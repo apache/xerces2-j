@@ -5877,7 +5877,7 @@ throws Exception {
             String uriStr = resolvePrefixToURI(prefix);
 
             if (!uriStr.equals(fTargetNSURIString)) {
-                addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo);
+                addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo, defaultAtt != null, fixedAtt != null, fixedStr, attValueAndUseType);
                 return 0;
             }
 
@@ -5943,8 +5943,8 @@ throws Exception {
                 }
 			}
             else if (fAttributeDeclRegistry.get(localpart) != null) {
-                    addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo);
-                }
+                addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo, defaultAtt != null, fixedAtt != null, fixedStr, attValueAndUseType);
+            }
             else {
                     // REVISIT: Localize
                 reportGenericSchemaError ( "Couldn't find top level attribute " + refStr + errorContext);
@@ -6139,9 +6139,9 @@ throws Exception {
             return -1;
         }
 
-        XMLAttributeDecl tempAttrDecl = (XMLAttributeDecl) attrRegistry.get(name);
+        XMLAttributeDecl referredAttrDecl = (XMLAttributeDecl) attrRegistry.get(name);
 
-        if (tempAttrDecl == null) {
+        if (referredAttrDecl == null) {
             // REVISIT: Localize
             reportGenericSchemaError( "no attribute named \"" + name
                                       + "\" was defined in schema : " + uriStr);
@@ -6152,15 +6152,15 @@ throws Exception {
         if (typeInfo!= null) {
 
             // check that there aren't duplicate attributes
-            int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, tempAttrDecl.name);
+            int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttrDecl.name);
             if (temp > -1) {
               reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " +
-              fStringPool.toString(tempAttrDecl.name.rawname) + " in type definition");
+              fStringPool.toString(referredAttrDecl.name.rawname) + " in type definition");
             }
 
             // check that there aren't multiple attributes with type derived from ID
-            if (tempAttrDecl.datatypeValidator != null &&
-                tempAttrDecl.datatypeValidator instanceof IDDatatypeValidator) {
+            if (referredAttrDecl.datatypeValidator != null &&
+                referredAttrDecl.datatypeValidator instanceof IDDatatypeValidator) {
                if (typeInfo.containsAttrTypeID())  {
                  reportGenericSchemaError("ct-props-correct.5: More than one attribute derived from type ID cannot appear in the same complex type definition");
                }
@@ -6168,11 +6168,113 @@ throws Exception {
             }
 
             fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
-                                      tempAttrDecl.name, tempAttrDecl.type,
-                                      -1, tempAttrDecl.defaultType,
-                                      tempAttrDecl.defaultValue,
-                                      tempAttrDecl.datatypeValidator,
-                                      tempAttrDecl.list);
+                                      referredAttrDecl.name, referredAttrDecl.type,
+                                      -1, referredAttrDecl.defaultType,
+                                      referredAttrDecl.defaultValue,
+                                      referredAttrDecl.datatypeValidator,
+                                      referredAttrDecl.list);
+        }
+
+
+        return 0;
+    }
+
+    private int addAttributeDeclFromAnotherSchema( String name, String uriStr, ComplexTypeInfo typeInfo, boolean hasDefault, boolean hasFixed, String fixedValue, int attValueAndUseType) throws Exception {
+        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+            // REVISIT: Localize
+            reportGenericSchemaError( "no attribute named \"" + name
+                                      + "\" was defined in schema : " + uriStr);
+            return -1;
+        }
+
+        Hashtable attrRegistry = aGrammar.getAttributeDeclRegistry();
+        if (attrRegistry == null) {
+            // REVISIT: Localize
+            reportGenericSchemaError( "no attribute named \"" + name
+                                      + "\" was defined in schema : " + uriStr);
+            return -1;
+        }
+
+        XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl((XMLAttributeDecl) attrRegistry.get(name));
+
+        if (referredAttrDecl == null) {
+            // REVISIT: Localize
+            reportGenericSchemaError( "no attribute named \"" + name
+                                      + "\" was defined in schema : " + uriStr);
+            return -1;
+        }
+
+
+        if (typeInfo!= null) {
+
+            // check that there aren't duplicate attributes
+            int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttrDecl.name);
+            if (temp > -1) {
+              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " +
+              fStringPool.toString(referredAttrDecl.name.rawname) + " in type definition");
+            }
+
+            // check that there aren't multiple attributes with type derived from ID
+            if (referredAttrDecl.datatypeValidator != null &&
+                referredAttrDecl.datatypeValidator instanceof IDDatatypeValidator) {
+               if (typeInfo.containsAttrTypeID())  {
+                 reportGenericSchemaError("ct-props-correct.5: More than one attribute derived from type ID cannot appear in the same complex type definition");
+               }
+               typeInfo.setContainsAttrTypeID();
+            }
+
+            /**
+             * Copied (and modified) the following code from traverseAttributeDecl
+             * because we also need to override "use" and "fixed" of the attribute
+             * from another namespace. - sandyg
+             */
+            boolean isReferFixed = (referredAttrDecl.defaultType & XMLAttributeDecl.DEFAULT_TYPE_FIXED) != 0;
+            String referFixed = isReferFixed ? null : referredAttrDecl.defaultValue;
+            if (referFixed != null && (hasDefault || hasFixed && !referFixed.equals(fixedValue))) {
+                reportGenericSchemaError("au-props-correct.2: If the {attribute declaration} has a fixed {value constraint}, then if the attribute use itself has a {value constraint}, it must also be fixed and its value must match that of the {attribute declaration}'s {value constraint}");
+            }
+
+            // this nasty hack needed to ``override'' the
+            // global attribute with "use" and "fixed" on the ref'ing attribute
+            if((attValueAndUseType & XMLAttributeDecl.USE_TYPE_OPTIONAL) == 0 ||
+               fixedValue.length() > 0) {
+
+                int useDigits =   XMLAttributeDecl.USE_TYPE_OPTIONAL |
+                                  XMLAttributeDecl.USE_TYPE_PROHIBITED |
+                                  XMLAttributeDecl.USE_TYPE_REQUIRED;
+
+                int valueDigits = XMLAttributeDecl.VALUE_CONSTRAINT_DEFAULT |
+                                  XMLAttributeDecl.VALUE_CONSTRAINT_FIXED;
+
+                if((attValueAndUseType & XMLAttributeDecl.USE_TYPE_OPTIONAL) == 0 &&
+                   (referredAttrDecl.defaultType & useDigits) !=
+                   (attValueAndUseType & useDigits))
+                {
+                    if(referredAttrDecl.defaultType != XMLAttributeDecl.USE_TYPE_PROHIBITED) {
+                            referredAttrDecl.defaultType |= useDigits;
+                            referredAttrDecl.defaultType ^= useDigits; // clear the use
+                        referredAttrDecl.defaultType |= (attValueAndUseType & useDigits);
+                    }
+                }
+
+                if(fixedValue.length() > 0) {
+                    if((referredAttrDecl.defaultType & XMLAttributeDecl.VALUE_CONSTRAINT_FIXED) == 0) {
+                        referredAttrDecl.defaultType |= valueDigits;
+                        referredAttrDecl.defaultType ^= valueDigits; // clear the value
+                        referredAttrDecl.defaultType |= XMLAttributeDecl.VALUE_CONSTRAINT_FIXED;
+                        referredAttrDecl.defaultValue = fixedValue;
+                    }
+                }
+            }
+            //***************************************
+
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
+                                      referredAttrDecl.name, referredAttrDecl.type,
+                                      -1, referredAttrDecl.defaultType,
+                                      referredAttrDecl.defaultValue,
+                                      referredAttrDecl.datatypeValidator,
+                                      referredAttrDecl.list);
         }
 
 

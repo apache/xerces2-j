@@ -1083,7 +1083,7 @@ public class GeneralAttrCheck {
                     } else if ( token.equals (SchemaSymbols.ELT_UNION) ) {
                         choice |= SchemaSymbols.RESTRICTION;
                     } else {
-                        throw new InvalidDatatypeValueException();
+                        throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | List of (substitution | extension | restriction | list | union))");
                     }
                 }
             }
@@ -1106,7 +1106,7 @@ public class GeneralAttrCheck {
                     } else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
                         choice |= SchemaSymbols.RESTRICTION;
                     } else {
-                        throw new InvalidDatatypeValueException();
+                        throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | List of (extension | restriction))");
                     }
                 }
             }
@@ -1125,7 +1125,7 @@ public class GeneralAttrCheck {
             } else if (value.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
                 choice = SchemaSymbols.RESTRICTION;
             } else {
-                throw new InvalidDatatypeValueException();
+                throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | (list | union | restriction))");
             }
 //???            value = Integer.toString(choice);
             break;
@@ -1133,46 +1133,56 @@ public class GeneralAttrCheck {
             // form = (qualified | unqualified)
             if (!value.equals (SchemaSymbols.ATTVAL_QUALIFIED) &&
                 !value.equals (SchemaSymbols.ATTVAL_UNQUALIFIED)) {
-                throw new InvalidDatatypeValueException();
+                throw new InvalidDatatypeValueException("the value '"+value+"' must match (qualified | unqualified)");
             }
             break;
         case DT_MAXOCCURS:
             // maxOccurs = (nonNegativeInteger | unbounded)
             if (!value.equals("unbounded")) {
-                fExtraDVs[DT_NONNEGINT].validate(value, null);
+                try {
+                    fExtraDVs[DT_NONNEGINT].validate(value, null);
+                } catch (InvalidDatatypeValueException ide) {
+                    throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
+                }
             }
             break;
         case DT_MAXOCCURS1:
             // maxOccurs = 1
             if (!value.equals("1"))
-                throw new InvalidDatatypeValueException();
+                throw new InvalidDatatypeValueException("the value '"+value+"' must be '1'");
             break;
         case DT_MEMBERTYPES:
             // memberTypes = List of QName
-            {
+            try {
                 StringTokenizer t = new StringTokenizer (value, " ");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
                     fExtraDVs[DT_QNAME].validate(token, null);
                 }
+            } catch (InvalidDatatypeValueException ide) {
+                throw new InvalidDatatypeValueException("the value '"+value+"' must match (List of QName)");
             }
             break;
         case DT_MINOCCURS1:
             // minOccurs = (0 | 1)
             if (!value.equals("0") && !value.equals("1"))
-                throw new InvalidDatatypeValueException();
+                throw new InvalidDatatypeValueException("the value '"+value+"' must be '0' or '1'");
             break;
         case DT_NAMESPACE:
             // namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )
             if (!value.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY) &&
                 !value.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
                 StringTokenizer t = new StringTokenizer (value, " ");
-                while (t.hasMoreTokens()) {
-                    String token = t.nextToken ();
-                    if (!token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS) &&
-                        !token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-                        fExtraDVs[DT_ANYURI].validate(token, null);
+                try {
+                    while (t.hasMoreTokens()) {
+                        String token = t.nextToken ();
+                        if (!token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS) &&
+                            !token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
+                            fExtraDVs[DT_ANYURI].validate(token, null);
+                        }
                     }
+                } catch (InvalidDatatypeValueException ide) {
+                    throw new InvalidDatatypeValueException("the value '"+value+"' must match ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )");
                 }
             }
             break;
@@ -1181,7 +1191,7 @@ public class GeneralAttrCheck {
             if (!value.equals (SchemaSymbols.ATTVAL_SKIP) &&
                 !value.equals (SchemaSymbols.ATTVAL_LAX) &&
                 !value.equals (SchemaSymbols.ATTVAL_STRICT)) {
-                throw new InvalidDatatypeValueException();
+                throw new InvalidDatatypeValueException("the value '"+value+"' must match (lax | skip | strict)");
             }
             break;
         case DT_PUBLIC:
@@ -1193,7 +1203,7 @@ public class GeneralAttrCheck {
             if (!value.equals (SchemaSymbols.ATTVAL_OPTIONAL) &&
                 !value.equals (SchemaSymbols.ATTVAL_PROHIBITED) &&
                 !value.equals (SchemaSymbols.ATTVAL_REQUIRED)) {
-                throw new InvalidDatatypeValueException();
+                throw new InvalidDatatypeValueException("the value '"+value+"' must match (optional | prohibited | required)");
             }
             break;
         case DT_WHITESPACE:
@@ -1201,7 +1211,7 @@ public class GeneralAttrCheck {
             if (!value.equals (SchemaSymbols.ATT_PRESERVE) &&
                 !value.equals (SchemaSymbols.ATT_REPLACE) &&
                 !value.equals (SchemaSymbols.ATT_COLLAPSE)) {
-                throw new InvalidDatatypeValueException();
+                throw new InvalidDatatypeValueException("the value '"+value+"' must match (preserve | replace | collapse)");
             }
             break;
         }
