@@ -69,9 +69,9 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
@@ -268,9 +268,22 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
             fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
         }
 
-        if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
-            XSMessageFormatter xmft = new XSMessageFormatter();
-            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+        // REVISIT: try to include XML Schema formatter.
+        //          This is a hack to allow DTD configuration to be build.
+        //          
+        if (fErrorReporter.getMessageFormatter("http://www.w3.org/TR/xml-schema-1") == null) {
+            MessageFormatter xmft = null;
+            try {            
+               xmft = (MessageFormatter)(Class.forName("org.apache.xerces.impl.xs.XSMessageFormatter")).newInstance();
+            } catch (ClassNotFoundException ex){
+                // will happen if this is DTD Only build
+
+            } catch (Exception exception){
+            }
+
+             if (xmft !=  null) {  
+                 fErrorReporter.putMessageFormatter("http://www.w3.org/TR/xml-schema-1", xmft);
+             }
         }
 
 

@@ -62,7 +62,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 import org.apache.xerces.impl.dtd.XMLDTDDescription;
-import org.apache.xerces.impl.xs.XSDDescription;
+//import org.apache.xerces.impl.xs.XSDDescription;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -169,7 +169,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
                 if(DEBUG) {
     	            System.out.println("CACHED GRAMMAR " + (i+1) ) ;
     	            Grammar temp = grammars[i] ;
-    	            print(temp.getGrammarDescription());
+    	            //print(temp.getGrammarDescription());
                 }
     	        putGrammar(grammars[i]);
             }
@@ -193,7 +193,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     public Grammar retrieveGrammar(XMLGrammarDescription desc) {
         if(DEBUG){
             System.out.println("RETRIEVING GRAMMAR FROM THE APPLICATION WITH FOLLOWING DESCRIPTION :");
-            print(desc);
+            //print(desc);
         }
         return getGrammar(desc);
     } // retrieveGrammar(XMLGrammarDescription):  Grammar
@@ -378,8 +378,8 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
         } // clear()
     } // class Entry
     
-    /* This is just for testing */
-    public void print(XMLGrammarDescription description){
+    /* For DTD build we can't import here XSDDescription. Thus, this method is commented out.. */
+    /* public void print(XMLGrammarDescription description){
     	if(description.getGrammarType().equals(XMLGrammarDescription.XML_DTD)){
     	
     	}
@@ -399,5 +399,6 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     	}
     
     }//print
+    */
     
 } // class XMLGrammarPoolImpl

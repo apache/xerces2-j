@@ -71,8 +71,10 @@ import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.dom.ProcessingInstructionImpl;
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.xs.AttributePSVImpl;
-import org.apache.xerces.impl.xs.XSAttributeDecl;
+// id types
+import org.apache.xerces.xni.psvi.AttributePSVI;
+import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
+import org.apache.xerces.impl.dv.XSSimpleType;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -840,7 +842,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 // REVISIT: consider moving this code to the XML Schema validator. 
                 //          When PSVI and XML Schema component interfaces are finalized
                 //          remove dependancy on *Impl class.
-                AttributePSVImpl attrPSVI = (AttributePSVImpl)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                 if (fNormalizeData) {
                     // If validation is not attempted, the SchemaNormalizedValue will be null. 
                     // We shouldn't take the normalized value in this case.
@@ -861,10 +863,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                     boolean specified = attributes.isSpecified(i);
                     attrImpl.setSpecified(specified);
                     // Identifier registration
-                    // try to retrieve XML Schema attribute declaration
-                    XSAttributeDecl xsDecl = (XSAttributeDecl)((attrPSVI!=null)?attrPSVI.getAttributeDeclaration():null);
+                    // REVISIT: try to retrieve XML Schema attribute declaration
+                    //          we should try to modify psvi API to allows to 
+                    //          check if id type 
+                    XSAttributeDeclaration xsDecl = (XSAttributeDeclaration)((attrPSVI!=null)?attrPSVI.getAttributeDeclaration():null);
                     if (attributes.getType(i).equals("ID") || 
-                        (xsDecl !=null && xsDecl.fType.isIDType())) {
+                        (xsDecl !=null && ((XSSimpleType)xsDecl.getTypeDefinition()).isIDType())) {
                         ((ElementImpl) el).setIdAttributeNode(attr);
                     }
                 }
@@ -886,7 +890,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 // REVISIT: consider moving this code to the XML Schema validator. 
                 //          When PSVI and XML Schema component interfaces are finalized
                 //          remove dependancy on *Impl class.
-                AttributePSVImpl attrPSVI = (AttributePSVImpl)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                 
                 if (fNormalizeData) {
                     // If validation is not attempted, the SchemaNormalizedValue will be null. 
@@ -902,11 +906,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                                                     attrValue,
                                                     attributes.isSpecified(i));
                 // identifier registration
-                // try to retrieve XML Schema attribute declaration 
-                XSAttributeDecl xsDecl = (XSAttributeDecl)((attrPSVI!=null)?attrPSVI.getAttributeDeclaration():null);
-
+                // REVISIT: try to retrieve XML Schema attribute declaration
+                //          we should try to modify psvi API to allows to 
+                //          check if id type 
+                XSAttributeDeclaration xsDecl = (XSAttributeDeclaration)((attrPSVI!=null)?attrPSVI.getAttributeDeclaration():null);
+                
                 if (attributes.getType(i).equals("ID") || 
-                    (xsDecl !=null && xsDecl.fType.isIDType())) {
+                    (xsDecl !=null && ((XSSimpleType)xsDecl.getTypeDefinition()).isIDType())) {
                     fDeferredDocumentImpl.setIdAttributeNode(el, attr);
                 }
             }
