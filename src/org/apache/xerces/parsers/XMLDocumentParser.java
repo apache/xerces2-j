@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,11 +57,11 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.apache.xerces.impl.Constants;
 
 /**
  * This is a concrete vanilla XML parser class. It uses the abstract parser
@@ -87,7 +87,7 @@ public class XMLDocumentParser
     public XMLDocumentParser() {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.StandardParserConfiguration"
+            "org.apache.xerces.parsers.XML11Configuration"
             ));
     } // <init>()
 
@@ -104,7 +104,7 @@ public class XMLDocumentParser
     public XMLDocumentParser(SymbolTable symbolTable) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.StandardParserConfiguration"
+            "org.apache.xerces.parsers.XML11Configuration"
             ));
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
     } // <init>(SymbolTable)
@@ -117,7 +117,7 @@ public class XMLDocumentParser
                              XMLGrammarPool grammarPool) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.StandardParserConfiguration"
+            "org.apache.xerces.parsers.XML11Configuration"
             ));
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY, grammarPool);

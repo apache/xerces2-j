@@ -57,10 +57,10 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 /**
@@ -139,7 +139,7 @@ public class SAXParser
     public SAXParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.IntegratedParserConfiguration"
+            "org.apache.xerces.parsers.XML11Configuration"
             ));
 
         // set features

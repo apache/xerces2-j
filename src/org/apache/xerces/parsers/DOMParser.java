@@ -57,33 +57,29 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.Reader;
 
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLParseException;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.apache.xerces.impl.Constants;
-
 import org.w3c.dom.Node;
-
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.LocatorImpl;
 
 /**
@@ -152,7 +148,7 @@ public class DOMParser
     public DOMParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.IntegratedParserConfiguration"
+            "org.apache.xerces.parsers.XML11Configuration"
             ));
 
         // set properties

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,13 +57,11 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.ObjectFactory;
-import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.Constants;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.impl.dv.DTDDVFactory;
+import org.apache.xerces.util.ObjectFactory;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 /**
  * @version $Id$
@@ -90,7 +88,7 @@ public abstract class XMLGrammarParser
     protected XMLGrammarParser(SymbolTable symbolTable) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.StandardParserConfiguration"
+            "org.apache.xerces.parsers.XML11Configuration"
             ));
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
     }
