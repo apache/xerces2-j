@@ -513,21 +513,11 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
           fSimpleType.type = XMLSimpleType.TYPE_NOTATION;
           Hashtable facets = new Hashtable();
           facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
-          DatatypeValidator dv = 
-              DatatypeValidatorFactoryImpl.getDatatypeRegistry().createDatatypeValidator(attributeName+"_NOTATION", 
-                                                                                         fSimpleType.datatypeValidator,
-                                                                                         facets, false);
-          fSimpleType.datatypeValidator = dv;
       }
-      else if (type.startsWith("(") ) {
+      else if (type.startsWith("ENUMERATION") ) {
           fSimpleType.type = XMLSimpleType.TYPE_ENUMERATION;
           Hashtable facets = new Hashtable();
           facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
-          DatatypeValidator dv = 
-              DatatypeValidatorFactoryImpl.getDatatypeRegistry().createDatatypeValidator(attributeName+"_CDATA", 
-                                                                                         DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator("string"),
-                                                                                         facets, false);
-          fSimpleType.datatypeValidator = dv;
       }
 
       fQName.clear();
