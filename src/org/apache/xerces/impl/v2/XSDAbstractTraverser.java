@@ -65,6 +65,8 @@ import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XIntPool;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
+import java.util.Vector;
+import java.lang.reflect.*;
 import org.apache.xerces.util.DOMUtil;
 
 /**
@@ -158,6 +160,181 @@ abstract class XSDAbstractTraverser {
         // REVISIT: an annotation decl should be returned when we support PSVI
     }
 
+    DatatypeValidator createRestrictedValidator(DatatypeValidator baseValidator, 
+                                                Hashtable fFacetData) { 
+
+        DatatypeValidator newDV=null;
+        Class validatorDef = baseValidator.getClass();
+        Class [] validatorArgsClass = new Class[] {
+            org.apache.xerces.impl.v2.datatypes.DatatypeValidator.class,
+            java.util.Hashtable.class,
+            boolean.class};
+
+        Object [] validatorArgs = new Object[] {baseValidator, fFacetData, Boolean.FALSE};
+        try {
+            Constructor validatorConstructor = validatorDef.getConstructor( validatorArgsClass );
+            newDV = (DatatypeValidator) validatorConstructor.newInstance(validatorArgs);
+        } catch (NoSuchMethodException e) {
+        } catch ( InstantiationException e ) {
+        } catch ( IllegalAccessException e ) {
+        } catch ( IllegalArgumentException e ) {
+        } catch ( InvocationTargetException e ) {
+            reportGenericSchemaError(e.getMessage());
+        }
+        return newDV;
+
+
+    }
+
+
+    // Temp data structures to be re-used in traversing facets
+    private StringBuffer fPattern = null;
+    private final QName fQName = new QName();
+
+    class fFacetInfo {
+      Hashtable facetdata;
+      Element nodeAfterFacets;
+    }
+
+    fFacetInfo traverseFacets(Element content, Object[] contentAttrs, String simpleTypeName, 
+               DatatypeValidator baseValidator, XSDocumentInfo schemaDoc, 
+               SchemaGrammar grammar) {
+
+        fFacetInfo fi = new fFacetInfo();
+        Hashtable fFacetData = new Hashtable(10); 
+        short flags = 0; // flag facets that have fixed="true"
+        int numEnumerationLiterals = 0;
+        Vector enumData  = new Vector();
+        content = checkContent(content , contentAttrs, schemaDoc);
+        String facet;
+
+        int numFacets=0;
+        while (content != null) {
+            // General Attribute Checking
+            Object[] attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
+            numFacets++;
+            facet = DOMUtil.getLocalName(content);
+            if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                numEnumerationLiterals++;
+                String enumVal =  DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE);
+                String localName;
+                if (baseValidator instanceof NOTATIONDatatypeValidator) {
+                    fAttrChecker.checkAttributes(content, false, schemaDoc);
+                    String prefix = fSchemaHandler.EMPTY_STRING;
+                    String localpart = enumVal;
+                    int colonptr = enumVal.indexOf(":");
+                    if (colonptr > 0) {
+                        prefix = enumVal.substring(0,colonptr);
+                        localpart = enumVal.substring(colonptr+1);
+
+                    }
+                    String uriStr = schemaDoc.fNamespaceSupport.getURI(prefix);
+                    fQName.setValues(prefix, localpart, null, uriStr );
+                    XSNotationDecl notation = (XSNotationDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE , fQName);
+    
+                    if (notation == null) {
+                            reportGenericSchemaError("Notation '" + localpart +
+                                                     "' not found in the grammar "+ uriStr);
+    
+                    }
+                    enumVal=simpleTypeName;
+                }
+                enumData.addElement(enumVal);
+                checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
+            }
+            else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+                //REVISIT:
+                Object[] args = {simpleTypeName}; 
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                           "ListUnionRestrictionError",
+                                           args,
+                                           XMLErrorReporter.SEVERITY_ERROR);
+    
+            }
+            else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
+                if (fPattern == null) {
+                    //REVISIT: size of buffer
+                    fPattern = new StringBuffer (DOMUtil.getAttrValue( content, SchemaSymbols.ATT_VALUE ));
+                }
+                else {
+                    // ---------------------------------------------
+                    //datatypes: 5.2.4 pattern: src-multiple-pattern
+                    // ---------------------------------------------
+                    fPattern.append("|");
+                    fPattern.append(DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE ));
+                    checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
+                }
+            }
+            else {
+                if (fFacetData.containsKey(facet))
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "DatatypeError",
+                                               new Object[]{"The facet '" + facet + "' is defined more than once."},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+
+                int facetType = 0;
+
+                if (facet.equals(SchemaSymbols.ELT_MINLENGTH)) {
+                    facetType= DatatypeValidator.FACET_MINLENGTH;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_MAXLENGTH)) {
+                    facetType= DatatypeValidator.FACET_MAXLENGTH;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                    facetType= DatatypeValidator.FACET_MAXEXCLUSIVE;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                    facetType= DatatypeValidator.FACET_MAXINCLUSIVE;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                    facetType= DatatypeValidator.FACET_MINEXCLUSIVE;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                    facetType= DatatypeValidator.FACET_MININCLUSIVE;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_TOTALDIGITS)) {
+                    facetType= DatatypeValidator.FACET_TOTALDIGITS;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_FRACTIONDIGITS)) {
+                    facetType = DatatypeValidator.FACET_FRACTIONDIGITS; 
+                }
+                else if (facet.equals(SchemaSymbols.ELT_WHITESPACE)) {
+                     
+                      if (baseValidator instanceof StringDatatypeValidator) 
+                         facetType= DatatypeValidator.FACET_WHITESPACE;
+                }
+                else if (facet.equals(SchemaSymbols.ELT_LENGTH)) { 
+                }
+                else {
+                    break;   // a non-facet
+                } 
+
+                if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE) ||
+                    content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE_1)) {
+                    flags |= facetType;
+                }
+                fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
+            }
+            // REVISIT: when to return the array
+            fAttrChecker.returnAttrArray (attrs, schemaDoc);
+            content = DOMUtil.getNextSiblingElement(content);
+        }
+        if (numEnumerationLiterals > 0) {
+            fFacetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
+        }
+        if (fPattern !=null) {
+            fFacetData.put(SchemaSymbols.ELT_PATTERN, fPattern.toString());
+        }
+        if (flags != 0) {
+            fFacetData.put(DatatypeValidator.FACET_FIXED, new Short(flags));
+        }
+        fPattern = null;
+        fi.facetdata = fFacetData;
+        fi.nodeAfterFacets = content;
+        return fi;
+    
+    }
 
     //
     // Traverse a set of attribute and attribute group elements
