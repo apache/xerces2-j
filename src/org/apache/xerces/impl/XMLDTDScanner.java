@@ -197,6 +197,10 @@ public class XMLDTDScanner
 
         scanTextDecl(complete);
 
+        if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
+            return false;
+        }
+
         // next state is markup decls regardless of whether there
         // is a TextDecl or not
         setScannerState(SCANNER_STATE_MARKUP_DECL);
@@ -227,6 +231,10 @@ public class XMLDTDScanner
         setScannerState(SCANNER_STATE_TEXT_DECL);
 
         scanTextDecl(complete);
+
+        if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
+            return false;
+        }
 
         // next state is markup decls regardless of whether there
         // is a TextDecl or not
