@@ -997,7 +997,7 @@ public abstract class NodeImpl
      *   node.
      * @since DOM Level 3
      */
-    public short compareDocumentPosition(Node other) {
+    public short compareDocumentPosition(Node other) throws DOMException {
 
         // If the nodes are the same, no flags should be set
         if (this==other) 
