@@ -42,9 +42,7 @@
 	<s2 title='Implementation of DOM Level 3 Core'>
             <p>Missing functionality:</p>
              <ul>
-			<li><strong>DOMConfiguration "infoset"</strong> parameter - value "true" is not supported. </li>
-			<li><strong>DOMConfiguration "well-formed"</strong> parameter - value "true" is not supported.</li>
-
+               <li><strong>DOMConfiguration "infoset"</strong> parameter - value "true" is not supported. </li>
              </ul>
               
 		<p>
@@ -170,7 +168,7 @@
 			<li>
 				<strong>well-formed</strong>
 				[
-				<em>false</em>
+				<em>true/false</em>
 				]
 			</li>	
 			<li>
