@@ -2,4 +2,16 @@
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
 <s1 title='XNI Parser Configuration'>
  <p><strong>TODO</strong></p>
+ <!--
+ <s2 title='XNI Parser Configuration'>
+  <p>
+   An XML application programmer can use the Xerces Native Interface
+   parser configuration interfaces to build different parser 
+   configurations, either completely from scratch or by mixing
+   and matching existing parser components. For advanced users
+   that want to take advantage of this capability, an understanding
+   of the parser configuration framework is required.
+  </p>
+ </s2>
+ -->
 </s1>

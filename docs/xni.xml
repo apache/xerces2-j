@@ -109,7 +109,7 @@
   </table>
   <p>
    For complete details of the Xerces Native Interface, refer to
-   the <link idref='xni-api'>XNI API</link> documentation.
+   the <link idref='xni-api'>API Documentation</link>.
   </p>
  </s2>
  <anchor name='generic-parser-configurations'/>

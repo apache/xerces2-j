@@ -20,7 +20,7 @@
 <!ELEMENT label %content;>
 <!ELEMENT item %content;>
 
-<!ELEMENT source (#PCDATA)>
+<!ELEMENT source (#PCDATA|link)*>
 
 <!ELEMENT table (tr)+>
 
