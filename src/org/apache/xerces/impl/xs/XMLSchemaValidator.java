@@ -2681,8 +2681,6 @@ public class XMLSchemaValidator
         if (fAugPSVI) {
             // PSVI: attribute declaration
             attrPSVI.fDeclaration = currDecl;
-            if (currDecl != null && currDecl.fDefault != null)
-                attrPSVI.fSchemaDefault = currDecl.fDefault.toString();
             // PSVI: attribute type
             attrPSVI.fTypeDecl = attDV;
 
@@ -2774,7 +2772,6 @@ public class XMLSchemaValidator
                     attrPSVI.fTypeDecl = currDecl.fType;
                     attrPSVI.fMemberType = defaultValue.memberType;
                     attrPSVI.fNormalizedValue = normalized;
-                    attrPSVI.fSchemaDefault = normalized;
                     attrPSVI.fValidationContext = fValidationRoot;
                     attrPSVI.fValidity = AttributePSVI.VALIDITY_VALID;
                     attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;

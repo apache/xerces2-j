@@ -103,9 +103,6 @@ public class AttributePSVImpl implements AttributePSVI {
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
 
-    /** schema default */
-    protected String fSchemaDefault = null;
-    
     //
     // AttributePSVI methods
     //
@@ -117,7 +114,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default>XML Schema Part 1: Structures [schema default]</a>
      */
     public String getSchemaDefault() {
-        return fSchemaDefault;
+        return fDeclaration == null ? null : fDeclaration.getConstraintValue();
     }
 
     /**
@@ -217,7 +214,6 @@ public class AttributePSVImpl implements AttributePSVI {
     public void reset() {
         fNormalizedValue = null;
         fDeclaration = null;
-        fSchemaDefault = null;
         fTypeDecl = null;
         fSpecified = false;
         fMemberType = null;
