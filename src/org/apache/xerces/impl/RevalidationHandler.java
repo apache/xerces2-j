@@ -69,13 +69,6 @@ import org.apache.xerces.xni.parser.XMLDocumentFilter;
 public interface RevalidationHandler extends XMLDocumentFilter {
 
     /**
-     * Set the base URI of the document
-     * 
-     * @param base
-     */
-    public void setBaseURI(String base);
-    
-    /**
      * Character content.
      * 
      * @param data   The character data.

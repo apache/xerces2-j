@@ -316,6 +316,11 @@ public class XMLSchemaValidator
 
 	/** Symbol table. */
 	protected SymbolTable fSymbolTable;
+    
+    /**
+     * While parsing a document, keep the location of the document.
+     */
+    private XMLLocator fLocator;
 
 	/**
 	 * A wrapper of the standard error reporter. We'll store all schema errors
@@ -443,8 +448,8 @@ public class XMLSchemaValidator
 	protected final XSDDescription fXSDDescription = new XSDDescription();
 	protected final Hashtable fLocationPairs = new Hashtable();
 
-	/** Base URI for the DOM revalidation*/
-	protected String fBaseURI = null;
+
+
 
 	// handlers
 
@@ -607,6 +612,7 @@ public class XMLSchemaValidator
 		fValidationState.setNamespaceSupport(namespaceContext);
 		fState4XsiType.setNamespaceSupport(namespaceContext);
 		fState4ApplyDefault.setNamespaceSupport(namespaceContext);
+        fLocator = locator;
 
 		handleStartDocument(locator, encoding);
 		// call handlers
@@ -845,6 +851,7 @@ public class XMLSchemaValidator
 		if (fDocumentHandler != null) {
 			fDocumentHandler.endDocument(augs);
 		}
+        fLocator = null;
 
 	} // endDocument(Augmentations)
 
@@ -852,9 +859,9 @@ public class XMLSchemaValidator
 	// DOMRevalidationHandler methods
 	//
 
-	public void setBaseURI(String base) {
-		fBaseURI = base;
-	}
+
+
+
 
 	public boolean characterData(String data, Augmentations augs) {
 
@@ -1267,7 +1274,7 @@ public class XMLSchemaValidator
 		fInCDATA = false;
 
 		fMatcherStack.clear();
-		fBaseURI = null;
+
 		
 		// get error reporter
 		fXSIErrorReporter.reset((XMLErrorReporter) componentManager.getProperty(ERROR_REPORTER));
@@ -2315,9 +2322,9 @@ public class XMLSchemaValidator
 			fXSDDescription.fEnclosedElementName = enclosingElement;
 			fXSDDescription.fTriggeringComponent = triggeringComponet;
 			fXSDDescription.fAttributes = attributes;
-			if (fBaseURI != null) {
-				fXSDDescription.setBaseSystemId(fBaseURI);
-			}
+            if (fLocator != null) {
+                fXSDDescription.setBaseSystemId(fLocator.getExpandedSystemId());
+            }
 
 			String[] temp = null;
 			Object locationArray =
@@ -2748,6 +2755,8 @@ public class XMLSchemaValidator
             attrPSVI.fActualValue = fValidatedInfo.actualValue;
             attrPSVI.fActualValueType = fValidatedInfo.actualValueType;
             attrPSVI.fItemValueTypes = fValidatedInfo.itemValueTypes;
+
+
 
 			// PSVI: validation attempted:
 			attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;

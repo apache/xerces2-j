@@ -234,9 +234,10 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
 		fErrorHandler = (DOMErrorHandler) fConfiguration.getParameter("error-handler");
 		if (fValidationHandler != null) {
-			fValidationHandler.setBaseURI(fDocument.fDocumentURI);
 			fValidationHandler.setDocumentHandler(this);
-			fValidationHandler.startDocument(null, fDocument.encoding, fNamespaceContext, null);
+			fValidationHandler.startDocument(
+                    new SimpleLocator(fDocument.fDocumentURI, fDocument.fDocumentURI,
+						-1, -1 ), fDocument.encoding, fNamespaceContext, null);
 
 		}
 		try {
