@@ -97,7 +97,7 @@ class XSDocumentInfo {
     protected short fFinalDefault;
 
     // targetNamespace
-    protected String fTargetNamespace;
+    String fTargetNamespace;
 
     // represents whether this is a chameleon schema (i.e., whether its TNS is natural or comes from without)
     protected boolean fIsChameleonSchema;
