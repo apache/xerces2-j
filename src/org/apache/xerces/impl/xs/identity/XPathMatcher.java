@@ -397,10 +397,18 @@ public class XPathMatcher {
     // startElement(QName,XMLAttrList,int)
 
     /**
-       * @param element  - name
-       * @param type - type
-       * @param type - nillable
+       * @param element
+       *        name of the element.
+       * @param type
+       *        content type of this element. IOW, the XML schema type
+       *        of the <tt>value</tt>. Note that this may not be the type declared
+       *        in the element declaration, but it is "the actual type". For example,
+       *        if the XML is &lt;foo xsi:type="xs:string">aaa&lt;/foo>, this
+       *        parameter will be "xs:string".
+       * @param nillable - nillable
+       *        true if the element declaration is nillable.
        * @param value - actual value
+       *        the typed value of the content of this element. 
        */
     public void endElement(QName element, XSTypeDefinition type, boolean nillable, Object value ) {
         if (DEBUG_METHODS2) {

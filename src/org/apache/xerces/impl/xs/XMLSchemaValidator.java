@@ -2116,7 +2116,7 @@ public class XMLSchemaValidator
 			else
 				matcher.endElement(
 					element,
-					fCurrentElemDecl.fType,
+					fCurrentType,
 					fCurrentElemDecl.getNillable(),
 					fDefaultValue == null
 						? fValidatedInfo.actualValue
