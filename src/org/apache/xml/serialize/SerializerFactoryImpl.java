@@ -62,7 +62,7 @@ package org.apache.xml.serialize;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.io.UnsupportedEncodingException;
-
+import org.apache.xerces.dom.DOMMessageFormatter;
 
 /**
  * Default serializer factory can construct serializers for the three
@@ -87,8 +87,10 @@ final class SerializerFactoryImpl
         if ( ! _method.equals( Method.XML ) &&
              ! _method.equals( Method.HTML ) &&
              ! _method.equals( Method.XHTML ) &&
-             ! _method.equals( Method.TEXT ) )
-            throw new IllegalArgumentException( "SER004 The method '" + method + "' is not supported by this factory\n" + method);
+             ! _method.equals( Method.TEXT ) ) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "MethodNotSupported", new Object[]{method});
+            throw new IllegalArgumentException(msg);
+        }
     }
 
 
@@ -137,7 +139,8 @@ final class SerializerFactoryImpl
         }  else if ( _method.equals( Method.TEXT ) ) {
             return new TextSerializer();
         } else {
-            throw new IllegalStateException( "SER005 The method '" + _method + "' is not supported by this factory\n" + _method);
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "MethodNotSupported", new Object[]{_method});
+            throw new IllegalStateException(msg);
         }
     }
     

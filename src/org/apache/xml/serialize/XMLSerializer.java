@@ -90,6 +90,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.dom.DOMMessageFormatter;
 
 /**
  * Implements an XML serializer supporting both DOM and SAX pretty
@@ -251,8 +252,10 @@ extends BaseMarkupSerializer{
         }
 
         try {
-            if (_printer == null)
-                throw new IllegalStateException( "SER002 No writer supplied for serializer" );
+            if (_printer == null) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "NoWriterSupplied", null);
+                throw new IllegalStateException(msg);
+            }
 
             state = getElementState();
             if (isDocumentState()) {
@@ -290,8 +293,10 @@ extends BaseMarkupSerializer{
             // Do not change the current element state yet.
             // This only happens in endElement().
             if (rawName == null || rawName.length() == 0) {
-                if (localName == null)
-                    throw new SAXException( "No rawName and localName is null" );
+                if (localName == null) {
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "NoName", null);
+                    throw new SAXException(msg);
+                }
                 if (namespaceURI != null && ! namespaceURI.equals( "" )) {
                     String prefix;
                     prefix = getPrefix( namespaceURI );
@@ -462,8 +467,10 @@ extends BaseMarkupSerializer{
         }
 
         try {
-            if (_printer == null)
-                throw new IllegalStateException( "SER002 No writer supplied for serializer" );
+            if (_printer == null) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "NoWriterSupplied", null);
+                throw new IllegalStateException(msg);
+            }
 
             state = getElementState();
             if (isDocumentState()) {
@@ -843,7 +850,8 @@ extends BaseMarkupSerializer{
                     if (colon != colon2) {
                         //not a QName: report an error
                         if (fDOMErrorHandler != null) {
-                            modifyDOMError("Element's name is not a QName: "+tagName, DOMError.SEVERITY_ERROR);
+                            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "ElementQName", new Object[]{tagName});
+                            modifyDOMError(msg, DOMError.SEVERITY_ERROR);
                             boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                             // REVISIT: should we terminate upon request?                        
                         }
@@ -852,7 +860,8 @@ extends BaseMarkupSerializer{
                         // if we got here no namespace processing was performed
                         // report warnings
                         if (fDOMErrorHandler != null) {
-                            modifyDOMError("Element <"+tagName+"> does not belong to any namespace: prefix could be undeclared or bound to some namespace", DOMError.SEVERITY_WARNING);
+                            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "ElementPrefix", new Object[]{tagName});
+                            modifyDOMError(msg, DOMError.SEVERITY_WARNING);
                             boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                         }
                     }
@@ -1034,7 +1043,8 @@ extends BaseMarkupSerializer{
                             if (prefix.length() == 0) {
                                 // report an error - invalid namespace declaration
                                 if (fDOMErrorHandler != null) {
-                                    modifyDOMError("Namespace declaration syntax is incorrect "+name, DOMError.SEVERITY_ERROR);
+                                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "InvalidNSDecl", new Object[]{name});
+                                    modifyDOMError(msg, DOMError.SEVERITY_ERROR);
                                     boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                                 }
                                 // REVISIT: skip invalid declaration?
@@ -1044,7 +1054,8 @@ extends BaseMarkupSerializer{
                             }
                             else if (value.length() == 0) {
                                 if (fDOMErrorHandler != null) {
-                                    modifyDOMError("Namespace declaration syntax is incorrect "+name, DOMError.SEVERITY_ERROR);
+                                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "InvalidNSDecl", new Object[]{name});
+                                    modifyDOMError(msg, DOMError.SEVERITY_ERROR);
                                     boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                                 }
                                 // REVISIT: skip invalid declaration?
@@ -1077,7 +1088,8 @@ extends BaseMarkupSerializer{
                         if (colon != colon2) {
                             //not a QName: report an error
                             if (fDOMErrorHandler != null) {
-                                modifyDOMError("Attribute's name is not a QName: "+name, DOMError.SEVERITY_ERROR);
+                                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "AttributeQName", new Object[]{name});
+                                modifyDOMError(msg, DOMError.SEVERITY_ERROR);
                                 boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);                                                        
                             }
 
@@ -1086,7 +1098,8 @@ extends BaseMarkupSerializer{
                             // if we got here no namespace processing was performed
                             // report warnings
                             if (fDOMErrorHandler != null) {
-                                modifyDOMError("Attribute '"+name+"' does not belong to any namespace: prefix could be undeclared or bound to some namespace", DOMError.SEVERITY_WARNING);
+                                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "AttributePrefix", new Object[]{name});
+                                modifyDOMError(msg, DOMError.SEVERITY_WARNING);
                                 boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                             }
                         }

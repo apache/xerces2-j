@@ -109,6 +109,7 @@ import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMLocator;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
 
 import org.w3c.dom.ls.DOMWriterFilter;
@@ -333,8 +334,11 @@ public abstract class BaseMarkupSerializer
 
     public void setOutputByteStream( OutputStream output )
     {
-        if ( output == null )
-            throw new NullPointerException( "SER001 Argument 'output' is null." );
+        if ( output == null ) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN,
+                                                           "ArgumentIsNull", new Object[]{"output"});
+            throw new NullPointerException(msg);
+        }
         _output = output;
         _writer = null;
         reset();
@@ -343,8 +347,11 @@ public abstract class BaseMarkupSerializer
 
     public void setOutputCharStream( Writer writer )
     {
-        if ( writer == null )
-            throw new NullPointerException( "SER001 Argument 'writer' is null." );
+        if ( writer == null ) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN,
+                                                           "ArgumentIsNull", new Object[]{"writer"});
+            throw new NullPointerException(msg);
+        }
         _writer = writer;
         _output = null;
         reset();
@@ -353,8 +360,11 @@ public abstract class BaseMarkupSerializer
 
     public void setOutputFormat( OutputFormat format )
     {
-        if ( format == null )
-            throw new NullPointerException( "SER001 Argument 'format' is null." );
+        if ( format == null ) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN,
+                                                           "ArgumentIsNull", new Object[]{"format"});
+            throw new NullPointerException(msg);
+        }
         _format = format;
         reset();
     }
@@ -362,8 +372,11 @@ public abstract class BaseMarkupSerializer
 
     public boolean reset()
     {
-        if ( _elementStateCount > 1 )
-            throw new IllegalStateException( "Serializer reset in the middle of serialization" );
+        if ( _elementStateCount > 1 ) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN,
+                                                           "ResetInMiddle", null);
+            throw new IllegalStateException(msg);
+        }
         _prepared = false;
         fCurrentNode = null;
         fStrBuffer.setLength(0);
@@ -377,8 +390,11 @@ public abstract class BaseMarkupSerializer
         if ( _prepared )
             return;
 
-        if ( _writer == null && _output == null )
-            throw new IOException( "SER002 No writer supplied for serializer" );
+        if ( _writer == null && _output == null ) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN,
+                                                           "NoWriterSupplied", null);
+            throw new IOException(msg);
+        }
         // If the output stream has been set, use it to construct
         // the writer. It is possible that the serializer has been
         // reused with the same output stream and different encoding.
@@ -1363,17 +1379,17 @@ public abstract class BaseMarkupSerializer
                 if (fFeatures != null && fDOMErrorHandler != null) {
                     if (!getFeature(Constants.DOM_SPLIT_CDATA)) {
                         // issue fatal error
-                         modifyDOMError("The character sequence \"]]>\" must not appear in content"+
-                                  " unless used to mark the end of a CDATA section.", DOMError.SEVERITY_FATAL_ERROR);
-                         boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                         if (!continueProcess) {
-                                throw new IOException();
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "EndingCDATA", null);
+                        modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR);
+                        boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
+                        if (!continueProcess) {
+                            throw new IOException();
                         }
                     } else {
                         // issue warning
-                            modifyDOMError("Spliting a CDATA section containing the CDATA section termination marker ']]>' ", 
-                                           DOMError.SEVERITY_WARNING);
-                            fDOMErrorHandler.handleError(fDOMError);
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "SplittingCDATA", null);
+                        modifyDOMError(msg, DOMError.SEVERITY_WARNING);
+                        fDOMErrorHandler.handleError(fDOMError);
                     }
                 }
             }
@@ -1710,8 +1726,10 @@ public abstract class BaseMarkupSerializer
 		//_prefixes = _elementStates[ _elementStateCount ].prefixes;
             -- _elementStateCount;
             return _elementStates[ _elementStateCount ];
-        } else
-            throw new IllegalStateException( "Internal error: element state is zero" );
+        } else {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "Internal", null);
+            throw new IllegalStateException(msg);
+        }
     }
 
 
