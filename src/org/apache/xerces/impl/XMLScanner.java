@@ -398,7 +398,7 @@ public abstract class XMLScanner
             do {
                 fPseudoAttrStringBuffer.append(value);
                 if (c != -1) {
-                    if (c == '&' || c == '%' || c == '<') {
+                    if (c == '&' || c == '%' || c == '<' || c == ']') {
                         fPseudoAttrStringBuffer.append((char)fEntityScanner.scanChar());
                     }
                     else if (XMLChar.isInvalid(c)) {
