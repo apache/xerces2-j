@@ -91,6 +91,10 @@ public class StandardParserConfiguration
     protected static final String XMLSCHEMA_FULL_CHECKING = 
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
     
+    /** Feature: generate synthetic annotations */
+    protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
+    
     /** Feature identifier: validate annotations */
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
@@ -174,6 +178,7 @@ public class StandardParserConfiguration
             NORMALIZE_DATA,
             SCHEMA_ELEMENT_DEFAULT,
             SCHEMA_AUGMENT_PSVI,
+            GENERATE_SYNTHETIC_ANNOTATIONS,
             VALIDATE_ANNOTATIONS,
             // NOTE: These shouldn't really be here but since the XML Schema
             //       validator is constructed dynamically, its recognized
@@ -188,6 +193,7 @@ public class StandardParserConfiguration
         setFeature(SCHEMA_ELEMENT_DEFAULT, true);
         setFeature(NORMALIZE_DATA, true);
         setFeature(SCHEMA_AUGMENT_PSVI, true);
+        setFeature(GENERATE_SYNTHETIC_ANNOTATIONS, false);
         setFeature(VALIDATE_ANNOTATIONS, false);
 
         // add default recognized properties

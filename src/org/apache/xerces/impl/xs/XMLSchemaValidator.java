@@ -143,6 +143,10 @@ public class XMLSchemaValidator
     protected static final String STANDARD_URI_CONFORMANT_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
     
+    /** Feature: generate synthetic annotations */
+    protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
+    
     /** Feature identifier: validate annotations. */
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
@@ -206,6 +210,7 @@ public class XMLSchemaValidator
             ALLOW_JAVA_ENCODINGS,
             CONTINUE_AFTER_FATAL_ERROR,
             STANDARD_URI_CONFORMANT_FEATURE,
+            GENERATE_SYNTHETIC_ANNOTATIONS,
             VALIDATE_ANNOTATIONS};
 
     /** Feature defaults. */
@@ -221,6 +226,7 @@ public class XMLSchemaValidator
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
+        null,
         null,
         null };
 

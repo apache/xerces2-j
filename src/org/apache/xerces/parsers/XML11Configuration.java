@@ -135,6 +135,10 @@ public class XML11Configuration extends ParserConfigurationSettings
     protected static final String XMLSCHEMA_FULL_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
     
+    /** Feature: generate synthetic annotations */
+    protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
+    
     /** Feature identifier: validate annotations */
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
@@ -434,7 +438,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 				VALIDATION,                 
 				NAMESPACES,
                 NORMALIZE_DATA, SCHEMA_ELEMENT_DEFAULT, SCHEMA_AUGMENT_PSVI,
-                VALIDATE_ANNOTATIONS,
+                GENERATE_SYNTHETIC_ANNOTATIONS, VALIDATE_ANNOTATIONS,
             	// NOTE: These shouldn't really be here but since the XML Schema
             	//       validator is constructed dynamically, its recognized
             	//       features might not have been set and it would cause a
@@ -455,6 +459,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 		fFeatures.put(SCHEMA_ELEMENT_DEFAULT, Boolean.TRUE);
 		fFeatures.put(NORMALIZE_DATA, Boolean.TRUE);
 		fFeatures.put(SCHEMA_AUGMENT_PSVI, Boolean.TRUE);
+        fFeatures.put(GENERATE_SYNTHETIC_ANNOTATIONS, Boolean.FALSE);
         fFeatures.put(VALIDATE_ANNOTATIONS, Boolean.FALSE);
 		fFeatures.put(PARSER_SETTINGS, Boolean.TRUE);
 

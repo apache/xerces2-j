@@ -978,7 +978,13 @@ XSLoader, DOMConfiguration {
         catch (XMLConfigurationException e){
             fIsCheckedFully = false;
         }
-        
+        // get generate-synthetic-annotations feature
+        try {
+            fSchemaHandler.setGenerateSyntheticAnnotations(componentManager.getFeature(GENERATE_SYNTHETIC_ANNOTATIONS));
+        }
+        catch (XMLConfigurationException e) {
+            fSchemaHandler.setGenerateSyntheticAnnotations(false);
+        }
         fSchemaHandler.reset(componentManager);		 
     }
     
