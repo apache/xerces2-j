@@ -22,6 +22,19 @@
    <changes>
     <add>
      <note>
+      Defined and implemented interfaces (<code>org.apache.xerces.xs.datatypes</code>) for accessing actual values.
+     </note>
+     <submitter name='Naela Nissar, Ankit Pasricha'/>
+    </add>
+    <add>
+     <note>
+      Implemented a feature that instructs the schema processor to use all schema location hints
+      for a given target namespace when locating components.
+     </note>
+     <submitter name='Ankit Pasricha'/>
+    </add>
+    <add>
+     <note>
       Implemented partial experimental support for the first working draft of 
       XML Schema 1.1 <jump href="http://www.w3.org/TR/2004/WD-xmlschema11-1-20040716/">Structures</jump>
       and <jump href="http://www.w3.org/TR/2004/WD-xmlschema11-2-20040716/">Datatypes</jump>.
@@ -30,8 +43,8 @@
     </add>
     <update>
      <note>
-      Implemented the <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/">XInclude</jump>
-      Proposed Recommendation (September 2004), excluding support for XPointer.
+      Implemented the <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/">XInclude</jump>
+      Recommendation (December 2004), excluding support for XPointer.
      </note>
      <submitter name='Michael Glavassevich'/>
     </update>
