@@ -282,6 +282,75 @@ public class XML11EntityScanner
     } // scanName():String
 
     /**
+     * Returns a string matching the NCName production appearing immediately
+     * on the input as a symbol, or null if no NCName string is present.
+     * <p>
+     * <strong>Note:</strong> The NCName characters are consumed.
+     * <p>
+     * <strong>Note:</strong> The string returned must be a symbol. The
+     * SymbolTable can be used for this purpose.
+     *
+     * @throws IOException  Thrown if i/o error occurs.
+     * @throws EOFException Thrown on end of file.
+     *
+     * @see org.apache.xerces.util.SymbolTable
+     * @see org.apache.xerces.util.XML11Char#isXML11NCName
+     * @see org.apache.xerces.util.XML11Char#isXML11NCNameStart
+     */
+    public String scanNCName() throws IOException {
+
+        // load more characters, if needed
+        if (fCurrentEntity.position == fCurrentEntity.count) {
+            load(0, true);
+        }
+
+        // scan name
+        int offset = fCurrentEntity.position;
+        if (XML11Char.isXML11NCNameStart(fCurrentEntity.ch[offset])) {
+            if (++fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
+                offset = 0;
+                if (load(1, false)) {
+                    fCurrentEntity.columnNumber++;
+                    String symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 1);
+                    return symbol;
+                }
+            }
+            while (XML11Char.isXML11NCName(fCurrentEntity.ch[fCurrentEntity.position])) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fBufferSize) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fBufferSize * 2];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                        fBufferSize *= 2;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        break;
+                    }
+                }
+            }
+        }
+        int length = fCurrentEntity.position - offset;
+        fCurrentEntity.columnNumber += length;
+
+        // return name
+        String symbol = null;
+        if (length > 0) {
+            symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, offset, length);
+        }
+        return symbol;
+
+    } // scanNCName():String
+
+    /**
      * Scans a qualified name from the input, setting the fields of the
      * QName structure appropriately.
      * <p>
