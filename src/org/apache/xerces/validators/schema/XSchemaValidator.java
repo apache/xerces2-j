@@ -114,6 +114,8 @@ import org.apache.xerces.validators.datatype.StringValidator;
 import org.apache.xerces.validators.datatype.FloatValidator;
 import org.apache.xerces.validators.datatype.DoubleValidator;
 import org.apache.xerces.validators.datatype.DecimalValidator;
+import org.apache.xerces.validators.datatype.TimeDurationValidator;
+import org.apache.xerces.validators.datatype.TimeInstantValidator;
 import org.apache.xerces.msg.SchemaMessages;
 
 /**
@@ -3117,6 +3119,8 @@ public class XSchemaValidator implements XMLValidator {
             fRegistry.put("decimal", new DecimalValidator());
             fRegistry.put("float", new FloatValidator());
             fRegistry.put("double", new DoubleValidator());
+            fRegistry.put("timeDuration", new TimeDurationValidator());
+            fRegistry.put("timeInstant", new TimeInstantValidator());
             //REVISIT - enable the below
             //fRegistry.put("binary", new BinaryValidator());
             //fRegistry.put("date", new DateValidator());
