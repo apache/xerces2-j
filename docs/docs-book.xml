@@ -6,10 +6,12 @@
 
   <separator/>
   <document id="index"       label="Readme"       source="readme.xml"      />
+  <external href="http://xml.apache.org/dist/xerces-j/"  label="Download"/>
   <document id="install"     label="Installation" source="install.xml"     />
 
   <separator/>
   <document id="api"         label="API Docs"     source="api.xml"         />
+  <!--
   <container id="samples"     label="Samples"      source="samples.xml">
 	<entry  id="domcount"        source="sam-domcount.xml" />
 	<entry  id="domwriter"       source="sam-domwriter.xml"/>
@@ -18,6 +20,14 @@
 	<entry  id="tree"            source="sam-tree.xml"     />
 	<entry  id="treeview"        source="sam-treeview.xml" />
   </container>
+  -->
+  <document id='samples'     label='Samples'      source='samples.xml'/>
+  <hidden id='domcount' source='sam-domcount.xml'/>
+  <hidden id="domwriter"       source="sam-domwriter.xml"/>
+  <hidden id="domfilter"       source="sam-domfilter.xml"/>
+  <hidden id="iterator"        source="sam-iterator.xml" />
+  <hidden  id="tree"            source="sam-tree.xml"     />
+  <hidden  id="treeview"        source="sam-treeview.xml" />
   <document id="schema"      label="Schema"       source="schema.xml"      />
 
   <separator/>

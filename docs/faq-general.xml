@@ -8,11 +8,9 @@
 		<a>
 			<p>Here are some of the new features in &javaparsername;:</p>
 		     <ul>
-			     <li>Support for SAX2 final.</li>
 			     <li>Additional support for W3C XML Schema Language.</li>
-			     <li>Access to DTD information as a DOM Tree.</li>
-			<li>Inclusion of WML DOM classes.</li>
-			<li>Support for JAXP.</li>
+			     <li>DOS filenames no longer work. See Common Problems
+				section of the FAQ.</li>
 		     </ul>
 	<anchor name="valid"/>
 		</a>

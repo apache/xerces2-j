@@ -8,9 +8,6 @@
 		print in a "canonical" XML format so the output can be used to compare 
 		XML documents. SAXWriter and DOMWriter also display any errors or 
 		warnings that occurred during the parse.</p>
-		<p><code>SAXWriter</code> uses either the validating or non-validating 
-		SAX parser. <code>DOMWriter</code> uses either the validating or 
-		non-validating DOM parser. </p>
 		<p><code>DOMWriter</code> provides a -e switch to set the output 
 		Java encoding. </p>
 		<p>The command lines below expect the current directory to be the 
@@ -33,7 +30,7 @@
 			<li>open up a MS-DOS command line window</li>
 			<li>set the path to the jdk\bin directory</li>
 			<li>change directory to the latest &javaparserdirectory; directory</li>
-			<li>invoke the <code>SAXWriter</code> parser</li>
+			<li>invoke the <code>SAXWriter</code> sample</li>
 		</ol>
 		<p><em>On Windows:</em></p>
 		<p>The easiest way to do this is to create a .bat file using the 
@@ -41,11 +38,10 @@
 		on the file name or icon. The following command lines assume that 
 		both the jdk and the &javaparserdirectory; directories are located directly below 
 		the c: drive.</p>
-<source>set path=c:\jdk1.1.8\bin;%PATH%
-set classpath=c:\&javaparserdirectory;\&javaparserdirectory;.jar;%CLASSPATH%
-set classpath=c:\&javaparserdirectory;\&javaparserdirectory;Samples;%CLASSPATH%
+<source>set PATH=%PATH%;c:\jdk1.1.8\bin
+set CLASSPATH=%CLASSPATH%;c:\&javaparserdirectory;\xerces.jar;c:\&javaparserdirectory;\xercesSamples.jar
 cd c:\&javaparserdirectory;
-java sax.SAXWriter data\personal.xml</source>
+java sax.SAXWriter data/personal.xml</source>
 
 		<p><em>Switches:</em></p>
 		<p>SAXCount also allows you to change the default behavior using the 
@@ -62,15 +58,15 @@ java sax.SAXWriter data\personal.xml</source>
 		<p>Running <code>SAXWriter</code> with the default settings is equivalent to 
 		running <code>SAXWriter</code> like this (type this in as one long command line): </p>
 <source>java sax.SAXWriter -p org.apache.xerces.parsers.SAXParser 
-    data\personal.xml </source>
+    data/personal.xml </source>
 	
 		<p>Bringing up the help information: </p>
 <source>java sax.SAXWriter -h </source>
 
 		<p>Print in canonical format: </p>
-<source>java sax.SAXWriter -c  data\personal.xml</source>
+<source>java sax.SAXWriter -c  data/personal.xml</source>
 
-		<note>Parse your own XML file instead of data\personal.xml</note>
+		<note>Parse your own XML file instead of data/personal.xml</note>
 	</s2>
 	
 	<s2 title="DOMWriter">
@@ -79,7 +75,7 @@ java sax.SAXWriter data\personal.xml</source>
 			<li>open up a MS-DOS command line window</li>
 			<li>set the path to the jdk\bin directory</li>
 			<li>change directory to the latest &javaparserdirectory; directory</li>
-			<li>invoke the <code>DOMWriter</code> parser</li>
+			<li>invoke the <code>DOMWriter</code> sample</li>
 		</ol>
 		
 		<p><em>On Windows:</em></p>
@@ -88,11 +84,10 @@ java sax.SAXWriter data\personal.xml</source>
 		on the file name or icon. The following command lines assume that 
 		both the jdk and the &javaparserdirectory; directories are located directly below 
 		the c: dirve.</p>
-<source>set path=c:\jdk1.1.8\bin;%PATH%
-set classpath=c:\&javaparserdirectory;\&javaparserdirectory;.jar;%CLASSPATH%
-set classpath=c:\&javaparserdirectory;\&javaparserdirectory;Samples;%CLASSPATH%
+<source>set PATH=%PATH%;c:\jdk1.1.8\bin
+set CLASSPATH=%CLASSPATH%;c:\&javaparserdirectory;\xerces.jar;c:\&javaparserdirectory;\xercesSamples.jar
 cd c:\&javaparserdirectory;
-java dom.DOMWriter data\personal.xml</source>
+java dom.DOMWriter data/personal.xml</source>
 
 		<p><em>Switches:</em></p>
 		<p>DOMCount also allows you to change the default behavior via the 
@@ -101,7 +96,6 @@ java dom.DOMWriter data\personal.xml</source>
 			<li>-p Specify the parser class to be used.
 			<br/>The available parsers are:</li>
 			<ul>
-				<li>dom.wrappers.NonValidatingDOMParser</li>
 				<li>dom.wrappers.DOMParser [default parser]</li>
 			</ul>
 			<li>-h Print DOMWriter help information. [default is no help]</li>
@@ -112,13 +106,13 @@ java dom.DOMWriter data\personal.xml</source>
 		<code>DOMWriter</code> like this: </p>
 
 <source>java dom.DOMWriter -p dom.wrappers.DOMParser 
-    data\personal.xml </source>
+    data/personal.xml </source>
 	
 		<p>Bringing up the help information: </p>
 <source>java dom.DOMWriter -h</source>
 
 		<p>Searching for elements: </p>
-<source>java dom.DOMWriter -c data\personal.xml</source>
+<source>java dom.DOMWriter -c data/personal.xml</source>
 
 		<p>Running DOMWriter with the -e switch and no encoding specified 
 		will print out a list of valid encoding names: </p>
@@ -146,7 +140,7 @@ java dom.DOMWriter data\personal.xml</source>
   MacSymbol MacThai MacTurkish MacUkraine SJIS Unicode 
   UnicodeBig UnicodeLittle UTF8</source>
 
-		<note>Parse your own XML file instead of data\personal.xml</note>
+		<note>Parse your own XML file instead of data/personal.xml</note>
 
 
 	</s2>

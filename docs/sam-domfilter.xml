@@ -22,7 +22,7 @@
 			<li>open up a MS-DOS command line window</li>
 			<li>set the path to the jdk\bin directory</li>
 			<li>change directory to the latest &javaparserdirectory; directory</li>
-			<li>invoke the <code>DOMFilter</code> parser</li>
+			<li>invoke the <code>DOMFilter</code> sample</li>
 		</ol>
 		
 		<p><em>On Windows:</em></p>
@@ -31,11 +31,10 @@
 		on the file name or icon. The following command lines assume that 
 		both the jdk and the &javaparserdirectory; directories are located directly below 
 		the c: dirve.</p>
-<source>set path=c:\jdk1.1.8\bin;%PATH%
-set classpath=c:\&javaparserdirectory;\&javaparserdirectory;.jar;%CLASSPATH%
-set classpath=c:\&javaparserdirectory;\&javaparserdirectory;Samples;%CLASSPATH%
+<source>set PATH=%PATH%;c:\jdk1.1.8\bin
+set CLASSPATH=%CLASSPATH%;c:\&javaparserdirectory;\xerces.jar;c:\&javaparserdirectory;\xercesSamples.jar
 cd c:\&javaparserdirectory;
-java dom.DOMFilter data\personal.xml</source>
+java dom.DOMFilter data/personal.xml</source>
 
 		<p><em>Switches:</em></p>
 		<p><code>DOMFilter</code> also allows you to change the default behavior using the 
@@ -44,7 +43,6 @@ java dom.DOMFilter data\personal.xml</source>
 			<li>-p Specify the parser class to be used.
 			<br/>The available parsers are:</li>
 			<ul>
-				<li>dom.wrappers.NonValidatingDOMParser</li>
 				<li>dom.wrappers.DOMParser [default parser]</li>
 			</ul>
 			<li>-h Print DOMCount help information. [default is no help]</li>
@@ -58,18 +56,18 @@ java dom.DOMFilter data\personal.xml</source>
 		<code>DOMFilter</code> like this: </p>
 
 <source>java dom.DOMFilter -p dom.wrappers.DOMParser 
-    data\personal.xml </source>
+    data/personal.xml </source>
 	
 		<p>Bringing up the help information: </p>
 <source>java dom.DOMFilter -h</source>
 	
 		<p>Searching for elements: </p>
-<source>java dom.DOMFilter -e family data\personal.xml</source>
+<source>java dom.DOMFilter -e family data/personal.xml</source>
 	
 		<p>Search for attributes: </p>
-<source>java dom.DOMFilter -a subordinates data\personal.xml</source>
+<source>java dom.DOMFilter -a subordinates data/personal.xml</source>
 
-		<note>Parse your own XML file instead of data\personal.xml</note>
+		<note>Parse your own XML file instead of data/personal.xml</note>
 
 
 	</s2>
