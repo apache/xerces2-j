@@ -21,11 +21,11 @@ import org.w3c.dom.traversal.NodeFilter;
  * based on the <code>NodeFilter</code> interface defined in [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>DOM Level 2 Traversal and      Range</a>]
  * . 
  * <p> <code>Document</code>, <code>DocumentType</code>, 
- * <code>DocumentFragment</code>, <code>Notation</code>, and 
- * <code>Entity</code> nodes are not passed to the filter. The child nodes 
- * of an <code>EntityReference</code> node are only passed to the filter if 
- * the <code>EntityReference</code> node is skipped by the method 
- * <code>LSParserFilter.acceptNode()</code>. 
+ * <code>DocumentFragment</code>, <code>Notation</code>, <code>Entity</code>
+ * , and children of <code>Attr</code> nodes are not passed to the filter. 
+ * The child nodes of an <code>EntityReference</code> node are only passed 
+ * to the filter if the <code>EntityReference</code> node is skipped by the 
+ * method <code>LSParserFilter.acceptNode()</code>. 
  * <p> When serializing an <code>Element</code>, the element is passed to the 
  * filter before any of its attributes are passed to the filter. Namespace 
  * declaration attributes, and default attributes (except in the case when "
@@ -35,6 +35,12 @@ import org.w3c.dom.traversal.NodeFilter;
  * <code>LSSerializerFilter</code> is implementation dependent. 
  * <p> DOM applications must not raise exceptions in a filter. The effect of 
  * throwing exceptions from a filter is DOM implementation dependent. 
+ * <p> For efficiency, a node passed to the filter may not be the same as the 
+ * one that is actually in the tree. And the actual node (node object 
+ * identity) may be reused during the process of filtering and serializing a 
+ * document. 
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
 public interface LSSerializerFilter extends NodeFilter {
     /**
@@ -46,6 +52,9 @@ public interface LSSerializerFilter extends NodeFilter {
      * , <code>SHOW_NOTATION</code>, and <code>SHOW_ENTITY</code> are 
      * meaningless here, such nodes will never be passed to a 
      * <code>LSSerializerFilter</code>. 
+     * <br> Unlike [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>DOM Level 2 Traversal and      Range</a>]
+     * , the <code>SHOW_ATTRIBUTE</code> constant indicates that the 
+     * <code>Attr</code> nodes are shown and passed to the filter. 
      * <br> The constants used here are defined in [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>DOM Level 2 Traversal and      Range</a>]
      * . 
      */

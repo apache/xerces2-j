@@ -12,8 +12,8 @@
 
 package org.w3c.dom.ls;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 /**
  *  <code>LSParserFilter</code>s provide applications the ability to examine 
@@ -29,11 +29,9 @@ import org.w3c.dom.Node;
  * <code>acceptNode</code> method on the filter. The child nodes of an 
  * <code>EntityReference</code> node are passed to the filter if the 
  * parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
- * entities</a>" is set to <code>false</code>, or if the <code>EntityReference</code> 
- * node is skipped by the method <code>LSParserFilter.acceptNode()</code>. 
- * Note that, as described by the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
- * entities</a>", entity reference nodes to non-defined entities are never discarded and 
- * are always passed to the filter. 
+ * entities</a>" is set to <code>false</code>. Note that, as described by the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
+ * entities</a>", unexpanded entity reference nodes are never discarded and are always 
+ * passed to the filter. 
  * <p> All validity checking while parsing a document occurs on the source 
  * document as it appears on the input stream, not on the DOM document as it 
  * is built in memory. With filters, the document in memory may be a subset 
@@ -44,6 +42,8 @@ import org.w3c.dom.Node;
  * passed to the filter methods. 
  * <p> DOM applications must not raise exceptions in a filter. The effect of 
  * throwing exceptions from a filter is DOM implementation dependent. 
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
 public interface LSParserFilter {
     // Constants returned by startElement and acceptNode
@@ -93,15 +93,11 @@ public interface LSParserFilter {
      * </li>
      * <li> 
      *   <code>FILTER_REJECT</code> if the <code>Element</code> and all of 
-     *   its children should be rejected. This return value will be ignored 
-     *   if <code>element</code> is the documentElement, the documentElement 
-     *   cannot be rejected. 
+     *   its children should be rejected. 
      * </li>
      * <li> <code>FILTER_SKIP</code> if the 
      *   <code>Element</code> should be skipped. All of its children are 
-     *   inserted in place of the skipped <code>Element</code> node. This 
-     *   return value will be ignored if <code>element</code> is the 
-     *   documentElement, the documentElement cannot be skipped. 
+     *   inserted in place of the skipped <code>Element</code> node. 
      * </li>
      * <li> 
      *   <code>FILTER_INTERRUPT</code> if the filter wants to stop the 
@@ -166,7 +162,7 @@ public interface LSParserFilter {
      * definition of the constants. The constants <code>SHOW_ATTRIBUTE</code>
      * , <code>SHOW_DOCUMENT</code>, <code>SHOW_DOCUMENT_TYPE</code>, 
      * <code>SHOW_NOTATION</code>, <code>SHOW_ENTITY</code>, and 
-     * <code>SHOW_DOCUMENT_FRAGMENT</code> are meaningless here, those nodes 
+     * <code>SHOW_DOCUMENT_FRAGMENT</code> are meaningless here. Those nodes 
      * will never be passed to <code>LSParserFilter.acceptNode</code>. 
      * <br> The constants used here are defined in [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>DOM Level 2 Traversal and      Range</a>]
      * . 

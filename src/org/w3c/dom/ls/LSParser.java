@@ -24,7 +24,7 @@ import org.w3c.dom.DOMException;
  * corresponding DOM document structure. A <code>LSParser</code> instance 
  * can be obtained by invoking the 
  * <code>DOMImplementationLS.createLSParser()</code> method. 
- * <p> As specified in DOM Level 3 Core
+ * <p> As specified in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
  * , when a document is first made available via the LSParser: 
  * <ul>
  * <li> there will 
@@ -33,7 +33,7 @@ import org.w3c.dom.DOMException;
  * </li>
  * <li> it is expected that the <code>value</code> and 
  * <code>nodeValue</code> attributes of an <code>Attr</code> node initially 
- * return the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#AVNormalize'>XML 1.0 
+ * return the <a href='http://www.w3.org/TR/2004/REC-xml-20040204#AVNormalize'>XML 1.0 
  * normalized value</a>. However, if the parameters "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate-if-schema'>
  * validate-if-schema</a>" and "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-datatype-normalization'>
  * datatype-normalization</a>" are set to <code>true</code>, depending on the attribute normalization 
@@ -42,7 +42,7 @@ import org.w3c.dom.DOMException;
  * datatype-normalization</a>" is set to <code>false</code>, the XML 1.0 attribute normalization is 
  * guaranteed to occur, and if the attributes list does not contain 
  * namespace declarations, the <code>attributes</code> attribute on 
- * <code>Element</code> node represents the property <b>[attributes]</b> defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information Set</a>]
+ * <code>Element</code> node represents the property <b>[attributes]</b> defined in [<a href='http://www.w3.org/TR/2004/REC-xml-infoset-20040204/'>XML Information Set</a>]
  * . 
  * </li>
  * </ul>
@@ -60,12 +60,12 @@ import org.w3c.dom.DOMException;
  * <dd> The 
  * <code>LSParser</code> signals progress as data is parsed.  This 
  * specification does not attempt to define exactly when progress events 
- * should be dispatched, that is intentionally left as implementation 
- * dependent, but here is one example of how an application might dispatch 
- * progress events. Once the parser starts receiving data, a progress event 
- * is dispatched to indicate that the parsing starts, then from there on, a 
- * progress event is dispatched for every 4096 bytes of data that is 
- * received and processed. This is only one example, though, and 
+ * should be dispatched. That is intentionally left as 
+ * implementation-dependent. Here is one example of how an application might 
+ * dispatch progress events: Once the parser starts receiving data, a 
+ * progress event is dispatched to indicate that the parsing starts. From 
+ * there on, a progress event is dispatched for every 4096 bytes of data 
+ * that is received and processed. This is only one example, though, and 
  * implementations can choose to dispatch progress events at any time while 
  * parsing, or not dispatch them at all.  See also the definition of the 
  * <code>LSProgressEvent</code> interface. </dd>
@@ -82,7 +82,7 @@ import org.w3c.dom.DOMException;
  * <dt> 
  * <code>"check-character-normalization-failure" [error]</code> </dt>
  * <dd> Raised if 
- * the paramter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-check-character-normalization'>
+ * the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-check-character-normalization'>
  * check-character-normalization</a>" is set to true and a string is encountered that fails normalization 
  * checking. </dd>
  * <dt><code>"doctype-not-allowed" [fatal]</code></dt>
@@ -135,21 +135,22 @@ import org.w3c.dom.DOMException;
  * are expected to raise implementation specific errors and warnings for any 
  * other error and warning cases such as IO errors (file not found, 
  * permission denied,...), XML well-formedness errors, and so on. 
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
 public interface LSParser {
     /**
      *  The <code>DOMConfiguration</code> object used when parsing an input 
      * source. This <code>DOMConfiguration</code> is specific to the parse 
-     * operation and no parameter values from this 
-     * <code>DOMConfiguration</code> object are passed automatically to the 
-     * <code>DOMConfiguration</code> object on the <code>Document</code> 
-     * that is created, or used, by the parse operation. The DOM application 
-     * is responsible for passing any needed parameter values from this 
-     * <code>DOMConfiguration</code> object to the 
-     * <code>DOMConfiguration</code> object referenced by the 
+     * operation. No parameter values from this <code>DOMConfiguration</code>
+     *  object are passed automatically to the <code>DOMConfiguration</code> 
+     * object on the <code>Document</code> that is created, or used, by the 
+     * parse operation. The DOM application is responsible for passing any 
+     * needed parameter values from this <code>DOMConfiguration</code> 
+     * object to the <code>DOMConfiguration</code> object referenced by the 
      * <code>Document</code> object. 
      * <br> In addition to the parameters recognized in on the <a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#DOMConfiguration'>
-     * DOMConfiguration</a> interface defined in DOM Level 3 Core
+     * DOMConfiguration</a> interface defined in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
      * , the <code>DOMConfiguration</code> objects for <code>LSParser</code> 
      * add or modify the following parameters: 
      * <dl>
@@ -162,7 +163,7 @@ public interface LSParser {
      * indication of the character encoding of the input stream being 
      * processed, that will override any encoding specified in the XML 
      * declaration or the Text declaration (see also section 4.3.3, 
-     * "Character Encoding in Entities", in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]). 
+     * "Character Encoding in Entities", in [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>]). 
      * Explicitly setting an encoding in the <code>LSInput</code> overrides 
      * any encoding from the protocol. </dd>
      * <dt><code>false</code></dt>
@@ -186,11 +187,11 @@ public interface LSParser {
      * <dl>
      * <dt>
      * <code>true</code></dt>
-     * <dd>[<em>required</em>] (<em>default</em>) If, while verifying full normalization when [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>] is 
+     * <dd>[<em>required</em>] (<em>default</em>) If, while verifying full normalization when [<a href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>XML 1.1</a>] is 
      * supported, a processor encounters characters for which it cannot 
      * determine the normalization properties, then the processor will 
      * ignore any possible denormalizations caused by these characters.  
-     * This parameter is ignored for [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]. </dd>
+     * This parameter is ignored for [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>]. </dd>
      * <dt>
      * <code>false</code></dt>
      * <dd>[<em>optional</em>] Report an fatal <b>"unknown-character-denormalization"</b> error if a character is encountered for which the processor cannot 
@@ -199,7 +200,7 @@ public interface LSParser {
      * <dt><code>"infoset"</code></dt>
      * <dd> See 
      * the definition of <code>DOMConfiguration</code> for a description of 
-     * this parameter. Unlike in [DOM Level 3 Core]
+     * this parameter. Unlike in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
      * , this parameter will default to <code>true</code> for 
      * <code>LSParser</code>. </dd>
      * <dt><code>"namespaces"</code></dt>
@@ -207,7 +208,7 @@ public interface LSParser {
      * <dl>
      * <dt><code>true</code></dt>
      * <dd>[<em>required</em>] (<em>default</em>) Perform the namespace processing as defined in [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
-     *  and [<a href='http://www.w3.org/TR/2003/PR-xml-names11-20031105/'>XML Namespaces 1.1</a>]
+     *  and [<a href='http://www.w3.org/TR/2004/REC-xml-names11-20040204/'>XML Namespaces 1.1</a>]
      * . </dd>
      * <dt><code>false</code></dt>
      * <dd>[<em>optional</em>] Do not perform the namespace processing. </dd>
@@ -232,9 +233,26 @@ public interface LSParser {
      * <dt><code>false</code></dt>
      * <dd>[<em>required</em>] (<em>default</em>) Accept any media type. </dd>
      * </dl></dd>
+     * <dt><code>"validate"</code></dt>
+     * <dd> See the definition of 
+     * <code>DOMConfiguration</code> for a description of this parameter. 
+     * Unlike in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
+     * , the processing of the internal subset is always accomplished, even 
+     * if this parameter is set to <code>false</code>. </dd>
+     * <dt>
+     * <code>"validate-if-schema"</code></dt>
+     * <dd> See the definition of 
+     * <code>DOMConfiguration</code> for a description of this parameter. 
+     * Unlike in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
+     * , the processing of the internal subset is always accomplished, even 
+     * if this parameter is set to <code>false</code>. </dd>
+     * <dt>
+     * <code>"well-formed"</code></dt>
+     * <dd> See the definition of 
+     * <code>DOMConfiguration</code> for a description of this parameter. 
+     * Unlike in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
+     * , this parameter cannot be set to <code>false</code>. </dd>
      * </dl>
-     * <br> The parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-well-formed'>
-     * well-formed</a>" cannot be set to <code>false</code>. 
      */
     public DOMConfiguration getDomConfig();
 
@@ -414,7 +432,7 @@ public interface LSParser {
      * @exception DOMException
      *   HIERARCHY_REQUEST_ERR: Raised if the content cannot replace, be 
      *   inserted before, after, or as a child of the context node (see also 
-     *   <code>Node.insertBefore</code> or <code>Node.replaceChild</code> in [DOM Level 3 Core]
+     *   <code>Node.insertBefore</code> or <code>Node.replaceChild</code> in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
      *   ).
      *   <br> NOT_SUPPORTED_ERR: Raised if the <code>LSParser</code> doesn't 
      *   support this method, or if the context node is of type 

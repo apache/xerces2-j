@@ -23,6 +23,8 @@ package org.w3c.dom.ls;
  * <code>DOMError</code> interface, a DOM implementation may choose to 
  * continue after a fatal error, but the resulting DOM tree is then 
  * implementation dependent. 
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
 public class LSException extends RuntimeException {
     public LSException(short code, String message) {

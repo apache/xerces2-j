@@ -22,10 +22,12 @@ import org.w3c.dom.DOMException;
  * binding-specific casting methods on an instance of the 
  * <code>DOMImplementation</code> interface or, if the <code>Document</code> 
  * supports the feature <code>"Core"</code> version <code>"3.0"</code> 
- * defined in [DOM Level 3 Core]
+ * defined in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>DOM Level 3 Core</a>]
  * , by using the method <code>DOMImplementation.getFeature</code> with 
  * parameter values <code>"LS"</code> (or <code>"LS-Async"</code>) and 
  * <code>"3.0"</code> (respectively). 
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
 public interface DOMImplementationLS {
     // DOMImplementationLSMode
@@ -59,7 +61,7 @@ public interface DOMImplementationLS {
      *   <code>null</code>. 
      * <p ><b>Note:</b>    For W3C XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
      *   , applications must use the value 
-     *   <code>"http://www.w3.org/2001/XMLSchema"</code>. For XML DTD [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], 
+     *   <code>"http://www.w3.org/2001/XMLSchema"</code>. For XML DTD [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>], 
      *   applications must use the value 
      *   <code>"http://www.w3.org/TR/REC-xml"</code>. Other Schema languages 
      *   are outside the scope of the W3C and therefore should recommend an 

@@ -51,18 +51,24 @@ package org.w3c.dom.ls;
  * <p> <code>LSInput</code> objects belong to the application. The DOM 
  * implementation will never modify them (though it may make copies and 
  * modify the copies, if necessary). 
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
 public interface LSInput {
     /**
      *  An attribute of a language and binding dependent type that represents 
      * a stream of 16-bit units. The application must encode the stream 
-     * using UTF-16 (defined in [Unicode] and in [ISO/IEC 10646]). 
+     * using UTF-16 (defined in [Unicode] and in [ISO/IEC 10646]). It is not a requirement to have an XML declaration when 
+     * using character streams. If an XML declaration is present, the value 
+     * of the encoding attribute will be ignored. 
      */
     public java.io.Reader getCharacterStream();
     /**
      *  An attribute of a language and binding dependent type that represents 
      * a stream of 16-bit units. The application must encode the stream 
-     * using UTF-16 (defined in [Unicode] and in [ISO/IEC 10646]). 
+     * using UTF-16 (defined in [Unicode] and in [ISO/IEC 10646]). It is not a requirement to have an XML declaration when 
+     * using character streams. If an XML declaration is present, the value 
+     * of the encoding attribute will be ignored. 
      */
     public void setCharacterStream(java.io.Reader characterStream);
 
@@ -87,24 +93,30 @@ public interface LSInput {
 
     /**
      *  String data to parse. If provided, this will always be treated as a 
-     * sequence of 16-bit units (UTF-16 encoded characters). 
+     * sequence of 16-bit units (UTF-16 encoded characters). It is not a 
+     * requirement to have an XML declaration when using 
+     * <code>stringData</code>. If an XML declaration is present, the value 
+     * of the encoding attribute will be ignored. 
      */
     public String getStringData();
     /**
      *  String data to parse. If provided, this will always be treated as a 
-     * sequence of 16-bit units (UTF-16 encoded characters). 
+     * sequence of 16-bit units (UTF-16 encoded characters). It is not a 
+     * requirement to have an XML declaration when using 
+     * <code>stringData</code>. If an XML declaration is present, the value 
+     * of the encoding attribute will be ignored. 
      */
     public void setStringData(String stringData);
 
     /**
      *  The system identifier, a URI reference [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>], for this 
      * input source. The system identifier is optional if there is a byte 
-     * stream, a character stream, or string data, but it is still useful to 
+     * stream, a character stream, or string data. It is still useful to 
      * provide one, since the application will use it to resolve any 
-     * relative URIs and can include it in error messages and warnings (the 
-     * <code>LSParser</code> will only attempt to fetch the resource 
-     * identified by the URI reference if there is no other input available 
-     * in the input source). 
+     * relative URIs and can include it in error messages and warnings. (The 
+     * LSParser will only attempt to fetch the resource identified by the 
+     * URI reference if there is no other input available in the input 
+     * source.) 
      * <br> If the application knows the character encoding of the object 
      * pointed to by the system identifier, it can set the encoding using 
      * the <code>encoding</code> attribute. 
@@ -118,12 +130,12 @@ public interface LSInput {
     /**
      *  The system identifier, a URI reference [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>], for this 
      * input source. The system identifier is optional if there is a byte 
-     * stream, a character stream, or string data, but it is still useful to 
+     * stream, a character stream, or string data. It is still useful to 
      * provide one, since the application will use it to resolve any 
-     * relative URIs and can include it in error messages and warnings (the 
-     * <code>LSParser</code> will only attempt to fetch the resource 
-     * identified by the URI reference if there is no other input available 
-     * in the input source). 
+     * relative URIs and can include it in error messages and warnings. (The 
+     * LSParser will only attempt to fetch the resource identified by the 
+     * URI reference if there is no other input available in the input 
+     * source.) 
      * <br> If the application knows the character encoding of the object 
      * pointed to by the system identifier, it can set the encoding using 
      * the <code>encoding</code> attribute. 
@@ -169,7 +181,7 @@ public interface LSInput {
 
     /**
      *  The character encoding, if known. The encoding must be a string 
-     * acceptable for an XML encoding declaration ([<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] section 
+     * acceptable for an XML encoding declaration ([<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>] section 
      * 4.3.3 "Character Encoding in Entities"). 
      * <br> This attribute has no effect when the application provides a 
      * character stream or string data. For other sources of input, an 
@@ -180,7 +192,7 @@ public interface LSInput {
     public String getEncoding();
     /**
      *  The character encoding, if known. The encoding must be a string 
-     * acceptable for an XML encoding declaration ([<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] section 
+     * acceptable for an XML encoding declaration ([<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>] section 
      * 4.3.3 "Character Encoding in Entities"). 
      * <br> This attribute has no effect when the application provides a 
      * character stream or string data. For other sources of input, an 
@@ -192,14 +204,14 @@ public interface LSInput {
 
     /**
      *  If set to true, assume that the input is certified (see section 2.13 
-     * in [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]) when 
-     * parsing [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. 
+     * in [<a href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>XML 1.1</a>]) when 
+     * parsing [<a href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>XML 1.1</a>]. 
      */
     public boolean getCertifiedText();
     /**
      *  If set to true, assume that the input is certified (see section 2.13 
-     * in [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]) when 
-     * parsing [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. 
+     * in [<a href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>XML 1.1</a>]) when 
+     * parsing [<a href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>XML 1.1</a>]. 
      */
     public void setCertifiedText(boolean certifiedText);
 

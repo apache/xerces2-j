@@ -29,9 +29,11 @@ package org.w3c.dom.ls;
  * <p> Many DOM applications will not need to implement this interface, but it 
  * will be especially useful for applications that build XML documents from 
  * databases or other specialized input sources, or for applications that 
- * use URN's. 
+ * use URNs. 
  * <p ><b>Note:</b>  <code>LSResourceResolver</code> is based on the SAX2 [<a href='http://www.saxproject.org/'>SAX</a>] <code>EntityResolver</code> 
  * interface. 
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
 public interface LSResourceResolver {
     /**
@@ -48,9 +50,9 @@ public interface LSResourceResolver {
      * system identifiers to secure and/or local URI, to look up public 
      * identifiers in a catalogue, or to read an entity from a database or 
      * other input source (including, for example, a dialog box). 
-     * @param type  The type of the resource being resolved. For XML [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] resources 
+     * @param type  The type of the resource being resolved. For XML [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>] resources 
      *   (i.e. entities), applications must use the value 
-     *   <code>"http://www.w3.org/TR/REC-xml"</code>, for XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     *   <code>"http://www.w3.org/TR/REC-xml"</code>. For XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
      *   , applications must use the value 
      *   <code>"http://www.w3.org/2001/XMLSchema"</code>. Other types of 
      *   resources are outside the scope of this specification and therefore 
