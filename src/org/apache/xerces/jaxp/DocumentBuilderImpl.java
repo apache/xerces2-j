@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.xerces.jaxp;
 
 import java.io.IOException;
@@ -36,7 +35,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author Rajiv Mordani
@@ -46,8 +44,6 @@ import org.xml.sax.helpers.DefaultHandler;
 public class DocumentBuilderImpl extends DocumentBuilder
         implements JAXPConstants
 {
-    private EntityResolver er = null;
-    private ErrorHandler eh = null;
     private DOMParser domParser = null;
 
     DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs)
@@ -162,15 +158,6 @@ public class DocumentBuilderImpl extends DocumentBuilder
                 DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
                 "jaxp-null-input-source", null));
         }
-
-        if (er != null) {
-            domParser.setEntityResolver(er);
-        }
-
-        if (eh != null) {
-            domParser.setErrorHandler(eh);      
-        }
-
         domParser.parse(is);
         return domParser.getDocument();
     }
@@ -193,14 +180,12 @@ public class DocumentBuilderImpl extends DocumentBuilder
         }
     }
 
-    public void setEntityResolver(org.xml.sax.EntityResolver er) {
-        this.er = er;
+    public void setEntityResolver(EntityResolver er) {
+        domParser.setEntityResolver(er);
     }
 
-    public void setErrorHandler(org.xml.sax.ErrorHandler eh) {
-        // If app passes in a ErrorHandler of null, then ignore all errors
-        // and warnings
-        this.eh = (eh == null) ? new DefaultHandler() : eh;
+    public void setErrorHandler(ErrorHandler eh) {
+        domParser.setErrorHandler(eh);
     }
 
     // package private
