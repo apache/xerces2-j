@@ -347,7 +347,6 @@ public class XSDHandler {
         Document schemaRoot = getSchema(schemaNamespace, schemaHint, null, true, true);
         if (schemaRoot == null) {
             // something went wrong right off the hop
-            reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
             return null;
         }
         // handle empty string URI as null
@@ -357,7 +356,6 @@ public class XSDHandler {
         fRoot = constructTrees(schemaRoot, schemaNamespace);
         if (fRoot == null) {
             // REVISIT:  something went wrong; print error about no schema found
-            reportGenericSchemaError("Could not locate a schema document");
             return null;
         }
 
@@ -455,7 +453,8 @@ public class XSDHandler {
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // schemaLocation is required on <include> and <redefine>
                 if (schemaHint == null)
-                    reportGenericSchemaError("schemaLocation attribute must appear in <include> and <redefine>");
+                    reportSchemaError("s4s-att-must-appear", new Object [] {
+                            "<include> or <redefine>", "schemaLocation"});
                 // pass the systemId of the current document as the base systemId
                 boolean mustResolve = false;
                 if(localName.equals(SchemaSymbols.ELT_REDEFINE)) {
@@ -820,7 +819,7 @@ public class XSDHandler {
             break;
         default:
             // REVISIT: report internal error...
-            reportGenericSchemaError("XSDHandler asked to locate component of type " + declType + "; it does not recognize this type (internal error!)");
+            reportSchemaError("Internal-Error", new Object [] {"XSDHandler asked to locate component of type " + declType + "; it does not recognize this type!"});
         }
         if (decl != null)
             schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
@@ -867,7 +866,7 @@ public class XSDHandler {
         if (DOMUtil.isHidden(decl)) {
             // decl must not be null if we're here...
             //REVISIT: report an error: circular reference
-            reportGenericSchemaError("Circular reference detected in schema component named " + declToTraverse.prefix+":"+declToTraverse.localpart);
+            reportSchemaError("st-props-correct.2", new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart});
             return null;
         }
 
@@ -1077,8 +1076,16 @@ public class XSDHandler {
                                        XMLErrorReporter.SEVERITY_WARNING); 
         }
         catch (IOException ex) {
-            // REVISIT: report an error!
-            reportGenericSchemaError("error reading schema document: " + schemaHint);
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "General",
+                                       new Object[]{"Error encountered reading schema document " + schemaHint},
+                                       // when using namespace, then hint is optional,
+                                       // and it's not an error if the file is not found
+                                       // but if not using namespace (include),
+                                       // it's a warning if the file is not found.
+                                       mustResolve ?
+                                       XMLErrorReporter.SEVERITY_ERROR: 
+                                       XMLErrorReporter.SEVERITY_WARNING); 
         }
 
         schemaDoc = null;
@@ -1454,7 +1461,7 @@ public class XSDHandler {
         else {
             // fRedefineSucceeded = false;
             // REVISIT: Localize
-            reportGenericSchemaError("internal Xerces error; please submit a bug with schema as testcase");
+            reportSchemaError("Internal-Error", new Object [] {"could not handle this particular <redefine>; please submit your schemas and instance document in a bug report!"});
         }
         // if we get here then we must have reported an error and failed somewhere...
 //        return false;
@@ -1588,14 +1595,6 @@ public class XSDHandler {
     void reportSchemaError (String key, Object[] args) {
         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                    key, args,
-                                   XMLErrorReporter.SEVERITY_ERROR);
-    }
-
-    // REVISIT: is it how we want to handle error reporting?
-    void reportGenericSchemaError (String error) {
-        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                   "General",
-                                   new Object[]{error},
                                    XMLErrorReporter.SEVERITY_ERROR);
     }
 
