@@ -140,7 +140,7 @@ public final class XMLSerializer
     public XMLSerializer( Writer writer, OutputFormat format )
     {
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
-        format.setMethod( Method.XML );
+        _format.setMethod( Method.XML );
         setOutputCharStream( writer );
     }
 
@@ -156,7 +156,7 @@ public final class XMLSerializer
     public XMLSerializer( OutputStream output, OutputFormat format )
     {
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
-        format.setMethod( Method.XML );
+        _format.setMethod( Method.XML );
         setOutputByteStream( output );
     }
 
