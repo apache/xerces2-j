@@ -7,6 +7,7 @@
   <separator/>
   <document id="index"       label="Readme"       source="readme.xml"      />
   <external href="http://xml.apache.org/dist/xerces-j/"  label="Download"/>
+  <external href="http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/"  label="Repository"/>
   <document id="install"     label="Installation" source="install.xml"     />
 
   <separator/>
