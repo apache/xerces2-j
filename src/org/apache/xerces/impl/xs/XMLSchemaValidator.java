@@ -2580,13 +2580,6 @@ public class XMLSchemaValidator
                     }
                 }
             }
-
-            // needed to update type for DOM Parser to implement getElementById
-            // REVISIT: shouldn't change attribute type, because it's only for DTD
-            if (attributes.getType(index).equals("CDATA") &&
-                currDecl.fType.isIDType()) {
-                attributes.setType(index, "ID");
-            }
     
             processOneAttribute(element, attributes.getValue(index),
                                 currDecl, currUse, attrPSVI);
