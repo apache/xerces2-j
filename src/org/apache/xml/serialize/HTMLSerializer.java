@@ -148,7 +148,7 @@ public class HTMLSerializer
     /**
      * Constructs a new HTML/XHTML serializer depending on the value of
      * <tt>xhtml</tt>. The serializer cannot be used without calling
-     * {@link #init} first.
+     * {@link #setOutputCharStream} or {@link #setOutputByteStream} first.
      *
      * @param xhtml True if XHTML serializing
      */

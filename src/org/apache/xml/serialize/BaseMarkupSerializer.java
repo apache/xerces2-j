@@ -117,7 +117,10 @@ import org.xml.sax.ext.DeclHandler;
  * serializing mechanisms.
  * <p>
  * The serializer must be initialized with the proper writer and
- * output format before it can be used by calling {@link #init}.
+ * output format before it can be used by calling {@link #setOutputCharStream} 
+ * or {@link #setOutputByteStream} for the writer and {@link #setOutputFormat}
+ * for the output format.
+ * <p>
  * The serializer can be reused any number of times, but cannot
  * be used concurrently by two threads.
  * <p>
@@ -275,7 +278,8 @@ public abstract class BaseMarkupSerializer
     /**
      * Protected constructor can only be used by derived class.
      * Must initialize the serializer before serializing any document,
-     * see {@link #init}.
+     * by calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
+		 * first
      */
     protected BaseMarkupSerializer( OutputFormat format )
     {
@@ -1323,7 +1327,7 @@ public abstract class BaseMarkupSerializer
     /**
      * Called to print additional text with whitespace handling.
      * If spaces are preserved, the text is printed as if by calling
-     * {@link #printText(String)} with a call to {@link #breakLine}
+     * {@link #printText(String,boolean,boolean)} with a call to {@link Printer#breakLine}
      * for each new line. If spaces are not preserved, the text is
      * broken at space boundaries if longer than the line width;
      * Multiple spaces are printed as such, but spaces at beginning
@@ -1621,7 +1625,7 @@ public abstract class BaseMarkupSerializer
      * 
      * @param message
      * @param severity
-     * @return 
+     * @return a DOMError
      */
     protected DOMError modifyDOMError(String message, short severity){
             fDOMError.reset();

@@ -78,8 +78,8 @@ import org.xml.sax.ContentHandler;
  * and pass it around as a {@link
  * org.xml.sax.DocumentHandler}. If an I/O error occurs while serializing, it will
  * be thrown by {@link DocumentHandler#endDocument}. The SAX serializer
- * may also be used as {@link org.xml.sax.DTDHandler}, {@link org.xml.sax.DeclHandler} and
- * {@link org.xml.sax.LexicalHandler}.
+ * may also be used as {@link org.xml.sax.DTDHandler}, {@link org.xml.sax.ext.DeclHandler} and
+ * {@link org.xml.sax.ext.LexicalHandler}.
  * <p>
  * To serialize a DOM document or DOM element, create a compatible
  * serializer and call it's {@link

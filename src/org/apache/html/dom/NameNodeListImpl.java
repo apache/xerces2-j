@@ -123,7 +123,7 @@ import org.apache.xerces.dom.DeepNodeListImpl;
  * This class implements the DOM's NodeList behavior for
  * HTMLDocuemnt.getElementsByName().
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  * @see DeepNodeListImpl
  */
