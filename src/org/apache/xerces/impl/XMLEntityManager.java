@@ -535,9 +535,16 @@ public class XMLEntityManager
        // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
-             fResourceIdentifier.clear();
-            fResourceIdentifier.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
-             xmlInputSource = fEntityResolver.resolveEntity(fResourceIdentifier);
+            XMLResourceIdentifierImpl ri = null;
+            if (resourceIdentifier instanceof XMLResourceIdentifierImpl) {
+                ri = (XMLResourceIdentifierImpl)resourceIdentifier;
+            }
+            else {
+                fResourceIdentifier.clear();
+                ri = fResourceIdentifier;
+            }
+            ri.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
+            xmlInputSource = fEntityResolver.resolveEntity(ri);
         }
 
         // do default resolution
