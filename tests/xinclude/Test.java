@@ -320,6 +320,8 @@ public class Test implements XMLErrorHandler {
                 }
             }
             else {
+				compareOutput(new FileReader(expectedOutputFile),
+									new StringReader(fResults));
                 fLogStream.println(fResults);
                 fLogStream.println("Result: FAIL");
                 return false;
