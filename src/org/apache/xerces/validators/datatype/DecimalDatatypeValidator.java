@@ -154,7 +154,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                                                                    getErrorString( DatatypeMessageProvider.MSG_FORMAT_FAILURE,
                                                                                    DatatypeMessageProvider.MSG_NONE, null));
                         }
-                    } catch ( NumberFormatException ex ){
+                    } catch ( Exception ex ){
                         throw new InvalidDatatypeFacetException( getErrorString(
                                                                                DatatypeMessageProvider.IllegalFacetValue, 
                                                                                DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
@@ -182,18 +182,18 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
                     if (enumeration != null) {
                         fEnumDecimal = new BigDecimal[enumeration.size()];
-                        for (int i = 0; i < enumeration.size(); i++)
+                        int i = 0;
                             try {
-                                fEnumDecimal[i] = new BigDecimal( ((String) enumeration.elementAt(i)));
-                                boundsCheck(fEnumDecimal[i]); // Check against max,min Inclusive, Exclusives
-                            } catch (InvalidDatatypeValueException idve) {
+                                for ( ; i < enumeration.size(); i++) {
+                                    fEnumDecimal[i] = 
+                                          new BigDecimal( ((String) enumeration.elementAt(i)));
+                                    boundsCheck(fEnumDecimal[i]); // Check against max,min Inclusive, Exclusives
+                                }
+                            } catch( Exception idve ){
                                 throw new InvalidDatatypeFacetException(
-                                                                       getErrorString(DatatypeMessageProvider.InvalidEnumValue,
-                                                                                      DatatypeMessageProvider.MSG_NONE,
-                                                                                      new Object [] { enumeration.elementAt(i)}));
-                            } catch (NumberFormatException nfe) {
-                                throw new InvalidDatatypeFacetException(
-                                                                       "Internal Error parsing enumerated values for Decimal type");
+                                      getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                               DatatypeMessageProvider.MSG_NONE,
+                                                       new Object [] { enumeration.elementAt(i)}));
                             }
                     }
                 }
@@ -211,23 +211,22 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
      * W3C decimal type.
      * 
      * @param content A string containing the content to be validated
-     *
+     *                            cd 
      * @exception throws InvalidDatatypeException if the content is
      *  is not a W3C decimal type
      */
 
     public Object validate(String content, Object state) throws InvalidDatatypeValueException {
 
-
         if ( fDerivationByList == false ) { //derived by restriction
             BigDecimal d = null; // Is content a Decimal 
             try {
                 d = new BigDecimal(content);
-            } catch (NumberFormatException nfe) {
+            } catch (Exception nfe) {
                 throw new InvalidDatatypeValueException(
                    getErrorString(DatatypeMessageProvider.NotDecimal,
                   DatatypeMessageProvider.MSG_NONE,
-                                      new Object[] { content}));
+                                      new Object[] { "'" + content +"'"}));
             }
             if( isScaleDefined == true ) {
                  if (d.scale() > fScale)
