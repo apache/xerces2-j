@@ -1509,6 +1509,9 @@ public class TraverseSchema implements
         int finalProperty = 0;
         if(finalAttr != null) 
             finalProperty = parseFinalSet(finalAttr.getValue());
+        else
+            finalProperty = parseFinalSet(null);
+
         // REVISIT:  is "extension" allowed???
         
         // if we have a nonzero final , store it in the hash...
@@ -3020,7 +3023,7 @@ public class TraverseSchema implements
            if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION) {
               // check to see if the baseType permits derivation by restriction
               if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.RESTRICTION) != 0)
-                    throw new ComplexTypeRecoverableError("Derivation by extension is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
+                    throw new ComplexTypeRecoverableError("Derivation by restriction is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
                
               //
               //REVISIT: !!!really hairy stuff to check the particle derivation OK in 5.10
@@ -4155,7 +4158,7 @@ public class TraverseSchema implements
         if (!ref.equals("")) {
             //REVISIT top level check for ref 
         	if (!type.equals("") || (elementMiscFlags > 0) 
-					|| (finalSet > 0) || (blockSet > 0)
+					|| (finalSetStr != null && finalSet > 0) || (blockSetStr != null && blockSet > 0)
 					|| !dflt.equals("") || !fixed.equals(""))
             	reportSchemaError(SchemaMessageProvider.BadAttWithRef, null);
 			if (!name.equals(""))
@@ -6122,8 +6125,10 @@ public class TraverseSchema implements
 
     private int parseFinalSet (String finalString)  throws Exception
     {
-            if( finalString == null) 
+            if( finalString == null) {
+            System.err.println("what's the deal?  " + fFinalDefault);
                 return fFinalDefault;
+                }
             else if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
                     return SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.UNION;
             } else {
