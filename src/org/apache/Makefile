@@ -17,6 +17,7 @@ all: dirs compile
 dirs:
 	${MAKE} -C xerces
 	${MAKE} -C xml
+	${MAKE} -C html
 
 compile: ${TARGETS}
 
@@ -32,4 +33,5 @@ compile: ${TARGETS}
 clean:
 	${MAKE} -C xerces clean
 	${MAKE} -C xml clean
+	${MAKE} -C html clean
 
