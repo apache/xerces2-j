@@ -133,11 +133,15 @@ public class XJavac extends Javac {
             // need to do special things for Sun too...
             else if(vendor.indexOf("SUN") >= 0){
                 // we're on an SUN 1.4; fiddle with the bootclasspath.
+                // since we can't eviscerate XML-related info here,
+                // we must use the classpath
                 Path bcp = createBootclasspath();
-                String bcpMember = "./tools/xml-apis.jar";
-                bcp.createPathElement().setPath(bcpMember);
+                Path clPath = getClasspath();
+                bcp.append(clPath);
                 String currBCP = (String)props.get("sun.boot.class.path");
-                bcp.createPathElement().setPath(currBCP);
+                Path currBCPath = new Path(null); 
+                currBCPath.createPathElement().setPath(currBCP);
+                bcp.append(currBCPath);
                 setBootclasspath(bcp);
             }
         }

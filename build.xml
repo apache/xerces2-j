@@ -1114,7 +1114,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Compiles the samples with DOM Level 3                               -->
   <!-- =================================================================== -->
-  <target name="samples-dom3" depends="compile-dom3">
+  <target name="samples-dom3" depends="jar-dom3, apijar-dom3">
     <mkdir dir="${build.samples}"/>
     <copy todir="${build.samples}" >
         <fileset dir="${samples.dir}" />
@@ -1132,7 +1132,7 @@ Copyright:
 
    <xjavac srcdir="${build.samples}"
            destdir="${build.dest}"
-           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
+           classpath="${build.dir}/classes:${build.dir}/dom3-${jar.parser}:${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.apis}"
            debug="${debug}"
            includeAntRuntime="false"
            includeJavaRuntime="true"/>
