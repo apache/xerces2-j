@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.v2;
 
+import org.apache.xerces.util.SymbolTable;
 
 /**
  * Collection of symbols used to parse a Schema Grammar.
@@ -64,99 +65,114 @@ package org.apache.xerces.impl.v2;
  * @author jeffrey rodriguez
  * @version $Id$
  */
-public final  class SchemaSymbols {
+public final class SchemaSymbols {
+
+    // strings that's not added to the schema symbol table, because they
+    // are not symbols in the schema document.
+    // the validator can choose to add them by itself.
+
+    // empty string
+    public static final String EMPTY_STRING = "";
+
     // schema namespaces
-    public static final String URI_XSI = "http://www.w3.org/2001/XMLSchema-instance";
-    public static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
+    public static final String URI_XSI                        = "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String URI_SCHEMAFORSCHEMA            = "http://www.w3.org/2001/XMLSchema";
 
     // xsi attributes
-    public static final String XSI_SCHEMALOCACTION = "schemaLocation";
+    public static final String XSI_SCHEMALOCACTION            = "schemaLocation";
     public static final String XSI_NONAMESPACESCHEMALOCACTION = "noNamespaceSchemaLocation";
-    public static final String XSI_TYPE = "type";
-    public static final String XSI_NIL = "nil";
+    public static final String XSI_TYPE                       = "type";
+    public static final String XSI_NIL                        = "nil";
 
     // xmlns attributes
-    public static final String XMLNS = "xmlns";
-    
+    public static final String XMLNS                          = "xmlns";
+
+    // the schema symbol table that holds all schema symbols.
+    // these are used within schema traversers (including XSDHandler).
+    // when a new DOM parser is created to parse schema document,
+    // XSDHandler is responsible for creating a new SymbolTable which
+    // *shadow* the symbol table defined below.
+    public static final SymbolTable fSymbolTable = new SynchronizedSymbolTable();
+
     // all possible schema element names
-    public static final String ELT_ALL                  = "all";
-    public static final String ELT_ANNOTATION           = "annotation";
-    public static final String ELT_ANY                  = "any";
-    public static final String ELT_ANYATTRIBUTE         = "anyAttribute";
-    public static final String ELT_APPINFO              = "appinfo";
-    public static final String ELT_ATTRIBUTE            = "attribute";
-    public static final String ELT_ATTRIBUTEGROUP       = "attributeGroup";
-    public static final String ELT_CHOICE               = "choice";
-    public static final String ELT_COMPLEXCONTENT       = "complexContent";
-    public static final String ELT_COMPLEXTYPE          = "complexType";
-    public static final String ELT_DOCUMENTATION        = "documentation";
-    public static final String ELT_ELEMENT              = "element";
-    public static final String ELT_ENUMERATION          = "enumeration";
-    public static final String ELT_EXTENSION            = "extension";
-    public static final String ELT_FIELD                = "field";
-    public static final String ELT_FRACTIONDIGITS       = "fractionDigits";
-    public static final String ELT_GROUP                = "group";
-    public static final String ELT_IMPORT               = "import";
-    public static final String ELT_INCLUDE              = "include";
-    public static final String ELT_KEY                  = "key";
-    public static final String ELT_KEYREF               = "keyref";
-    public static final String ELT_LENGTH               = "length";
-    public static final String ELT_LIST                 = "list";
-    public static final String ELT_MAXEXCLUSIVE         = "maxExclusive";
-    public static final String ELT_MAXINCLUSIVE         = "maxInclusive";
-    public static final String ELT_MAXLENGTH            = "maxLength";
-    public static final String ELT_MINEXCLUSIVE         = "minExclusive";
-    public static final String ELT_MININCLUSIVE         = "minInclusive";
-    public static final String ELT_MINLENGTH            = "minLength";
-    public static final String ELT_NOTATION             = "notation";
-    public static final String ELT_PATTERN              = "pattern";
-    public static final String ELT_REDEFINE             = "redefine";
-    public static final String ELT_RESTRICTION          = "restriction";
-    public static final String ELT_SCHEMA               = "schema";
-    public static final String ELT_SELECTOR             = "selector";
-    public static final String ELT_SEQUENCE             = "sequence";
-    public static final String ELT_SIMPLECONTENT        = "simpleContent";
-    public static final String ELT_SIMPLETYPE           = "simpleType";
-    public static final String ELT_TOTALDIGITS          = "totalDigits";
-    public static final String ELT_UNION                = "union";
-    public static final String ELT_UNIQUE               = "unique";
-    public static final String ELT_WHITESPACE           = "whiteSpace";
+    public static final String ELT_ALL                  = fSymbolTable.addSymbol("all");
+    public static final String ELT_ANNOTATION           = fSymbolTable.addSymbol("annotation");
+    public static final String ELT_ANY                  = fSymbolTable.addSymbol("any");
+    public static final String ELT_ANYATTRIBUTE         = fSymbolTable.addSymbol("anyAttribute");
+    public static final String ELT_APPINFO              = fSymbolTable.addSymbol("appinfo");
+    public static final String ELT_ATTRIBUTE            = fSymbolTable.addSymbol("attribute");
+    public static final String ELT_ATTRIBUTEGROUP       = fSymbolTable.addSymbol("attributeGroup");
+    public static final String ELT_CHOICE               = fSymbolTable.addSymbol("choice");
+    public static final String ELT_COMPLEXCONTENT       = fSymbolTable.addSymbol("complexContent");
+    public static final String ELT_COMPLEXTYPE          = fSymbolTable.addSymbol("complexType");
+    public static final String ELT_DOCUMENTATION        = fSymbolTable.addSymbol("documentation");
+    public static final String ELT_ELEMENT              = fSymbolTable.addSymbol("element");
+    public static final String ELT_ENUMERATION          = fSymbolTable.addSymbol("enumeration");
+    public static final String ELT_EXTENSION            = fSymbolTable.addSymbol("extension");
+    public static final String ELT_FIELD                = fSymbolTable.addSymbol("field");
+    public static final String ELT_FRACTIONDIGITS       = fSymbolTable.addSymbol("fractionDigits");
+    public static final String ELT_GROUP                = fSymbolTable.addSymbol("group");
+    public static final String ELT_IMPORT               = fSymbolTable.addSymbol("import");
+    public static final String ELT_INCLUDE              = fSymbolTable.addSymbol("include");
+    public static final String ELT_KEY                  = fSymbolTable.addSymbol("key");
+    public static final String ELT_KEYREF               = fSymbolTable.addSymbol("keyref");
+    public static final String ELT_LENGTH               = fSymbolTable.addSymbol("length");
+    public static final String ELT_LIST                 = fSymbolTable.addSymbol("list");
+    public static final String ELT_MAXEXCLUSIVE         = fSymbolTable.addSymbol("maxExclusive");
+    public static final String ELT_MAXINCLUSIVE         = fSymbolTable.addSymbol("maxInclusive");
+    public static final String ELT_MAXLENGTH            = fSymbolTable.addSymbol("maxLength");
+    public static final String ELT_MINEXCLUSIVE         = fSymbolTable.addSymbol("minExclusive");
+    public static final String ELT_MININCLUSIVE         = fSymbolTable.addSymbol("minInclusive");
+    public static final String ELT_MINLENGTH            = fSymbolTable.addSymbol("minLength");
+    public static final String ELT_NOTATION             = fSymbolTable.addSymbol("notation");
+    public static final String ELT_PATTERN              = fSymbolTable.addSymbol("pattern");
+    public static final String ELT_REDEFINE             = fSymbolTable.addSymbol("redefine");
+    public static final String ELT_RESTRICTION          = fSymbolTable.addSymbol("restriction");
+    public static final String ELT_SCHEMA               = fSymbolTable.addSymbol("schema");
+    public static final String ELT_SELECTOR             = fSymbolTable.addSymbol("selector");
+    public static final String ELT_SEQUENCE             = fSymbolTable.addSymbol("sequence");
+    public static final String ELT_SIMPLECONTENT        = fSymbolTable.addSymbol("simpleContent");
+    public static final String ELT_SIMPLETYPE           = fSymbolTable.addSymbol("simpleType");
+    public static final String ELT_TOTALDIGITS          = fSymbolTable.addSymbol("totalDigits");
+    public static final String ELT_UNION                = fSymbolTable.addSymbol("union");
+    public static final String ELT_UNIQUE               = fSymbolTable.addSymbol("unique");
+    public static final String ELT_WHITESPACE           = fSymbolTable.addSymbol("whiteSpace");
 
     // all possible schema attribute names
-    public static final String ATT_ABSTRACT             = "abstract";
-    public static final String ATT_ATTRIBUTEFORMDEFAULT = "attributeFormDefault";
-    public static final String ATT_BASE                 = "base";
-    public static final String ATT_BLOCK                = "block";
-    public static final String ATT_BLOCKDEFAULT         = "blockDefault";
-    public static final String ATT_DEFAULT              = "default";
-    public static final String ATT_ELEMENTFORMDEFAULT   = "elementFormDefault";
-    public static final String ATT_FINAL                = "final";
-    public static final String ATT_FINALDEFAULT         = "finalDefault";
-    public static final String ATT_FIXED                = "fixed";
-    public static final String ATT_FORM                 = "form";
-    public static final String ATT_ID                   = "id";
-    public static final String ATT_ITEMTYPE             = "itemType";
-    public static final String ATT_MAXOCCURS            = "maxOccurs";
-    public static final String ATT_MEMBERTYPES          = "memberTypes";
-    public static final String ATT_MINOCCURS            = "minOccurs";
-    public static final String ATT_MIXED                = "mixed";
-    public static final String ATT_NAME                 = "name";
-    public static final String ATT_NAMESPACE            = "namespace";
-    public static final String ATT_NILLABLE             = "nillable";
-    public static final String ATT_PROCESSCONTENTS      = "processContents";
-    public static final String ATT_REF                  = "ref";
-    public static final String ATT_REFER                = "refer";
-    public static final String ATT_SCHEMALOCATION       = "schemaLocation";
-    public static final String ATT_SOURCE               = "source";
-    public static final String ATT_SUBSTITUTIONGROUP    = "substitutionGroup";
-    public static final String ATT_SYSTEM               = "system";
-    public static final String ATT_PUBLIC               = "public";
-    public static final String ATT_TARGETNAMESPACE      = "targetNamespace";
-    public static final String ATT_TYPE                 = "type";
-    public static final String ATT_USE                  = "use";
-    public static final String ATT_VALUE                = "value";
-    public static final String ATT_VERSION              = "version";
-    public static final String ATT_XPATH                = "xpath";
+    public static final String ATT_ABSTRACT             = fSymbolTable.addSymbol("abstract");
+    public static final String ATT_ATTRIBUTEFORMDEFAULT = fSymbolTable.addSymbol("attributeFormDefault");
+    public static final String ATT_BASE                 = fSymbolTable.addSymbol("base");
+    public static final String ATT_BLOCK                = fSymbolTable.addSymbol("block");
+    public static final String ATT_BLOCKDEFAULT         = fSymbolTable.addSymbol("blockDefault");
+    public static final String ATT_DEFAULT              = fSymbolTable.addSymbol("default");
+    public static final String ATT_ELEMENTFORMDEFAULT   = fSymbolTable.addSymbol("elementFormDefault");
+    public static final String ATT_FINAL                = fSymbolTable.addSymbol("final");
+    public static final String ATT_FINALDEFAULT         = fSymbolTable.addSymbol("finalDefault");
+    public static final String ATT_FIXED                = fSymbolTable.addSymbol("fixed");
+    public static final String ATT_FORM                 = fSymbolTable.addSymbol("form");
+    public static final String ATT_ID                   = fSymbolTable.addSymbol("id");
+    public static final String ATT_ITEMTYPE             = fSymbolTable.addSymbol("itemType");
+    public static final String ATT_MAXOCCURS            = fSymbolTable.addSymbol("maxOccurs");
+    public static final String ATT_MEMBERTYPES          = fSymbolTable.addSymbol("memberTypes");
+    public static final String ATT_MINOCCURS            = fSymbolTable.addSymbol("minOccurs");
+    public static final String ATT_MIXED                = fSymbolTable.addSymbol("mixed");
+    public static final String ATT_NAME                 = fSymbolTable.addSymbol("name");
+    public static final String ATT_NAMESPACE            = fSymbolTable.addSymbol("namespace");
+    public static final String ATT_NILLABLE             = fSymbolTable.addSymbol("nillable");
+    public static final String ATT_PROCESSCONTENTS      = fSymbolTable.addSymbol("processContents");
+    public static final String ATT_REF                  = fSymbolTable.addSymbol("ref");
+    public static final String ATT_REFER                = fSymbolTable.addSymbol("refer");
+    public static final String ATT_SCHEMALOCATION       = fSymbolTable.addSymbol("schemaLocation");
+    public static final String ATT_SOURCE               = fSymbolTable.addSymbol("source");
+    public static final String ATT_SUBSTITUTIONGROUP    = fSymbolTable.addSymbol("substitutionGroup");
+    public static final String ATT_SYSTEM               = fSymbolTable.addSymbol("system");
+    public static final String ATT_PUBLIC               = fSymbolTable.addSymbol("public");
+    public static final String ATT_TARGETNAMESPACE      = fSymbolTable.addSymbol("targetNamespace");
+    public static final String ATT_TYPE                 = fSymbolTable.addSymbol("type");
+    public static final String ATT_USE                  = fSymbolTable.addSymbol("use");
+    public static final String ATT_VALUE                = fSymbolTable.addSymbol("value");
+    public static final String ATT_VERSION              = fSymbolTable.addSymbol("version");
+    public static final String ATT_XPATH                = fSymbolTable.addSymbol("xpath");
 
     // all possible schema attribute values
     public static final String ATTVAL_TWOPOUNDANY       = "##any";
@@ -262,4 +278,84 @@ public final  class SchemaSymbols {
 
     // maxOccurs = "unbounded"
    public static final int OCCURRENCE_UNBOUNDED = -1;
+
+
+    /**
+     * Synchronized symbol table.
+     *
+     * @author Andy Clark, IBM
+     */
+    public static final class SynchronizedSymbolTable
+        extends SymbolTable {
+
+        //
+        // SymbolTable methods
+        //
+
+        /**
+         * Adds the specified symbol to the symbol table and returns a
+         * reference to the unique symbol. If the symbol already exists,
+         * the previous symbol reference is returned instead, in order
+         * guarantee that symbol references remain unique.
+         *
+         * @param symbol The new symbol.
+         */
+        public String addSymbol(String symbol) {
+
+            synchronized (this) {
+                return super.addSymbol(symbol);
+            }
+
+        } // addSymbol(String)
+
+        /**
+         * Adds the specified symbol to the symbol table and returns a
+         * reference to the unique symbol. If the symbol already exists,
+         * the previous symbol reference is returned instead, in order
+         * guarantee that symbol references remain unique.
+         *
+         * @param buffer The buffer containing the new symbol.
+         * @param offset The offset into the buffer of the new symbol.
+         * @param length The length of the new symbol in the buffer.
+         */
+        public String addSymbol(char[] buffer, int offset, int length) {
+
+            synchronized (this) {
+                return super.addSymbol(buffer, offset, length);
+            }
+
+        } // addSymbol(char[],int,int):String
+
+        /**
+         * Returns true if the symbol table already contains the specified
+         * symbol.
+         *
+         * @param symbol The symbol to look for.
+         */
+        public boolean containsSymbol(String symbol) {
+
+            synchronized (this) {
+                return super.containsSymbol(symbol);
+            }
+
+        } // containsSymbol(String):boolean
+
+        /**
+         * Returns true if the symbol table already contains the specified
+         * symbol.
+         *
+         * @param buffer The buffer containing the symbol to look for.
+         * @param offset The offset into the buffer.
+         * @param length The length of the symbol in the buffer.
+         */
+        public boolean containsSymbol(char[] buffer, int offset, int length) {
+
+            synchronized (this) {
+                return super.containsSymbol(buffer, offset, length);
+            }
+
+        } // containsSymbol(char[],int,int):boolean
+
+    } // class SynchronizedSymbolTable
+
 }
