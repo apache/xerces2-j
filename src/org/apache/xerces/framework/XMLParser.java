@@ -124,10 +124,11 @@ public abstract class XMLParser
         "http://xml.org/sax/features/namespaces",
         // Xerces
         "http://apache.org/xml/features/validation/schema",
+        "http://apache.org/xml/features/schema/expose-normalized-values",
         "http://apache.org/xml/features/validation/schema-full-checking",
         "http://apache.org/xml/features/validation/dynamic",
         "http://apache.org/xml/features/validation/default-attribute-values",
-        "http://apache.org/xml/features/validation/normalize-element-contents",
+        
         "http://apache.org/xml/features/validation/validate-content-models",
         "http://apache.org/xml/features/validation/validate-datatypes",
         "http://apache.org/xml/features/validation/warn-on-duplicate-attdef",
@@ -641,10 +642,10 @@ public abstract class XMLParser
      * 
      * @param normalize
      */
-    protected void setNormalizeElementContents(boolean normalize) {
+    protected void setNormalizeContents(boolean normalize) {
         fValidator.setNormalizeContents(normalize);
     }
-    protected boolean getNormalizeElementContents() {
+    protected boolean getNormalizeContents() {
         return fValidator.getNormalizeConents();
     }
 
@@ -1360,8 +1361,8 @@ public abstract class XMLParser
                 throw new SAXNotSupportedException(featureId);
             }
 
-            if (feature.equals("validation/normalize-element-contents")) {
-                setNormalizeElementContents(state);
+            if (feature.equals("schema/expose-normalized-values")) {
+                setNormalizeContents(state);
                 return;
              }
             //
@@ -1535,7 +1536,7 @@ public abstract class XMLParser
                 throw new SAXNotRecognizedException(featureId);
             }
             if (feature.equals("validation/normalize-element-contents")) {
-                return getNormalizeElementContents();
+                return getNormalizeContents();
             }
             //
             // http://apache.org/xml/features/validation/validate-content-models

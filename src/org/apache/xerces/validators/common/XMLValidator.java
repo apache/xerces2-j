@@ -237,12 +237,18 @@ public final class XMLValidator
    private boolean fWarningOnUndeclaredElements = false;
    private boolean fNormalizeAttributeValues = true;
    private boolean fLoadDTDGrammar = true;
-   // normalize element content
-   // default: don't normalize
+   // expose normalized values for element/attribute content
+   // default: expose Infoset
    private boolean fNormalizeContents = false;
 
+   // REVISIT: normalization
+   // would not work properly for UNION types since we don't have
+   // correct whiteSpace facet to normalize values.
+   //
+   
    // Private temporary variables
-   private Hashtable fLocationUriPairs = new Hashtable(10);
+   
+  private Hashtable fLocationUriPairs = new Hashtable(10);
 
 
    // declarations
@@ -734,6 +740,13 @@ public final class XMLValidator
    //
    // XMLEntityHandler.CharDataHandler methods
    //
+
+   private String normalizeValue (String unNormalizedValue){
+       fUnnormalizedStr.setLength(0);
+       fUnnormalizedStr.append(unNormalizedValue);
+       normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace == DatatypeValidator.COLLAPSE));
+       return fNormalizedStr.toString();                                                          
+   }
 
     /**
      * Normalize whitespace in an XMLString according to the rules of attribute
@@ -2204,6 +2217,7 @@ public final class XMLValidator
                   }
                }
                if (validationEnabled) {
+                   // default value should have been already normalized
                    validateUsingDV (fTempAttDecl.datatypeValidator,
                                     fStringPool.toString(attValue), true);
                }
@@ -3748,17 +3762,16 @@ public final class XMLValidator
                                                    }
                                                 } else {
                                                    try {
-                                                      String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
-                                                      String  value       = unTrimValue.trim();
+                                                      String  value = fStringPool.toString(attrList.getAttValue(index));
                                                       fWhiteSpace = attDV.getWSFacet();
-                                                      if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
-                                                          attDV.validate(unTrimValue, null );
+                                                      if (fWhiteSpace != DatatypeValidator.PRESERVE) { 
+                                                            value = normalizeValue(value);
                                                       }
-                                                      else { // normalize
-                                                          int normalizedValue = fStringPool.addString(value);
-                                                          attrList.setAttValue(index,normalizedValue );
-                                                          validateUsingDV(attDV, value, false);
-                                                      }
+                                                       validateUsingDV(attDV, value, false);
+                                                       if (fNormalizeContents) {
+                                                            int normalizedValue = fStringPool.addString(value);
+                                                            attrList.setAttValue(index,normalizedValue);
+                                                       }
                                                    } catch (InvalidDatatypeValueException idve) {
                                                       fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                                                  SchemaMessageProvider.SCHEMA_DOMAIN,
@@ -3805,16 +3818,19 @@ public final class XMLValidator
                                  /****/
                               } else {
                                  try {
-                                    String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
-                                    String  value       = unTrimValue.trim();
+                                    String  value = fStringPool.toString(attrList.getAttValue(index));
                                     DatatypeValidator tempDV = fTempAttDecl.datatypeValidator;
+                                    fWhiteSpace = tempDV.getWSFacet();
+                                    if (fWhiteSpace != DatatypeValidator.PRESERVE) { 
+                                        value = normalizeValue(value);
+                                    }
                                     // if "fixed" is specified, then get the fixed string,
                                     // and compare over value space
                                     if ((fTempAttDecl.defaultType & XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0 &&
                                         tempDV.compare(value, fTempAttDecl.defaultValue) != 0) {
                                         Object[] args = { fStringPool.toString(element.rawname),
                                                           fStringPool.toString(attrList.getAttrName(index)),
-                                                          unTrimValue,
+                                                          value,
                                                           fTempAttDecl.defaultValue};
                                         fErrorReporter.reportError( fErrorReporter.getLocator(),
                                                                     XMLMessages.XML_DOMAIN,
@@ -3823,14 +3839,10 @@ public final class XMLValidator
                                                                     args,
                                                                     XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                     }
-                                    fWhiteSpace = tempDV.getWSFacet();
-                                    if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
-                                        tempDV.validate(unTrimValue, null );
-                                    }
-                                    else { // normalize
+                                    validateUsingDV(tempDV, value, false);
+                                    if (fNormalizeContents) {
                                         int normalizedValue = fStringPool.addString(value);
                                         attrList.setAttValue(index,normalizedValue );
-                                        validateUsingDV(tempDV, value, false);
                                     }
                                  } catch (InvalidDatatypeValueException idve) {
                                     fErrorReporter.reportError(fErrorReporter.getLocator(),
