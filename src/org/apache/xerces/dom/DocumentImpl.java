@@ -229,6 +229,10 @@ public class DocumentImpl
         newdoc.allowGrammarAccess = allowGrammarAccess;
         newdoc.errorChecking = errorChecking;
 
+	// make sure every cloned node is owned by this document
+	// as opposed to the source document
+	newdoc.adoptNode(newdoc);
+
         // return new document
     	return newdoc;
 
