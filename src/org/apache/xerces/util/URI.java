@@ -254,6 +254,9 @@ import java.io.Serializable;
 
   /** If specified, stores the port for this URI; otherwise -1 */
   private int m_port = -1;
+  
+  /** If specified, stores the registry based authority for this URI; otherwise -1 */
+  private String m_regAuthority = null;
 
   /** If specified, stores the path for this URI; otherwise null */
   private String m_path = null;
@@ -447,6 +450,7 @@ import java.io.Serializable;
     m_userinfo = p_other.getUserinfo();
     m_host = p_other.getHost();
     m_port = p_other.getPort();
+    m_regAuthority = p_other.getRegBasedAuthority();
     m_path = p_other.getPath();
     m_queryString = p_other.getQueryString();
     m_fragment = p_other.getFragment();
@@ -516,9 +520,10 @@ import java.io.Serializable;
 
     // Two slashes means we may have authority, but definitely means we're either
     // matching net_path or abs_path. These two productions are ambiguous in that
-    // every net_path is an abs_path. RFC 2396 resolves this ambiguity by applying
-    // a greedy left most matching rule. Try matching net_path first, and if that
-    // fails we don't have authority so then attempt to match abs_path.
+    // every net_path (except those containing an IPv6Reference) is an abs_path. 
+    // RFC 2396 resolves this ambiguity by applying a greedy left most matching rule. 
+    // Try matching net_path first, and if that fails we don't have authority so 
+    // then attempt to match abs_path.
     //
     // net_path = "//" authority [ abs_path ]
     // abs_path = "/"  path_segments
@@ -569,11 +574,12 @@ import java.io.Serializable;
       // see <http://www.ics.uci.edu/~fielding/url/test1.html> which
       // identified this as a bug in the RFC
       if (m_path.length() == 0 && m_scheme == null &&
-          m_host == null) {
+          m_host == null && m_regAuthority == null) {
         m_scheme = p_base.getScheme();
         m_userinfo = p_base.getUserinfo();
         m_host = p_base.getHost();
         m_port = p_base.getPort();
+        m_regAuthority = p_base.getRegBasedAuthority();
         m_path = p_base.getPath();
 
         if (m_queryString == null) {
@@ -593,10 +599,11 @@ import java.io.Serializable;
 
       // check for authority - RFC 2396 5.2 #4
       // if we found a host, then we've got a network path, so we're done
-      if (m_host == null) {
+      if (m_host == null && m_regAuthority == null) {
         m_userinfo = p_base.getUserinfo();
         m_host = p_base.getHost();
         m_port = p_base.getPort();
+        m_regAuthority = p_base.getRegBasedAuthority();
       }
       else {
         return;
@@ -792,13 +799,20 @@ import java.io.Serializable;
       }
     }
     
-    if (isValidServerAuthority(host, port, userinfo)) {
+    if (isValidServerBasedAuthority(host, port, userinfo)) {
       m_host = host;
       m_port = port;
       m_userinfo = userinfo;
       return true;
     }
-    
+    // Note: Registry based authority is being removed from a
+    // new spec for URI which would obsolete RFC 2396. If the
+    // spec is added to XML errata, processing of reg_name
+    // needs to be removed. - mrglavas.
+    else if (isValidRegistryBasedAuthority(p_uriSpec)) {
+      m_regAuthority = p_uriSpec;
+      return true;
+    }
     return false;
   }
   
@@ -813,7 +827,7 @@ import java.io.Serializable;
    * @return true if the given host, port, and userinfo compose
    * a valid server authority
    */
-  private boolean isValidServerAuthority(String host, int port, String userinfo) {
+  private boolean isValidServerBasedAuthority(String host, int port, String userinfo) {
     
     // Check if the host is well formed.
     if (!isWellFormedAddress(host)) {
@@ -843,6 +857,7 @@ import java.io.Serializable;
             !isHex(userinfo.charAt(index+2))) {
             return false;
           }
+          index += 2;
         }
         else if (!isUserinfoCharacter(testChar)) {
           return false;
@@ -852,7 +867,41 @@ import java.io.Serializable;
     }
     return true;
   }
-
+  
+  /**
+   * Determines whether the given string is a registry based authority.
+   * 
+   * @param authority the authority component of a URI
+   * 
+   * @return true if the given string is a registry based authority
+   */
+  private boolean isValidRegistryBasedAuthority(String authority) {
+    int index = 0;
+    int end = authority.length();
+    char testChar;
+  	
+    while (index < end) {
+      testChar = authority.charAt(index);
+      
+      // check for valid escape sequence
+      if (testChar == '%') {
+        if (index+2 >= end ||
+            !isHex(authority.charAt(index+1)) ||
+            !isHex(authority.charAt(index+2))) {
+            return false;
+        }
+        index += 2;
+      }
+      // can check against path characters because the set
+      // is the same except for '/' which we've already excluded.
+      else if (!isPathCharacter(testChar)) {
+        return false;
+      }
+      ++index;
+    }
+    return true;
+  }
+  	
  /**
   * Initialize the path for this URI from a URI string spec.
   *
@@ -892,6 +941,7 @@ import java.io.Serializable;
                         throw new MalformedURIException(
                             "Path contains invalid escape sequence!");
                     }
+                    index += 2;
                 }
                 // Path segments cannot contain '[' or ']' since pchar
                 // production was not changed by RFC 2732.
@@ -924,6 +974,7 @@ import java.io.Serializable;
                         throw new MalformedURIException(
                             "Opaque part contains invalid escape sequence!");
                     }
+                    index += 2;
                 }
                 // If the scheme specific part is opaque, it can contain '['
                 // and ']'. uric_no_slash wasn't modified by RFC 2732, which
@@ -956,6 +1007,7 @@ import java.io.Serializable;
             throw new MalformedURIException(
                     "Query string contains invalid escape sequence!");
            }
+           index += 2;
         }
         else if (!isURICharacter(testChar)) {
           throw new MalformedURIException(
@@ -980,6 +1032,7 @@ import java.io.Serializable;
             throw new MalformedURIException(
                     "Fragment contains invalid escape sequence!");
            }
+           index += 2;
         }
         else if (!isURICharacter(testChar)) {
           throw new MalformedURIException(
@@ -1009,22 +1062,28 @@ import java.io.Serializable;
   public String getSchemeSpecificPart() {
     StringBuffer schemespec = new StringBuffer();
 
-    if (m_userinfo != null || m_host != null || m_port != -1) {
+    if (m_host != null || m_regAuthority != null) {
       schemespec.append("//");
-    }
+    
+      // Server based authority.
+      if (m_host != null) {
 
-    if (m_userinfo != null) {
-      schemespec.append(m_userinfo);
-      schemespec.append('@');
-    }
-
-    if (m_host != null) {
-      schemespec.append(m_host);
-    }
-
-    if (m_port != -1) {
-      schemespec.append(':');
-      schemespec.append(m_port);
+        if (m_userinfo != null) {
+          schemespec.append(m_userinfo);
+          schemespec.append('@');
+        }
+        
+        schemespec.append(m_host);
+        
+        if (m_port != -1) {
+          schemespec.append(':');
+          schemespec.append(m_port);
+        }
+      }
+      // Registry based authority.
+      else {
+      	schemespec.append(m_regAuthority);
+      }
     }
 
     if (m_path != null) {
@@ -1069,6 +1128,15 @@ import java.io.Serializable;
   */
   public int getPort() {
     return m_port;
+  }
+  
+  /**
+   * Get the registry based authority for this URI.
+   * 
+   * @return the registry based authority (null if not specified).
+   */
+  public String getRegBasedAuthority() {
+    return m_regAuthority;
   }
 
  /**
@@ -1166,6 +1234,7 @@ import java.io.Serializable;
   public void setUserinfo(String p_userinfo) throws MalformedURIException {
     if (p_userinfo == null) {
       m_userinfo = null;
+      return;
     }
     else {
       if (m_host == null) {
@@ -1198,9 +1267,12 @@ import java.io.Serializable;
     m_userinfo = p_userinfo;
   }
 
-  /**
-  * Set the host for this URI. If null is passed in, the userinfo
-  * field is also set to null and the port is set to -1.
+ /**
+  * <p>Set the host for this URI. If null is passed in, the userinfo
+  * field is also set to null and the port is set to -1.</p>
+  * 
+  * <p>Note: This method overwrites registry based authority if it
+  * previously existed in this URI.</p>
   *
   * @param p_host the host for this URI
   *
@@ -1209,14 +1281,19 @@ import java.io.Serializable;
   */
   public void setHost(String p_host) throws MalformedURIException {
     if (p_host == null || p_host.length() == 0) {
+      if (p_host != null) {
+        m_regAuthority = null;
+      }
       m_host = p_host;
       m_userinfo = null;
       m_port = -1;
+      return;
     }
     else if (!isWellFormedAddress(p_host)) {
       throw new MalformedURIException("Host is not a well formed address!");
     }
     m_host = p_host;
+    m_regAuthority = null;
   }
 
  /**
@@ -1241,6 +1318,37 @@ import java.io.Serializable;
       throw new MalformedURIException("Invalid port number!");
     }
     m_port = p_port;
+  }
+  
+  /**
+   * <p>Sets the registry based authority for this URI.</p>
+   * 
+   * <p>Note: This method overwrites server based authority
+   * if it previously existed in this URI.</p>
+   * 
+   * @param authority the registry based authority for this URI
+   * 
+   * @exception MalformedURIException it authority is not a
+   * well formed registry based authority
+   */
+  public void setRegBasedAuthority(String authority) 
+    throws MalformedURIException {
+
+  	if (authority == null) {
+  	  m_regAuthority = null;
+  	  return;
+  	}
+	// reg_name = 1*( unreserved | escaped | "$" | "," | 
+	//            ";" | ":" | "@" | "&" | "=" | "+" )
+  	else if (authority.length() < 1 ||
+  	  !isValidRegistryBasedAuthority(authority) ||
+  	  authority.indexOf('/') != -1) {
+      throw new MalformedURIException("Registry based authority is not well formed.");       	
+  	}
+  	m_regAuthority = authority;
+  	m_host = null;
+  	m_userinfo = null;
+  	m_port = -1;
   }
 
  /**
