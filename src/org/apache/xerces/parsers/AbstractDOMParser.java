@@ -643,7 +643,9 @@ public abstract class AbstractDOMParser
                         // set actual encoding
                         fDocumentImpl.setActualEncoding(encoding);
                         // set documentURI
-                        fDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
+                        if (locator != null) {
+                            fDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
+                        }
                     }
                 }
                 catch (ClassNotFoundException e) {
