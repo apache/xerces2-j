@@ -622,6 +622,7 @@ public class TraverseSchema implements
             //annotation ? ( 0 or 1 )
             if( content.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
                 traverseAnnotationDecl( content );   
+                content                    = XUtil.getNextSiblingElement(content);
             } 
 
             //TODO: If content is annotation again should raise validation error
@@ -631,7 +632,7 @@ public class TraverseSchema implements
 
             //facets    * ( 0 or more )
 
-            content                    = XUtil.getNextSiblingElement(content);
+            
             int numEnumerationLiterals = 0;
             facetData        = new Hashtable();
             Vector enumData            = new Vector();
@@ -642,10 +643,11 @@ public class TraverseSchema implements
                     numFacets++;
                     if (facetElt.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION)) {
                         numEnumerationLiterals++;
-                        enumData.addElement(facetElt.getAttribute(SchemaSymbols.ATT_VALUE));
+                        String enumVal = facetElt.getAttribute(SchemaSymbols.ATT_VALUE);
+                        enumData.addElement(enumVal);
                         //Enumerations can have annotations ? ( 0 | 1 )
                         Element enumContent =  XUtil.getFirstChildElement( facetElt );
-                        if( enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                        if( enumContent != null && enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
                             traverseAnnotationDecl( content );   
                          } 
                         //TODO: If enumContent is encounter  again should raise validation error
@@ -934,7 +936,10 @@ public class TraverseSchema implements
         }
 
             // if content = textonly, base is a datatype
-        if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
+        if (content.length() == 0 && base.length() == 0) {
+            contentSpecType = XMLElementDecl.TYPE_ANY;
+        }
+        else if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
             //TO DO
             if (fDatatypeRegistry.getValidatorFor(base) == null) // must be datatype
                         reportSchemaError(SchemaMessageProvider.NotADatatype,
