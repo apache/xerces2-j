@@ -78,7 +78,7 @@ import org.w3c.dom.NodeList;
  * This program is actually meant to test that we DO NOT fire any mutation
  * events while the Deferred DOM is being synchronized.
  */
-public class DeferredDom
+public class DeferredDOM
 {
     //
     // Constants
@@ -122,7 +122,7 @@ public class DeferredDom
         try {
             DOMParserWrapper parser =
             (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
-            DeferredDom test = new DeferredDom();
+            DeferredDOM test = new DeferredDOM();
 
             parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
 
@@ -232,7 +232,7 @@ public class DeferredDom
 
         Arguments argopt = new Arguments();
         argopt.setUsage( new String[] {
-                             "usage: java dom.DOMCount (options) uri ...",
+                             "usage: java dom.events.DeferredDOM (options) uri ...",
                              "",
                              "options:",
                              "  -p name  Specify DOM parser wrapper by name.",
