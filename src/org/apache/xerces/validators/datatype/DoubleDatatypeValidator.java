@@ -106,7 +106,7 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
         fDerivedByList = derivedByList;
 
         if ( facets != null ) {   // Set Facet
-            if ( fDerivedByList == false ) { 
+            if ( fDerivedByList == false ) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     if (key.equals(SchemaSymbols.ELT_PATTERN)) {
@@ -260,26 +260,69 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
      * check that a facet is in range, assumes that facets are compatible -- compatibility ensured by setFacets
      */
     private void boundsCheck(double d) throws InvalidDatatypeValueException {
-        boolean inUpperBound = false;
-        boolean inLowerBound = false;
 
-        if ( isMaxInclusiveDefined ) {
-            inUpperBound = ( d <= fMaxInclusive );
-        } else if ( isMaxExclusiveDefined ) {
-            inUpperBound = ( d <  fMaxExclusive );
+        boolean minOk = false;
+        boolean maxOk = false;
+        String  upperBound =  (fMaxExclusive != Double.MAX_VALUE )? (   Double.toString( fMaxExclusive)) :
+                              ( ( fMaxInclusive != Double.MAX_VALUE )? Double.toString( fMaxInclusive):"");
+
+        String  lowerBound =  (fMinExclusive != Double.MIN_VALUE )? ( Double.toString( fMinExclusive ) ):
+                              (( fMinInclusive != Double.MIN_VALUE )? Double.toString( fMinInclusive ):""); 
+        String  lowerBoundIndicator = "";
+        String  upperBoundIndicator = "";
+
+
+        if ( isMaxInclusiveDefined) {
+            maxOk = (d <= fMaxInclusive);
+            upperBound          = Double.toString( fMaxInclusive );
+            if ( upperBound != null ) {
+                upperBoundIndicator = "<="; 
+            } else {
+                upperBound="";
+            }
+        } else if ( isMaxExclusiveDefined) {
+            maxOk = (d < fMaxExclusive );
+            upperBound = Double.toString(fMaxExclusive );
+            if ( upperBound != null ) {
+                upperBoundIndicator = "<";
+            } else {
+                upperBound = "";
+            }
+        } else {
+            maxOk = (!isMaxInclusiveDefined && ! isMaxExclusiveDefined);
         }
 
-        if ( isMinInclusiveDefined ) {
-            inLowerBound = ( d >= fMinInclusive );
-        } else if ( isMinExclusiveDefined ) {
-            inLowerBound = ( d >  fMinExclusive );
+
+
+        if ( isMinInclusiveDefined) {
+
+            minOk = (d >=  fMinInclusive );
+            lowerBound = Double.toString( fMinInclusive );
+            if ( lowerBound != null ) {
+                lowerBoundIndicator = "<=";
+            } else {
+                lowerBound = "";
+            }
+        } else if ( isMinExclusiveDefined) {
+            minOk = (d > fMinExclusive);
+            lowerBound = Double.toString( fMinExclusive  );
+            if ( lowerBound != null ) {
+                lowerBoundIndicator = "<";
+            } else {
+                lowerBound = "";
+            }
+        } else {
+            minOk = (!isMinInclusiveDefined && !isMinExclusiveDefined);
         }
 
-        if ( inUpperBound == false  || inLowerBound == false ) { // within bounds ?
-            getErrorString(DatatypeMessageProvider.OutOfBounds,
-                           DatatypeMessageProvider.MSG_NONE,
-                           new Object [] { new Double(d), "","","","" }); //REVISIT
-        }
+        if (!(minOk && maxOk))
+            throw new InvalidDatatypeValueException (
+                             getErrorString(DatatypeMessageProvider.OutOfBounds,
+                                  DatatypeMessageProvider.MSG_NONE,
+                                      new Object [] { Double.toString(d) ,  lowerBound ,
+                                          upperBound, lowerBoundIndicator, upperBoundIndicator}));
+
+
     }
 
     private void enumCheck(double v) throws InvalidDatatypeValueException {
