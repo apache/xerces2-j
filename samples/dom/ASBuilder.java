@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2002, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -57,8 +57,8 @@
 
 package dom;
 
-import org.apache.xerces.dom3.DOMError;
-import org.apache.xerces.dom3.DOMErrorHandler;
+import org.w3c.dom.DOMError;
+import org.w3c.dom.DOMErrorHandler;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
