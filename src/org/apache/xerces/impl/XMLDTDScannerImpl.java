@@ -1676,12 +1676,17 @@ public class XMLDTDScannerImpl
                     // These tests are split so that we handle cases like
                     // '<<![' and '<!<![' which we might otherwise miss.
                     //
-                    if (fEntityScanner.skipChar('!')
-                        && fEntityScanner.skipChar('[')) {
-                        if (fDTDHandler != null) {
-                            fIgnoreConditionalBuffer.append("![");
+                    if (fEntityScanner.skipChar('!')) {
+                        if(fEntityScanner.skipChar('[')) {
+                            if (fDTDHandler != null) {
+                                fIgnoreConditionalBuffer.append("![");
+                            }
+                            fIncludeSectDepth++;
+                        } else {
+                            if (fDTDHandler != null) {
+                                fIgnoreConditionalBuffer.append("!");
+                            }
                         }
-                        fIncludeSectDepth++;
                     }
                 }
                 else if (fEntityScanner.skipChar(']')) {
@@ -1712,6 +1717,8 @@ public class XMLDTDScannerImpl
                                     fDTDHandler.endConditional();
                                 }
                                 return;
+                            } else if(fDTDHandler != null) {
+                                fIgnoreConditionalBuffer.append('>');
                             }
                         }
                     }
