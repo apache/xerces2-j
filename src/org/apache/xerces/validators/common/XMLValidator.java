@@ -3376,7 +3376,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
 
         try {
-            parser.parse( loc );
+            parser.parse( fEntityHandler.expandSystemId(loc) );
         }catch( IOException e ) {
             e.printStackTrace();
         }catch( SAXException e ) {
