@@ -119,6 +119,7 @@ public class DTDGrammar
 
     /** Default constructor. */
     public DTDGrammar() {
+        this( "" );
     }
 
     /**
@@ -127,6 +128,7 @@ public class DTDGrammar
      * @param targetNamespace 
      */
     public DTDGrammar(String targetNamespace) {
+        setTargetNameSpace( targetNamespace );
     }
 
     //

@@ -465,6 +465,10 @@ public class Grammar {
 
     }
 
+    protected void setTargetNameSpace( String targetNamespace ){
+        fTargetNamespace = targetNamespace;
+    }
+
     // debugging
 
     public void printElements(  ) {

@@ -68,40 +68,40 @@ public class XMLSimpleType {
     //
 
     /** TYPE_CDATA */
-    public static final short TYPE_CDATA = 1;
+    public static final short TYPE_CDATA = 0;
 
     /** TYPE_ENTITY */
-    public static final short TYPE_ENTITY = 2;
+    public static final short TYPE_ENTITY = 1;
 
     /** TYPE_ENUMERATION */
-    public static final short TYPE_ENUMERATION = 3;
+    public static final short TYPE_ENUMERATION = 2;
 
     /** TYPE_ID */
-    public static final short TYPE_ID = 4;
+    public static final short TYPE_ID = 3;
 
     /** TYPE_IDREF */
-    public static final short TYPE_IDREF = 5;
+    public static final short TYPE_IDREF = 4;
 
     /** TYPE_NMTOKEN */
-    public static final short TYPE_NMTOKEN = 6;
+    public static final short TYPE_NMTOKEN = 5;
 
     /** TYPE_NOTATION */
-    public static final short TYPE_NOTATION = 7;
+    public static final short TYPE_NOTATION = 6;
 
     /** TYPE_NAMED */
-    public static final short TYPE_NAMED = 8;
+    public static final short TYPE_NAMED = 7;
 
     /** DEFAULT_TYPE_DEFAULT */
-    public static final short DEFAULT_TYPE_DEFAULT = -1;
+    public static final short DEFAULT_TYPE_DEFAULT = 3;
 
     /** DEFAULT_TYPE_FIXED */
-    public static final short DEFAULT_TYPE_FIXED = -1;
+    public static final short DEFAULT_TYPE_FIXED = 1;
 
     /** DEFAULT_TYPE_IMPLIED */
-    public static final short DEFAULT_TYPE_IMPLIED = -1;
+    public static final short DEFAULT_TYPE_IMPLIED = 0;
 
     /** DEFAULT_TYPE_REQUIRED */
-    public static final short DEFAULT_TYPE_REQUIRED = -1;
+    public static final short DEFAULT_TYPE_REQUIRED = 2;
 
     //
     // Data
