@@ -223,7 +223,7 @@ public abstract class BasicParserConfiguration
      * @param symbolTable The symbol table to use.
      */
     protected BasicParserConfiguration(SymbolTable symbolTable) {
-        this(null, null);
+        this(symbolTable, null);
     } // <init>(SymbolTable)
 
     /** 
