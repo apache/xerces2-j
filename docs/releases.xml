@@ -5,6 +5,7 @@
   <s2 title='TBD'>
         <ul>
            <li>Fixed bug in Deferred DOM with multiple IDs on same element [andyc]</li>
+           <li>Updates to improve DFA build-time performance. [ATOZAWA@jp.ibm.com]</li>
         </ul>
   </s2>
   <s2 title='December 06, 2000'>
