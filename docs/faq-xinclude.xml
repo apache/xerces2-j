@@ -27,7 +27,7 @@
   </faq>
 
   <faq title="xml:base attributes and XML Schema validation">
-    <q>Why are <code>xml:base</code> attributes added, which make Schema validation fail?</q>
+    <q>Why are xml:base attributes added, which make Schema validation fail?</q>
     <a>
      <p>
       According to the specification for XInclude, processors must add an <code>xml:base</code>
