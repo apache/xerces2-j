@@ -109,45 +109,49 @@ public class ElementNSImpl
 		    colon2 = qname.lastIndexOf(':');
         }
 
-		ownerDocument().checkNamespaceWF(qname, colon1, colon2);
+		ownerDocument.checkNamespaceWF(qname, colon1, colon2);
 		if (colon1 < 0) {
 			// there is no prefix
 			localName = qname;
-			ownerDocument().checkQName(null, localName);
-			if (qname.equals("xmlns")
-				&& (namespaceURI == null
-					|| !namespaceURI.equals(NamespaceContext.XMLNS_URI))
-				|| (namespaceURI!=null && namespaceURI.equals(NamespaceContext.XMLNS_URI)
-					&& !qname.equals("xmlns"))) {
-				String msg =
-					DOMMessageFormatter.formatMessage(
-						DOMMessageFormatter.DOM_DOMAIN,
-						"NAMESPACE_ERR",
-						null);
-				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+			if (ownerDocument.errorChecking) {
+			    ownerDocument.checkQName(null, localName);
+			    if (qname.equals("xmlns")
+			        && (namespaceURI == null
+			        || !namespaceURI.equals(NamespaceContext.XMLNS_URI))
+			        || (namespaceURI!=null && namespaceURI.equals(NamespaceContext.XMLNS_URI)
+			        && !qname.equals("xmlns"))) {
+			        String msg =
+			            DOMMessageFormatter.formatMessage(
+			                    DOMMessageFormatter.DOM_DOMAIN,
+			                    "NAMESPACE_ERR",
+			                    null);
+			        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+			    }
 			}
 		}//there is a prefix
 		else {
-            prefix = qname.substring(0, colon1);
-
-            //NAMESPACE_ERR:
-            //1. if the qualifiedName has a prefix and the namespaceURI is null,
-
-            //2. or if the qualifiedName has a prefix that is "xml" and the namespaceURI
-            //is different from " http://www.w3.org/XML/1998/namespace"
-
-            if( namespaceURI == null || ( prefix.equals("xml") && !namespaceURI.equals(NamespaceContext.XML_URI) )){
-				String msg =
-					DOMMessageFormatter.formatMessage(
-						DOMMessageFormatter.DOM_DOMAIN,
-						"NAMESPACE_ERR",
-						null);
-				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-            }
-
-			localName = qname.substring(colon2 + 1);
-			ownerDocument().checkQName(prefix, localName);
-			ownerDocument().checkDOMNSErr(prefix, namespaceURI);
+		    prefix = qname.substring(0, colon1);
+		    localName = qname.substring(colon2 + 1);
+		    
+		    //NAMESPACE_ERR:
+		    //1. if the qualifiedName has a prefix and the namespaceURI is null,
+		    
+		    //2. or if the qualifiedName has a prefix that is "xml" and the namespaceURI
+		    //is different from " http://www.w3.org/XML/1998/namespace"
+		    
+		    if (ownerDocument.errorChecking) {
+		        if( namespaceURI == null || ( prefix.equals("xml") && !namespaceURI.equals(NamespaceContext.XML_URI) )){
+		            String msg =
+		                DOMMessageFormatter.formatMessage(
+		                        DOMMessageFormatter.DOM_DOMAIN,
+		                        "NAMESPACE_ERR",
+		                        null);
+		            throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+		        }
+		        
+		        ownerDocument.checkQName(prefix, localName);
+		        ownerDocument.checkDOMNSErr(prefix, namespaceURI);
+		    }
 		}
 	}
 
@@ -285,7 +289,7 @@ public class ElementNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-        if (ownerDocument().errorChecking) {
+        if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
@@ -293,7 +297,7 @@ public class ElementNSImpl
                                      msg);
             }
             if (prefix != null && prefix.length() != 0) {
-                if (!CoreDocumentImpl.isXMLName(prefix,ownerDocument().isXML11Version())) {
+                if (!CoreDocumentImpl.isXMLName(prefix,ownerDocument.isXML11Version())) {
                     String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
                     throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
                 }
