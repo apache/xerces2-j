@@ -580,7 +580,7 @@ public class XSDHandler {
         // store the document and its location
         // REVISIT: don't expose the DOM tree
         //sg.addDocument(currSchemaInfo.fSchemaDoc, (String)fDoc2SystemId.get(currSchemaInfo));
-        sg.addDocument(null, (String)fDoc2SystemId.get(currSchemaInfo));
+        sg.addDocument(null, (String)fDoc2SystemId.get(currSchemaInfo.fSchemaDoc));
             
         fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
 
