@@ -32,7 +32,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * <p>This class wraps a SAX EntityResolver2 in an XNI entity resolver.</p>
+ * <p>This class wraps a SAX entity resolver (EntityResolver2) in an XNI entity resolver.</p>
  * 
  * @author Michael Glavassevich, IBM
  * 
@@ -45,7 +45,7 @@ public class EntityResolver2Wrapper
     // Data
     //
     
-    /** The SAX entity resolver (EntityResolver2). */
+    /** An instance of SAX2 Extensions 1.1's EntityResolver2. */
     protected EntityResolver2 fEntityResolver;
     
     //
@@ -55,7 +55,11 @@ public class EntityResolver2Wrapper
     /** Default constructor. */
     public EntityResolver2Wrapper() {}
 
-    /** Wraps the specified SAX entity resolver. */
+    /**
+     * <p>Creates a new instance wrapping the given SAX entity resolver.</p>
+     * 
+     * @param entityResolver the SAX entity resolver to wrap
+     */
     public EntityResolver2Wrapper(EntityResolver2 entityResolver) {
         setEntityResolver(entityResolver);
     } // <init>(EntityResolver2)
@@ -64,12 +68,20 @@ public class EntityResolver2Wrapper
     // Public methods
     //
 
-    /** Sets the SAX entity resolver (EntityResolver2). */
+    /**
+     * <p>Sets the SAX entity resolver wrapped by this object.</p>
+     * 
+     * @param entityResolver the SAX entity resolver to wrap
+     */
     public void setEntityResolver(EntityResolver2 entityResolver) {
         fEntityResolver = entityResolver;
     } // setEntityResolver(EntityResolver2)
 
-    /** Returns the SAX entity resolver (EntityResolver2). */
+    /**
+     * <p>Returns the SAX entity resolver wrapped by this object.</p>
+     * 
+     * @return the SAX entity resolver wrapped by this object
+     */
     public EntityResolver2 getEntityResolver() {
         return fEntityResolver;
     } // getEntityResolver():EntityResolver2
@@ -203,10 +215,6 @@ public class EntityResolver2Wrapper
     /**
      * <p>EntityResolver2 like interface to be removed once 
      * the real interface (org.xml.sax.ext.EntityResolver2) is available.</p>
-     * 
-     * @author Michael Glavassevich, IBM
-     * 
-     * @version $Id$
      */
     public interface EntityResolver2 extends EntityResolver {
         public InputSource getExternalSubset(String name, String baseURI)
@@ -214,5 +222,6 @@ public class EntityResolver2Wrapper
         public InputSource resolveEntity(String name, String publicId,
             String baseURI, String systemId)
             throws SAXException, IOException;
-    }
-}
+    } // interface EntityResolver2
+    
+} // class EntityResolver2Wrapper
