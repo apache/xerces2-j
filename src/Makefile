@@ -181,6 +181,14 @@ samples: ../bin/${SAMPLESJARFILE}
 	${MKDIR}  ../class/ui
 	${CP}  ../samples/ui/*.class  ../class/ui
 
+
+#-samples/util
+
+	${MKDIR}  ../class/util
+	${CP}  ../samples/util/*.class  ../class/util
+
+
+
 #Make the second jar file
 
 	cd ../class;$(JAR) c0vf ../bin/${SAMPLESJARFILE} Xerces_Ver_${PRODUCTVERSION}.info dom sax ui;cd ../src
@@ -351,6 +359,14 @@ package_src:
 	${MKDIR}  ../source/samples/ui
 	${CP}  ../samples/ui/*.java  ../source/samples/ui
 
+
+#-samples/util
+
+	${MKDIR}  ../source/samples/util
+	${CP}  ../samples/util/*.java  ../source/samples/util
+
+
+
 #########################################
 #copy the Makefiles under src
 
@@ -516,6 +532,12 @@ package_src:
 
 	${MKDIR}  ../source/samples/ui
 	${CP}  ../samples/ui/Makefile  ../source/samples/ui
+
+#-samples/util
+
+	${MKDIR}  ../source/samples/util
+	${CP}  ../samples/util/Makefile  ../source/samples/util
+
 
 ###
 #copy higher levels Makefiles
