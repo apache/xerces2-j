@@ -641,7 +641,6 @@ public class XMLSchemaValidator
         }
 
         handleCharacters(text);
-        
         // call handlers
         if (fDocumentHandler != null) {
             if (fUnionType) {
@@ -1451,7 +1450,7 @@ public class XMLSchemaValidator
         if (DEBUG) {
          System.out.println("==>characters()"+fCurrentType.getTypeName()+":"+mixed);
         }
-        
+
         if (mixed || fWhiteSpace !=-1 || fUnionType) {
             // don't check characters: since it is either
             // a) mixed content model - we don't care if there were some characters
@@ -2422,7 +2421,7 @@ public class XMLSchemaValidator
                 augs.putItem(Constants.ATTRIBUTE_PSVI, attrPSVI);
             }
             // PSVI attribute: validation context
-            attrPSVI.fValidationContext = element.rawname;
+            attrPSVI.fValidationContext = fValidationRoot;
         }
 
         // add default attributes
@@ -2444,32 +2443,30 @@ public class XMLSchemaValidator
         if (fCurrentType == null || fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             int attCount = attributes.getLength();
 
-            // REVISIT: what should be PSVI info for those?
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
                 // get attribute PSVI
                 attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
-                // PSVI: validation attempted, validity
-                attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
-                attrPSVI.fValidity = AttributePSVI.VALID_VALIDITY;
-                // PSVI: normalized value is equal to the one supplied by xmlattributes
-                attrPSVI.fNormalizedValue = attributes.getValue(index);
+                // for the 4 xsi attributes, get appropriate decl, and validate
                 if (fTempQName.uri == URI_XSI) {
-                    if (fTempQName.localpart != XSI_SCHEMALOCATION &&
-                        fTempQName.localpart != XSI_NONAMESPACESCHEMALOCATION &&
-                        fTempQName.localpart != XSI_NIL &&
-                        fTempQName.localpart != XSI_TYPE) {
-
-                        // PSVI: attribute is invalid, record errors
-                        attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-                        attrPSVI.addErrorCode("cvc-type.3.1.1");
-                        reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname});
+                    XSAttributeDecl attrDecl = null;
+                    if (fTempQName.localpart == XSI_SCHEMALOCATION)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_SCHEMALOCATION);
+                    else if (fTempQName.localpart == XSI_NONAMESPACESCHEMALOCATION)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NONAMESPACESCHEMALOCATION);
+                    else if (fTempQName.localpart == XSI_NIL)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NIL);
+                    else if (fTempQName.localpart == XSI_TYPE)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_TYPE);
+                    if (attrDecl != null) {
+                        processOneAttribute(element, attributes.getValue(index),
+                                            attrDecl, null, attrPSVI);
+                        continue;
                     }
                 }
-                else if (fTempQName.rawname != XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
-                    // PSVI: attribute is invalid, record errors
-                    attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-                    attrPSVI.addErrorCode("cvc-type.3.1.1");
+
+                // for all other attributes, no_validation/unknow_validity
+                if (fTempQName.rawname != XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
                     reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname});
                 }
             }
@@ -2490,29 +2487,33 @@ public class XMLSchemaValidator
         // 3 For each attribute information item in the element information item's [attributes] excepting those whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation, the appropriate case among the following must be true:
         // get the corresponding attribute decl
         for (int index = 0; index < attCount; index++) {
-
+            attributes.getName(index, fTempQName);
             // get attribute PSVI
             attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
-            // PSVI: set Attribute valid and attempted validation to full.
-            attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
-            attrPSVI.fValidity = AttributePSVI.VALID_VALIDITY;
-            // PSVI: normalized value is equal to the one supplied by xmlattributes
-            //       need to fill in for xsi: attributes
-            attrPSVI.fNormalizedValue = attributes.getValue(index);
 
-            attributes.getName(index, fTempQName);
-            // if it's from xsi namespace, it must be one of the four
+            // for the 4 xsi attributes, get appropriate decl, and validate
             if (fTempQName.uri == URI_XSI) {
-                if (fTempQName.localpart == XSI_SCHEMALOCATION ||
-                    fTempQName.localpart == XSI_NONAMESPACESCHEMALOCATION ||
-                    fTempQName.localpart == XSI_NIL ||
-                    fTempQName.localpart == XSI_TYPE) {
+                XSAttributeDecl attrDecl = null;
+                if (fTempQName.localpart == XSI_SCHEMALOCATION)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_SCHEMALOCATION);
+                else if (fTempQName.localpart == XSI_NONAMESPACESCHEMALOCATION)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NONAMESPACESCHEMALOCATION);
+                else if (fTempQName.localpart == XSI_NIL)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NIL);
+                else if (fTempQName.localpart == XSI_TYPE)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_TYPE);
+                if (attrDecl != null) {
+                    processOneAttribute(element, attributes.getValue(index),
+                                        attrDecl, null, attrPSVI);
                     continue;
                 }
             }
-            else if (fTempQName.rawname == XMLNS || fTempQName.rawname.startsWith("xmlns:")) {
+            
+            // for namespace attributes, no_validation/unknow_validity
+            if (fTempQName.rawname == XMLNS || fTempQName.rawname.startsWith("xmlns:")) {
                 continue;
             }
+            
             // it's not xmlns, and not xsi, then we need to find a decl for it
             XSAttributeUse currUse = null;
             for (int i = 0; i < useCount; i++) {
@@ -2536,10 +2537,6 @@ public class XMLSchemaValidator
                     !attrWildcard.allowNamespace(fTempQName.uri)) {
                     // so this attribute is not allowed
                     reportSchemaError("cvc-complex-type.3.2.2", new Object[]{element.rawname, fTempQName.rawname});
-
-                    // PSVI: attribute is invalid, record errors
-                    attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-                    attrPSVI.addErrorCode("cvc-complex-type.3.2.2");
                     continue;
                 }
             }
@@ -2554,8 +2551,7 @@ public class XMLSchemaValidator
                 if (attrWildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP)
                     continue;
 
-
-        //try to find grammar by different means...
+                //try to find grammar by different means...
                 SchemaGrammar grammar = findSchemaGrammar( XSDDescription.CONTEXT_ATTRIBUTE , fTempQName.uri , element , fTempQName , attributes);
 
                 if (grammar != null){
@@ -2567,9 +2563,6 @@ public class XMLSchemaValidator
                     // if strict, report error
                     if (attrWildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT){
                         reportSchemaError("cvc-complex-type.3.2.2", new Object[]{element.rawname, fTempQName.rawname});
-                        // PSVI: attribute is invalid, record errors
-                        attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-                        attrPSVI.addErrorCode("cvc-complex-type.3.2.2");
                     }
 
                     // then continue to the next attribute
@@ -2593,98 +2586,101 @@ public class XMLSchemaValidator
                 }
             }
 
-            // Attribute Locally Valid
-            // For an attribute information item to be locally valid with respect to an attribute declaration all of the following must be true:
-            // 1 The declaration must not be absent (see Missing Sub-components (5.3) for how this can fail to be the case).
-            // 2 Its {type definition} must not be absent.
-            // 3 The item's normalized value must be locally valid with respect to that {type definition} as per String Valid (3.14.4).
-            // get simple type
-            XSSimpleType attDV = currDecl.fType;
-
-            // PSVI: attribute declaration
-            attrPSVI.fDeclaration = currDecl;
-            // PSVI: attribute type
-            attrPSVI.fTypeDecl = attDV;
-
-            // PSVI: validation attempted:
-            attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
-
             // needed to update type for DOM Parser to implement getElementById
-            if (attributes.getType(index).equals("CDATA")) {
-                String type = (currDecl.fType.isIDType())?"ID":"CDATA";
-                attributes.setType(index, type);
+            // REVISIT: shouldn't change attribute type, because it's only for DTD
+            if (attributes.getType(index).equals("CDATA") &&
+                currDecl.fType.isIDType()) {
+                attributes.setType(index, "ID");
             }
-
-            // get attribute value
-            String attrValue = attributes.getValue(index);
-
-            Object actualValue = null;
-            try {
-                actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
-                // PSVI: attribute normalized value
-                attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
-                // PSVI: attribute memberType
-                attrPSVI.fMemberType = fValidatedInfo.memberType;
-                // PSVI: element notation
-                if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
-                    ((XSAtomicSimpleType)attDV).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION){
-                   QName qName = (QName)actualValue;
-                   SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
-
-
-                   //REVISIT: is it possible for the notation to be in different namespace than the attribute
-                   //with which it is associated, CHECK !!  <fof n1:att1 = "n2:notation1" ..>
-                   // should we give chance to the application to be able to  retrieve a grammar - nb
-                   //REVISIT: what would be the triggering component here.. if it is attribute value that
-                   // triggered the loading of grammar ?? -nb
-
-                   if (grammar != null)
-                       fCurrentPSVI.fNotation = grammar.getNotationDecl(qName.localpart);
-                }
-            }
-            catch (InvalidDatatypeValueException idve) {
-
-                // PSVI: attribute is invalid, record errors
-                attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-                attrPSVI.addErrorCode("cvc-attribute.3");
-                reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
-            }
-
-            // get the value constraint from use or decl
-            // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
-            if (actualValue != null &&
-                currDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE) {
-                if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){
-
-                    // PSVI: attribute is invalid, record errors
-                    attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-                    attrPSVI.addErrorCode("cvc-attribute.4");
-                    reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
-                }
-            }
-
-            // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an absent {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be valid with respect to that attribute use as per Attribute Locally Valid (Use) (3.5.4). In this case the {attribute declaration} of that attribute use is the context-determined declaration for the attribute information item with respect to Schema-Validity Assessment (Attribute) (3.2.4) and Assessment Outcome (Attribute) (3.2.5).
-            if (actualValue != null &&
-                currUse != null && currUse.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
-                if (!attDV.isEqual(actualValue, currUse.fDefault.actualValue)){
-                    // PSVI: attribute is invalid, record errors
-                    attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-                    attrPSVI.addErrorCode("cvc-complex-type.3.1");
-                    reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
-                }
-            }
+    
+            processOneAttribute(element, attributes.getValue(index),
+                                currDecl, currUse, attrPSVI);
         } // end of for (all attributes)
 
         // 5.2 If wild IDs is non-empty, there must not be any attribute uses among the {attribute uses} whose {attribute declaration}'s {type definition} is or is derived from ID.
         if (attrGrp.fIDAttrName != null && wildcardIDName != null){
             // PSVI: attribute is invalid, record errors
-            attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
-            attrPSVI.addErrorCode("cvc-complex-type.3.1");
             reportSchemaError("cvc-complex-type.5.2", new Object[]{element.rawname, wildcardIDName, attrGrp.fIDAttrName});
         }
 
     } //processAttributes
 
+    void processOneAttribute(QName element, String attrValue,
+                             XSAttributeDecl currDecl, XSAttributeUse currUse,
+                             AttributePSVImpl attrPSVI) {
+        // Attribute Locally Valid
+        // For an attribute information item to be locally valid with respect to an attribute declaration all of the following must be true:
+        // 1 The declaration must not be absent (see Missing Sub-components (5.3) for how this can fail to be the case).
+        // 2 Its {type definition} must not be absent.
+        // 3 The item's normalized value must be locally valid with respect to that {type definition} as per String Valid (3.14.4).
+        // get simple type
+        XSSimpleType attDV = currDecl.fType;
+    
+        // PSVI: attribute declaration
+        attrPSVI.fDeclaration = currDecl;
+        // PSVI: attribute type
+        attrPSVI.fTypeDecl = attDV;
+    
+        // PSVI: validation attempted:
+        attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
+        attrPSVI.fValidity = AttributePSVI.VALID_VALIDITY;
+    
+        Object actualValue = null;
+        try {
+            actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
+            // PSVI: attribute normalized value
+            attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
+            // PSVI: attribute memberType
+            attrPSVI.fMemberType = fValidatedInfo.memberType;
+            // PSVI: element notation
+            if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
+                ((XSAtomicSimpleType)attDV).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION){
+               QName qName = (QName)actualValue;
+               SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
+    
+               //REVISIT: is it possible for the notation to be in different namespace than the attribute
+               //with which it is associated, CHECK !!  <fof n1:att1 = "n2:notation1" ..>
+               // should we give chance to the application to be able to  retrieve a grammar - nb
+               //REVISIT: what would be the triggering component here.. if it is attribute value that
+               // triggered the loading of grammar ?? -nb
+    
+               if (grammar != null)
+                   fCurrentPSVI.fNotation = grammar.getNotationDecl(qName.localpart);
+            }
+        }
+        catch (InvalidDatatypeValueException idve) {
+    
+            // PSVI: attribute is invalid, record errors
+            attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
+            attrPSVI.addErrorCode("cvc-attribute.3");
+            reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+        }
+    
+        // get the value constraint from use or decl
+        // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
+        if (actualValue != null &&
+            currDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE) {
+            if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){
+    
+                // PSVI: attribute is invalid, record errors
+                attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
+                attrPSVI.addErrorCode("cvc-attribute.4");
+                reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+            }
+        }
+    
+        // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an absent {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be valid with respect to that attribute use as per Attribute Locally Valid (Use) (3.5.4). In this case the {attribute declaration} of that attribute use is the context-determined declaration for the attribute information item with respect to Schema-Validity Assessment (Attribute) (3.2.4) and Assessment Outcome (Attribute) (3.2.5).
+        if (actualValue != null &&
+            currUse != null && currUse.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
+            if (!attDV.isEqual(actualValue, currUse.fDefault.actualValue)){
+                // PSVI: attribute is invalid, record errors
+                attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
+                attrPSVI.addErrorCode("cvc-complex-type.3.1");
+                reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+            }
+        }
+    }
+    
     void addDefaultAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
         // Check after all specified attrs are scanned
         // (1) report error for REQUIRED attrs that are missing (V_TAGc)
@@ -2752,7 +2748,7 @@ public class XMLSchemaValidator
 
                 attrPSVI.fSpecified = false;
                 // PSVI attribute: validation context
-                attrPSVI.fValidationContext = element.rawname;
+                attrPSVI.fValidationContext = fValidationRoot;
             }
 
         } // for
@@ -2968,14 +2964,12 @@ public class XMLSchemaValidator
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
 
                     if (fDocumentHandler != null && fUnionType) {
-                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
                         fDocumentHandler.characters(fXMLString, fAugmentations);
                     }
                 }
                 catch (InvalidDatatypeValueException e) {
                     if (fDocumentHandler != null && fUnionType) {
                         fCurrentPSVI.fNormalizedValue = null;
-                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
                         fDocumentHandler.characters(fXMLString, fAugmentations);
 
                     }
