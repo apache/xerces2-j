@@ -968,7 +968,7 @@ Copyright:
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java **/v1/** **/v2/**
               	       org/apache/xerces/dom3/*.java
-              	       org/apache/xerces/dom3/ls
+              	       org/apache/xerces/dom3/ls/**
                        org/w3c/dom/*.java">
         </fileset>
     </copy>
