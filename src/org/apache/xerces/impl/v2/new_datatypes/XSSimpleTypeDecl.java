@@ -60,6 +60,7 @@ package org.apache.xerces.impl.v2.new_datatypes;
 import org.apache.xerces.impl.v2.XSTypeDecl;
 import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
 import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
+import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.msg.XMLMessages;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XIntPool;
@@ -402,9 +403,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
                         fEnumeration[i] = getCompiledValue(enumVals[i]);
                     } catch (InvalidDatatypeValueException ide) {
                         reportError("Value of enumeration '" + enumVals[i] + "' must be from the value space of base");
-                        fEnumeration[i] = "";
-                        //REVISIT: uncomment it.
-                        //fEnumeration[i] = XSDHandler.EMPTY_STRING;
+                        fEnumeration[i] = SchemaSymbols.EMPTY_STRING;
                     }
                 }
                 fFacetsDefined |= DEFINED_ENUMERATION;
@@ -1071,7 +1070,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
 
         int length = fDVs[fValidateDV].getDataLength(ob);
 
-	      // maxLength
+          // maxLength
         if ( (fFacetsDefined & DEFINED_MAXLENGTH) != 0 ) {
             if ( length > fMaxLength ) {
                 reportError("Value '"+content+
@@ -1080,7 +1079,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
             }
         }
 
-	      //minLength
+          //minLength
         if ( (fFacetsDefined & DEFINED_MINLENGTH) != 0 ) {
             if ( length < fMinLength ) {
                 reportError("Value '"+content+
@@ -1089,7 +1088,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
             }
         }
 
-	      //length
+          //length
         if ( (fFacetsDefined & DEFINED_LENGTH) != 0 ) {
             if ( length != fLength ) {
                 reportError("Value '"+content+
@@ -1098,7 +1097,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
             }
         }
 
-	      //enumeration
+          //enumeration
 
         if ( ((fFacetsDefined & DEFINED_ENUMERATION) != 0 )&&
              (fEnumeration != null) ) {
@@ -1119,7 +1118,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
 
 
 
-	      //fractionDigits
+          //fractionDigits
         if ((fFacetsDefined & DEFINED_FRACTIONDIGITS) != 0) {
         int scale = fDVs[fValidateDV].getFractionDigits(ob);
             if (scale > fFractionDigits) {
@@ -1133,7 +1132,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
             }
         }
 
-	      //totalDigits
+          //totalDigits
         if ((fFacetsDefined & DEFINED_TOTALDIGITS)!=0) {
             int totalDigits = fDVs[fValidateDV].getTotalDigits(ob);
             if (totalDigits > fTotalDigits) {
@@ -1151,7 +1150,7 @@ public class XSSimpleTypeDecl implements XSTypeDecl {
 
         // REVISIT this part for error reporting
 
-	      boolean minOk = true;
+        boolean minOk = true;
         boolean maxOk = true;
         String  upperBound="";
 

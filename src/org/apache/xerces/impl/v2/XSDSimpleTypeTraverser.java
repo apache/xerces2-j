@@ -414,7 +414,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             // reset fListName, meaning that we are done with
             // traversing <list> and its itemType resolves to atomic value
             if (fListName.equals(qualifiedName)) {
-                fListName = fSchemaHandler.EMPTY_STRING;
+                fListName = SchemaSymbols.EMPTY_STRING;
             }
         }
         if (restriction && content != null) {
@@ -445,7 +445,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
     private void reportCosListOfAtomic () {
         reportGenericSchemaError("cos-list-of-atomic: The itemType must have a {variety} of atomic or union (in which case all the {member type definitions} must be atomic)");
-        fListName=fSchemaHandler.EMPTY_STRING;
+        fListName=SchemaSymbols.EMPTY_STRING;
     }
 
     //@param: elm - top element

@@ -79,7 +79,6 @@ import java.util.Stack;
 
 class XSDocumentInfo {
 
-    private static String EMPTY_STRING = "";
     // Data
     protected SchemaNamespaceSupport fNamespaceSupport;
     protected SchemaNamespaceSupport fNamespaceSupportRoot;

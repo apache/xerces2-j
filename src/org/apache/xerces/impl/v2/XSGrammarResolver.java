@@ -66,15 +66,13 @@ import java.util.Hashtable;
  */
 class XSGrammarResolver {
 
-    // Constants
-    private static String EMPTY_STRING = "";
-
     // Data
 
     /**
      * Hashtable that maps between Namespace and a Grammar
      */
     private Hashtable fGrammarRegistry = new Hashtable();
+    private SchemaGrammar fNoNSGrammar = null;
 
     /**
      * Get the schema grammar for the specified namespace
@@ -83,8 +81,8 @@ class XSGrammarResolver {
      * @return SchemaGrammar associated with the namespace
      */
     public SchemaGrammar getGrammar(String namespace) {
-        if(namespace == null)
-            return(SchemaGrammar)fGrammarRegistry.get(EMPTY_STRING);
+        if (namespace == null)
+            return fNoNSGrammar;
         return (SchemaGrammar)fGrammarRegistry.get(namespace);
     }
 
@@ -94,8 +92,8 @@ class XSGrammarResolver {
      * @param grammar   the grammar to put in the registry
      */
     public void putGrammar(SchemaGrammar grammar) {
-        if(grammar.getTargetNamespace() == null)
-            fGrammarRegistry.put(EMPTY_STRING, grammar);
+        if (grammar.getTargetNamespace() == null)
+            fNoNSGrammar = grammar;
         else
             fGrammarRegistry.put(grammar.getTargetNamespace(), grammar);
     }
@@ -110,7 +108,10 @@ class XSGrammarResolver {
      * @param grammar   the grammar to put in the registry
      */
     public void putGrammar(String namespace, SchemaGrammar grammar) {
-        fGrammarRegistry.put(namespace, grammar);
+        if (namespace == null)
+            fNoNSGrammar = grammar;
+        else
+            fGrammarRegistry.put(namespace, grammar);
     }
 
     /**
@@ -120,6 +121,8 @@ class XSGrammarResolver {
      * @return boolean true if contains
      */
     public boolean contains(String namespace) {
+        if (namespace == null)
+            return (fNoNSGrammar != null);
         return fGrammarRegistry.containsKey(namespace);
     }
 
@@ -128,6 +131,7 @@ class XSGrammarResolver {
      * REVISIT: update to use another XMLGrammarResolver
      */
     public void reset() {
+        fNoNSGrammar = null;
         fGrammarRegistry.clear();
     }
 

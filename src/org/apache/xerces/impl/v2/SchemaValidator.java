@@ -1073,8 +1073,8 @@ public class SchemaValidator
             }
         }
         if (nsLocation != null) {
-            if (fGrammarResolver.getGrammar(fSchemaHandler.EMPTY_STRING) == null)
-                fSchemaHandler.parseSchema(fSchemaHandler.EMPTY_STRING, nsLocation);
+            if (fGrammarResolver.getGrammar(null) == null)
+                fSchemaHandler.parseSchema(null, nsLocation);
         }
 
         // get the element decl for this element

@@ -1332,7 +1332,7 @@ public class XSAttributeChecker {
                 wildcard.fType = XSWildcardDecl.WILDCARD_OTHER;
                 wildcard.fNamespaceList = new String[2];
                 wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
-                wildcard.fNamespaceList[1] = fSchemaHandler.EMPTY_STRING;
+                wildcard.fNamespaceList[1] = null;
             } else {
                 // list
                 wildcard = new XSWildcardDecl();

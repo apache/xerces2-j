@@ -118,6 +118,11 @@ class XSDHandler {
     // as unlikely as possible to cause collisions.
     public final static String REDEF_IDENTIFIER = "_fn3dktizrknc9pi";
 
+    // please note the difference between SchemaHandler.EMPTY_STRING and
+    // SchemaSymbols.EMPTY_STRING:
+    //   the one in SchemaHandler is only for namespace binding purpose, it's
+    //   used as a legal prefix, and it's added to the current symbol table;
+    //   while the one in SchemaSymbols is for general purpose: just empty.
     public String EMPTY_STRING;
 
     //
@@ -284,10 +289,7 @@ class XSDHandler {
             return null;
         }
         // handle empty string URI as null
-        if (schemaNamespace.length() == 0) {
-            schemaNamespace = null;
-        }
-        else {
+        if (schemaNamespace != null) {
             schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
         }
         fRoot = constructTrees(schemaRoot, schemaNamespace);
@@ -303,19 +305,13 @@ class XSDHandler {
         // third phase:  call traversers
         traverseSchemas();
 
-        // fourth:  handle substitution group declarations
-        // we defer substitution group handling for circular substitution
-        // REVISIT: wait until we are sure that such circular referencence
-        //          is allowed.
-        //fElementTraverser.resolveSubstitutionGroup();
-
-        // fifth phase: handle local element decls
+        // fourth phase: handle local element decls
         traverseLocalElements();
 
-        // sixth phase:  handle Keyrefs
+        // fifth phase:  handle Keyrefs
         resolveKeyRefs();
 
-        // seventh phase:  handle derivation constraint checking
+        // sixth phase:  handle derivation constraint checking
         // and UPA, and validate attribute of non-schema namespaces
         // REVISIT: skip this for now. we reall don't want to do it.
         //fAttributeChecker.checkNonSchemaAttributes(fGrammarResolver);
@@ -394,6 +390,9 @@ class XSDHandler {
                 Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
+                // schemaLocation is required on <include> and <redefine>
+                if (schemaHint == null)
+                    reportGenericSchemaError("schemaLocation attribute must appear in <include> and <redefine>");
                 newSchemaRoot = getSchema(null, schemaHint);
                 schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
@@ -417,8 +416,10 @@ class XSDHandler {
                 // rename the right things later!
                 fRedefine2XSDMap.put(child, newSchemaInfo);
             }
-            dependencies.addElement(newSchemaInfo);
-            newSchemaRoot = null;
+            if (newSchemaRoot != null) {
+                dependencies.addElement(newSchemaInfo);
+                newSchemaRoot = null;
+            }
         }
         fDependencyMap.put(currSchemaInfo, dependencies);
         return currSchemaInfo;
@@ -873,13 +874,21 @@ class XSDHandler {
         Document schemaDoc = null;
         try {
             schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
-            if (schemaSource != null) {
+            // REVISIT: when the system id of the input source is null, it's
+            //          impossible to find the schema document. so we skip in
+            //          this case. otherwise we'll receive some NPE or
+            //          file not found errors. but schemaHint=="" is perfectly
+            //          legal for import.
+            //          this checking should be done in EntityManager (our
+            //          default entity resolver). but it's not clear to me
+            //          whether the same applies for DTD.
+            if (schemaSource != null && schemaSource.getSystemId() != null) {
                 StringBuffer schemaIdBuf = new StringBuffer();;
                 if(schemaSource.getPublicId() != null)
                     schemaIdBuf.append(schemaSource.getPublicId());
                 if(schemaSource.getSystemId() != null)
                     schemaIdBuf.append(schemaSource.getSystemId());
-                if(schemaIdBuf.equals(EMPTY_STRING))
+                if(schemaIdBuf.length() == 0)
                     schemaIdBuf.append(schemaSource.getBaseSystemId());
                 String schemaId =
                     fSymbolTable.addSymbol(schemaIdBuf.toString());
@@ -895,10 +904,12 @@ class XSDHandler {
                 return schemaDoc;
             }
 
-        }
-        catch (IOException ex) {
+        } catch (java.io.FileNotFoundException ex) {
+            // REVISIT: how to report an error for missing files
+            reportGenericSchemaError("file not found: " + schemaHint);
+        } catch (IOException ex) {
             // REVISIT: report an error!
-            ex.printStackTrace();
+            reportGenericSchemaError("error reading schema document: " + schemaHint);
         }
 
         schemaDoc = null;
@@ -934,7 +945,7 @@ class XSDHandler {
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
 
-        EMPTY_STRING = fSymbolTable.addSymbol("");
+        EMPTY_STRING = fSymbolTable.addSymbol(SchemaSymbols.EMPTY_STRING);
 
         try {
             fSchemaParser.setProperty(SchemaValidator.ERROR_REPORTER, fErrorReporter);
