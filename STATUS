@@ -1,54 +1,23 @@
-This is the Status file for the Xerces for Java code base. 
+This is the Status file for the Xerces for Java code base.
+This file provides an overview of the things that need to
+be done. However, specific action items are enumerated in
+the TODO file.
 
 There are lots of things that need to be done: 
 
-* Additional Support for W3C XML schema.  (andyc, ericy, jeffr are
-	working on it)
+* Performance, performance, performance!
+* Conformance, conformance, conformance!
+* Kill bugs
 
-* Figuring out what support for DTD access should look like.  This
-  version of Xerces supports access to the DTD via a special node in
-  the DOM tree.  There's also room for a more programmatic API to the
-  DTD / Schema.  This is a meaty one, and would be a good place for
-  somebody to jump in and help.
+* W3C XML Schema support
+* Grammar caching
+* Grammar access
+* Re-validation
+* Pull parsing
 
-* Enabling support for a DTD Caching mechanism.  This would be
-  especially beneficial in a server environment.  Part of the work
-  that helps Schema will help this. 
+* Documentation
+* Samples
+* Scripts to build parser subconfigurations
+* Additional configuration options
 
-* Revalidation architecture work (i.e. How to validate, after a DOM
-  tree has been edited - we used to be able to do this...)
-
-* DOM Write validation (i.e. what is legal to insert here?)
-
-* refinement and extension of the incremental parsing API
-
-* scripts to build parser subconfigurations (i.e. if I don't need
-  WML/WAP, take it out of the jar)
-
-* additional configuration options.
-
-* performance, performance, performance.  Always need help here.
-
-* conformance, conformance, conformance.  We're pretty darn good, but
-  we can always do better.
-
-* a bunch of things that haven't been thought of yet.
-
-* more documentation.  The docs need to be updated, especially the FAQ.
-
-* more samples (lots, especially code fragments that accomplish specific
-  tasks)
-
-* kill bugs (always)
-
-* Major work on the build system.
-  
-  ANT vs Makefiles is the current discussion
-  Is ANT ready for us to use?  It has to get beyond the "compile everything"
-  stage, because we have files (e.g. for Schema) that should NOT be compiled
-  into the build yet.
-
-* Hook up JavaScript DOM API tests (see http://www.nist.gov/xml)
-
-* JAXP Wrappers for Xerces
-  [pending resolution of licensing issues]
+* Anything else?

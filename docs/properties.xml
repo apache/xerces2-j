@@ -1,166 +1,171 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE properties SYSTEM 'dtd/settings.dtd'>
+<properties>
+ <desc name='Setting Properties'>
+  <p>
+   If you have created a DOM document builder or a SAX parser using
+   the JAXP interfaces, you may have difficulty setting features and
+   properties directly using those interfaces. The following
+   instructions tell you how to set properties on document builders
+   and SAX parsers created from the JAXP interfaces.
+  </p>
+  <p>
+   The DocumentBuilderFactory interface contains a 
+   <code>setAttribute(String,Object)</code> method which <em>may</em>
+   provide a means to set features and properties on the underyling
+   parser. However, it cannot be relied upon. Therefore, you must
+   use the Xerces DOMParser object directly. For example:
+  </p>
+  <source>import org.apache.xerces.parsers.DOMParser;
+import org.xml.sax.SAXException;
+  
+DOMParser parser = new DOMParser();
 
-<s1 title="Properties">
-	<s2 title="Setting Features">
-    <anchor name="properties"/>
-		<p>To set a property on either org.apache.xerces.parsers.SAXParser 
-		or org.apache.xerces.parsers.DOMParser, you should use the SAX2 
-		method <code>setProperty(String,Object)</code>. To query a
-		property, use the SAX2 method <code>getProperty(String)</code>.</p>
-		<p>For example, to set the document factory by name:</p>
-<source>DOMParser p=new DOMParser();
-try {        
-  p.setProperty("http://apache.org/xml/properties/dom/document-class-name",
-                "org.apache.xerces.dom.DocumentImpl");
-} catch (SAXException e) {
-  System.out.println("error in setting up parser property");             
+String id    = "http://apache.org/xml/properties/dom/document-class-name";
+Object value = "org.apache.xerces.dom.DocumentImpl";
+try {
+    parser.setProperty(id, value);
+} 
+catch (SAXException e) {
+    System.err.println("could not set parser feature");
 }</source>
-	</s2>
-	
-	<s2 title="General Properties">
-		<!--
-		<anchor name="namespace-sep"/>
-		<p>http://xml.org/sax/properties/namespace-sep</p>
-		<table>
-			<tr><th>Type:</th>		<td>java.lang.String</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>		<td>The separator string that will appear between the namespace 
-									URI and the local part of the name when namespace processing is being 
-									performed. If the value is the empty string, the two parts will be 
-									concatenated. </td></tr>
-			<tr><th>  Default:  </th>	<td>""</td></tr>
-			<tr><th>See:</th>		<td><link idref="features" anchor="namespaces">http://xml.org/sax/features/namespaces</link></td></tr>
-		</table>
-		-->
-		
-		<anchor name="xml-string"/>
-		<p>http://xml.org/sax/properties/xml-string</p>
-		<table>
-			<tr><th>Type:</th>		<td>java.lang.String</td></tr>
-			<tr><th>Access:</th>	<td>read-only</td></tr>
-			<tr><th>Desc:</th>		<td>Get the string of characters associated with the current event. If the 
-									   parser recognizes and supports this property but is not currently 
-									   parsing text, it should return null.</td></tr>
-			<tr><th>Note:</th>		<td>This property is currently not supported because the contents of the 
-   										XML string returned by this property is not well defined.</td></tr>
-		</table>
-                
-                <anchor name="xml-string"/>
-		<p>http://apache.org/xml/properties/schema/external-schemaLocation</p>
-		<table>
-			<tr><th>Type:</th>      <td>java.lang.String</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>	<td>The XML Schema Recommendation explicitly states that the inclusion of schemaLocation/ noNamespaceSchemaLocation attributes is only a hint; it does not mandate 
-                        that these attributes must be used to locate schemas. This property 
-                        allows the user to specify a list of schemas to use.  
-                        If the targetNamespace of a schema (specified using this property)  
-                        matches the targetNamespace of a schema occuring in the instance document 
-                        in schemaLocation attribute, the schema specified by the user using this 
-                        property will be used (i.e., the instance document&apos;s schemaLocation attribute will be effectively ignored).
-                                                </td></tr>
-			<tr><th>Note:</th>	<td>The syntax is the same as for schemaLocation attributes in
-                        instance documents: e.g, "http://www.example.com file_name.xsd".
-                        The user can specify more than one XML Schema in the list.                         
-                        </td></tr>
-		</table>
-                
-                <anchor name="xml-string"/>
-		<p>http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation</p>
-		<table>
-			<tr><th>Type:</th>      <td>java.lang.String</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>	<td>This property allows the user to specify an XML Schema with no namespace. 
-                                                </td></tr>
-			<tr><th>Note:</th>	<td>The syntax is a same as for the noNamespaceSchemaLocation
-                         attribute that may occur in an instance document:
-                        e.g."file_name.xsd". The user may specify only one XML Schema. For more information see the documentation for the 
-                        http://apache.org/xml/properties/schema/external-schemaLocation
-                        property</td></tr>
-		</table>
+  <p>
+   Using the SAXParser interface in JAXP is better because you can
+   query the underlying XMLReader implementation directly and that
+   interface contains methods to set and query features and 
+   properties. For example:
+  </p>
+  <source>import javax.xml.parsers.SAXParser;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
-	</s2>
-	
-	<s2 title="DOM Parser Properties">
-		<anchor name="current-element-node"/>
-		<p>http://apache.org/xml/properties/dom/current-element-node</p>
-		<table>
-			<tr><th>Type:</th>		<td>org.w3c.dom.Node</td></tr>
-			<tr><th>Access:</th>	<td>read-only</td></tr>
-			<tr><th>Desc:</th>		<td>The current DOM element node while parsing.</td></tr>
-			<tr><th>Note:</th>		<td>This property is useful for determining the location 
-									with a DOM document when an error occurs.</td></tr>
-			<tr><th>See:</th>		<td><link anchor="dom-node">http://xml.org/sax/properties/dom-node</link></td></tr>
-		</table>
-		
-		<anchor name="document-class-name"/>
-		<p>http://apache.org/xml/properties/dom/document-class-name</p>
-		<table>
-			<tr><th>Type:</th>		<td>java.lang.String</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>		<td>The fully qualified class name of the DOM 
-									implementation. The implementation used must 
-									have a zero argument constructor.</td></tr>
-			<tr><th>Default:</th>	<td>"org.apache.xerces.dom.DocumentImpl"</td></tr>
-			<tr><th>Note:</th>		<td>When the document class name is set to a value other 
-									than the name of the default document factory, the 
-									deferred node expansion feature does not work. </td></tr>
-			<tr><th>See:</th>		<td><link idref="features" anchor="defer-node-expansion">http://apache.org/xml/features/dom/defer-node-expansion</link></td></tr>
-		</table>
-	</s2>
-	
-	<s2 title="SAX Parser Properties">
-		<!--
-		<anchor name="DeclHandler"/>
-		<p>http://xml.org/sax/handlers/DeclHandler</p>
-		<table>
-			<tr><th>Type:</th>		<td>org.xml.sax.misc.DeclHandler</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>		<td>Set the handler for DTD declarations.</td></tr>
-		</table>
-		
-		<anchor name="LexicalHandler"/>
-		<p>http://xml.org/sax/handlers/LexicalHandler</p>
-		<table>
-			<tr><th>Type:</th>		<td>org.xml.sax.misc.LexicalHandler</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>		<td>Set the handler for lexical parsing events.</td></tr>
-		</table>
-		
-		<anchor name="NamespaceHandler"/>
-		<p>http://xml.org/sax/handlers/NamespaceHandler</p>
-		<table>
-			<tr><th>Type:</th>		<td>org.xml.sax.misc.NamespaceHandler</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>		<td>Set the handler for lexical parsing events.</td></tr>
-		</table>
-		-->
-		<anchor name="declaration-handler"/>
-		<p>http://xml.org/sax/properties/declaration-handler</p>
-		<table>
-			<tr><th>Type:</th>		<td>org.xml.sax.ext.DeclHandler</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>		<td>Set the handler for DTD declarations.</td></tr>
-		</table>
-		
-		<anchor name="lexical-handler"/>
-		<p>http://xml.org/sax/properties/lexical-handler</p>
-		<table>
-			<tr><th>Type:</th>		<td>org.xml.sax.ext.LexicalHandler</td></tr>
-			<tr><th>Access:</th>	<td>read-write</td></tr>
-			<tr><th>Desc:</th>		<td>Set the handler for lexical parsing events.</td></tr>
-		</table>
+SAXParser parser = /* created from SAXParserFactory */;
+XMLReader reader = parser.getXMLReader();
 
-		<anchor name="dom-node"/>
-		<p>http://xml.org/sax/properties/dom-node</p>
-		<table>
-			<tr><th>Type:</th>		<td>org.w3c.dom.Node</td></tr>
-			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
-			<tr><th>Desc:</th>		<td>The DOM node currently being visited, 
-									if SAX is being used as a DOM iterator. 
-									If the parser recognizes and supports this property but is 
-									not currently visiting a DOM node, it should return null.</td></tr>
-		</table>
-		
-	</s2>
-</s1>
+String id    = "http://apache.org/xml/properties/dom/document-class-name";
+Object value = "org.apache.xerces.dom.DocumentImpl";
+try {
+    reader.setProperty(id, value);
+} 
+catch (SAXException e) {
+    System.err.println("could not set parser feature");
+}</source>
+ </desc>
+ <pcategory name='General Properties'>
+  <property name='http://xml.org/sax/properties/xml-string'
+            id='xml-string'>
+   <desc>
+    Get the string of characters associated with the current event. 
+    If the parser recognizes and supports this property but is not
+    currently parsing text, it should return null.  
+   </desc>
+   <type>java.lang.String</type>
+   <access general='read-only'/>
+   <note>
+    This property is currently not supported because the contents of
+    the XML string returned by this property is not well defined.  
+   </note>
+  </property>
+  <!--
+    - REVISIT: Reconsider adding these properties once parser has
+    -          Schema support.
+    -
+  <property name='http://apache.org/xml/properties/schema/external-schemaLocation'
+            id='schema.external-schemaLocation'>
+   <desc>
+    The XML Schema Recommendation explicitly states that the inclusion
+    of schemaLocation/ noNamespaceSchemaLocation attributes is only a 
+    hint; it does not mandate that these attributes must be used to 
+    locate schemas. This property allows the user to specify a list of
+    schemas to use. If the targetNamespace of a schema (specified 
+    using this property) matches the targetNamespace of a schema 
+    occuring in the instance document in schemaLocation attribute, the 
+    schema specified by the user using this property will be used 
+    (i.e., the instance document's schemaLocation attribute will be 
+    effectively ignored).   
+   </desc>
+   <type>java.lang.String</type>
+   <access general='read-write'/>
+   <note>
+    The syntax is the same as for schemaLocation attributes in 
+    instance documents: e.g, "http://www.example.com file_name.xsd". 
+    The user can specify more than one XML Schema in the list.   
+   </note>
+  </property>
+  <property name='http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation'
+            id='schema.external-noNamespaceSchemaLocation'>
+   <desc>
+    This property allows the user to specify an XML Schema with no 
+    namespace.
+   </desc>
+   <type>java.lang.String</type>
+   <access general='read-write'/>
+   <note>
+    The syntax is a same as for the noNamespaceSchemaLocation attribute 
+    that may occur in an instance document: e.g."file_name.xsd". The 
+    user may specify only one XML Schema. For more information see the
+    documentation for the 
+    http://apache.org/xml/properties/schema/external-schemaLocation 
+    property.
+   </note>
+  </property>
+  -->
+ </pcategory>
+ <pcategory name='DOM Properties'>
+  <property name='http://apache.org/xml/properties/dom/current-element-node'
+            id='dom.current-element-node'>
+   <desc>The current DOM element node while parsing.</desc>
+   <type>org.w3c.dom.Element</type>
+   <access general='read-only'/>
+   <note>
+    This property is useful for determining the location with a DOM
+    document when an error occurs.
+   </note>
+  </property>
+  <property name='http://apache.org/xml/properties/dom/document-class-name'
+            id='dom.document-class-name'>
+   <desc>
+    The fully qualified class name of the DOM implementation. The
+    implementation used must have a zero argument constructor.  
+   </desc>
+   <type>java.lang.String</type>
+   <default value='"org.apache.xerces.dom.DocumentImpl"'/>
+   <access general='read-write'/>
+   <note>
+    When the document class name is set to a value other than the 
+    name of the default document factory, the deferred node expansion 
+    feature does not work.   
+   </note>
+  </property>
+ </pcategory>
+ <pcategory name='SAX Properties'>
+  <property name='http://xml.org/sax/properties/declaration-handler'
+            id='declaration-handler'>
+   <desc>Set the handler for DTD declarations.</desc>
+   <type>org.xml.sax.ext.DeclHandler</type>
+   <access general='read-write'/>
+  </property>
+  <property name='http://xml.org/sax/properties/lexical-handler'
+            id='lexical-handler'>
+   <desc>Set the handler for lexical parsing events.</desc>
+   <type>org.xml.sax.ext.LexicalHandler</type>
+   <access general='read-write'/>
+  </property>
+  <property name='http://xml.org/sax/properties/dom-node'
+            id='dom-node'>
+   <desc>
+    The DOM node currently being visited, if SAX is being used as
+    a DOM iterator. If the parser recognizes and supports this 
+    property but is not currently visiting a DOM node, it should 
+    return null.  
+   </desc>
+   <type>org.w3c.dom.Node</type>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <note>
+    This property is only for SAX parser implementations used as
+    DOM tree walkers. Currently, Xerces does not have this
+    functionality.
+   </note>
+  </property>
+ </pcategory>
+</properties>

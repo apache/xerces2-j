@@ -73,7 +73,7 @@ import  java.io.*;
  * - Generate a DOM from Scratch.
  * - Output DOM to a String using Serializer
  * @author Jeffrey Rodriguez
- * @version $id$
+ * @version $Id$
  */
 public class DOMGenerate {
     public static void main( String[] argv ) {

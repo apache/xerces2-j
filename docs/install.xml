@@ -1,43 +1,127 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
-
-<s1 title="Installation">
-	<s2 title="Unpacking the files">
-		<p>&javaparsername; is packaged as a ZIP file for all
-		platforms and operating systems.  You can run the Java
-		<ref>jar</ref> command to unpack the distribution.</p>
-        <ul>
-			<li>jar xf &javaparsername;-bin.&javaparserversion;.zip</li>
-			<li>jar xf &javaparsername;-src.&javaparserversion;.zip</li>
-			<li>This command creates a "&javaparserdirectory;" sub-directory in the current directory containing all the files.</li>
-		</ul>
-	</s2>
-	<s2 title="Files in the binary package release">
-		<table>
-			<tr><td>LICENSE</td><td>License for &javaparsername;</td></tr>
-			<!--<tr><td>README</td><td>Build instructions</td></tr>-->
-			<tr><td>Readme.html</td><td>Web page redirect to docs/html/index.html</td></tr>
-			<!--<tr><td>STATUS</td><td>Project status list</td></tr>-->
-			<tr><td>xerces.jar</td><td>Jar file containing all the parser class files</td></tr>
-			<tr><td>xercesSamples.jar</td><td>Jar file containing all sample class files</td></tr>
-			<tr><td>data/</td><td>Directory containing sample XML data files</td></tr>
-			<tr><td>docs/html/</td><td>Directory containing documentation</td></tr>
-			<tr><td>docs/html/apiDocs/</td><td>Directory containing Javadoc API for parser framework</td></tr>
-		</table>
-		<note>To use &javaparsername; you do not need the source files. 
-		</note>
-	</s2>
-	<s2 title="Files in the source package release">
-		<table>
-			<tr><td>LICENSE</td><td>License for &javaparsername;</td></tr>
-			<tr><td>Makefile</td><td>Top level Makefile -- read README file before building</td></tr>
-			<tr><td>README</td><td>Build instructions</td></tr>
-			<tr><td>Readme.html</td><td>Web page redirect required for building documentation</td></tr>
-			<tr><td>STATUS</td><td>Current source code status information</td></tr>
-			<tr><td>data/</td><td>Directory containing sample XML data files</td></tr>
-			<tr><td>docs/</td><td>Directory containing documentation, in XML form</td></tr>
-			<tr><td>samples/</td><td>Directory containing source code for samples</td></tr>
-			<tr><td>src/</td><td>Directory containing source code for parser and supplemental APIs</td></tr>
-		</table>
-	</s2>
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
+<s1 title='Installation'>
+ <s2 title='Unpacking the Files'>
+  <p>
+   &ParserName; is packaged as a ZIP file for all platforms 
+   and operating systems. The parser release is also packaged
+   as Tar GZip files as a convenience for UNIX users. You can
+   extract the ZIP files using the Java <ref>jar</ref> command
+   to unpack the distribution.
+  </p>
+  <source>jar xf &ParserName;-bin.&parserversion;.zip
+jar xf &ParserName;-src.&parserversion;.zip
+jar xf &ParserName;-tools.&parserversion;.zip</source>
+  <p>
+   All of these commands creates a sub-directory called
+   "&parserdir;" in the current directory.
+  </p>
+ </s2>
+ <s2 title='Files in the Binary Package'>
+  <table>
+   <tr>
+    <td>LICENSE</td>
+    <td>License for &ParserName;</td>
+   </tr>
+   <tr>
+    <td>Readme.html</td>
+    <td>Web page redirect to docs/html/index.html</td>
+   </tr>
+   <tr>
+    <td>xerces.jar</td>
+    <td>Jar file containing all the parser class files</td>
+   </tr>
+   <tr>
+    <td>xercesSamples.jar</td>
+    <td>Jar file containing all sample class files</td>
+   </tr>
+   <tr>
+    <td>data/</td>
+    <td>Directory containing sample XML data files</td>
+   </tr>
+   <tr>
+    <td>docs/html/</td>
+    <td>Directory containing documentation</td>
+   </tr>
+   <tr>
+    <td>docs/apiDocs/</td>
+    <td>Directory containing Javadoc API for parser framework</td>
+   </tr>
+   <tr>
+    <td>samples/</td>
+    <td>Directory containing the source code for the samples</td>
+   </tr>
+  </table>
+  <note>
+   To use &ParserName; you do not need the source files. 
+   However, if you want to recompile the sources you need to
+   download the source package.
+  </note>
+ </s2>
+ <s2 title='Files in the Source Package'>
+  <table>
+   <tr>
+    <td>LICENSE</td>
+    <td>License for &ParserName;</td>
+   </tr>
+   <tr>
+    <td>build.bat</td>
+    <td>Batch file for invoking Ant build for Windows users</td>
+   </tr>
+   <tr>
+    <td>build</td>
+    <td>Shell script for invoking Ant build for UNIX users</td>
+   </tr>
+   <tr>
+    <td>build.xml</td>
+    <td>Ant build file -- read README file before building</td>
+   </tr>
+   <tr>
+    <td>README</td>
+    <td>Build instructions</td>
+   </tr>
+   <tr>
+    <td>Readme.html</td>
+    <td>Web page redirect required for building documentation</td>
+   </tr>
+   <tr>
+    <td>STATUS</td>
+    <td>Current source code status information</td>
+   </tr>
+   <tr>
+    <td>TODO</td>
+    <td>Current list of "todo" items</td>
+   </tr>
+   <tr>
+    <td>ISSUES</td>
+    <td>Current open issues that need to be resolved</td>
+   </tr>
+   <tr>
+    <td>data/</td>
+    <td>Directory containing sample XML data files</td>
+   </tr>
+   <tr>
+    <td>docs/</td>
+    <td>Directory containing documentation, in XML form</td>
+   </tr>
+   <tr>
+    <td>samples/</td>
+    <td>Directory containing source code for samples</td>
+   </tr>
+   <tr>
+    <td>src/</td>
+    <td>
+     Directory containing source code for parser and supplemental 
+     APIs
+    </td>
+   </tr>
+  </table>
+  <note>
+   In order to compile the source code using Ant or build the
+   release packages, you must download the 
+   <code>&ParserName;-tools.&parserversion;.zip</code>
+   package and extract it in the same directory where you
+   extracted the source package.
+  </note>
+ </s2>
 </s1>

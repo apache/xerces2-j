@@ -65,7 +65,7 @@ import org.apache.xerces.dom.NodeImpl;
 import org.w3c.dom.Document;
 import java.io.FileOutputStream;
 import org.w3c.dom.Node;
-import dom.DOMWriter;
+import dom.Writer;
 
 
 /**
@@ -153,9 +153,9 @@ public class TestSerializeDOMOut
             TestSerializeDOMIn    tstIn  = new TestSerializeDOMIn();
             doc           = tstIn.deserializeDOM( nameOfSerializedFile );
 
-            DOMWriter prettyWriter = new DOMWriter( false );
+            Writer prettyWriter = new Writer( false );
             System.out.println( "Here is the whole Document" );
-            prettyWriter.print(  doc.getDocumentElement() );
+            prettyWriter.write(  doc.getDocumentElement() );
         } catch ( Exception ex ){
             ex.printStackTrace();
         }

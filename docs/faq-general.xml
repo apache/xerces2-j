@@ -1,191 +1,79 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE faqs SYSTEM "./dtd/faqs.dtd">
-
-<faqs title="General FAQs">
-
-    <faq title="Validating Schemas">
-        <q>I have written a schema and I want to use Xerces to
-            validate it.  How do I do this?</q>
-        <a>
-            <p>
-            The best way to solve this problem is to write a
-            simple, valid instance document and use one of the
-            sample programs that accompanies Xerces (such as
-            sax.SAXCount or dom.DOMCount) to validate the
-            instance document.  While validating the instance
-            document, Xerces will simultaneously validate the
-            corresponding schema.  We hope to introduce
-            functionality to permit schemas to be validated
-            independently of instance documents in Xerces2.
-            </p>
-        </a>
-    </faq>
-
-	<faq title="Bugzilla">
-		<q>How do I use Bugzilla to report bugs?</q>
-		<a>
-       		         <ul>
-       		         <li>Please report bugs against the newest release.</li>
-       		         <li>If doubt exists whether the behaviour in question is a bug or a feature, 
-       		         please post a message to the xerces-j-user list for clarification.</li>
-      		         <li> To help to eliminate duplicate bug reports, 
-       		         before reporting a bug, you should
-			first query the bugzilla database to see whether the bug has already been reported (and perhaps fixed).
-			Then, checkout code from CVS, and 
-       		         build Xerces-J locally to verify that a bug still exists. </li>
-       	         </ul>
-       	         <p>For more information visit the following links:</p>
-       		         <ul>
-       		         <li><jump href="http://nagoya.apache.org/bugzilla/">
-				http://nagoya.apache.org/bugzilla/</jump></li>
-	                <li><jump href="http://www.mozilla.org/bugs/">
-                		http://www.mozilla.org/bugs/</jump></li>
-                	</ul>
-		<anchor name="bugzilla"/>
-        	 </a>
-	</faq>
-
-	<faq title="Extracting code from CVS">
-		<q>How do I extract code from CVS?</q>
-		<a>
-			<p>
-    	   		 <br/>set CVSROOT=:pserver:anoncvs@cvs.apache.org:/home/cvspublic
-		        <br/>cvs login        <em>(password: anoncvs)</em>
-        		<br/>cvs checkout -d xerces_j xml-xerces/java 
-			</p>
-        	</a> 
-	</faq>
-	<faq title="Revalidation of DOM document in Memory">
-		<q>I have used the DOMParser to convert an XML document into
-			a DOM tree.  Then I made some changes to the DOM tree.  How do I make sure
-			the document still conforms to my (schema or DTD)?</q>
-		<a>
-			<p>
-			DOM revalidation  is not supported by Xerces 1. Ken Rawlings has been trying 
-			to build a revalidating DOMParser based on code which was dropped from Xerces because
-			it was no longer being maintained. The current code is at:
-			<jump href="http://www.vervet.com/~krawling/RevalidatingDOMParser.java">http://www.vervet.com/~krawling/RevalidatingDOMParser.java.</jump>
-			We hope that Xerces 2 will include this capability.
-			</p>
-		</a>
-	</faq>
-	<faq title="Schema/DTD caching">
-		<q>I have a (DTD or schema) that I will use to validate many XML documents.  How can I avoid having to recompile it every time I want to validate a new document?</q>
-		<a>
-			<p>Xerces 1 does not currently support grammar caching.  We
-			expect that Xerces 2 will support this functionality.  Some users
-			have reported success by registering an EntityResolver which handles reading
-			the grammar from the disk and storing it in an efficient way (usually a byteArray), then passing the
-			parser a reader for the efficiently-stored structure.  While this
-			does not avoid recompiling the grammar for each instance document,
-			it does avoid disk accesses.
-			</p>
-		</a>
-	</faq>
-
-	<faq title="New Features?">
-		<q>What are the new features?</q>
-		<a>
-			<p>Here are some of the new features in &javaparsername;:</p>
-		     <ul>
-			     <li>Additional support for W3C XML Schema Language.</li>
-			     <li>DOS filenames no longer work. See Common Problems
-				section of the FAQ.</li>
-		     </ul>
-	<anchor name="valid"/>
-		</a>
-	</faq>
-	
-	<faq title="Validation">
-		<q>How do I turn on validation?</q>
-		<a>
-			<p>You can turn validation on and off via methods available
-			on the SAX2 <code>XMLFilter</code> interface. While only the 
-			<code>SAXParser</code> implements the <code>XMLFilter</code>
-			interface, the methods required for turning on validation
-			are available to both parser classes, DOM and SAX.
-			<br/>
-            The code snippet below shows how to turn validation on -- assume that <ref>parser</ref>
-            is an instance of either
-            <code>org.apache.xerces.parsers.SAXParser</code> or
-            <code>org.apache.xerces.parsers.DOMParser</code>. <br/><br/>
-     		<code>parser.setFeature("http://xml.org/sax/features/validation", true);</code>
-			</p>
-			<p><em>IMPORTANT!</em>Simply turning on
-			validation will <em>not</em> make Xerces
-			actually report the errors that it detects.
-			For this, you need to implement the 
-			<code>org.xml.sax.ErrorHandler</code>
-			interface and register your implementation
-			with the parser using the
-			<code>setErrorHandler</code> method.</p>
-		</a>
-	</faq>
-	
-	<faq title="International Encodings">
-		<q>What international encodings are supported by &javaparsername;?</q>
-		<a>
-            <p> In general, the parser supports all IANA encodings and
-            aliases (see
-            <jump href="http://www.iana.org/assignments/character-sets">
-            http://www.iana.org/assignments/character-sets</jump>) that 
-            have clear mappings to Java encodings (see
-            <jump href="http://java.sun.com/j2se/1.3.0/docs/guide/intl/encoding.doc.html">here</jump> 
-            for details).  Some of the more common encodings are:</p>
-			<ul>
-          		<li>UTF-8</li>
-          		<li>UTF-16 Big Endian, UTF-16 Little Endian</li>
-          		<li>IBM-1208</li>
-          		<li>ISO Latin-1 (ISO-8859-1)</li>
-          		<li>ISO Latin-2 (ISO-8859-2) [Bosnian, Croatian, Czech, 
-					Hungarian, Polish, Romanian, Serbian (in Latin transcription), 
-					Serbocroatian, Slovak, Slovenian, Upper and Lower Sorbian]</li>
-          		<li>ISO Latin-3 (ISO-8859-3) [Maltese, Esperanto]</li>
-          		<li>ISO Latin-4 (ISO-8859-4)</li>
-          		<li>ISO Latin Cyrillic (ISO-8859-5)</li>
-          		<li>ISO Latin Arabic (ISO-8859-6)</li>
-          		<li>ISO Latin Greek (ISO-8859-7)</li>
-          		<li>ISO Latin Hebrew (ISO-8859-8)</li>
-          		<li>ISO Latin-5 (ISO-8859-9) [Turkish]</li>
-          		<li>Extended Unix Code, packed for Japanese (euc-jp, eucjis)</li>
-          		<li>Japanese Shift JIS (shift-jis)</li>
-          		<li>Chinese (big5)</li>
-          		<li>Chinese for PRC (mixed 1/2 byte) (gb2312)</li>
-          		<li>Japanese ISO-2022-JP (iso-2022-jp)</li>
-          		<li>Cyrllic (koi8-r)</li>
-          		<li>Extended Unix Code, packed for Korean (euc-kr)</li>
-          		<li>Russian Unix, Cyrillic (koi8-r)</li>
-          		<li>Windows Thai (cp874)</li>
-          		<li>Latin 1 Windows (cp1252)</li>
-          		<li>cp858</li>
-          		<li>EBCDIC encodings:</li>
-          		<ul>
-            		<li>EBCDIC US (ebcdic-cp-us)</li>
-            		<li>EBCDIC Canada (ebcdic-cp-ca)</li>
-            		<li>EBCDIC Netherland (ebcdic-cp-nl)</li>
-            		<li>EBCDIC Denmark (ebcdic-cp-dk)</li>
-            		<li>EBCDIC Norway (ebcdic-cp-no)</li>
-            		<li>EBCDIC Finland (ebcdic-cp-fi)</li>
-            		<li>EBCDIC Sweden (ebcdic-cp-se)</li>
-            		<li>EBCDIC Italy (ebcdic-cp-it)</li>
-            		<li>EBCDIC Spain, Latin America (ebcdic-cp-es)</li>
-            		<li>EBCDIC Great Britain (ebcdic-cp-gb)</li>
-            		<li>EBCDIC France (ebcdic-cp-fr)</li>
-            		<li>EBCDIC Hebrew (ebcdic-cp-he)</li>
-            		<li>EBCDIC Switzerland (ebcdic-cp-ch)</li>
-            		<li>EBCDIC Roece (ebcdic-cp-roece)</li>
-            		<li>EBCDIC Yugoslavia (ebcdic-cp-yu)</li>
-            		<li>EBCDIC Iceland (ebcdic-cp-is)</li>
-            		<li>EBCDIC Urdu (ebcdic-cp-ar2)</li>
-            		<li>Latin 0 EBCDIC</li>
-            		<li>EBCDIC Arabic (ebcdic-cp-ar1)</li>
-          		</ul>
-        	</ul>
-            <p> Please also look at the documentation for the feature 
-            &quot;http://apache.org/xml/features/allow-java-encodings&quot;
-            which provides a mechanism for using the 
-            encoding names recognized directly by Java.</p>
-		</a>
-	</faq>
-	
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
+<faqs title='General FAQs'>
+ <faq title='Validation'>
+  <q>How do I turn on validation?</q>
+  <a>
+   <p>
+    You can turn validation on and off via methods available
+    on the SAX2 <code>XMLFilter</code> interface. While only the 
+    <code>SAXParser</code> implements the <code>XMLFilter</code>
+    interface, the methods required for turning on validation
+    are available to both parser classes, DOM and SAX.
+    <br/>
+    The code snippet below shows how to turn validation on -- assume
+    that <ref>parser</ref> is an instance of either 
+    <code>org.apache.xerces.parsers.SAXParser</code> or
+    <code>org.apache.xerces.parsers.DOMParser</code>. 
+    <br/><br/>
+    <code>parser.setFeature("http://xml.org/sax/features/validation", true);</code>
+   </p>
+  </a>
+ </faq>
+ <faq title='International Encodings'>
+  <q>What international encodings are supported by &ParserName;?</q>
+  <a>
+   <ul>
+    <li>UTF-8</li>
+    <li>UTF-16 Big Endian, UTF-16 Little Endian</li>
+    <li>IBM-1208</li>
+    <li>ISO Latin-1 (ISO-8859-1)</li>
+    <li>
+     ISO Latin-2 (ISO-8859-2) [Bosnian, Croatian, Czech, 
+     Hungarian, Polish, Romanian, Serbian (in Latin transcription), 
+     Serbocroatian, Slovak, Slovenian, Upper and Lower Sorbian]
+    </li>
+    <li>ISO Latin-3 (ISO-8859-3) [Maltese, Esperanto]</li>
+    <li>ISO Latin-4 (ISO-8859-4)</li>
+    <li>ISO Latin Cyrillic (ISO-8859-5)</li>
+    <li>ISO Latin Arabic (ISO-8859-6)</li>
+    <li>ISO Latin Greek (ISO-8859-7)</li>
+    <li>ISO Latin Hebrew (ISO-8859-8)</li>
+    <li>ISO Latin-5 (ISO-8859-9) [Turkish]</li>
+    <li>Extended Unix Code, packed for Japanese (euc-jp, eucjis)</li>
+    <li>Japanese Shift JIS (shift-jis)</li>
+    <li>Chinese (big5)</li>
+    <li>Chinese for PRC (mixed 1/2 byte) (gb2312)</li>
+    <li>Japanese ISO-2022-JP (iso-2022-jp)</li>
+    <li>Cyrllic (koi8-r)</li>
+    <li>Extended Unix Code, packed for Korean (euc-kr)</li>
+    <li>Russian Unix, Cyrillic (koi8-r)</li>
+    <li>Windows Thai (cp874)</li>
+    <li>Latin 1 Windows (cp1252)</li>
+    <li>cp858</li>
+    <li>EBCDIC encodings:</li>
+     <ul>
+      <li>EBCDIC US (ebcdic-cp-us)</li>
+      <li>EBCDIC Canada (ebcdic-cp-ca)</li>
+      <li>EBCDIC Netherland (ebcdic-cp-nl)</li>
+      <li>EBCDIC Denmark (ebcdic-cp-dk)</li>
+      <li>EBCDIC Norway (ebcdic-cp-no)</li>
+      <li>EBCDIC Finland (ebcdic-cp-fi)</li>
+      <li>EBCDIC Sweden (ebcdic-cp-se)</li>
+      <li>EBCDIC Italy (ebcdic-cp-it)</li>
+      <li>EBCDIC Spain, Latin America (ebcdic-cp-es)</li>
+      <li>EBCDIC Great Britain (ebcdic-cp-gb)</li>
+      <li>EBCDIC France (ebcdic-cp-fr)</li>
+      <li>EBCDIC Hebrew (ebcdic-cp-he)</li>
+      <li>EBCDIC Switzerland (ebcdic-cp-ch)</li>
+      <li>EBCDIC Roece (ebcdic-cp-roece)</li>
+      <li>EBCDIC Yugoslavia (ebcdic-cp-yu)</li>
+      <li>EBCDIC Iceland (ebcdic-cp-is)</li>
+      <li>EBCDIC Urdu (ebcdic-cp-ar2)</li>
+      <li>Latin 0 EBCDIC</li>
+      <li>EBCDIC Arabic (ebcdic-cp-ar1)</li>
+     </ul>
+   </ul>
+  </a>
+ </faq>
 </faqs>

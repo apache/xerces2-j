@@ -1,4 +1,4 @@
-<?xml encoding='US-ASCII'?>
+<?xml encoding='UTF-8'?>
 
 <!-- BLOCKS ENTITY -->
 <!ENTITY % blocks "p|note|ul|ol|gloss|table|source|anchor">
@@ -20,7 +20,7 @@
 <!ELEMENT label %content;>
 <!ELEMENT item %content;>
 
-<!ELEMENT source (#PCDATA)>
+<!ELEMENT source (#PCDATA|link)*>
 
 <!ELEMENT table (tr)+>
 

@@ -82,7 +82,7 @@ import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
-import org.apache.xerces.utils.XMLCharacterProperties;
+import org.apache.xerces.util.XMLChar;
 
 
 /**
@@ -237,8 +237,6 @@ public class CoreDocumentImpl
      */
     public CoreDocumentImpl() {
         this(false);
-        // make sure the XMLCharacterProperties class is initilialized
-        XMLCharacterProperties.initCharFlags();
     }
 
     /** Constructor. */
@@ -246,8 +244,6 @@ public class CoreDocumentImpl
         super(null);
         ownerDocument = this;
         allowGrammarAccess = grammarAccess;
-        // make sure the XMLCharacterProperties class is initilialized
-        XMLCharacterProperties.initCharFlags();
     }
 
     /**
@@ -257,8 +253,6 @@ public class CoreDocumentImpl
     public CoreDocumentImpl(DocumentType doctype)
     {
         this(doctype, false);
-        // make sure the XMLCharacterProperties class is initilialized
-        XMLCharacterProperties.initCharFlags();
     }
 
     /** For DOM2 support. */
@@ -275,8 +269,6 @@ public class CoreDocumentImpl
             doctypeImpl.ownerDocument = this;
             appendChild(doctype);
         }
-        // make sure the XMLCharacterProperties class is initilialized
-        XMLCharacterProperties.initCharFlags();
     }
 
     //
@@ -1411,7 +1403,7 @@ public class CoreDocumentImpl
         if (s == null) {
             return false;
         }
-        return XMLCharacterProperties.validName(s);
+        return XMLChar.isValidName(s);
 
     } // isXMLName(String):boolean
 

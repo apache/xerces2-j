@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,53 +60,51 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.apache.xerces.readers.MIME2Java;
+import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.xni.XNIException;
 
-    /**
-     *  The DOMParserSaveEncoding class extends DOMParser. It also provides
-     *  the Java Encoding of the XML document by overriding the startDocument method 
-     *  and providing a way to capture the MIME encoding from the XML document which
-     *  in turn is converted to the Java Encoding by the internal MIME2Java class.
-     *   
-     */
+/**
+ *  The DOMParserSaveEncoding class extends DOMParser. It also provides
+ *  the Java Encoding of the XML document by overriding the startDocument method 
+ *  and providing a way to capture the MIME encoding from the XML document which
+ *  in turn is converted to the Java Encoding by the internal MIME2Java class.
+ *   
+ */
 
-  
-public class DOMParserSaveEncoding extends DOMParser
-  {
-   String _mimeEncoding = "DEFAULT";//Default  MIME so we check the file.encoding
-   private void setMimeEncoding( String encoding ) {
-      _mimeEncoding = encoding;
-   }
-   private String getMimeEncoding() {
-      return (_mimeEncoding);
-   }
-   public String getJavaEncoding() {
-      String javaEncoding = null;
-      String mimeEncoding = getMimeEncoding();
 
-      if( mimeEncoding != null )
-      {
-      if( mimeEncoding.equals( "DEFAULT" ) )
-         javaEncoding = System.getProperty( "file.encoding" );
-      else if( ( javaEncoding = MIME2Java.convert( mimeEncoding ) ) == null )
-         javaEncoding = "UTF8";      // We always return an encoding.
-      }
+public class DOMParserSaveEncoding extends DOMParser {
+    String _mimeEncoding = "UTF8";//Default  MIME so we check the file.encoding
+    private void setMimeEncoding( String encoding ) {
+        _mimeEncoding = encoding;
+    }
+    private String getMimeEncoding() {
+        return(_mimeEncoding);
+    }
+    public String getJavaEncoding() {
+        String javaEncoding = null;
+        String mimeEncoding = getMimeEncoding();
 
-      if( javaEncoding == null )  // Should never return null
-         javaEncoding = "UTF8";
+        if (mimeEncoding != null) {
+            if (mimeEncoding.equals( "DEFAULT" ))
+                javaEncoding =  "UTF8";
+            else if (mimeEncoding.equalsIgnoreCase( "UTF-16" ))
+                javaEncoding = "Unicode";
+            else
+                javaEncoding = EncodingMap.getIANA2JavaMapping( mimeEncoding );    
+        } else   // Should never return null
+            javaEncoding = "UTF8";
+        return(javaEncoding);
+    }
+    public void startEntity(String name, 
+                            String publicId, String systemId, 
+                            String baseSystemId,
+                            String encoding) throws XNIException {
+        if( encoding != null){
+            setMimeEncoding( encoding);
+        }
+        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
+    }
 
-      return (javaEncoding);
-   }
-   public void startDocument( int versionIndex, int encodingIndex, int standAloneIndex ) {
-      String encoding = null;
-      if ( encodingIndex != -1 ) {
-         encoding            = fStringPool.toString( encodingIndex );
-         setMimeEncoding( encoding );
-      }
- //     super.startDocument( versionIndex,  encodingIndex, standAloneIndex );//passes control to superclass
-      super.startDocument();
-   }
+}
 
-  }
-    
