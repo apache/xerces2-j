@@ -748,32 +748,15 @@ public abstract class XMLScanner
             return false;
         }
 
-        boolean dataok = true;
-        int c;
-        // skip leading whitespace (tab is not allowed though!)
-        while (true) {
-            c = fEntityScanner.scanChar();
-            if (c == '\t') {
-                dataok = false;
-                reportFatalError("InvalidCharInPublicID",
-                                 new Object[] {Integer.toString(9, 16)});
-            }
-            else if (c != ' ' && c != '\n' && c != '\r') {
-                break;
-            }
-        }
-
         fStringBuffer.clear();
-        boolean skipSpace = false;
+        // skip leading whitespace
+        boolean skipSpace = true;
+        boolean dataok = true;
         while (true) {
-            if (c == '\t') {
-                dataok = false;
-                reportFatalError("InvalidCharInPublicID",
-                                 new Object[] {Integer.toString(9, 16)});
-            }
-            else if (c == ' ' || c == '\n' || c == '\r') {
-                // take the first whitespace as a space and skip the others
+            int c = fEntityScanner.scanChar();
+            if (c == ' ' || c == '\n' || c == '\r') {
                 if (!skipSpace) {
+                    // take the first whitespace as a space and skip the others
                     fStringBuffer.append(' ');
                     skipSpace = true;
                 }
@@ -786,20 +769,19 @@ public abstract class XMLScanner
                 literal.setValues(fStringBuffer);
                 break;
             }
-            else if (XMLChar.isInvalid(c)) {
-                dataok = false;
-                reportFatalError("InvalidCharInPublicID",
-                                 new Object[]{Integer.toHexString(c)});
+            else if (XMLChar.isPubid(c)) {
+                fStringBuffer.append((char)c);
+                skipSpace = false;
             }
             else if (c == -1) {
                 reportFatalError("PublicIDUnterminated", null);
                 return false;
             }
             else {
-                fStringBuffer.append((char)c);
-                skipSpace = false;
+                dataok = false;
+                reportFatalError("InvalidCharInPublicID",
+                                 new Object[]{Integer.toHexString(c)});
             }
-            c = fEntityScanner.scanChar();
         }
         return dataok;
    }
