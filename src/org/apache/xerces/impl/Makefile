@@ -4,6 +4,7 @@ TARGETS=\
         Constants.class\
         Version.class\
         XMLDocumentScanner.class\
+        XMLDTDScanner.class\
         XMLEntityManager.class\
         XMLEntityScanner.class\
         XMLErrorReporter.class\
