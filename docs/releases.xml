@@ -4,7 +4,8 @@
 <releases>
   <release version="2.1">
     <desc>
-        TBD
+        As well as some relatively minor changes to XNI, this release includes many 
+        bugfixes and performance improvements.
     </desc>
     <changes>
         <update>

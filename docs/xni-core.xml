@@ -1249,6 +1249,7 @@ public class PassThroughFilter
     // Data
     
     protected <link anchor='document-handler'>XMLDocumentHandler</link> fDocumentHandler;
+    protected <link anchor='document-source'>XMLDocumentSource</link> fDocumentSource;
     
     // Public methods
    
@@ -1408,6 +1409,15 @@ public class PassThroughFilter
             fDocumentHandler.endDocument(augs);
         }
     }
+
+    public void setDocumentSource(<link anchor='document-source'>XMLDocumentSource</link> source) {
+        fDocumentSource = source;
+    }
+    
+    public XMLDocumentSource getDocumentSource(<link anchor='document-source'>XMLDocumentSource</link> source) {
+        return fDocumentSource;
+    }
+    
     
 } // class PassThroughFilter</source>
   </s3>
