@@ -58,8 +58,10 @@
 package org.apache.xerces.framework;
 
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.utils.ChunkyCharArray;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
 
 import org.xml.sax.Locator;
@@ -147,6 +149,13 @@ public final class XMLDocumentScanner {
     //
     // Instance Variables
     //
+    /***
+    // NOTE: Used by old implementation of scanElementType method. -Ac
+    private StringPool.CharArrayRange fCurrentElementCharArrayRange = null;
+    /***/
+    XMLDTDScanner fDTDScanner = null;
+    boolean fNamespacesEnabled = false;
+    boolean fValidationEnabled = false;
     QName fElementQName = new QName();
     QName fAttributeQName = new QName();
     QName fCurrentElementQName = new QName();
@@ -180,54 +189,6 @@ public final class XMLDocumentScanner {
      * more generic task of scanning the XML non-DTD grammar.
      */
     public interface EventHandler {
-        /**
-         * Scan an element type.
-         *
-         * If namespaces are supported, this method should scan a QName instead of a
-         * Name and report any related well-formedness errors.
-         *
-         * @param entityReader The entity reader.
-         * @param fastchar A likely non-name character that might terminate the element type.
-         * <!--
-         * @return The handle in the string pool for the element type scanned, or -1 if
-         *         we were not able to scan an element type at the current location.
-         * -->
-         * @exception java.lang.Exception
-         */
-        public void scanElementType(XMLEntityHandler.EntityReader entityReader, 
-                                   char fastchar, QName element) throws Exception;
-        /**
-         * Scan the expected element type.
-         *
-         * This method is used to scan the matching end tag for the element type at the current
-         * nesting depth of the document.
-         *
-         * @param entityReader The entity reader.
-         * @param fastchar A likely non-name character that might terminate the element type.
-         * @return <code>true</code> if we scanned the expected element type; otherwise
-         *         <code>false</code> if we were not able to scan an element type at the
-         *         current location, or if that element type was not the one we expected to
-         *         find.
-         * @exception java.lang.Exception
-         */
-        public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, 
-                                               char fastchar, QName element) throws Exception;
-        /**
-         * Scan an attribute name.
-         *
-         * If namespaces are supported, this method should scan a QName instead of a
-         * Name and report any related well-formedness errors.
-         *
-         * @param entityReader The entity reader.
-         * @param elementType The element type for this attribute.
-         * <!--
-         * @return The handle in the string pool for the attribute name scanned, or -1 if
-         *         we were not able to scan an attribute name at the current location.
-         * -->
-         * @exception java.lang.Exception
-         */
-        public void scanAttributeName(XMLEntityHandler.EntityReader entityReader, 
-                                     QName element, QName attribute) throws Exception;
         /**
          * Signal the start of a document
          *
@@ -272,22 +233,6 @@ public final class XMLDocumentScanner {
          */
         public void callEndElement(int readerId) throws Exception;
         /**
-         * Check for a valid XML version number
-         *
-         * @param version a string representing an XML version number
-         * @return true if the parser can process this version of XML
-         * @exception java.lang.Exception
-         */
-        public boolean validVersionNum(String version) throws Exception;
-        /**
-         * Check for a valid encoding name
-         *
-         * @param encoding a string containing an encoding naem
-         * @return true if the encoding name is valid
-         * @exception java.lang.Exception
-         */
-        public boolean validEncName(String encoding) throws Exception;
-        /**
          * Signal the start of a CDATA section
          * @exception java.lang.Exception
          */
@@ -319,26 +264,6 @@ public final class XMLDocumentScanner {
          * @exception java.lang.Exception
          */
         public void callComment(int data) throws Exception;
-        /**
-         * Scan the document type declaration
-         *
-         * @param standalone true if there was a standalone document declaration in
-         *        the XMLDecl
-         * @exception java.lang.Exception
-         */
-        public void scanDoctypeDecl(boolean standalone) throws Exception;
-        /**
-         * Scan the value of an attribute and include it in the set of specified
-         * attributes for the element.
-         *
-         * @param elementType handle for the element type of the attribute.
-         * @param attrName handle for the attribute name.
-         * @return XMLDocumentScanner.RESULT_SUCCESS if the attribute was created,
-         *         XMLDocumentScanner.RESULT_NOT_WELL_FORMED if the scan failed, or
-         *         XMLDocumentScanner.RESULT_DUPLICATE_ATTR if the attribute is a duplicate.
-         * @exception java.lang.Exception
-         */
-        public int scanAttValue(QName element, QName attribute) throws Exception;
     }
 
     /**
@@ -797,7 +722,7 @@ public final class XMLDocumentScanner {
                         if (fEntityReader.skippedString(doctype_string)) {
                             setScannerState(SCANNER_STATE_DOCTYPE);
                             fSeenDoctypeDecl = true;
-                            fEventHandler.scanDoctypeDecl(fStandalone); // scan through the closing '>'
+                            scanDoctypeDecl(fStandalone); // scan through the closing '>'
                             fScannerMarkupDepth--;
                             fDispatcher = new PrologDispatcher();
                             restoreScannerState(SCANNER_STATE_PROLOG);
@@ -904,7 +829,7 @@ public final class XMLDocumentScanner {
                             if (!fSeenDoctypeDecl && fEntityReader.skippedString(doctype_string)) {
                                 setScannerState(SCANNER_STATE_DOCTYPE);
                                 fSeenDoctypeDecl = true;
-                                fEventHandler.scanDoctypeDecl(fStandalone); // scan through the closing '>'
+                                scanDoctypeDecl(fStandalone); // scan through the closing '>'
                                 fScannerMarkupDepth--;
                             } else {
                                 abortMarkup(XMLMessages.MSG_MARKUP_NOT_RECOGNIZED_IN_PROLOG,
@@ -997,7 +922,7 @@ public final class XMLDocumentScanner {
                 switch (fScannerState) {
                 case SCANNER_STATE_ROOT_ELEMENT:
                 {
-                    fEventHandler.scanElementType(fEntityReader, '>', fElementQName);
+                    scanElementType(fEntityReader, '>', fElementQName);
                     if (fElementQName.rawname != -1) {
                         //
                         // root element
@@ -1094,7 +1019,7 @@ public final class XMLDocumentScanner {
                             //
                             // [42] ETag ::= '</' Name S? '>'
                             //
-                            if (!fEventHandler.scanExpectedElementType(fEntityReader, '>', fElementQName)) {
+                            if (!scanExpectedElementType(fEntityReader, '>', fElementQName)) {
                                 abortMarkup(XMLMessages.MSG_ETAG_REQUIRED,
                                             XMLMessages.P39_UNTERMINATED,
                                             fCurrentElementType);
@@ -1122,7 +1047,7 @@ public final class XMLDocumentScanner {
                                 }
                             }
                         } else {
-                            fEventHandler.scanElementType(fEntityReader, '>', fElementQName);
+                            scanElementType(fEntityReader, '>', fElementQName);
                             if (fElementQName.rawname != -1) {
                                 //
                                 // element
@@ -1208,7 +1133,7 @@ public final class XMLDocumentScanner {
                         //
                         // [42] ETag ::= '</' Name S? '>'
                         //
-                        if (!fEventHandler.scanExpectedElementType(fEntityReader, '>', fElementQName)) {
+                        if (!scanExpectedElementType(fEntityReader, '>', fElementQName)) {
                             abortMarkup(XMLMessages.MSG_ETAG_REQUIRED,
                                         XMLMessages.P39_UNTERMINATED,
                                         fCurrentElementType);
@@ -1241,7 +1166,7 @@ public final class XMLDocumentScanner {
                     {
                         fScannerMarkupDepth++;
                         fParseTextDecl = false;
-                        fEventHandler.scanElementType(fEntityReader, '>', fElementQName);
+                        scanElementType(fEntityReader, '>', fElementQName);
                         if (fElementQName.rawname != -1) {
                             if (fEntityReader.lookingAtChar('>', true)) {
                                 fEventHandler.callStartElement(fElementQName);
@@ -1689,7 +1614,7 @@ public final class XMLDocumentScanner {
                 version = result;
                 String versionString = fStringPool.toString(version);
                 if (!"1.0".equals(versionString)) {
-                    if (!fEventHandler.validVersionNum(versionString)) {
+                    if (!validVersionNum(versionString)) {
                         abortMarkup(XMLMessages.MSG_VERSIONINFO_INVALID,
                                             XMLMessages.P26_INVALID_VALUE,
                                             versionString);
@@ -1722,7 +1647,7 @@ public final class XMLDocumentScanner {
                 //
                 encoding = result;
                 String encodingString = fStringPool.toString(encoding);
-                if (!fEventHandler.validEncName(encodingString)) {
+                if (!validEncName(encodingString)) {
                     abortMarkup(XMLMessages.MSG_ENCODINGDECL_INVALID,
                                 XMLMessages.P81_INVALID_VALUE,
                                 encodingString);
@@ -1815,8 +1740,7 @@ public final class XMLDocumentScanner {
                 // Name
                 //
                 setScannerState(SCANNER_STATE_ATTRIBUTE_NAME);
-                fEventHandler.scanAttributeName(fEntityReader, 
-                                                element, fAttributeQName);
+                scanAttributeName(fEntityReader, element, fAttributeQName);
                 if (fAttributeQName.rawname == -1) {
                     break;
                 }
@@ -1835,7 +1759,7 @@ public final class XMLDocumentScanner {
                 }
                 fEntityReader.skipPastSpaces();
                 //int result = fEventHandler.scanAttValue(prefixIndex, elementType, 
-                int result = fEventHandler.scanAttValue(element,  fAttributeQName);
+                int result = scanAttValue(element,  fAttributeQName);
                 if (result == RESULT_FAILURE) {
                     if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                         skipPastEndOfCurrentMarkup();
@@ -2039,4 +1963,260 @@ public final class XMLDocumentScanner {
                      StringPool.EMPTY_STRING : fEntityReader.addString(piDataOffset, piDataLength);
         fEventHandler.callProcessingInstruction(piTarget, piData);
     }
-}
+
+    /** Sets whether the parser preprocesses namespaces. */
+    public void setNamespacesEnabled(boolean enabled) {
+        fNamespacesEnabled = enabled;
+    }
+
+    /** Returns whether the parser processes namespaces. */
+    public boolean getNamespacesEnabled() {
+        return fNamespacesEnabled;
+    }
+
+    /** Sets whether the parser validates. */
+    public void setValidationEnabled(boolean enabled) {
+        fValidationEnabled = enabled;
+    }
+
+    /** Returns true if validation is turned on. */
+    public boolean getValidationEnabled() {
+        return fValidationEnabled;
+    }
+
+    // old EventHandler methods pushed back into scanner
+
+    /** Scans element type. */
+    private void scanElementType(XMLEntityHandler.EntityReader entityReader, 
+                                char fastchar, QName element) throws Exception {
+
+        if (!fNamespacesEnabled) {
+            element.clear();
+            element.localpart = entityReader.scanName(fastchar);
+            element.rawname = element.localpart;
+        } 
+        else {
+            entityReader.scanQName(fastchar, element);
+            if (entityReader.lookingAtChar(':', false)) {
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                           XMLMessages.P5_INVALID_CHARACTER,
+                                           null,
+                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                 entityReader.skipPastNmtoken(' ');
+            }
+        }
+
+    } // scanElementType(XMLEntityHandler.EntityReader,char,QName)
+
+    /** Scans expected element type. */
+    private boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, 
+                                           char fastchar, QName element) 
+        throws Exception {
+
+        /***
+        // REVISIT: Why aren't we using the 'element' parameter? -Ac
+        if (fCurrentElementCharArrayRange == null) {
+            fCurrentElementCharArrayRange = fStringPool.createCharArrayRange();
+        }
+        fStringPool.getCharArrayRange(fCurrentElement.rawname, fCurrentElementCharArrayRange);
+        return entityReader.scanExpectedName(fastchar, fCurrentElementCharArrayRange);
+        /***/
+        entityReader.scanQName(fastchar, element);
+        return true;
+        /***/
+
+    } // scanExpectedElementType(XMLEntityHandler.EntityReader,char,QName)
+
+    /** Scans attribute name. */
+    private void scanAttributeName(XMLEntityHandler.EntityReader entityReader, 
+                                  QName element, QName attribute) 
+        throws Exception {
+
+        /***
+        // REVISIT: What's this check for?
+        if (!fSeenRootElement) {
+            fSeenRootElement = true;
+            rootElementSpecified(element);
+            fStringPool.resetShuffleCount();
+        }
+        /***/
+
+        if (!fNamespacesEnabled) {
+            attribute.clear();
+            attribute.localpart = entityReader.scanName('=');
+            attribute.rawname = attribute.localpart;
+        } 
+        else {
+            entityReader.scanQName('=', attribute);
+            if (entityReader.lookingAtChar(':', false)) {
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                           XMLMessages.P5_INVALID_CHARACTER,
+                                           null,
+                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                entityReader.skipPastNmtoken(' ');
+            }
+        }
+
+    } // scanAttributeName(XMLEntityHandler.EntityReader,QName,QName)
+
+    /** Scan doctype declaration. */
+    private void scanDoctypeDecl(boolean standalone) throws Exception {
+
+        /***
+        fScanningDTD = true;
+        fCheckedForSchema = true;
+        /***/
+        fSeenDoctypeDecl = true;
+        /***
+        fStandaloneReader = standalone ? fEntityHandler.getReaderId() : -1;
+        fDeclsAreExternal = false;
+        if (fDTDImporter == null) {
+            fDTDImporter = new DTDImporter(fStringPool, fErrorReporter, fEntityHandler, this);
+        } 
+        else {
+            fDTDImporter.reset(fStringPool);
+        }
+        fDTDImporter.initHandlers(fDTDHandler);
+        fDTDImporter.setValidating(fValidating);
+        fDTDImporter.setNamespacesEnabled(fNamespacesEnabled);
+        if (fDTDImporter.scanDoctypeDecl(standalone) && fValidating) {
+            // check declared elements
+            if (fWarningOnUndeclaredElements) {
+                // REVISIT: comment out because won't compile 
+                // checkDeclaredElements();
+            }
+
+            // check required notations
+            fEntityHandler.checkRequiredNotations();
+        }
+        fScanningDTD = false;
+        /***/
+        if (fDTDScanner == null) {
+            fDTDScanner = new XMLDTDScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
+        }
+        else {
+            fDTDScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
+        }
+        // REVISIT: What about standalone?
+        if (fDTDScanner.scanDoctypeDecl()) {
+            if (fDTDScanner.getReadingExternalEntity()) {
+                fDTDScanner.scanDecls(true);
+            }
+            // REVISIT: What about validation and checking stuff?
+        }
+        /***/
+
+    } // scanDoctypeDecl(boolean)
+
+    /** Scan attribute value. */
+    private int scanAttValue(QName element, QName attribute) throws Exception {
+
+        //fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
+        int attValue = scanAttValue(element, attribute, fValidationEnabled);
+        if (attValue == -1) {
+            return XMLDocumentScanner.RESULT_FAILURE;
+        }
+
+        //
+        // Check for Schema and load
+        //
+
+        /*
+        if (!fCheckedForSchema) {
+            fCheckedForSchema = true;
+            if (attrName == fStringPool.addSymbol("xmlns")) { // default namespacedecl
+                                
+                if (fSchemaImporter == null) {
+                    fSchemaImporter = new SchemaImporter(fStringPool, fErrorReporter, fEntityHandler, this);
+                } else {
+                    fSchemaImporter.reset(fStringPool);
+                }
+                String fs = fEntityHandler.expandSystemId(fStringPool.toString(attValue));
+                EntityResolver resolver = fEntityHandler.getEntityResolver();
+                InputSource is = resolver == null ? null : resolver.resolveEntity(null, fs);
+                if (is == null) {
+                    is = new InputSource(fs);
+                }
+
+                fSchemaImporter.loadSchema(is);
+                fSchemaDocument = fSchemaImporter.getSchemaDocument();
+            }
+        }
+        */
+
+        /***
+        // REVISIT: This is validation related.
+        if (!fValidating && fAttDefCount == 0) {
+            int attType = fCDATASymbol;
+            if (fAttrListHandle == -1)
+                fAttrListHandle = fAttrList.startAttrList();
+            // REVISIT: Should this be localpart or rawname?
+            if (fAttrList.addAttr(attribute, attValue, attType, true, true) == -1) {
+                return XMLDocumentScanner.RESULT_DUPLICATE_ATTR;
+            }
+            return XMLDocumentScanner.RESULT_SUCCESS;
+        }
+
+        // REVISIT: Validation. What should these be?
+        int attDefIndex = getAttDef(element, attribute);
+        if (attDefIndex == -1) {
+            if (fValidating) {
+                // REVISIT - cache the elem/attr tuple so that we only give
+                //  this error once for each unique occurrence
+                Object[] args = { fStringPool.toString(element.rawname),
+                                  fStringPool.toString(attribute.rawname) };
+                fErrorReporter.reportError(fAttrNameLocator,
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                           XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                           args,
+                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+            }
+            int attType = fCDATASymbol;
+            if (fAttrListHandle == -1) {
+                fAttrListHandle = fAttrList.startAttrList();
+            }
+            // REVISIT: Validation. What should the name be?
+            if (fAttrList.addAttr(attribute, attValue, attType, true, true) == -1) {
+                return XMLDocumentScanner.RESULT_DUPLICATE_ATTR;
+            }
+            return XMLDocumentScanner.RESULT_SUCCESS;
+        }
+
+        int attType = getAttType(attDefIndex);
+        if (attType != fCDATASymbol) {
+            AttributeValidator av = getAttributeValidator(attDefIndex);
+            int enumHandle = getEnumeration(attDefIndex);
+            // REVISIT: Validation. What should these be?
+            attValue = av.normalize(element, attribute, 
+                                    attValue, attType, enumHandle);
+        }
+
+        if (fAttrListHandle == -1) {
+            fAttrListHandle = fAttrList.startAttrList();
+        }
+        // REVISIT: Validation. What should the name be?
+        if (fAttrList.addAttr(attribute, attValue, attType, true, true) == -1) {
+            return XMLDocumentScanner.RESULT_DUPLICATE_ATTR;
+        }
+        /***/
+
+        return XMLDocumentScanner.RESULT_SUCCESS;
+
+    } // scanAttValue(QName,QName):int
+
+    /** Returns true if the version number is valid. */
+    private boolean validVersionNum(String version) {
+        return XMLCharacterProperties.validVersionNum(version);
+    }
+
+    /** Returns true if the encoding name is valid. */
+    private boolean validEncName(String encoding) {
+        return XMLCharacterProperties.validEncName(encoding);
+    }
+
+} // class XMLDocumentScanner
