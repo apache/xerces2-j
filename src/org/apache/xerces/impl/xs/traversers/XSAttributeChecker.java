@@ -1,12 +1,12 @@
 /*
  * Copyright 2001-2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,7 +59,7 @@ import org.w3c.dom.Element;
  * - Should have the datatype validators return compiled value
  * - use symbol table instead of many hashtables
  *
- * @xerces.internal 
+ * @xerces.internal
  *
  * @author Sandy Gao, IBM
  * @version $Id$
@@ -97,7 +97,7 @@ public class XSAttributeChecker {
     public static final int ATTIDX_NAME            = ATTIDX_COUNT++;
     public static final int ATTIDX_NAMESPACE       = ATTIDX_COUNT++;
     public static final int ATTIDX_NAMESPACE_LIST  = ATTIDX_COUNT++;
-    public static final int ATTIDX_NILLABLE        = ATTIDX_COUNT++; 
+    public static final int ATTIDX_NILLABLE        = ATTIDX_COUNT++;
     public static final int ATTIDX_NONSCHEMA       = ATTIDX_COUNT++;
     public static final int ATTIDX_PROCESSCONTENTS = ATTIDX_COUNT++;
     public static final int ATTIDX_PUBLIC          = ATTIDX_COUNT++;
@@ -774,7 +774,7 @@ public class XSAttributeChecker {
         attrList = Container.getContainer(1);
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
-        oneEle = new OneElement (attrList, false);
+        oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_APPINFO, oneEle);
         fEleAttrsMapL.put(SchemaSymbols.ELT_APPINFO, oneEle);
 
@@ -783,7 +783,7 @@ public class XSAttributeChecker {
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
         // xml:lang = language ???
-        oneEle = new OneElement (attrList, false);
+        oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
         fEleAttrsMapL.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
 
@@ -1055,7 +1055,7 @@ public class XSAttributeChecker {
         //Hashtable otherValues = new Hashtable();
         long fromDefault = 0;
         Container attrList = oneEle.attrList;
-        
+
         // clear the "seen" flag.
         System.arraycopy(fSeenTemp, 0, fSeen, 0, ATTIDX_COUNT);
 
@@ -1073,7 +1073,7 @@ public class XSAttributeChecker {
             if (attrName.startsWith("xmlns")) {
                 continue;
             }
-            
+
             // skip anything starts with x/X m/M l/L
             // add this to the list of "non-schema" attributes
             if (attrName.toLowerCase(Locale.ENGLISH).startsWith("xml")) {
@@ -1490,7 +1490,7 @@ public class XSAttributeChecker {
                 retValue = INT_ANY_LIST;
 
                 fNamespaceList.removeAllElements();
-                
+
                 // tokenize
                 // use the default \t\r\n\f delimiters
                 StringTokenizer tokens = new StringTokenizer(value);
@@ -1723,8 +1723,8 @@ public class XSAttributeChecker {
 
         // mark this array as returned
         attrArray[ATTIDX_ISRETURNED] = Boolean.TRUE;
-        // better clear nonschema vector 
-        if(attrArray[ATTIDX_NONSCHEMA] != null) 
+        // better clear nonschema vector
+        if(attrArray[ATTIDX_NONSCHEMA] != null)
             ((Vector)attrArray[ATTIDX_NONSCHEMA]).clear();
         // and put it into the pool
         fArrayPool[--fPoolPos] = attrArray;
