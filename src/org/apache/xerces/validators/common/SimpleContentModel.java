@@ -276,10 +276,10 @@ public class SimpleContentModel
                 //  we stored, in the stored order.
                 //
                 if (length == 2) {
-                    if (children[offset].uri != fFirstChild.uri && children[offset].localpart != fFirstChild.localpart)
+                    if (children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart)
                         return 0;
 
-                    if (children[offset + 1].uri != fSecondChild.uri && children[offset + 1].localpart != fSecondChild.localpart)
+                    if (children[offset + 1].uri != fSecondChild.uri || children[offset + 1].localpart != fSecondChild.localpart)
                         return 1;
                 }
                 else {
