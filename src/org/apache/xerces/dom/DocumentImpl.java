@@ -64,7 +64,6 @@ import java.util.Vector;
 import org.w3c.dom.*;
 
 import org.w3c.dom.traversal.*;
-import org.apache.xerces.dom.traversal.*;
 import org.w3c.dom.events.*;
 import org.apache.xerces.dom.events.*;
 

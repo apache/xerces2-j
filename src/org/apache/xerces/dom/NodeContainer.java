@@ -65,7 +65,6 @@ import org.w3c.dom.*;
 import org.w3c.dom.events.*;
 import org.apache.xerces.dom.*;
 import org.apache.xerces.dom.events.*;
-import org.apache.xerces.dom.traversal.*;
 
 /**
  * NodeContainer inherits from NodeImpl and adds the capability of having child
