@@ -170,8 +170,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fRegistry.put("float",             new FloatDatatypeValidator());
                 fRegistry.put("double",            new DoubleDatatypeValidator());
                 fRegistry.put("decimal",           new DecimalDatatypeValidator());
-                fRegistry.put("timeDuration",      new TimeDurationDatatypeValidator());
-                fRegistry.put("recurringDuration", new RecurringDurationDatatypeValidator());
                 fRegistry.put("hexBinary",         new HexBinaryDatatypeValidator());
                 fRegistry.put("base64Binary",      new Base64BinaryDatatypeValidator());
                 fRegistry.put("anyURI",            new AnyURIDatatypeValidator());
