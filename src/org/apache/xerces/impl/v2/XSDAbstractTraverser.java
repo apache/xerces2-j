@@ -243,10 +243,9 @@ abstract class XSDAbstractTraverser {
                                                  "' not found in the grammar "+ uriStr);
 
                     }
-                    // REVISIT: we need to store QNames in Notation validator to be able
-                    //          to validation notations. This is just a temp. fix.
-                    //String fullName = (uriStr!=null)?(uriStr+":"+localpart):localpart;
-                    enumVal = localpart;
+
+                    enumVal = (uriStr!=null)?(uriStr+","+localpart):localpart;                      
+                    fSymbolTable.addSymbol(enumVal);
                 }
                 enumData.addElement(enumVal);
                 checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);

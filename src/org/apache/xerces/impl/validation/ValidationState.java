@@ -58,75 +58,91 @@
 package org.apache.xerces.impl.validation;
 
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.SymbolTable;
+
 import java.util.Hashtable;
 
 public class  ValidationState implements ValidationContext {
+
+    // 
+    // private data
+    //
+    private EntityState fEntityState            = null;
+    private NamespaceSupport fNamespaceSupport  = null;
+    private SymbolTable fSymbolTable            = null;
+
+    private final Hashtable fIdTable    = new Hashtable();
+    private final Hashtable fIdRefTable = new Hashtable();
+
+    private final static Object fNullValue = new Object();
+
+    //
+    // public methods
+    //
+    public void setEntityState(EntityState state) {
+        fEntityState = state;
+    }
+
+    public void setNamespaceSupport(NamespaceSupport namespace) {
+        fNamespaceSupport = namespace;
+    }
+
+    public void setSymbolTable(SymbolTable sTable) {
+        fSymbolTable = sTable;
+    }
     
-   private EntityState fEntityState = null;
-   private NamespaceSupport fNamespaceSupport = null;
     
-   private final Hashtable fIdTable = new Hashtable();
-   private final Hashtable fIdRefTable = new Hashtable();
+    public void reset () {
+        fIdTable.clear();
+        fIdRefTable.clear();
+        fEntityState = null;
+        fNamespaceSupport = null;
+        fSymbolTable = null;
+    }
+    //
+    // implementation of ValidationContext methods
+    //
 
-   private final static Object fNullValue      = new Object();
+    // entity
+    public boolean isEntityDeclared (String name) {
+        if (fEntityState !=null) {
+            return fEntityState.isEntityDeclared(name);
+        }
+        return false;
+    }
+    public boolean isEntityUnparsed (String name) {
+        if (fEntityState !=null) {
+            return fEntityState.isEntityUnparsed(name);
+        }
+        return false;
+    }
 
-   public void setEntityState(EntityState state){
-       fEntityState = state;
-   }
-   // public void setNotationState
-   // public void setPrefixResolver
-   public void setNamespaceSupport(NamespaceSupport namespace){
-       fNamespaceSupport = namespace;
-   }
+    // id
+    public boolean isIdDeclared(String name) {
+        return fIdTable.containsKey(name);
+    }
+    public void    addId(String name) {
+        fIdTable.put(name, fNullValue);
+    }
 
-   // reset
-   //
-   public void reset (){
-       fIdTable.clear();
-       fIdRefTable.clear();
-       fEntityState = null;
-       fNamespaceSupport = null;
-   }
-   //
-   // implementation of ValidationContext methods
-   //
-   
-   // entity
-   public boolean isEntityDeclared (String name){
-       if (fEntityState !=null) {       
-        return fEntityState.isEntityDeclared(name);
-       }
-       return false;
-   }
-   public boolean isEntityUnparsed (String name){
-       if (fEntityState !=null) {
-        return fEntityState.isEntityUnparsed(name);
-       }
-       return false;
-   }
+    // idref
+    public void addIdRef(String name) {
+        if (fIdRefTable.containsKey(name)) {
+            return;
+        }
+        fIdRefTable.put(name, fNullValue);
+    }
+    // get symbols
 
-   // id
-   public boolean isIdDeclared(String name){
-       return fIdTable.containsKey(name);
-   }
-   public void    addId(String name){
-       fIdTable.put(name, fNullValue);
-   }
-
-   // idref
-   public void addIdRef(String name){
-       if (fIdRefTable.containsKey(name)) {
-           return;
-       }
-       fIdRefTable.put(name, fNullValue);
-   }
-
-   // qname
-   public String resolvePrefix(String prefix){
-       if (fNamespaceSupport !=null) {
-           return fNamespaceSupport.getURI(prefix);
-       }
-       return null;
-   }
+    public String getSymbol (String symbol){
+            return fSymbolTable.addSymbol(symbol);
+    }
+    // qname, notation
+    public String getURI(String prefix) {
+        if (fNamespaceSupport !=null) {
+            return fNamespaceSupport.getURI(prefix);
+        }
+        return null;
+    }
 
 }

@@ -114,19 +114,13 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
 
         //check content
         Element child = DOMUtil.getFirstChildElement(elmNode);
-        if (child != null) {
-            if (child.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
-                child = DOMUtil.getNextSiblingElement(child);
-            }
-
-            if (child != null) {
-                Object[] args = new Object [] { "notation", child.getLocalName()};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+        if (checkContent(child, attrValues, schemaDoc)!=null){
+             Object[] args = new Object [] { child.getLocalName() };
+             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            "NotationContentRestricted",
                                            args,
                                            XMLErrorReporter.SEVERITY_ERROR);
-            }
+            
         }
         grammar.addGlobalNotationDecl(notation);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);

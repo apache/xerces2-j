@@ -76,9 +76,9 @@ public interface ValidationContext {
     // idref
     public void addIdRef(String name);
     
-    
-    // REVISIT: notation
-    
+    // get symbol from symbol table
+    public String getSymbol (String symbol);
+
     // qname
-    public String resolvePrefix(String prefix);
+    public String getURI(String prefix);
 }

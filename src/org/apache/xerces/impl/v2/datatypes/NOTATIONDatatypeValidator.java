@@ -114,6 +114,59 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
     }
 
 
+    public Object validate(String content, ValidationContext state)  throws InvalidDatatypeValueException {
+        checkContent( content, state, false );
+        return null;
+    }
+
+    private void checkContent( String content, ValidationContext state, boolean asBase )
+    throws InvalidDatatypeValueException {
+        // validate against parent type if any
+        if (fBaseValidator instanceof NOTATIONDatatypeValidator) {
+            // validate content as a base type
+            ((NOTATIONDatatypeValidator)fBaseValidator).checkContent(content, state, true);
+        }
+
+        // we check pattern first
+        if ((fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0) {
+            if (fRegex == null || fRegex.matches( content) == false)
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' does not match regular expression facet '" + fPattern + "'." );
+        }
+
+        // validate special kinds of token, in place of old pattern matching
+        if (fTokenType != SPECIAL_TOKEN_NONE) {
+            validateToken(fTokenType, content);
+        }
+
+        // if this is a base validator, we only need to check pattern facet
+        // all other facet were inherited by the derived type
+        if (asBase)
+            return;
+
+        // REVISIT: see comments in checkValueSpace
+        // checkValueSpace (content);
+        int length = getLength(content);
+        // REVISIT: XML Schema group does not clearly specify how QNames should be 
+        // compared against length, minLength, maxLength we don't do any comparison
+        //
+        if ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
+            (fEnumeration != null)) {
+            String prefix = state.getSymbol("");
+            String localpart = content;
+            int colonptr = content.indexOf(":");
+            if (colonptr > 0) {
+                prefix = content.substring(0,colonptr);
+                localpart = content.substring(colonptr+1);
+
+            }
+            String uriStr = state.getURI(state.getSymbol(prefix));
+            String fullName =  (uriStr!=null)?(uriStr+","+localpart):localpart;                      
+            if (fEnumeration.contains( fullName ) == false)
+                throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
+        }
+    }
+
     protected void checkValueSpace (String content) throws InvalidDatatypeValueException {
         
         // REVISIT: do we need to check 3.2.19: "anyURI:NCName"?        
@@ -131,7 +184,6 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
     }    
 
     public int compare( String  content1, String content2){
-        // TO BE DONE!!!
         return content1.equals(content2)?0:-1;
     }
 }
