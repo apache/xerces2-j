@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- ===================================================================
+
+   Build file for Xerces-j
+
+Notes:
+   This is a build file for use with the Jakarta Ant java build tool.
+   
+Installation Instructions:   
+   To install Ant on your system, you need to checkout the
+   "jakarta-tools" CVS module. Then you should place the files
+     - ant.jar
+     - projectx-tr2.jar
+     - javac.jar
+   in your classpath. (XML parser abstraction is currently in
+   the todo list, volunteers welcome!)
+   
+Build Instructions:   
+   To build, run
+    
+     java org.apache.tools.ant.Main
+     
+   on the directory where this file is located.
+
+Authors:
+  Stefano Mazzocchi <stefano@apache.org>
+  
+Fixme:
+  - add "dist", "docs" and "samples" targets
+  - use token evaluation to keep versining info in this file only
+
+Copyright:
+  Copyright (c) 1999 The Apache Software Foundation.
+  
+   $Id$
+   
+==================================================================== -->
+
+<project name="Xerces" default="package" basedir=".">
+
+  <property name="version" value="1.0.1-dev"/>
+
+  <property name="build.compiler" value="classic"/>
+  <property name="debug" value="off"/>
+
+  <property name="build.dir" value="./build"/>
+  <property name="build.src" value="./build/src"/>
+  <property name="build.dest" value="./build/classes"/>
+  <property name="src.dir" value="./src"/>
+
+  <target name="prepare">
+    <!-- create temporary build dirs -->
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${build.src}"/>
+    <mkdir dir="${build.dest}"/>
+
+    <!-- copy src files dirs -->
+    <copydir src="${src.dir}" dest="${build.src}"/>
+    
+    <!-- substitute tokens as needed ("replace" not yet implemented) -->
+    <!-- <replace file="${build.src}/Version.java" token="@version@" value="${version}"/> -->
+  </target>
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${build.src}" destdir="${build.dest}" debug="${debug}"/>
+  </target>
+
+  <target name="package" depends="compile">
+    <jar jarfile="${build.dir}/xerces-${version}.jar" basedir="${build.dest}" items="org"/>
+  </target>
+  
+  <target name="clean">
+    <deltree dir="${build.dir}"/>
+  </target>
+
+</project>
