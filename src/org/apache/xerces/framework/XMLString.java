@@ -112,7 +112,7 @@ public class XMLString {
     public void setValues(char[] ch, int offset, int length) {
         this.ch = ch;
         this.offset = offset;
-        this.length = offset;
+        this.length = length;
     } // setValues
 
     /**
@@ -120,7 +120,7 @@ public class XMLString {
      */
     public void clear() {
         this.ch = null;
-        this.offset = -1;
+        this.offset = 0;
         this.length = 0;
     } // clear
 
