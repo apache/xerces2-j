@@ -675,7 +675,7 @@ public class Grammar {
       int   chunk = contentSpecIndex >> CHUNK_SHIFT;
       int   index = contentSpecIndex & CHUNK_MASK;
 
-      System.out.println("idx spec = " + contentSpecIndex );
+      //System.out.println("idx spec = " + contentSpecIndex );
                          
       fContentSpecType[chunk][index]       = contentSpec.type;
       fContentSpecValue[chunk][index]      = contentSpec.value;

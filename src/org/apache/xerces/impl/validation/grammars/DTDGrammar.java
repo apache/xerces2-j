@@ -661,7 +661,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     * @see TYPE_CHILDREN
     */
    public void childrenElement(String elementName) throws SAXException {
-      System.out.println("chil elem = " + elementName );
+      //System.out.println("chil elem = " + elementName );
    } // childrenElement
 
    /**
