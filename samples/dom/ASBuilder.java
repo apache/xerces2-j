@@ -57,8 +57,8 @@
 
 package dom;
 
-import org.w3c.dom.DOMError;
-import org.w3c.dom.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMErrorHandler;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
