@@ -1357,28 +1357,28 @@ public class DOMParser
             // should never be true - we should not return here.
             if (fDeferredDocumentImpl.getNodeType(erChild, false) != Node.ENTITY_REFERENCE_NODE)  return;
 
-            erChild = fDeferredDocumentImpl.getFirstChild(erChild, false); // first Child of EntityReference
+            erChild = fDeferredDocumentImpl.getLastChild(erChild, false); // first Child of EntityReference
 
             if (fDocumentTypeIndex != -1) {
                 // find Entity decl for this EntityReference.
-                int entityDecl = fDeferredDocumentImpl.getFirstChild(fDocumentTypeIndex, false);
+                int entityDecl = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
                 while (entityDecl != -1) {
                     if (fDeferredDocumentImpl.getNodeType(entityDecl, false) == Node.ENTITY_NODE
                     && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) // string compare...
                     {
                         break;
                     }
-                    entityDecl = fDeferredDocumentImpl.getNextSibling(entityDecl, false);
+                    entityDecl = fDeferredDocumentImpl.getPrevSibling(entityDecl, false);
                 }
 
                 if (entityDecl != -1
-                    && fDeferredDocumentImpl.getFirstChild(entityDecl, false) == -1) {
+                    && fDeferredDocumentImpl.getLastChild(entityDecl, false) == -1) {
                     // found entityDecl with same name as this reference
                     // AND it doesn't have any children.
 
                     // we don't need to iterate, because the whole structure
                     // should already be connected to the 1st child.
-                    fDeferredDocumentImpl.setAsFirstChild(entityDecl, erChild);
+                    fDeferredDocumentImpl.setAsLastChild(entityDecl, erChild);
                 }
             }
 
