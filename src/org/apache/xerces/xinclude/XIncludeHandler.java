@@ -2373,7 +2373,7 @@ public class XIncludeHandler
 
     // This is a storage class to hold information about the notations.
     // We're not using XMLNotationDecl because we don't want to lose the augmentations.
-    protected class Notation {
+    protected static class Notation {
         public String name;
         public String systemId;
         public String baseURI;
@@ -2414,7 +2414,7 @@ public class XIncludeHandler
 
     // This is a storage class to hold information about the unparsed entities.
     // We're not using XMLEntityDecl because we don't want to lose the augmentations.
-    protected class UnparsedEntity {
+    protected static class UnparsedEntity {
         public String name;
         public String systemId;
         public String baseURI;
