@@ -93,6 +93,9 @@ import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 
+
+import org.apache.xerces.xni.psvi.ElementPSVI;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -119,7 +122,6 @@ import java.util.StringTokenizer;
  * @author Elena Litani IBM
  * @author Eric Ye IBM
  * @author Andy Clark IBM
- * @author Jeffrey Rodriguez IBM
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @version $Id$
  */
@@ -199,6 +201,15 @@ public class XMLSchemaValidator
     // REVISIT: what does it mean if namespaces is off
     //          while schema validation is on?
     protected boolean fNamespaces = false;
+
+    /** PSV infoset information for element */
+    protected final  ElementPSVImpl fElemPSVI = new ElementPSVImpl();
+
+    /** current PSVI element info */
+    protected ElementPSVImpl fCurrentPSVI = null;
+    
+    // REVISIT: define constant here?
+    protected final static String ELEM_PSVI = "ELEM_PSVI";
 
     /** Validation. */
     protected boolean fValidation = false;
@@ -472,7 +483,7 @@ public class XMLSchemaValidator
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
-        handleStartElement(element, attributes);
+        handleStartElement(element, attributes, augs);
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes, augs);
@@ -491,11 +502,11 @@ public class XMLSchemaValidator
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
-        handleStartElement(element, attributes);
+        handleStartElement(element, attributes, augs);
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, change emptyElement call to
         // start + characters + end
-        XMLString defaultValue = handleEndElement(element);
+        XMLString defaultValue = handleEndElement(element, augs);
         // call handlers
         if (fDocumentHandler != null) {
 
@@ -564,7 +575,7 @@ public class XMLSchemaValidator
 
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, add a characters call.
-        XMLString defaultValue = handleEndElement(element);
+        XMLString defaultValue = handleEndElement(element, augs);
         // call handlers
         if (fDocumentHandler != null) {
             // REVISIT: should we send default element values??
@@ -1000,6 +1011,7 @@ public class XMLSchemaValidator
         // initialize state
         fCurrentElemDecl = null;
         fNil = false;
+        fCurrentPSVI = null;
         fCurrentType = null;
         fCurrentCM = null;
         fCurrCMState = null;
@@ -1184,7 +1196,7 @@ public class XMLSchemaValidator
     } // handleIgnorableWhitespace(XMLString)
 
     /** Handle element. */
-    void handleStartElement(QName element, XMLAttributes attributes) {
+    void handleStartElement(QName element, XMLAttributes attributes, Augmentations augs) {
         if (DEBUG) {
             System.out.println("handleStartElement: " +element);
         }
@@ -1214,7 +1226,16 @@ public class XMLSchemaValidator
             fValidationState = fValidationManager.getValidationState();
             fValidationState.setNamespaceSupport(fNamespaceSupport);
             fValidationState.setSymbolTable(fSymbolTable);
+
+            // REVISIT: is this a right place to do it?
+            // put ElementPSVI item into Augmentations
+            augs.putItem(ELEM_PSVI, fElemPSVI);
         }
+
+        // REVISIT: is it possible that ElementPSVI is null?
+        fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
+        fCurrentPSVI.reset();
+
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
         // parse them to get the grammars
         // REVISIT: we'll defer this operation until there is a reference to
@@ -1233,6 +1254,12 @@ public class XMLSchemaValidator
             // only
 
             fDoValidation = fValidation;
+
+            // PSVI: validation context
+            // REVISIT: for now we assume there is one validation root in the doc
+            //         if there are more than one, who is responsible for keeping track
+            //         of validation context? Could it be PSVIWriter? DOMParser?
+            fCurrentPSVI.fValidationContext = element.toString();
         }
 
         // if we are in the content of "skip", then just skip this element
@@ -1310,6 +1337,11 @@ public class XMLSchemaValidator
         if (fCurrentElemDecl != null && fCurrentElemDecl.isAbstract())
             reportSchemaError("cvc-elt.2", new Object[]{element.rawname});
 
+        //
+        // PSVI: add element declaration
+        //
+        fCurrentPSVI.fDeclaration = fCurrentElemDecl;
+
         // get the type for the current element
         fCurrentType = null;
         if (fCurrentElemDecl != null) {
@@ -1322,6 +1354,12 @@ public class XMLSchemaValidator
         if (xsiType != null)
             getAndCheckXsiType(element, xsiType);
 
+
+        //
+        // PSVI: add element type
+        //
+        fCurrentPSVI.fTypeDecl = fCurrentType;
+        
         // Element Locally Valid (Type)
         // 2 Its {abstract} must be false.
         if (fCurrentType != null) {
@@ -1420,7 +1458,12 @@ public class XMLSchemaValidator
      *  {value constraint} on the corresponding element decl, then return
      *  an XMLString representing the default value.
      */
-    XMLString handleEndElement(QName element) {
+    XMLString handleEndElement(QName element, Augmentations augs) {
+
+
+        //REVISIT: is it possible PSVI element is going to be null?
+        fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
+        fCurrentPSVI.reset();
 
         // if we are skipping, return
         if (fSkipValidationDepth >= 0) {
@@ -1451,6 +1494,11 @@ public class XMLSchemaValidator
             // REVISIT: PSVI should get error codes here
             String[] errors = fXSIErrorReporter.popContext();
 
+            // PSVI: validation attempted:
+            // validation attempted = none
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.NO_VALIDATION;
+            fCurrentPSVI.fValidity = ElementPSVI.UNKNOWN_VALIDITY;
+            fCurrentPSVI.fErrorCodes = errors;
             return null;
         }
 
@@ -1527,6 +1575,15 @@ public class XMLSchemaValidator
         // element, and remove them from the error list
         // REVISIT: PSVI should get error codes here
         String[] errors = fXSIErrorReporter.popContext();
+        
+        // PSVI: error codes
+        fCurrentPSVI.fErrorCodes = errors;
+        // PSVI: validation attempted
+        // REVISIT: element could be partially valid
+        fCurrentPSVI.fValidationAttempted = ElementPSVI.FULL_VALIDATION;
+        // PSVI: validity
+        fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALID_VALIDITY 
+                                                  : ElementPSVI.INVALID_VALIDITY;
 
         return defaultValue;
     } // handleEndElement(QName,boolean)*/
@@ -1855,6 +1912,10 @@ public class XMLSchemaValidator
         if (fCurrentElemDecl != null) {
             if (fCurrentElemDecl.fDefault != null) {
                 if (fBuffer.toString().trim().length() == 0) {
+
+                    // PSVI: specified
+                    fCurrentPSVI.fSpecified = true;
+
                     int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
                     char [] chars = new char[bufLen];
                     fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, chars, 0);
@@ -1884,8 +1945,13 @@ public class XMLSchemaValidator
             // Element Locally Valid (Element)
             // 3.2.1 The element information item must have no character or element information item [children].
             if (fNil) {
-                if (fChildCount != 0 || content.length() != 0)
+                if (fChildCount != 0 || content.length() != 0){
                     reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+                    // PSVI: nil
+                    fCurrentPSVI.fNil = false;                    
+                } else {
+                    fCurrentPSVI.fNil = true;
+                }
             }
 
             // 5 The appropriate case among the following must be true:
@@ -1963,6 +2029,11 @@ public class XMLSchemaValidator
                 XSSimpleType dv = (XSSimpleType)fCurrentType;
                 try {
                     retValue = dv.validate(textContent, fValidationState, fValidatedInfo);
+                    // PSVI: schema normalized value
+                    //
+                    fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
+                    // PSVI: memberType
+                    fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
                 }
                 catch (InvalidDatatypeValueException e) {
                     reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, textContent});
@@ -1998,6 +2069,12 @@ public class XMLSchemaValidator
                 XSSimpleType dv = ctype.fXSSimpleType;
                 try {
                     actualValue = dv.validate(textContent, fValidationState, fValidatedInfo);
+
+                    // PSVI: schema normalized value
+                    //
+                    fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
+                    // PSVI: memberType
+                    fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
                 }
                 catch (InvalidDatatypeValueException e) {
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});

@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.xni.QName;
@@ -77,16 +78,43 @@ import java.util.Vector;
  */
 public class ElementPSVImpl implements ElementPSVI {
 
-
+    /** element declaration */
     protected XSElementDecl fDeclaration = null;
+
+    /** type of element, could be xsi:type */
+    protected XSTypeDecl fTypeDecl = null;
+
+    /** true if clause 3.2 of Element Locally Valid (Element) (3.3.4) 
+      * is satisfied, otherwise false 
+      */
+    protected boolean fNil = false;
+
+    /** if normalized value represent the default value  */
+    protected boolean fSpecified = false;
+
+    /** schema normalized value property */
+    protected String fNormalizedValue = null;
+
     protected XSNotationDecl fNotation = null;
-    // should be simpleType decl
-    protected XSTypeDecl fMemberType = null;
+
+    /** member type definition against which element was validated */
+    protected XSSimpleType fMemberType = null;
+
+    /** validation attempted: none, partial, full */
     protected short fValidationAttempted = ElementPSVI.NO_VALIDATION;
+
+    /** validity: valid, invalid, unknown */
     protected short fValidity = ElementPSVI.UNKNOWN_VALIDITY;
-    protected Vector fErrorCodes = new Vector(10);
+
+    /** error codes */
+    protected String[] fErrorCodes = null;
+
+    /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
+
+    /** schema information item*/
     protected String fTargetNS = null;
+
 
     //
     // ElementPSVI methods
@@ -99,10 +127,9 @@ public class ElementPSVImpl implements ElementPSVI {
      *         otherwise false.
      */
     public boolean  isMemberTypeAnonymous() {
-        // REVISIT: implement
-        return false;
-
+        return (fMemberType !=null)? fMemberType.isAnonymous():false;
     }
+
 
     /**
      * [member type definition name]
@@ -112,8 +139,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *         value unique to the definition.
      */
     public String   getMemberTypeName() {
-        // REVISIT: implement
-        return null;
+        return (fMemberType !=null)? fMemberType.getTypeName():null;
     }
 
     /**
@@ -122,9 +148,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The {target namespace} of the actual member type definition.
      */
     public String   getMemberTypeNamespace() {
-
-        // REVISIT: implement
-        return null;
+        return (fMemberType !=null)? fMemberType.getTargetNamespace():null;
     }
 
     /**
@@ -135,10 +159,10 @@ public class ElementPSVImpl implements ElementPSVI {
      */
     public String   schemaDefault() {
         Object dValue = null;
-        if (fDeclaration !=null) {
+        if( fDeclaration !=null ) {
             dValue = fDeclaration.fDefault;
         }
-        return(dValue !=null)?dValue.toString():null;
+        return(dValue != null)?dValue.toString():null;
     }
 
     /**
@@ -149,21 +173,17 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return
      */
     public String schemaNormalizedValue() {
-
-        // REVISIT: implement
-        return null;
+        return fNormalizedValue;
     }
 
     /**
      * [schema specified]
+     * 
+     * @return if return is true - schema, otherwise - infoset
      * @see http://www.w3.org/TR/xmlschema-1/#e-schema_specified
-     * @return
      */
     public boolean schemaSpecified() {
-        if (fDeclaration !=null) {
-            return(fDeclaration.getConstraintType() != fDeclaration.NO_CONSTRAINT);
-        }
-        return false;
+        return fSpecified;
     }
 
 
@@ -173,10 +193,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return true if the {name} of the type definition is absent, otherwise false.
      */
     public boolean isTypeAnonymous() {
-
-        // REVISIT: implement
-        //return fDeclaration.fType().isAnonymous();
-        return false;
+        return (fTypeDecl !=null)? fTypeDecl.isAnonymous():false;
     }
 
     /**
@@ -187,11 +204,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *         provide a value unique to the definition.
      */
     public String getTypeName() {
-
-        if (fDeclaration !=null && fDeclaration.fType !=null) {
-            return fDeclaration.fType.getTypeName();
-        }
-        return null;
+        return (fTypeDecl !=null)? fTypeDecl.getTypeName():null;
     }
 
     /**
@@ -200,11 +213,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The {target namespace} of the type definition.
      */
     public String getTypeNamespace() {
-
-        // REVISIT: implement
-        //return fDeclaration.fType.getTargetNS();
-        return null;
-
+        return (fTypeDecl !=null)? fTypeDecl.getTargetNamespace():null;
     }
 
     /**
@@ -215,12 +224,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *  @return simple or complex, depending on the type definition.
      */
     public short getTypeDefinitionType() {
-        if (fDeclaration !=null && fDeclaration.fType !=null) {
-            return fDeclaration.fType.getXSType();
-        }
-        // if there was an error and element declaration was not provided
-        // application should not rely on any information available via PSVI
-        return XSTypeDecl.COMPLEX_TYPE;
+        return (fTypeDecl !=null)? fTypeDecl.getXSType():XSTypeDecl.COMPLEX_TYPE;
     }
 
     /**
@@ -251,15 +255,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return Array of error codes
      */
     public String[] getErrorCodes() {
-
-        // REVISIT: how should we internally store errors
-        int size = fErrorCodes.size();
-        if (size<=0) {
-            return null;
-        }
-        String[] errors = new String[size];
-        fErrorCodes.copyInto(errors);
-        return errors;
+        return fErrorCodes;
 
     }
 
@@ -275,7 +271,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false
      */
     public boolean isNil() {
-        return false;
+        return fNil;
     }
 
     /**
@@ -285,7 +281,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The value of the {public identifier} of that notation declaration.
      */
     public String getNotationPublicId() {
-        return(fNotation!=null)?fNotation.fPublicId:null;
+        return (fNotation!=null)?fNotation.fPublicId:null;
     }
 
     /**
@@ -295,7 +291,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The value of the {system identifier} of that notation declaration.
      */
     public String getNotationSystemId() {
-        return(fNotation!=null)?fNotation.fSystemId:null;
+        return (fNotation!=null)?fNotation.fSystemId:null;
     }
 
     /**
@@ -305,7 +301,8 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return A namespace name or absent.
      */
     public String getSchemaNamespace() {
-        return fTargetNS;
+        // REVISIT: is this info correct
+        return (fDeclaration !=null)? fDeclaration.fName:null;
     }
 
 
@@ -315,22 +312,17 @@ public class ElementPSVImpl implements ElementPSVI {
     public void reset() {
 
         fDeclaration = null;
+        fTypeDecl = null;
+        fNil = false;
+        fSpecified = false;
         fNotation = null;
         // should be simpleType decl
         fMemberType = null;
         fValidationAttempted = ElementPSVI.NO_VALIDATION;
         fValidity = ElementPSVI.UNKNOWN_VALIDITY;
-        fErrorCodes.setSize(0);
+        fErrorCodes = null;
         fValidationContext = null;
         fTargetNS = null;
     }
 
-    //
-    // setter methods
-    //
-
-    public void setErrorCode (String error) {
-        // REVISIT: how should we internally store errors
-        fErrorCodes.addElement(error);
-    }
 }
