@@ -81,8 +81,6 @@ public class DurationDV extends AbstractDateTimeDV {
         {1903, 3, 1, 0, 0, 0, 0, 'Z'},
         {1903, 7, 1, 0, 0, 0, 0, 'Z'}};
 
-    private int[][] fDuration = null;
-
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
             return new DateTimeData(parse(content), this);
@@ -234,35 +232,35 @@ public class DurationDV extends AbstractDateTimeDV {
         if ( resultA == 0 ) {
             return 0;
         }
-        if ( fDuration == null ) {
-            fDuration = new int[2][TOTAL_SIZE];
-        }
+
+        int[][] fDuration = new int[2][TOTAL_SIZE];
+
         //long comparison algorithm is required
-        int[] tempA = addDuration (date1, 0, fDuration[0]);
-        int[] tempB = addDuration (date2, 0, fDuration[1]);
+        int[] tempA = addDuration (date1, DATETIMES[0], fDuration[0]);
+        int[] tempB = addDuration (date2, DATETIMES[0], fDuration[1]);
         resultA =  compareOrder(tempA, tempB);
         if ( resultA == INDETERMINATE ) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, 1, fDuration[0]);
-        tempB = addDuration(date2, 1, fDuration[1]);
+        tempA = addDuration(date1, DATETIMES[1], fDuration[0]);
+        tempB = addDuration(date2, DATETIMES[1], fDuration[1]);
         resultB = compareOrder(tempA, tempB);
         resultA = compareResults(resultA, resultB, strict);
         if (resultA == INDETERMINATE) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, 2, fDuration[0]);
-        tempB = addDuration(date2, 2, fDuration[1]);
+        tempA = addDuration(date1, DATETIMES[2], fDuration[0]);
+        tempB = addDuration(date2, DATETIMES[2], fDuration[1]);
         resultB = compareOrder(tempA, tempB);
         resultA = compareResults(resultA, resultB, strict);
         if (resultA == INDETERMINATE) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, 3, fDuration[0]);
-        tempB = addDuration(date2, 3, fDuration[1]);
+        tempA = addDuration(date1, DATETIMES[3], fDuration[0]);
+        tempB = addDuration(date2, DATETIMES[3], fDuration[1]);
         resultB = compareOrder(tempA, tempB);
         resultA = compareResults(resultA, resultB, strict);
 
@@ -288,7 +286,7 @@ public class DurationDV extends AbstractDateTimeDV {
         return resultA;
     }
 
-    private int[] addDuration(int[] date, int index, int[] duration) {
+    private int[] addDuration(int[] date, int[] addto, int[] duration) {
 
         //REVISIT: some code could be shared between normalize() and this method,
         //         however is it worth moving it? The structures are different...
@@ -296,30 +294,30 @@ public class DurationDV extends AbstractDateTimeDV {
 
         resetDateObj(duration);
         //add months (may be modified additionaly below)
-        int temp = DATETIMES[index][M] + date[M];
+        int temp = addto[M] + date[M];
         duration[M] = modulo (temp, 1, 13);
         int carry = fQuotient (temp, 1, 13);
 
         //add years (may be modified additionaly below)
-        duration[CY]=DATETIMES[index][CY] + date[CY] + carry;
-
+        duration[CY]=addto[CY] + date[CY] + carry;
+        
         //add seconds
-        temp = DATETIMES[index][s] + date[s];
+        temp = addto[s] + date[s];
         carry = fQuotient (temp, 60);
         duration[s] =  mod(temp, 60, carry);
 
         //add minutes
-        temp = DATETIMES[index][m] +date[m] + carry;
+        temp = addto[m] +date[m] + carry;
         carry = fQuotient (temp, 60);
         duration[m]= mod(temp, 60, carry);
 
         //add hours
-        temp = DATETIMES[index][h] + date[h] + carry;
+        temp = addto[h] + date[h] + carry;
         carry = fQuotient(temp, 24);
         duration[h] = mod(temp, 24, carry);
 
 
-        duration[D]=DATETIMES[index][D] + date[D] + carry;
+        duration[D]=addto[D] + date[D] + carry;
 
         while ( true ) {
 
