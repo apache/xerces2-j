@@ -23,13 +23,14 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import java.util.Vector;
 
-/*
- * All information specific to dTD grammars.  
+/**
+ * All information specific to DTD grammars.  
+ * 
+ * @xerces.internal
  * 
  * @author Neil Graham, IBM
  * @version $Id$
  */
-
 public class XMLDTDDescription extends XMLResourceIdentifierImpl
         implements org.apache.xerces.xni.grammars.XMLDTDDescription {
 
@@ -71,19 +72,20 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
         return XMLGrammarDescription.XML_DTD;
     } // getGrammarType():  String
 
-    // return the root name of this DTD
-    // returns null if root name is unknown
+    /** 
+     * @return the root name of this DTD or null if root name is unknown
+     */
     public String getRootName() {
         return fRootName;
     } // getRootName():  String
 
-    // set the root name
+    /** Set the root name **/
     public void setRootName(String rootName) {
         fRootName = rootName;
         fPossibleRoots = null;
     }
 
-    // set possible roots
+    /** Set possible roots **/
     public void setPossibleRoots(Vector possibleRoots) {
         fPossibleRoots = possibleRoots;
     } 

@@ -30,6 +30,8 @@ package org.apache.xerces.impl.dtd.models;
  *
  * Note that the code that uses this class will never perform operations
  * on sets of different sizes, so that check does not have to be made here.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */

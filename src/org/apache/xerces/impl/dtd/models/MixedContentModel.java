@@ -33,6 +33,8 @@ import org.apache.xerces.impl.dtd.XMLContentSpec;
  * validate by just looking up each child being validated by looking it up
  * in the list.
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class MixedContentModel

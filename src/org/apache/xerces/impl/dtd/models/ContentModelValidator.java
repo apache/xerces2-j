@@ -19,6 +19,8 @@ package org.apache.xerces.impl.dtd.models;
 import org.apache.xerces.xni.QName;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public interface ContentModelValidator {

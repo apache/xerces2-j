@@ -48,6 +48,8 @@ import org.apache.xerces.xni.parser.XMLDTDSource;
  * A DTD grammar. This class implements the XNI handler interfaces
  * for DTD information so that it can build the approprate validation
  * structures automatically from the callbacks.
+ * 
+ * @xerces.internal
  *
  * @author Eric Ye, IBM
  * @author Jeffrey Rodriguez, IBM
@@ -2570,6 +2572,8 @@ public class DTDGrammar
     
     /**
      * Children list for <code>contentSpecTree</code> method.
+     * 
+     * @xerces.internal
      *
      * @author Eric Ye, IBM
      */
@@ -2607,6 +2611,8 @@ public class DTDGrammar
     /**
      * A simple Hashtable implementation that takes a tuple (String, String)
      * as the key and a int as value.
+     * 
+     * @xerces.internal
      *
      * @author Eric Ye, IBM
      * @author Andy Clark, IBM

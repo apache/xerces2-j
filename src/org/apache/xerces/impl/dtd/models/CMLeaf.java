@@ -21,6 +21,8 @@ import org.apache.xerces.xni.QName;
 
 /**
  * Content model leaf node.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */

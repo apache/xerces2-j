@@ -62,6 +62,8 @@ import org.apache.xerces.xni.parser.XMLDTDSource;
  *  <li>http://apache.org/xml/properties/internal/grammar-pool</li>
  *  <li>http://apache.org/xml/properties/internal/datatype-validator-factory</li>
  * </ul>
+ * 
+ * @xerces.internal
  *
  * @author Neil Graham, IBM
  *

@@ -20,13 +20,15 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import java.util.Hashtable;
 
 /**
-* This very simple class is the skeleton of what the DTDValidator could use
-* to store various grammars that it gets from the GrammarPool.  As in the
-* case of XSGrammarBucket, one thinks of this object as being closely
-* associated with its validator; when fully mature, this class will be
-* filled from the GrammarPool when the DTDValidator is invoked on a
-* document, and, if a new DTD grammar is parsed, the new set will be
-* offered back to the GrammarPool for possible inclusion.
+ * This very simple class is the skeleton of what the DTDValidator could use
+ * to store various grammars that it gets from the GrammarPool.  As in the
+ * case of XSGrammarBucket, one thinks of this object as being closely
+ * associated with its validator; when fully mature, this class will be
+ * filled from the GrammarPool when the DTDValidator is invoked on a
+ * document, and, if a new DTD grammar is parsed, the new set will be
+ * offered back to the GrammarPool for possible inclusion.
+ * 
+ * @xerces.internal
  *
  * @author Neil Graham, IBM
  *

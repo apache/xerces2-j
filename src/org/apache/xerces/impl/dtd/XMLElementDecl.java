@@ -18,7 +18,10 @@ package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
+
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class XMLElementDecl {

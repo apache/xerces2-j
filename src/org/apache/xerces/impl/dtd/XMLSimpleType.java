@@ -15,8 +15,12 @@
  */
 
 package org.apache.xerces.impl.dtd;
+
 import org.apache.xerces.impl.dv.DatatypeValidator;
+
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class XMLSimpleType {

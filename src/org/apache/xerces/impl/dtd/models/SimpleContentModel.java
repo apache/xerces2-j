@@ -40,6 +40,8 @@ import org.apache.xerces.impl.dtd.XMLContentSpec;
  * in a simple way without a DFA and without the overhead of setting up a
  * DFA for such a simple check.
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class SimpleContentModel

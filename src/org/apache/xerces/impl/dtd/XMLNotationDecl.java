@@ -17,6 +17,8 @@
 package org.apache.xerces.impl.dtd;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class XMLNotationDecl {

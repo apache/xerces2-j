@@ -19,8 +19,9 @@ package org.apache.xerces.impl.dtd.models;
 import org.apache.xerces.impl.dtd.XMLContentSpec;
 
 /**
- *
  * Content model Bin-Op node.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */

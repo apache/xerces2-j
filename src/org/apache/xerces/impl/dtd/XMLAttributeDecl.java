@@ -19,6 +19,8 @@ package org.apache.xerces.impl.dtd;
 import org.apache.xerces.xni.QName;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class XMLAttributeDecl {

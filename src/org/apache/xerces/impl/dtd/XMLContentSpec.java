@@ -65,6 +65,8 @@ package org.apache.xerces.impl.dtd;
  * one" and "one or more" nodes.  The leaf nodes would always have a valid
  * string pool index, as the "#PCDATA" leaf is not used in the declarations
  * for element content models.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */
@@ -263,6 +265,8 @@ public class XMLContentSpec {
      * "mean". If those values refer to content spec identifiers,
      * then the user can call back into the provider to get the
      * next content spec node in the structure.
+     * 
+     * @xerces.internal
      */
     public interface Provider {
 

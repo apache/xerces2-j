@@ -31,6 +31,8 @@ import org.apache.xerces.impl.dtd.XMLContentSpec;
  * are very constrained in form and easily handled via a special case. 
  * This also makes implementation of this class much easier.
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class DFAContentModel

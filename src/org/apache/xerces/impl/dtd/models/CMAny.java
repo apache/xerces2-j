@@ -19,6 +19,8 @@ package org.apache.xerces.impl.dtd.models;
 
 /**
  * Content model any node.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */
