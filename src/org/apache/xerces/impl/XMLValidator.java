@@ -973,7 +973,7 @@ public class XMLValidator
         // call handlers
         if (fInDTD) {
             fDTDGrammar.processingInstruction(target, data);
-            if (fDTDHandler != null && fDTDHandler != fDocumentHandler) {
+            if (fDTDHandler != null) {
                 fDTDHandler.processingInstruction(target, data);
             }
         }
