@@ -4025,7 +4025,7 @@ public final class XMLValidator
       // Get the element name index from the element
       // REVISIT: Validation
       final int elementType = fCurrentElement.rawname;
-
+      
       if (DEBUG_PRINT_CONTENT) {
          String strTmp = fStringPool.toString(elementType);
          System.out.println("Name: "+strTmp+", "+
@@ -4075,7 +4075,7 @@ public final class XMLValidator
           // 3.2.1 The element information item must have no
           // character or element information item [children].
           //
-          if (childCount == 0 && fNil) {
+          if (childCount == 0 && fNil) {              
               fNil = false;
               //return success
               return -1;
@@ -4150,19 +4150,27 @@ public final class XMLValidator
                } else {
                    String value =fDatatypeBuffer.toString();
                    String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
+                   int hasFixed =  (((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED);
+                   if (fNil) {
+                       if (value.length() != 0) {                       
+                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                                 XMLMessages.SCHEMA_GENERIC_ERROR,
+                                                 "An element <" +fStringPool.toString(elementType)+"> with attribute xsi:nil=\"true\" must be empty");
+                       }
+                       if (hasFixed !=0) {
+                           reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                             XMLMessages.SCHEMA_GENERIC_ERROR,
+                             "An element <" +fStringPool.toString(elementType)+"> with attribute xsi:nil=\"true\" must not have fixed value constraint");
+                       }
+                       fNil = false;
+                       return -1;
+                   }
                    // check for fixed/default values of elements here.
                     if( currentElementDefault == null || currentElementDefault.length() == 0) {
-                        if (!fNil) {
                             validateUsingDV(fCurrentDV, value, false);
-                        }
-                        else if ( fNil && value.length() != 0 ) {
-                            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                                                      XMLMessages.SCHEMA_GENERIC_ERROR,
-                                                      "An element <" +fStringPool.toString(elementType)+"> with attribute xsi:nil=\"true\" must be empty");
-                        }
                     }
                     else {
-                        if ( (((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED) != 0 ) {
+                        if (hasFixed !=0) {
                             if ( value.length() == 0 ) {   // use fixed as default value
                                 // Note:  this is inefficient where the DOMParser
                                 // is concerned.  However, if we used the characters(int)
@@ -4182,12 +4190,11 @@ public final class XMLValidator
                             }
                         }
                         else {
-                            if ( value.length() == 0 ) {   // use default value
+                            if ( value.length() == 0) {   // use default value
                                 fDocumentHandler.characters(currentElementDefault.toCharArray(), 0, currentElementDefault.length());
                                 validateUsingDV(fCurrentDV, currentElementDefault, true);
                             }
-
-                            else if (!fNil){ // must validate value
+                            else {
                                 validateUsingDV(fCurrentDV, value, false);
                             }
                         }
@@ -4201,7 +4208,7 @@ public final class XMLValidator
                                           new Object [] { "In element '"+fStringPool.toString(elementType)+"' : "+idve.getMessage()},
                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
             }
-            fNil = false;
+            
             fCurrentDV = null;
             fFirstChunk= true;
             fTrailing=false;
