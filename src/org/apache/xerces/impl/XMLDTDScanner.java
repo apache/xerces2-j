@@ -702,6 +702,8 @@ public class XMLDTDScanner
      * </pre>
      *
      * @param elName The element type name this declaration is about.
+     *
+     * <strong>Note:</strong> Called after scanning past the open paranthesis.
      */
     private final void scanMixed(String elName)
         throws IOException, SAXException {
@@ -724,6 +726,10 @@ public class XMLDTDScanner
             }
             skipSeparator(false, !scanningInternalSubset());
         }
+        // The following check must be done in a single call (as opposed to one
+        // for ')' and then one for '*') to guarantee that callbacks are
+        // properly nested. We do not want to trigger endEntity too early in
+        // case we cross the boundary of an entity between the two characters.
         if (fEntityScanner.skipString(")*")) {
             fStringBuffer.append(")*");
         }
@@ -748,76 +754,47 @@ public class XMLDTDScanner
      * </pre>
      *
      * @param elName The element type name this declaration is about.
+     *
+     * <strong>Note:</strong> Called after scanning past the first open
+     * paranthesis.
      */
     private final void scanChildren(String elName)
         throws IOException, SAXException {
+
         // call handler
         if (fDTDContentModelHandler != null) {
             fDTDContentModelHandler.childrenStartGroup();
         }
-        fContentDepth = 0;
+        fContentDepth = 1;
         int currentOp = 0;
         int c;
-        do {
-            c = fEntityScanner.peekChar();
-            if (c == '(') {
+        while (true) {
+            if (fEntityScanner.skipChar('(')) {
                 // call handler
                 if (fDTDContentModelHandler != null) {
                     fDTDContentModelHandler.childrenStartGroup();
                 }
-                fEntityScanner.scanChar();
                 fStringBuffer.append('(');
                 // push current op on stack and reset it
                 pushOpStack(currentOp);
                 currentOp = 0;
                 fContentDepth++;
+                continue;
             }
-            else if (c == ')') {
-                // call handler
-                if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.childrenEndGroup();
-                }
-                fEntityScanner.scanChar();
-                fStringBuffer.append(')');
-                // restore previous op
-                currentOp = popOpStack();
-                fContentDepth--;
+            skipSeparator(false, !scanningInternalSubset());
+            String childName = fEntityScanner.scanName();
+            if (childName == null) {
+                reportFatalError("MSG_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED_IN_CHILDREN",
+                                 new Object[]{elName});
+                return;
             }
-            else if (c == ',') {
-                if (currentOp == 0) {
-                    currentOp = c;
-                }
-                else if (c != currentOp) {
-//                                               "MSG_UNTERMINATED_CHOICE",
-                    reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
-                                     new Object[]{elName});
-                }
-                // call handler
-                if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.childrenSeparator(
-                                 XMLDTDContentModelHandler.SEPARATOR_SEQUENCE);
-                }
-                fEntityScanner.scanChar();
-                fStringBuffer.append(',');
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.childrenElement(childName);
             }
-            else if (c == '|') {
-                if (currentOp == 0) {
-                    currentOp = c;
-                }
-                else if (c != currentOp) {
-//                                               "MSG_UNTERMINATED_SEQ",
-                    reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
-                                     new Object[]{elName});
-                }
-                // call handler
-                if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.childrenSeparator(
-                                 XMLDTDContentModelHandler.SEPARATOR_CHOICE);
-                }
-                fEntityScanner.scanChar();
-                fStringBuffer.append('|');
-            }
-            else if (c == '?' || c == '*' || c == '+') {
+            fStringBuffer.append(childName);
+            c = fEntityScanner.peekChar();
+            if (c == '?' || c == '*' || c == '+') {
                 // call handler
                 if (fDTDContentModelHandler != null) {
                     short oc;
@@ -835,42 +812,83 @@ public class XMLDTDScanner
                 fEntityScanner.scanChar();
                 fStringBuffer.append((char)c);
             }
-            else {
-                String childName = fEntityScanner.scanName();
-                if (childName == null) {
-                    reportFatalError("MSG_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED_IN_CHILDREN",
+            while (true) {
+                skipSeparator(false, !scanningInternalSubset());
+                c = fEntityScanner.peekChar();
+                if (c == ',' && currentOp != '|') {
+                    currentOp = c;
+                    // call handler
+                    if (fDTDContentModelHandler != null) {
+                        fDTDContentModelHandler.childrenSeparator(
+                                 XMLDTDContentModelHandler.SEPARATOR_SEQUENCE);
+                    }
+                    fEntityScanner.scanChar();
+                    fStringBuffer.append(',');
+                    break;
+                }
+                else if (c == '|' && currentOp != ',') {
+                    currentOp = c;
+                    // call handler
+                    if (fDTDContentModelHandler != null) {
+                        fDTDContentModelHandler.childrenSeparator(
+                                 XMLDTDContentModelHandler.SEPARATOR_CHOICE);
+                    }
+                    fEntityScanner.scanChar();
+                    fStringBuffer.append('|');
+                    break;
+                }
+                else if (c != ')') {
+                    reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
                                      new Object[]{elName});
                 }
                 // call handler
                 if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.childrenElement(childName);
+                    fDTDContentModelHandler.childrenEndGroup();
                 }
-                fStringBuffer.append(childName);
-            }
-            skipSeparator(false, !scanningInternalSubset());
-        } while (fContentDepth >= 0);
-
-        // occurence operator
-        c = fEntityScanner.peekChar();
-        if (c == '?' || c == '*' || c == '+') {
-            // call handler
-            if (fDTDContentModelHandler != null) {
+                // restore previous op
+                currentOp = popOpStack();
+                fContentDepth--;
                 short oc;
-                if (c == '?') {
-                    oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE;
+                // The following checks must be done in a single call (as
+                // opposed to one for ')' and then one for '?', '*', and '+')
+                // to guarantee that callbacks are properly nested. We do not
+                // want to trigger endEntity too early in case we cross the
+                // boundary of an entity between the two characters.
+                if (fEntityScanner.skipString(")?")) {
+                    // call handler
+                    if (fDTDContentModelHandler != null) {
+                        oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE;
+                        fDTDContentModelHandler.childrenOccurrence(oc);
+                    }
+                    fStringBuffer.append(")?");
                 }
-                else if (c == '*') {
-                    oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
+                else if (fEntityScanner.skipString(")+")) {
+                    // call handler
+                    if (fDTDContentModelHandler != null) {
+                        oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
+                        fDTDContentModelHandler.childrenOccurrence(oc);
+                    }
+                    fStringBuffer.append(")+");
+                }
+                else if (fEntityScanner.skipString(")*")) {
+                    // call handler
+                    if (fDTDContentModelHandler != null) {
+                        oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
+                        fDTDContentModelHandler.childrenOccurrence(oc);
+                    }
+                    fStringBuffer.append(")*");
                 }
                 else {
-                    oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
+                    // no occurrence specified
+                    fEntityScanner.scanChar();
+                    fStringBuffer.append(')');
                 }
-                fDTDContentModelHandler.childrenOccurrence(oc);
+                if (fContentDepth == 0) {
+                    return;
+                }
             }
-            fEntityScanner.scanChar();
-            fStringBuffer.append((char)c);
+            skipSeparator(false, !scanningInternalSubset());
         }
-        // we are done
     }
 
     /**
