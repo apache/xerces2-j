@@ -125,7 +125,7 @@ public class URI implements Serializable {
 
   /** URI punctuation mark characters - these, combined with 
       alphanumerics, constitute the "unreserved" characters */
-  private static final String MARK_CHARACTERS = "-_.!~*'()";
+  private static final String MARK_CHARACTERS = "-_.!~*'() ";
 
   /** scheme can be composed of alphanumerics and these characters */
   private static final String SCHEME_CHARACTERS = "+-.";
