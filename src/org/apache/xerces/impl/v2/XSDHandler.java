@@ -427,13 +427,13 @@ class XSDHandler {
                 } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
                         DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
                     if(!dependenciesCanOccur) {
-                        // REVISIT:  schema element ordreing violation
+                        fElementTraverser.reportSchemaError("schema-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                     // we've dealt with this; mark as traversed
                     DOMUtil.setHidden(globalComp);
                 } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
                     if(!dependenciesCanOccur) {
-                        // REVISIT:  schema element ordreing violation
+                        fElementTraverser.reportSchemaError("schema-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                     for(Element redefineComp = DOMUtil.getFirstChildElement(globalComp);
                             redefineComp != null;
@@ -469,11 +469,12 @@ class XSDHandler {
                             checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
                             String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
-                            // and all we need to do is error-check+rename our kkids:
+                            // and all we need to do is error-check+rename our kids:
                             renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_GROUP,
                                 lName, targetLName);
                         } else {
                             // REVISIT:  report schema element ordering error
+                            fElementTraverser.reportSchemaError("src-redefine", new Object [] {componentType});
                         }
                     } // end march through <redefine> children
                     // and now set as traversed
@@ -501,7 +502,7 @@ class XSDHandler {
                     } else if(componentType.equals(SchemaSymbols.ELT_NOTATION)) {
                         checkForDuplicateNames(qName, fUnparsedNotationRegistry, globalComp, currSchemaDoc);
                     } else {
-                        // REVISIT:  report schema element ordering error
+                        fElementTraverser.reportSchemaError("schema-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                 }
             } // end for
@@ -664,13 +665,19 @@ class XSDHandler {
                 break;
             default:
                 // REVISIT: report internal error...
+                fElementTraverser.reportGenericSchemaError("XSDHandler asked to locate component of type " + declType + "; it does not recognize this type (internal error!)"); 
             }
             if (decl != null)
                 schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
+            else {
+                fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " + declToTraverse.localpart);
+                return null;
+            }
 
             if (schemaWithDecl == null) {
                 // cannot get to this schema from the one containing the requesting decl
                 // REVISIT: report component not found error
+                fElementTraverser.reportGenericSchemaError("components from the schema document containing " + declToTraverse.localpart + " are not referenceable from schema document " + currSchema);
                 return null;
             }
             sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
@@ -704,49 +711,48 @@ class XSDHandler {
         if (retObj != null)
             return retObj;
 
-        if (decl != null) {
-            if (DOMUtil.isHidden(decl)) {
-                //REVISIT: report an error: circular reference
-                fElementTraverser.reportGenericSchemaError("Circular reference detected in schema component named " + declToTraverse.prefix+":"+declToTraverse.localpart);
-                return null;
-            }
-
-            DOMUtil.setHidden(decl);
-
-            // back up the current SchemaNamespaceSupport, because we need to provide
-            // a fresh one to the traverGlobal methods.
-            schemaWithDecl.backupNSSupport();
-
-            switch (declType) {
-            case ATTRIBUTE_TYPE :
-                retObj = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-                break;
-            case ATTRIBUTEGROUP_TYPE :
-                retObj = fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-                break;
-            case ELEMENT_TYPE :
-                retObj = fElementTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-                break;
-            case GROUP_TYPE :
-                retObj = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-                break;
-            case IDENTITYCONSTRAINT_TYPE :
-                // identity constraints should have been parsed already...
-                retObj = null;
-            case NOTATION_TYPE :
-                retObj = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
-                break;
-            case TYPEDECL_TYPE :
-                if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
-                    retObj = fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-                else
-                    retObj = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
-            }
-
-            // restore the previous SchemaNamespaceSupport, so that the caller can get
-            // proper namespace binding.
-            schemaWithDecl.restoreNSSupport();
+        // decl must not be null if we're here...
+        if (DOMUtil.isHidden(decl)) {
+            //REVISIT: report an error: circular reference
+            fElementTraverser.reportGenericSchemaError("Circular reference detected in schema component named " + declToTraverse.prefix+":"+declToTraverse.localpart);
+            return null;
         }
+
+        DOMUtil.setHidden(decl);
+
+        // back up the current SchemaNamespaceSupport, because we need to provide
+        // a fresh one to the traverseGlobal methods.
+        schemaWithDecl.backupNSSupport();
+
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            retObj = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            break;
+        case ATTRIBUTEGROUP_TYPE :
+            retObj = fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            break;
+        case ELEMENT_TYPE :
+            retObj = fElementTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            break;
+        case GROUP_TYPE :
+            retObj = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            break;
+        case IDENTITYCONSTRAINT_TYPE :
+            // identity constraints should have been parsed already...
+            retObj = null;
+        case NOTATION_TYPE :
+            retObj = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
+            break;
+        case TYPEDECL_TYPE :
+            if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
+                retObj = fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            else
+                retObj = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+        }
+
+        // restore the previous SchemaNamespaceSupport, so that the caller can get
+        // proper namespace binding.
+        schemaWithDecl.restoreNSSupport();
 
         return retObj;
     } // getGlobalDecl(XSDocumentInfo, int, QName):  Object
@@ -838,10 +844,10 @@ class XSDHandler {
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
 
-        EMPTY_STRING = symbolTable.addSymbol("");
+        EMPTY_STRING = fSymbolTable.addSymbol("");
 
         try {
-            fSchemaParser.setProperty(SchemaValidator.ERROR_REPORTER, errorReporter);
+            fSchemaParser.setProperty(SchemaValidator.ERROR_REPORTER, fErrorReporter);
         } catch (Exception e) {}
 
         fUnparsedAttributeRegistry.clear();
@@ -868,22 +874,21 @@ class XSDHandler {
         fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
 
         // reset traversers
-        fAttributeChecker.reset(errorReporter, symbolTable);
-        fAttributeGroupTraverser.reset(errorReporter, symbolTable);
-        fAttributeTraverser.reset(errorReporter, symbolTable);
-        fComplexTypeTraverser.reset(errorReporter, symbolTable);
-        fElementTraverser.reset(errorReporter, symbolTable);
-        fGroupTraverser.reset(errorReporter, symbolTable);
-        fKeyrefTraverser.reset(errorReporter, symbolTable);
-        fNotationTraverser.reset(errorReporter, symbolTable);
-        fSimpleTypeTraverser.reset(errorReporter, symbolTable);
-        fUniqueOrKeyTraverser.reset(errorReporter, symbolTable);
-        fWildCardTraverser.reset(errorReporter, symbolTable);
+        fAttributeChecker.reset(fErrorReporter, fSymbolTable);
+        fAttributeGroupTraverser.reset(fErrorReporter, fSymbolTable);
+        fAttributeTraverser.reset(fErrorReporter, fSymbolTable);
+        fComplexTypeTraverser.reset(fErrorReporter, fSymbolTable);
+        fElementTraverser.reset(fErrorReporter, fSymbolTable);
+        fGroupTraverser.reset(fErrorReporter, fSymbolTable);
+        fKeyrefTraverser.reset(fErrorReporter, fSymbolTable);
+        fNotationTraverser.reset(fErrorReporter, fSymbolTable);
+        fSimpleTypeTraverser.reset(fErrorReporter, fSymbolTable);
+        fUniqueOrKeyTraverser.reset(fErrorReporter, fSymbolTable);
+        fWildCardTraverser.reset(fErrorReporter, fSymbolTable);
 
         fRedefinedRestrictedAttributeGroupRegistry.clear();
         fRedefinedRestrictedGroupRegistry.clear();
-
-    } // reset
+    } // reset(ErrorReporter, EntityResolver, SymbolTable)
 
     /**
      * Traverse all the deferred local elements. This method should be called
@@ -955,8 +960,9 @@ class XSDHandler {
                     checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
             } else if (redefinedSchema != null) { // we're apparently redefining the wrong schema
                 // REVISIT:  error that redefined element in wrong schema
+                fElementTraverser.reportSchemaError("src-redefine.1", new Object [] {qName});
             } else { // we've just got a flat-out collision
-                // REVISIT:  report error for duplicate declarations
+                fElementTraverser.reportSchemaError("sch-props-correct", new Object []{qName});
             }
         }
     } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
@@ -994,8 +1000,7 @@ class XSDHandler {
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
                 // fRedefineSucceeded = false;
-                // REVISIT: Localize
-                // REVISIT:  reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
+                fElementTraverser.reportSchemaError("src-redefine.5", null);
             } else {
                 String grandKidName = grandKid.getLocalName();
                 if(grandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -1004,19 +1009,16 @@ class XSDHandler {
                 }
                 if (grandKid == null) {
                     // fRedefineSucceeded = false;
-                    // REVISIT: Localize
-                    // REVISIT:  reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
+                    fElementTraverser.reportSchemaError("src-redefine.5", null);
                 } else if(!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
                     // fRedefineSucceeded = false;
-                    // REVISIT: Localize
-                    // REVISIT:  reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
+                    fElementTraverser.reportSchemaError("src-redefine.5", null);
                 } else {
                     String derivedBase = grandKid.getAttribute( SchemaSymbols.ATT_BASE );
                     String processedDerivedBase = findQName(derivedBase, currNSMap);
                     if(!processedTypeName.equals(processedDerivedBase)) {
                         // fRedefineSucceeded = false;
-                        // REVISIT: Localize
-                        // REVISIT:  reportGenericSchemaError("the base attribute of the restriction child of a simpleType child of a redefine must have the same value as the simpleType's type attribute");
+                        fElementTraverser.reportSchemaError("src-redefine.5", null);
                     } else {
                         // now we have to do the renaming...
                         int colonptr = derivedBase.indexOf(":");
@@ -1035,23 +1037,20 @@ class XSDHandler {
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
                 // fRedefineSucceeded = false;
-                // REVISIT: Localize
-                // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                fElementTraverser.reportSchemaError("src-redefine.5", null);
             } else {
                 if(grandKid.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
                     grandKid = DOMUtil.getNextSiblingElement(grandKid);
                 }
                 if (grandKid == null) {
                     // fRedefineSucceeded = false;
-                    // REVISIT: Localize
-                    // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                    fElementTraverser.reportSchemaError("src-redefine.5", null);
                 } else {
                     // have to go one more level down; let another pass worry whether complexType is valid.
                     Element greatGrandKid = DOMUtil.getFirstChildElement(grandKid);
                     if (greatGrandKid == null) {
                         // fRedefineSucceeded = false;
-                        // REVISIT: Localize
-                        // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                        fElementTraverser.reportSchemaError("src-redefine.5", null);
                     } else {
                         String greatGrandKidName = greatGrandKid.getLocalName();
                         if(greatGrandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -1060,20 +1059,17 @@ class XSDHandler {
                         }
                         if (greatGrandKid == null) {
                             // fRedefineSucceeded = false;
-                            // REVISIT: Localize
-                            // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                            fElementTraverser.reportSchemaError("src-redefine.5", null);
                         } else if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
                                 !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
                             // fRedefineSucceeded = false;
-                            // REVISIT: Localize
-                            // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                            fElementTraverser.reportSchemaError("src-redefine.5", null);
                         } else {
                             String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
                             String processedDerivedBase = findQName(derivedBase, currSchema.fNamespaceSupport);
                             if(!processedTypeName.equals(processedDerivedBase)) {
                                 // fRedefineSucceeded = false;
-                                // REVISIT: Localize
-                                // REVISIT:  reportGenericSchemaError("the base attribute of the restriction or extension grandchild of a complexType child of a redefine must have the same value as the complexType's type attribute");
+                                fElementTraverser.reportSchemaError("src-redefine.5", null);
                             } else {
                                 // now we have to do the renaming...
                                 int colonptr = derivedBase.indexOf(":");
@@ -1095,8 +1091,7 @@ class XSDHandler {
             int attGroupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
             if(attGroupRefsCount > 1) {
                 // fRedefineSucceeded = false;
-                // REVISIT:  localize
-                // REVISIT:  reportGenericSchemaError("if an attributeGroup child of a <redefine> element contains an attributeGroup ref'ing itself, it must have exactly 1; this one has " + attGroupRefsCount);
+                fElementTraverser.reportSchemaError("src-redefine.7.1", new Object []{new Integer(attGroupRefsCount)});
             } else if (attGroupRefsCount == 1) {
 //                return true;
             }  else
@@ -1110,8 +1105,7 @@ class XSDHandler {
             int groupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
             if(groupRefsCount > 1) {
                 // fRedefineSucceeded = false;
-                // REVISIT:  localize
-                // REVISIT:  reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
+                fElementTraverser.reportSchemaError("src-redefine.6.1.1", new Object []{new Integer(groupRefsCount)});
             } else if (groupRefsCount == 1) {
 //                return true;
             }  else {
@@ -1123,7 +1117,7 @@ class XSDHandler {
         } else {
             // fRedefineSucceeded = false;
             // REVISIT: Localize
-            // REVISIT:  reportGenericSchemaError("internal Xerces error; please submit a bug with schema as testcase");
+            fElementTraverser.reportGenericSchemaError("internal Xerces error; please submit a bug with schema as testcase");
         }
         // if we get here then we must have reported an error and failed somewhere...
 //        return false;
@@ -1179,8 +1173,7 @@ class XSDHandler {
                             String maxOccurs = child.getAttribute( SchemaSymbols.ATT_MAXOCCURS );
                             if(!((maxOccurs.length() == 0 || maxOccurs.equals("1"))
                                     && (minOccurs.length() == 0 || minOccurs.equals("1")))) {
-                                //REVISIT:  localize
-                                // REVISIT:  reportGenericSchemaError("src-redefine.6.1.2:  the group " + ref + " which contains a reference to a group being redefined must have minOccurs = maxOccurs = 1");
+                                fElementTraverser.reportSchemaError("src-redefine.6.1.2", new Object [] {ref});
                             }
                         }
                     }
