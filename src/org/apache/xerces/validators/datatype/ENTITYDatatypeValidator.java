@@ -58,6 +58,7 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
+import java.util.Vector;
 import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.utils.StringPool;
@@ -141,9 +142,23 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
         }
 
         // inherit entity handler and string pool from base validator
-        if (base != null && base instanceof ENTITYDatatypeValidator) {
+        if (base != null) {
             this.fEntityHandler = ((ENTITYDatatypeValidator)base).fEntityHandler;
             this.fStringPool = ((ENTITYDatatypeValidator)base).fStringPool;
+        }
+
+        Vector enum = null;
+        if (facets != null)
+            enum = (Vector)facets.get(SchemaSymbols.ELT_ENUMERATION);
+        if (enum != null) {
+            int i = 0;
+            try {
+                for ( ; i < enum.size(); i++)
+                    fgStrValidator.validate((String)enum.elementAt(i), null);
+            } catch ( Exception idve ){
+                throw new InvalidDatatypeFacetException( "Value of enumeration = '" + enum.elementAt(i) +
+                                                         "' must be from the value space of base.");
+            }
         }
     }
 

@@ -389,7 +389,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             timeZone[hh]=14;
             timeZone[mm]=0;
 
-            fTempDate[utc]='+';
+            fTempDate[utc]='-';
             if (DEBUG) {
                System.out.println("fTempDate=" + dateToString(fTempDate));
             }
@@ -404,7 +404,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             cloneDate(date1); //clones date1 value to global temporary storage: fTempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
-            fTempDate[utc]='-';
+            fTempDate[utc]='+';
             normalize(fTempDate);
             c2 = compareOrder(fTempDate, date2);
             if (DEBUG) {
@@ -744,7 +744,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
         //add minutes (from time zone)
         int negate = 1;
-        if (date[utc]=='-') {
+        if (date[utc]=='+') {
             negate = -1;
         }
         if ( DEBUG ) {

@@ -110,6 +110,20 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
                 }
             } //end for
 
+            // check 4.3.5.c0 must: enumeration values from the value space of base
+            if ( base != null &&
+                (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
+                (fEnumeration != null) ) {
+                int i = 0;
+                try {
+                    for (; i < fEnumeration.size(); i++) {
+                        base.validate ((String)fEnumeration.elementAt(i), null);
+                    }
+                } catch ( Exception idve ){
+                    throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
+                                                             "' must be from the value space of base.");
+                }
+            }
         }// End of Facets Setting
 
     }

@@ -2,6 +2,8 @@
 
 TARGETS=\
 	AbstractDatatypeValidator.class\
+	AbstractNumericFacetValidator.class\
+	AbstractNumericValidator.class\
 	AnyURIDatatypeValidator.class\
 	Base64BinaryDatatypeValidator.class\
 	BooleanDatatypeValidator.class\
@@ -28,6 +30,7 @@ TARGETS=\
 	MonthDayDatatypeValidator.class\
 	NOTATIONDatatypeValidator.class \
 	QNameDatatypeValidator.class\
+	SchemaDateTimeException.class\
 	StateMessageDatatype.class\
 	StringDatatypeValidator.class\
 	TimeDatatypeValidator.class\

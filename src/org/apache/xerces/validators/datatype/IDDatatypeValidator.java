@@ -59,6 +59,7 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Vector;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.validators.schema.SchemaSymbols;
@@ -100,6 +101,20 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
             strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
             strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
             fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+        }
+
+        Vector enum = null;
+        if (facets != null)
+            enum = (Vector)facets.get(SchemaSymbols.ELT_ENUMERATION);
+        if (enum != null) {
+            int i = 0;
+            try {
+                for ( ; i < enum.size(); i++)
+                    fgStrValidator.validate((String)enum.elementAt(i), null);
+            } catch ( Exception idve ){
+                throw new InvalidDatatypeFacetException( "Value of enumeration = '" + enum.elementAt(i) +
+                                                         "' must be from the value space of base.");
+            }
         }
     }
 

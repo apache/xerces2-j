@@ -145,6 +145,24 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                     "must be greater that the value of maxLength" + fMaxLength );
                 }
             }
+
+            // check 4.3.5.c0 must: enumeration values from the value space of base
+            //REVISIT: we should try either to delay it till validate() or
+            //         store enumeration values in _value_space 
+            //         otherwise we end up creating and throwing objects  
+            if ( base != null &&
+                (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
+                (fEnumeration != null) ) {
+                int i = 0;
+                try {
+                    for (; i < fEnumeration.size(); i++) {
+                        base.validate ((String)fEnumeration.elementAt(i), null);
+                    }
+                } catch ( Exception idve ){
+                    throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
+                                                             "' must be from the value space of base.");
+                }
+            }
         }// End of Facets Setting
     }
 
@@ -246,9 +264,10 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             
             //REVISIT: attemt to make enumeration to be validated against value space.
             //a redesign of Datatypes might help to reduce complexity of this validation
-        StringTokenizer parsedList = new StringTokenizer( content );
-        int numberOfTokens = parsedList.countTokens();         
-        if (fBaseValidator instanceof ListDatatypeValidator) { 
+        
+         StringTokenizer parsedList = new StringTokenizer( content );
+         int numberOfTokens = parsedList.countTokens();         
+         if (fBaseValidator instanceof ListDatatypeValidator) { 
             //<simpleType name="fRestriction"><restriction base="fList">...</restriction></simpleType>
             try {
                 if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
@@ -294,6 +313,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
         else { 
             //the case:
             //<simpleType name="fList"><list itemType="float"/></simpleType>
+            
             if (enumeration !=null) {
                 StringTokenizer eTokens = null; //temporary list of enumeration tokens 
                 StringTokenizer cTokens = null; //list of content tokens
@@ -310,7 +330,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                     currentEnumeration = (String)enumeration.elementAt(i);
                     eTokens = new StringTokenizer (currentEnumeration);
                     valid = true;
-                    cTokens=parsedList;
+
+                    cTokens = (i==0)?parsedList:new StringTokenizer( content );
                     
                     if (numberOfTokens == eTokens.countTokens()) {
                         try {
@@ -326,13 +347,9 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                                     token = cTokens.nextToken();
                                     eToken = eTokens.nextToken();
                                     enumTemp.setElementAt(eToken,0);
-                                    //REVISIT: RecurringDuration..
-                                    if (fBaseValidator instanceof DecimalDatatypeValidator) {
-                                        ((DecimalDatatypeValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
-                                    } else if (fBaseValidator instanceof FloatDatatypeValidator) {
-                                        ((FloatDatatypeValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
-                                    } else if (fBaseValidator instanceof DoubleDatatypeValidator) {
-                                        ((DoubleDatatypeValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
+                                    //REVISIT: date/time enumeration support
+                                    if (fBaseValidator instanceof AbstractNumericValidator) {
+                                        ((AbstractNumericValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
                                     } else { 
                                         if (!token.equals(eToken)) { //validate enumeration for all other types
                                             throw new InvalidDatatypeValueException("Value '"+content+ "' must be one of "+enumeration);
