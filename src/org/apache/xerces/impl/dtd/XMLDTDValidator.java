@@ -1289,6 +1289,7 @@ public class XMLDTDValidator
                                                "MSG_ATTRIBUTE_NOT_DECLARED",
                                                args,XMLErrorReporter.SEVERITY_ERROR);   
                 }
+				attributes.setType(i, null);
                 continue;
             }
             // attribute is declared
