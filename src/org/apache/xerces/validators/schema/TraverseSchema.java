@@ -393,6 +393,7 @@ public class TraverseSchema {
     private int fAnonTypeCount =0;
     private int fScopeCount=0;
     private int fCurrentScope=0;
+    private int fSimpleTypeAnonCount = 0;
 
     private boolean defaultQualified = false;
     private int targetNSURI;
@@ -515,39 +516,103 @@ public class TraverseSchema {
      * @return 
      */
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) {
-        int simpleTypeAbstract   =  fStringPool.addSymbol(
-                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
 
-        int simpleTypeBasetype   = fStringPool.addSymbol(
-                                                        simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ));
+        //TODO Add the derivedBy List
 
-        int simpleTypeDerivedBy  =  fStringPool.addSymbol(
-                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY ));
+        String varietyProperty       =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
+        String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
+        String baseTypeQNameProperty =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE );
+        String abstractProperty      =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
 
-        int simpleTypeID         =  fStringPool.addSymbol(
-                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+        int     newSimpleTypeName    = -1;
 
-        int simpleTypeName       =  fStringPool.addSymbol(
-                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
-        Element simpleTypeChild = XUtil.getFirstChildElement(simpleTypeDecl);
+        if ( nameProperty.equals("")) { // anonymous simpleType
+            newSimpleTypeName = fStringPool.addSymbol(
+                               "http://www.apache.org/xml/xerces/internalDatatype"+fSimpleTypeAnonCount++ );   
+            } else 
+            newSimpleTypeName       = fStringPool.addSymbol( nameProperty );
 
-        // check that base type is defined
-        //REVISIT: how do we do the extension mechanism? hardwired type name?
 
-        //DatatypeValidator baseValidator = 
-       // fDatatypeRegistry.getValidatorFor(simpleTypeChild.getAttribute(ATT_NAME));
-        //if (baseValidator == null) {
-         //   reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-          //                    new Object [] { simpleTypeChild.getAttribute(ATT_NAME), simpleTypeDecl.getAttribute(ATT_NAME)});
+        int               basetype;
+        DatatypeValidator baseValidator = null;
 
-        //    return -1;
-        //}
+        if( baseTypeQNameProperty!= null ) {
+            basetype      = fStringPool.addSymbol( baseTypeQNameProperty );
+            baseValidator = fDatatypeRegistry.getValidatorFor( baseTypeQNameProperty );
+            if (baseValidator == null) {
+                reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
+                                                  simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME) });
+                return -1;
+                }
+        }
 
-        // build facet list
+        // Any Children if so then check Content otherwise bail out
+
+        Element   content   = XUtil.getFirstChildElement( simpleTypeDecl );
+        int       numFacets = 0; 
+        Hashtable facetData = null;
+
+        if( content != null ) {
+
+            //Content follows: ( annotation? , facets* )
+
+            //annotation ? ( 0 or 1 )
+            if( content.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                traverseAnnotationDecl( content );   
+            } 
+
+            //TODO: If content is annotation again should raise validation error
+            // if( content.getNodeName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
+            //   throw ValidationException(); }
+            //
+
+            //facets    * ( 0 or more )
+
+            content                    = XUtil.getNextSiblingElement(content);
+            int numEnumerationLiterals = 0;
+            facetData        = new Hashtable();
+            Vector enumData            = new Vector();
+
+            while (content != null) {
+                if (content.getNodeType() == Node.ELEMENT_NODE) {
+                    Element facetElt = (Element) content;
+                    numFacets++;
+                    if (facetElt.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                        numEnumerationLiterals++;
+                        enumData.addElement(facetElt.getAttribute(SchemaSymbols.ATT_VALUE));
+                        //Enumerations can have annotations ? ( 0 | 1 )
+                        Element enumContent =  XUtil.getFirstChildElement( facetElt );
+                        if( enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                            traverseAnnotationDecl( content );   
+                         } 
+                        //TODO: If enumContent is encounter  again should raise validation error
+                        //  enumContent.getNextSibling();
+                        // if( enumContent.getNodeName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
+                        //   throw ValidationException(); }
+                        //
+                    } else {
+                    facetData.put(facetElt.getNodeName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
+                    }
+                }
+            content = (Element) content.getNextSibling();
+            }
+            if (numEnumerationLiterals > 0) {
+               facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
+            }
+        }
 
         // create & register validator for "generated" type if it doesn't exist
-        return -1;
+        try {
+            DatatypeValidator newValidator = (DatatypeValidator) baseValidator.getClass().newInstance();
+           if (numFacets > 0)
+               newValidator.setFacets(facetData);
+           fDatatypeRegistry.addValidator(fStringPool.toString(newSimpleTypeName),newValidator);
+           } catch (Exception e) {
+           reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
+           }
+        return newSimpleTypeName;
     }
 
 
