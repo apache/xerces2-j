@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.v2;
+package org.apache.xerces.util;
 
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.DocumentImpl;
@@ -270,7 +270,7 @@ public class XMLManipulator {
 
     } // getNextSiblingElement(Node):Element
 
-    // get next visible (un-hidden) node.  
+    // get next visible (un-hidden) node.
     public static Element getNextVisibleSiblingElement(Node node) {
 
         // search for node
@@ -288,7 +288,7 @@ public class XMLManipulator {
 
     } // getNextSiblingdElement(Node):Element
 
-    // set this Node as being hidden 
+    // set this Node as being hidden
     public static void setHidden(Node node) {
         ((NodeImpl)node).setReadOnly(true, false);
     } // setTraversed(node):void
@@ -356,7 +356,7 @@ public class XMLManipulator {
     } // getNextSiblingdElement(Node,String):Element
 
     /** Finds and returns the first child node with the given qualified name. */
-    public static Element getFirstChildElementNS(Node parent, 
+    public static Element getFirstChildElementNS(Node parent,
                                                  String uri, String localpart) {
 
         // search for node
@@ -378,7 +378,7 @@ public class XMLManipulator {
     } // getFirstChildElementNS(Node,String,String):Element
 
     /** Finds and returns the last child node with the given qualified name. */
-    public static Element getLastChildElementNS(Node parent, 
+    public static Element getLastChildElementNS(Node parent,
                                                 String uri, String localpart) {
 
         // search for node
@@ -400,7 +400,7 @@ public class XMLManipulator {
     } // getLastChildElementNS(Node,String,String):Element
 
     /** Finds and returns the next sibling node with the given qualified name. */
-    public static Element getNextSiblingElementNS(Node node, 
+    public static Element getNextSiblingElementNS(Node node,
                                                   String uri, String localpart) {
 
         // search for node
@@ -485,7 +485,7 @@ public class XMLManipulator {
     } // getNextSiblingdElement(Node,String[]):Element
 
     /** Finds and returns the first child node with the given qualified name. */
-    public static Element getFirstChildElementNS(Node parent, 
+    public static Element getFirstChildElementNS(Node parent,
                                                  String[][] elemNames) {
 
         // search for node
@@ -509,7 +509,7 @@ public class XMLManipulator {
     } // getFirstChildElementNS(Node,String[][]):Element
 
     /** Finds and returns the last child node with the given qualified name. */
-    public static Element getLastChildElementNS(Node parent, 
+    public static Element getLastChildElementNS(Node parent,
                                                 String[][] elemNames) {
 
         // search for node
@@ -533,7 +533,7 @@ public class XMLManipulator {
     } // getLastChildElementNS(Node,String[][]):Element
 
     /** Finds and returns the next sibling node with the given qualified name. */
-    public static Element getNextSiblingElementNS(Node node, 
+    public static Element getNextSiblingElementNS(Node node,
                                                   String[][] elemNames) {
 
         // search for node
@@ -642,7 +642,7 @@ public class XMLManipulator {
      * Returns the concatenated child text of the specified node.
      * This method only looks at the immediate children of type
      * <code>Node.TEXT_NODE</code> or the children of any child
-     * node that is of type <code>Node.CDATA_SECTION_NODE</code> 
+     * node that is of type <code>Node.CDATA_SECTION_NODE</code>
      * for the concatenation.
      *
      * @param node The node to look at.
