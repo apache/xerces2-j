@@ -974,8 +974,9 @@ public abstract class BaseMarkupSerializer
 
             text = node.getNodeValue();
             if ( text != null )
-								if ( !_indenting || getElementState().preserveSpace || !(text.replace('\n',' ').trim() != ""))
-										characters( node.getNodeValue() );
+                if ( !_indenting || getElementState().preserveSpace
+                     || (text.replace('\n',' ').trim().length() != 0))
+                    characters( text );
             break;
         }
 
@@ -985,7 +986,7 @@ public abstract class BaseMarkupSerializer
             text = node.getNodeValue();
             if ( text != null ) {
                 startCDATA();
-                characters( node.getNodeValue() );
+                characters( text );
                 endCDATA();
             }
             break;
@@ -997,7 +998,7 @@ public abstract class BaseMarkupSerializer
             if ( ! _format.getOmitComments() ) {
                 text = node.getNodeValue();
                 if ( text != null )
-                    comment( node.getNodeValue() );
+                    comment( text );
             }
             break;
         }
