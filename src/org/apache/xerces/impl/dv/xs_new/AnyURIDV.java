@@ -71,6 +71,14 @@ import org.apache.xerces.impl.validation.ValidationContext;
  */
 public class AnyURIDV extends TypeValidator {
 
+    private static URI BASE_URI = null;
+    static {
+        try {
+            BASE_URI = new URI("http://www.template.com");
+        } catch (URI.MalformedURIException ex) {
+        }
+    }
+
     public short getAllowedFacets(){
         return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
     }
@@ -81,13 +89,12 @@ public class AnyURIDV extends TypeValidator {
         // check 3.2.17.c0 must: URI (rfc 2396/2723)
         try {
             if( content.length() != 0 ) {
-                URI tempURI = new URI("http://www.template.com");
                 // Support for relative URLs
                 // According to Java 1.1: URLs may also be specified with a
                 // String and the URL object that it is related to.
-                new URI(tempURI, content );
+                new URI(BASE_URI, content );
             }
-        } catch (  URI.MalformedURIException ex ) {
+        } catch (URI.MalformedURIException ex) {
             throw new InvalidDatatypeValueException("Value '"+content+"' is a Malformed URI");
         }
 
