@@ -1223,7 +1223,20 @@ public class XSAttributeChecker {
             // final = (#all | List of (extension | restriction))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
-                choice = SchemaSymbols.EXTENSION|SchemaSymbols.RESTRICTION;
+                //choice = SchemaSymbols.EXTENSION|SchemaSymbols.RESTRICTION;
+                // REVISIT: if #all, then make the result the combination of
+                //          everything: substitution/externsion/restriction/list/union.
+                //          would this be a problem?
+                // the reason doing so is that when final/blockFinal on <schema>
+                // is #all, it's not always the same as the conbination of those
+                // values allowed by final/blockFinal.
+                // for example, finalDefault="#all" is not always the same as
+                // finalDefault="extension restriction".
+                // if finalDefault="#all", final on any simple type would be
+                // "extension restriction list union".
+                choice = SchemaSymbols.SUBSTITUTION|SchemaSymbols.EXTENSION|
+                         SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
+                         SchemaSymbols.UNION;
             }
             else {
                 StringTokenizer t = new StringTokenizer (value, " ");
@@ -1247,7 +1260,14 @@ public class XSAttributeChecker {
             // final = (#all | (list | union | restriction))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
-                choice = SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
+                //choice = SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
+                //         SchemaSymbols.UNION;
+                // REVISIT: if #all, then make the result the combination of
+                //          everything: substitution/externsion/restriction/list/union.
+                //          would this be a problem?
+                // same reason as above DT_BLOCK1/DT_FINAL
+                choice = SchemaSymbols.SUBSTITUTION|SchemaSymbols.EXTENSION|
+                         SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
                          SchemaSymbols.UNION;
             }
             else if (value.equals (SchemaSymbols.ATTVAL_LIST)) {
