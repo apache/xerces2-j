@@ -2,10 +2,11 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
-    <s2 title="January 26, 1999">
+    <s2 title="February 8, 2000">
         <ul>
+            <li>Removed hard-coded strings to enable national language support (NLS) [jeffreyr,lehors,rip]
+            <li>Update for SAX2beta [andyc]</li>
             <li>Add new feature <code>http://apache.org/xml/features/dom/include-ignorable-whitespace</code> [andyc]</li>
-            <li>ANT build file almost works (mod bug in ANT) [twl]</li>
             <li>ChunkyByteArray - needed resize chunk array for large files [andyc] </li>
             <li>UTF8DataChunk - memory perf fix [andyc] </li>
             <li>DOM L1 - cache node children length to accelerate <code>Node#item()</code>[andyc]</li>
