@@ -302,11 +302,13 @@ public class XMLValidator
 
         fNDataDeclNotations.clear();
 
+        // sax features
         fValidation = configurationManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
 
         // get needed components
         fErrorReporter = (XMLErrorReporter) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
+        fGrammarPool = (GrammarPool) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.GRAMMAR_POOL_PROPERTY);
 
         // plug in XMLNamespaceBinder
         fNamespaceBinder = new XMLNamespaceBinder();
@@ -1073,6 +1075,8 @@ public class XMLValidator
 
         // create DTD grammar
         fDTDGrammar = new DTDGrammar();
+        // REVISIT: should we use the systemId as the key instead?
+        fGrammarPool.putGrammar("", fDTDGrammar);
 
         // REVESIT: if schema validation is turned on, we shouldn't be doing this.
         fCurrentGrammarIsDTD = true;
