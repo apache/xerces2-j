@@ -192,7 +192,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
 
             // add global group declaration to the grammar
-            if (particle != null && strNameAttr != null) {
+            if (strNameAttr != null) {
                 group = new XSGroupDecl();
                 group.fName = strNameAttr;
                 group.fTargetNamespace = schemaDoc.fTargetNamespace;
