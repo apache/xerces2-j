@@ -106,7 +106,7 @@ please read the <link idref='faq-general'>Bugzilla</link> FAQ.
       Please, let us know if this change affects your application.</p>
   </s2>
   
-  <s2 title='Changes from Previous Release'>
+<!--  <s2 title='Changes from Previous Release'>
     
     <p>
       The &ParserNameLong; &ParserVersion; fixes bugs and adds new functionality.
@@ -124,6 +124,7 @@ please read the <link idref='faq-general'>Bugzilla</link> FAQ.
       <link idref='releases'>Release Information</link> page.
     </p>	      
   </s2>
+  -->
   <s2 title='Changes from Xerces 1.x'>
     <p>
       Xerces2 is a nearly complete rewrite of the Xerces 1.x codebase
