@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.v2.datatypes.*;
-
+import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.xni.QName;
@@ -260,7 +260,10 @@ class XSDHandler {
 
         // REVISIT: do we use shadowed or synchronized symbol table of
         //          SchemaSymbols.fSymbolTable?
-        fSchemaParser = new DOMParser(new SchemaSymbols.SchemaSymbolTable());
+        // REVISIT: don't use SchemaConfiguration internally
+        //          we will get stack overflaw because 
+        //          SchemaValidator will be instantiating XSDHandler...
+        fSchemaParser = new DOMParser(new StandardParserConfiguration(new SchemaSymbols.SchemaSymbolTable()));
         // set ErrorHandler and EntityResolver (doesn't seem that
         // XMLErrorHandler or XMLEntityResolver will work with
         // standard DOMParser...
