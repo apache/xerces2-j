@@ -60,6 +60,7 @@ package org.apache.xerces.impl;
 import java.io.IOException;
 import java.io.EOFException;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
@@ -114,6 +115,9 @@ public class XMLDTDScanner
     protected static final int SCANNER_STATE_CONDITIONAL_SECT = 9;
     ***/
 
+    // set default values for features
+    final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+
     // debugging
 
     /** Debug scanner state. */
@@ -122,6 +126,14 @@ public class XMLDTDScanner
     //
     // Data
     //
+
+    // features
+
+    /** 
+     * Validation. This feature identifier is:
+     * http://xml.org/sax/features/validation
+     */
+    protected boolean fValidation;
 
     /** fErrorReporter */
     protected XMLErrorReporter fErrorReporter;
@@ -303,6 +315,9 @@ public class XMLDTDScanner
 
         super.reset(componentManager);
 
+        // sax features
+        fValidation = componentManager.getFeature(VALIDATION);
+
         // Xerces properties
         fGrammarPool = (GrammarPool)
             componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
@@ -328,6 +343,10 @@ public class XMLDTDScanner
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        if (featureId.equals(VALIDATION)) {
+            fValidation = state;
+        }
 
     } // setFeature
 
@@ -440,7 +459,9 @@ public class XMLDTDScanner
         else if (name.charAt(0) == '%') {
             // check well-formedness of the enity
             int startMarkUpDepth = popPEStack();
-            if (startMarkUpDepth != fMarkUpDepth) {
+            // Proper nesting of parameter entities is a Validity Constraint
+            // and must not be enforced when validation is off
+            if (fValidation && startMarkUpDepth != fMarkUpDepth) {
                 reportFatalError("MarkupEntityMismatch", null);
             }
             if (fEntityScanner.isExternal()) {
