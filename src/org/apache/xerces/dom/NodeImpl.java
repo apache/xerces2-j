@@ -1224,7 +1224,7 @@ public abstract class NodeImpl
      * prevent the nodes, your data is attached to, to be garbage collected
      * until the whole document is.
      *
-     * @returns the previous user object, or null if none.
+     * @param data the object to store or null to remove any existing reference
      */
     public void setUserData(Object data) {
         ownerDocument().setUserData(this, data);

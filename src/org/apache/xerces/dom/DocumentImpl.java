@@ -1382,7 +1382,11 @@ public class DocumentImpl
         if (userData == null) {
             userData = new Hashtable();
         }
-        userData.put(n, data);
+        if (data == null) {
+            userData.remove(n);
+        } else {
+            userData.put(n, data);
+        }
     }
 
     /**
