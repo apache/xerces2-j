@@ -312,7 +312,29 @@ public class MyComponent
     <td>org.apache.xerces.xni.parser.XMLDocumentScanner</td>
    </tr>
   </table>
-  <p><strong>TODO</strong></p>
+  <p>Required properties:</p>
+  <ul>
+   <li>http://apache.org/xml/properties/internal/symbol-table</li>
+   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+   <li>http://apache.org/xml/properties/internal/entity-manager</li>
+   <li>http://apache.org/xml/properties/internal/dtd-scanner</li>
+  </ul>
+  <p>Recognized features:</p>
+  <ul>
+   <li>http://xml.org/sax/features/namespaces</li>
+   <li>http://xml.org/sax/features/validation</li>
+   <li>http://apache.org/xml/features/nonvalidating/load-external-dtd</li>
+   <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
+   <li>http://apache.org/xml/features/scanner/notify-builtin-refs</li>
+  </ul>
+  <p>
+   The <code>org.apache.xerces.impl.XMLDocumentScannerImpl</code>
+   class implements the XNI document scanner interface and is
+   implemented so that it can also function as a "pull" parser.
+   A pull parser allows the application to drive the parsing of 
+   the document instead of having all of the document events
+   "pushed" to the registered handlers.
+  </p>
  </s2>
  <anchor name='dtd-scanner'/>
  <s2 title='DTD Scanner'>
@@ -327,7 +349,24 @@ public class MyComponent
     <td>org.apache.xerces.xni.parser.XMLDTDScanner</td>
    </tr>
   </table>
-  <p><strong>TODO</strong></p>
+  <p>Required properties:</p>
+  <ul>
+   <li>http://apache.org/xml/properties/internal/symbol-table</li>
+   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+   <li>http://apache.org/xml/properties/internal/entity-manager</li>
+  </ul>
+  <p>Recognized features:</p>
+  <ul>
+   <li>http://xml.org/sax/features/validation</li>
+  </ul>
+  <p>
+   The <code>org.apache.xerces.impl.XMLDTDScannerImpl</code>
+   class implements the XNI DTD scanner interface and is
+   implemented so that it can also function as a "pull" parser.
+   A pull parser allows the application to drive the parsing of 
+   the DTD instead of having all of the DTD events
+   "pushed" to the registered handlers.
+  </p>
  </s2>
  <anchor name='entity-manager'/>
  <s2 title='Entity Manager'>
@@ -342,7 +381,42 @@ public class MyComponent
     <td>org.apache.xerces.impl.XMLEntityManager</td>
    </tr>
   </table>
-  <p><strong>TODO</strong></p>
+  <p>Required properties:</p>
+  <ul>
+   <li>http://apache.org/xml/properties/internal/symbol-table</li>
+   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+  </ul>
+  <p>Recognized features:</p>
+  <ul>
+   <li>http://xml.org/sax/features/validation</li>
+   <li>http://xml.org/sax/features/external-general-entities</li>
+   <li>http://xml.org/sax/features/external-parameter-entities</li>
+   <li>http://apache.org/xml/features/allow-java-encodings</li>
+  </ul>
+  <p>Recognized properties:</p>
+  <ul>
+   <li>http://apache.org/xml/properties/entity-resolver</li>
+  </ul>
+  <p>
+   Both the <link anchor='document-scanner'>Document Scanner</link>
+   and the <link anchor='dtd-scanner'>DTD Scanner</link> depend
+   on the Entity Manager. This component handles starting and
+   starting entities automatically so that the scanners can continue
+   operation transparently even when entities go in and out of
+   scope.
+  </p>
+  <p>
+   The Entity Manager implements an Entity Scanner which is a 
+   low-level scanner for document and DTD information. Because
+   the document and DTD scanners interact only with the Entity
+   Scanner to scan the document, the scanners are shielded from
+   changes caused by starting and stopping entities. Changes in
+   the entities being scanned happens transparently within the 
+   Manager/Scanner combination but the scanner components are
+   notified of the start and end of the entity by implementing
+   the XMLEntityHandler interface that is only part of the
+   Xerces2 reference implementation.
+  </p>
  </s2>
  <anchor name='dtd-validator'/>
  <s2 title='DTD Validator'>
@@ -357,7 +431,29 @@ public class MyComponent
     <td>org.apache.xerces.impl.XMLDTDValidator</td>
    </tr>
   </table>
-  <p><strong>TODO</strong></p>
+  <p>Required properties:</p>
+  <ul>
+   <li>http://apache.org/xml/properties/internal/symbol-table</li>
+   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+   <!--
+     - NOTE: The following properties are also required but the
+     -       validation engine is being redesigned so I'm not
+     -       listing them in the documentation.
+   <li>http://apache.org/xml/properties/internal/grammar-pool</li>
+   <li>http://apache.org/xml/properties/internal/datatype-validator-factory</li>
+   -->
+  </ul>
+  <p>Recognized features:</p>
+  <ul>
+   <li>http://xml.org/sax/features/namespaces</li>
+   <li>http://xml.org/sax/features/validation</li>
+   <li>http://apache.org/xml/features/validation/dynamic</li>
+  </ul>
+  <p>
+   The DTD Validator performs validation of the document events that 
+   it receives which may augment the streaming information set with
+   default attribute values and normalizing attribute values.
+  </p>
  </s2>
  <anchor name='namespace-binder'/>
  <s2 title='Namespace Binder'>
@@ -372,6 +468,22 @@ public class MyComponent
     <td>org.apache.xerces.impl.XMLNamespaceBinder</td>
    </tr>
   </table>
-  <p><strong>TODO</strong></p>
+  <p>Required properties:</p>
+  <ul>
+   <li>http://apache.org/xml/properties/internal/symbol-table</li>
+   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+  </ul>
+  <p>Recognized features:</p>
+  <ul>
+   <li>http://xml.org/sax/features/namespaces</li>
+  </ul>
+  <p>
+   The Namespace Binder is responsible for detecting namespace bindings
+   in the startElement/emptyElement methods and emitting appropriate 
+   start and end prefix mapping events. Namespace binding should always
+   occur <em>after</em> DTD validation (since namespace bindings may
+   have been defaulted from an attribute declaration in the DTD) and
+   <em>before</em> Schema validation.
+  </p>
  </s2>
 </s1> 
