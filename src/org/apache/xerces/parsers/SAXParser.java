@@ -1018,7 +1018,7 @@ public class SAXParser
                         break;
                     }
                     case XMLAttributeDecl.TYPE_NOTATION: {
-                        aType = "NOTATION";
+                        aType = "NOTATION "+enumString;
                         break;
                     }
                 }
