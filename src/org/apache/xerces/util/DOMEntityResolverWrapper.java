@@ -101,55 +101,45 @@ public class DOMEntityResolverWrapper
         throws XNIException, IOException {
         // resolve entity using DOM entity resolver
         if (fEntityResolver != null) {
-            try {
-                // For entity resolution the type of the resource would be  XML TYPE
-                // DOM L3 LS spec mention only the XML 1.0 recommendation right now
-                LSInput inputSource =
-                    resourceIdentifier == null
-                        ? fEntityResolver.resolveResource(
-                            null,
-                            null,
-                            null,
-                            null,
-                            null)
-                        : fEntityResolver.resolveResource(
-                            getType(resourceIdentifier),
-                            resourceIdentifier.getNamespace(),
-                            resourceIdentifier.getPublicId(),
-                            resourceIdentifier.getLiteralSystemId(),
-                            resourceIdentifier.getBaseSystemId());
-                if (inputSource != null) {
-                    String publicId = inputSource.getPublicId();
-                    String systemId = inputSource.getSystemId();
-                    String baseSystemId = inputSource.getBaseURI();
-                    InputStream byteStream = inputSource.getByteStream();
-                    Reader charStream = inputSource.getCharacterStream();
-                    String encoding = inputSource.getEncoding();
-                    String data = inputSource.getStringData();
-                    XMLInputSource xmlInputSource =
-                        new XMLInputSource(publicId, systemId, baseSystemId);
+            // For entity resolution the type of the resource would be  XML TYPE
+            // DOM L3 LS spec mention only the XML 1.0 recommendation right now
+            LSInput inputSource =
+                resourceIdentifier == null
+                    ? fEntityResolver.resolveResource(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)
+                    : fEntityResolver.resolveResource(
+                        getType(resourceIdentifier),
+                        resourceIdentifier.getNamespace(),
+                        resourceIdentifier.getPublicId(),
+                        resourceIdentifier.getLiteralSystemId(),
+                        resourceIdentifier.getBaseSystemId());
+            if (inputSource != null) {
+                String publicId = inputSource.getPublicId();
+                String systemId = inputSource.getSystemId();
+                String baseSystemId = inputSource.getBaseURI();
+                InputStream byteStream = inputSource.getByteStream();
+                Reader charStream = inputSource.getCharacterStream();
+                String encoding = inputSource.getEncoding();
+                String data = inputSource.getStringData();
+                XMLInputSource xmlInputSource =
+                    new XMLInputSource(publicId, systemId, baseSystemId);
 
-                    if (charStream != null) {
-                        xmlInputSource.setCharacterStream(charStream);
-                    }
-                    if (byteStream != null) {
-                        xmlInputSource.setByteStream((InputStream) byteStream);
-                    }
-                    if (data != null && data.length() != 0) {
-                        xmlInputSource.setCharacterStream(
-                            new StringReader(data));
-                    }
-                    xmlInputSource.setEncoding(encoding);
-                    return xmlInputSource;
+                if (charStream != null) {
+                    xmlInputSource.setCharacterStream(charStream);
                 }
-            }
-
-            // error resolving entity
-            catch (Exception e) {
-                // REVISIT:
-                // can at this point we receive wrapped exception?
-
-                throw new XNIException(e);
+                if (byteStream != null) {
+                    xmlInputSource.setByteStream((InputStream) byteStream);
+                }
+                if (data != null && data.length() != 0) {
+                    xmlInputSource.setCharacterStream(
+                        new StringReader(data));
+                }
+                xmlInputSource.setEncoding(encoding);
+                return xmlInputSource;
             }
         }
 
