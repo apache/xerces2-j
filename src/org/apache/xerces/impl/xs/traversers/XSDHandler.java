@@ -344,7 +344,7 @@ public class XSDHandler {
                                      String schemaHint) {
 
         // first phase:  construct trees.
-        Document schemaRoot = getSchema(schemaNamespace, schemaHint, null, true);
+        Document schemaRoot = getSchema(schemaNamespace, schemaHint, null, true, true);
         if (schemaRoot == null) {
             // something went wrong right off the hop
             reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
@@ -443,7 +443,7 @@ public class XSDHandler {
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // consciously throw away whether was a duplicate; don't care.
                 // pass the systemId of the current document as the base systemId
-                newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), true);
+                newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false, true);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
                      (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
@@ -457,7 +457,11 @@ public class XSDHandler {
                 if (schemaHint == null)
                     reportGenericSchemaError("schemaLocation attribute must appear in <include> and <redefine>");
                 // pass the systemId of the current document as the base systemId
-                newSchemaRoot = getSchema(null, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false);
+                boolean mustResolve = false;
+                if(localName.equals(SchemaSymbols.ELT_REDEFINE)) {
+                    mustResolve = nonAnnotationContent(child);
+                }
+                newSchemaRoot = getSchema(null, schemaHint, (String)fDoc2SystemId.get(schemaRoot), mustResolve, false);
                 schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
             else {
@@ -1015,12 +1019,12 @@ public class XSDHandler {
     // otherwise.  schemaDoc is null if and only if no schema document
     // was resolved to.
     private Document getSchema(String schemaNamespace, String schemaHint,
-                               String baseSystemId, boolean useNamespace) {
+                               String baseSystemId, boolean mustResolve, boolean useProperties) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
         Document schemaDoc = null;
         try {
-            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, baseSystemId, useNamespace);
+            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, baseSystemId, useProperties);
             // REVISIT: when the system id and byte stream and character stream
             //          of the input source are all null, it's
             //          impossible to find the schema document. so we skip in
@@ -1066,11 +1070,11 @@ public class XSDHandler {
                                        new Object[]{"file not found: " + schemaHint},
                                        // when using namespace, then hint is optional,
                                        // and it's not an error if the file is not found
-                                       // but if not using namespace (include/redefine),
-                                       // it's an error if the file is not found.
-                                       useNamespace ?
-                                       XMLErrorReporter.SEVERITY_WARNING :
-                                       XMLErrorReporter.SEVERITY_ERROR);
+                                       // but if not using namespace (include),
+                                       // it's a warning if the file is not found.
+                                       mustResolve ?
+                                       XMLErrorReporter.SEVERITY_ERROR: 
+                                       XMLErrorReporter.SEVERITY_WARNING); 
         }
         catch (IOException ex) {
             // REVISIT: report an error!
@@ -1080,7 +1084,7 @@ public class XSDHandler {
         schemaDoc = null;
         fLastSchemaWasDuplicate = false;
         return null;
-    } // getSchema(String, String):  Document
+    } // getSchema(String, String, String, boolean, boolean):  Document
 
     // initialize all the traversers.
     // this should only need to be called once during the construction
@@ -1559,6 +1563,14 @@ public class XSDHandler {
         return null;
         **********/
     } // findXSDocumentForDecl(XSDocumentInfo, Element):  XSDocumentInfo
+
+    // returns whether more than <annotation>s occur in children of elem
+    private boolean nonAnnotationContent(Element elem) {
+        for(Element child = DOMUtil.getFirstChildElement(elem); child != null; child = DOMUtil.getNextSiblingElement(child)) {
+            if(!(DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION))) return true;
+        }
+        return false;
+    } // nonAnnotationContent(Element):  boolean
 
     private void setSchemasVisible(XSDocumentInfo startSchema) {
         if (DOMUtil.isHidden(startSchema.fSchemaDoc)) {
