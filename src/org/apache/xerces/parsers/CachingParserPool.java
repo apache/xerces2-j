@@ -63,6 +63,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
 
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.SynchronizedSymbolTable;
 
 /**
  * A parser pool that enables caching of grammars. The caching parser
@@ -223,100 +224,6 @@ public class CachingParserPool {
     //
     // Classes
     //
-
-    /**
-     * Synchronized symbol table.
-     *
-     * @author Andy Clark, IBM
-     */
-    public static final class SynchronizedSymbolTable
-        extends SymbolTable {
-        
-        //
-        // Data
-        //
-
-        /** Main symbol table. */
-        protected SymbolTable fSymbolTable;
-
-        //
-        // Constructors
-        //
-
-        /** Constructs a synchronized symbol table. */
-        public SynchronizedSymbolTable(SymbolTable symbolTable) {
-            fSymbolTable = symbolTable;
-        } // <init>(SymbolTable)
-
-        //
-        // SymbolTable methods
-        //
-        
-        /**
-         * Adds the specified symbol to the symbol table and returns a
-         * reference to the unique symbol. If the symbol already exists, 
-         * the previous symbol reference is returned instead, in order
-         * guarantee that symbol references remain unique.
-         * 
-         * @param symbol The new symbol.
-         */
-        public String addSymbol(String symbol) {
-
-            synchronized (fSymbolTable) {
-                return fSymbolTable.addSymbol(symbol);
-            }
-
-        } // addSymbol(String)
-
-        /**
-         * Adds the specified symbol to the symbol table and returns a
-         * reference to the unique symbol. If the symbol already exists, 
-         * the previous symbol reference is returned instead, in order
-         * guarantee that symbol references remain unique.
-         * 
-         * @param buffer The buffer containing the new symbol.
-         * @param offset The offset into the buffer of the new symbol.
-         * @param length The length of the new symbol in the buffer.
-         */
-        public String addSymbol(char[] buffer, int offset, int length) {
-
-            synchronized (fSymbolTable) {
-                return fSymbolTable.addSymbol(buffer, offset, length);
-            }
-
-        } // addSymbol(char[],int,int):String
-
-        /** 
-         * Returns true if the symbol table already contains the specified
-         * symbol.
-         *
-         * @param symbol The symbol to look for.
-         */
-        public boolean containsSymbol(String symbol) {
-
-            synchronized (fSymbolTable) {
-                return fSymbolTable.containsSymbol(symbol);
-            }
-
-        } // containsSymbol(String):boolean
-
-        /** 
-         * Returns true if the symbol table already contains the specified
-         * symbol.
-         *
-         * @param buffer The buffer containing the symbol to look for.
-         * @param offset The offset into the buffer.
-         * @param length The length of the symbol in the buffer.
-         */
-        public boolean containsSymbol(char[] buffer, int offset, int length) {
-
-            synchronized (fSymbolTable) {
-                return fSymbolTable.containsSymbol(buffer, offset, length);
-            }
-
-        } // containsSymbol(char[],int,int):boolean
-
-    } // class SynchronizedSymbolTable
 
     /**
      * Shadowed symbol table.

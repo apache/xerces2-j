@@ -100,14 +100,24 @@ public class SymbolTable {
     //
 
     /** Buckets. */
-    protected Entry[] fBuckets = new Entry[TABLE_SIZE];
+    protected Entry[] fBuckets = null;
+
+    // actual table size
+    protected int fTableSize;
 
     //
     // Constructors
     //
 
-    /** Constructs a symbol table. */
+    /** Constructs a symbol table with a default number of buckets. */
     public SymbolTable() {
+        this(TABLE_SIZE);
+    }
+
+    /** Constructs a symbol table with a specified number of buckets. */
+    public SymbolTable(int tableSize) {
+        fTableSize = tableSize;
+        fBuckets = new Entry[fTableSize];
     }
 
     //
@@ -125,7 +135,7 @@ public class SymbolTable {
     public String addSymbol(String symbol) {
 
         // search for identical symbol
-        int bucket = hash(symbol) % TABLE_SIZE;
+        int bucket = hash(symbol) % fTableSize;
         int length = symbol.length();
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             if (length == entry.characters.length) {
@@ -158,7 +168,7 @@ public class SymbolTable {
     public String addSymbol(char[] buffer, int offset, int length) {
 
         // search for identical symbol
-        int bucket = hash(buffer, offset, length) % TABLE_SIZE;
+        int bucket = hash(buffer, offset, length) % fTableSize;
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             if (length == entry.characters.length) {
                 for (int i = 0; i < length; i++) {
@@ -226,7 +236,7 @@ public class SymbolTable {
     public boolean containsSymbol(String symbol) {
 
         // search for identical symbol
-        int bucket = hash(symbol) % TABLE_SIZE;
+        int bucket = hash(symbol) % fTableSize;
         int length = symbol.length();
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             if (length == entry.characters.length) {
@@ -254,7 +264,7 @@ public class SymbolTable {
     public boolean containsSymbol(char[] buffer, int offset, int length) {
 
         // search for identical symbol
-        int bucket = hash(buffer, offset, length) % TABLE_SIZE;
+        int bucket = hash(buffer, offset, length) % fTableSize;
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             if (length == entry.characters.length) {
                 for (int i = 0; i < length; i++) {
