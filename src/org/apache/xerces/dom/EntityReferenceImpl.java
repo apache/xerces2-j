@@ -140,7 +140,7 @@ public class EntityReferenceImpl
 
     /** Factory constructor. */
     public EntityReferenceImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, null);
+    	super(ownerDoc);
         this.name = name;
         //fEnableSynchronize = false;
 
@@ -278,15 +278,6 @@ public class EntityReferenceImpl
     	return super.item(index);
     }
     /***/
-
-    /**
-     * EntityReferences never have a nodeValue.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
-     */
-    public void setNodeValue(String x) throws DOMException {
-    	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "DOM001 Modification not allowed");
-    }
 
     //
     // Public methods

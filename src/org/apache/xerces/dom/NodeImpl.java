@@ -132,20 +132,12 @@ public abstract class NodeImpl
 
     // data
 
-    /** Node value. */
-	protected String value;
-
     /** Read-only property. */
 	protected boolean readOnly;
 
 	/** NON-DOM FEATURE; see setUserData/getUserData. **/
 	protected Object userData;
 	
-    /** flag to indicate whether setNodeValue was called by the
-     *  client or from the DOM.
-     */
-    protected boolean fInternalSetNodeValue = false;
-    
     // lazy-evaluation nifo
 
     /** Synchronization of data needed. */
@@ -190,12 +182,11 @@ public abstract class NodeImpl
      * <p>
      * Every Node knows what Document it belongs to.
      */
-    protected NodeImpl(DocumentImpl ownerDocument, String value) {
+    protected NodeImpl(DocumentImpl ownerDocument) {
 
         // set information
         // REVISITNS: This may have to be modifoed for DOM2:
         this.ownerDocument = ownerDocument;
-        this.value = value;
 
     } // <init>(DocumentImpl,String,short,boolean,String)
 
@@ -217,118 +208,25 @@ public abstract class NodeImpl
      */
     public abstract String getNodeName();
     
-    /** This function added so that we can distinguish whether
-     *  setNodeValue has been called from some other DOM functions.
-     *  or by the client.<p>
-     *  This is important, because we do one type of Range fix-up, 
-     *  from the high-level functions in CharacterData, and another
-     *  type if the client simply calls setNodeValue(value).
-     */
-    void setNodeValueInternal(String value) {
-        fInternalSetNodeValue = true;
-        setNodeValue( value);
-        fInternalSetNodeValue = false;
-    }
-    
     /**
-     * Any node which can have a nodeValue (@see getNodeValue) will
-     * also accept requests to set it to a string.  The exact response to
-     * this varies from node to node -- Attribute, for example, stores
-     * its values in its children and has to replace them with a new Text
-     * holding the replacement value.
-     * <p>
-     * For most types of Node, value is null and attempting to set it
-     * will throw DOMException(NO_MODIFICATION_ALLOWED_ERR). This will
-     * also be thrown if the node is read-only.
-     */
-    public void setNodeValue(String value) {
-
-    	if (readOnly)
-    		throw new DOMExceptionImpl(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
-        // revisit: may want to set the value in ownerDocument.
-    	// Default behavior, overridden in some subclasses
-        if (syncData) {
-            synchronizeData();
-            }
-            
-        // Cache old value for DOMCharacterDataModified.
-        String oldvalue=this.value;
-        EnclosingAttr enclosingAttr=null;
-        if(MUTATIONEVENTS)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            // If we're within the scope of an Attr and DOMAttrModified 
-            // was requested, we need to preserve its previous value for
-            // that event.
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-                enclosingAttr=getEnclosingAttr();
-            }
-        } // End mutation preprocessing
-            
-    	this.value = value;
-    	if (!fInternalSetNodeValue) {
-            // call out to any Ranges to set any boundary index to zero.
-            Enumeration ranges = ownerDocument.getRanges();
-            if (ranges != null) {
-                while ( ranges.hasMoreElements()) {
-                    ((RangeImpl)ranges.nextElement()).receiveReplacedText(this);
-                }
-            }
-        }
-    	
-        if(MUTATIONEVENTS)
-        {
-            // MUTATION POST-EVENTS:
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-                MutationEvent me=
-                    new MutationEventImpl();
-                    //?????ownerDocument.createEvent("MutationEvents");
-                me.initMutationEvent(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,true,false,
-                    null,oldvalue,value,null);
-                dispatchEvent(me);
-            }
-            
-            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
-            // if required. (Common to most kinds of mutation)
-            dispatchAggregateEvents(enclosingAttr);
-        } // End mutation postprocessing
-
-    } // setNodeValue(String)
-
-    /**
-     * nodeValue is a string representation of the data contained in
-     * this node. Each subclass of Node defines what information is
-     * considered its value, or returns null if the query is not
-     * appropriate. Entity references should be expanded before being
-     * returned.
-     * <p>
-     * For most types of Node, value is null and may not be changed.
-     * <p>
-     * For Text, CDATASection, ProcessingInstruction, and Comment value
-     * is a string representing the contents of the node.
-     * <p>
-     * For Attribute, value is the string returned by the attribute's
-     * getValue method. This will be gathered from the Attribute's
-     * children.
-     *
-     * @throws DOMException(DOMSTRING_SIZE_ERR) when it would return more
-     * characters than fit in a DOMString variable on the implementation
-     * platform. (Will never arise in this implementation)
+     * Returns the node value.
      */
     public String getNodeValue() {
+        return null;            // overridden in some subclasses
+    }
 
-        if (syncData) {
-            synchronizeData();
-            }
-    	return value;
-
-    } // getNodeValue():String
+    /**
+     * Sets the node value.
+     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
+     */
+    public void setNodeValue(String x) 
+        throws DOMException {
+        if (readOnly) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                                   "DOM001 Modification not allowed");
+        }
+        // Default behavior is to do nothing, overridden in some subclasses
+    }
 
     /**
      * Adds a child node to the end of the list of children for this node.
@@ -402,11 +300,8 @@ public abstract class NodeImpl
     	newnode.previousSibling = null;
         newnode.nextSibling     = null;
 
-        // set other values
-        newnode.value = value;
         // REVISIT: What to do when readOnly? -Ac
         newnode.readOnly = false;
-        newnode.fInternalSetNodeValue = fInternalSetNodeValue;
 
         // REVISIT: Should the user data be cloned?
         newnode.userData = null;

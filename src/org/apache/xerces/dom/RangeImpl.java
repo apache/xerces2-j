@@ -649,9 +649,9 @@ public class RangeImpl  implements Range {
         if (fStartContainer.getNodeType() == Node.TEXT_NODE) {
             if (newNode.getNodeType()!= Node.TEXT_NODE) { // result is 3 text nodes...
                 cloneCurrent = fStartContainer.cloneNode(false);
-                ((NodeImpl)cloneCurrent).setNodeValueInternal(
+                ((TextImpl)cloneCurrent).setNodeValueInternal(
                     (cloneCurrent.getNodeValue()).substring(fStartOffset));
-                ((NodeImpl)fStartContainer).setNodeValueInternal(
+                ((TextImpl)fStartContainer).setNodeValueInternal(
                     (fStartContainer.getNodeValue()).substring(0,fStartOffset));
                 Node next = fStartContainer.getNextSibling();
                 if (next != null) {

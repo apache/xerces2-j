@@ -109,7 +109,7 @@ public class ElementImpl
 
     /** Factory constructor. */
     public ElementImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, null);
+    	super(ownerDoc);
         this.name = name;
         //setupDefaultAttributes(ownerDoc);
         syncData = true;
@@ -139,20 +139,6 @@ public class ElementImpl
             synchronizeData();
         }
         return name;
-    }
-
-    /** Returns the node value. */
-    public String getNodeValue() {
-        return null;
-    }
-
-    /**
-     * Elements never have a nodeValue.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR), unconditionally.
-     */
-    public void setNodeValue(String value) throws DOMException {
-    	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "DOM001 Modification not allowed");
     }
 
     /**

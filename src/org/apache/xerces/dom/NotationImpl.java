@@ -110,7 +110,7 @@ public class NotationImpl
 
     /** Factory constructor. */
     public NotationImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, null);
+    	super(ownerDoc);
         this.name = name;
     }
     
@@ -145,15 +145,6 @@ public class NotationImpl
 
     public Node getParentNode() {
         return null;
-    }
-
-    /** 
-     * Notations never have a nodeValue.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
-     */
-    public void setNodeValue(String value) throws DOMException {
-    	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "DOM001 Modification not allowed");
     }
 
     //

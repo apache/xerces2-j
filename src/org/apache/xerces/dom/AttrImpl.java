@@ -131,7 +131,7 @@ public class AttrImpl
      * method in the Document class.
      */
     protected AttrImpl(DocumentImpl ownerDocument, String name) {
-    	super(ownerDocument, null);
+    	super(ownerDocument);
         this.name = name;
         syncData = true;
     }

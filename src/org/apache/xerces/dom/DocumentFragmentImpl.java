@@ -116,7 +116,7 @@ public class DocumentFragmentImpl
 
     /** Factory constructor. */
     public DocumentFragmentImpl(DocumentImpl ownerDoc) {
-        super(ownerDoc, null);
+        super(ownerDoc);
     }  
   
     /** Constructor for serialization. */
@@ -139,14 +139,4 @@ public class DocumentFragmentImpl
         return "#document-fragment";
     }
     
-    /**
-     * DocumentFragments never have a nodeValue.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
-     */
-    public void setNodeValue(String x) 
-        throws DOMException {
-    	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "DOM001 Modification not allowed");
-    }
-
 } // class DocumentFragmentImpl

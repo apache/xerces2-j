@@ -123,7 +123,7 @@ public class DocumentTypeImpl
 
     /** Factory method for creating a document type node. */
     public DocumentTypeImpl(DocumentImpl ownerDocument, String name) {
-        super(ownerDocument, null);
+        super(ownerDocument);
 
         this.name = name;
         // DOM
@@ -218,16 +218,6 @@ public class DocumentTypeImpl
             synchronizeData();
         }
         return name;
-    }
-
-    /**
-     * DocumentTypes never have a nodeValue.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
-     */
-    public void setNodeValue(String value) throws DOMException {
-    	throw new DOMExceptionImpl(
-    		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    		"DOM001 Modification not allowed");
     }
 
     /** Clones the node. */

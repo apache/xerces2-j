@@ -119,8 +119,9 @@ public class DeferredCommentImpl
         syncData = false;
 
         // fluff data
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        value = ownerDocument.getNodeValueString(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) this.ownerDocument;
+        data = ownerDocument.getNodeValueString(fNodeIndex);
 
     } // synchronizeData()
 

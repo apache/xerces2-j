@@ -60,6 +60,9 @@ package org.apache.xerces.dom;
 import org.w3c.dom.*;
 import java.util.Enumeration;
 
+import org.apache.xerces.dom.events.MutationEventImpl;
+import org.w3c.dom.events.*;
+
 /**
  * CharacterData is an abstract Node that can carry character data as its
  * Value.  It provides shared behavior for Text, CData, and
@@ -69,12 +72,15 @@ import java.util.Enumeration;
  * If the static boolean NodeImpl.MUTATIONEVENTS is not set true, that support
  * is disabled and can be optimized out to reduce code size.
  *
+ * Since this ProcessingInstructionImpl inherits from this class to reuse the
+ * setNodeValue method, this class isn't declared as implementing the interface
+ * CharacterData. This is done by relevant subclasses (TexImpl, CommentImpl).
+ *
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public abstract class CharacterDataImpl
-    extends NodeImpl 
-    implements CharacterData {
+    extends NodeImpl {
 
     //
     // Constants
@@ -87,6 +93,13 @@ public abstract class CharacterDataImpl
     // Data
     //
 
+    protected String data;
+
+    /** flag to indicate whether setNodeValue was called by the
+     *  client or from the DOM.
+     */
+    protected boolean fInternalSetNodeValue = false;
+    
     /** Empty child nodes. */
     private static transient NodeList singletonNodeList = new NodeList() {
         public Node item(int index) { return null; }
@@ -99,7 +112,8 @@ public abstract class CharacterDataImpl
 
     /** Factory constructor. */
     protected CharacterDataImpl(DocumentImpl ownerDocument, String data) {
-        super(ownerDocument, data);
+        super(ownerDocument);
+        this.data = data;
     }
 
     //
@@ -110,6 +124,100 @@ public abstract class CharacterDataImpl
     public NodeList getChildNodes() {
         return singletonNodeList;
     }
+
+    /** Clone node. */
+    public Node cloneNode(boolean deep) {
+        CharacterDataImpl newcdata = (CharacterDataImpl)super.cloneNode(deep);
+        newcdata.data = data;
+        newcdata.fInternalSetNodeValue = fInternalSetNodeValue;
+        return newcdata;
+    }
+
+    /*
+     * returns the content of this node
+     */
+    public String getNodeValue() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return data;
+    }
+
+    /** This function added so that we can distinguish whether
+     *  setNodeValue has been called from some other DOM functions.
+     *  or by the client.<p>
+     *  This is important, because we do one type of Range fix-up, 
+     *  from the high-level functions in CharacterData, and another
+     *  type if the client simply calls setNodeValue(value).
+     */
+    void setNodeValueInternal(String value) {
+        fInternalSetNodeValue = true;
+        setNodeValue(value);
+        fInternalSetNodeValue = false;
+    }
+    
+    /**
+     * Sets the content, possibly firing related events, and updating ranges
+     */
+    public void setNodeValue(String value) {
+    	if (readOnly)
+    		throw new DOMExceptionImpl(
+    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+    			"DOM001 Modification not allowed");
+        // revisit: may want to set the value in ownerDocument.
+    	// Default behavior, overridden in some subclasses
+        if (syncData) {
+            synchronizeData();
+        }
+            
+        // Cache old value for DOMCharacterDataModified.
+        String oldvalue = value;
+        EnclosingAttr enclosingAttr=null;
+        if(MUTATIONEVENTS)
+        {
+            // MUTATION PREPROCESSING AND PRE-EVENTS:
+            // If we're within the scope of an Attr and DOMAttrModified 
+            // was requested, we need to preserve its previous value for
+            // that event.
+            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+            if(lc.captures+lc.bubbles+lc.defaults>0)
+            {
+                enclosingAttr=getEnclosingAttr();
+            }
+        } // End mutation preprocessing
+            
+    	this.data = value;
+    	if (!fInternalSetNodeValue) {
+            // call out to any Ranges to set any boundary index to zero.
+            Enumeration ranges = ownerDocument.getRanges();
+            if (ranges != null) {
+                while ( ranges.hasMoreElements()) {
+                   ((RangeImpl)ranges.nextElement()).receiveReplacedText(this);
+                }
+            }
+        }
+    	
+        if(MUTATIONEVENTS)
+        {
+            // MUTATION POST-EVENTS:
+            LCount lc =
+                LCount.lookup(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED);
+            if(lc.captures+lc.bubbles+lc.defaults>0)
+            {
+                MutationEvent me= new MutationEventImpl();
+                //?????ownerDocument.createEvent("MutationEvents");
+                me.initMutationEvent(
+                                 MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
+                                     true,false,null,oldvalue,value,null);
+                dispatchEvent(me);
+            }
+            
+            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
+            // if required. (Common to most kinds of mutation)
+            dispatchAggregateEvents(enclosingAttr);
+        } // End mutation postprocessing
+
+    } // setNodeValue(String)
 
     //
     // CharacterData methods
@@ -127,7 +235,7 @@ public abstract class CharacterDataImpl
         if (syncData) {
             synchronizeData();
         }
-        return value;
+        return data;
     }
 
     /** 
@@ -138,7 +246,7 @@ public abstract class CharacterDataImpl
         if (syncData) {
             synchronizeData();
         }
-        return value.length();
+        return data.length();
     }  
 
     /** 
@@ -161,8 +269,8 @@ public abstract class CharacterDataImpl
             synchronizeData();
         }
         
-		// Handles mutation event generation, if any
-        setNodeValue(value+data);
+        // Handles mutation event generation, if any
+        setNodeValue(this.data + data);
 
     } // appendData(String)
 
@@ -195,12 +303,13 @@ public abstract class CharacterDataImpl
         if (syncData) {
             synchronizeData();
         }
-        int tailLength = Math.max(value.length() - count - offset, 0);
+        int tailLength = Math.max(data.length() - count - offset, 0);
         try {
-		    // Handles mutation event generation, if any
-		    setNodeValueInternal( value.substring(0, offset) + (tailLength > 0 
-		        ? value.substring(offset + count, offset + count + tailLength) 
-		        : "") );
+            // Handles mutation event generation, if any
+            setNodeValueInternal(data.substring(0, offset) +
+                                 (tailLength > 0 
+		? data.substring(offset + count, offset + count + tailLength) 
+                                  : "") );
             Enumeration ranges = ownerDocument.getRanges();
             if (ranges != null) {
                 while ( ranges.hasMoreElements()) {
@@ -240,7 +349,7 @@ public abstract class CharacterDataImpl
         try {
        		// Handles mutation event generation, if any
             setNodeValueInternal(
-                new StringBuffer(value).insert(offset, data).toString()
+                new StringBuffer(this.data).insert(offset, data).toString()
                 );
             Enumeration ranges = ownerDocument.getRanges();
             if (ranges != null) {
@@ -332,7 +441,7 @@ public abstract class CharacterDataImpl
             synchronizeData();
         }
         
-        int length = value.length();
+        int length = data.length();
         if (count < 0 || offset < 0 || offset > length - 1) {
             throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
                                        "DOM004 Index out of bounds");
@@ -340,7 +449,7 @@ public abstract class CharacterDataImpl
 
         int tailIndex = Math.min(offset + count, length);
 
-        return value.substring(offset, tailIndex);
+        return data.substring(offset, tailIndex);
 
     } // substringData(int,int):String
 

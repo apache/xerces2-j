@@ -67,7 +67,7 @@ import org.w3c.dom.*;
  */
 public class CommentImpl 
     extends CharacterDataImpl 
-    implements Comment {
+    implements CharacterData, Comment {
 
     //
     // Constants

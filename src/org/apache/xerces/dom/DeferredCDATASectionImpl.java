@@ -138,8 +138,9 @@ public class DeferredCDATASectionImpl
         syncData = false;
 
         // fluff data
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        value = ownerDocument.getNodeValueString(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) this.ownerDocument;
+        data = ownerDocument.getNodeValueString(fNodeIndex);
         ignorableWhitespace = ownerDocument.getFirstChild(fNodeIndex) == 1;
 
     } // synchronizeData()

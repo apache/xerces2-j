@@ -155,9 +155,8 @@ public abstract class NodeContainer
      * No public constructor; only subclasses of NodeContainer should be
      * instantiated, and those normally via a Document's factory methods
      */
-    protected NodeContainer(DocumentImpl ownerDocument,
-			    String value) {
-	super(ownerDocument, value);
+    protected NodeContainer(DocumentImpl ownerDocument) {
+	super(ownerDocument);
     }
 
     /** Constructor for serialization. */

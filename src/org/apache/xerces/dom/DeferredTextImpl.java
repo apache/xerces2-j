@@ -129,8 +129,9 @@ public class DeferredTextImpl
         syncData = false;
 
         // get initial text value
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        value = ownerDocument.getNodeValueString(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) this.ownerDocument;
+        data = ownerDocument.getNodeValueString(fNodeIndex);
 
         // revisit: we only normalize text nodes with Elements as parents.
         int parent = -1;
@@ -141,13 +142,13 @@ public class DeferredTextImpl
             int realNext = ownerDocument.getRealNextSibling(fNodeIndex);
             int type     = ownerDocument.getNodeType(realNext);
             if (realNext != -1 && type == Node.TEXT_NODE) {
-                StringBuffer sb = new StringBuffer(value);
+                StringBuffer sb = new StringBuffer(data);
                 while (realNext != -1 && type == Node.TEXT_NODE) {
                     sb.append(ownerDocument.getNodeValueString(realNext));
                     realNext = ownerDocument.getRealNextSibling(realNext);
                     type = ownerDocument.getNodeType(realNext);
                 }
-                value = sb.toString();
+                data = sb.toString();
             }
         }
 

@@ -126,7 +126,7 @@ public class EntityImpl
 
     /** Factory constructor. */
     public EntityImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, null);
+    	super(ownerDoc);
         this.name = name;
     }
     
@@ -154,20 +154,6 @@ public class EntityImpl
             synchronizeData();
         }
         return name;
-    }
-
-    /** Returns the node value. */
-    public String getNodeValue() {
-        return null;
-    }
-
-    /**
-     * EntityReferences never have a nodeValue.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
-     */
-    public void setNodeValue(String value) throws DOMException {
-    	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "DOM001 Modification not allowed");
     }
 
     /** Clone node. */

@@ -64,11 +64,13 @@ import org.w3c.dom.*;
  * processor-specific information alongside their actual content. PIs
  * are most common in XML, but they are supported in HTML as well.
  *
+ * This class inherits from CharacterDataImpl to reuse its setNodeValue method.
+ *
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class ProcessingInstructionImpl
-    extends NodeImpl
+    extends CharacterDataImpl
     implements ProcessingInstruction {
 
     //
@@ -164,7 +166,7 @@ public class ProcessingInstructionImpl
         if (syncData) {
             synchronizeData();
         }
-        return value;
+        return data;
 
     } // getData():String
 
@@ -175,8 +177,8 @@ public class ProcessingInstructionImpl
      * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR) if node is read-only.
      */
     public void setData(String data) {
-	    // Hand off to setNodeValue for code-reuse reasons (mutation
-	    // events, readonly protection, synchronizing, etc.)
+        // Hand off to setNodeValue for code-reuse reasons (mutation
+        // events, readonly protection, synchronizing, etc.)
         setNodeValue(data);
     } // setData(String)
 

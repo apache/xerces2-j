@@ -77,7 +77,7 @@ import org.w3c.dom.*;
  */
 public class TextImpl 
     extends CharacterDataImpl 
-    implements Text {
+    implements CharacterData, Text {
 
     //
     // Constants
@@ -90,7 +90,6 @@ public class TextImpl
     // Data
     //
 
-    /** Ignorable whitespace. */
     protected boolean ignorableWhitespace;
 
     //
@@ -118,7 +117,7 @@ public class TextImpl
     public String getNodeName() {
         return "#text";
     }
-    
+
     /**
      * NON-DOM: Set whether this Text is ignorable whitespace.
      */
@@ -127,7 +126,6 @@ public class TextImpl
         if (syncData) {
             synchronizeData();
         }
-
         ignorableWhitespace = ignore;
 
     } // setIgnorableWhitespace(boolean)
@@ -141,7 +139,6 @@ public class TextImpl
         if (syncData) {
             synchronizeData();
         }
-
         return ignorableWhitespace;
 
     } // isIgnorableWhitespace():boolean
@@ -170,7 +167,7 @@ public class TextImpl
         throws DOMException {
 
     	if (readOnly) {
-    		throw new DOMExceptionImpl(
+            throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -178,14 +175,14 @@ public class TextImpl
         if (syncData) {
             synchronizeData();
         }
-    	if (offset < 0 || offset > value.length() - 1) {
-    		throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
-    		                           "DOM004 Index out of bounds");
+    	if (offset < 0 || offset > data.length() - 1) {
+            throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+                                       "DOM004 Index out of bounds");
         }
     		
         // split text into two separate nodes
-    	Text newText = ownerDocument.createTextNode(value.substring(offset));
-    	setNodeValue(value.substring(0, offset));
+    	Text newText = ownerDocument.createTextNode(data.substring(offset));
+    	setNodeValue(data.substring(0, offset));
 
         // insert new text node
         Node parentNode = getParentNode();

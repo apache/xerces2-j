@@ -154,7 +154,7 @@ public class DocumentImpl
 
     /** Experimental constructor. */
     public DocumentImpl(boolean grammarAccess) {
-        super(null,null);
+        super(null);
         ownerDocument = this;
         allowGrammarAccess = grammarAccess;
     }
@@ -193,11 +193,6 @@ public class DocumentImpl
     /** Returns the node name. */
     public String getNodeName() {
         return "#document";
-    }
-
-    /** Returns the node value. */
-    public String getNodeValue() {
-        return null;
     }
 
     /**
@@ -292,16 +287,6 @@ public class DocumentImpl
     	return oldChild;
 
     }   // removeChild(Node):Node
-
-    /**
-     * Documents never have a nodeValue.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
-     */
-    public void setNodeValue(String x)
-        throws DOMException {
-    	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "DOM001 Modification not allowed");
-    }
 
     //
     // Document methods
