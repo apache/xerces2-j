@@ -224,6 +224,7 @@ public class TraverseSchema implements
     private Stack fCurrentGroupNameStack = new Stack();
     private Vector fElementRecurseComplex = new Vector();
 
+    private Vector fSubstitutionGroupRecursionRegistry = new Vector();
     private boolean fElementDefaultQualified = false;
     private boolean fAttributeDefaultQualified = false;
     private int fBlockDefault = 0;
@@ -6371,94 +6372,6 @@ throws Exception {
         Element substitutionGroupElementDecl = null;
         int substitutionGroupElementDeclIndex = -1;
         boolean noErrorSoFar = true;
-        String substitutionGroupUri = null;
-        String substitutionGroupLocalpart = null;
-        String substitutionGroupFullName = null;
-        ComplexTypeInfo substitutionGroupEltTypeInfo = null;
-        DatatypeValidator substitutionGroupEltDV = null;
-        SchemaGrammar subGrammar = fSchemaGrammar;
-
-        if ( substitutionGroupStr.length() > 0 ) {
-            if(refAtt != null)
-                // REVISIT: Localize
-                reportGenericSchemaError("a local element cannot have a substitutionGroup");
-            substitutionGroupUri =  resolvePrefixToURI(getPrefix(substitutionGroupStr));
-            substitutionGroupLocalpart = getLocalPart(substitutionGroupStr);
-            substitutionGroupFullName = substitutionGroupUri+","+substitutionGroupLocalpart;
-
-            if ( !substitutionGroupUri.equals(fTargetNSURIString) ) {
-                Grammar grammar = fGrammarResolver.getGrammar(substitutionGroupUri);
-                if (grammar != null && grammar instanceof SchemaGrammar) {
-                    subGrammar = (SchemaGrammar) grammar;
-                    substitutionGroupElementDeclIndex = subGrammar.getElementDeclIndex(fStringPool.addSymbol(substitutionGroupUri),
-                                                              fStringPool.addSymbol(substitutionGroupLocalpart),
-                                                              TOP_LEVEL_SCOPE);
-                    if (substitutionGroupElementDeclIndex<=-1) {
-                        // REVISIT:  localize
-                        noErrorSoFar = false;
-                        reportGenericSchemaError("couldn't find substitutionGroup " + substitutionGroupLocalpart + " referenced by element " + nameStr
-                                         + " in the SchemaGrammar "+substitutionGroupUri);
-
-                    } else {
-                        substitutionGroupEltTypeInfo = getElementDeclTypeInfoFromNS(substitutionGroupUri, substitutionGroupLocalpart);
-                        if (substitutionGroupEltTypeInfo == null) {
-                            substitutionGroupEltDV = getElementDeclTypeValidatorFromNS(substitutionGroupUri, substitutionGroupLocalpart);
-                            if (substitutionGroupEltDV == null) {
-                                //TO DO: report error here;
-                                noErrorSoFar = false;
-                                reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
-                                                 + "' in schema '" + substitutionGroupUri+"'");
-                            }
-                        }
-                    }
-                } else {
-                    // REVISIT:  locallize
-                    noErrorSoFar = false;
-                    reportGenericSchemaError("couldn't find a schema grammar with target namespace " + substitutionGroupUri);
-                }
-            }
-            else {
-                substitutionGroupElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, substitutionGroupLocalpart);
-                if (substitutionGroupElementDecl == null) {
-                    substitutionGroupElementDeclIndex =
-                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-                    if ( substitutionGroupElementDeclIndex == -1) {
-                        noErrorSoFar = false;
-                        // REVISIT: Localize
-                        reportGenericSchemaError("unable to locate substitutionGroup affiliation element "
-                                                  +substitutionGroupStr
-                                                  +" in element declaration "
-                                                  +nameStr);
-                    }
-                }
-                else {
-                    substitutionGroupElementDeclIndex =
-                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-
-                    if ( substitutionGroupElementDeclIndex == -1) {
-                        traverseElementDecl(substitutionGroupElementDecl);
-                        substitutionGroupElementDeclIndex =
-                            fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-                    }
-                }
-
-                if (substitutionGroupElementDeclIndex != -1) {
-                    substitutionGroupEltTypeInfo = fSchemaGrammar.getElementComplexTypeInfo( substitutionGroupElementDeclIndex );
-                    if (substitutionGroupEltTypeInfo == null) {
-                        fSchemaGrammar.getElementDecl(substitutionGroupElementDeclIndex, fTempElementDecl);
-                        substitutionGroupEltDV = fTempElementDecl.datatypeValidator;
-                        if (substitutionGroupEltDV == null) {
-                            //TO DO: report error here;
-                            noErrorSoFar = false;
-                            reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
-                                                     + "' in schema '" + substitutionGroupUri+"'");
-                        }
-                    }
-                }
-            }
-
-        }
-
 
         //
         // resolving the type for this element right here
@@ -6662,8 +6575,101 @@ throws Exception {
         }
         // now we need to make sure that our substitution (if any)
         // is valid, now that we have all the requisite type-related info.
-        if(substitutionGroupStr.length() > 0) {
-            checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
+        String substitutionGroupUri = null;
+        String substitutionGroupLocalpart = null;
+        String substitutionGroupFullName = null;
+        ComplexTypeInfo substitutionGroupEltTypeInfo = null;
+        DatatypeValidator substitutionGroupEltDV = null;
+        SchemaGrammar subGrammar = fSchemaGrammar;
+        boolean ignoreSub = false;
+
+        if ( substitutionGroupStr.length() > 0 ) {
+            if(refAtt != null)
+                // REVISIT: Localize
+                reportGenericSchemaError("a local element cannot have a substitutionGroup");
+            substitutionGroupUri =  resolvePrefixToURI(getPrefix(substitutionGroupStr));
+            substitutionGroupLocalpart = getLocalPart(substitutionGroupStr);
+            substitutionGroupFullName = substitutionGroupUri+","+substitutionGroupLocalpart;
+
+            if ( !substitutionGroupUri.equals(fTargetNSURIString) ) {
+                Grammar grammar = fGrammarResolver.getGrammar(substitutionGroupUri);
+                if (grammar != null && grammar instanceof SchemaGrammar) {
+                    subGrammar = (SchemaGrammar) grammar;
+                    substitutionGroupElementDeclIndex = subGrammar.getElementDeclIndex(fStringPool.addSymbol(substitutionGroupUri),
+                                                              fStringPool.addSymbol(substitutionGroupLocalpart),
+                                                              TOP_LEVEL_SCOPE);
+                    if (substitutionGroupElementDeclIndex<=-1) {
+                        // REVISIT:  localize
+                        noErrorSoFar = false;
+                        reportGenericSchemaError("couldn't find substitutionGroup " + substitutionGroupLocalpart + " referenced by element " + nameStr
+                                         + " in the SchemaGrammar "+substitutionGroupUri);
+
+                    } else {
+                        substitutionGroupEltTypeInfo = getElementDeclTypeInfoFromNS(substitutionGroupUri, substitutionGroupLocalpart);
+                        if (substitutionGroupEltTypeInfo == null) {
+                            substitutionGroupEltDV = getElementDeclTypeValidatorFromNS(substitutionGroupUri, substitutionGroupLocalpart);
+                            if (substitutionGroupEltDV == null) {
+                                //TO DO: report error here;
+                                noErrorSoFar = false;
+                                reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
+                                                 + "' in schema '" + substitutionGroupUri+"'");
+                            }
+                        }
+                    }
+                } else {
+                    // REVISIT:  locallize
+                    noErrorSoFar = false;
+                    reportGenericSchemaError("couldn't find a schema grammar with target namespace " + substitutionGroupUri);
+                }
+            }
+            else {
+                substitutionGroupElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, substitutionGroupLocalpart);
+                if (substitutionGroupElementDecl == null) {
+                    substitutionGroupElementDeclIndex =
+                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
+                    if ( substitutionGroupElementDeclIndex == -1) {
+                        noErrorSoFar = false;
+                        // REVISIT: Localize
+                        reportGenericSchemaError("unable to locate substitutionGroup affiliation element "
+                                                  +substitutionGroupStr
+                                                  +" in element declaration "
+                                                  +nameStr);
+                    }
+                }
+                else {
+                    substitutionGroupElementDeclIndex =
+                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
+
+                    if ( substitutionGroupElementDeclIndex == -1) {
+                        // check for mutual recursion!
+                        if(fSubstitutionGroupRecursionRegistry.contains(substitutionGroupElementDecl.getAttribute("name"))) {
+                            ignoreSub = true;
+                        } else {
+                            fSubstitutionGroupRecursionRegistry.addElement(substitutionGroupElementDecl.getAttribute("name"));
+                            traverseElementDecl(substitutionGroupElementDecl);
+                            substitutionGroupElementDeclIndex =
+                                fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
+                            fSubstitutionGroupRecursionRegistry.remove(substitutionGroupElementDecl.getAttribute("name"));
+                        }
+                    }
+                }
+
+                if (!ignoreSub && substitutionGroupElementDeclIndex != -1) {
+                    substitutionGroupEltTypeInfo = fSchemaGrammar.getElementComplexTypeInfo( substitutionGroupElementDeclIndex );
+                    if (substitutionGroupEltTypeInfo == null) {
+                        fSchemaGrammar.getElementDecl(substitutionGroupElementDeclIndex, fTempElementDecl);
+                        substitutionGroupEltDV = fTempElementDecl.datatypeValidator;
+                        if (substitutionGroupEltDV == null) {
+                            //TO DO: report error here;
+                            noErrorSoFar = false;
+                            reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
+                                                     + "' in schema '" + substitutionGroupUri+"'");
+                        }
+                    }
+                }
+            }
+            if(!ignoreSub) 
+                checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
         }
 
         // this element is ur-type, check its substitutionGroup affiliation.
