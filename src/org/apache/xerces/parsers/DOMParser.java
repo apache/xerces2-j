@@ -389,7 +389,8 @@ public class DOMParser
      * @see #getDeferNodeExpansion
      * @see #setDocumentClassName
      */
-    protected void setDeferNodeExpansion(boolean deferNodeExpansion) throws SAXException {
+    protected void setDeferNodeExpansion(boolean deferNodeExpansion) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fDeferNodeExpansion = deferNodeExpansion;
     }
 
@@ -399,7 +400,8 @@ public class DOMParser
      *
      * @see #setDeferNodeExpansion
      */
-    protected boolean getDeferNodeExpansion() throws SAXException {
+    protected boolean getDeferNodeExpansion() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDeferNodeExpansion;
     }
 
@@ -418,7 +420,8 @@ public class DOMParser
      *
      * @see #getCreateEntityReferenceNodes
      */
-    protected void setCreateEntityReferenceNodes(boolean create) throws SAXException {
+    protected void setCreateEntityReferenceNodes(boolean create) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fCreateEntityReferenceNodes = create;
     }
 
@@ -428,7 +431,8 @@ public class DOMParser
      *
      * @see #setCreateEntityReferenceNodes
      */
-    public boolean getCreateEntityReferenceNodes() throws SAXException {
+    public boolean getCreateEntityReferenceNodes() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fCreateEntityReferenceNodes;
     }
 
@@ -451,7 +455,8 @@ public class DOMParser
      *
      * @see #getIncludeIgnorableWhitespace
      */
-    public void setIncludeIgnorableWhitespace(boolean include) throws SAXException {
+    public void setIncludeIgnorableWhitespace(boolean include) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fIncludeIgnorableWhitespace = include;
     }
 
@@ -461,7 +466,8 @@ public class DOMParser
      *
      * @see #setIncludeIgnorableWhitespace
      */
-    public boolean getIncludeIgnorableWhitespace() throws SAXException {
+    public boolean getIncludeIgnorableWhitespace() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fIncludeIgnorableWhitespace;
     }
     
@@ -482,7 +488,8 @@ public class DOMParser
      * @see #setDeferNodeExpansion
      * @see #DEFAULT_DOCUMENT_CLASS_NAME
      */
-    protected void setDocumentClassName(String documentClassName) throws SAXException {
+    protected void setDocumentClassName(String documentClassName) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         // normalize class name
         if (documentClassName == null) {
@@ -517,7 +524,8 @@ public class DOMParser
      *
      * @see #setDocumentClassName
      */
-    protected String getDocumentClassName() throws SAXException {
+    protected String getDocumentClassName() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDocumentClassName;
     }
 
@@ -528,7 +536,8 @@ public class DOMParser
      *       property is set to true and the document factory is set to
      *       the default factory.
      */
-    protected Element getCurrentElementNode() throws SAXException {
+    protected Element getCurrentElementNode() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         if (fCurrentElementNode != null &&
             fCurrentElementNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -555,11 +564,9 @@ public class DOMParser
      * @exception SAXNotSupportedException If the requested feature is
      *                                     known, but the requested state
      *                                     is not supported.
-     * @exception SAXException If there is any other problem fulfilling
-     *                         the request.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 core features
@@ -667,10 +674,9 @@ public class DOMParser
      *
      * @exception SAXNotRecognizedException If the requested feature is
      *                                      not known.
-     * @exception SAXException If there is any other problem fulfilling
-     *                         the request.
      */
-    public boolean getFeature(String featureId) throws SAXException {
+    public boolean getFeature(String featureId) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 core features
@@ -773,11 +779,9 @@ public class DOMParser
      * @exception SAXNotSupportedException If the requested property is
      *                                     known, but the requested
      *                                     value is not supported.
-     * @exception SAXException If there is any other problem fulfilling
-     *                         the request.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // Xerces properties
@@ -831,12 +835,11 @@ public class DOMParser
      *
      * @exception SAXNotRecognizedException If the requested property is
      *                                      not known.
-     * @exception SAXException If there is any other problem fulfilling
-     *                         the request.
      *
      * @see Configurable#getProperty
      */
-    public Object getProperty(String propertyId) throws SAXException {
+    public Object getProperty(String propertyId) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // Xerces properties

@@ -64,11 +64,11 @@ import java.io.UnsupportedEncodingException;
 import sax.helpers.AttributeListImpl;
 
 import org.xml.sax.AttributeList;
-import org.xml.sax.Configurable;
 import org.xml.sax.HandlerBase;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.ParserFactory;
 
 /**
@@ -121,13 +121,13 @@ public class SAXCount
             parser.setDocumentHandler(counter);
             parser.setErrorHandler(counter);
             try {
-                if (validate && parser instanceof Configurable)
-                    ((Configurable)parser).setFeature("http://xml.org/sax/features/validation", true);
+                if (validate && parser instanceof XMLReader)
+                    ((XMLReader)parser).setFeature("http://xml.org/sax/features/validation", true);
             } catch (Exception ex) {}
 
             if (warmup) {
-                if (parser instanceof Configurable)
-                    ((Configurable)parser).setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
+                if (parser instanceof XMLReader)
+                    ((XMLReader)parser).setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
                 parser.parse(uri);
                 warmup = false;
             }

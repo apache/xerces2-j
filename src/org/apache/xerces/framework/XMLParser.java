@@ -89,7 +89,6 @@ import org.apache.xerces.validators.schema.XSchemaValidator;
 import org.apache.xerces.validators.datatype.DatatypeMessageProvider;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
 
-import org.xml.sax.Configurable;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -111,7 +110,6 @@ public abstract class XMLParser
                XMLEntityHandler,
                XMLDocumentScanner.EventHandler,
                DTDValidator.EventHandler,
-               Configurable,
                Locator {
 
     //
@@ -125,9 +123,6 @@ public abstract class XMLParser
 
     /** SAX2 properties prefix (http://xml.org/sax/properties/). */
     protected static final String SAX2_PROPERTIES_PREFIX = "http://xml.org/sax/properties/";
-
-    /** SAX2 handlers prefix (http://xml.org/sax/handlers/). */
-    protected static final String SAX2_HANDLERS_PREFIX = "http://xml.org/sax/handlers/";
 
     /** Xerces features prefix (http://apache.org/xml/features/). */
     protected static final String XERCES_FEATURES_PREFIX = "http://apache.org/xml/features/";
@@ -717,13 +712,14 @@ public abstract class XMLParser
      * @see #getValidation
      * @see #setFeature
      */
-    protected void setValidation(boolean validate) throws SAXException {
+    protected void setValidation(boolean validate) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         try {
             fDTDValidator.setValidationEnabled(validate);
             getSchemaValidator().setValidationEnabled(validate);
         }
         catch (Exception ex) {
-            throw new SAXException(ex);
+            throw new SAXNotSupportedException(ex.getMessage());
         }
     }
 
@@ -732,7 +728,8 @@ public abstract class XMLParser
      *
      * @see #setValidation
      */
-    protected boolean getValidation() throws SAXException {
+    protected boolean getValidation() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDTDValidator.getValidationEnabled();
     }
 
@@ -755,7 +752,7 @@ public abstract class XMLParser
      * @see #setFeature
      */
     protected void setExternalGeneralEntities(boolean expand)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         if (!expand) {
             throw new SAXNotSupportedException("http://xml.org/sax/features/external-general-entities");
         }
@@ -768,7 +765,8 @@ public abstract class XMLParser
      *
      * @see #setExternalGeneralEntities
      */
-    protected boolean getExternalGeneralEntities() throws SAXException {
+    protected boolean getExternalGeneralEntities() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return true;
     }
 
@@ -791,7 +789,7 @@ public abstract class XMLParser
      * @see #setFeature
      */
     protected void setExternalParameterEntities(boolean expand)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         if (!expand) {
             throw new SAXNotSupportedException("http://xml.org/sax/features/external-parameter-entities");
         }
@@ -804,7 +802,8 @@ public abstract class XMLParser
      *
      * @see #setExternalParameterEntities
      */
-    protected boolean getExternalParameterEntities() throws SAXException {
+    protected boolean getExternalParameterEntities() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return true;
     }
 
@@ -821,7 +820,8 @@ public abstract class XMLParser
      * @see #getNamespaces
      * @see #setFeature
      */
-    protected void setNamespaces(boolean process) throws SAXException {
+    protected void setNamespaces(boolean process) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fNamespacesEnabled = process;
         fDTDValidator.setNamespacesEnabled(process);
         getSchemaValidator().setNamespacesEnabled(process);
@@ -832,7 +832,8 @@ public abstract class XMLParser
      *
      * @see #setNamespaces
      */
-    protected boolean getNamespaces() throws SAXException {
+    protected boolean getNamespaces() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fNamespacesEnabled;
     }
 
@@ -854,7 +855,8 @@ public abstract class XMLParser
      * @see #getValidationDynamic
      * @see #setFeature
      */
-    protected void setValidationDynamic(boolean dynamic) throws SAXException {
+    protected void setValidationDynamic(boolean dynamic) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize this message. -Ac
             throw new SAXNotSupportedException("http://apache.org/xml/features/validation/dynamic: parse is in progress");
@@ -864,7 +866,7 @@ public abstract class XMLParser
             getSchemaValidator().setDynamicValidationEnabled(dynamic);
         }
         catch (Exception ex) {
-            throw new SAXException(ex);
+            throw new SAXNotSupportedException(ex.getMessage());
         }
     }
 
@@ -874,7 +876,8 @@ public abstract class XMLParser
      *
      * @see #setValidationDynamic
      */
-    protected boolean getValidationDynamic() throws SAXException {
+    protected boolean getValidationDynamic() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDTDValidator.getDynamicValidationEnabled();
     }
 
@@ -893,7 +896,7 @@ public abstract class XMLParser
      * @see #setFeature
      */
     protected void setValidationWarnOnDuplicateAttdef(boolean warn)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fDTDValidator.setWarningOnDuplicateAttDef(warn);
         getSchemaValidator().setWarningOnDuplicateAttDef(warn);
     }
@@ -905,7 +908,7 @@ public abstract class XMLParser
      * @see #setValidationWarnOnDuplicateAttdef
      */
     protected boolean getValidationWarnOnDuplicateAttdef()
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDTDValidator.getWarningOnDuplicateAttDef();
     }
 
@@ -925,7 +928,7 @@ public abstract class XMLParser
      * @see #setFeature
      */
     protected void setValidationWarnOnUndeclaredElemdef(boolean warn)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fDTDValidator.setWarningOnUndeclaredElements(warn);
         getSchemaValidator().setWarningOnUndeclaredElements(warn);
     }
@@ -937,7 +940,7 @@ public abstract class XMLParser
      * @see #setValidationWarnOnUndeclaredElemdef
      */
     protected boolean getValidationWarnOnUndeclaredElemdef()
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDTDValidator.getWarningOnUndeclaredElements();
     }
 
@@ -955,7 +958,8 @@ public abstract class XMLParser
      * @see #getAllowJavaEncodings
      * @see #setFeature
      */
-    protected void setAllowJavaEncodings(boolean allow) throws SAXException {
+    protected void setAllowJavaEncodings(boolean allow) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fReaderFactory.setAllowJavaEncodingName(allow);
     }
 
@@ -964,7 +968,8 @@ public abstract class XMLParser
      *
      * @see #setAllowJavaEncodings
      */
-    protected boolean getAllowJavaEncodings() throws SAXException {
+    protected boolean getAllowJavaEncodings() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fReaderFactory.getAllowJavaEncodingName();
     }
 
@@ -984,7 +989,7 @@ public abstract class XMLParser
      * @see #setFeature
      */
     protected void setContinueAfterFatalError(boolean continueAfterFatalError)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         fContinueAfterFatalError = continueAfterFatalError;
     }
 
@@ -993,7 +998,8 @@ public abstract class XMLParser
      *
      * @see #setContinueAfterFatalError
      */
-    protected boolean getContinueAfterFatalError() throws SAXException {
+    protected boolean getContinueAfterFatalError() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fContinueAfterFatalError;
     }
 
@@ -1018,7 +1024,8 @@ public abstract class XMLParser
      * @see #getNamespaceSep
      * @see #setProperty
      */
-    protected void setNamespaceSep(String separator) throws SAXException {
+    protected void setNamespaceSep(String separator) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         // REVISIT: Ask someone what it could possibly hurt to allow
         //          the application to change this in mid-parse.
         if (fParseInProgress) {
@@ -1033,7 +1040,8 @@ public abstract class XMLParser
      *
      * @see #setNamespaceSep
      */
-    protected String getNamespaceSep() throws SAXException {
+    protected String getNamespaceSep() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fNamespaceSep;
     }
 
@@ -1049,7 +1057,8 @@ public abstract class XMLParser
      *
      * @see #getProperty
      */
-    protected String getXMLString() throws SAXException {
+    protected String getXMLString() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         throw new SAXNotSupportedException("http://xml.org/sax/properties/xml-string");
     }
 
@@ -1106,12 +1115,34 @@ public abstract class XMLParser
     }
 
     //
-    // Parser methods
+    // Parser/XMLReader methods
     //
     // NOTE: This class does *not* implement the org.xml.sax.Parser
     //       interface but it does share some common methods. -Ac
 
     // handlers
+
+    /**
+     * Sets the resolver used to resolve external entities. The EntityResolver
+     * interface supports resolution of public and system identifiers.
+     *
+     * @param resolver The new entity resolver. Passing a null value will
+     *                 uninstall the currently installed resolver.
+     */
+    public void setEntityResolver(EntityResolver resolver) {
+        fEntityResolver = resolver;
+    }
+
+    /**
+     * Return the current entity resolver.
+     *
+     * @return The current entity resolver, or null if none
+     *         has been registered.
+     * @see #setEntityResolver
+     */
+    public EntityResolver getEntityResolver() {
+        return fEntityResolver;
+    }
 
     /**
      * Sets the error handler.
@@ -1120,6 +1151,17 @@ public abstract class XMLParser
      */
     public void setErrorHandler(ErrorHandler handler) {
         fErrorHandler = handler;
+    }
+
+    /**
+     * Return the current error handler.
+     *
+     * @return The current error handler, or null if none
+     *         has been registered.
+     * @see #setErrorHandler
+     */
+    public ErrorHandler getErrorHandler() {
+        return fErrorHandler;
     }
 
     // parsing
@@ -1298,6 +1340,11 @@ public abstract class XMLParser
     //
     // Configurable methods
     //
+    // This interface is no longer a part of SAX2. These methods have
+    // been added directly to the new XMLReader interface. In addition,
+    // the throws clause has changed from throws SAXException to throws
+    // SAXNotRecognizedException, SAXNotSupportedException
+    //
 
     /**
      * Set the state of a feature.
@@ -1318,7 +1365,7 @@ public abstract class XMLParser
      *            problem fulfilling the request.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 Features
@@ -1464,7 +1511,8 @@ public abstract class XMLParser
      * @exception org.xml.sax.SAXException If there is any other
      *            problem fulfilling the request.
      */
-    public boolean getFeature(String featureId) throws SAXException {
+    public boolean getFeature(String featureId) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 Features
@@ -1606,7 +1654,7 @@ public abstract class XMLParser
      *            problem fulfilling the request.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 Properties
@@ -1700,7 +1748,8 @@ public abstract class XMLParser
      *            problem fulfilling the request.
      * @see org.xml.sax.Configurable#getProperty
      */
-    public Object getProperty(String propertyId) throws SAXException {
+    public Object getProperty(String propertyId) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 Properties
@@ -1945,7 +1994,7 @@ public abstract class XMLParser
             if (attrName == fStringPool.addSymbol("xmlns")) { // default namespacedecl
                 fValidator = getSchemaValidator();
 					 String fs = fEntityHandler.expandSystemId(fStringPool.toString(attValue));
-			       InputSource is = fResolver == null ? null : fResolver.resolveEntity(null, fs);
+			       InputSource is = fEntityResolver == null ? null : fEntityResolver.resolveEntity(null, fs);
 		        		if (is == null) {
             			is = new InputSource(fs);
 						}
@@ -2125,7 +2174,7 @@ public abstract class XMLParser
     //
     //
     //
-    private EntityResolver fResolver = null;
+    private EntityResolver fEntityResolver = null;
     private byte[] fEntityTypeStack = null;
     private int[] fEntityNameStack = null;
     private int fEntityStackDepth = 0;
@@ -2178,17 +2227,6 @@ public abstract class XMLParser
      */
     public void addRecognizer(XMLDeclRecognizer recognizer) {
         fReaderFactory.addRecognizer(recognizer);
-    }
-
-    /**
-     * Sets the resolver used to resolve external entities. The EntityResolver
-     * interface supports resolution of public and system identifiers.
-     *
-     * @param resolver The new entity resolver. Passing a null value will
-     *                 uninstall the currently installed resolver.
-     */
-    public void setEntityResolver(EntityResolver resolver) {
-        fResolver = resolver;
     }
 
     /**
@@ -2573,7 +2611,7 @@ public abstract class XMLParser
         sendStartEntityNotifications();
         ReaderState rs = (ReaderState) fReaderStack.peek();
         fSystemId = expandSystemId(fSystemId, rs.systemId);
-        fSource = fResolver == null ? null : fResolver.resolveEntity(fPublicId, fSystemId);
+        fSource = fEntityResolver == null ? null : fEntityResolver.resolveEntity(fPublicId, fSystemId);
         if (fSource == null) {
             fSource = new InputSource(fSystemId);
             if (fPublicId != null)

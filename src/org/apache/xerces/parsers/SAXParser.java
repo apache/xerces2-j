@@ -63,15 +63,22 @@ import org.apache.xerces.framework.XMLValidator;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.StringPool;
 
+import org.xml.sax.Attributes;
 import org.xml.sax.AttributeList;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.DTDHandler;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.Parser;
+import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.misc.DeclHandler;
-import org.xml.sax.misc.LexicalHandler;
-import org.xml.sax.misc.NamespaceHandler;
+import org.xml.sax.ext.DeclHandler;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.AttributesImpl;
+
+// REVISIT: [SAX2beta] ContentHandler#skippedEntity(String)
 
 /**
  * SAXParser provides a parser which implements the SAX1 and SAX2
@@ -81,7 +88,7 @@ import org.xml.sax.misc.NamespaceHandler;
  */
 public class SAXParser
     extends XMLParser
-    implements Parser {
+    implements Parser, XMLReader {
 
     //
     // Constants
@@ -92,18 +99,19 @@ public class SAXParser
     /** Features recognized by this parser. */
     private static final String RECOGNIZED_FEATURES[] = {
         // SAX2 core
-        "http://xml.org/sax/features/normalize-text",
-        "http://xml.org/sax/features/use-locator",
+        /*"http://xml.org/sax/features/normalize-text",*/
+        /*"http://xml.org/sax/features/use-locator",*/
+        "http://xml.org/sax/features/namespace-prefixes",
+        "http://xml.org/sax/features/string-interning",
         // Xerces
     };
 
     /** Properties recognized by this parser. */
     private static final String RECOGNIZED_PROPERTIES[] = {
         // SAX2 core
+        "http://xml.org/sax/properties/lexical-handler",
+        "http://xml.org/sax/properties/declaration-handler",
         "http://xml.org/sax/properties/dom-node",
-        "http://xml.org/sax/handlers/DeclHandler",
-        "http://xml.org/sax/handlers/LexicalHandler",
-        "http://xml.org/sax/handlers/NamespaceHandler",
         // Xerces
     };
 
@@ -116,13 +124,20 @@ public class SAXParser
     // Data
     //
 
-    // handlers
+    // parser handlers
+
+    /** Document handler. */
+    private DocumentHandler fDocumentHandler;
+
+    // parser/xmlreader handlers
 
     /** DTD handler. */
     private DTDHandler fDTDHandler;
 
-    /** Document handler. */
-    private DocumentHandler fDocumentHandler;
+    // xmlreader handlers
+
+    /** Content handler. */
+    private ContentHandler fContentHandler;
 
     /** Decl handler. */
     private DeclHandler fDeclHandler;
@@ -130,8 +145,9 @@ public class SAXParser
     /** Lexical handler. */
     private LexicalHandler fLexicalHandler;
 
-    /** Namespace handler. */
-    private NamespaceHandler fNamespaceHandler;
+    // temp
+
+    private transient AttributesImpl fAttributes = new AttributesImpl();
 
     //
     // Constructors
@@ -238,11 +254,14 @@ public class SAXParser
      * @see #getNormalizeText
      * @see #setFeature
      */
-    protected void setNormalizeText(boolean normalize) throws SAXException {
+    /*
+    protected void setNormalizeText(boolean normalize) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         if (normalize) {
             throw new SAXNotSupportedException("http://xml.org/sax/features/normalize-text");
         }
     }
+    */
 
     /**
      * <b>Note: This feature is always false.</b>
@@ -253,9 +272,12 @@ public class SAXParser
      *
      * @see #setNormalizeText
      */
-    protected boolean getNormalizeText() throws SAXException {
+    /*
+    protected boolean getNormalizeText() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return false;
     }
+    */
 
     /**
      * <b>Note: Currently, this parser always sets the locator.</b>
@@ -272,11 +294,14 @@ public class SAXParser
      * @see #getUseLocator
      * @see #setFeature
      */
-    protected void setUseLocator(boolean use) throws SAXException {
+    /*
+    protected void setUseLocator(boolean use) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         if (!use) {
             throw new SAXNotSupportedException("http://xml.org/sax/features/use-locator");
         }
     }
+    */
 
     /**
      * <b>Note: This feature is always true.</b>
@@ -285,9 +310,12 @@ public class SAXParser
      *
      * @see #setUseLocator
      */
-    protected boolean getUseLocator() throws SAXException {
+    /*
+    protected boolean getUseLocator() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return true;
     }
+    */
 
     // SAX2 core properties
 
@@ -296,7 +324,7 @@ public class SAXParser
      * <p>
      * This method is the equivalent to the property:
      * <pre>
-     * http://xml.org/sax/handlers/DeclHandler
+     * http://xml.org/sax/properties/declaration-handler
      * </pre>
      *
      * @param handler The new handler.
@@ -304,10 +332,11 @@ public class SAXParser
      * @see #getDeclHandler
      * @see #setProperty
      */
-    protected void setDeclHandler(DeclHandler handler) throws SAXException {
+    protected void setDeclHandler(DeclHandler handler) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize this message.
-            throw new SAXNotSupportedException("http://xml.org/sax/handlers/DeclHandler: parse is in progress");
+            throw new SAXNotSupportedException("http://xml.org/sax/properties/declaration-handler: parse is in progress");
         }
         fDeclHandler = handler;
     }
@@ -317,7 +346,8 @@ public class SAXParser
      *
      * @see #setDeclHandler
      */
-    protected DeclHandler getDeclHandler() throws SAXException {
+    protected DeclHandler getDeclHandler() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDeclHandler;
     }
 
@@ -326,7 +356,7 @@ public class SAXParser
      * <p>
      * This method is the equivalent to the property:
      * <pre>
-     * http://xml.org/sax/handlers/LexicalHandler
+     * http://xml.org/sax/properties/lexical-handler
      * </pre>
      *
      * @param handler lexical event handler
@@ -335,10 +365,10 @@ public class SAXParser
      * @see #setProperty
      */
     protected void setLexicalHandler(LexicalHandler handler)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize this message.
-            throw new SAXNotSupportedException("http://xml.org/sax/handlers/LexicalHandler: parse is in progress");
+            throw new SAXNotSupportedException("http://xml.org/sax/properties/lexical-handler: parse is in progress");
         }
         fLexicalHandler = handler;
     }
@@ -348,43 +378,56 @@ public class SAXParser
      *
      * @see #setLexicalHandler
      */
-    protected LexicalHandler getLexicalHandler() throws SAXException {
+    protected LexicalHandler getLexicalHandler() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
         return fLexicalHandler;
     }
 
-    /**
-     * Set the namespace declaration scope event handler.
-     * <p>
-     * This method is the equivalent to the property:
-     * <pre>
-     * http://xml.org/sax/handlers/NamespaceHandler
-     * </pre>
-     *
-     * @param handler namespace event handler
-     *
-     * @see #getNamespaceHandler
-     * @see #setProperty
-     */
-    protected void setNamespaceHandler(NamespaceHandler handler)
-        throws SAXException {
-        if (fParseInProgress) {
-            // REVISIT: Localize this message.
-            throw new SAXNotSupportedException("http://xml.org/sax/handlers/NamespaceHandler: parse is in progress");
-        }
-        fNamespaceHandler = handler;
-    }
+    //
+    // Parser methods
+    //
 
-    /**
-     * Returns the namespace declaration scope event handler.
-     *
-     * @see #setNamespaceHandler
-     */
-    protected NamespaceHandler getNamespaceHandler() throws SAXException {
-        return fNamespaceHandler;
+    /** Sets the document handler. */
+    public void setDocumentHandler(DocumentHandler handler) {
+        fDocumentHandler = handler;
     }
 
     //
-    // Configurable methods
+    // Parser/XMLReader methods
+    //
+
+    /**
+     * Allow an application to register a DTD event handler.
+     *
+     * <p>If the application does not register a DTD handler, all DTD
+     * events reported by the SAX parser will be silently ignored.</p>
+     *
+     * <p>Applications may register a new or different handler in the
+     * middle of a parse, and the SAX parser must begin using the new
+     * handler immediately.</p>
+     *
+     * @param handler The DTD handler.
+     * @exception java.lang.NullPointerException If the handler 
+     *            argument is null.
+     * @see #getDTDHandler
+     */
+    public void setDTDHandler(DTDHandler handler) {
+        fDTDHandler = handler;
+    }
+
+    /**
+     * Return the current DTD handler.
+     *
+     * @return The current DTD handler, or null if none
+     *         has been registered.
+     * @see #setDTDHandler
+     */
+    public DTDHandler getDTDHandler() {
+        return fDTDHandler;
+    }
+
+    //
+    // XMLReader methods
     //
 
     /**
@@ -400,11 +443,9 @@ public class SAXParser
      * @exception SAXNotSupportedException If the
      *            requested feature is known, but the requested
      *            state is not supported.
-     * @exception SAXException If there is any other
-     *            problem fulfilling the request.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 Features
@@ -412,6 +453,7 @@ public class SAXParser
 
         if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
             String feature = featureId.substring(SAX2_FEATURES_PREFIX.length());
+            /*
             //
             // http://xml.org/sax/features/normalize-text
             //   Ensure that all consecutive text is returned in a single callback to
@@ -422,6 +464,8 @@ public class SAXParser
                 setNormalizeText(state);
                 return;
             }
+            */
+            /*
             //
             // http://xml.org/sax/features/use-locator
             //   Provide a Locator using the DocumentHandler.setDocumentLocator
@@ -431,6 +475,7 @@ public class SAXParser
                 setUseLocator(state);
                 return;
             }
+            */
             //
             // Drop through and perform default processing
             //
@@ -468,10 +513,11 @@ public class SAXParser
      * @return The current state of the feature.
      * @exception org.xml.sax.SAXNotRecognizedException If the
      *            requested feature is not known.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
+     * @exception SAXNotSupportedException If the
+     *            requested feature is known but not supported.
      */
-    public boolean getFeature(String featureId) throws SAXException {
+    public boolean getFeature(String featureId) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 Features
@@ -479,6 +525,7 @@ public class SAXParser
 
         if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
             String feature = featureId.substring(SAX2_FEATURES_PREFIX.length());
+            /*
             //
             // http://xml.org/sax/features/normalize-text
             //   Ensure that all consecutive text is returned in a single callback to
@@ -488,6 +535,8 @@ public class SAXParser
             if (feature.equals("normalize-text")) {
                 return getNormalizeText();
             }
+            */
+            /*
             //
             // http://xml.org/sax/features/use-locator
             //   Provide a Locator using the DocumentHandler.setDocumentLocator
@@ -496,10 +545,23 @@ public class SAXParser
             if (feature.equals("use-locator")) {
                 return getUseLocator();
             }
+            */
             //
             // Drop through and perform default processing
             //
         }
+
+        //
+        // Xerces Features
+        //
+
+        /*
+        else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
+            //
+            // Drop through and perform default processing
+            //
+        }
+        */
 
         //
         // Perform default processing
@@ -523,11 +585,9 @@ public class SAXParser
      * @exception SAXNotSupportedException If the
      *            requested property is known, but the requested
      *            value is not supported.
-     * @exception SAXException If there is any other
-     *            problem fulfilling the request.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXException {
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 core properties
@@ -535,6 +595,36 @@ public class SAXParser
 
         if (propertyId.startsWith(SAX2_PROPERTIES_PREFIX)) {
             String property = propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
+            //
+            // http://xml.org/sax/properties/lexical-handler
+            // Value type: org.xml.sax.ext.LexicalHandler
+            // Access: read/write, pre-parse only
+            //   Set the lexical event handler.
+            //
+            if (property.equals("lexical-handler")) {
+                try {
+                    setLexicalHandler((LexicalHandler)value);
+                }
+                catch (ClassCastException e) {
+                    throw new SAXNotSupportedException(propertyId);
+                }
+                return;
+            }
+            //
+            // http://xml.org/sax/properties/declaration-handler
+            // Value type: org.xml.sax.ext.DeclHandler
+            // Access: read/write, pre-parse only
+            //   Set the DTD declaration event handler.
+            //
+            if (property.equals("declaration-handler")) {
+                try {
+                    setDeclHandler((DeclHandler)value);
+                }
+                catch (ClassCastException e) {
+                    throw new SAXNotSupportedException(propertyId);
+                }
+                return;
+            }
             //
             // http://xml.org/sax/properties/dom-node
             // Value type: DOM Node
@@ -547,62 +637,6 @@ public class SAXParser
             //
             if (property.equals("dom-node")) {
                 throw new SAXNotSupportedException(propertyId); // read-only property
-            }
-            //
-            // Drop through and perform default processing
-            //
-        }
-
-        //
-        // SAX2 core handlers
-        //
-
-        else if (propertyId.startsWith(SAX2_HANDLERS_PREFIX)) {
-            String property = propertyId.substring(SAX2_HANDLERS_PREFIX.length());
-            //
-            // http://xml.org/sax/handlers/DeclHandler
-            // Value type: org.xml.sax.misc.DeclHandler
-            // Access: read/write, pre-parse only
-            //   Set the DTD declaration event handler.
-            //
-            if (property.equals("DeclHandler")) {
-                try {
-                    setDeclHandler((DeclHandler)value);
-                }
-                catch (ClassCastException e) {
-                    throw new SAXNotSupportedException(propertyId);
-                }
-                return;
-            }
-            //
-            // http://xml.org/sax/handlers/LexicalHandler
-            // Value type: org.xml.sax.misc.LexicalHandler
-            // Access: read/write, pre-parse only
-            //   Set the lexical event handler.
-            //
-            if (property.equals("LexicalHandler")) {
-                try {
-                    setLexicalHandler((LexicalHandler)value);
-                }
-                catch (ClassCastException e) {
-                    throw new SAXNotSupportedException(propertyId);
-                }
-                return;
-            }
-            //
-            // http://xml.org/sax/handlers/NamespaceHandler
-            // Value type: org.xml.sax.misc.NamespaceHandler
-            // Access: read/write, pre-parse only
-            //   Set the namespace declaration scope event handler.
-            //
-            if (property.equals("NamespaceHandler")) {
-                try {
-                    setNamespaceHandler((NamespaceHandler)value);
-                }
-                catch (ClassCastException e) {
-                    throw new SAXNotSupportedException(propertyId);
-                }
-                return;
             }
             //
             // Drop through and perform default processing
@@ -640,11 +674,11 @@ public class SAXParser
      * @return The current value of the property.
      * @exception org.xml.sax.SAXNotRecognizedException If the
      *            requested property is not known.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
-     * @see org.xml.sax.Configurable#getProperty
+     * @exception SAXNotSupportedException If the
+     *            requested property is known but not supported.
      */
-    public Object getProperty(String propertyId) throws SAXException {
+    public Object getProperty(String propertyId) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
         // SAX2 core properties
@@ -652,6 +686,24 @@ public class SAXParser
 
         if (propertyId.startsWith(SAX2_PROPERTIES_PREFIX)) {
             String property = propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
+            //
+            // http://xml.org/sax/properties/lexical-handler
+            // Value type: org.xml.sax.ext.LexicalHandler
+            // Access: read/write, pre-parse only
+            //   Set the lexical event handler.
+            //
+            if (property.equals("lexical-handler")) {
+                return getLexicalHandler();
+            }
+            //
+            // http://xml.org/sax/properties/declaration-handler
+            // Value type: org.xml.sax.ext.DeclHandler
+            // Access: read/write, pre-parse only
+            //   Set the DTD declaration event handler.
+            //
+            if (property.equals("declaration-handler")) {
+                return getDeclHandler();
+            }
             //
             // http://xml.org/sax/properties/dom-node
             // Value type: DOM Node
@@ -664,44 +716,6 @@ public class SAXParser
             //
             if (property.equals("dom-node")) {
                 throw new SAXNotSupportedException(propertyId); // we are not iterating a DOM tree
-            }
-            //
-            // Drop through and perform default processing
-            //
-        }
-
-        //
-        // SAX2 core handlers
-        //
-
-        else if (propertyId.startsWith(SAX2_HANDLERS_PREFIX)) {
-            String property = propertyId.substring(SAX2_HANDLERS_PREFIX.length());
-            //
-            // http://xml.org/sax/handlers/DeclHandler
-            // Value type: org.xml.sax.misc.DeclHandler
-            // Access: read/write, pre-parse only
-            //   Set the DTD declaration event handler.
-            //
-            if (property.equals("DeclHandler")) {
-                return getDeclHandler();
-            }
-            //
-            // http://xml.org/sax/handlers/LexicalHandler
-            // Value type: org.xml.sax.misc.LexicalHandler
-            // Access: read/write, pre-parse only
-            //   Set the lexical event handler.
-            //
-            if (property.equals("LexicalHandler")) {
-                return getLexicalHandler();
-            }
-            //
-            // http://xml.org/sax/handlers/NamespaceHandler
-            // Value type: org.xml.sax.misc.NamespaceHandler
-            // Access: read/write, pre-parse only
-            //   Set the namespace declaration scope event handler.
-            //
-            if (property.equals("NamespaceHandler")) {
-                return getNamespaceHandler();
             }
             //
             // Drop through and perform default processing
@@ -728,18 +742,38 @@ public class SAXParser
 
     } // getProperty(String):Object
 
-    //
-    // Parser methods
-    //
-
-    /** Sets the DTD handler. */
-    public void setDTDHandler(DTDHandler handler) {
-        fDTDHandler = handler;
+    /**
+     * Allow an application to register a content event handler.
+     *
+     * <p>If the application does not register a content handler, all
+     * content events reported by the SAX parser will be silently
+     * ignored.</p>
+     *
+     * <p>Applications may register a new or different handler in the
+     * middle of a parse, and the SAX parser must begin using the new
+     * handler immediately.</p>
+     *
+     * @param handler The content handler.
+     * @exception java.lang.NullPointerException If the handler 
+     *            argument is null.
+     * @see #getContentHandler
+     */
+    public void setContentHandler(ContentHandler handler) {
+        if (handler == null) {
+            throw new NullPointerException();
+        }
+        fContentHandler = handler;
     }
 
-    /** Sets the document handler. */
-    public void setDocumentHandler(DocumentHandler handler) {
-        fDocumentHandler = handler;
+    /**
+     * Return the current content handler.
+     *
+     * @return The current content handler, or null if none
+     *         has been registered.
+     * @see #setContentHandler
+     */
+    public ContentHandler getContentHandler() {
+        return fContentHandler;
     }
 
     //
@@ -1026,6 +1060,10 @@ public class SAXParser
             fDocumentHandler.setDocumentLocator(getLocator());
             fDocumentHandler.startDocument();
         }
+        if (fContentHandler != null) {
+            fContentHandler.setDocumentLocator(getLocator());
+            fContentHandler.startDocument();
+        }
 
         // release strings
         fStringPool.releaseString(versionIndex);
@@ -1044,6 +1082,9 @@ public class SAXParser
         if (fDocumentHandler != null) {
             fDocumentHandler.endDocument();
         }
+        if (fContentHandler != null) {
+            fContentHandler.endDocument();
+        }
 
     } // endDocument()
 
@@ -1052,7 +1093,7 @@ public class SAXParser
      */
     public void startNamespaceDeclScope(int prefix, int uri) throws Exception {
 
-        if (fNamespaceHandler != null || DEBUG_CALLBACKS) {
+        if (fContentHandler != null || DEBUG_CALLBACKS) {
 
             // strings
             String p = fStringPool.toString(prefix);
@@ -1062,8 +1103,8 @@ public class SAXParser
             if (DEBUG_CALLBACKS) {
                 System.err.println("startNamespaceDeclScope(" + p + ", " + ns + ")");
             }
-            if (fNamespaceHandler != null) {
-                fNamespaceHandler.startNamespaceDeclScope(p, ns);
+            if (fContentHandler != null) {
+                fContentHandler.startPrefixMapping(p, ns);
             }
         }
 
@@ -1074,7 +1115,7 @@ public class SAXParser
      */
     public void endNamespaceDeclScope(int prefix) throws Exception {
 
-        if (fNamespaceHandler != null || DEBUG_CALLBACKS) {
+        if (fContentHandler != null || DEBUG_CALLBACKS) {
 
             // strings
             String p = fStringPool.toString(prefix);
@@ -1083,8 +1124,8 @@ public class SAXParser
             if (DEBUG_CALLBACKS) {
                 System.err.println("endNamespaceDeclScope(" + p + ")");
             }
-            if (fNamespaceHandler != null) {
-                fNamespaceHandler.endNamespaceDeclScope(p);
+            if (fContentHandler != null) {
+                fContentHandler.endPrefixMapping(p);
             }
         }
 
@@ -1113,6 +1154,31 @@ public class SAXParser
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(name, attrs);
         }
+        if (fContentHandler != null) {
+            int uriIndex = fStringPool.getURIForQName(elementType);
+            String uri = uriIndex != -1 ? fStringPool.toString(uriIndex) : "";
+            int localIndex = fStringPool.getLocalPartForQName(elementType);
+            String local = localIndex != -1 ? fStringPool.toString(localIndex) : "";
+            String raw = name;
+            fAttributes.clear();
+            for (int attrIndex = attrList.getFirstAttr(attrListIndex); 
+                 attrIndex != -1; 
+                 attrIndex = attrList.getNextAttr(attrIndex)) {
+                int attrNameIndex = attrList.getAttrName(attrIndex);
+                int attrUriIndex = fStringPool.getURIForQName(attrNameIndex);
+                String attrUri = attrUriIndex != -1 
+                               ? fStringPool.toString(attrUriIndex) : "";
+                int attrLocalIndex = fStringPool.getLocalPartForQName(attrNameIndex);
+                String attrLocal = attrLocalIndex != -1 
+                                 ? fStringPool.toString(attrLocalIndex) : "";
+                String attrRaw = fStringPool.toString(attrNameIndex);
+                String attrType = fStringPool.toString(attrList.getAttType(attrIndex));
+                String attrValue = fStringPool.toString(attrList.getAttValue(attrIndex));
+                fAttributes.addAttribute(attrUri, attrLocal, attrRaw, 
+                                         attrType, attrValue);
+            }
+            fContentHandler.startElement(uri, local, raw, fAttributes);
+        }
 
         // free attribute list
         attrList.releaseAttrList(attrListIndex);
@@ -1128,6 +1194,14 @@ public class SAXParser
         }
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(fStringPool.toString(elementType));
+        }
+        if (fContentHandler != null) {
+            int uriIndex = fStringPool.getURIForQName(elementType);
+            String uri = uriIndex != -1 ? fStringPool.toString(uriIndex) : "";
+            int localIndex = fStringPool.getLocalPartForQName(elementType);
+            String local = localIndex != -1 ? fStringPool.toString(localIndex) : "";
+            String raw = fStringPool.toString(elementType);
+            fContentHandler.endElement(uri, local, raw);
         }
 
     } // endElement(int)
@@ -1241,7 +1315,7 @@ public class SAXParser
     /** Processing instruction. */
     public void processingInstruction(int piTarget, int piData) throws Exception {
 
-        if (fDocumentHandler != null || DEBUG_CALLBACKS) {
+        if (fDocumentHandler != null || fContentHandler != null || DEBUG_CALLBACKS) {
             //
             // REVISIT - I keep running into SAX apps that expect
             //   null data to be an empty string, which is contrary
@@ -1259,8 +1333,12 @@ public class SAXParser
             if (fDocumentHandler != null) {
                 fDocumentHandler.processingInstruction(target, data);
             }
+            if (fContentHandler != null) {
+                fContentHandler.processingInstruction(target, data);
+            }
 
-        } else {
+        } 
+        else {
             fStringPool.releaseString(piTarget);
             fStringPool.releaseString(piData);
         }
@@ -1303,6 +1381,9 @@ public class SAXParser
         if (fDocumentHandler != null) {
             fDocumentHandler.characters(ch, start, length);
         }
+        if (fContentHandler != null) {
+            fContentHandler.characters(ch, start, length);
+        }
 
     }
 
@@ -1315,6 +1396,9 @@ public class SAXParser
         }
         if (fDocumentHandler != null) {
             fDocumentHandler.ignorableWhitespace(ch, start, length);
+        }
+        if (fContentHandler != null) {
+            fContentHandler.ignorableWhitespace(ch, start, length);
         }
 
     }
