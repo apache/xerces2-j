@@ -169,7 +169,7 @@ public class TextImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-    	if (offset < 0 || offset > data.length() - 1) {
+    	if (offset < 0 || offset > data.length() ) {
             throw new DOMException(DOMException.INDEX_SIZE_ERR, 
                                        "DOM004 Index out of bounds");
         }
