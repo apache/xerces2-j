@@ -166,9 +166,8 @@ Copyright:
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java **/v1/** **/v2/**
-                       org/apache/xerces/dom/DOMImplementationSourceImpl.java
                        org/apache/xerces/dom3/*.java
-                       org/apache/xerces/dom3/ls/*">
+                       org/apache/xerces/dom3/ls">
         </fileset>
     </copy>
     
@@ -198,7 +197,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the omnibus class package                                           -->
+  <!-- Creates the omnibus class package                                   -->
   <!-- =================================================================== -->
   <target name="deprecatedjar" depends="compile">
     <jar jarfile="${build.dir}/${deprecatedjar.parser}"
@@ -208,23 +207,37 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the implementation class package                                           -->
+  <!-- Creates the implementation class package, excluding DOM Level 3     -->
   <!-- =================================================================== -->
   <target name="jar" depends="compile">
     <jar jarfile="${build.dir}/${jar.parser}"
          basedir="${build.dest}"
          compress="true"
-         includes="org/apache/**, META-INF/**"/>
+         includes="org/apache/**, META-INF/**
+                   org/w3c/dom/ls/**
+                   org/w3c/dom/DOMError.class
+                   org/w3c/dom/DOMErrorHandler.class
+                   org/w3c/dom/DOMImplementationSource.class
+                   org/w3c/dom/DOMImplementationRegistry.class
+                   org/w3c/dom/DOMLocator.class
+                   org/w3c/dom/UserDataHandler.class"/>
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the API class package                                           -->
+  <!-- Creates the API class package, excluding DOM Level 3                -->
   <!-- =================================================================== -->
   <target name="apijar" depends="compile">
     <jar jarfile="${build.dir}/${jar.apis}"
          basedir="${build.dest}"
          compress="true"
-         includes="org/xml/**, org/w3c/**, javax/**"/>
+         includes="org/xml/**, org/w3c/**, javax/**"
+         excludes="org/w3c/dom/ls
+                   org/w3c/dom/DOMError.class
+                   org/w3c/dom/DOMErrorHandler.class
+                   org/w3c/dom/DOMImplementationSource.class
+                   org/w3c/dom/DOMImplementationRegistry.class
+                   org/w3c/dom/DOMLocator.class
+                   org/w3c/dom/UserDataHandler.class" />
   </target>
 
   <!-- =================================================================== -->
@@ -250,8 +263,7 @@ Copyright:
   <target name="tests" depends="samples">
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
-        <fileset dir="${tests.dir}"
-           excludes="**/dom/registry" />
+        <fileset dir="${tests.dir}" />
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -440,7 +452,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Prepares the tools distribution                                    -->
+  <!-- Prepares the tools distribution                                     -->
   <!-- =================================================================== -->
   <target name="pack-tools" depends="init">
     <echo message="Building the tools distribution files (zip,tar)"/>
@@ -470,7 +482,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Prepares common parts of the binary distributions                                    -->
+  <!-- Prepares common parts of the binary distributions                   -->
   <!-- =================================================================== -->
   <target name="pack-bin-common" depends="javadocs, docs, sampjar">
 
@@ -544,7 +556,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Prepares the deprecated binary distribution                                    -->
+  <!-- Prepares the deprecated binary distribution                         -->
   <!-- =================================================================== -->
   <target name="deprecated-bin" depends="pack-bin-common, deprecatedjars">
     <copy file="${build.dir}/${deprecatedjar.parser}" tofile="${distbin.dir}/${deprecatedjar.parser}"/>
@@ -640,25 +652,25 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds both deprecated xerces and sample jar files                             -->
+  <!-- Builds both deprecated xerces and sample jar files                  -->
   <!-- =================================================================== -->
   <target name="deprecatedjars" depends="deprecatedjar, sampjar">
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds xercesImpl, xmlParserAPIs and sample jar files                             -->
+  <!-- Builds xercesImpl, xmlParserAPIs and sample jar files               -->
   <!-- =================================================================== -->
   <target name="jars" depends="jar, sampjar, apijar">
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds and packages tools, sources and binary distributions                -->
+  <!-- Builds and packages tools, sources and binary distributions         -->
   <!-- =================================================================== -->
   <target name="all" depends="pack-bin, deprecated-bin, pack-src, pack-tools">
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds and packages tools, sources and binary distributions                -->
+  <!-- Builds and packages tools, sources and binary distributions         -->
   <!-- =================================================================== -->
   <target name="deprecatedall" depends="pack-src, deprecated-bin, pack-tools">
   </target>
@@ -684,7 +696,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the DTD-only implementation class package                                           -->
+  <!-- Creates the DTD-only implementation class package                   -->
   <!-- =================================================================== -->
   <target name="dtdjar" depends="dtdcompile">
     <jar jarfile="${build.dir}/${jar.parser}"
@@ -694,7 +706,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Compiles the DTD-only source directory                                       -->
+  <!-- Compiles the DTD-only source directory                              -->
   <!-- =================================================================== -->
   <target name="dtdcompile" depends="dtdprepare-src">
     <copy todir="${build.dest}">
@@ -761,13 +773,13 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds xercesImpl (DTD-only), xmlParserAPIs and sample jar files                             -->
+  <!-- Builds xercesImpl (DTD-only), xmlParserAPIs and sample jar files    -->
   <!-- =================================================================== -->
   <target name="dtdjars" depends="dtdjar, sampjar, apijar">
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the tiny implementation class package                                           -->
+  <!-- Creates the tiny implementation class package                       -->
   <!-- =================================================================== -->
   <target name="tinyjar" depends="tinycompile">
     <jar jarfile="${build.dir}/${jar.parser}"
@@ -777,7 +789,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Compiles the tiny source directory                                       -->
+  <!-- Compiles the tiny source directory                                  -->
   <!-- =================================================================== -->
   <target name="tinycompile" depends="tinyprepare-src">
     <copy todir="${build.dest}">
@@ -797,7 +809,7 @@ Copyright:
 
 
   <!-- =================================================================== -->
-  <!-- Compiles the tiny source code package                                    -->
+  <!-- Compiles the tiny source code package                               -->
   <!-- =================================================================== -->
   <target name="tinyprepare-src" depends="prepare-common">
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration"
@@ -846,7 +858,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds xercesImpl (tiny), xmlParserAPIs and sample jar files                             -->
+  <!-- Builds xercesImpl (tiny), xmlParserAPIs, and sample jars            -->
   <!-- =================================================================== -->
   <target name="tinyjars" depends="tinyjar, sampjar, apijar">
   </target>
@@ -912,7 +924,7 @@ Copyright:
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java **/v1/** **/v2/**
               	       org/apache/xerces/dom3/*.java
-              	       org/apache/xerces/dom3/ls/*
+              	       org/apache/xerces/dom3/ls
                        org/w3c/dom/*.java">
         </fileset>
     </copy>
@@ -984,7 +996,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Do a sanity test using samples                                      -->
+  <!-- Do a sanity test using samples with DOM Level 3                     -->
   <!-- =================================================================== -->
   <target name="test-dom3" depends="tests-dom3">
     <echo message="Performing sanity test for ${parser.Name} ${parser.Version} ..." />
@@ -1056,6 +1068,43 @@ Copyright:
           classname="dom.DTest"
           failOnError="yes">
     </java>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the implementation class package with DOM Level 3           -->
+  <!-- =================================================================== -->
+  <target name="jar-dom3" depends="compile-dom3">
+    <jar jarfile="${build.dir}/${jar.parser}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="org/apache/**, META-INF/**" />
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the API class package with DOM Level 3                      -->
+  <!-- =================================================================== -->
+  <target name="apijar-dom3" depends="compile-dom3">
+    <jar jarfile="${build.dir}/${jar.apis}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="org/xml/**, org/w3c/**, javax/**" />
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Creates the samples package with DOM Level 3                        -->
+  <!-- =================================================================== -->
+  <target name="sampjar-dom3" depends="samples-dom3">
+    <jar jarfile="${build.dir}/${jar.samples}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="dom/**,sax/**,socket/**,ui/**,xni/**"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds xercesImpl, xmlParserAPIs, and sample jars with DOM Level 3  -->
+  <!-- =================================================================== -->
+  <target name="jars-dom3" depends="jar-dom3, sampjar-dom3, apijar-dom3">
   </target>
 
 </project>
