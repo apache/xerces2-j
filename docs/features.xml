@@ -297,6 +297,16 @@ catch (SAXException e) {
    <see idref='scanner.notify-char-refs'/>
   </feature>
 
+  <feature name='http://apache.org/xml/features/disallow-doctype-decl'
+           id='disallow-doctype-decl'>
+   <true>
+    A fatal error is thrown if the incoming document contains a DOCTYPE
+    declaration.
+   </true>
+   <false>DOCTYPE declaration is allowed.</false>
+   <default value='false'/>
+  </feature>
+
  </fcategory>
  <fcategory name='DOM Features'>
   <feature name='http://apache.org/xml/features/dom/defer-node-expansion'
