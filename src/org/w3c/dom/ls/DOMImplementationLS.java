@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom.ls;
@@ -15,11 +15,12 @@ package org.w3c.dom.ls;
 import org.w3c.dom.DOMException;
 
 /**
- * <strong>DOM Level 3 WD Experimental:
+ * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time.</strong> <p>
+ * or obsoleted by other documents at any time. 
+ *
  *  <code>DOMImplementationLS</code> contains the factory methods for creating 
  * objects that implement the <code>DOMBuilder</code> (parser) and 
  * <code>DOMWriter</code> (serializer) interfaces. 
@@ -28,10 +29,11 @@ import org.w3c.dom.DOMException;
  * binding-specific casting methods on an instance of the 
  * <code>DOMImplementation</code> interface or, if the <code>Document</code> 
  * supports the feature <code>"Core"</code> version <code>"3.0"</code> 
- * defined in , by using the method <code>Node.getInterface</code> with 
+ * defined in [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022'>DOM Level 3 Core</a>]
+ * , by using the method <code>DOMImplementation.getFeature</code> with 
  * parameter values <code>"LS-Load"</code> and <code>"3.0"</code> 
  * (respectively). 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMImplementationLS {
@@ -63,17 +65,20 @@ public interface DOMImplementationLS {
      *   checking is done on the absolute URI. In order to create a 
      *   <code>DOMBuilder</code> for any kind of schema types (i.e. the 
      *   DOMBuilder will be free to use any schema found), use the value 
-     *   <code>null</code>.  For W3C XML Schema , applications must use the 
-     *   value <code>"http://www.w3.org/2001/XMLSchema"</code>. For XML DTD 
+     *   <code>null</code>. 
+     * <p ><b>Note:</b>    For W3C XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
      *   , applications must use the value 
+     *   <code>"http://www.w3.org/2001/XMLSchema"</code>. For XML DTD [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], 
+     *   applications must use the value 
      *   <code>"http://www.w3.org/TR/REC-xml"</code>. Other Schema languages 
      *   are outside the scope of the W3C and therefore should recommend an 
      *   absolute URI in order to use this method. 
      * @return  The newly created <code>DOMBuilder</code> object. This 
      *   <code>DOMBuilder</code> is either synchronous or asynchronous 
-     *   depending on the value of the <code>mode</code> argument.  By 
-     *   default, the newly created <code>DOMBuilder</code> does not contain 
-     *   a <code>DOMErrorHandler</code>, i.e. the value of the 
+     *   depending on the value of the <code>mode</code> argument. 
+     * <p ><b>Note:</b>    By default, the newly created 
+     *   <code>DOMBuilder</code> does not contain a 
+     *   <code>DOMErrorHandler</code>, i.e. the value of the 
      *   <code>errorHandler</code> is <code>null</code>. However, 
      *   implementations may provide a default error handler at creation 
      *   time. In that case, the initial value of the 
@@ -91,10 +96,10 @@ public interface DOMImplementationLS {
     /**
      * Create a new <code>DOMWriter</code> object. <code>DOMWriter</code>s are 
      * used to serialize a DOM tree back into an XML document. 
-     * @return The newly created <code>DOMWriter</code> object. By default, 
-     *   the newly created <code>DOMWriter</code> does not contain a 
-     *   <code>DOMErrorHandler</code>, i.e. the value of the 
-     *   <code>errorHandler</code> is <code>null</code>. However, 
+     * @return The newly created <code>DOMWriter</code> object.
+     * <p ><b>Note:</b>    By default, the newly created <code>DOMWriter</code>
+     *    does not contain a <code>DOMErrorHandler</code>, i.e. the value of 
+     *   the <code>errorHandler</code> is <code>null</code>. However, 
      *   implementations may provide a default error handler at creation 
      *   time. In that case, the initial value of the 
      *   <code>errorHandler</code> attribute on the new created 

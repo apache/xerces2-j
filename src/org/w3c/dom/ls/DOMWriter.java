@@ -1,38 +1,41 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom.ls;
 
+import org.apache.xerces.dom3.DOMConfiguration;
 import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
-import org.apache.xerces.dom3.DOMConfiguration;
-
 
 /**
- * <strong>DOM Level 3 WD Experimental:
+ * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time.</strong> <p>
+ * or obsoleted by other documents at any time. 
+ *
  *  <code>DOMWriter</code> provides an API for serializing (writing) a DOM 
  * document out in an XML document. The XML data is written to an output 
  * stream, the type of which depends on the specific language bindings in 
  * use. 
  * <p> During serialization of XML data, namespace fixup is done when possible 
- * as defined in [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020114'>DOM Level 3 Core</a>], Appendix B. [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113'>DOM Level 2 Core</a>] allows empty strings as a real namespace 
- * URI. If the <code>namespaceURI</code> of a <code>Node</code> is empty 
- * string, the serialization will treat them as <code>null</code>, ignoring 
- * the prefix if any. should the remark on DOM Level 2 namespace URI 
- * included in the namespace algorithm in Core instead?
+ * as defined in [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022'>DOM Level 3 Core</a>]
+ * , Appendix B. [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113'>DOM Level 2 Core</a>]
+ *  allows empty strings as a real namespace URI. If the 
+ * <code>namespaceURI</code> of a <code>Node</code> is empty string, the 
+ * serialization will treat them as <code>null</code>, ignoring the prefix 
+ * if any. 
+ * <p class="editor"><b>Note:</b> should the remark on DOM Level 2 namespace 
+ * URI included in the namespace algorithm in Core instead?
  * <p> <code>DOMWriter</code> accepts any node type for serialization. For 
  * nodes of type <code>Document</code> or <code>Entity</code>, well formed 
  * XML will be created if possible. The serialized output for these node 
@@ -41,18 +44,27 @@ import org.apache.xerces.dom3.DOMConfiguration;
  * serialized form is not specified, but should be something useful to a 
  * human for debugging or diagnostic purposes. Note: rigorously designing an 
  * external (source) form for stand-alone node types that don't already have 
- * one defined in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] seems a bit much to take on here. 
+ * one defined in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] seems a bit 
+ * much to take on here. 
  * <p>Within a <code>Document</code>, <code>DocumentFragment</code>, or 
  * <code>Entity</code> being serialized, <code>Nodes</code> are processed as 
- * follows <code>Document</code> nodes are written including with the XML 
+ * follows
+ * <ul>
+ * <li> <code>Document</code> nodes are written including with the XML 
  * declaration and a DTD subset, if one exists in the DOM. Writing a 
- * <code>Document</code> node serializes the entire document.  
+ * <code>Document</code> node serializes the entire document. 
+ * </li>
+ * <li> 
  * <code>Entity</code> nodes, when written directly by 
  * <code>DOMWriter.writeNode</code>, output the entity expansion but no 
  * namespace fixup is done. The resulting output will be valid as an 
- * external entity.  <code>EntityReference</code> nodes are serialized as an 
+ * external entity. 
+ * </li>
+ * <li> <code>EntityReference</code> nodes are serialized as an 
  * entity reference of the form "<code>&amp;entityName;</code>" in the 
- * output. Child nodes (the expansion) of the entity reference are ignored.  
+ * output. Child nodes (the expansion) of the entity reference are ignored. 
+ * </li>
+ * <li> 
  * CDATA sections containing content characters that can not be represented 
  * in the specified output encoding are handled according to the 
  * "split-cdata-sections" boolean parameter.  If the boolean parameter is 
@@ -62,13 +74,20 @@ import org.apache.xerces.dom3.DOMConfiguration;
  * the boolean parameter is <code>false</code>, unrepresentable characters 
  * in a CDATA section are reported as errors. The error is not recoverable - 
  * there is no mechanism for supplying alternative characters and continuing 
- * with the serialization.  <code>DocumentFragment</code> nodes are 
+ * with the serialization. 
+ * </li>
+ * <li> <code>DocumentFragment</code> nodes are 
  * serialized by serializing the children of the document fragment in the 
- * order they appear in the document fragment.  All other node types 
+ * order they appear in the document fragment. 
+ * </li>
+ * <li> All other node types 
  * (Element, Text, etc.) are serialized to their corresponding XML source 
- * form.  The serialization of a <code>Node</code> does not always generate 
- * a well-formed XML document, i.e. a <code>DOMBuilder</code> might through 
- * fatal errors when parsing the resulting serialization. 
+ * form. 
+ * </li>
+ * </ul>
+ * <p ><b>Note:</b>  The serialization of a <code>Node</code> does not always 
+ * generate a well-formed XML document, i.e. a <code>DOMBuilder</code> might 
+ * through fatal errors when parsing the resulting serialization. 
  * <p> Within the character data of a document (outside of markup), any 
  * characters that cannot be represented directly are replaced with 
  * character references. Occurrences of '&lt;' and '&amp;' are replaced by 
@@ -91,16 +110,19 @@ import org.apache.xerces.dom3.DOMConfiguration;
  * <p> When requested by setting the <code>normalize-characters</code> boolean 
  * parameter on <code>DOMWriter</code>, all data to be serialized, both 
  * markup and character data, is W3C Text normalized according to the rules 
- * defined in [<a href='http://www.w3.org/TR/2002/WD-charmod-20020430'>CharModel</a>]. The W3C Text normalization process affects only the data as 
- * it is being written; it does not alter the DOM's view of the document 
- * after serialization has completed. 
+ * defined in [<a href='http://www.w3.org/TR/2002/WD-charmod-20020430'>CharModel</a>]. The 
+ * W3C Text normalization process affects only the data as it is being 
+ * written; it does not alter the DOM's view of the document after 
+ * serialization has completed. 
  * <p> Namespaces are fixed up during serialization, the serialization process 
  * will verify that namespace declarations, namespace prefixes and the 
  * namespace URIs associated with elements and attributes are consistent. If 
  * inconsistencies are found, the serialized form of the document will be 
  * altered to remove them. The method used for doing the namespace fixup 
  * while serializing a document is the algorithm defined in Appendix B.1 
- * "Namespace normalization" of [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020114'>DOM Level 3 Core</a>]. previous paragraph to be defined closer 
+ * "Namespace normalization" of [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022'>DOM Level 3 Core</a>]
+ * . 
+ * <p class="editorial"><b>Note:</b> previous paragraph to be defined closer 
  * here.
  * <p>Any changes made affect only the namespace prefixes and declarations 
  * appearing in the serialized data. The DOM's view of the document is not 
@@ -119,13 +141,18 @@ import org.apache.xerces.dom3.DOMConfiguration;
  * description about warning about unbound entity refs. Entity refs are 
  * always serialized as <code>&amp;foo;</code>, also mention this in the 
  * load part of this spec. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20021022'>Document Object Model (DOM) Level 3 Load and Save Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
+and Save Specification</a>.
  */
-
 public interface DOMWriter {
-
     /**
-     *  The configuration used when a document is loaded. 
+     *  The configuration used when a document is loaded. The values of 
+     * parameters used on a document are not passed automatically from the 
+     * <code>DOMConfiguration</code> object used by the <code>Document</code>
+     *  nodes. The DOM application is responsible for passing the parameters 
+     * values from the <code>DOMConfiguration</code> object referenced from 
+     * the <code>Document</code> node to the <code>DOMConfiguration</code> 
+     * object referenced from the <code>DOMWriter</code>. 
      * <br>In addition to the boolean parameters and parameters recognized in 
      * the Core module, the <code>DOMConfiguration</code> objects for 
      * <code>DOMWriter</code> adds, or modifies, the following boolean 
@@ -140,92 +167,99 @@ public interface DOMWriter {
      * <dl>
      * <dt>
      * <code>true</code></dt>
-     * <dd>[required] (default) If a <code>Document</code> Node 
-     * or an <code>Entity</code> node is serialized, the XML declaration, or 
-     * text declaration, should be included <code>Document.version</code> 
-     * and/or an encoding is specified. </dd>
+     * <dd>[<em>required</em>] (<em>default</em>) If a <code>Document</code> Node or an <code>Entity</code> node is 
+     * serialized, the XML declaration, or text declaration, should be 
+     * included <code>Document.version</code> and/or an encoding is 
+     * specified. </dd>
      * <dt><code>false</code></dt>
-     * <dd>[required] Do not 
-     * serialize the XML and text declarations. </dd>
-     * </dl></dd>
-     * <dt><code>"canonical-form"</code></dt>
-     * <dd>
-     * <dl>
-     * <dt>
-     * <code>true</code></dt>
-     * <dd>[optional] This formatting writes the document 
-     * according to the rules specified in [<a href='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'>Canonical XML</a>]. Setting this boolean parameter 
-     * to true will set the boolean parameter 
-     * <code>"format-pretty-print"</code> to false. </dd>
-     * <dt><code>false</code></dt>
-     * <dd>[
-     * required] (default) Do not canonicalize the output. </dd>
+     * <dd>[<em>required</em>] Do not serialize the XML and text declarations. </dd>
      * </dl></dd>
      * <dt>
-     * <code>"format-pretty-print"</code></dt>
+     * <code>"canonical-form"</code></dt>
      * <dd>
      * <dl>
      * <dt><code>true</code></dt>
-     * <dd>[optional] 
-     * Formatting the output by adding whitespace to produce a 
-     * pretty-printed, indented, human-readable form. The exact form of the 
-     * transformations is not specified by this specification. Setting this 
-     * boolean parameter to true will set the boolean parameter 
-     * "canonical-form" to false. </dd>
+     * <dd>[<em>optional</em>] This formatting writes the document according to the rules specified in [<a href='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'>Canonical XML</a>]. 
+     * Setting this boolean parameter to true will set the boolean parameter 
+     * <code>"format-pretty-print"</code> to false. </dd>
      * <dt><code>false</code></dt>
-     * <dd>[required] (default) 
-     * Don't pretty-print the result. </dd>
+     * <dd>[<em>required</em>] (<em>default</em>) Do not canonicalize the output. </dd>
      * </dl></dd>
-     * <dt><code>"normalize-characters"</code></dt>
-     * <dd> 
-     * This boolean parameter is equivalent to the one defined by 
-     * <code>DOMConfiguration</code> in [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020114'>DOM Level 3 Core</a>]. Unlike in the Core, the default 
-     * value for this boolean parameter is <code>true</code>. While DOM 
-     * implementations are not required to implement the W3C Text 
-     * Normalization defined in [<a href='http://www.w3.org/TR/2002/WD-charmod-20020430'>CharModel</a>], this boolean parameter must be activated 
-     * by default if supported. </dd>
-     * <dt><code>"unknown-characters"</code></dt>
+     * <dt><code>"format-pretty-print"</code></dt>
      * <dd>
      * <dl>
      * <dt>
      * <code>true</code></dt>
-     * <dd>[required] (default) If, while verifying full 
-     * normalization when [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>] is supported, a character is encountered for 
-     * which the normalization properties cannot be determined, then ignore 
-     * any possible denormalizations caused by these characters. </dd>
+     * <dd>[<em>optional</em>] Formatting the output by adding whitespace to produce a pretty-printed, 
+     * indented, human-readable form. The exact form of the transformations 
+     * is not specified by this specification. Setting this boolean 
+     * parameter to true will set the boolean parameter "canonical-form" to 
+     * false. </dd>
+     * <dt><code>false</code></dt>
+     * <dd>[<em>required</em>] (<em>default</em>) Don't pretty-print the result. </dd>
+     * </dl></dd>
+     * <dt><code>"normalize-characters"</code></dt>
+     * <dd> This 
+     * boolean parameter is equivalent to the one defined by 
+     * <code>DOMConfiguration</code> in [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022'>DOM Level 3 Core</a>]
+     * . Unlike in the Core, the default value for this boolean parameter is 
+     * <code>true</code>. While DOM implementations are not required to 
+     * implement the W3C Text Normalization defined in [<a href='http://www.w3.org/TR/2002/WD-charmod-20020430'>CharModel</a>], this 
+     * boolean parameter must be activated by default if supported. </dd>
      * <dt>
-     * <code>false</code></dt>
-     * <dd>[optional] Report an fatal error if a character is 
-     * encountered for which the processor can not determine the 
-     * normalization properties. </dd>
+     * <code>"unknown-characters"</code></dt>
+     * <dd>
+     * <dl>
+     * <dt><code>true</code></dt>
+     * <dd>[<em>required</em>] (<em>default</em>) If, while verifying full normalization when [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>] is 
+     * supported, a character is encountered for which the normalization 
+     * properties cannot be determined, then ignore any possible 
+     * denormalizations caused by these characters. </dd>
+     * <dt><code>false</code></dt>
+     * <dd>[<em>optional</em>] Report an fatal error if a character is encountered for which the 
+     * processor can not determine the normalization properties. </dd>
      * </dl></dd>
      * </dl>
      */
-
     public DOMConfiguration getConfig();
-
 
     /**
      *  The character encoding in which the output will be written. 
-     * <br> The encoding to use when writing is determined as follows: If the 
-     * encoding attribute has been set, that value will be used.If the 
+     * <br> The encoding to use when writing is determined as follows: 
+     * <ul>
+     * <li>If the 
+     * encoding attribute has been set, that value will be used.
+     * </li>
+     * <li>If the 
      * encoding attribute is <code>null</code> or empty, but the item to be 
      * written, or the owner document of the item, specifies an encoding 
      * (i.e. the "actualEncoding" from the document) specified encoding, 
-     * that value will be used.If neither of the above provides an encoding 
+     * that value will be used.
+     * </li>
+     * <li>If neither of the above provides an encoding 
      * name, a default encoding of "UTF-8" will be used.
+     * </li>
+     * </ul>
      * <br>The default value is <code>null</code>.
      */
     public String getEncoding();
     /**
      *  The character encoding in which the output will be written. 
-     * <br> The encoding to use when writing is determined as follows: If the 
-     * encoding attribute has been set, that value will be used.If the 
+     * <br> The encoding to use when writing is determined as follows: 
+     * <ul>
+     * <li>If the 
+     * encoding attribute has been set, that value will be used.
+     * </li>
+     * <li>If the 
      * encoding attribute is <code>null</code> or empty, but the item to be 
      * written, or the owner document of the item, specifies an encoding 
      * (i.e. the "actualEncoding" from the document) specified encoding, 
-     * that value will be used.If neither of the above provides an encoding 
+     * that value will be used.
+     * </li>
+     * <li>If neither of the above provides an encoding 
      * name, a default encoding of "UTF-8" will be used.
+     * </li>
+     * </ul>
      * <br>The default value is <code>null</code>.
      */
     public void setEncoding(String encoding);
@@ -242,8 +276,8 @@ public interface DOMWriter {
      * end-of-line sequence. DOM implementations should choose the default 
      * to match the usual convention for text files in the environment being 
      * used. Implementations must choose a default sequence that matches one 
-     * of those allowed by "End-of-Line Handling" (, section 2.11) if the 
-     * serialized content is XML 1.0 or "End-of-Line Handling" (, section 
+     * of those allowed by "End-of-Line Handling" ([<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], section 
+     * 2.11) if the serialized content is XML 1.0 or "End-of-Line Handling" ([<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>], section 
      * 2.11) if the serialized content is XML 1.1. </dd>
      * <dt>CR</dt>
      * <dd>The carriage-return 
@@ -256,7 +290,7 @@ public interface DOMWriter {
      * </dl>
      * <br>The default value for this attribute is <code>null</code>.
      */
-    public String getNewLine();   
+    public String getNewLine();
     /**
      *  The end-of-line sequence of characters to be used in the XML being 
      * written out. Any string is supported, but these are the recommended 
@@ -269,8 +303,8 @@ public interface DOMWriter {
      * end-of-line sequence. DOM implementations should choose the default 
      * to match the usual convention for text files in the environment being 
      * used. Implementations must choose a default sequence that matches one 
-     * of those allowed by "End-of-Line Handling" (, section 2.11) if the 
-     * serialized content is XML 1.0 or "End-of-Line Handling" (, section 
+     * of those allowed by "End-of-Line Handling" ([<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], section 
+     * 2.11) if the serialized content is XML 1.0 or "End-of-Line Handling" ([<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>], section 
      * 2.11) if the serialized content is XML 1.1. </dd>
      * <dt>CR</dt>
      * <dd>The carriage-return 
@@ -299,7 +333,6 @@ public interface DOMWriter {
      * the node from the stream or to terminate the serialization early. 
      */
     public void setFilter(DOMWriterFilter filter);
-
 
     /**
      * Write out the specified node as described above in the description of 

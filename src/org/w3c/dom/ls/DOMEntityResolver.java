@@ -1,23 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom.ls;
 
 /**
- * <strong>DOM Level 3 WD Experimental:
+ * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time.</strong> <p>
+ * or obsoleted by other documents at any time. 
+ *
  * <code>DOMEntityResolver</code> Provides a way for applications to redirect 
  * references to external entities.
  * <p>Applications needing to implement customized handling for external 
@@ -30,9 +31,10 @@ package org.w3c.dom.ls;
  * <p>Many DOM applications will not need to implement this interface, but it 
  * will be especially useful for applications that build XML documents from 
  * databases or other specialized input sources, or for applications that 
- * use URNs. <code>DOMEntityResolver</code> is based on the SAX2  
- * <code>EntityResolver</code> interface. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
+ * use URNs.
+ * <p ><b>Note:</b>  <code>DOMEntityResolver</code> is based on the SAX2 [<a href='http://www.saxproject.org/'>SAX</a>] <code>EntityResolver</code> 
+ * interface. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMEntityResolver {
@@ -51,12 +53,14 @@ public interface DOMEntityResolver {
      * other input source (including, for example, a dialog box).
      * <br>If the system identifier is a URI, the <code>DOMBuilder</code> must 
      * resolve it fully before reporting it to the application through this 
-     * interface. See issue #4. An alternative would be to pass the URI out 
-     * without resolving it, and to provide a base as an additional 
-     * parameter. SAX resolves URIs first, and does not provide a base. 
+     * interface.
+     * <p class="editorial"><b>Note:</b>  See issue #4. An alternative would 
+     * be to pass the URI out without resolving it, and to provide a base as 
+     * an additional parameter. SAX resolves URIs first, and does not 
+     * provide a base. 
      * @param publicId The public identifier of the external entity being 
      *   referenced, or <code>null</code> if none was supplied.
-     * @param systemId The system identifier, a URI reference , of the 
+     * @param systemId The system identifier, a URI reference [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>], of the 
      *   external entity being referenced exactly as written in the source. 
      * @param baseURI The absolute base URI of the resource being parsed, or 
      *   <code>null</code> if there is no base URI. 

@@ -2536,6 +2536,14 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
         } // end-if child !=null
     }
+    
+    
+    /**
+     * @see org.w3c.dom.ls.DOMBuilder#abort()
+     */
+    public void abort() {
+           throw new RuntimeException();
+    }
 
     
 } // class AbstractDOMParser

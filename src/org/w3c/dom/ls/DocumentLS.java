@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom.ls;
@@ -16,47 +16,55 @@ import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
 
 /**
- * <strong>DOM Level 3 WD Experimental:
+ * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time.</strong> <p>
- * The <code>DocumentLS</code> interface provides a mechanism by which the 
- * content of a document can be replaced with the DOM tree produced when 
- * loading a URI, or parsing a string. The expectation is that an instance 
- * of the <code>DocumentLS</code> interface can be obtained by using 
- * binding-specific casting methods on an instance of the 
- * <code>Document</code> interface or, if the <code>Document</code> supports 
- * the feature <code>"Core"</code> version <code>"3.0"</code> defined in , 
- * by using the method <code>Node.getInterface</code> with parameter values 
- * <code>"LS-Load"</code> and <code>"3.0"</code> (respectively). 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
+ * or obsoleted by other documents at any time. 
+ *
+ *  The <code>DocumentLS</code> interface provides a mechanism by which the 
+ * content of a document can be serialized, or replaced with the DOM tree 
+ * produced when loading a URI, or parsing a string. 
+ * <p> If the <code>DocumentLS</code> interface is supported, the expectation 
+ * is that an instance of the <code>DocumentLS</code> interface can be 
+ * obtained by using binding-specific casting methods on an instance of the 
+ * <code>Document</code> interface, or by using the method 
+ * <code>Node.getFeature</code> with parameter values <code>"LS-Load"</code> 
+ * and <code>"3.0"</code> (respectively) on an <code>Document</code>, if the 
+ * <code>Document</code> supports the feature <code>"Core"</code> version 
+ * <code>"3.0"</code> defined in [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022'>DOM Level 3 Core</a>]
+ *  
+ * <p> This interface is optional. If supported, implementations are must 
+ * support version <code>"3.0"</code> of the feature 
+ * <code>"LS-DocumentLS"</code>. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DocumentLS {
     /**
-     * Indicates whether the method load should be synchronous or 
-     * asynchronous. When the async attribute is set to <code>true</code> 
-     * the load method returns control to the caller before the document has 
-     * completed loading. The default value of this attribute is 
-     * <code>false</code>. Should the DOM spec define the default value of 
-     * this attribute? What if implementing both async and sync IO is 
-     * impractical in some systems?  2001-09-14. default is 
-     * <code>false</code> but we need to check with Mozilla and IE. 
-     * @exception DOMException
-     *   NOT_SUPPORTED_ERR: Raised if the implementation doesn't support the 
-     *   mode the attribute is being set to.
+     *  Indicates whether the method <code>DocumentLS.load()</code> should be 
+     * synchronous or asynchronous. When the async attribute is set to 
+     * <code>true</code> the load method returns control to the caller 
+     * before the document has completed loading. The default value of this 
+     * attribute is <code>true</code>.  Should the DOM spec define the 
+     * default value of this attribute? What if implementing both async and 
+     * sync IO is impractical in some systems?  2001-09-14. default is 
+     * <code>false</code> but we need to check with Mozilla and IE.  
+     * 2003-01-24. Checked with IE and Mozilla, default is <code>true</code>
+     * . 
      */
     public boolean getAsync();
     /**
-     * Indicates whether the method load should be synchronous or 
-     * asynchronous. When the async attribute is set to <code>true</code> 
-     * the load method returns control to the caller before the document has 
-     * completed loading. The default value of this attribute is 
-     * <code>false</code>. Should the DOM spec define the default value of 
-     * this attribute? What if implementing both async and sync IO is 
-     * impractical in some systems?  2001-09-14. default is 
-     * <code>false</code> but we need to check with Mozilla and IE. 
+     *  Indicates whether the method <code>DocumentLS.load()</code> should be 
+     * synchronous or asynchronous. When the async attribute is set to 
+     * <code>true</code> the load method returns control to the caller 
+     * before the document has completed loading. The default value of this 
+     * attribute is <code>true</code>.  Should the DOM spec define the 
+     * default value of this attribute? What if implementing both async and 
+     * sync IO is impractical in some systems?  2001-09-14. default is 
+     * <code>false</code> but we need to check with Mozilla and IE.  
+     * 2003-01-24. Checked with IE and Mozilla, default is <code>true</code>
+     * . 
      * @exception DOMException
      *   NOT_SUPPORTED_ERR: Raised if the implementation doesn't support the 
      *   mode the attribute is being set to.

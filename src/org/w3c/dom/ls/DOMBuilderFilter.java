@@ -1,26 +1,27 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom.ls;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;         
+import org.w3c.dom.Node;
 
 /**
- * <strong>DOM Level 3 WD Experimental:
+ * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time.</strong> <p>
+ * or obsoleted by other documents at any time. 
+ *
  * <code>DOMBuilderFilter</code>s provide applications the ability to examine 
  * nodes as they are being constructed during a parse. As each node is 
  * examined, it may be modified or removed, or the entire parse may be 
@@ -39,8 +40,10 @@ import org.w3c.dom.Node;
  * <p> All default content, including default attributes, must be passed to 
  * the filter methods. 
  * <p> Any exception raised in the filter are ignored by the 
- * <code>DOMBuilder</code>. The description of these methods is not complete
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
+ * <code>DOMBuilder</code>. 
+ * <p class="editorial"><b>Note:</b> The description of these methods is not 
+ * complete
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMBuilderFilter {
@@ -84,16 +87,30 @@ public interface DOMBuilderFilter {
      * @param elt The newly encountered element. At the time this method is 
      *   called, the element is incomplete - it will have its attributes, 
      *   but no children. 
-     * @return  <code>FILTER_ACCEPT</code> if this <code>Element</code> 
-     *   should be included in the DOM document being built.  
+     * @return 
+     * <ul>
+     * <li> <code>FILTER_ACCEPT</code> if this <code>Element</code> 
+     *   should be included in the DOM document being built. 
+     * </li>
+     * <li> 
      *   <code>FILTER_REJECT</code> if the <code>Element</code> and all of 
-     *   its children should be rejected.  <code>FILTER_SKIP</code> if the 
+     *   its children should be rejected. This return value will be ignored 
+     *   if <code>elt</code> is the documentElement, the documentElement can 
+     *   not be rejected. 
+     * </li>
+     * <li> <code>FILTER_SKIP</code> if the 
      *   <code>Element</code> should be rejected. All of its children are 
-     *   inserted in place of the rejected <code>Element</code> node.  
-     *   <code>FILTER_INTERRUPT</code> if the filter wants to stop the 
-     *   processing of the document. Interrupting the processing of the 
+     *   inserted in place of the rejected <code>Element</code> node. This 
+     *   return value will be ignored if <code>elt</code> is the 
+     *   documentElement, the documentElement can not be rejected nor 
+     *   skipped. 
+     * </li>
+     * <li> <code>FILTER_INTERRUPT</code> if the filter wants to stop 
+     *   the processing of the document. Interrupting the processing of the 
      *   document does no longer guarantee that the entire is XML well-formed
-     *   .  Returning any other values will result in unspecified behavior. 
+     *   . 
+     * </li>
+     * </ul> Returning any other values will result in unspecified behavior. 
      */
     public short startElement(Element elt);
 
@@ -117,16 +134,26 @@ public interface DOMBuilderFilter {
      *   called, the element is complete - it has all of its children (and 
      *   their children, recursively) and attributes, and is attached as a 
      *   child to its parent. 
-     * @return  <code>FILTER_ACCEPT</code> if this <code>Node</code> should 
-     *   be included in the DOM document being built.  
+     * @return 
+     * <ul>
+     * <li> <code>FILTER_ACCEPT</code> if this <code>Node</code> should 
+     *   be included in the DOM document being built. 
+     * </li>
+     * <li> 
      *   <code>FILTER_REJECT</code> if the <code>Node</code> and all of its 
-     *   children should be rejected.  <code>FILTER_SKIP</code> if the 
+     *   children should be rejected. 
+     * </li>
+     * <li> <code>FILTER_SKIP</code> if the 
      *   <code>Node</code> should be skipped and the <code>Node</code> 
-     *   should be replaced by all the children of the <code>Node</code>.  
+     *   should be replaced by all the children of the <code>Node</code>. 
+     * </li>
+     * <li> 
      *   <code>FILTER_INTERRUPT</code> if the filter wants to stop the 
      *   processing of the document. Interrupting the processing of the 
      *   document does no longer guarantee that the entire is XML well-formed
      *   . 
+     * </li>
+     * </ul>
      */
     public short acceptNode(Node enode);
 

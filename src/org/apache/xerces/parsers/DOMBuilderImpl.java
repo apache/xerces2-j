@@ -138,6 +138,8 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
     // REVISIT: this value should be null by default and should be set during creation of
     //          DOMBuilder
     protected String fSchemaType = null;
+    
+    protected boolean fBusy = false;
 
     protected final static boolean DEBUG = false;
 
@@ -682,10 +684,13 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
      */
     public Document parseURI(String uri)  {
         XMLInputSource source = new XMLInputSource(null, uri, null);
-
+        
+        fBusy = true;      
         try {        
             parse(source);
+            fBusy = false;
         } catch (Exception e){
+            fBusy = false;
             if (fErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
@@ -709,22 +714,25 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 
         // need to wrap the DOMInputSource with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource(is);
-
-        try {        
+        fBusy = true;      
+        
+        try {  
             parse(xmlInputSource);
+            fBusy = false;
         } catch (Exception e) {
+             fBusy = false;
             if (fErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
                 error.fMessage = e.getMessage();
                 error.fSeverity = error.SEVERITY_FATAL_ERROR;
                 fErrorHandler.getErrorHandler().handleError(error);
-
             }
             if (DEBUG) {            
                e.printStackTrace();
             }
         }
+
         return getDocument();
     }
 
@@ -747,7 +755,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
      *   HIERARCHY_REQUEST_ERR: Thrown if this action results in an invalid 
      *   hierarchy (i.e. a Document with more than one document element). 
      */
-    public void parseWithContext(DOMInputSource is, Node cnode, 
+    public Node parseWithContext(DOMInputSource is, Node cnode, 
                                  short action) throws DOMException {
         // REVISIT: need to implement.
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
@@ -792,5 +800,18 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         return xis;
     }
 
+	/**
+	 * @see org.w3c.dom.ls.DOMBuilder#getAsync()
+	 */
+	public boolean getAsync() {
+		return false;
+	}
+
+	/**
+	 * @see org.w3c.dom.ls.DOMBuilder#getBusy()
+	 */
+	public boolean getBusy() {
+		return fBusy;
+	}
 
 } // class DOMBuilderImpl

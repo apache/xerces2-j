@@ -1,23 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom.ls;
 
 /**
- * <strong>DOM Level 3 WD Experimental:
+ * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time.</strong> <p>
+ * or obsoleted by other documents at any time. 
+ *
  * This interface represents a single input source for an XML entity. 
  * <p> This interface allows an application to encapsulate information about 
  * an input source in a single object, which may include a public 
@@ -28,8 +29,9 @@ package org.w3c.dom.ls;
  * <p> There are two places that the application will deliver this input 
  * source to the parser: as the argument to the <code>parse</code> method, 
  * or as the return value of the <code>DOMEntityResolver.resolveEntity</code>
- *  method.  There are at least three places where DOMInputSource is passed 
- * to the parser (parseWithContext).
+ *  method. 
+ * <p class="editorial"><b>Note:</b>  There are at least three places where 
+ * DOMInputSource is passed to the parser (parseWithContext).
  * <p> The <code>DOMBuilder</code> will use the <code>DOMInputSource</code> 
  * object to determine how to read XML input. If there is a character stream 
  * available, the parser will read that stream directly; if not, the parser 
@@ -38,9 +40,10 @@ package org.w3c.dom.ls;
  * connection to the resource identified by the system identifier. 
  * <p> A <code>DOMInputSource</code> object belongs to the application: the 
  * parser shall never modify it in any way (it may modify a copy if 
- * necessary).  Even though all attributes in this interface are writable 
+ * necessary). 
+ * <p ><b>Note:</b>  Even though all attributes in this interface are writable 
  * the DOM implementation is expected to never mutate a DOMInputSource. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMInputSource {
@@ -72,7 +75,7 @@ public interface DOMInputSource {
     /**
      *  An attribute of a language-binding dependent type that represents a 
      * stream of 16-bit units. Application must encode the stream using 
-     * UTF-16 (defined in  and Amendment 1 of ). 
+     * UTF-16 (defined in [Unicode 2.0] and Amendment 1 of [ISO/IEC 10646]). 
      * <br>If a character stream is specified, the parser will ignore any byte 
      * stream and will not attempt to open a URI connection to the system 
      * identifier.
@@ -81,7 +84,7 @@ public interface DOMInputSource {
     /**
      *  An attribute of a language-binding dependent type that represents a 
      * stream of 16-bit units. Application must encode the stream using 
-     * UTF-16 (defined in  and Amendment 1 of ). 
+     * UTF-16 (defined in [Unicode 2.0] and Amendment 1 of [ISO/IEC 10646]). 
      * <br>If a character stream is specified, the parser will ignore any byte 
      * stream and will not attempt to open a URI connection to the system 
      * identifier.
@@ -107,24 +110,24 @@ public interface DOMInputSource {
 
     /**
      *  The character encoding, if known. The encoding must be a string 
-     * acceptable for an XML encoding declaration ( section 4.3.3 "Character 
-     * Encoding in Entities"). 
+     * acceptable for an XML encoding declaration ([<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] section 
+     * 4.3.3 "Character Encoding in Entities"). 
      * <br>This attribute has no effect when the application provides a 
      * character stream. For other sources of input, an encoding specified 
      * by means of this attribute will override any encoding specified in 
      * the XML declaration or the Text declaration, or an encoding obtained 
-     * from a higher level protocol, such as HTTP .
+     * from a higher level protocol, such as HTTP [<a href='http://www.ietf.org/rfc/rfc2616.txt'>IETF RFC 2616</a>].
      */
     public String getEncoding();
     /**
      *  The character encoding, if known. The encoding must be a string 
-     * acceptable for an XML encoding declaration ( section 4.3.3 "Character 
-     * Encoding in Entities"). 
+     * acceptable for an XML encoding declaration ([<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] section 
+     * 4.3.3 "Character Encoding in Entities"). 
      * <br>This attribute has no effect when the application provides a 
      * character stream. For other sources of input, an encoding specified 
      * by means of this attribute will override any encoding specified in 
      * the XML declaration or the Text declaration, or an encoding obtained 
-     * from a higher level protocol, such as HTTP .
+     * from a higher level protocol, such as HTTP [<a href='http://www.ietf.org/rfc/rfc2616.txt'>IETF RFC 2616</a>].
      */
     public void setEncoding(String encoding);
 
@@ -142,46 +145,46 @@ public interface DOMInputSource {
     public void setPublicId(String publicId);
 
     /**
-     * The system identifier, a URI reference , for this input source. The 
-     * system identifier is optional if there is a byte stream or a 
-     * character stream, but it is still useful to provide one, since the 
-     * application can use it to resolve relative URIs and can include it in 
-     * error messages and warnings (the parser will attempt to fetch the 
-     * ressource identifier by the URI reference only if there is no byte 
-     * stream or character stream specified).
+     * The system identifier, a URI reference [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>], for this 
+     * input source. The system identifier is optional if there is a byte 
+     * stream or a character stream, but it is still useful to provide one, 
+     * since the application can use it to resolve relative URIs and can 
+     * include it in error messages and warnings (the parser will attempt to 
+     * fetch the ressource identifier by the URI reference only if there is 
+     * no byte stream or character stream specified).
      * <br>If the application knows the character encoding of the object 
      * pointed to by the system identifier, it can register the encoding by 
      * setting the encoding attribute.
-     * <br>If the system ID is a relative URI reference (see section 5 in ), 
-     * the behavior is implementation dependent.
+     * <br>If the system ID is a relative URI reference (see section 5 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]), the 
+     * behavior is implementation dependent.
      */
     public String getSystemId();
     /**
-     * The system identifier, a URI reference , for this input source. The 
-     * system identifier is optional if there is a byte stream or a 
-     * character stream, but it is still useful to provide one, since the 
-     * application can use it to resolve relative URIs and can include it in 
-     * error messages and warnings (the parser will attempt to fetch the 
-     * ressource identifier by the URI reference only if there is no byte 
-     * stream or character stream specified).
+     * The system identifier, a URI reference [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>], for this 
+     * input source. The system identifier is optional if there is a byte 
+     * stream or a character stream, but it is still useful to provide one, 
+     * since the application can use it to resolve relative URIs and can 
+     * include it in error messages and warnings (the parser will attempt to 
+     * fetch the ressource identifier by the URI reference only if there is 
+     * no byte stream or character stream specified).
      * <br>If the application knows the character encoding of the object 
      * pointed to by the system identifier, it can register the encoding by 
      * setting the encoding attribute.
-     * <br>If the system ID is a relative URI reference (see section 5 in ), 
-     * the behavior is implementation dependent.
+     * <br>If the system ID is a relative URI reference (see section 5 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]), the 
+     * behavior is implementation dependent.
      */
     public void setSystemId(String systemId);
 
     /**
-     *  The base URI to be used (see section 5.1.4 in ) for resolving relative 
-     * URIs to absolute URIs. If the baseURI is itself a relative URI, the 
-     * behavior is implementation dependent. 
+     *  The base URI to be used (see section 5.1.4 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]) for 
+     * resolving relative URIs to absolute URIs. If the baseURI is itself a 
+     * relative URI, the behavior is implementation dependent. 
      */
     public String getBaseURI();
     /**
-     *  The base URI to be used (see section 5.1.4 in ) for resolving relative 
-     * URIs to absolute URIs. If the baseURI is itself a relative URI, the 
-     * behavior is implementation dependent. 
+     *  The base URI to be used (see section 5.1.4 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]) for 
+     * resolving relative URIs to absolute URIs. If the baseURI is itself a 
+     * relative URI, the behavior is implementation dependent. 
      */
     public void setBaseURI(String baseURI);
 
