@@ -139,6 +139,9 @@ public abstract class AbstractSAXParser
 
     /** Namespace prefixes. */
     protected boolean fNamespacePrefixes = false;
+    
+    /** Lexical handler parameter entities. */
+    protected boolean fLexicalHandlerParameterEntities = true;
 
     // parser handlers
 
@@ -350,7 +353,24 @@ public abstract class AbstractSAXParser
                                    String encoding, Augmentations augs)
         throws XNIException {
         
-        startParameterEntity(name, identifier, encoding, augs);
+        try {
+            // Only report startEntity if this entity was actually read.
+            if (augs != null && Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
+                // report skipped entity to content handler
+                if (fContentHandler != null) {
+                    fContentHandler.skippedEntity(name);
+                }
+            }
+            else {
+                // SAX2 extension
+                if (fLexicalHandler != null) {
+                    fLexicalHandler.startEntity(name);
+                }
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
 
     } // startGeneralEntity(String,String,String,String,String)
 
@@ -375,7 +395,18 @@ public abstract class AbstractSAXParser
      */
     public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 
-        endParameterEntity(name, augs);
+        try {
+            // Only report endEntity if this entity was actually read.
+            if (augs == null || !Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
+                // SAX2 extension
+                if (fLexicalHandler != null) {
+                    fLexicalHandler.endEntity(name);
+                }
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
 
     } // endEntity(String)
 
@@ -755,7 +786,7 @@ public abstract class AbstractSAXParser
             }
             else {
                 // SAX2 extension
-                if (fLexicalHandler != null) {
+                if (fLexicalHandler != null && fLexicalHandlerParameterEntities) {
                     fLexicalHandler.startEntity(name);
                 }
             }
@@ -792,7 +823,7 @@ public abstract class AbstractSAXParser
             // Only report endEntity if this entity was actually read.
             if (augs == null || !Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
                 // SAX2 extension
-                if (fLexicalHandler != null) {
+                if (fLexicalHandler != null && fLexicalHandlerParameterEntities) {
                     fLexicalHandler.endEntity(name);
                 }
             }
@@ -1457,6 +1488,15 @@ public abstract class AbstractSAXParser
                     }
                     return;
                 }
+                // http://xml.org/sax/features/lexical-handler/parameter-entities
+                //   controls whether the beginning and end of parameter entities
+                //   will be reported to the LexicalHandler.
+                //
+                if (suffixLength == Constants.LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE.length() &&
+                    featureId.endsWith(Constants.LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE)) {
+                    fLexicalHandlerParameterEntities = state;
+                    return;
+                }
 
                 //
                 // Drop through and perform default processing
@@ -1541,6 +1581,15 @@ public abstract class AbstractSAXParser
                 if (suffixLength == Constants.STRING_INTERNING_FEATURE.length() && 
                     featureId.endsWith(Constants.STRING_INTERNING_FEATURE)) {
                     return true;
+                }
+                
+                // http://xml.org/sax/features/lexical-handler/parameter-entities
+                //   controls whether the beginning and end of parameter entities
+                //   will be reported to the LexicalHandler.
+                //
+                if (suffixLength == Constants.LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE.length() &&
+                    featureId.endsWith(Constants.LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE)) {
+                    	return fLexicalHandlerParameterEntities;
                 }
 
                 //

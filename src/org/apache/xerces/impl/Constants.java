@@ -57,6 +57,9 @@ public final class Constants {
 
     /** External parameter entities feature ("external-parameter-entities "). */
     public static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE = "external-parameter-entities";
+    
+    /** Lexical handler parameter entities feature ("lexical-handler/parameter-entities"). */
+    public static final String LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE = "lexical-handler/parameter-entities";
 
     /** Allow unparsed entity and notation declaration events to be sent after the end DTD event ("allow-dtd-events-after-endDTD") */
     public static final String ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE = "allow-dtd-events-after-endDTD";
