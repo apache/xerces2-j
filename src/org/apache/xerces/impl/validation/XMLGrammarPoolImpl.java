@@ -130,14 +130,21 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      * @return 		  The set of grammars the validator may put in its "bucket"
      */
     public Grammar [] retrieveInitialGrammarSet (String grammarType) {
-
-       	if (grammarType.equals(XMLGrammarDescription.XML_DTD)) {
-    	    return getDTDGrammars();
+        synchronized (fGrammars) {
+            int grammarSize = fGrammars.length ;
+            Grammar [] tempGrammars = new Grammar[grammarSize];
+            int pos = 0;
+            for (int i = 0; i < grammarSize; i++) {
+                for (Entry e = fGrammars[i]; e != null; e = e.next) {
+                    if (e.desc.getGrammarType().equals(grammarType)) {
+                        tempGrammars[pos++] = e.grammar;
+                    }
+                }
+            }
+            Grammar[] toReturn = new Grammar[pos];
+            System.arraycopy(tempGrammars, 0, toReturn, 0, pos);
+            return toReturn;
         }
-        else if (grammarType.equals(XMLGrammarDescription.XML_SCHEMA)) {
-    	    return getSchemaGrammars();
-        }
-        return null;
     } // retrieveInitialGrammarSet (String): Grammar[]
 
     /* <p> Return the final set of grammars that the validator ended up
@@ -192,18 +199,20 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      * @param grammar The Grammar.
      */
     public void putGrammar(Grammar grammar) {
-        XMLGrammarDescription desc = grammar.getGrammarDescription();
-        int hash = hashCode(desc);
-        int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-        for (Entry entry = fGrammars[index]; entry != null; entry = entry.next) {
-            if (entry.hash == hash && equals(entry.desc, desc)) {
-                entry.grammar = grammar;
-                return;
+        synchronized (fGrammars) {
+            XMLGrammarDescription desc = grammar.getGrammarDescription();
+            int hash = hashCode(desc);
+            int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+            for (Entry entry = fGrammars[index]; entry != null; entry = entry.next) {
+                if (entry.hash == hash && equals(entry.desc, desc)) {
+                    entry.grammar = grammar;
+                    return;
+                }
             }
+            // create a new entry
+            Entry entry = new Entry(hash, desc, grammar, fGrammars[index]);
+            fGrammars[index] = entry;
         }
-        // create a new entry
-        Entry entry = new Entry(hash, desc, grammar, fGrammars[index]);
-        fGrammars[index] = entry;
     } // putGrammar(Grammar)
 
     /**
@@ -214,14 +223,16 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      * @param desc The Grammar Description.
      */
     public Grammar getGrammar(XMLGrammarDescription desc) {
-        int hash = hashCode(desc);
-	int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-	for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
-	    if ((entry.hash == hash) && equals(entry.desc, desc)) {
-	        return entry.grammar;
+        synchronized (fGrammars) {
+            int hash = hashCode(desc);
+	    int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+	    for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
+	        if ((entry.hash == hash) && equals(entry.desc, desc)) {
+	            return entry.grammar;
+	        }
 	    }
+	    return null;
 	}
-	return null;
     } // getGrammar(XMLGrammarDescription):Grammar
 
     /**
@@ -234,22 +245,24 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      * @return     The removed grammar.
      */
     public Grammar removeGrammar(XMLGrammarDescription desc) {
-    	int hash = hashCode(desc);
-	int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-	for (Entry entry = fGrammars[index], prev = null ; entry != null ; prev = entry, entry = entry.next) {
-	    if ((entry.hash == hash) && equals(entry.desc, desc)) {
-	        if (prev != null) {
-                    prev.next = entry.next;
-		} 
-		else {
-		    fGrammars[index] = entry.next;
-		}
-	    	Grammar tempGrammar = entry.grammar;
-	    	entry.grammar = null;
-	        return tempGrammar;
+        synchronized (fGrammars) {
+    	    int hash = hashCode(desc);
+	    int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+	    for (Entry entry = fGrammars[index], prev = null ; entry != null ; prev = entry, entry = entry.next) {
+	        if ((entry.hash == hash) && equals(entry.desc, desc)) {
+	            if (prev != null) {
+                        prev.next = entry.next;
+		    } 
+		    else {
+		        fGrammars[index] = entry.next;
+		    }
+	    	    Grammar tempGrammar = entry.grammar;
+	    	    entry.grammar = null;
+	            return tempGrammar;
+	        }
 	    }
-	}
-	return null;
+	    return null;
+        }
     } // removeGrammar(XMLGrammarDescription):Grammar
 
     /**
@@ -261,58 +274,18 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      * @param desc The Grammar Description.
      */
     public boolean containsGrammar(XMLGrammarDescription desc) {
-    	int hash = hashCode(desc);
-	int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-	for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
-	    if ((entry.hash == hash) && equals(entry.desc, desc)) {
-	        return true;
+        synchronized (fGrammars) {
+    	    int hash = hashCode(desc);
+	    int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+	    for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
+	        if ((entry.hash == hash) && equals(entry.desc, desc)) {
+	            return true;
+	        }
 	    }
+	    return false;
 	}
-	return false; 
     } // containsGrammar(XMLGrammarDescription):boolean
 
-    /**
-     * Returns all the DTD grammars.
-     * 
-     * @return The set of DTD grammars in the pool
-     */
-    public Grammar [] getDTDGrammars() {
-        int grammarSize = fGrammars.length ;
-        Grammar [] tempGrammars = new Grammar[grammarSize];
-        int pos = 0;
-        for (int i = 0; i < grammarSize; i++) {
-            for (Entry e = fGrammars[i]; e != null; e = e.next) {
-                if (e.desc.getGrammarType().equals(XMLGrammarDescription.XML_DTD)) {
-                    tempGrammars[pos++] = e.grammar;
-                }
-            }
-        }
-        Grammar[] toReturn = new Grammar[pos];
-        System.arraycopy(tempGrammars, 0, toReturn, 0, pos);
-        return toReturn;
-    } // getDTDGrammars()
-
-    /**
-     * Returns all the Schema grammars.
-     * 
-     * @return The set of Schema grammars in the pool
-     */
-    public Grammar [] getSchemaGrammars() {
-        int grammarSize = fGrammars.length ;
-        Grammar [] tempGrammars = new Grammar[grammarSize];
-        int pos = 0;
-        for (int i = 0; i < grammarSize; i++) {
-            for (Entry e = fGrammars[i]; e != null; e = e.next) {
-                if (e.desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)) {
-                    tempGrammars[pos++] = e.grammar;
-                }
-            }
-        }
-        Grammar[] toReturn = new Grammar[pos];
-        System.arraycopy(tempGrammars, 0, toReturn, 0, pos);
-        return toReturn;
-    } // getSchemaGrammars()
-    
     /**
      * This method checks whether two grammars are the same. Currently, we compare 
      * the root element names for DTD grammars and the target namespaces for Schema grammars.
