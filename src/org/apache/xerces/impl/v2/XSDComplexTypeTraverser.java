@@ -410,17 +410,18 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           // -----------------------------------------------------------------------
           // Traverse any attributes
           // -----------------------------------------------------------------------
-          if (!isAttrOrAttrGroup(attrNode)) {
-             throw new ComplexTypeRecoverableError("src-ct",
-              new Object[]{typeInfo.fName,DOMUtil.getLocalName(attrNode)});
+          if (attrNode != null) {
+              if (!isAttrOrAttrGroup(attrNode)) {
+                 throw new ComplexTypeRecoverableError("src-ct",
+                  new Object[]{typeInfo.fName,DOMUtil.getLocalName(attrNode)});
+              }
+              Element node=traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
+                                                    schemaDoc,grammar);
+              if (node!=null) {
+                   throw new ComplexTypeRecoverableError("src-ct",
+                    new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)});
+              }
           }
-          Element node=traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp, 
-                                                schemaDoc,grammar);   
-          if (node!=null) {
-               throw new ComplexTypeRecoverableError("src-ct",
-                new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)});
-          }
-
 
           mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
           String error = typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp);
@@ -445,7 +446,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 new Object[]{typeInfo.fName,DOMUtil.getLocalName(attrNode)});
             }
             Element node=traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
-                                     schemaDoc,grammar);  
+                                     schemaDoc,grammar);
             if (node!=null) {
                  throw new ComplexTypeRecoverableError("src-ct",
                   new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)});
@@ -674,6 +675,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
          else {
            if (extension) {
               //REVISIT - should create a msg in properties file
+              // REVISIT: what if one of the attribute uses is "prohibited"
               reportGenericSchemaError("ComplexType " + typeName + ": " +
                 "Duplicate attribute use " + existingAttrUse.fAttrDecl.fName );
               throw new ComplexTypeRecoverableError();
@@ -764,7 +766,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
               throw new ComplexTypeRecoverableError("src-ct",
                new Object[]{typeInfo.fName,DOMUtil.getLocalName(attrNode)});
            }
-           Element node = 
+           Element node =
                 traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,schemaDoc,grammar);
            if (node!=null) {
                  throw new ComplexTypeRecoverableError("src-ct",
@@ -777,11 +779,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     } // end processComplexContent
 
 
-    private boolean isAttrOrAttrGroup(Element e)
-    {
-        if (e == null)
-            return false;
-
+    private boolean isAttrOrAttrGroup(Element e) {
         String elementName = DOMUtil.getLocalName(e);
 
         if (elementName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
