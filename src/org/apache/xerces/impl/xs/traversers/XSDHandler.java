@@ -2020,7 +2020,7 @@ public class XSDHandler {
             // condition 2: same namespace and same locatoin
             if (referNS != key.referNS ||
                 (systemId == null && key.systemId != null) ||
-                !systemId.equals(key.systemId)) {
+                systemId != null && !systemId.equals(key.systemId)) {
                 return false;
             }
             
