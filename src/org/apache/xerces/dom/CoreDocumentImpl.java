@@ -324,8 +324,8 @@ public class CoreDocumentImpl
             try {
                 doctypeImpl = (DocumentTypeImpl) doctype;
             } catch (ClassCastException e) {
-                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
-                                       "DOM005 Wrong document");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
             }
             doctypeImpl.ownerDocument = this;
             appendChild(doctype);
@@ -432,8 +432,8 @@ public class CoreDocumentImpl
         if (errorChecking) {
             if((type == Node.ELEMENT_NODE && docElement != null) ||
                (type == Node.DOCUMENT_TYPE_NODE && docType != null)) {
-                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
-                                           "DOM006 Hierarchy request error");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
             }
         }
         // Adopt orphan doctypes
@@ -597,8 +597,8 @@ public class CoreDocumentImpl
         throws DOMException {
 
         if (errorChecking && !isXMLName(tagName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                   "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new ElementImpl(this, tagName);
 
@@ -618,8 +618,8 @@ public class CoreDocumentImpl
         throws DOMException {
 
         if (errorChecking && !isXMLName(name)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                   "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new EntityReferenceImpl(this, name);
 
@@ -643,8 +643,8 @@ public class CoreDocumentImpl
         throws DOMException {
 
         if (errorChecking && !isXMLName(target)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                   "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new ProcessingInstructionImpl(this, target, data);
 
@@ -884,8 +884,8 @@ public class CoreDocumentImpl
                            throws DOMException{
 
 	if (n.getOwnerDocument() != this) {
-	    throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-				   "DOM005 Wrong document");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
 	}
         switch (n.getNodeType()) {
             case ELEMENT_NODE: {
@@ -1003,9 +1003,9 @@ public class CoreDocumentImpl
 		
 		return at;
 	    }
-	    default: {
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                                       "cannot rename this type of node.");
+	    default: { 
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 	    }
 	}
 
@@ -1115,16 +1115,25 @@ public class CoreDocumentImpl
                    name.equals(Constants.DOM_CANONICAL_FORM) ||
                    name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
                 if (state) { // true is not supported
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
+                                                                   "FEATURE_NOT_SUPPORTED", 
+                                                                   new Object[]{name});
+                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
         } else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS) ||
                    name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
                 if (!state) { // false is not supported
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
+                                                                   "FEATURE_NOT_SUPPORTED", 
+                                                                   new Object[]{name});
+                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
         
         } else {
-            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature \""+name+"\" not recognized");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
+                                                           "FEATURE_NOT_FOUND", 
+                                                           new Object[]{name});
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
     }
 
@@ -1170,7 +1179,10 @@ public class CoreDocumentImpl
             return true;    
         
         } else {
-            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature \""+name+"\" not recognized");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
+                                                           "FEATURE_NOT_FOUND", 
+                                                           new Object[]{name});
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
     }
 
@@ -1198,7 +1210,10 @@ public class CoreDocumentImpl
             return (state)?true:false;    
         
         } else {
-            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature \""+name+"\" not recognized");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
+                                                           "FEATURE_NOT_FOUND", 
+                                                           new Object[]{name});
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
     }
 
@@ -1256,9 +1271,8 @@ public class CoreDocumentImpl
      */
     public void setAsync(boolean async) {
         if (async) {
-            // NOT SUPPORTED
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
-                                   "Asynchronous mode is not supported");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
         }
     }
     /**
@@ -1320,9 +1334,11 @@ public class CoreDocumentImpl
      */
     public String saveXML(Node snode)
                           throws DOMException {
-        if ( snode != null &&
-             getOwnerDocument() != snode.getOwnerDocument() )
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,"Node "+snode.getNodeName()+" does not belongs to this Document.");
+        if ( snode != null &&                                                      
+             getOwnerDocument() != snode.getOwnerDocument() ) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
+        }
         DOMImplementationLS domImplLS = (DOMImplementationLS)DOMImplementationImpl.getDOMImplementation();
         DOMWriter xmlWriter = domImplLS.createDOMWriter();
         if (snode == null) {
@@ -1369,8 +1385,8 @@ public class CoreDocumentImpl
         throws DOMException {
 
         if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                   "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
 
@@ -1392,8 +1408,8 @@ public class CoreDocumentImpl
         throws DOMException {
 
         if (errorChecking && !isXMLName(name)) {
-                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                           "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new EntityImpl(this, name);
 
@@ -1415,8 +1431,8 @@ public class CoreDocumentImpl
         throws DOMException {
 
         if (errorChecking && !isXMLName(name)) {
-                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                           "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new NotationImpl(this, name);
 
@@ -1430,8 +1446,8 @@ public class CoreDocumentImpl
         throws DOMException {
 
         if (errorChecking && !isXMLName(name)) {
-                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                           "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new ElementDefinitionImpl(this, name);
 
@@ -1623,8 +1639,8 @@ public class CoreDocumentImpl
                 // unless this is used as part of cloning a Document
                 // forbid it for the sake of being compliant to the DOM spec
                 if (!cloningDoc) {
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                                  "Node type being imported is not supported");
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
                 DocumentType srcdoctype = (DocumentType)source;
                 DocumentTypeImpl newdoctype = (DocumentTypeImpl)
@@ -1676,8 +1692,8 @@ public class CoreDocumentImpl
             }
             case DOCUMENT_NODE : // Can't import document nodes
             default: {           // Unknown node type
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                                  "Node type being imported is not supported");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
             }
         }
 
@@ -1727,8 +1743,8 @@ public class CoreDocumentImpl
             }
             case DOCUMENT_NODE:
             case DOCUMENT_TYPE_NODE: {
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                                       "cannot adopt this type of node.");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
             }
             case ENTITY_REFERENCE_NODE: {
                 // remove node from wherever it is
@@ -1918,8 +1934,8 @@ public class CoreDocumentImpl
         throws DOMException
     {
         if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                   "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new ElementNSImpl(this, namespaceURI, qualifiedName);
     }
@@ -1966,8 +1982,8 @@ public class CoreDocumentImpl
         throws DOMException
     {
         if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                                   "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new AttrNSImpl(this, namespaceURI, qualifiedName);
     }

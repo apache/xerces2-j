@@ -135,8 +135,8 @@ public class ASDOMImplementationImpl extends DOMImplementationImpl
      * @return  a DOMASWriter
      */
     public DOMASWriter createDOMASWriter(){
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
-                                   "ASWriter is not implemented.");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
 

@@ -68,7 +68,7 @@ import org.w3c.dom.Node;
  * specifics of storing attributes. These are:
  * <ul>
  *  <li>managing ownership of attribute nodes
- *  <li>managing default attributes
+ *  <li>managing default attributes       
  *  <li>firing mutation events
  * </ul>
  * <p>
@@ -107,25 +107,24 @@ public class AttributeMap extends NamedNodeMapImpl {
         throws DOMException {
 
     	if (isReadOnly()) {
-            throw
-                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                                     "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
     	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
-                                       "DOM005 Wrong document");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
         if (arg.getNodeType() != arg.ATTRIBUTE_NODE) {
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                   "DOM006 Hierarchy request error");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
         }
 
         AttrImpl argn = (AttrImpl)arg;
 
     	if (argn.isOwned()){
             if (argn.getOwnerElement() != ownerNode) {
-                throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
-                                       "DOM009 Attribute already in use");
+                   String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INUSE_ATTRIBUTE_ERR", null);
+                   throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, msg);
             } 
             // replacing an Attribute with itself does nothing
             return arg;
@@ -175,26 +174,25 @@ public class AttributeMap extends NamedNodeMapImpl {
         throws DOMException {
 
     	if (isReadOnly()) {
-            throw
-                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                                     "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
         }
     
     	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
-                                       "DOM005 Wrong document");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
 
         if (arg.getNodeType() != arg.ATTRIBUTE_NODE) {
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                   "DOM006 Hierarchy request error");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
         }
         AttrImpl argn = (AttrImpl)arg;
 
     	if (argn.isOwned()){
             if (argn.getOwnerElement() != ownerNode) {
-                throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
-                                       "DOM009 Attribute already in use");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INUSE_ATTRIBUTE_ERR", null);
+                throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, msg);
             } 
             // replacing an Attribute with itself does nothing
             return arg;
@@ -294,8 +292,8 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
         }
         if (index < 0) {
-            throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                   "DOM008 Not found");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
         
         return remove((AttrImpl)item, index, addDefault);
@@ -306,16 +304,15 @@ public class AttributeMap extends NamedNodeMapImpl {
      * must be thrown if the specified name is not found.
      */
     final protected Node internalRemoveNamedItem(String name, boolean raiseEx){
-    	if (isReadOnly()) {
-            throw
-                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                                     "DOM001 Modification not allowed");
+    	if (isReadOnly()) {            
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
         }
     	int i = findNamePoint(name,0);
     	if (i < 0) {
             if (raiseEx) {
-                throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                           "DOM008 Not found");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             } else {
                 return null;
             }
@@ -415,15 +412,14 @@ public class AttributeMap extends NamedNodeMapImpl {
                                                    String name,
                                                    boolean raiseEx) {
     	if (isReadOnly()) {
-            throw
-                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                                     "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
         }
     	int i = findNamePoint(namespaceURI, name);
     	if (i < 0) {
             if (raiseEx) {
-                throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                           "DOM008 Not found");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             } else {
                 return null;
             }

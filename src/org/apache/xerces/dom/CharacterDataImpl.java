@@ -138,10 +138,10 @@ public abstract class CharacterDataImpl
      *  type if the client simply calls setNodeValue(value).
      */
     protected void setNodeValueInternal(String value) {
-    	if (isReadOnly())
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (isReadOnly()) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+        }
         // revisit: may want to set the value in ownerDocument.
     	// Default behavior, overridden in some subclasses
         if (needsSyncData()) {
@@ -214,10 +214,9 @@ public abstract class CharacterDataImpl
      */
     public void appendData(String data) {
 
-        if (isReadOnly()) {
-        	throw new DOMException(
-        		DOMException.NO_MODIFICATION_ALLOWED_ERR,
-        		"DOM001 Modification not allowed");
+    	if (isReadOnly()) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
         if (data == null) {
             return;
@@ -245,15 +244,14 @@ public abstract class CharacterDataImpl
     public void deleteData(int offset, int count) 
         throws DOMException {
 
-        if (isReadOnly()) {
-        	throw new DOMException(
-        		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-        		"DOM001 Modification not allowed");
+    	if (isReadOnly()) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
 
         if (count < 0) {
-        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
-        	                           "DOM004 Index out of bounds");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
         }
 
         if (needsSyncData()) {
@@ -272,8 +270,8 @@ public abstract class CharacterDataImpl
             ownerDocument().deletedText(this, offset, count);
         }
         catch (StringIndexOutOfBoundsException e) {
-        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
-        	                           "DOM004 Index out of bounds");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
         }
 
     } // deleteData(int,int)
@@ -291,9 +289,8 @@ public abstract class CharacterDataImpl
         throws DOMException {
 
         if (isReadOnly()) {
-        	throw new DOMException(
-        		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-        		"DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
 
         if (needsSyncData()) {
@@ -309,8 +306,8 @@ public abstract class CharacterDataImpl
             ownerDocument().insertedText(this, offset, data.length());
         }
         catch (StringIndexOutOfBoundsException e) {
-        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
-        	                           "DOM004 Index out of bounds");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
         }
 
     } // insertData(int,int)
@@ -392,8 +389,8 @@ public abstract class CharacterDataImpl
         
         int length = data.length();
         if (count < 0 || offset < 0 || offset > length - 1) {
-            throw new DOMException(DOMException.INDEX_SIZE_ERR, 
-                                       "DOM004 Index out of bounds");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
         }
 
         int tailIndex = Math.min(offset + count, length);

@@ -121,7 +121,8 @@ public class ASModelImpl implements ASModel {
      * A code representing the underlying object as defined above.
      */
     public short getAsNodeType() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -130,7 +131,8 @@ public class ASModelImpl implements ASModel {
      * is <code>null</code>. 
      */
     public ASModel getOwnerASModel() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -139,7 +141,8 @@ public class ASModelImpl implements ASModel {
      * is <code>null</code>. 
      */
     public void setOwnerASModel(ASModel ownerASModel) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -147,7 +150,8 @@ public class ASModelImpl implements ASModel {
      * <code>ASObject</code> type.
      */
     public String getNodeName() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -155,7 +159,8 @@ public class ASModelImpl implements ASModel {
      * <code>ASObject</code> type.
      */
     public void setNodeName(String nodeName) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -163,7 +168,8 @@ public class ASModelImpl implements ASModel {
      * unspecified.
      */
     public String getPrefix() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -171,7 +177,8 @@ public class ASModelImpl implements ASModel {
      * unspecified.
      */
     public void setPrefix(String prefix) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -179,7 +186,8 @@ public class ASModelImpl implements ASModel {
      * <code>ASObject</code>.
      */
     public String getLocalName() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -187,7 +195,8 @@ public class ASModelImpl implements ASModel {
      * <code>ASObject</code>.
      */
     public void setLocalName(String localName) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -196,7 +205,8 @@ public class ASModelImpl implements ASModel {
      * components.
      */
     public String getNamespaceURI() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -205,7 +215,8 @@ public class ASModelImpl implements ASModel {
      * components.
      */
     public void setNamespaceURI(String namespaceURI) {
-   	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -218,7 +229,8 @@ public class ASModelImpl implements ASModel {
      * @return Cloned <code>ASObject</code>.
      */
     public ASObject cloneASObject(boolean deep) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     //
@@ -241,35 +253,40 @@ public class ASModelImpl implements ASModel {
      * subset. 
      */
     public short getUsageLocation() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
      *  The URI reference. 
      */
     public String getAsLocation() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
      *  The URI reference. 
      */
     public void setAsLocation(String asLocation) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
      *  The hint to locating an ASModel. 
      */
     public String getAsHint() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
      *  The hint to locating an ASModel. 
      */
     public void setAsHint(String asHint) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -288,7 +305,8 @@ public class ASModelImpl implements ASModel {
      * equivalent is thrown). 
      */
     public ASNamedObjectMap getElementDeclarations() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -299,7 +317,8 @@ public class ASModelImpl implements ASModel {
      * equivalent is thrown). 
      */
     public ASNamedObjectMap getAttributeDeclarations() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -310,7 +329,8 @@ public class ASModelImpl implements ASModel {
      * equivalent is thrown). 
      */
     public ASNamedObjectMap getNotationDeclarations() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -321,7 +341,8 @@ public class ASModelImpl implements ASModel {
      * equivalent is thrown). 
      */
     public ASNamedObjectMap getEntityDeclarations() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -332,7 +353,8 @@ public class ASModelImpl implements ASModel {
      * equivalent is thrown). 
      */
     public ASNamedObjectMap getContentModelDeclarations() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -349,7 +371,8 @@ public class ASModelImpl implements ASModel {
      * @return A list of ASModels. 
      */
     public ASObjectList getASModels() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -368,7 +391,8 @@ public class ASModelImpl implements ASModel {
      *   <code>false</code> otherwise.
      */
     public boolean validate() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -376,7 +400,8 @@ public class ASModelImpl implements ASModel {
      * @param asobject  <code>ASObject</code> to be imported. 
      */
     public void importASObject(ASObject asobject) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -384,7 +409,8 @@ public class ASModelImpl implements ASModel {
      * @param asobject  <code>ASObject</code> to be inserted. 
      */
     public void insertASObject(ASObject asobject) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -406,7 +432,8 @@ public class ASModelImpl implements ASModel {
     public ASElementDeclaration createASElementDeclaration(String namespaceURI, 
                                                            String name)
                                                            throws DOMException {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -424,7 +451,8 @@ public class ASModelImpl implements ASModel {
     public ASAttributeDeclaration createASAttributeDeclaration(String namespaceURI, 
                                                                String name)
                                                                throws DOMException {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -446,7 +474,8 @@ public class ASModelImpl implements ASModel {
     public ASNotationDeclaration createASNotationDeclaration(String namespaceURI, String name, 
                                                              String systemId, String publicId)
                                                              throws DOMException {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
     
     /**
@@ -460,7 +489,8 @@ public class ASModelImpl implements ASModel {
      */
     public ASEntityDeclaration createASEntityDeclaration(String name)
                                                          throws DOMException {
-	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
     /**
@@ -479,7 +509,8 @@ public class ASModelImpl implements ASModel {
      */
     public ASContentModel createASContentModel(int minOccurs, int maxOccurs, 
                                                short operator) throws DOMASException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
     }
 
 

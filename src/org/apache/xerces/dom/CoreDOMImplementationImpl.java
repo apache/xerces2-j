@@ -174,15 +174,15 @@ implements DOMImplementation, DOMImplementationLS {
                                                  String systemID)
     {
         if (!CoreDocumentImpl.isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-                                   "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         int index = qualifiedName.indexOf(':');
         int lastIndex = qualifiedName.lastIndexOf(':');
         // it is an error for NCName to have more than one ':'
         if (index == 0 || index == qualifiedName.length() - 1 || lastIndex!=index) {
-            throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                   "DOM003 Namespace error");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+            throw new DOMException(DOMException.NAMESPACE_ERR, msg);
         }
         return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
     }
@@ -212,8 +212,8 @@ implements DOMImplementation, DOMImplementationLS {
     throws DOMException
     {
         if (doctype != null && doctype.getOwnerDocument() != null) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                   "DOM005 Wrong document");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
         CoreDocumentImpl doc = new CoreDocumentImpl(doctype);
         Element e = doc.createElementNS( namespaceURI, qualifiedName);
@@ -239,10 +239,8 @@ implements DOMImplementation, DOMImplementationLS {
      *   <code>DOMImplementation</code>
      */
     public DOMImplementation getInterface(String feature){
-
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
-                               "getInterface() is not implemented");
-        
+        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);        
     }
 
     // DOM L3 LS
@@ -253,8 +251,8 @@ implements DOMImplementation, DOMImplementationLS {
                                        String schemaType)
                                        throws DOMException{        
         if (mode == DOMImplementationLS.MODE_ASYNCHRONOUS) {
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
-                                   "Asynchronous mode is not supported");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);        
         }
         if (schemaType !=null && schemaType.equals("http://www.w3.org/TR/REC-xml")) {
             return new DOMBuilderImpl("org.apache.xerces.parsers.DTDConfiguration", schemaType);

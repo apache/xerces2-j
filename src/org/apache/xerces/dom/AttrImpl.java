@@ -334,8 +334,8 @@ public class AttrImpl
     public void setValue(String newvalue) {
 
     	if (isReadOnly()) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                   "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
         CoreDocumentImpl ownerDocument = ownerDocument();
         Element ownerElement = getOwnerElement();
@@ -703,9 +703,8 @@ public class AttrImpl
                      kid != null; kid = kid.getNextSibling()) {
 
                     if (!ownerDocument.isKidOK(this, kid)) {
-                        throw new DOMException(
-                                           DOMException.HIERARCHY_REQUEST_ERR, 
-                                           "DOM006 Hierarchy request error");
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+                        throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
                     }
                 }
             }
@@ -730,22 +729,21 @@ public class AttrImpl
 
         if (errorChecking) {
             if (isReadOnly()) {
-                throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                       "DOM001 Modification not allowed");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
             }
             if (newChild.getOwnerDocument() != ownerDocument) {
-                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                       "DOM005 Wrong document");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
             }
             if (!ownerDocument.isKidOK(this, newChild)) {
-                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                       "DOM006 Hierarchy request error");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
             }
             // refChild must be a child of this node (or null)
             if (refChild != null && refChild.getParentNode() != this) {
-                throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                       "DOM008 Not found");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             }
 
             // Prevent cycles in the tree
@@ -757,8 +755,8 @@ public class AttrImpl
                 treeSafe = newChild != a;
             }
             if (!treeSafe) {
-                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                       "DOM006 Hierarchy request error");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
             }
         }
 
@@ -866,13 +864,12 @@ public class AttrImpl
         CoreDocumentImpl ownerDocument = ownerDocument();
         if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
-                throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                     "DOM001 Modification not allowed");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
             }
             if (oldChild != null && oldChild.getParentNode() != this) {
-                throw new DOMException(DOMException.NOT_FOUND_ERR, 
-                                       "DOM008 Not found");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             }
         }
 

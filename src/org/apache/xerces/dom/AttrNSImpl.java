@@ -124,9 +124,8 @@ public class AttrNSImpl
             if (ownerDocument().errorChecking &&
                 qualifiedName.equals("xmlns") &&
                 (namespaceURI == null || !namespaceURI.equals(xmlnsURI))) {
-
-                throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                       "DOM003 Namespace error");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                throw new DOMException(DOMException.NAMESPACE_ERR, msg);
             }
         }
         else {
@@ -137,21 +136,21 @@ public class AttrNSImpl
                 if (this.namespaceURI == null
                     || (localName.length() == 0)
                     || (localName.indexOf(':') >= 0)) {
-                    throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                           "DOM003 Namespace error");
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                    throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                 } else if (prefix.equals("xml")) {
                     if (!namespaceURI.equals(xmlURI)) {
-                        throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                               "DOM003 Namespace error");
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                     }
                 } else if (prefix.equals("xmlns")) {
                     if (!namespaceURI.equals(xmlnsURI)) {
-                        throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                               "DOM003 Namespace error");
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                     }
                 } else if (index == 0) {
-                    throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                           "DOM003 Namespace error");
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                    throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                 }
             }
         }
@@ -277,31 +276,30 @@ public class AttrNSImpl
         }
         if (ownerDocument().errorChecking) {
             if (isReadOnly()) {
-                throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                     "DOM001 Modification not allowed");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
             }
             if (!CoreDocumentImpl.isXMLName(prefix)) {
-                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-                                       "DOM002 Illegal character");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
             }
             if (namespaceURI == null || prefix.indexOf(':') >=0) {
-                throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                       "DOM003 Namespace error");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                throw new DOMException(DOMException.NAMESPACE_ERR, msg);
             } else if (prefix != null) {
                 if (prefix.equals("xmlns")) {
                     if (!namespaceURI.equals(xmlnsURI)){
-                        throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                               "DOM003 Namespace error");
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                     }
                 } else if (prefix.equals("xml")) {
                     if (!namespaceURI.equals(xmlURI)) {
-                        throw new DOMException(DOMException.NAMESPACE_ERR, 
-                                               "DOM003 Namespace error");
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                     }
                 }else if (name.equals("xmlns")) {
-                        throw new DOMException(DOMException.NAMESPACE_ERR,
-                               "DOM003 Namespace error");
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                    throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                 }
             }
         }
