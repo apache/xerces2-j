@@ -99,7 +99,7 @@ import java.util.Vector;
 import java.util.StringTokenizer;
 
 /**
- * The universal validator. The validator implements a document
+ * The DTD validator. The validator implements a document
  * filter: receiving document events from the scanner; validating
  * the content and structure; augmenting the InfoSet, if applicable;
  * and notifying the parser of the information resulting from the
@@ -138,10 +138,6 @@ public class XMLDTDValidator
     
     // feature identifiers
 
-    /** Feature identifier: namespaces. */
-    protected static final String NAMESPACES =
-        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
-
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
         Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
@@ -172,14 +168,16 @@ public class XMLDTDValidator
 
     /** Recognized features. */
     protected static final String[] RECOGNIZED_FEATURES = {
-        NAMESPACES,         VALIDATION,
+        VALIDATION,
         DYNAMIC_VALIDATION,
     };
 
     /** Recognized properties. */
     protected static final String[] RECOGNIZED_PROPERTIES = {
-        SYMBOL_TABLE,       ERROR_REPORTER,
-        GRAMMAR_POOL,       DATATYPE_VALIDATOR_FACTORY,
+        SYMBOL_TABLE,       
+        ERROR_REPORTER,
+        GRAMMAR_POOL,       
+        DATATYPE_VALIDATOR_FACTORY,
     };
 
     // debugging
@@ -194,7 +192,18 @@ public class XMLDTDValidator
     // Data
     //
 
-    // components
+    // features
+
+    /** Validation. */
+    protected boolean fValidation;
+
+    /** 
+     * Dynamic validation. This state of this feature is only useful when
+     * the validation feature is set to <code>true</code>.
+     */
+    protected boolean fDynamicValidation;
+
+    // properties
 
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
@@ -207,21 +216,6 @@ public class XMLDTDValidator
 
     /** Datatype validator factory. */
     protected DatatypeValidatorFactory fDatatypeValidatorFactory;
-
-    // features
-
-    /** Namespaces. */
-    protected boolean fNamespaces;
-
-    /** Validation. */
-    protected boolean fValidation;
-    private boolean fSkipValidation;
-
-    /** 
-     * Dynamic validation. This state of this feature is only useful when
-     * the validation feature is set to <code>true</code>.
-     */
-    protected boolean fDynamicValidation;
 
     // handlers
 
@@ -236,22 +230,16 @@ public class XMLDTDValidator
 
     // grammars
 
-    /** Current grammar. */
-    protected Grammar fCurrentGrammar;
-
-    // REVISIT: There should be a way of specifying this information
-    //          without actually binding it directly to these two
-    //          instances of grammars. A careful look at what operations
-    //          the validator performs on the grammar objects will tell
-    //          us how we can make a clean separation here. -Ac
-
-    /** True if the current grammar is DTD. */
-    protected boolean fCurrentGrammarIsDTD;
-
     /** DTD Grammar. */
     protected DTDGrammar fDTDGrammar;
 
     // state
+
+    /** Perform validation. */
+    private boolean fPerformValidation;
+
+    /** Skip validation. */
+    private boolean fSkipValidation;
 
     /** True if currently in the DTD. */
     protected boolean fInDTD;
@@ -325,9 +313,6 @@ public class XMLDTDValidator
     /** True if seen the root element. */
     private boolean fSeenRootElement = false;
 
-    /** True if buffer the datatype values. */
-    private boolean fBufferDatatype = false;
-
     /** True if inside of element content. */
     private boolean fInElementContent = false;
 
@@ -349,7 +334,7 @@ public class XMLDTDValidator
     private QName fTempQName = new QName();
 
     /** Temporary string buffer for buffering datatype value. */
-    private StringBuffer fDatatypeBuffer = new StringBuffer();
+    //private StringBuffer fDatatypeBuffer = new StringBuffer();
 
     /** Notation declaration hash. */
     private Hashtable fNDataDeclNotations = new Hashtable();
@@ -509,16 +494,13 @@ public class XMLDTDValidator
         throws XMLConfigurationException {
 
         // clear grammars
-        fCurrentGrammar = null;
         fDTDGrammar = null;
-        fCurrentGrammarIsDTD = false;
 
         // initialize state
         fInDTD = false;
         fInDTDIgnore = false;
         fStandaloneIsYes = false;
         fSeenRootElement = false;
-        fBufferDatatype = false;
         fInElementContent = false;
         fCurrentElementIndex = -1;
         fCurrentContentSpecType = -1;
@@ -529,8 +511,20 @@ public class XMLDTDValidator
         fNDataDeclNotations.clear();
 
         // sax features
-        fNamespaces = componentManager.getFeature(Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE);
-        fValidation = componentManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
+        try {
+            fValidation = componentManager.getFeature(VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fValidation = false;
+        }
+
+        // Xerces features
+        try {
+            fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fDynamicValidation = false;
+        }
 
         // get needed components
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
@@ -705,6 +699,7 @@ public class XMLDTDValidator
         throws XNIException {
 
         // save root element state
+        fSeenDoctypeDecl = true;
         fRootElement.setValues(null, rootElement, rootElement, null);
 
         // call handlers
@@ -804,11 +799,10 @@ public class XMLDTDValidator
             }
     
             // validate
-            if (fValidation) {
+            if (fPerformValidation) {
                 if (fInElementContent) {
-                    if (fCurrentGrammarIsDTD && 
-                        fStandaloneIsYes &&
-                        ((DTDGrammar)fCurrentGrammar).getElementDeclIsExternal(fCurrentElementIndex)) {
+                    if (fStandaloneIsYes &&
+                        fDTDGrammar.getElementDeclIsExternal(fCurrentElementIndex)) {
                         if (allWhiteSpace) {
                             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
                                                         "MSG_WHITE_SPACE_IN_ELEMENT_CONTENT_WHEN_STANDALONE",
@@ -822,9 +816,6 @@ public class XMLDTDValidator
     
                 if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
                     charDataInContent();
-                }
-                if (fBufferDatatype) {
-                    fDatatypeBuffer.append(text.ch, text.offset, text.length);
                 }
             }
     
@@ -894,7 +885,7 @@ public class XMLDTDValidator
      */
     public void startCDATA() throws XNIException {
 
-        if (fValidation && fInElementContent) {
+        if (fPerformValidation && fInElementContent) {
             charDataInContent();
         }
         
@@ -980,11 +971,11 @@ public class XMLDTDValidator
         } 
         else {
             // check VC: Standalone Document Declartion, entities references appear in the document.
-            if (fValidation && fCurrentGrammar != null) {
+            if (fPerformValidation && fDTDGrammar != null) {
                 if (fStandaloneIsYes && !name.startsWith("[")) {
-                    int entIndex = fCurrentGrammar.getEntityDeclIndex(name);
+                    int entIndex = fDTDGrammar.getEntityDeclIndex(name);
                     if (entIndex > -1) {
-                        fCurrentGrammar.getEntityDecl(entIndex, fEntityDecl);
+                        fDTDGrammar.getEntityDecl(entIndex, fEntityDecl);
                         if (fEntityDecl.inExternal) {
                             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
                                                         "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
@@ -1541,22 +1532,19 @@ public class XMLDTDValidator
 
         // save grammar
         fDTDGrammar.endDTD();
-        fCurrentGrammar = fDTDGrammar;
-        // REVESIT: if schema validation is turned on, we shouldn't be doing this.
-        fCurrentGrammarIsDTD = true;
 
         // check VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
 
-            fValENTITY.initialize(fCurrentGrammar);//Initialize ENTITY, ENTITIES validators 
-            fValENTITIES.initialize(fCurrentGrammar);
+            fValENTITY.initialize(fDTDGrammar);//Initialize ENTITY, ENTITIES validators 
+            fValENTITIES.initialize(fDTDGrammar);
 
             // VC : Notation Declared. for external entity declaration [Production 76].
             Enumeration entities = fNDataDeclNotations.keys();
             while (entities.hasMoreElements()) {
                 String entity = (String) entities.nextElement();
                 String notation = (String) fNDataDeclNotations.get(entity);
-                if (fCurrentGrammar.getNotationDeclIndex(notation) == -1) {
+                if (fDTDGrammar.getNotationDeclIndex(notation) == -1) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_NOTATION_NOT_DECLARED_FOR_UNPARSED_ENTITYDECL",
                                                new Object[]{entity, notation},
@@ -1570,7 +1558,7 @@ public class XMLDTDValidator
             while (notationVals.hasMoreElements()) {
                 String notation = (String) notationVals.nextElement();
                 String attributeName = (String) fNotationEnumVals.get(notation);
-                if (fCurrentGrammar.getNotationDeclIndex(notation) == -1) {
+                if (fDTDGrammar.getNotationDeclIndex(notation) == -1) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_NOTATION_NOT_DECLARED_FOR_NOTATIONTYPE_ATTRIBUTE",
                                                new Object[]{attributeName, notation},
@@ -1723,12 +1711,12 @@ public class XMLDTDValidator
         throws XNIException {
 
         // is there anything to do?
-        if (elementIndex == -1 || fCurrentGrammar == null) {
+        if (elementIndex == -1 || fDTDGrammar == null) {
             return;
         }
 
         // get element info
-        fCurrentGrammar.getElementDecl(elementIndex,fTempElementDecl);
+        fDTDGrammar.getElementDecl(elementIndex,fTempElementDecl);
         QName element = fTempElementDecl.name;
 
         //
@@ -1736,16 +1724,16 @@ public class XMLDTDValidator
         // (1) report error for REQUIRED attrs that are missing (V_TAGc)
         // (2) add default attrs (FIXED and NOT_FIXED)
         //
-        int attlistIndex = fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
+        int attlistIndex = fDTDGrammar.getFirstAttributeDeclIndex(elementIndex);
 
         while (attlistIndex != -1) {
 
-            fCurrentGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
+            fDTDGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
             if (DEBUG_ATTRIBUTES) {
                 if (fTempAttDecl != null) {
                     XMLElementDecl elementDecl = new XMLElementDecl();
-                    fCurrentGrammar.getElementDecl(elementIndex, elementDecl);
+                    fDTDGrammar.getElementDecl(elementIndex, elementDecl);
                     System.out.println("element: "+(elementDecl.name.localpart));
                     System.out.println("attlistIndex " + attlistIndex + "\n"+
                                        "attName : '"+(fTempAttDecl.name.localpart) + "'\n"
@@ -1789,8 +1777,8 @@ public class XMLDTDValidator
                                                    XMLErrorReporter.SEVERITY_ERROR);
                     }
                 } else if (attValue != null) {
-                    if (fValidation && fStandaloneIsYes)
-                        if (((DTDGrammar) fCurrentGrammar).getAttributeDeclIsExternal(attlistIndex)) {
+                    if (fPerformValidation && fStandaloneIsYes)
+                        if (fDTDGrammar.getAttributeDeclIsExternal(attlistIndex)) {
 
                             Object[] args = { element.localpart, attRawName};
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -1803,7 +1791,7 @@ public class XMLDTDValidator
                 }
             }
             // get next att decl in the Grammar for this element
-            attlistIndex = fCurrentGrammar.getNextAttributeDeclIndex(attlistIndex);
+            attlistIndex = fDTDGrammar.getNextAttributeDeclIndex(attlistIndex);
         }
 
         // now iterate through the expanded attributes for
@@ -1814,7 +1802,7 @@ public class XMLDTDValidator
         for (int i = 0; i < attrCount; i++) {
             String attrRawName = attributes.getQName(i);
             boolean declared = false;
-            if (fValidation) {
+            if (fPerformValidation) {
                 if (fStandaloneIsYes) {
                     // check VC: Standalone Document Declaration, entities
                     // references appear in the document.
@@ -1824,9 +1812,9 @@ public class XMLDTDValidator
                     int entityCount = attributes.getEntityCount(i);
                     for (int j=0;  j < entityCount; j++) {
                         String entityName= attributes.getEntityName(i, j);
-                        int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
+                        int entIndex = fDTDGrammar.getEntityDeclIndex(entityName);
                         if (entIndex > -1) {
-                            fCurrentGrammar.getEntityDecl(entIndex,
+                            fDTDGrammar.getEntityDecl(entIndex,
                                                           fEntityDecl);
                             if (fEntityDecl.inExternal) {
                                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -1840,19 +1828,19 @@ public class XMLDTDValidator
             }
             int attDefIndex = -1;
             int position =
-                fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
+                fDTDGrammar.getFirstAttributeDeclIndex(elementIndex);
             while (position != -1) {
-                fCurrentGrammar.getAttributeDecl(position, fTempAttDecl);
+                fDTDGrammar.getAttributeDecl(position, fTempAttDecl);
                 if (fTempAttDecl.name.rawname == attrRawName) {
                     // found the match att decl, 
                     attDefIndex = position;
                     declared = true;
                     break;
                 }
-                position = fCurrentGrammar.getNextAttributeDeclIndex(position);
+                position = fDTDGrammar.getNextAttributeDeclIndex(position);
             }
             if (!declared) {
-                if (fValidation) {
+                if (fPerformValidation) {
                     // REVISIT - cache the elem/attr tuple so that we only
                     // give this error once for each unique occurrence
                     Object[] args = { element.rawname, attrRawName };
@@ -1878,9 +1866,9 @@ public class XMLDTDValidator
             if (attributes.isSpecified(i) && type != fCDATASymbol) {
                 changedByNormalization = normalizeAttrValue(attributes, i);
                 attrValue = attributes.getValue(i);
-                if (fValidation && fStandaloneIsYes
+                if (fPerformValidation && fStandaloneIsYes
                     && changedByNormalization 
-                    && ((DTDGrammar) fCurrentGrammar).getAttributeDeclIsExternal(position)
+                    && fDTDGrammar.getAttributeDeclIsExternal(position)
                     ) {
                     // check VC: Standalone Document Declaration
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -1889,7 +1877,7 @@ public class XMLDTDValidator
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
-            if (!fValidation) {
+            if (!fPerformValidation) {
                 continue;
             }
             if (fTempAttDecl.simpleType.defaultType ==
@@ -2208,7 +2196,7 @@ public class XMLDTDValidator
 
     /** Root element specified. */
     private void rootElementSpecified(QName rootElement) throws XNIException {
-        if (fValidation && fCurrentGrammarIsDTD) {
+        if (fPerformValidation) {
             String root1 = fRootElement.rawname;
             String root2 = rootElement.rawname;
             if (root1 == null || !root1.equals(root2)) {
@@ -2258,7 +2246,7 @@ public class XMLDTDValidator
                              int childOffset, 
                              int childCount) throws XNIException {
 
-        fCurrentGrammar.getElementDecl(elementIndex, fTempElementDecl);
+        fDTDGrammar.getElementDecl(elementIndex, fTempElementDecl);
 
         // Get the element name index from the element
         final String elementType = fCurrentElement.rawname;
@@ -2326,7 +2314,7 @@ public class XMLDTDValidator
 
         int contentSpecType = -1;
         if (elementIndex > -1) {
-            if (fCurrentGrammar.getElementDecl(elementIndex,fTempElementDecl)) {
+            if (fDTDGrammar.getElementDecl(elementIndex,fTempElementDecl)) {
                 contentSpecType = fTempElementDecl.type;
             }
         }
@@ -2490,23 +2478,24 @@ public class XMLDTDValidator
     protected void handleStartElement(QName element, XMLAttributes attributes,
                                       boolean isEmpty) throws XNIException {
 
+        // set wether we're performing validation
+        fPerformValidation = fValidation && (!fDynamicValidation || fSeenDoctypeDecl);
+        
         // VC: Root Element Type
         // see if the root element's name matches the one in DoctypeDecl 
         if (!fSeenRootElement) {
             fSeenRootElement = true;
-            if (fCurrentGrammarIsDTD) {
-                rootElementSpecified(element);
-            }
+            rootElementSpecified(element);
         }
 
-        if (fCurrentGrammar == null && !fSkipValidation){
+        if (fDTDGrammar == null && !fSkipValidation){
         
-            if  (!fValidation) {
+            if  (!fPerformValidation) {
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
             fInElementContent = false;
             }
-            if (fValidation ) {
+            if (fPerformValidation ) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                            "MSG_GRAMMAR_NOT_FOUND",
                                            new Object[]{ element.rawname},
@@ -2514,12 +2503,12 @@ public class XMLDTDValidator
                 fSkipValidation = true;
             }
         } 
-        else if (fCurrentGrammarIsDTD) {
+        else {
             //  resolve the element
-            fCurrentElementIndex = fCurrentGrammar.getElementDeclIndex(element, -1);
+            fCurrentElementIndex = fDTDGrammar.getElementDeclIndex(element, -1);
 
             fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
-            if (fCurrentElementIndex == -1 && fValidation) {
+            if (fCurrentElementIndex == -1 && fPerformValidation) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                            "MSG_ELEMENT_NOT_DECLARED",
                                            new Object[]{ element.rawname},
@@ -2541,7 +2530,7 @@ public class XMLDTDValidator
         // increment the element depth, add this element's 
         // QName to its enclosing element 's children list
         fElementDepth++;
-        if (fValidation) {
+        if (fPerformValidation) {
             // push current length onto stack
             if (fElementChildrenOffsetStack.length < fElementDepth) {
                 int newarray[] = new int[fElementChildrenOffsetStack.length * 2];
@@ -2594,7 +2583,7 @@ public class XMLDTDValidator
         fElementDepth--;
 
         // validate
-        if (fValidation) {
+        if (fPerformValidation) {
             int elementIndex = fCurrentElementIndex;
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
                 QName children[] = fElementChildren;
@@ -2604,7 +2593,7 @@ public class XMLDTDValidator
                                           children, childrenOffset, childrenLength);
 
                 if (result != -1) {
-                    fCurrentGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                    fDTDGrammar.getElementDecl(elementIndex, fTempElementDecl);
                     if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                                    "MSG_CONTENT_INVALID",
@@ -2617,7 +2606,7 @@ public class XMLDTDValidator
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                                    messageKey,
                                                    new Object[]{ element.rawname, 
-                                                       fCurrentGrammar.getContentSpecAsString(elementIndex)},
+                                                       fDTDGrammar.getContentSpecAsString(elementIndex)},
                                                    XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
@@ -2652,7 +2641,7 @@ public class XMLDTDValidator
             // (1) check that there was an element with a matching id for every
             //   IDREF and IDREFS attr (V_IDREF0)
             //
-            if (fValidation) {
+            if (fPerformValidation) {
                 try {
                     fValIDRef.validate();//Do final validation of IDREFS against IDs
                     fValIDRefs.validate();
@@ -2672,22 +2661,10 @@ public class XMLDTDValidator
 
         // If Namespace enable then localName != rawName
         fCurrentElement.setValues(fElementQNamePartsStack[fElementDepth]);
-        if (fNamespaces) { 
-            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
-        } 
-        // REVISIT: jeffreyr - This is so we still do old behavior when 
-        //          namespace is off 
-        else {
-            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
-        }
 
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
         fInElementContent = (fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN);
-
-        if (fValidation) {
-            fBufferDatatype = false;
-        }
 
     } // handleEndElement(QName,boolean)
 
