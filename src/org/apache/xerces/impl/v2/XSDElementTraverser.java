@@ -341,8 +341,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                    (childName.equals(SchemaSymbols.ELT_KEY) ||
                     childName.equals(SchemaSymbols.ELT_KEYREF) ||
                     childName.equals(SchemaSymbols.ELT_UNIQUE))) {
-                if(childName == SchemaSymbols.ELT_KEY ||
-                        childName == SchemaSymbols.ELT_UNIQUE) {
+                
+                if (childName.equals(SchemaSymbols.ELT_KEY) ||
+                        childName.equals(SchemaSymbols.ELT_UNIQUE)) {
                     fSchemaHandler.fUniqueOrKeyTraverser.traverse(child, element, schemaDoc, grammar);
                     if(DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME).length() != 0 ) {
                         fSchemaHandler.checkForDuplicateNames(
