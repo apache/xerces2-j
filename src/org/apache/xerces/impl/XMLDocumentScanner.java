@@ -177,12 +177,6 @@ public class XMLDocumentScanner
 
     // properties
 
-    /** Symbol table. */
-    protected SymbolTable fSymbolTable;
-
-    /** Entity manager. */
-    protected XMLEntityManager fEntityManager;
-
     /** DTD scanner. */
     /*** REVISIT: Add DTD support. ***
     protected XMLDTDScanner fDTDScanner;
@@ -261,6 +255,8 @@ public class XMLDocumentScanner
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
 
+    private String[] fPseudoAttributeValues = new String[3];
+
     // symbols
 
     /** Symbol: "amp". */
@@ -277,15 +273,6 @@ public class XMLDocumentScanner
 
     /** Symbol: "apos". */
     private String fAposSymbol;
-
-    /** Symbol: "version". */
-    private String fVersionSymbol;
-
-    /** Symbol: "encoding". */
-    private String fEncodingSymbol;
-
-    /** Symbol: "standalone". */
-    private String fStandaloneSymbol;
 
     /** Symbol: "xml". */
     private String fXmlSymbol;
@@ -347,26 +334,19 @@ public class XMLDocumentScanner
     public void reset(XMLComponentManager componentManager)
         throws SAXException {
 
+        super.reset(componentManager);
+
         // SAX features
         final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
         fNamespaces = componentManager.getFeature(NAMESPACES);
         fAttributes.setNamespaces(fNamespaces);
 
         // Xerces properties
-        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-        final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
-        fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
         /*** REVISIT: Add DTD support. ***
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
         /***/
 
-        // initialize scanner
-        fEntityScanner = fEntityManager.getEntityScanner();
-        
         // initialize vars
         fEntityStack.removeAllElements();
         fNamespaceSupport.reset();
@@ -385,9 +365,6 @@ public class XMLDocumentScanner
         fGtSymbol = fSymbolTable.addSymbol("gt");
         fQuotSymbol = fSymbolTable.addSymbol("quot");
         fAposSymbol = fSymbolTable.addSymbol("apos");
-        fVersionSymbol = fSymbolTable.addSymbol("version");
-        fEncodingSymbol = fSymbolTable.addSymbol("encoding");
-        fStandaloneSymbol = fSymbolTable.addSymbol("standalone");
         fXmlSymbol = fSymbolTable.addSymbol("xml");
         fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
 
@@ -426,20 +403,18 @@ public class XMLDocumentScanner
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         
+        super.setProperty(propertyId, value);
+
         // Xerces properties
+        /*** REVISIT: Add DTD support. ***
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
-                fSymbolTable = (SymbolTable)value;
-            }
-            else if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {
-                fErrorReporter = (XMLErrorReporter)value;
-            }
-            else if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
-                fEntityManager = (XMLEntityManager)value;
+            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
+                fDTDScanner = (XMLDTDScanner)value;
             }
             return;
         }
+        /***/
 
     } // setProperty(String,Object)
 
@@ -575,115 +550,11 @@ public class XMLDocumentScanner
         String encoding = null;
         String standalone = null;
 
-        // scan pseudo-attributes
-        final int STATE_VERSION = 0;
-        final int STATE_ENCODING = 1;
-        final int STATE_STANDALONE = 2;
-        final int STATE_DONE = 3;
-        int state = STATE_VERSION;
-        fEntityScanner.skipSpaces();
-        while (fEntityScanner.peekChar() != '?') {
-            String name = scanPseudoAttribute(fString);
-            switch (state) {
-                case STATE_VERSION: {
-                    if (name == fVersionSymbol) {
-                        version = fString.toString();
-                        state = STATE_ENCODING;
-                        if (!version.equals("1.0")) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "VersionNotSupported", 
-                                                       new Object[]{version}, 
-                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
-                    }
-                    else if (name == fEncodingSymbol) {
-                        if (!scanningTextDecl) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "VersionInfoRequired", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
-                        encoding = fString.toString();
-                        state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
-                    }
-                    else {
-                        if (scanningTextDecl) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "EncodingDeclRequired", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
-                        else {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "VersionInfoRequired", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
-                    }
-                    break;
-                }
-                case STATE_ENCODING: {
-                    if (name == fEncodingSymbol) {
-                        encoding = fString.toString();
-                        state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
-                        // TODO: check encoding name; set encoding on
-                        //       entity scanner
-                    }
-                    else if (!scanningTextDecl && name == fStandaloneSymbol) {
-                        standalone = fString.toString();
-                        state = STATE_DONE;
-                        if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "SDDeclInvalid", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
-                    }
-                    else {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                   "EncodingDeclRequired", 
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    break;
-                }
-                case STATE_STANDALONE: {
-                    if (name == fStandaloneSymbol) {
-                        standalone = fString.toString();
-                        state = STATE_DONE;
-                        if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "SDDeclInvalid", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
-                    }
-                    else {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                   "EncodingDeclRequired", 
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    break;
-                }
-                default: {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                               "NoMorePseudoAttributes", 
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-            }
-            fEntityScanner.skipSpaces();
-        }
-        if ((scanningTextDecl && state != STATE_DONE) ||
-            !(state == STATE_STANDALONE || state == STATE_DONE)) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                       "MorePseudoAttributes", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
+        super.scanXMLDeclOrTextDecl(scanningTextDecl, fPseudoAttributeValues);
 
-        // end
-        if (!fEntityScanner.skipChar('?')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-        if (!fEntityScanner.skipChar('>')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-
-        }
+        version = fPseudoAttributeValues[0];
+        encoding = fPseudoAttributeValues[1];
+        standalone = fPseudoAttributeValues[2];
 
         // call handler
         if (fDocumentHandler != null) {
@@ -697,41 +568,6 @@ public class XMLDocumentScanner
 
     } // scanXMLDeclOrTextDecl(boolean)
 
-    /**
-     * Scans a pseudo attribute.
-     */
-    public String scanPseudoAttribute(XMLString value) 
-        throws IOException, SAXException {
-
-        String name = fEntityScanner.scanName();
-        if (name == null) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PseudoAttrNameExpected", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-        fEntityScanner.skipSpaces();
-        if (!fEntityScanner.skipChar('=')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "EqRequiredInTextDecl", 
-                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-        fEntityScanner.skipSpaces();
-        int quote = fEntityScanner.peekChar();
-        if (quote != '\'' && quote != '"') {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "QuoteRequiredInTextDecl", 
-                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-        fEntityScanner.scanChar();
-        // REVISIT: fix this
-        fEntityScanner.scanAttContent(quote, value);
-        if (!fEntityScanner.skipChar(quote)) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInTextDecl", 
-                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-
-        // return
-        return name;
-
-    } // scanPseudoAttribute(XMLString):String
-    
     /**
      * Scans a processing data. This is needed to handle the situation
      * where a document starts with a processing instruction whose 
