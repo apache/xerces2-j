@@ -74,7 +74,8 @@ public class Test {
         System.out.println("Running dom.registry.Test...");
         // set DOMImplementationSource
         System.setProperty(DOMImplementationRegistry.PROPERTY,
-                          "org.apache.xerces.dom.DOMImplementationSourceImpl");
+                          "org.apache.xerces.dom.DOMImplementationSourceImpl" +
+                          " org.apache.xerces.dom.DOMXSImplementationSourceImpl");
 
         DOMImplementationRegistry registry = null;
         try {

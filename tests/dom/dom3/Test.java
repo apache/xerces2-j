@@ -100,7 +100,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
         try {
             boolean namespaces = true;
             System.out.println("Running dom.dom3.Test...");
-            System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMImplementationSourceImpl");
+            System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMImplementationSourceImpl org.apache.xerces.dom.DOMXSImplementationSourceImpl");
 
             
             DOMImplementationLS impl = (DOMImplementationLS)DOMImplementationRegistry.newInstance().getDOMImplementation("LS");
