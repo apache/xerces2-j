@@ -100,6 +100,18 @@ public class XSParticleDecl {
         return minEffectiveTotalRange() == 0;
     }
 
+    public boolean isEmpty() {
+        if (fType==PARTICLE_ELEMENT || fType==PARTICLE_WILDCARD) return false; 
+
+        if (fType==PARTICLE_EMPTY) return true; 
+        
+        boolean leftIsEmpty  = (fValue==null || ((XSParticleDecl)fValue).isEmpty());
+        boolean rightIsEmpty  = (fOtherValue==null || 
+                                 ((XSParticleDecl)fOtherValue).isEmpty());
+
+        return (leftIsEmpty && rightIsEmpty) ;
+    }
+
     /**
      * 3.8.6 Effective Total Range (all and sequence) and
      *       Effective Total Range (choice)
