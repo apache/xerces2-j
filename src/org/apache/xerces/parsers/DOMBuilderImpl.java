@@ -76,7 +76,7 @@ import org.w3c.dom.ls.DOMEntityResolver;
 import org.w3c.dom.ls.DOMBuilderFilter;
 import org.w3c.dom.ls.DOMInputSource;
 
-
+import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.SymbolTable;
@@ -141,6 +141,8 @@ extends AbstractDOMParser implements DOMBuilder {
     protected String fSchemaType = XML_SCHEMA_VALIDATION;
 
     protected final static boolean DEBUG = false;
+
+    protected DOMErrorHandlerWrapper fErrorHandler = null;
     //
     // Constructors
     //
@@ -293,18 +295,10 @@ extends AbstractDOMParser implements DOMBuilder {
      * result in implementation dependent behavour. 
      */
     public DOMErrorHandler getErrorHandler() {
-        DOMErrorHandler errorHandler = null;
-        try {
-            DOMErrorHandler domErrorHandler = 
-            (DOMErrorHandler)fConfiguration.getProperty(ERROR_HANDLER);
-            if (domErrorHandler != null && 
-                domErrorHandler instanceof DOMErrorHandlerWrapper) {
-                errorHandler = ((DOMErrorHandlerWrapper)domErrorHandler).getErrorHandler();
-            }
-        } catch (XMLConfigurationException e) {
-
+        if (fErrorHandler != null) {
+            return fErrorHandler.getErrorHandler();
         }
-        return errorHandler;
+        return null;
     }
 
     /**
@@ -320,8 +314,9 @@ extends AbstractDOMParser implements DOMBuilder {
      */
     public void setErrorHandler(DOMErrorHandler errorHandler) {
         try {
+            fErrorHandler = new DOMErrorHandlerWrapper(errorHandler);
             fConfiguration.setProperty(ERROR_HANDLER, 
-                                       new DOMErrorHandlerWrapper(errorHandler));
+                                       fErrorHandler);
         } catch (XMLConfigurationException e) {
 
         }
@@ -445,7 +440,16 @@ extends AbstractDOMParser implements DOMBuilder {
                    name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
             return true;
         }
-        return false;        
+
+            
+        // Recognize Xerces features.
+        try {
+            fConfiguration.getFeature(name);
+            return true;
+        } catch (XMLConfigurationException e){
+            return false;
+        }
+                
     }
 
     /**
@@ -501,7 +505,14 @@ extends AbstractDOMParser implements DOMBuilder {
         try {        
             parse(source);
         } catch (Exception e){
-            // REVISIT: report exception via the error handler
+            if (fErrorHandler != null) {
+                DOMErrorImpl error = new DOMErrorImpl();
+                error.fException = e;
+                error.fMessage = e.getMessage();
+                error.fSeverity = error.SEVERITY_ERROR;
+                fErrorHandler.getErrorHandler().handleError(error);
+
+            }
             if (DEBUG) {            
                e.printStackTrace();
             }
@@ -525,7 +536,14 @@ extends AbstractDOMParser implements DOMBuilder {
         try {        
             parse(xmlInputSource);
         } catch (Exception e) {
-            // REVISIT: report exception via the error handler
+            if (fErrorHandler != null) {
+                DOMErrorImpl error = new DOMErrorImpl();
+                error.fException = e;
+                error.fMessage = e.getMessage();
+                error.fSeverity = error.SEVERITY_ERROR;
+                fErrorHandler.getErrorHandler().handleError(error);
+
+            }
             if (DEBUG) {            
                e.printStackTrace();
             }
