@@ -401,6 +401,9 @@ public abstract class AbstractDOMParser
         if (fInDocument && !fInDTD && fCreateEntityRefNodes ) {
             if (!fDeferNodeExpansion) {
                 EntityReference er = fDocument.createEntityReference(name);
+                // we don't need synchronization now, because entity ref will be
+                // expanded anyway. Synch only needed when user creates entityRef node
+                ((EntityReferenceImpl)er).needsSyncChildren(false);
                 fCurrentNode.appendChild(er);
                 fCurrentNode = er;
             }
@@ -968,6 +971,8 @@ public abstract class AbstractDOMParser
                         entities.setNamedItem(entity);
                     }
                 }
+                // Make entity ref node read only
+                ((NodeImpl)fCurrentNode).setReadOnly(true, true);
                 fCurrentNode = fCurrentNode.getParentNode();
             }
             else {

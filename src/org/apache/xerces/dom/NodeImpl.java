@@ -1137,7 +1137,7 @@ public abstract class NodeImpl
         return (flags & SYNCCHILDREN) != 0;
     }
 
-    final void needsSyncChildren(boolean value) {
+    public final void needsSyncChildren(boolean value) {
         flags = (short) (value ? flags | SYNCCHILDREN : flags & ~SYNCCHILDREN);
     }
 
