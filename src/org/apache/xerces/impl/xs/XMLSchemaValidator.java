@@ -2788,7 +2788,7 @@ public class XMLSchemaValidator
                 // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
                 if (fCurrentType != fCurrentElemDecl.fType) {
                     //REVISIT:we should pass ValidatedInfo here.
-                    if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault, fState4XsiType, null) == null)
+                    if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.normalizedValue, fState4XsiType, null) == null)
                         reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getName(), fCurrentElemDecl.fDefault.normalizedValue});
                 }
                 // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its normalized value must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
@@ -2828,7 +2828,10 @@ public class XMLSchemaValidator
                     }
                     else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
                         XSSimpleType sType = (XSSimpleType)fCurrentType;
-                        if (!sType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
+                        if (actualValue != null &&
+                            !sType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
+                            // REVISIT: the spec didn't mention this case: fixed
+                            //          value with simple type
                             reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
                     }
                 }
