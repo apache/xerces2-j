@@ -41,6 +41,7 @@ ${BINZIPFILE}: ./src/classfiles_updated
 	${RM} -r bin/data/CVS
 	${CP} LICENSE bin
 	${RM} bin/build.xml
+	${RM} bin/README
 	$(MV) bin xerces-${PRODUCTVERSION}
 	$(JAR) cvfM ${BINZIPFILE} xerces-${PRODUCTVERSION} 
 	$(MV) xerces-${PRODUCTVERSION} bin
@@ -57,6 +58,7 @@ package_src: ./source/src/Makefile
 	${CP} docs/*.ent source/docs
 	${CP} LICENSE source
 	${RM} source/build.xml
+	${RM} source/Readme.html
 	$(MV) source xerces-${PRODUCTVERSION}
 	$(JAR) cvfM ${SRCZIPFILE} xerces-${PRODUCTVERSION} 
 	$(MV) xerces-${PRODUCTVERSION} source
