@@ -72,6 +72,8 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.parser.XMLDTDSource;
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -103,6 +105,12 @@ public abstract class AbstractXMLDocumentParser
 
     /** Document source*/
     protected XMLDocumentSource fDocumentSource;
+
+    /** DTD source*/
+    protected XMLDTDSource fDTDSource;
+
+    /** DTD content model source*/
+    protected XMLDTDContentModelSource fDTDContentModelSource;
 
     //
     // Constructors
@@ -692,6 +700,16 @@ public abstract class AbstractXMLDocumentParser
         fInDTD = false;
     } // endDTD()
 
+    // set the source of this handler
+    public void setDTDSource(XMLDTDSource source) {
+        fDTDSource = source;
+    }
+
+    // return the source from which this handler derives its events
+    public XMLDTDSource getDTDSource() {
+        return fDTDSource;
+    }
+
     //
     // XMLDTDContentModelHandler methods
     //
@@ -837,6 +855,16 @@ public abstract class AbstractXMLDocumentParser
      */
     public void endContentModel(Augmentations augs) throws XNIException {
     } // endContentModel(Augmentations)
+
+    // set content model source
+    public void setDTDContentModelSource(XMLDTDContentModelSource source) {
+        fDTDContentModelSource = source;
+    }
+
+    // get content model source
+    public XMLDTDContentModelSource getDTDContentModelSource() {
+        return fDTDContentModelSource;
+    }
 
     //
     // Protected methods
