@@ -4,35 +4,35 @@
 <s1 title="Releases">
   <s2 title='March 16, 2001 (version 1.3.1)'>
 	<ul>
-		<li>Added support for schema &lt;redefine&gt; element [neilg]</li>
-		<li>Added support for schema notations [elena]</li>
+		<li>Added support for schema &lt;redefine&gt; element [Neil Graham]</li>
+		<li>Added support for schema notations [Elena Litani]</li>
 		<li>Implemented validation constraints for the &quot;abstract&quot; attribute
-				on elements [lmartin]</li>
-		<li>Simple value normalization and whitespace facet support[elena]</li>
-		<li>Fixed validation constraints surrounding the schema &lt;annotation&gt; element info item [neilg]</li>
-		<li>Implemented support for JAXP 1.1 [edwingo]</li>
-		<li>Added experimental DOM Level 3 features for handling XML header[elena]</li>
-		<li>Miscellaneous bugfixes [lehors, neilg, elena, andyc, Lynn Monson, Sandy Gao, Brad O'Hearne]</li>
-		<li>Partially fixed inability to make (or build) Xerces under Unix [neilg]</li>
-	  <li>Removed final from XMLSerializer per request [andyc]</li>
-	  <li>Fixed identity constraint bugs (support still limited) [andyc]</li>
+				on elements [Lisa Martin]</li>
+		<li>Simple value normalization and whitespace facet support [Elena Litani]</li>
+		<li>Fixed validation constraints surrounding the schema &lt;annotation&gt; element info item [Neil Graham]</li>
+		<li>Implemented support for JAXP 1.1 [Edwin Goei]</li>
+		<li>Added experimental DOM Level 3 features for handling XML header [Elena Litani]</li>
+		<li>Miscellaneous bugfixes [Arnaud  Le Hors, Neil Graham, Elena Litani, Andy Clark, Lynn Monson, Sandy Gao, Brad O'Hearne]</li>
+		<li>Partially fixed inability to make (or build) Xerces under Unix [Neil Graham]</li>
+	  <li>Removed final from XMLSerializer per request [Andy Clark]</li>
+	  <li>Fixed identity constraint bugs (support still limited) [Andy Clark]</li>
 	  <li>Changed parse method to close streams opened by parser even in
-	      event of error [andyc]</li>
+	      event of error [Andy Clark]</li>
 	</ul>
   </s2>
   <s2 title='January 31, 2001 (version 1.3.0)'>
         <ul>
 				<li>Upgraded schema support to the schema CR drafts at a
 					similar level to that which had existed for the WD schema
-					specifications.[elena, lmartin, neilg]</li> 
+					specifications. [Elena Litani, Lisa Martin, Neil Graham]</li> 
 					<li>Implemented schema union simple type
-					definition.[elena]</li>
+					definition. [Elena Litani]</li>
 					<li>Implemented many attribute and element declaration
 					schema-validation constraints, as well as
-					use=prohibited.[neilg]</li>
-           <li>Implemented basic support for XML Schema identity constraints [andyc]</li>
-           <li>Fixed bug in Deferred DOM with multiple IDs on same element [andyc]</li>
-           <li>Updates to improve DFA build-time performance. [ATOZAWA@jp.ibm.com]</li>
+					use=prohibited. [Neil Graham]</li>
+           <li>Implemented basic support for XML Schema identity constraints [Andy Clark]</li>
+           <li>Fixed bug in Deferred DOM with multiple IDs on same element [Andy Clark]</li>
+           <li>Updates to improve DFA build-time performance. [Tozawa Akihiko]</li>
            <li>Optimization of memory used by attribute nodes in the DOM. [Arnaud  Le Hors]</li>
            <li>Fixed conflict between HTML DOM and Core DOM. [Mark Diekhans]</li>
            <li>Optimized DOM normalize operation. [Jay Cain + Arnaud  Le Hors]</li>
@@ -40,15 +40,15 @@
   </s2>
   <s2 title='December 06, 2000 (version 1.2.3)'>
          <ul>
-           <li>Fixed Memory leak bug was reported by Tosiki IGA where parser runs out of memory [ericye]</li>
+           <li>Fixed Memory leak bug was reported by Tosiki IGA where parser runs out of memory [Eric Ye]</li>
            <li>Rampant object creation even when not validating fix patch send by Elena Litani[Elena Litani]</li>
-           <li>ListDatatypeValidator enumeration bug fix by Elena Litani[Elena Litani]</li>
-           <li>Optimization in validator to only instantiate objects needed in the case of DTD vs. Schemas[jeffreyr]</li>
-           <li>Fixed misc. Schema Structures miscelaneous bugs since last release [ericye]</li>
+           <li>ListDatatypeValidator enumeration bug fix by Elena Litani Litani[Elena Litani]</li>
+           <li>Optimization in validator to only instantiate objects needed in the case of DTD vs. Schemas[Jeffrey Rodriguez]</li>
+           <li>Fixed misc. Schema Structures miscelaneous bugs since last release [Eric Ye]</li>
            <li>improved implementation of &lt;all&gt; schema construct
 					 to handle 8 elements instead of 6; also increased
-					 validation speed [Neil Graham, ericye]</li>
-           <li>Fixed DOM misc. bugs and other patches since last release [lehors]</li>
+					 validation speed [Neil Graham, Eric Ye]</li>
+           <li>Fixed DOM misc. bugs and other patches since last release [Arnaud  Le Hors]</li>
            <li>Miscelaneous DOM patches by Lynn Monson [Lynn Monson]</li>
            <li>Added new 'load-external-dtd' feature, so that when non
 validating, applications can ask the parser not to load the external subset at
@@ -57,188 +57,190 @@ all [Arnaud Le Hors]</li>
   </s2>
   <s2 title='November 22, 2000 (version 1.2.2)'>
         <ul>
-           <li>DOM 2 Recommendation release support update[lehors]</li>
-           <li>Fixed FAQ section submitted by Tony Montgomery Smith[jeffreyr,Tony Montgomery]</li>
-           <li>Added normalization patch by Ken Tamura[jeffreyr, Ken Tamura]</li>           
-           <li>Fixed hang in UTF8Reader  when we find a multb. UTF8 char. outside [#x10000-#x10FFFF] range [jeffreyr]</li>
-           <li>Fixed problem in Server env. with Singleton implemtation of validators[ericye,jeffreyr]</li>
-           <li>Fixed patch submitted by Elena Kitani and others with RangeImpl[ericye,Elena Kitani,Lynn Monson]</li>
-           <li>Fixed misc. Schema Structures miscelaneous bugs since last release [ericye]</li>
-           <li>Miscelaneous bug fixes and patches submitted by Lisa Martin [lisa martin]</li>
-           <li>Fixed DOM misc. bugs and other patches since last release [lehors]</li>
+           <li>DOM 2 Recommendation release support update [Arnaud  Le Hors]</li>
+           <li>Fixed FAQ section submitted by Tony Montgomery Smith [Jeffrey Rodriguez,Tony Montgomery]</li>
+           <li>Added normalization patch by Ken Tamura [Jeffrey Rodriguez, Ken Tamura]</li>           
+           <li>Fixed hang in UTF8Reader  when we find a multb. UTF8 char. outside [#x10000-#x10FFFF] range [Jeffrey Rodriguez]</li>
+           <li>Fixed problem in Server env. with Singleton implemtation of validators [Eric Ye, Jeffrey Rodriguez]</li>
+           <li>Fixed patch submitted by Elena Litani Kitani and others with
+RangeImpl [Eric Ye, Elena Litani, Lynn Monson]</li>
+           <li>Fixed misc. Schema Structures miscelaneous bugs since last release [Eric Ye]</li>
+           <li>Miscelaneous bug fixes and patches submitted by Lisa Martin [Lisa Martin]</li>
+           <li>Fixed DOM misc. bugs and other patches since last release [Arnaud  Le Hors]</li>
         </ul>
   </s2>
 
    <s2 title='October 19, 2000 (version 1.2.1)'>
         <ul>
            <li>This is a bug fix release</li>
-           <li>Added Mark Swinkels datatype list refactoring [mark swinkels, jeffreyr]</li>           
-           <li>Added RangeImpl patch submitted by Lynn Monson [lynn monson,lehors, lehors]</li>
-           <li>Fixed datatype registry not being initialized in XMLValidator bug [jeffreyr]</li>
-           <li>Fixed misc. Schema Structures bugs since last release [ericye]</li>
-           <li>Fixed misc. Datatypes bugs since last release [jeffreyr]</li>
+           <li>Added Mark Swinkels datatype list refactoring [Mark Swinkels, Jeffrey Rodriguez]</li>           
+           <li>Added RangeImpl patch submitted by Lynn Monson [Lynn monson, Arnaud  Le Hors]</li>
+           <li>Fixed datatype registry not being initialized in XMLValidator bug [Jeffrey Rodriguez]</li>
+           <li>Fixed misc. Schema Structures bugs since last release [Eric Ye]</li>
+           <li>Fixed misc. Datatypes bugs since last release [Jeffrey Rodriguez]</li>
         </ul>
     </s2>
 
     <s2 title='August 28, 2000 (version 1.2.0)'>
         <ul>
-           <li>Merged redundant Attribute validators inner classes with the data type validators. [jeffreyr]</li>
-           <li>Fixed namespaces bugs for endElement method in SAX. [jeffreyr]</li>
-           <li>Fixed misc. Schema Datatype bugs. [jeffreyr]</li>
-           <li>Fixed misc. DOM implementation bugs. [lehors]</li>
-           <li>Fixed Makefiles and documentations. [andyc]</li>
-           <li>Added "any" with "processContents='lax|skip'" support for Schema. [ericye]</li>           
-           <li>Added feature "load-dtd-grammar" [ericye]</li>
-           <li>Fixed a bug in reset() method of XMLValidator. [ericye]</li>
-           <li>Fixed misc. Schema Structures bugs. [ericye]</li>
+           <li>Merged redundant Attribute validators inner classes with the data type validators. [Jeffrey Rodriguez]</li>
+           <li>Fixed namespaces bugs for endElement method in SAX. [Jeffrey Rodriguez]</li>
+           <li>Fixed misc. Schema Datatype bugs. [Jeffrey Rodriguez]</li>
+           <li>Fixed misc. DOM implementation bugs. [Arnaud  Le Hors]</li>
+           <li>Fixed Makefiles and documentations. [Andy Clark]</li>
+           <li>Added "any" with "processContents='lax|skip'" support for Schema. [Eric Ye]</li>           
+           <li>Added feature "load-dtd-grammar" [Eric Ye]</li>
+           <li>Fixed a bug in reset() method of XMLValidator. [Eric Ye]</li>
+           <li>Fixed misc. Schema Structures bugs. [Eric Ye]</li>
         </ul>
     </s2>
     <s2 title='July 26, 2000 (version 1.1.3)'>
         <ul>
-           <li>Added "anyAttribute" support for Schema. [ericye]</li>           
-           <li>Added "xsi:type" support for Schema. [ericye]</li>
-           <li>Added full equivClass support for Schema. [ericye]</li>
-           <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec. [ericye]</li>
-           <li>Fixed "xml:space" bug in DTD validation. [ericye, andyc]</li>
-           <li>Expanded "any" element support to model groups. [ericye]</li>
-           <li>Fixed "any" element bugs when there are multilple URIs. [ericye]</li>
-           <li>Cleaned up XMLValidator. [ericye]</li>
-           <li>Fixed misc. Schema bugs. [ericye]</li>
-           <li>Fixed resolving Schema location bug in XMLValidator. [David.Blankenship@kla_tencor.com, ericye]</li>
-	   <li>Fixed for BUG:SAXParser endElement reports incorrect local name. [jeffreyr]</li>
-	   <li>Fixed DOM Java Serialization-previous fix did not work. [jeffreyr]</li>
-	   <li>Added testcase under test to test DOM Java Serialization. [jeffreyr]</li>
-	   <li>Added James Duncan fix suggestion to not compile RevalidatingDOMParser. [James Duncan, jeffreyr]</li> 
-	   <li>Miscelanous DOM enhancements [lehors]. </li>
-	   <li>Fixed parameterizes entities in XMLDTDScanner. [jeffreyr]</li>
-	   <li>Fixed bug reported by Philippe MOUAWAD, on XMLContentSpec toString method. [jeffreyr]</li>
-	   <li>Fixed problem with DTD validation when namespace is supported is on. [andyc,ericye]</li>
-	   <li>Fixed bug reported by Michael Brundage in StringReader. [jeffreyr]</li>
+           <li>Added "anyAttribute" support for Schema. [Eric Ye]</li>           
+           <li>Added "xsi:type" support for Schema. [Eric Ye]</li>
+           <li>Added full equivClass support for Schema. [Eric Ye]</li>
+           <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec. [Eric Ye]</li>
+           <li>Fixed "xml:space" bug in DTD validation. [Eric Ye, Andy Clark]</li>
+           <li>Expanded "any" element support to model groups. [Eric Ye]</li>
+           <li>Fixed "any" element bugs when there are multilple URIs. [Eric Ye]</li>
+           <li>Cleaned up XMLValidator. [Eric Ye]</li>
+           <li>Fixed misc. Schema bugs. [Eric Ye]</li>
+           <li>Fixed resolving Schema location bug in XMLValidator. [David Blankenship, Eric Ye]</li>
+	   <li>Fixed for BUG:SAXParser endElement reports incorrect local name. [Jeffrey Rodriguez]</li>
+	   <li>Fixed DOM Java Serialization-previous fix did not work. [Jeffrey Rodriguez]</li>
+	   <li>Added testcase under test to test DOM Java Serialization. [Jeffrey Rodriguez]</li>
+	   <li>Added James Duncan fix suggestion to not compile RevalidatingDOMParser. [James Duncan, Jeffrey Rodriguez]</li> 
+	   <li>Miscelanous DOM enhancements [Arnaud  Le Hors]. </li>
+	   <li>Fixed parameterizes entities in XMLDTDScanner. [Jeffrey Rodriguez]</li>
+	   <li>Fixed bug reported by Philippe MOUAWAD, on XMLContentSpec toString method. [Jeffrey Rodriguez]</li>
+	   <li>Fixed problem with DTD validation when namespace is supported is on. [Andy Clark,Eric Ye]</li>
+	   <li>Fixed bug reported by Michael Brundage in StringReader. [Jeffrey Rodriguez]</li>
         </ul>
     </s2>
     <s2 title='June 21, 2000 (version 1.1.2)'>
         <ul>
-           <li>Added "any" element content support for Schema [andyc]</li>
-           <li>Fixed adjacent text nodes bug in deferred DOM [andyc]</li>
-           <li>Fixed namespace URI bug in deferred DOM [andyc]</li>
-           <li>Fixed null document type node bug [andyc]</li>
-           <li>Fixed StringReader index out of bounds exception bug [andyc]</li>
-           <li>Turned on namespace support in all parsers, by default [andyc]</li>
-           <li>Added feature to allow Schema support to be turned off [andyc]</li>
-           <li>Fixed SAX2 DeclHandler, LexicalHandler callbacks [andyc]</li>
-           <li>Fixed DOM serialization [jeffreyr]</li>
-           <li>Fixed datatype enumeration bugs [jeffreyr]</li>
-           <li>Fixed datatype pattern bugs [jeffreyr]</li>
-           <li>Fixed datatype min/maxLength bugs [jeffreyr]</li>
-           <li>Modified samples to include additional switches [jeffreyr]</li>
-           <li>Fixed lexical comparison for string/qname datatypes [jeffreyr]</li>
-           <li>Added regular expression character class subtraction [tkent@jp.ibm.com]</li>
-           <li>Fixed regular expression bugs [tkent@jp.ibm.com]</li>
+           <li>Added "any" element content support for Schema [Andy Clark]</li>
+           <li>Fixed adjacent text nodes bug in deferred DOM [Andy Clark]</li>
+           <li>Fixed namespace URI bug in deferred DOM [Andy Clark]</li>
+           <li>Fixed null document type node bug [Andy Clark]</li>
+           <li>Fixed StringReader index out of bounds exception bug [Andy Clark]</li>
+           <li>Turned on namespace support in all parsers, by default [Andy Clark]</li>
+           <li>Added feature to allow Schema support to be turned off [Andy Clark]</li>
+           <li>Fixed SAX2 DeclHandler, LexicalHandler callbacks [Andy Clark]</li>
+           <li>Fixed DOM serialization [Jeffrey Rodriguez]</li>
+           <li>Fixed datatype enumeration bugs [Jeffrey Rodriguez]</li>
+           <li>Fixed datatype pattern bugs [Jeffrey Rodriguez]</li>
+           <li>Fixed datatype min/maxLength bugs [Jeffrey Rodriguez]</li>
+           <li>Modified samples to include additional switches [Jeffrey Rodriguez]</li>
+           <li>Fixed lexical comparison for string/qname datatypes [Jeffrey Rodriguez]</li>
+           <li>Added regular expression character class subtraction [Ken Tamura]</li>
+           <li>Fixed regular expression bugs [Ken Tamura]</li>
            <li>Added URI class [paul.eng@iclick.com]</li>
-           <li>Fixed import/include Schema bug [ericye]</li>
-           <li>Fixed lots of Schema bugs [ericye]</li>
+           <li>Fixed import/include Schema bug [Eric Ye]</li>
+           <li>Fixed lots of Schema bugs [Eric Ye]</li>
         </ul>
     </s2>
     <s2 title='June 5, 2000 (version 1.1.1)'>
         <ul>
-           <li>Added Schema include/import [ericye]</li>
-           <li>Performance tuning [ericye, andyc]</li>
+           <li>Added Schema include/import [Eric Ye]</li>
+           <li>Performance tuning [Eric Ye, Andy Clark]</li>
            <li>Added Ant support to build process [abagchi]</li>
-           <li>Re-architecture Schema datatypes [jeffreyr]</li>
-           <li>Re-organized docs directory to get FOP to work[abagchi, jeffreyr]</li>
-           <li>Fixed Dynamic validation bug [ericye]</li>
-           <li>Fixed Grammar access bug [ericye, andyc]</li>
-	   <li>Fixed Miscellaneous bugs  [ericye, andyc, jeffreyr]</li> 
-	   <li>Added JAXP to build, updated JAXP files [lehors]</li>
-           <li>Added a DOM from scratch and Serializer sample [jeffreyr]</li>
-           <li>Fixed NodeImpl supports nullpointer bug in Samples [lehors]</li>
+           <li>Re-architecture Schema datatypes [Jeffrey Rodriguez]</li>
+           <li>Re-organized docs directory to get FOP to work[Anupam Bagchi, Jeffrey Rodriguez]</li>
+           <li>Fixed Dynamic validation bug [Eric Ye]</li>
+           <li>Fixed Grammar access bug [Eric Ye, Andy Clark]</li>
+	   <li>Fixed Miscellaneous bugs  [Eric Ye, Andy Clark, Jeffrey Rodriguez]</li> 
+	   <li>Added JAXP to build, updated JAXP files [Arnaud  Le Hors]</li>
+           <li>Added a DOM from scratch and Serializer sample [Jeffrey Rodriguez]</li>
+           <li>Fixed NodeImpl supports nullpointer bug in Samples [Arnaud  Le Hors]</li>
            <li>Fixed a bug in cloning default attribute</li>
         </ul>
     </s2>
     <s2 title='May 19, 2000 (version 1.1.0)'>
         <ul>
-           <li>Reworked internals for XML Schema support [andyc, ericye, 
-	       jeffreyr]</li>
-	   <li>Updated XML Schema support to April working draft [ericye, 
-	       jeffreyr]</li>
+           <li>Reworked internals for XML Schema support [Andy Clark, Eric Ye, 
+	       Jeffrey Rodriguez]</li>
+	   <li>Updated XML Schema support to April working draft [Eric Ye, 
+	       Jeffrey Rodriguez]</li>
 	   <li>Changed code to notify error handler of content model 
-	       validation errors before calling endElement [lehors]</li>
+	       validation errors before calling endElement [Arnaud  Le Hors]</li>
         </ul>
     </s2>
     <s2 title='May 9, 2000'>
         <ul>
-           <li>Upgraded to SAX 2.0. [lehors]</li>
+           <li>Upgraded to SAX 2.0. [Arnaud  Le Hors]</li>
            <li>Added support for WML DOM. [david]</li>
            <li>Preliminary work for full schema support.
-              [andyc, gmarcy, jefreyr, ericye]</li>
-           <li>Reorganized DOM classes to use much less memory. [lehors]</li>
+              [Andy Clark, Glenn Marcy, jefreyr, Eric Ye]</li>
+           <li>Reorganized DOM classes to use much less memory. [Arnaud  Le Hors]</li>
            <li>Entities and entity reference nodes are now readonly as
-              expected. [lehors]</li>
+              expected. [Arnaud  Le Hors]</li>
            <li>Entity references now have their replacement value when created
-              with createEntityReference. [lehors]</li>
+              with createEntityReference. [Arnaud  Le Hors]</li>
            <li>Fixed problem in Deferred DOM which made building it N^2 order.
-              [lehors]</li>
-           <li>Fixed handling of elements with IDs in Deferred DOM. [lehors]</li>
-           <li>Added support for namespaces in parameter entities. [lehors]</li>
+              [Arnaud  Le Hors]</li>
+           <li>Fixed handling of elements with IDs in Deferred DOM. [Arnaud  Le Hors]</li>
+           <li>Added support for namespaces in parameter entities. [Arnaud  Le Hors]</li>
            <li>setNodeValue raised an exception when it should simply be a
-              no-op. [lehors]</li>
+              no-op. [Arnaud  Le Hors]</li>
            <li>Attributes returned by setNamedItem and setNamedItemNS could not
-              be reused. [lehors]</li>
+              be reused. [Arnaud  Le Hors]</li>
            <li>Implemented new DOM Level 2 methods hasAttribute and
-              hasAttributeNS. [lehors]</li>
+              hasAttributeNS. [Arnaud  Le Hors]</li>
            <li>43: importNode now uses createElementNS and createAttributeNS
-              when necessary. [lehors]</li>
+              when necessary. [Arnaud  Le Hors]</li>
            <li>59: after a first iteration over the whole list, item(index)
-              returned the wrong value. [lehors]</li>
-           <li>60: Fixed. [andyc]</li>
+              returned the wrong value. [Arnaud  Le Hors]</li>
+           <li>60: Fixed. [Andy Clark]</li>
            <li>62: Cloned attributes return wrong owner element.
               [awiner@us.oracle.com]</li>
            <li>Fixed caption element creation pb with HTMLTableElement.
-              [arkin]</li>
+              [Assaf Arkin]</li>
            <li>Improved performance of XML serialize. Added support of
-              encodings and reuse of serializer. [arkin]</li>
+              encodings and reuse of serializer. [Assaf Arkin]</li>
            <li>Updated XML serializer to not be strictly dependent on DOM Level
-              2. [andyc]</li>
+              2. [Andy Clark]</li>
         </ul>
     </s2>
     <s2 title="March 8, 2000">
         <ul>
-            <li>26: Schema lookup disabled when validation is off. [lehors]</li>
-            <li>23: With UCS-4 and UTF-16 encodings, 0xD characters are now properly normalized.[gmarcy]</li>
+            <li>26: Schema lookup disabled when validation is off. [Arnaud  Le Hors]</li>
+            <li>23: With UCS-4 and UTF-16 encodings, 0xD characters are now properly normalized.[Glenn Marcy]</li>
             <li>27: SAX2 http://xml.org/sax/features/namespaces - default set to true. [pier]</li>
             <li>28: Fixed error in setNamespaces javadoc [elharo@metalab.unc.edu]</li>
             <li>33: Relaxed restraint of xml:space attribute for XHTML DTDs [david-b@pacbell.net]</li>
-            <li>34: SAX 2.0beta2 changes accepted. [rpfeiffe]</li>
-            <li>35: Fixed getLength() to always return the right value[lehors]</li>
-            <li>36: Fixed setPrefix() to update nodeName[lehors]</li>
+            <li>34: SAX 2.0beta2 changes accepted. [Ralf Pfeiffer]</li>
+            <li>35: Fixed getLength() to always return the right value[Arnaud  Le Hors]</li>
+            <li>36: Fixed setPrefix() to update nodeName [Arnaud  Le Hors]</li>
         </ul>
     </s2>
     <s2 title="February 8, 2000">
         <ul>
-            <li>Removed hard-coded strings to enable national language support (NLS) [jeffreyr,lehors,rip]</li>
-            <li>Update for SAX2beta [andyc]</li>
-            <li>Add new feature <code>http://apache.org/xml/features/dom/include-ignorable-whitespace</code> [andyc]</li>
-            <li>ChunkyByteArray - needed resize chunk array for large files [andyc] </li>
-            <li>UTF8DataChunk - memory perf fix [andyc] </li>
-            <li>DOM L1 - cache node children length to accelerate <code>Node#item()</code>[andyc]</li>
+            <li>Removed hard-coded strings to enable national language support
+(NLS) [Jeffrey Rodriguez, Arnaud  Le Hors, Ralf Pfeiffer]</li>
+            <li>Update for SAX2beta [Andy Clark]</li>
+            <li>Add new feature <code>http://apache.org/xml/features/dom/include-ignorable-whitespace</code> [Andy Clark]</li>
+            <li>ChunkyByteArray - needed resize chunk array for large files [Andy Clark] </li>
+            <li>UTF8DataChunk - memory perf fix [Andy Clark] </li>
+            <li>DOM L1 - cache node children length to accelerate <code>Node#item()</code>[Andy Clark]</li>
             <li>DOM L1 - Off by one error in DeferredDocumentImpl [jflight@impresse.com]</li>
-            <li>DOM L1 - Slight refactoring of DOM to save memory [lehors]</li>   
+            <li>DOM L1 - Slight refactoring of DOM to save memory [Arnaud  Le Hors]</li>   
             <li>Schema datatypes - add binary &amp; URI, update
             decimal &amp; String [twl]</li>
             <li>Schema datatypes - allow StringValidator to validate maxLength &amp; enumeration facets [gtj@peakin.com]</li>
             <li>Schema datatypes - timeDuration &amp; timeInstant validators [gtj@peakin.com]</li>
             <li>Schema functionality - allow schema lookup via installed entity resolver [gtj@peakin.com]</li>
             <li>Schema bug fixes (reportSchemaError &amp; integer subtype registration) [gtj@peakin.com]</li>
-            <li>Serializer bug on CData sections [arkin] </li>
-            <li>Serializers now prints PUBLIC/SYSTEM id [arkin]</li>
+            <li>Serializer bug on CData sections [Assaf Arkin] </li>
+            <li>Serializers now prints PUBLIC/SYSTEM id [Assaf Arkin]</li>
             <li>HTMLTableElementImpl - Empty cell no longer created
-            when adding a row [arkin]</li>
+            when adding a row [Assaf Arkin]</li>
             <li>DOM L2 - TreeWalkerImpl didn't iterate backwards properly [bmj01@club-internet.fr]</li>
-            <li>DOM L2 - Tracking the candidate recommendation [lehors]</li>
-            <li>DOM L2 Namespace bug fixes [rip, lehors]</li>
+            <li>DOM L2 - Tracking the candidate recommendation [Arnaud  Le Hors]</li>
+            <li>DOM L2 Namespace bug fixes [Ralf Pfeiffer, Arnaud  Le Hors]</li>
             <li>DOM L2 API moved to org.w3c.dom where it belongs
-            [rip]</li>
-            <li>DOMMemTest [lehors]</li>
+            [Ralf Pfeiffer]</li>
+            <li>DOMMemTest [Arnaud  Le Hors]</li>
         </ul>
     </s2>
     <s2 title="December 31, 1999">
