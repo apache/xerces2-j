@@ -1125,6 +1125,9 @@ public class TraverseSchema implements
         }
 
         // handle the rest of the schema elements.
+        // BEWARE!  this method gets called both from traverseRedefine and
+        // traverseInclude; the preconditions (especially with respect to
+        // groups and attributeGroups) are different!
         for (; child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
@@ -1185,6 +1188,9 @@ public class TraverseSchema implements
                 // we have yet to be renamed.
                 try {
                     Integer i = (Integer)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
+                    // if that succeeded then we're done; were ref'd here in 
+                    // an include most likely.
+                    continue;
                 } catch (ClassCastException c) {
                     String s = (String)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
                     if (s == null) continue; // must have seen this already--somehow...
