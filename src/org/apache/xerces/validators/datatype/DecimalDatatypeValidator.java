@@ -131,19 +131,19 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                         } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
                             value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
-                            fMaxInclusive    = new BigDecimal(value);
+                            fMaxInclusive    = new BigDecimal(stripPlusIfPresent(value));
                         } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
                             value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
-                            fMaxExclusive   = new BigDecimal(value);
+                            fMaxExclusive   = new BigDecimal(stripPlusIfPresent( value));
                         } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
                             value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-                            fMinInclusive   = new BigDecimal(value);
+                            fMinInclusive   = new BigDecimal(stripPlusIfPresent(value));
                         } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
                             value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
-                            fMinExclusive   = new BigDecimal(value);
+                            fMinExclusive   = new BigDecimal(stripPlusIfPresent(value));
                         } else if (key.equals(SchemaSymbols.ELT_PRECISION)) {
                             value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_PRECISSION;
@@ -229,7 +229,8 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                         try {
                             for ( ; i < enumeration.size(); i++) {
                                 fEnumDecimal[i] = 
-                                new BigDecimal( ((String) enumeration.elementAt(i)));
+                                  new BigDecimal( stripPlusIfPresent(((String) enumeration.elementAt(i))));
+
                                 boundsCheck(fEnumDecimal[i]); // Check against max,min Inclusive, Exclusives
                             }
                         } catch ( Exception idve ){
@@ -275,7 +276,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
             BigDecimal d = null; // Is content a Decimal 
             try {
-                d = new BigDecimal(content);
+                d = new BigDecimal( stripPlusIfPresent( content));
             } catch (Exception nfe) {
                 throw new InvalidDatatypeValueException(
                                                        getErrorString(DatatypeMessageProvider.NotDecimal,
@@ -419,6 +420,29 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         fBaseValidator =  base;
     }
 
+    /**
+     * This class deals with a bug in BigDecimal class
+     * present up to version 1.1.2. 1.1.3 knows how
+     * to deal with the + sign.
+     * 
+     * This method strips the first '+' if it found
+     * alone such as.
+     * +33434.344
+     * 
+     * If we find +- then nothing happens we just
+     * return the string passed
+     * 
+     * @param value
+     * @return 
+     */
+    static private String stripPlusIfPresent( String value ){
+        String strippedPlus = value;
+        
+        if( value.length() >= 2 && value.charAt(0) == '+' && value.charAt(1) != '-' ) {
+            strippedPlus = value.substring(1);
+        }
+        return strippedPlus;
+    }
 
 }
 
