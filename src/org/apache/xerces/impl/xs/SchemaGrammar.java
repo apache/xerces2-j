@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.util.*;
 import org.apache.xerces.impl.xs.psvi.*;
@@ -89,7 +90,7 @@ import java.util.Vector;
 public class SchemaGrammar implements Grammar, XSNamespaceItem {
 
     // the target namespace of grammar
-    public String fTargetNamespace;
+    String fTargetNamespace;
 
     // global decls: map from decl name to decl object
     SymbolHash fGlobalAttrDecls;
@@ -106,6 +107,9 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
     //
     // Constructors
     //
+
+    // needed to make BuiltinSchemaGrammar work.
+    private SchemaGrammar() {}
 
     /**
      * Default constructor.
@@ -137,91 +141,131 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
 
     private static final int GRAMMAR_XS  = 1;
     private static final int GRAMMAR_XSI = 2;
-    /**
-     * Special constructor to create the grammars for the schema namespaces
-     *
-     * @param grammar
-     */
-    protected SchemaGrammar(int grammar) {
-        SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
 
-        if (grammar == GRAMMAR_XS) {
-            // target namespace
-            fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+    // this class makes sure the static, built-in schema grammars
+    // are immutable.
+    public static class BuiltinSchemaGrammar extends SchemaGrammar {
+        /**
+         * Special constructor to create the grammars for the schema namespaces
+         *
+         * @param grammar
+         */
+        public BuiltinSchemaGrammar(int grammar) {
+            SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
     
-            // grammar description
-            fGrammarDescription = new XSDDescription();
-            fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
-            fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+            if (grammar == GRAMMAR_XS) {
+                // target namespace
+                fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+        
+                // grammar description
+                fGrammarDescription = new XSDDescription();
+                fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
+                fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+        
+                // no global decls other than types
+                fGlobalAttrDecls  = new SymbolHash(1);
+                fGlobalAttrGrpDecls = new SymbolHash(1);
+                fGlobalElemDecls = new SymbolHash(1);
+                fGlobalGroupDecls = new SymbolHash(1);
+                fGlobalNotationDecls = new SymbolHash(1);
+                fGlobalIDConstraintDecls = new SymbolHash(1);
+        
+                // get all built-in types
+                fGlobalTypeDecls = schemaFactory.getBuiltInTypes();
+                // add anyType
+                fGlobalTypeDecls.put(fAnyType.getName(), fAnyType);
+            }
+            else if (grammar == GRAMMAR_XSI) {
+                // target namespace
+                fTargetNamespace = SchemaSymbols.URI_XSI;
+                // grammar description
+                fGrammarDescription = new XSDDescription();
+                fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
+                fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_XSI;
+        
+                // no global decls other than attributes
+                fGlobalAttrGrpDecls = new SymbolHash(1);
+                fGlobalElemDecls = new SymbolHash(1);
+                fGlobalGroupDecls = new SymbolHash(1);
+                fGlobalNotationDecls = new SymbolHash(1);
+                fGlobalIDConstraintDecls = new SymbolHash(1);
+                fGlobalTypeDecls = new SymbolHash(1);
     
-            // no global decls other than types
-            fGlobalAttrDecls  = new SymbolHash(1);
-            fGlobalAttrGrpDecls = new SymbolHash(1);
-            fGlobalElemDecls = new SymbolHash(1);
-            fGlobalGroupDecls = new SymbolHash(1);
-            fGlobalNotationDecls = new SymbolHash(1);
-            fGlobalIDConstraintDecls = new SymbolHash(1);
+                // 4 attributes, so initialize the size as 4*2 = 8
+                fGlobalAttrDecls  = new SymbolHash(8);
+                String name = null;
+                String tns = null;
+                XSSimpleType type = null;
+                short constraint = XSConstants.VC_NONE;
+                short scope = XSConstants.SCOPE_GLOBAL;
+                
+                // xsi:type
+                name = SchemaSymbols.OXSI_TYPE.intern();
+                tns = SchemaSymbols.URI_XSI;
+                type = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_QNAME);
+                fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
+                
+                // xsi:nil
+                name = SchemaSymbols.OXSI_NIL.intern();
+                tns = SchemaSymbols.URI_XSI;
+                type = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_BOOLEAN);
+                fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
+                
+                XSSimpleType anyURI = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_ANYURI);
     
-            // get all built-in types
-            fGlobalTypeDecls = schemaFactory.getBuiltInTypes();
-            // add anyType
-            addGlobalTypeDecl(fAnyType);
+                // xsi:schemaLocation
+                name = SchemaSymbols.OXSI_SCHEMALOCATION.intern();
+                tns = SchemaSymbols.URI_XSI;
+                type = schemaFactory.createTypeList(null, SchemaSymbols.URI_XSI, (short)0, anyURI);
+                fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
+                
+                // xsi:noNamespaceSchemaLocation
+                name = SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION.intern();
+                tns = SchemaSymbols.URI_XSI;
+                type = anyURI;
+                fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
+            }
+        } // <init>(int)
+
+        // return the XMLGrammarDescription corresponding to this
+        // object
+        public XMLGrammarDescription getGrammarDescription() {
+            return fGrammarDescription.makeClone();
+        } // getGrammarDescription():  XMLGrammarDescription
+
+        // override these methods solely so that these
+        // objects cannot be modified once they're created.
+        public void setImportedGrammars(Vector importedGrammars) {
+            // ignore
         }
-        else if (grammar == GRAMMAR_XSI) {
-            // target namespace
-            fTargetNamespace = SchemaSymbols.URI_XSI;
-            // grammar description
-            fGrammarDescription = new XSDDescription();
-            fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
-            fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_XSI;
-    
-            // no global decls other than attributes
-            fGlobalAttrGrpDecls = new SymbolHash(1);
-            fGlobalElemDecls = new SymbolHash(1);
-            fGlobalGroupDecls = new SymbolHash(1);
-            fGlobalNotationDecls = new SymbolHash(1);
-            fGlobalIDConstraintDecls = new SymbolHash(1);
-            fGlobalTypeDecls = new SymbolHash(1);
-
-            // 4 attributes, so initialize the size as 4*2 = 8
-            fGlobalAttrDecls  = new SymbolHash(8);
-            XSAttributeDecl attr;
-            
-            // xsi:type
-            attr = new XSAttributeDecl();
-            attr.fName = SchemaSymbols.OXSI_TYPE.intern();
-            attr.fTargetNamespace = SchemaSymbols.URI_XSI;
-            attr.fType = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_QNAME);
-            attr.fScope = XSConstants.SCOPE_GLOBAL;
-            fGlobalAttrDecls.put(attr.fName, attr);
-            
-            // xsi:nil
-            attr = new XSAttributeDecl();
-            attr.fName = SchemaSymbols.OXSI_NIL.intern();
-            attr.fTargetNamespace = SchemaSymbols.URI_XSI;
-            attr.fType = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_BOOLEAN);
-            attr.fScope = XSConstants.SCOPE_GLOBAL;
-            fGlobalAttrDecls.put(attr.fName, attr);
-            
-            XSSimpleType anyURI = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_ANYURI);
-
-            // xsi:schemaLocation
-            attr = new XSAttributeDecl();
-            attr.fName = SchemaSymbols.OXSI_SCHEMALOCATION.intern();
-            attr.fTargetNamespace = SchemaSymbols.URI_XSI;
-            attr.fType = schemaFactory.createTypeList(null, SchemaSymbols.URI_XSI, (short)0, anyURI);
-            attr.fScope = XSConstants.SCOPE_GLOBAL;
-            fGlobalAttrDecls.put(attr.fName, attr);
-            
-            // xsi:noNamespaceSchemaLocation
-            attr = new XSAttributeDecl();
-            attr.fName = SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION.intern();
-            attr.fTargetNamespace = SchemaSymbols.URI_XSI;
-            attr.fType = anyURI;
-            attr.fScope = XSConstants.SCOPE_GLOBAL;
-            fGlobalAttrDecls.put(attr.fName, attr);
+        public void addGlobalAttributeDecl(XSAttributeDecl decl) {
+            // ignore
         }
-    } // <init>(int)
+        public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalElementDecl(XSElementDecl decl) {
+            // ignore
+        }
+        public void addGlobalGroupDecl(XSGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalNotationDecl(XSNotationDecl decl) {
+            // ignore
+        }
+        public void addGlobalTypeDecl(XSTypeDecl decl) {
+            // ignore
+        }
+        public void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
+            // ignore
+        }
+        public void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base, SimpleLocator locator) {
+            // ignore
+        }
+        public synchronized void addDocument(Object document, String location) {
+            // ignore
+        }
+    }
 
     // Grammar methods
 
@@ -256,21 +300,21 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
     /**
      * register one global attribute
      */
-    public final void addGlobalAttributeDecl(XSAttributeDecl decl) {
+    public void addGlobalAttributeDecl(XSAttributeDecl decl) {
         fGlobalAttrDecls.put(decl.fName, decl);
     }
 
     /**
      * register one global attribute group
      */
-    public final void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl) {
+    public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl) {
         fGlobalAttrGrpDecls.put(decl.fName, decl);
     }
 
     /**
      * register one global element
      */
-    public final void addGlobalElementDecl(XSElementDecl decl) {
+    public void addGlobalElementDecl(XSElementDecl decl) {
         fGlobalElemDecls.put(decl.fName, decl);
 
         // if there is a substitution group affiliation, store in an array,
@@ -285,21 +329,21 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
     /**
      * register one global group
      */
-    public final void addGlobalGroupDecl(XSGroupDecl decl) {
+    public void addGlobalGroupDecl(XSGroupDecl decl) {
         fGlobalGroupDecls.put(decl.fName, decl);
     }
 
     /**
      * register one global notation
      */
-    public final void addGlobalNotationDecl(XSNotationDecl decl) {
+    public void addGlobalNotationDecl(XSNotationDecl decl) {
         fGlobalNotationDecls.put(decl.fName, decl);
     }
 
     /**
      * register one global type
      */
-    public final void addGlobalTypeDecl(XSTypeDecl decl) {
+    public void addGlobalTypeDecl(XSTypeDecl decl) {
         fGlobalTypeDecls.put(decl.getName(), decl);
     }
 
@@ -382,7 +426,7 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
     /**
      * add one complex type decl: for later constraint checking
      */
-    public final void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
+    public void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
         if (fCTCount == fComplexTypeDecls.length) {
             fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount+INC_SIZE);
             fCTLocators = resize(fCTLocators, fCTCount+INC_SIZE);
@@ -394,7 +438,7 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
     /**
      * add a group redefined by restriction: for later constraint checking
      */
-    public final void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base, SimpleLocator locator) {
+    public void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base, SimpleLocator locator) {
         if (fRGCount == fRedefinedGroupDecls.length) {
             // double array size each time.
             fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount << 1);
@@ -560,14 +604,33 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
             return particleG;
         }
     }
+    private static class BuiltinAttrDecl extends XSAttributeDecl {
+        public BuiltinAttrDecl(String name, String tns, 
+                XSSimpleType type, short scope) {
+            fName = name;
+            super.fTargetNamespace = tns;
+            fType = type;
+            fScope = scope;
+        }
+
+        public void setValues(String name, String targetNamespace,
+                XSSimpleType simpleType, short constraintType, short scope,
+                ValidatedInfo valInfo, XSComplexTypeDecl enclosingCT) { 
+            // ignore this call.
+        }
+
+        public void reset () {
+            // also ignore this call.
+        }
+    } // class BuiltinAttrDecl
 
     // the grammars to hold components of the schema namespace
-    public final static SchemaGrammar SG_SchemaNS = new SchemaGrammar(GRAMMAR_XS);
+    public final static BuiltinSchemaGrammar SG_SchemaNS = new BuiltinSchemaGrammar(GRAMMAR_XS);
 
     public final static XSSimpleType fAnySimpleType = (XSSimpleType)SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
 
     // the grammars to hold components of the schema-instance namespace
-    public final static SchemaGrammar SG_XSI = new SchemaGrammar(GRAMMAR_XSI);
+    public final static BuiltinSchemaGrammar SG_XSI = new BuiltinSchemaGrammar(GRAMMAR_XSI);
 
     static final XSComplexTypeDecl[] resize(XSComplexTypeDecl[] oldArray, int newSize) {
         XSComplexTypeDecl[] newArray = new XSComplexTypeDecl[newSize];

@@ -802,21 +802,21 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         int attrCount = attrUseS.getLength();
         for (int i=0; i<attrCount; i++) {
             oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
-            existingAttrUse = toAttrGrp.getAttributeUse(oneAttrUse.fAttrDecl.fTargetNamespace,
-                                                        oneAttrUse.fAttrDecl.fName);
+            existingAttrUse = toAttrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
+                                                        oneAttrUse.fAttrDecl.getName());
             if (existingAttrUse == null) {
 
                 String idName = toAttrGrp.addAttributeUse(oneAttrUse);
                 if (idName != null) {
                     throw new ComplexTypeRecoverableError("ct-props-correct.5",
-                          new Object[]{typeName, idName, oneAttrUse.fAttrDecl.fName},
+                          new Object[]{typeName, idName, oneAttrUse.fAttrDecl.getName()},
                           elem);
                 }
             }
             else {
                 if (extension) {
                     throw new ComplexTypeRecoverableError("ct-props-correct.4",
-                          new Object[]{typeName, existingAttrUse.fAttrDecl.fName},
+                          new Object[]{typeName, existingAttrUse.fAttrDecl.getName()},
                           elem);
                 }
             }

@@ -77,29 +77,29 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     public final static short     SCOPE_LOCAL         = 2;
 
     // the name of the attribute
-    public String fName = null;
+    String fName = null;
     // the target namespace of the attribute
-    public String fTargetNamespace = null;
+    String fTargetNamespace = null;
     // the simple type of the attribute
-    public XSSimpleType fType = null;
+    XSSimpleType fType = null;
     // value constraint type: default, fixed or !specified
-    public short fConstraintType = XSConstants.VC_NONE;
+    short fConstraintType = XSConstants.VC_NONE;
     // scope
-    public short fScope = XSConstants.SCOPE_ABSENT;
+    short fScope = XSConstants.SCOPE_ABSENT;
     // enclosing complex type, when the scope is local
     XSComplexTypeDecl fEnclosingCT = null;
     // value constraint value
-    public ValidatedInfo fDefault = null;
+    ValidatedInfo fDefault = null;
 
-    public void setConstraintType(short constraintType) {
+    public void setValues(String name, String targetNamespace,
+            XSSimpleType simpleType, short constraintType, short scope,
+            ValidatedInfo valInfo, XSComplexTypeDecl enclosingCT) { 
+        fName = name;
+        fTargetNamespace = targetNamespace;
+        fType = simpleType;
         fConstraintType = constraintType;
-    }
-
-    public void setIsGlobal() {
-        fScope = SCOPE_GLOBAL;
-    }
-    public void setIsLocal(XSComplexTypeDecl enclosingCT) {
-        fScope = SCOPE_LOCAL;
+        fScope = scope;
+        fDefault = valInfo;
         fEnclosingCT = enclosingCT;
     }
 
@@ -189,4 +189,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         return null;
     }
     
+    public ValidatedInfo getValInfo() {
+        return fDefault;
+    }
 } // class XSAttributeDecl

@@ -414,20 +414,20 @@ abstract class XSDAbstractTraverser {
                                                                                grammar,
                                                                                enclosingCT);
                 if (tempAttrUse == null) break;
-                if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.fTargetNamespace,
-                                            tempAttrUse.fAttrDecl.fName)==null) {
+                if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.getNamespace(),
+                                            tempAttrUse.fAttrDecl.getName())==null) {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     if (idName != null) {
                         String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
                         String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
-                        reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.fName, idName}, child);
+                        reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName(), idName}, child);
                     }
                 }
                 else {
                     // REVISIT: what if one of the attribute uses is "prohibited"
                     String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
                     String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
-                    reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.fName}, child);
+                    reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.getName()}, child);
                 }
             }
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
@@ -440,17 +440,17 @@ abstract class XSDAbstractTraverser {
                 int attrCount = attrUseS.getLength();
                 for (int i=0; i<attrCount; i++) {
                     oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
-                    existingAttrUse = attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.fTargetNamespace,
-                                                              oneAttrUse.fAttrDecl.fName);
+                    existingAttrUse = attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
+                                                              oneAttrUse.fAttrDecl.getName());
                     if (existingAttrUse == null) {
                         String idName = attrGrp.addAttributeUse(oneAttrUse);
                         if (idName != null) {
-                            reportSchemaError("cvc-complex-type.5.3", new Object[]{oneAttrUse.fAttrDecl.fName, idName}, child);
+                            reportSchemaError("cvc-complex-type.5.3", new Object[]{oneAttrUse.fAttrDecl.getName(), idName}, child);
                         }
                     }
                     else {
                         // REVISIT: what if one of the attribute uses is "prohibited"
-                        reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + existingAttrUse.fAttrDecl.fName + " found "}, child);
+                        reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + existingAttrUse.fAttrDecl.getName() + " found "}, child);
                     }
                 }
 

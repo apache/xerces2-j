@@ -441,7 +441,7 @@ public class XPathMatcher {
                                       XSAttributeUseImpl tempAttUse = attrGrp.getAttributeUse(aname.uri, aname.localpart);
                                       if (tempAttUse != null) {
                                         XSAttributeDecl tempAttDecl = tempAttUse.fAttrDecl;
-                                        aValidator = tempAttDecl.fType;
+                                        aValidator = (XSSimpleType)tempAttDecl.getTypeDefinition();
                                       }
                                     }
                                     matched(fMatchedString, aValidator, false);

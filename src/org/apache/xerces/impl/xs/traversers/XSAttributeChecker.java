@@ -1521,7 +1521,7 @@ public class XSAttributeChecker {
             attrDecl = sGrammar.getGlobalAttributeDecl(attrLocal);
             if (attrDecl == null)
                 continue;
-            XSSimpleType dv = (XSSimpleType)attrDecl.fType;
+            XSSimpleType dv = (XSSimpleType)attrDecl.getTypeDefinition();
             if (dv == null)
                 continue;
 
