@@ -86,7 +86,7 @@ public class BinaryValidator implements DatatypeValidator {
      * @exception throws InvalidDatatypeException if the content is
      *  not a W3C binary type
      */
-    public void validate(String content) throws InvalidDatatypeValueException {
+    public void validate(String content, boolean list) throws InvalidDatatypeValueException {
         // just say yes
     }
 

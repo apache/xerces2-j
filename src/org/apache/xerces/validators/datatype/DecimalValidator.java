@@ -105,7 +105,7 @@ public class DecimalValidator implements DatatypeValidator {
      *  is not a W3C decimal type
      */
 
-    public void validate(String content) throws InvalidDatatypeValueException {
+    public void validate(String content, boolean list) throws InvalidDatatypeValueException {
         BigDecimal d = null;
         try {
             d = new BigDecimal(content);

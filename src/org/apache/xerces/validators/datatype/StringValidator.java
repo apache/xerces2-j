@@ -92,7 +92,7 @@ public class StringValidator implements DatatypeValidator {
      *  not a W3C string type
      */
 
-	public void validate(String content) throws InvalidDatatypeValueException {
+	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
 
         if (facetData == null)return;
 

@@ -99,7 +99,7 @@ public class RealValidator implements DatatypeValidator {
      *  is not a W3C real type
      */
 
-	public void validate(String content) throws InvalidDatatypeValueException {
+	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
 	    double d = 0;
         try {
             d = Double.valueOf(content).doubleValue();

@@ -108,7 +108,7 @@ public class TimeDurationValidator implements DatatypeValidator {
      *  not a W3C timeDuration type
      */
 
-	public void validate(String content) throws InvalidDatatypeValueException 
+	public void validate(String content, boolean list) throws InvalidDatatypeValueException 
 	{
 		ovalue=content;
 		Long d = ((Long)cache.get(content));

@@ -99,7 +99,7 @@ public class FloatValidator implements DatatypeValidator {
      *  is not a W3C real type
      */
 
-	public void validate(String content) throws InvalidDatatypeValueException {
+	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
 	    float f = 0;
         try {
             f = Float.valueOf(content).floatValue();

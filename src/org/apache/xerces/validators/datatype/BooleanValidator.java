@@ -83,7 +83,7 @@ public class BooleanValidator implements DatatypeValidator {
      *  is not a W3C integer type
      */
 
-	public void validate(String content) throws InvalidDatatypeValueException {
+	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
         if (!content.equals("true") && !content.equals("false"))
             throw new InvalidDatatypeValueException(
 				getErrorString(DatatypeMessageProvider.NotBoolean,

@@ -108,7 +108,7 @@ public class TimeInstantValidator implements DatatypeValidator {
      *  not a W3C timeInstant type
      */
 
-	public void validate(String content) throws InvalidDatatypeValueException 
+	public void validate(String content, boolean list) throws InvalidDatatypeValueException 
 	{
 		ovalue=content;
 		Calendar c = (Calendar)cache.get(content);

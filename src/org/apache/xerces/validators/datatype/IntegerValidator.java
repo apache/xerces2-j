@@ -99,7 +99,7 @@ public class IntegerValidator implements DatatypeValidator {
      *  is not a W3C integer type
      */
 
-	public void validate(String content) throws InvalidDatatypeValueException {
+	public void validate(String content,boolean list) throws InvalidDatatypeValueException {
 	    int i = 0;
         try {
             i = Integer.parseInt(content);
