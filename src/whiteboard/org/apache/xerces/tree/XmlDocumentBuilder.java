@@ -90,7 +90,6 @@ import org.xml.sax.ext.DeclHandler;
 
 import org.apache.xerces.tree.AttributeListEx;
 import org.apache.xerces.tree.DtdEventListener;
-import org.apache.xerces.tree.LexicalEventListener;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.tree.Resolver;
 
@@ -135,8 +134,7 @@ import org.apache.xerces.tree.Resolver;
  * @version $Revision$
  */
 public class XmlDocumentBuilder implements
-    ContentHandler, DocumentHandler, LexicalHandler, DTDHandler, DeclHandler,
-    LexicalEventListener //XXXeeg LexicalEventListener is old
+    ContentHandler, DocumentHandler, LexicalHandler, DTDHandler, DeclHandler
 {
     // implicit predeclarations of "xml" namespace
     private static final String
@@ -705,34 +703,6 @@ public class XmlDocumentBuilder implements
 	}
     }
 
-    /**
-     * LexicalEventListener callback, not for general application
-     * use.  Reports that a comment was found in the document.
-     *
-     * If this builder is set to record lexical information (by default
-     * it ignores such information) then this callback records a comment
-     * in the DOM tree.
-     * @param text body of the comment.
-     */
-    public void comment (String text) throws SAXException
-    {
-	// Ignore comments if lexical info is to be ignored,
-	// or if parsing the DTD
-	if (ignoringLexicalInfo || inDTD)
-	    return;
-
-
-        Comment		comment = document.createComment (text);
-        ParentNode	top = elementStack [topOfStack];
-        
-	try {
-	    top.appendChild (comment);
-	    top.doneChild ((NodeEx) comment, context);
-	} catch (DOMException ex) {
-	    fatal (new SAXParseException ((getMessage ("XDB-004", new
-	    		Object [] { ex.getMessage () })), locator, ex));
-	}
-    }
     
     /**
      * LexicalEventListener callback, not for general application
@@ -907,63 +877,6 @@ public class XmlDocumentBuilder implements
 	    		Object [] { ex.getMessage () })), locator, ex));
 	}
     }
-
-    /**
-     * LexicalEventListener callback, not for general application
-     * use.  Reports the begining of processing for a general entity.
-     *
-     * <P>If this builder is set to record lexical information (by default
-     * it ignores such information) then this callback arranges that
-     * an entity reference node hold data that is reported until the
-     * matching <em>endParsedEntity</em> callback.  Otherwise that data
-     * is treated like any other content found in a document (and will
-     * not be marked as readonly).
-     *
-     * @param name identifies the parsed general entity whose
-     *	expansion will be represented in the DOM tree.
-     */
-    public void startParsedEntity (String name) throws SAXException
-    {
-	if (ignoringLexicalInfo)
-	    return;
-
-        EntityReference	e = document.createEntityReference (name);
-	elementStack [topOfStack++].appendChild (e);
-	elementStack [topOfStack] = (ParentNode) e;
-    }
-
-    /**
-     * LexicalEventListener callback, not for general application
-     * use.  Reports that the parser finished handling a general
-     * entity.  If an entity reference was being recorded, this
-     * callback marks the entity being expanded as read only.
-     *
-     * @param name identifies the parsed general entity whose
-     *	expansion will be represented in the DOM tree.
-     * @param included lets nonvalidating XML parser tell applications
-     *	about any external entities that were recognized but not included.
-     */
-    public void endParsedEntity (String name, boolean included)
-    throws SAXException
-    {
-        ParentNode	entity = elementStack [topOfStack];
-
-	if (!(entity instanceof EntityReference))
-	    return;
-
-	entity.setReadonly (true);
-        elementStack [topOfStack--] = null;
-        if (!name.equals (entity.getNodeName ()))
-            fatal (new SAXParseException ((getMessage ("XDB-011", new
-	    Object[] { name, entity.getNodeName () })), locator));
-	try {
-	    elementStack [topOfStack].doneChild (entity, context);
-
-	} catch (DOMException ex) {
-	    fatal (new SAXParseException ((getMessage ("XDB-004", new
-	    		Object [] { ex.getMessage () })), locator, ex));
-	}
-    } 
 
     // mostly for namespace errors
     private void error (SAXParseException err)
