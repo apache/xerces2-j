@@ -1053,7 +1053,7 @@ public class XMLDocumentScanner
                 }
                 else if (c != -1 && XMLChar.isInvalid(c)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                               "InvalidCharInContent",
+                                               "InvalidCharInAttValue",
                                                new Object[] {Integer.toString(c, 16)},
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     fEntityScanner.scanChar();
@@ -1159,7 +1159,7 @@ public class XMLDocumentScanner
                 int c = fEntityScanner.peekChar();
                 if (c != -1 && XMLChar.isInvalid(c)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                               "InvalidCharInContent",
+                                               "InvalidCharInCDSect",
                                                new Object[] {Integer.toString(c, 16)},
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     fEntityScanner.scanChar();

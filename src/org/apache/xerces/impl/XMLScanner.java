@@ -248,7 +248,7 @@ public abstract class XMLScanner
         int state = STATE_VERSION;
         fEntityScanner.skipSpaces();
         while (fEntityScanner.peekChar() != '?') {
-            String name = scanPseudoAttribute(fString);
+            String name = scanPseudoAttribute(scanningTextDecl, fString);
             switch (state) {
                 case STATE_VERSION: {
                     if (name == fVersionSymbol) {
@@ -359,13 +359,20 @@ public abstract class XMLScanner
     /**
      * Scans a pseudo attribute.
      *
-     * @param value The string to fill in with the attribute value
+     * @param scanningTextDecl True if scanning this pseudo-attribute for a
+     *                         TextDecl; false if scanning XMLDecl. This 
+     *                         flag is needed to report the correct type of
+     *                         error.
+     * @param value            The string to fill in with the attribute 
+     *                         value.
+     *
      * @return The name of the attribute
      *
      * <strong>Note:</strong> This method uses fPseudoAttrStringBuffer, anything in it
      * at the time of calling is lost.
      */
-    public String scanPseudoAttribute(XMLString value) 
+    public String scanPseudoAttribute(boolean scanningTextDecl, 
+                                      XMLString value) 
         throws IOException, SAXException {
 
         String name = fEntityScanner.scanName();
@@ -385,11 +392,28 @@ public abstract class XMLScanner
                                        new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fEntityScanner.scanChar();
-        if (fEntityScanner.scanLiteral(quote, value) != quote) {
+        int c = fEntityScanner.scanLiteral(quote, value);
+        if (c != quote) {
             fPseudoAttrStringBuffer.clear();
             do {
                 fPseudoAttrStringBuffer.append(value);
-            } while (fEntityScanner.scanLiteral(quote, value) != quote);
+                if (c != -1) {
+                    if (c == '&' || c == '%' || c == '<') {
+                        fPseudoAttrStringBuffer.append((char)fEntityScanner.scanChar());
+                    }
+                    else if (XMLChar.isInvalid(c)) {
+                        String key = scanningTextDecl 
+                                   ? "InvalidCharInTextDecl" 
+                                   : "InvalidCharInXMLDecl";
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                   key,
+                                                   new Object[] {Integer.toString(c, 16)},
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        fEntityScanner.scanChar();
+                    }
+                }
+                c = fEntityScanner.scanLiteral(quote, value);
+            } while (c != quote);
             fPseudoAttrStringBuffer.append(value);
             value.setValues(fPseudoAttrStringBuffer);
         }
