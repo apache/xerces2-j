@@ -161,9 +161,14 @@ public class DeferredEntityImpl
         int extraDataIndex = ownerDocument.getNodeValue(fNodeIndex);
         ownerDocument.getNodeType(extraDataIndex);
         publicId     = pool.toString(ownerDocument.getNodeName(extraDataIndex));
-        systemId     = pool.toString(ownerDocument.getNodeValue(extraDataIndex));
         notationName = pool.toString(ownerDocument.getLastChild(extraDataIndex));
 
+        // DOM Level 3 adding experimental features -el
+        extraDataIndex = ownerDocument.getNodeValue(extraDataIndex);
+        systemId    = pool.toString(ownerDocument.getNodeName(extraDataIndex));
+        version     = pool.toString(ownerDocument.getNodeValue(extraDataIndex));
+        encoding    = pool.toString(ownerDocument.getLastChild(extraDataIndex));
+         
     } // synchronizeData()
 
     /** Synchronize the children. */

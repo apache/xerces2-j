@@ -276,7 +276,6 @@ public class DeferredDocumentImpl
 
     /** Creates an entity in the table. */
     public int createEntity(int entityName, int publicId, int systemId, int notationName) throws Exception {
-
         // create node
         int nodeIndex = createNode(Node.ENTITY_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
@@ -287,17 +286,37 @@ public class DeferredDocumentImpl
         int echunk = extraDataIndex >> CHUNK_SHIFT;
         int eindex = extraDataIndex & CHUNK_MASK;
 
+        // create extra data node DOM Level 3 - el
+        int extraDataIndex2 = createNode((short)0); // node type unimportant
+        int echunk2 = extraDataIndex2 >> CHUNK_SHIFT;
+        int eindex2 = extraDataIndex2 & CHUNK_MASK;
+
         // save name, public id, system id, and notation name
         setChunkIndex(fNodeName, entityName, chunk, index);
         setChunkIndex(fNodeValue, extraDataIndex, chunk, index);
-        setChunkIndex(fNodeName, publicId, echunk, eindex);
-        setChunkIndex(fNodeValue, systemId, echunk, eindex);
         setChunkIndex(fNodeLastChild, notationName, echunk, eindex);
+        setChunkIndex(fNodeName, publicId, echunk, eindex);
+        setChunkIndex(fNodeValue, extraDataIndex2, echunk, eindex);
+        setChunkIndex(fNodeName, systemId, echunk2, eindex2);
+
+        // initialize encoding and verison for DOM Level 3 - el
+        setChunkIndex(fNodeValue, -1, echunk2, eindex2);
+        setChunkIndex(fNodeLastChild, -1, echunk2, eindex2);
 
         // return node index
         return nodeIndex;
 
     } // createEntity(int,int,int,int):int
+
+    // DOM Level 3 - el
+    // setting encoding and version
+    public void setEntityInfo(int currentEntityDecl, int versionIndex, int encodingIndex){
+        int eNodeIndex = getNodeValue(getNodeValue(currentEntityDecl, false), false); 
+        int echunk = eNodeIndex >> CHUNK_SHIFT;
+        int eindex = eNodeIndex & CHUNK_MASK;
+        setChunkIndex(fNodeValue, versionIndex, echunk, eindex);
+        setChunkIndex(fNodeLastChild, encodingIndex, echunk, eindex);
+    }
 
     /** Creates an entity reference node in the table. */
     public int createEntityReference(int nameIndex) throws Exception {

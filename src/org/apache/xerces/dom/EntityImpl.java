@@ -117,6 +117,13 @@ public class EntityImpl
     /** System identifier. */
     protected String systemId;
 
+    /** Encoding */
+    protected String encoding;
+
+    /** Version */
+    protected String version;
+
+
     /** Notation name. */
     protected String notationName;
 
@@ -190,6 +197,37 @@ public class EntityImpl
     } // getSystemId():String
 
     /** 
+      * DOM Level 3 WD - experimental
+      * the version number of this entity, when it is an external parsed entity. 
+      */
+    public String getVersion() {
+
+       if (needsSyncData()) {
+           synchronizeData();
+       }
+       return version;
+
+   } // getVersion():String
+
+
+    /**
+     * DOM Level 3 WD - experimental 
+     * the encoding of this entity, when it is an external parsed entity. 
+     */
+    public String getEncoding() {
+
+       if (needsSyncData()) {
+           synchronizeData();
+       }
+       return encoding;
+
+   } // getVersion():String
+
+
+
+
+
+    /** 
      * Unparsed entities -- which contain non-XML data -- have a
      * "notation name" which tells applications how to deal with them.
      * Parsed entities, which <em>are</em> in XML format, don't need this and
@@ -209,7 +247,7 @@ public class EntityImpl
     //
 
     /**
-     * NON-DOM The public identifier associated with the entity. If not specified,
+     * DOM Level 2: The public identifier associated with the entity. If not specified,
      * this will be null. */
     public void setPublicId(String id) {
         
@@ -218,10 +256,42 @@ public class EntityImpl
         }
     	publicId = id;
 
-    } // getPublicId(String)
+    } // setPublicId(String)
 
     /**
-     * NON-DOM The system identifier associated with the entity. If not
+     * DOM Level 3 WD - experimental 
+     * encoding - An attribute specifying, as part of the text declaration, 
+     * the encoding of this entity, when it is an external parsed entity. 
+     * This is null otherwise
+     */
+    public void setEncoding(String value) {
+        
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+    	encoding = value;
+
+    } // setEncoding (String)
+
+
+    /** 
+      * DOM Level 3 WD - experimental
+      * version - An attribute specifying, as part of the text declaration, 
+      * the version number of this entity, when it is an external parsed entity. 
+      * This is null otherwise
+      */
+    public void setVersion(String value) {
+        
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+    	version = value;
+
+    } // setVersion (String)
+
+
+    /**
+     * DOM Level 2: The system identifier associated with the entity. If not
      * specified, this will be null. 
      */
     public void setSystemId(String id) {
@@ -234,7 +304,7 @@ public class EntityImpl
     } // setSystemId(String)
 
     /** 
-     * NON-DOM Unparsed entities -- which contain non-XML data -- have a
+     * DOM Level 2: Unparsed entities -- which contain non-XML data -- have a
      * "notation name" which tells applications how to deal with them.
      * Parsed entities, which <em>are</em> in XML format, don't need this and
      * set it to null.  

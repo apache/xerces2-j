@@ -121,6 +121,17 @@ public class DocumentImpl
     /** Document element. */
     protected ElementImpl docElement;
 
+    
+    /**Experimental DOM Level 3 feature: Document encoding */
+    protected String encoding;
+
+    /**Experimental DOM Level 3 feature: Document version */
+    protected String version;
+
+    /**Experimental DOM Level 3 feature: Document standalone */
+    protected boolean standalone;
+
+
     /** Identifiers. */
     protected Hashtable identifiers;
 
@@ -564,6 +575,43 @@ public class DocumentImpl
 	    return docType;
     }
 
+
+   /**
+    * DOM Level 3 WD - Experimental.      
+    * The encoding of this document (part of XML Declaration)     
+    */
+    public String getEncoding() {
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+	    return encoding;
+
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * The version of this document (part of XML Declaration)     
+      */
+    public String getVersion() {
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+	    return version;
+
+    }
+     /**
+      * DOM Level 3 WD - Experimental.    
+      * standalone that specifies whether this document is standalone (part of XML Declaration)     
+      */
+    public boolean getStandalone() {
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+	    return standalone;
+
+    }
+
+
     /**
      * Convenience method, allowing direct access to the child node
 	 * which is considered the root of the actual document content. For
@@ -629,9 +677,39 @@ public class DocumentImpl
      * <li>Checks related to DOM events
      * </ul>
      */
+    
     public void setErrorChecking(boolean check) {
         errorChecking = check;
     }
+
+    
+    /**
+      * DOM Level 3 WD - Experimental.
+      * An attribute specifying, as part of the XML declaration, 
+      * the encoding of this document. This is null when unspecified.
+      */
+    public void setEncoding(String value) {
+        encoding = value;
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * version - An attribute specifying, as part of the XML declaration, 
+      * the version number of this document. This is null when unspecified
+      */
+    public void setVersion(String value) {
+       version = value;    
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * standalone - An attribute specifying, as part of the XML declaration, 
+      * whether this document is standalone
+      */
+    public void setStandalone(boolean value) {
+        standalone = value;
+    } 
+    
 
     /**
      * Returns true if the DOM implementation performs error checking.
