@@ -80,10 +80,10 @@ public class SAXParser
     //
 
     /**
-     * Constructs a SAX parser using the default basic parser configuration.
+     * Constructs a SAX parser using the dtd/xml schema parser configuration.
      */
     public SAXParser() {
-        super(new StandardParserConfiguration());
+        super(new DTDXSParserConfiguration());
     } // <init>()
 
     /**
@@ -97,7 +97,7 @@ public class SAXParser
      * Constructs a SAX parser using the specified symbol table.
      */
     public SAXParser(SymbolTable symbolTable) {
-        super(new StandardParserConfiguration(symbolTable));
+        super(new DTDXSParserConfiguration(symbolTable));
     } // <init>(SymbolTable)
 
     /**
@@ -105,7 +105,7 @@ public class SAXParser
      * grammar pool.
      */
     public SAXParser(SymbolTable symbolTable, GrammarPool grammarPool) {
-        super(new StandardParserConfiguration(symbolTable, grammarPool));
+        super(new DTDXSParserConfiguration(symbolTable, grammarPool));
     } // <init>(SymbolTable,GrammarPool)
 
 } // class SAXParser

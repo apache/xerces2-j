@@ -98,10 +98,10 @@ public class DOMParser
     //
 
     /**
-     * Constructs a DOM parser using the default basic parser configuration.
+     * Constructs a DOM parser using the dtd/xml schema parser configuration.
      */
     public DOMParser() {
-        super(new StandardParserConfiguration());
+        super(new DTDXSParserConfiguration());
     } // <init>
 
     /**
@@ -115,15 +115,16 @@ public class DOMParser
      * Constructs a DOM parser using the specified symbol table.
      */
     public DOMParser(SymbolTable symbolTable) {
-        super(new StandardParserConfiguration(symbolTable));
+        super(new DTDXSParserConfiguration(symbolTable));
     } // <init>(SymbolTable)
+
 
     /**
      * Constructs a DOM parser using the specified symbol table and
      * grammar pool.
      */
     public DOMParser(SymbolTable symbolTable, GrammarPool grammarPool) {
-        super(new StandardParserConfiguration(symbolTable, grammarPool));
+        super(new DTDXSParserConfiguration(symbolTable, grammarPool));
     }
 
     //
