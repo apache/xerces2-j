@@ -1608,8 +1608,6 @@ public class XMLDTDProcessor
      */
     private boolean normalizeDefaultAttrValue(XMLString value) {
 
-        int oldLength = value.length;
-
         boolean skipSpace = true; // skip leading spaces
         int current = value.offset;
         int end = value.offset + value.length;

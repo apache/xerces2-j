@@ -474,8 +474,6 @@ public class DeferredDocumentImpl
         int lastAttrNodeIndex = getChunkIndex(fNodeExtra,
                                               elementChunk, elementIndex);
         if (lastAttrNodeIndex != 0) {
-            int lastAttrChunk = lastAttrNodeIndex >> CHUNK_SHIFT;
-            int lastAttrIndex = lastAttrNodeIndex & CHUNK_MASK;
             // add link from new attribute to last attribute
             setChunkIndex(fNodePrevSib, lastAttrNodeIndex,
                           attrChunk, attrIndex);
@@ -759,11 +757,8 @@ public class DeferredDocumentImpl
 
     /** Sets the last child of the parentIndex to childIndex. */
     public void setAsLastChild(int parentIndex, int childIndex) {
-
         int pchunk = parentIndex >> CHUNK_SHIFT;
         int pindex = parentIndex & CHUNK_MASK;
-        int chunk = childIndex >> CHUNK_SHIFT;
-        int index = childIndex & CHUNK_MASK;
         setChunkIndex(fNodeLastChild, childIndex, pchunk, pindex);
     } // setAsLastChild(int,int)
 

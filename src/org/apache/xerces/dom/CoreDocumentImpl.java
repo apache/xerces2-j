@@ -1824,7 +1824,6 @@ extends ParentNode implements Document  {
                 if (entityNode == null) {
                     break;
                 }
-                EntityImpl entity = (EntityImpl) entityNode;
                 for (child = entityNode.getFirstChild();
                 child != null; child = child.getNextSibling()) {
                     Node childClone = child.cloneNode(true);

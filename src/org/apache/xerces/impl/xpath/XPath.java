@@ -1921,7 +1921,7 @@ public class XPath {
             }
             if (ch == '.') {
                 if (++currentOffset < endOffset) {
-                    int start = currentOffset;
+                    /** int start = currentOffset; **/
                     ch = data.charAt(currentOffset);
                     while (ch >= '0' && ch <= '9') {
                         part = (part * 10) + (ch - '0');

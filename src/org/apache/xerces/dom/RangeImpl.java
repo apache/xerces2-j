@@ -733,8 +733,6 @@ public class RangeImpl  implements Range {
             }
         }
         
-        Node root = getCommonAncestorContainer();
-        
         Node realStart = fStartContainer;
         Node realEnd = fEndContainer;
         if (fStartContainer.getNodeType() == Node.TEXT_NODE) {

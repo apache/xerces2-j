@@ -1338,7 +1338,6 @@ public class DTDGrammar
      */
     public boolean isCDATAAttribute(QName elName, QName atName) {
         int elDeclIdx = getElementDeclIndex(elName);
-        int atDeclIdx = getAttributeDeclIndex(elDeclIdx, atName.rawname);
         if (getAttributeDecl(elDeclIdx, fAttributeDecl)
             && fAttributeDecl.simpleType.type != XMLSimpleType.TYPE_CDATA){
             return false;
@@ -1736,15 +1735,11 @@ public class DTDGrammar
       int     chunk       = elementDeclIndex >> CHUNK_SHIFT;
       int     index       = elementDeclIndex &  CHUNK_MASK;
 
-      int     scope       = elementDecl.scope;
-
-
       fElementDeclName[chunk][index].setValues(elementDecl.name);
       fElementDeclType[chunk][index]                  = elementDecl.type; 
 
       fElementDeclContentModelValidator[chunk][index] = elementDecl.contentModelValidator;
          
-
       if (elementDecl.simpleType.list  == true ) {
          fElementDeclType[chunk][index] |= LIST_FLAG;
       }
@@ -1891,13 +1886,9 @@ public class DTDGrammar
        fEntityIndexMap.put(entityDecl.name, entityDeclIndex);
    }
    
-
    protected int createNotationDecl() {
        int chunk = fNotationCount >> CHUNK_SHIFT;
-       int index = fNotationCount & CHUNK_MASK;
-
        ensureNotationDeclCapacity(chunk);
-
        return fNotationCount++;
    }
 

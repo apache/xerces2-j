@@ -1113,7 +1113,6 @@ XSLoader, DOMConfiguration {
      */
     public boolean canSetParameter(String name, Object value) {
         if(value instanceof Boolean){
-            boolean state = ((Boolean)value).booleanValue();
             if (name.equals(Constants.DOM_VALIDATE) ||
                 name.equals(SCHEMA_FULL_CHECKING) ||
                 name.equals(VALIDATE_ANNOTATIONS) ||
