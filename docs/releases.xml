@@ -2,6 +2,16 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+   <s2 title='October 19, 2000'>
+        <ul>
+           <li>This is a bug fix release</li>
+           <li>Added Mark Swinkels datatype list refactoring [mark swinkels, jeffreyr]</li>           
+           <li>Added RangeImpl patch submitted by Lynn Monson [lynn monson,lehors, lehors]</li>
+           <li>Fixed datatype registry not being initialized in XMLValidator bug [jeffreyr]</li>
+           <li>Fixed misc. Schema Structures bugs since last release [ericye]</li>
+           <li>Fixed misc. Datatypes bugs since last release [jeffreyr]</li>
+        </ul>
+    </s2>
     <s2 title='August 28, 2000'>
         <ul>
            <li>Merged redundant Attribute validators inner classes with the data type validators. [jeffreyr]</li>
