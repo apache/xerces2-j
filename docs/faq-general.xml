@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='General FAQs'>
- <faq title='Validation'>
-  <q>How do I turn on validation?</q>
+ <faq title='Validation against DTD'>
+  <q>How do I turn on DTD validation?</q>
   <a>
    <p>
     You can turn validation on and off via methods available
@@ -19,9 +19,7 @@
     <code>parser.setFeature("http://xml.org/sax/features/validation", true);</code>
    </p>
   </a>
- </faq>
- 
-
+ </faq> 
 <faq title='IDs and XML Schemas'>
   <q>Why getElementById() does not always work for documents validated against XML Schemas?</q>
   <a>
