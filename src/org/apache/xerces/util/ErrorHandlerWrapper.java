@@ -142,8 +142,11 @@ public class ErrorHandlerWrapper
         try {
             fErrorHandler.warning(saxException);
         }
+        catch (SAXParseException e) {
+            throw createXMLParseException(e);
+        }
         catch (SAXException e) {
-            throw createXMLParseException(saxException);
+            throw createXNIException(e);
         }
 
     } // warning(String,String,XMLParseException)
@@ -171,8 +174,11 @@ public class ErrorHandlerWrapper
         try {
             fErrorHandler.error(saxException);
         }
+        catch (SAXParseException e) {
+            throw createXMLParseException(e);
+        }
         catch (SAXException e) {
-            throw createXMLParseException(saxException);
+            throw createXNIException(e);
         }
 
     } // error(String,String,XMLParseException)
@@ -208,8 +214,11 @@ public class ErrorHandlerWrapper
         try {
             fErrorHandler.fatalError(saxException);
         }
+        catch (SAXParseException e) {
+            throw createXMLParseException(e);
+        }
         catch (SAXException e) {
-            throw createXMLParseException(saxException);
+            throw createXNIException(e);
         }
 
     } // fatalError(String,String,XMLParseException)
@@ -228,7 +237,7 @@ public class ErrorHandlerWrapper
                                      exception.getException());
     } // createSAXParseException(XMLParseException):SAXParseException
 
-    /** Creates a XMLParseException from an SAXParseException. */
+    /** Creates an XMLParseException from a SAXParseException. */
     protected static XMLParseException createXMLParseException(SAXParseException exception) {
         final String fPublicId = exception.getPublicId();
         final String fSystemId = exception.getSystemId();
@@ -245,4 +254,11 @@ public class ErrorHandlerWrapper
                                      exception.getException());
     } // createXMLParseException(SAXParseException):XMLParseException
 
+    /** Creates an XNIException from a SAXException. 
+        NOTE:  care should be taken *not* to call this with a SAXParseException; this will
+        lose information!!! */
+    protected static XNIException createXNIException(SAXException exception) {
+        return new XNIException(exception.getMessage(),
+                                     exception.getException());
+    } // createXNIException(SAXException):XMLParseException
 } // class ErrorHandlerWrapper
