@@ -540,6 +540,7 @@ public abstract class Grammar implements EntityState {
                              fEntitySystemId[chunk][index],
                              fEntityBaseSystemId[chunk][index],
                              fEntityNotation[chunk][index],
+                             fEntityValue[chunk][index],
                              fEntityIsPE[chunk][index] == 0 ? false : true ,
                              fEntityInExternal[chunk][index] == 0 ? false : true );
 
@@ -1073,7 +1074,7 @@ public abstract class Grammar implements EntityState {
        int index = entityDeclIndex & CHUNK_MASK;
 
        fEntityName[chunk][index] = entityDecl.name;
-       fEntityValue[chunk][index] = null;
+       fEntityValue[chunk][index] = entityDecl.value;
        fEntityPublicId[chunk][index] = entityDecl.publicId;
        fEntitySystemId[chunk][index] = entityDecl.systemId;
        fEntityBaseSystemId[chunk][index] = entityDecl.baseSystemId;
