@@ -571,11 +571,13 @@ public class TraverseSchema implements
                            SchemaGrammar schemaGrammar,
                            GrammarResolver grammarResolver) throws Exception {
 
-        fNamespacesScope = new NamespacesScope(this);
 
         fSchemaRootElement = root;
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
+        fNamespacesScope = new NamespacesScope(this);
+        fNamespacesScope.setNamespaceForPrefix(fStringPool.addSymbol("xml"), fStringPool.addSymbol("http://www.w3.org/XML/1998/namespace"));
+
         if (fFullConstraintChecking) {
           fSchemaGrammar.setDeferContentSpecExpansion();
           fSchemaGrammar.setCheckUniqueParticleAttribution();
@@ -1467,6 +1469,7 @@ public class TraverseSchema implements
             fSchemaRootElement = root;
             fCurrentSchemaURL = location;
             fNamespacesScope = new NamespacesScope(this);
+            fNamespacesScope.setNamespaceForPrefix(fStringPool.addSymbol("xml"), fStringPool.addSymbol("http://www.w3.org/XML/1998/namespace"));
             if((redefinedTargetNSURIString.length() == 0) && (root.getAttributeNode("xmlns") == null)) {
                 fNamespacesScope.setNamespaceForPrefix(StringPool.EMPTY_STRING, fTargetNSURI);
             } else {
