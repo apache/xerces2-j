@@ -422,20 +422,16 @@ public class UTF8Reader
                 // decode bytes into surrogate characters
                 int uuuuu = ((b0 << 2) & 0x001C) | ((b1 >> 4) & 0x0003);
                 int wwww = uuuuu - 1;
-                int hs = 0xD800 | 
-                         ((wwww << 6) & 0x03C0) | ((b1 << 2) & 0x003C) | 
-                         ((b2 >> 4) & 0x0003);
-                int ls = 0xDC00 | ((b2 << 6) & 0x03C0) | (b3 & 0x003F);
+                int zzzz = b1 & 0x000F;
+                int yyyyyy = b2 & 0x003F;
+                int xxxxxx = b3 & 0x003F;
+                int hs = 0xD800 | ((wwww << 6) & 0x03C0) | (zzzz << 2) | (yyyyyy >> 4);
+                int ls = 0xDC00 | ((yyyyyy << 6) & 0x03C0) | xxxxxx;
 
-                // set characters; save low surrogate if doesn't fit
+                // set characters
                 ch[out++] = (char)hs;
-                if (out < offset + length) {
-                    ch[out++] = (char)ls;
-                }
-                else {
-                    fSurrogate = ls;
-                }
-                count -= 3;
+                ch[out++] = (char)ls;
+                count -= 2;
                 continue;
             }
 
