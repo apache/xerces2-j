@@ -644,25 +644,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)) {
                 if (value instanceof String || value == null) {
                     try {
-                        String schemaType = (String) getProperty(
-                        Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE);
-                        if (schemaType == Constants.NS_XMLSCHEMA || value == null) {
-                            // map DOM schema-location to JAXP schemaSource property
-                            setProperty(
-                                Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
-                                value);
-                        }
-                        else {
-                            // schemaType must not be null.
-                            // REVISIT: allow pre-parsing DTD grammars
-                            String msg =
-                                DOMMessageFormatter.formatMessage(
-                                    DOMMessageFormatter.DOM_DOMAIN,
-                                    "FEATURE_NOT_SUPPORTED",
-                                    new Object[] { name });
-                            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
-                        }
-
+                        // map DOM schema-location to JAXP schemaSource property
+                        setProperty(
+                            Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
+                            value);
                     }
                     catch (XMLConfigurationException e) {}
                 }
