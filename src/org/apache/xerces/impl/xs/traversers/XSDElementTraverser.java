@@ -386,7 +386,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // required attributes
         if (nameAtt == null) {
             if (isGlobal)
-                reportSchemaError("s4s-att-must-appear", new Object[]{NO_NAME, SchemaSymbols.ATT_NAME});
+                reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_ELEMENT, SchemaSymbols.ATT_NAME});
             else
                 reportSchemaError("src-element.2.1", null);
             nameAtt = NO_NAME;

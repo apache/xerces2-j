@@ -141,6 +141,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         XSSimpleType type = traverseSimpleTypeDecl(elmNode, attrValues, schemaDoc, grammar, true);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
+        if (nameAtt == null)
+            reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, SchemaSymbols.ATT_NAME});
+
         return type;
     }
 
