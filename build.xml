@@ -171,6 +171,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="compile" depends="prepare-src">
     <javac srcdir="${build.src}"
+           excludes="**/RevalidatingDOMParser.java "
     	   destdir="${build.dest}"
     	   debug="${debug}"
 	       deprecation="${deprecation}"
