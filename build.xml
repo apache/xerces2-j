@@ -170,7 +170,8 @@ Copyright:
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java ">
+                       **/DTDImporter.java 
+                       **/v1/** **/v2/**">
         </fileset>
     </copy>
     
@@ -190,7 +191,7 @@ Copyright:
     </copy>
 
     <javac srcdir="${build.src}"
-           excludes="**/RevalidatingDOMParser.java **/v1/** **/v2/**"
+           excludes="**/RevalidatingDOMParser.java"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
@@ -335,7 +336,8 @@ Copyright:
         <fileset
             dir="${src.dir}"  
             includes="**/Makefile, **/Makefile.incl, org/**, javax/**"
-            excludes="**/CVS*, **/.#*, **/*.class"
+            excludes="**/CVS*, **/.#*, **/*.class
+                      **/v1/** **/v2/**"
         />
     </copy>
 

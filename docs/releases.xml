@@ -3,24 +3,42 @@
 <releases>
  <release version='NOT YET RELEASED'>
   <desc/>
-  <fix>
-   <note>
-    Fixed bug in scanner that allowed the built-in entity references
-    to be sent via XNI. The default value for this feature should have
-    been false.
-   </note>
-   <submitter name='Andy Clark'/>
-  </fix>
-  <fix>
-   <note>Fixed several SAX bugs.</note>
-   <submitter name='Andy Clark'/>
-  </fix>
-  <update>
-   <note>
-    Synchronized DOM implementation code from Xerces 1.x codebase.
-   </note>
-   <submitter name='Andy Clark'/>
-  </update>
+  <changes>
+   <update>
+    <note>
+     Updated standard parser configuration to separate DTD validation
+     and namespace binding in the parsing pipeline.
+    </note>
+    <submitter name='Andy Clark'/>
+   </update>
+   <remove>
+    <note>
+     Removed old XML Schema code that was not being used. This code 
+     is intended to be replaced by either a port of the Xerces 1.x 
+     XML Schema implementation or by a re-designed, re-implemented
+     XML Schema implementation.
+    </note>
+    <submitter name='Andy Clark'/>
+   </remove>
+   <fix>
+    <note>
+     Fixed bug in scanner that allowed the built-in entity references
+     to be sent via XNI. The default value for this feature should have
+     been false.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
+   <fix>
+    <note>Fixed several SAX bugs.</note>
+    <submitter name='Andy Clark'/>
+   </fix>
+   <update>
+    <note>
+     Synchronized DOM implementation code from Xerces 1.x codebase.
+    </note>
+    <submitter name='Andy Clark'/>
+   </update>
+  </changes>
  </release>
  <release version='&ParserName; 2.0.0 (beta)'>
   <desc>

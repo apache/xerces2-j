@@ -1,8 +1,8 @@
-/*
+/*                                                                                   :q
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer. 
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:
+ *    if any, must include the following acknowledgment:  
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written
+ *    software without prior written permission. For written 
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -54,70 +54,58 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+package org.apache.xerces.impl.validation.datatypes;
 
-package org.apache.xerces.impl.validation.datatypes.eTypes.Data.datime;
+import java.util.Hashtable;
 
-import org.apache.xerces.impl.validation.datatypes.regex.*;
-
-import java.util.StringTokenizer;
-import java.io.IOException;
-import java.io.FileNotFoundException;
-
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.impl.validation.DatatypeValidator;
+import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
+import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 
 /**
- * Handles date part of ISO 8601
- * 
- * @author Leonard C. Berman
- * @author Jeffrey Rodriguez
+ * NMTOKEN datatype validator.
+ *
  * @version $Id$
  */
-public class ISODate extends ISODateTime {
+public class NMTOKENDatatypeValidator 
+    extends AbstractDatatypeValidator {
 
-   public ISODate(){ 
-      super( "ISODate"); 
+   public  NMTOKENDatatypeValidator() throws InvalidDatatypeFacetException{
+        // Native, No Facets defined, Restriction
+      this( null, null, false );
+
    }
-/**
- * 
- */
-   public ISODate( String name ) {
-      super( name );
+
+   public NMTOKENDatatypeValidator( DatatypeValidator base, Hashtable facets, 
+                                    boolean derivedByList ) throws InvalidDatatypeFacetException {
+       // ignore everything -- just do NMTOKEN validation
    }
-   Match getTimeMatch(){
-      throw new RuntimeException("Can't call getTimeMatch on ISODate");
+
+   /**
+    * validate that a string is a W3C string type
+    * 
+    * @param content A string containing the content to be validated
+    * @param list
+    * @exception throws InvalidDatatypeException if the content is
+    *                   not a W3C string type
+    * @exception InvalidDatatypeValueException
+    */
+   public void validate(String content, Object state)  
+        throws InvalidDatatypeValueException {
+       if (!XMLChar.isValidNmtoken(content)) {
+           throw new InvalidDatatypeValueException(content+" is not a NMTOKEN");
+       }
    }
-   public static void main(String[] args) throws FileNotFoundException, IOException {
-      // Insert code to start the application here.
-      if (args == null || args.length == 0) {
-         args = new String[] {"/home/berman/perl/XML/date/ex.date"};
-      }
-      int i;
-      ISODate iso = new ISODate();
-      /*
-      FileStringRW fsrw = new FileStringRW();
-      for (i = 0; i < args.length; i++) {
-         fsrw.clear();
-         fsrw.setFile(new String[] {args[i]});
-         fsrw.read(0);
-         String contents = fsrw.getContents();
-         StringTokenizer tok = new StringTokenizer(contents);
-         while (tok.hasMoreElements()) {
-            String str = (String) tok.nextElement();
-            if (!iso.validate(str)) {
-               System.err.println(">>>   " + str + " not valid ISODate\n");
-            }
-         }
-      }
-      */
+
+   public Hashtable getFacets() { return null; }
+
+   public int compare( String content, String facetValue){
+       return content.compareTo(facetValue);
    }
-   void setTimeMatch(Match m){
-      throw new RuntimeException("Can't call setTimeMatch on ISODate");
+
+   public Object clone() throws CloneNotSupportedException  {
+      return this;
    }
-   /** Determines whether str is a valid ISO 8601 date */
-   public boolean validate(Object obj){
-      String str = ( String ) obj;        
-      if ( ! super.validate(str) ) {
-         return false;
-      }
-      return !isTime() && isDate();
-   }
-}
+
+} // class NMTOKENDatatypeValidator

@@ -65,7 +65,8 @@ import org.apache.xerces.impl.XMLDocumentScannerImpl;
 import org.apache.xerces.impl.XMLDTDScannerImpl;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.impl.XMLValidator;
+import org.apache.xerces.impl.XMLDTDValidator;
+import org.apache.xerces.impl.XMLNamespaceBinder;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
@@ -173,9 +174,13 @@ public class StandardParserConfiguration
     protected static final String GRAMMAR_POOL = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
     
-    /** Property identifier: validator. */
-    protected static final String VALIDATOR = 
-        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
+    /** Property identifier: DTD validator. */
+    protected static final String DTD_VALIDATOR = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_VALIDATOR_PROPERTY;
+
+    /** Property identifier: namespace binder. */
+    protected static final String NAMESPACE_BINDER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_BINDER_PROPERTY;
 
     /** Property identifier: datatype validator factory. */
     protected static final String DATATYPE_VALIDATOR_FACTORY = 
@@ -212,8 +217,11 @@ public class StandardParserConfiguration
     /** DTD scanner. */
     protected XMLDTDScanner fDTDScanner;
 
-    /** Validator. */
-    protected XMLValidator fValidator;
+    /** DTD Validator. */
+    protected XMLDTDValidator fDTDValidator;
+
+    /** Namespace binder. */
+    protected XMLNamespaceBinder fNamespaceBinder;
 
     // state
 
@@ -316,10 +324,16 @@ public class StandardParserConfiguration
             }
         }
 
-        fValidator = createValidator();
-        if (fValidator != null) {
-            fProperties.put(VALIDATOR, fValidator);
-            addComponent(fValidator);
+        fDTDValidator = createDTDValidator();
+        if (fDTDValidator != null) {
+            fProperties.put(DTD_VALIDATOR, fDTDValidator);
+            addComponent(fDTDValidator);
+        }
+
+        fNamespaceBinder = createNamespaceBinder();
+        if (fNamespaceBinder != null) {
+            fProperties.put(NAMESPACE_BINDER, fNamespaceBinder);
+            addComponent(fNamespaceBinder);
         }
         
         fDatatypeValidatorFactory = createDatatypeValidatorFactory();
@@ -450,21 +464,29 @@ public class StandardParserConfiguration
         //          etc... -Ac
 
         // setup document pipeline
-        if (fValidator != null) {
-            fScanner.setDocumentHandler(fValidator);
-            fValidator.setDocumentHandler(fDocumentHandler);
+        if (fDTDValidator != null) {
+            fScanner.setDocumentHandler(fDTDValidator);
+            fDTDValidator.setDocumentHandler(fNamespaceBinder);
+            fNamespaceBinder.setDocumentHandler(fDocumentHandler);
         }
         else {
-            fScanner.setDocumentHandler(fDocumentHandler);
+            fScanner.setDocumentHandler(fNamespaceBinder);
+            fNamespaceBinder.setDocumentHandler(fDocumentHandler);
         }
 
         // setup dtd pipeline
         if (fDTDScanner != null) {
-            fDTDScanner.setDTDHandler(fValidator);
-            fValidator.setDTDHandler(fDTDHandler);
-            
-            fDTDScanner.setDTDContentModelHandler(fValidator);
-            fValidator.setDTDContentModelHandler(fDTDContentModelHandler);
+            if (fDTDValidator != null) {
+                fDTDScanner.setDTDHandler(fDTDValidator);
+                fDTDValidator.setDTDHandler(fDTDHandler);
+                
+                fDTDScanner.setDTDContentModelHandler(fDTDValidator);
+                fDTDValidator.setDTDContentModelHandler(fDTDContentModelHandler);
+            }
+            else {
+                fDTDScanner.setDTDHandler(fDTDHandler);
+                fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
+            }
         }
 
     } // configurePipeline()
@@ -611,10 +633,15 @@ public class StandardParserConfiguration
         return new XMLDTDScannerImpl();
     } // createDTDScanner():XMLDTDScanner
 
-    /** Create a validator. */
-    protected XMLValidator createValidator() {
-        return new XMLValidator();
-    } // createValidator():XMLValidator
+    /** Create a DTD validator. */
+    protected XMLDTDValidator createDTDValidator() {
+        return new XMLDTDValidator();
+    } // createDTDValidator():XMLDTDValidator
+
+    /** Create a namespace binder. */
+    protected XMLNamespaceBinder createNamespaceBinder() {
+        return new XMLNamespaceBinder();
+    } // createNamespaceBinder():XMLNamespaceBinder
 
     /** Create a datatype validator factory. */
     protected DatatypeValidatorFactory createDatatypeValidatorFactory() {

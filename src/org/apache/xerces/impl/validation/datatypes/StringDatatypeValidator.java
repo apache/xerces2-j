@@ -65,8 +65,8 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.impl.validation.DatatypeValidator;
-import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
-import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
+//import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+//import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 
@@ -110,7 +110,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator {
    private boolean    isMaxInclusiveDefined = false;
    private boolean    isMinExclusiveDefined = false;
    private boolean    isMinInclusiveDefined = false;
-   private RegularExpression fRegex         = null;
+   //private RegularExpression fRegex         = null;
 
 
 
@@ -133,7 +133,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator {
          for (Enumeration e = facets.keys(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
 
-            if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+            if ( key.equals("length") ) {
                fFacetsDefined += DatatypeValidator.FACET_LENGTH;
                String lengthValue = (String)facets.get(key);
                try {
@@ -144,7 +144,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator {
                if ( fLength < 0 )
                   throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
-            } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+            } else if (key.equals("minlength") ) {
                fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
                String minLengthValue = (String)facets.get(key);
                try {
@@ -152,7 +152,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator {
                } catch (NumberFormatException nfe) {
                   throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
                }
-            } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
+            } else if (key.equals("maxlength") ) {
                fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
                String maxLengthValue = (String)facets.get(key);
                try {
@@ -160,11 +160,15 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator {
                } catch (NumberFormatException nfe) {
                   throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
                }
-            } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+            } 
+            /***
+            else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                fPattern = (String)facets.get(key);
                fRegex   = new RegularExpression(fPattern, "X");
-            } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+            } 
+            /***/
+            else if (key.equals("enumeration")) {
                fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                fEnumeration = (Vector)facets.get(key);
                /* Per Schema CR - October 23 spec we don't have this facets in String datatype
@@ -181,7 +185,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator {
                fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
                fMinExclusive = (String)facets.get(key);
                */
-            } else if (key.equals(SchemaSymbols.ELT_WHITESPACE)) {
+            } else if (key.equals("whitespace")) {
                String         whiteSpaceChoice = (String)facets.get(key); 
                fFacetsDefined += DatatypeValidator.FACET_WHITESPACE;
                if ( whiteSpaceChoice.equals("preserve" ) ) {
@@ -346,12 +350,14 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator {
 
         */
 
+      /***
       if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
          //RegularExpression regex = new RegularExpression(fPattern );
          if ( fRegex == null || fRegex.matches( content) == false )
             throw new InvalidDatatypeValueException("Value '"+content+
                                                     "' does not match regular expression facet '" + fPattern + "'." );
       }
+      /***/
 
    }
    public int compare( String content, String facetValue ){

@@ -207,6 +207,12 @@ public final class Constants {
     /** Validator property ("internal/validator"). */
     public static final String VALIDATOR_PROPERTY = "internal/validator";
 
+    /** Validator property ("internal/validator/dtd"). */
+    public static final String DTD_VALIDATOR_PROPERTY = "internal/validator/dtd";
+
+    /** Namespace binder property ("internal/namespace-binder"). */
+    public static final String NAMESPACE_BINDER_PROPERTY = "internal/namespace-binder";
+
     // private
 
     /** SAX features. */

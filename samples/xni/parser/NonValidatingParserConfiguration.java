@@ -57,8 +57,8 @@
 
 package xni.parser;
 
+import org.apache.xerces.impl.XMLDTDValidator;
 import org.apache.xerces.impl.XMLNamespaceBinder;
-import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
 
@@ -123,8 +123,8 @@ public class NonValidatingParserConfiguration
     // factory methods
 
     /** Create a null validator. */
-    protected XMLValidator createValidator() {
+    protected XMLDTDValidator createDTDValidator() {
         return null;
-    } // createValidator():XMLValidator
+    } // createDTDValidator():XMLDTDValidator
 
 } // class NonValidatingParserConfiguration

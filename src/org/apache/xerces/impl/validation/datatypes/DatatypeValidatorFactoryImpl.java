@@ -64,7 +64,7 @@ import org.apache.xerces.impl.validation.DatatypeValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
-import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+//import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
 import org.apache.xerces.impl.validation.Grammar;
 
 
@@ -119,6 +119,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
     //Register Primitive Datatypes
 
+    /***
     public void expandRegistryToFullSchemaSet() {
 
         //Register Primitive Datatypes 
@@ -290,6 +291,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             }
         }
     }
+    /***/
 
 
 
@@ -327,9 +329,13 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
 
+                /***
                 Hashtable facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
                 createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
+                /***/
+                createDatatypeValidator("NMTOKEN", new NMTOKENDatatypeValidator(), null, false );
+                /***/
 
                 createDatatypeValidator("NMTOKENS",  
                                         getDatatypeValidator( "NMTOKEN" ), null, true );
@@ -376,12 +382,14 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                     if (!fgBaseTypes.containsKey("NMTOKEN")) {
                         initializeDTDRegistry();
                     }
+                    /***
                     if (!fgBaseTypes.containsKey(name)) {
                         // lazily construct Schema base types
                         if (!fgBaseTypes.containsKey("boolean")) {
                             expandRegistryToFullSchemaSet();
                         }
                     }
+                    /***/
                 }
             }
             base = getDatatypeValidator(name);

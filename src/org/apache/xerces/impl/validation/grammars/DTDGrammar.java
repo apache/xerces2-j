@@ -557,11 +557,20 @@ public class DTDGrammar
         }
         else if (type.startsWith("NOTATION") ) {
             fSimpleType.type = XMLSimpleType.TYPE_NOTATION;
+            /***
             facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
+            /***/
+            // REVISIT: Is this a bug? -Ac
+            facets.put("enumeration", fSimpleType.enumeration);
+            /***/
         }
         else if (type.startsWith("ENUMERATION") ) {
             fSimpleType.type = XMLSimpleType.TYPE_ENUMERATION;
+            /***
             facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
+            /***/
+            facets.put("enumeration", fSimpleType.enumeration);
+            /***/
         }
         else {
             // REVISIT: Report error message. -Ac

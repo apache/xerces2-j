@@ -67,9 +67,9 @@ import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
-import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+//import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
 import org.apache.xerces.impl.validation.DatatypeValidator;
-import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
+//import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
 
 
 
@@ -89,7 +89,7 @@ implements  StatefullDatatypeValidator {
     private int        fFacetsDefined    = 0;
     private boolean    fDerivedByList    = false;//default
 
-    private RegularExpression fRegex         = null;
+    //private RegularExpression fRegex         = null;
 
 
 
@@ -109,7 +109,7 @@ implements  StatefullDatatypeValidator {
         if (facets != null) {
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                 String key = (String) e.nextElement();
-                if (key.equals(SchemaSymbols.ELT_LENGTH)) {
+                if (key.equals("length")) {
                     fFacetsDefined += DatatypeValidator.FACET_LENGTH;
                     String lengthValue = (String)facets.get(key);
                     try {
@@ -120,7 +120,7 @@ implements  StatefullDatatypeValidator {
                     if (fLength < 0)
                         throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
-                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH)) {
+                } else if (key.equals("minlength")) {
                     fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
                     String minLengthValue = (String)facets.get(key);
                     try {
@@ -128,7 +128,7 @@ implements  StatefullDatatypeValidator {
                     } catch (NumberFormatException nfe) {
                         throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
                     }
-                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
+                } else if (key.equals("maxlength")) {
                     fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
                     try {
@@ -136,7 +136,7 @@ implements  StatefullDatatypeValidator {
                     } catch (NumberFormatException nfe) {
                         throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
                     }
-                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                } else if (key.equals("enumeration")) {
                     fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration    = (Vector)facets.get(key);
                 } else {

@@ -66,8 +66,8 @@ import org.apache.xerces.impl.validation.DatatypeValidator;
 
 import org.apache.xerces.impl.validation.XMLEntityDecl;
 import org.apache.xerces.impl.validation.Grammar;
-import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
-import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
+//import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+//import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 

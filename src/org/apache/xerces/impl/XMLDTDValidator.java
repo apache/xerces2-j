@@ -124,7 +124,7 @@ import java.util.StringTokenizer;
  *
  * @version $Id$
  */
-public class XMLValidator
+public class XMLDTDValidator
     implements XMLComponent, 
                XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler
     {
@@ -208,11 +208,6 @@ public class XMLValidator
     /** Datatype validator factory. */
     protected DatatypeValidatorFactory fDatatypeValidatorFactory;
 
-    // utility component
-
-    /** Namespace binder. */
-    protected XMLNamespaceBinder fNamespaceBinder;
-
     // features
 
     /** Namespaces. */
@@ -255,9 +250,6 @@ public class XMLValidator
 
     /** DTD Grammar. */
     protected DTDGrammar fDTDGrammar;
-
-    /** True if the current grammar is Schema. */
-    protected boolean fCurrentGrammarIsSchema;
 
     // state
 
@@ -486,17 +478,13 @@ public class XMLValidator
     //
 
     /** Default constructor. */
-    public XMLValidator() {
+    public XMLDTDValidator() {
         
         // initialize data
         for (int i = 0; i < fElementQNamePartsStack.length; i++) {
             fElementQNamePartsStack[i] = new QName();
         }
-
-        // setup namespace binder
-        fNamespaceBinder = new XMLNamespaceBinder();
-        fNamespaceBinder.setOnlyPassPrefixMappingEvents(true);
-
+        
     } // <init>()
 
     //
@@ -524,7 +512,6 @@ public class XMLValidator
         fCurrentGrammar = null;
         fDTDGrammar = null;
         fCurrentGrammarIsDTD = false;
-        fCurrentGrammarIsSchema = true;
 
         // initialize state
         fInDTD = false;
@@ -550,9 +537,6 @@ public class XMLValidator
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
         fGrammarPool = (GrammarPool)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.GRAMMAR_POOL_PROPERTY);
         fDatatypeValidatorFactory = (DatatypeValidatorFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
-
-        // reset namespace binder
-        fNamespaceBinder.reset(componentManager);
 
         fElementDepth = -1;                      
         init();
@@ -626,7 +610,6 @@ public class XMLValidator
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
-        fNamespaceBinder.setDocumentHandler(fDocumentHandler);
     } // setDocumentHandler(XMLDocumentHandler)
 
     //
@@ -1560,7 +1543,6 @@ public class XMLValidator
         fCurrentGrammar = fDTDGrammar;
         // REVESIT: if schema validation is turned on, we shouldn't be doing this.
         fCurrentGrammarIsDTD = true;
-        fCurrentGrammarIsSchema = false;
 
         // check VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
@@ -2516,11 +2498,6 @@ public class XMLValidator
             }
         }
 
-        // bind namespaces, if current grammar is Schema
-        if (fNamespaces && fCurrentGrammarIsSchema) {
-            fNamespaceBinder.startElement(element, attributes);
-        }
-        
         if (fCurrentGrammar == null && !fSkipValidation){
         
             if  (!fValidation) {
@@ -2557,12 +2534,6 @@ public class XMLValidator
             }
         }
         
-        // buffer datatype value for Schema datatype validation
-        if (fValidation && fCurrentContentSpecType == XMLElementDecl.TYPE_SIMPLE) {
-            fBufferDatatype = true;
-            fDatatypeBuffer.setLength(0);
-        }
-
         // set element content state
         fInElementContent = fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN;
 
@@ -2593,11 +2564,6 @@ public class XMLValidator
             }
             qname.setValues(element);
             fElementChildrenLength++;
-        }
-
-        // bind namespaces, if current grammar is DTD
-        if (fNamespaces && fCurrentGrammarIsDTD) {
-            fNamespaceBinder.startElement(element, attributes);
         }
 
         // save current element information
@@ -2670,11 +2636,6 @@ public class XMLValidator
             fDocumentHandler.endElement(fCurrentElement);
         }
         
-        // unbind prefixes
-        if (fNamespaces) {
-            fNamespaceBinder.endElement(element);
-        }
-
         // now pop this element off the top of the element stack
         if (fElementDepth < -1) {
             throw new RuntimeException("FWK008 Element stack underflow");
@@ -2735,4 +2696,4 @@ public class XMLValidator
         return new DTDGrammar(fSymbolTable);
     } // createDTDGrammar():DTDGrammar
 
-} // class XMLValidator
+} // class XMLDTDValidator

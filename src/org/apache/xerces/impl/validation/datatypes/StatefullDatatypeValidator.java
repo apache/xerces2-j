@@ -59,7 +59,7 @@ package org.apache.xerces.impl.validation.datatypes;
 
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
-import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+//import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
 
 
 
