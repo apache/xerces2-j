@@ -59,6 +59,7 @@ package org.apache.xerces.dom;
 
 import java.util.Hashtable;
 import java.util.Vector;
+import java.io.Serializable;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -520,7 +521,7 @@ public class DocumentImpl
      * is probably short in most cases, it might not be worth spending
      * the space. ***** REVISIT WHEN WE HAVE MORE EXPERIENCE.
      */
-    class LEntry
+    class LEntry implements Serializable
     {
         String type;
         EventListener listener;
@@ -861,7 +862,7 @@ public class DocumentImpl
      * (two values, the Attr node affected (if any) and its previous 
      * string value. Simple struct, no methods.
      */
-    class EnclosingAttr
+    class EnclosingAttr implements Serializable
     {
         AttrImpl node;
         String oldvalue;

@@ -40,9 +40,16 @@
     </fix>
     <update>
       <note>Improved management of ID attributes in the DOM so that
-        Document.getElementByID is more reliable.</note>
+        Document.getElementByID is more reliable.
+      </note>
       <submitter name='Arnaud  Le Hors'/>
     </update>
+    <fix>
+      <note>Applied patch from Scott Sanders to fix Java serialization of the
+        DOM and add a test.
+      </note>
+      <submitter name='Arnaud  Le Hors'/>
+    </fix>
   </changes>
  </release>
  <release version='Xerces 2.0.1'>
