@@ -51,9 +51,9 @@ Implementation-URL: http://java.sun.com/xml/jaxp.html
 Name: org/apache/xerces/xni/
 Comment: Xerces Native Interface
 Specification-Title: Xerces Native Interface
-Specification-Version: 1.1
+Specification-Version: 1.2
 Specification-Vendor: Apache Software Foundation
 Implementation-Title: org.apache.xerces.xni
-Implementation-Version: 1.1
+Implementation-Version: 1.2
 Implementation-Vendor: Apache Software Foundation
 Implementation-URL: http://xml.apache.org/xerces2-j/
