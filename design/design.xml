@@ -1532,30 +1532,28 @@
   </class>
 
   <class id='grammar' name='Grammar'>
-   <implements>
-    <reference idref='content-spec-provider'/>
-   </implements>
    <field name='fTargetNamespace'>
     <reference idref='java-string'/>
    </field>
-   <!-- REVISIT
-   <field name='fGrammarDocument'>
-    <reference idref='dom-document'/>
-   </field>
-   -->
    <constructor/>
    <method name='getTargetNamespace'>
     <returns>
      <reference idref='java-string'/>
     </returns>
    </method>
-   <!-- REVISIT
-   <method name='getGrammarDocument'>
+   <method name='getFirstElementDeclIndex'>
     <returns>
-     <reference idref='dom-document'/>
+     <primitive type='int'/>
     </returns>
    </method>
-   -->
+   <method name='getNextElementDeclIndex'>
+    <param name='elementDeclIndex'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
    <method name='getElementDeclIndex'>
     <param name='elementDeclName'>
      <reference idref='java-string'/>
@@ -1618,6 +1616,19 @@
      <primitive type='boolean'/>
     </returns>
    </method>
+   <method name='getFirstEntityDeclIndex'>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='getNextEntityDeclIndex'>
+    <param name='elementDeclIndex'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
    <method name='getEntityDeclIndex'>
     <param name='entityDeclName'>
      <reference idref='java-string'/>
@@ -1637,6 +1648,19 @@
      <primitive type='boolean'/>
     </returns>
    </method>
+   <method name='getFirstNotationDeclIndex'>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='getNextNotationDeclIndex'>
+    <param name='elementDeclIndex'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
    <method name='getNotationDeclIndex'>
     <param name='notationDeclName'>
      <reference idref='java-string'/>
@@ -1654,14 +1678,6 @@
     </param>
     <returns>
      <primitive type='boolean'/>
-    </returns>
-   </method>
-   <method name='getElementContentModel'>
-    <param name='elementDeclIndex'>
-     <primitive type='int'/>
-    </param>
-    <returns>
-     <reference idref='content-model'/>
     </returns>
    </method>
   </class>
@@ -1694,6 +1710,9 @@
    <field name='contentSpec' visibility='public'>
     <primitive type='int'/>
    </field>
+   <field name='contentModelValidator' visibility='public'>
+    <reference idref='content-model'/>
+   </field>
    <field name='simpleType' visibility='public'>
     <reference idref='simple-type'/>
    </field>
@@ -1717,80 +1736,6 @@
    <method name='clear'/>
   </class>
 
-  <class id='content-spec' name='XMLContentSpec'>
-   <constant name='TYPE_CHOICE'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='TYPE_LEAF'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='TYPE_SEQUENCE'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='TYPE_ZERO_OR_ONE'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='TYPE_ZERO_OR_MORE'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='TYPE_ONE_OR_MORE'>
-    <primitive type='short'/>
-   </constant>
-   <field name='type' visibility='public'>
-    <primitive type='short'/>
-   </field>
-   <field name='left' visibility='public'>
-    <primitive type='int'/>
-   </field>
-   <field name='right' visibility='public'>
-    <primitive type='int'/>
-   </field>
-   <field name='uri' visibility='public'>
-    <reference idref='java-string'/>
-   </field>
-   <field name='localpart' visibility='public'>
-    <reference idref='java-string'/>
-   </field>
-   <method name='setValues'>
-    <param name='type'>
-     <primitive type='short'/>
-    </param>
-    <param name='left'>
-     <primitive type='int'/>
-    </param>
-    <param name='right'>
-     <primitive type='int'/>
-    </param>
-   </method>
-   <method name='setValues'>
-    <param name='type'>
-     <primitive type='short'/>
-    </param>
-    <param name='uri'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='localpart'>
-     <reference idref='java-string'/>
-    </param>
-   </method>
-   <method name='clear'/>
-  </class>
-
-  <interface id='content-spec-provider' name='ContentSpecProvider'>
-   <method name='getContentSpec'>
-    <param name='contentSpecIndex'>
-     <primitive type='int'/>
-    </param>
-    <param name='contentSpec'>
-     <note>The values of this structure are set by this call.</note>
-     <reference idref='content-spec'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-   </method>
-  </interface>                            
-                            
   <class id='attribute-decl' name='XMLAttributeDecl'>
    <field name='name' visibility='public'>
     <reference idref='qname'/>
@@ -1955,9 +1900,6 @@
    <field name='systemId' visibility='public'>
     <reference idref='java-string'/>
    </field>
-   <field name='baseSystemId' visibility='public'>
-    <reference idref='java-string'/>
-   </field>
    <method name='setValues'>
     <param name='name'>
     <reference idref='java-string'/>
@@ -1967,9 +1909,6 @@
     </param>
     <param name='systemId'>
     <reference idref='java-string'/>
-    </param>
-    <param name='baseSystemId'>
-     <reference idref='java-string'/>
     </param>
    </method>
    <method name='clear'/>
@@ -2028,9 +1967,6 @@
     <param name='state'>
      <reference idref='java-object'/>
     </param>
-    <returns>
-     <reference idref='java-object'/>
-    </returns>
     <throws>
      <reference idref='invalid-datatype-value-exception'/>
     </throws>
@@ -2267,12 +2203,14 @@
     <reference idref='content-model'/>
    </implements>
    <constructor>
+    <!-- REVISIT: How do we communicate the model to the DFAContentModel?
     <param name='contentSpecProvider'>
      <reference idref='content-spec-provider'/>
     </param>
     <param name='contentSpecIndex'>
      <primitive type='int'/>
     </param>
+    -->
    </constructor>
   </class>
   
@@ -2918,20 +2856,7 @@
   </class>
 
   <class id='symbol-table' name='SymbolTable'>
-   <field name='fSymbolHasher'>
-    <reference idref='symbol-hasher'/>
-   </field>
    <constructor/>
-   <constructor>
-    <param name='symbolHasher'>
-     <reference idref='symbol-hasher'/>
-    </param>
-   </constructor>
-   <method name='getSymbolHasher'>
-    <returns>
-     <reference idref='symbol-hasher'/>
-    </returns>
-   </method>
    <method name='addSymbol'>
     <param name='symbol'>
      <reference idref='java-string'/>
@@ -2954,36 +2879,33 @@
     </param>
     <returns>
      <reference idref='java-string'/>
+    </returns>
+   </method>
+   <method name='hash'>
+    <param name='symbol'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='hash'>
+    <param name='buffer'>
+     <array>
+      <primitive type='char'/>
+     </array>
+    </param>
+    <param name='offset'>
+     <primitive type='int'/>
+    </param>
+    <param name='length'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
     </returns>
    </method>
   </class>
-
-  <interface id='symbol-hasher' name='SymbolHasher'>
-   <method name='hash'>
-    <param name='symbol'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <primitive type='int'/>
-    </returns>
-   </method>
-   <method name='hash'>
-    <param name='buffer'>
-     <array>
-      <primitive type='char'/>
-     </array>
-    </param>
-    <param name='offset'>
-     <primitive type='int'/>
-    </param>
-    <param name='length'>
-     <primitive type='int'/>
-    </param>
-    <returns>
-     <primitive type='int'/>
-    </returns>
-   </method>
-  </interface>
 
   <class id='qname' name='QName'>
    <field name='prefix' visibility='public'>

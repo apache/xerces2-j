@@ -773,7 +773,6 @@
   <BLOCKQUOTE>
    <A name="Grammar"><DL class="class">
      <DT>class <SPAN class="class-title">Grammar</SPAN>
-     <DD class="implements">      implements      <SPAN class="interface-title">ContentSpecProvider</SPAN>
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="class-title">String</SPAN> <SPAN class="field-title">fTargetNamespace</SPAN>
@@ -787,6 +786,13 @@
        <LI>
         <SPAN class="method-title">getTargetNamespace</SPAN>      (
         )       :    <SPAN class="class-title">String</SPAN>
+       <LI>
+        <SPAN class="method-title">getFirstElementDeclIndex</SPAN>
+        (             )       :    int
+       <LI>
+        <SPAN class="method-title">getNextElementDeclIndex</SPAN>      (
+        int <SPAN class="param-title">elementDeclIndex</SPAN>          )
+        :    int
        <LI>
         <SPAN class="method-title">getElementDeclIndex</SPAN>      (
          <SPAN class="class-title">String</SPAN> <SPAN
@@ -816,6 +822,13 @@
         class="class-title">XMLAttributeDecl</SPAN> <SPAN
         class="param-title">attributeDecl</SPAN>          )       :    boolean
        <LI>
+        <SPAN class="method-title">getFirstEntityDeclIndex</SPAN>      (
+        )       :    int
+       <LI>
+        <SPAN class="method-title">getNextEntityDeclIndex</SPAN>      (
+        int <SPAN class="param-title">elementDeclIndex</SPAN>          )
+        :    int
+       <LI>
         <SPAN class="method-title">getEntityDeclIndex</SPAN>      (
          <SPAN class="class-title">String</SPAN> <SPAN
         class="param-title">entityDeclName</SPAN>          )       :    int
@@ -825,6 +838,13 @@
         class="class-title">XMLEntityDecl</SPAN> <SPAN
         class="param-title">entityDecl</SPAN>          )       :    boolean
        <LI>
+        <SPAN class="method-title">getFirstNotationDeclIndex</SPAN>
+        (             )       :    int
+       <LI>
+        <SPAN class="method-title">getNextNotationDeclIndex</SPAN>
+        (   int <SPAN class="param-title">elementDeclIndex</SPAN>
+        )       :    int
+       <LI>
         <SPAN class="method-title">getNotationDeclIndex</SPAN>      (
          <SPAN class="class-title">String</SPAN> <SPAN
         class="param-title">notationDeclName</SPAN>          )       :    int
@@ -833,10 +853,6 @@
          <SPAN class="param-title">notationDeclIndex</SPAN>, <SPAN
         class="class-title">XMLNotationDecl</SPAN> <SPAN
         class="param-title">notationDecl</SPAN>          )       :    boolean
-       <LI>
-        <SPAN class="method-title">getElementContentModel</SPAN>      (
-        int <SPAN class="param-title">elementDeclIndex</SPAN>          )
-        :    <SPAN class="interface-title">ContentModelValidator</SPAN>
       </UL>
     </DL>
    </A></BLOCKQUOTE>
@@ -857,6 +873,8 @@
        <LI>short <SPAN class="field-title">type</SPAN>
        <LI>int <SPAN class="field-title">contentSpec</SPAN>
        <LI>
+        <SPAN class="interface-title">ContentModelValidator</SPAN> <SPAN class="field-title">contentModelValidator</SPAN>
+       <LI>
         <SPAN class="class-title">XMLSimpleType</SPAN> <SPAN class="field-title">simpleType</SPAN>
       </UL>
      <DD class="methods">      methods:      <UL>
@@ -871,56 +889,6 @@
         class="param-title">simpleType</SPAN>          )
        <LI>
         <SPAN class="method-title">clear</SPAN>      (             )
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLContentSpec"><DL class="class">
-     <DT>class <SPAN class="class-title">XMLContentSpec</SPAN>
-     <DD class="constants">      constants:      <UL>
-       <LI>short <SPAN class="constant-title">TYPE_CHOICE</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_LEAF</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_SEQUENCE</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_ZERO_OR_ONE</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_ZERO_OR_MORE</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_ONE_OR_MORE</SPAN>
-      </UL>
-     <DD class="fields">      fields:      <UL>
-       <LI>short <SPAN class="field-title">type</SPAN>
-       <LI>int <SPAN class="field-title">left</SPAN>
-       <LI>int <SPAN class="field-title">right</SPAN>
-       <LI>
-        <SPAN class="class-title">String</SPAN> <SPAN class="field-title">uri</SPAN>
-       <LI>
-        <SPAN class="class-title">String</SPAN> <SPAN class="field-title">localpart</SPAN>
-      </UL>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">setValues</SPAN>      (   short <SPAN
-        class="param-title">type</SPAN>, int <SPAN
-        class="param-title">left</SPAN>, int <SPAN
-        class="param-title">right</SPAN>          )
-       <LI>
-        <SPAN class="method-title">setValues</SPAN>      (   short <SPAN
-        class="param-title">type</SPAN>, <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">uri</SPAN>, <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">localpart</SPAN>          )
-       <LI>
-        <SPAN class="method-title">clear</SPAN>      (             )
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="ContentSpecProvider"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">ContentSpecProvider</SPAN>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">getContentSpec</SPAN>      (   int
-         <SPAN class="param-title">contentSpecIndex</SPAN>, <SPAN
-        class="class-title">XMLContentSpec</SPAN> <SPAN
-        class="param-title">contentSpec</SPAN>          )       :    boolean
       </UL>
     </DL>
    </A></BLOCKQUOTE>
@@ -1041,8 +1009,6 @@
         <SPAN class="class-title">String</SPAN> <SPAN class="field-title">publicId</SPAN>
        <LI>
         <SPAN class="class-title">String</SPAN> <SPAN class="field-title">systemId</SPAN>
-       <LI>
-        <SPAN class="class-title">String</SPAN> <SPAN class="field-title">baseSystemId</SPAN>
       </UL>
      <DD class="methods">      methods:      <UL>
        <LI>
@@ -1052,9 +1018,7 @@
         class="class-title">String</SPAN> <SPAN
         class="param-title">publicId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
-        class="param-title">systemId</SPAN>, <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">baseSystemId</SPAN>          )
+        class="param-title">systemId</SPAN>          )
        <LI>
         <SPAN class="method-title">clear</SPAN>      (             )
       </UL>
@@ -1090,7 +1054,7 @@
         class="class-title">String</SPAN> <SPAN
         class="param-title">data</SPAN>, <SPAN
         class="class-title">Object</SPAN> <SPAN
-        class="param-title">state</SPAN>          )       :    <SPAN class="class-title">Object</SPAN>
+        class="param-title">state</SPAN>          )
        <LI>
         <SPAN class="method-title">compare</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
@@ -1225,9 +1189,7 @@
      <DD class="constructors">      constructors:      <UL>
        <LI>
         <SPAN class="constructor-title">DFAContentModel</SPAN>      (
-         <SPAN class="interface-title">ContentSpecProvider</SPAN> <SPAN
-        class="param-title">contentSpecProvider</SPAN>, int <SPAN
-        class="param-title">contentSpecIndex</SPAN>          )
+        )
       </UL>
     </DL>
    </A></BLOCKQUOTE>
@@ -1682,23 +1644,12 @@
   <BLOCKQUOTE>
    <A name="SymbolTable"><DL class="class">
      <DT>class <SPAN class="class-title">SymbolTable</SPAN>
-     <DD class="fields">      fields:      <UL>
-       <LI>
-        <SPAN class="interface-title">SymbolHasher</SPAN> <SPAN class="field-title">fSymbolHasher</SPAN>
-      </UL>
      <DD class="constructors">      constructors:      <UL>
        <LI>
         <SPAN class="constructor-title">SymbolTable</SPAN>      (
         )
-       <LI>
-        <SPAN class="constructor-title">SymbolTable</SPAN>      (
-         <SPAN class="interface-title">SymbolHasher</SPAN> <SPAN
-        class="param-title">symbolHasher</SPAN>          )
       </UL>
      <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">getSymbolHasher</SPAN>      (
-        )       :    <SPAN class="interface-title">SymbolHasher</SPAN>
        <LI>
         <SPAN class="method-title">addSymbol</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
@@ -1709,13 +1660,6 @@
         class="param-title">offset</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">length</SPAN>          )       :    <SPAN class="class-title">String</SPAN>
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="SymbolHasher"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">SymbolHasher</SPAN>
-     <DD class="methods">      methods:      <UL>
        <LI>
         <SPAN class="method-title">hash</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
