@@ -4,7 +4,8 @@
 <releases>
   <release version='&ParserName; 2.6.0'>
    <desc>This release provides an implementation of W3C DOM Level 3 Core and Load/Save Candidate Recommendations and also brings Xerces into compliance with the most recent work of the W3C XML Core working group (XML 1.1, Namespace in XML 1.1, XML 1.0 3rd edition, XInclude).
-In addion, in this release we improved parser performance in several areas and fixes many bugs.</desc>
+In addition, in this release we improved parser performance in several areas and fixed many bugs.
+</desc>
    <changes>
     <update>
      <note>

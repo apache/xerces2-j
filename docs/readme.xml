@@ -25,9 +25,9 @@
     </p>
     <p>
       Xerces2 also provides an <link idref='dom3'>experimental implementation</link> of the 
-<jump href="http://www.w3.org/DOM/DOMTR/">Document 
+<jump href="http://www.w3.org/DOM/DOMTR#dom3">Document 
       Object Model Level 3 Core and Load/Save</jump> Candidate Recommendations and provides a 
-      <link idref='faq-xinclude'>partial implementation</link> of the <jump href="http://www.w3.org/TR/xinclude/">XML Inclusions 
+      <link idref='faq-xinclude'>partial implementation</link> of the <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/">XML Inclusions 
       (XInclude)</jump> W3C Working Draft in Last Call.
     </p>
 
