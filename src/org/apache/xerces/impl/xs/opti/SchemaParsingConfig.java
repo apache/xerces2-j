@@ -57,40 +57,31 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import java.util.Locale;
 import java.io.IOException;
-
-import org.w3c.dom.Document;
+import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLDTDScannerImpl;
-import org.apache.xerces.impl.XMLNamespaceBinder;
-import org.apache.xerces.impl.XMLDocumentScannerImpl;
-
+import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.XMLNSDocumentScannerImpl;
 import org.apache.xerces.impl.dv.DTDDVFactory;
-
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
-
 import org.apache.xerces.impl.validation.ValidationManager;
-
+import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.parsers.BasicParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
-
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
-
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponent;
-import org.apache.xerces.xni.parser.XMLDTDScanner;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLDocumentScanner;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDTDScanner;
+import org.apache.xerces.xni.parser.XMLDocumentScanner;
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
-
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-
-import org.apache.xerces.parsers.BasicParserConfiguration;
+import org.w3c.dom.Document;
 
 
 /**
@@ -147,6 +138,7 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     /** Feature identifier: send element default value via characters() */
     protected static final String SCHEMA_ELEMENT_DEFAULT =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
+    	
 
     // property identifiers
 
@@ -224,8 +216,6 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     /** DTD scanner. */
     protected XMLDTDScanner fDTDScanner;
 
-    /** Namespace binder. */
-    protected XMLNamespaceBinder fNamespaceBinder;
     
     protected SchemaDOMParser fSchemaDOMParser;
 
@@ -295,22 +285,22 @@ public class SchemaParsingConfig extends BasicParserConfiguration
 
         // add default recognized features
         final String[] recognizedFeatures = {
-            WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
+			PARSER_SETTINGS, WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
             ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
             LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
             NOTIFY_CHAR_REFS
         };
         addRecognizedFeatures(recognizedFeatures);
-
+		fFeatures.put(PARSER_SETTINGS, Boolean.TRUE);
         // set state for default features
-        setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
+		fFeatures.put(WARN_ON_DUPLICATE_ATTDEF, Boolean.FALSE);
         //setFeature(WARN_ON_DUPLICATE_ENTITYDEF, false);
-        setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);
-        setFeature(ALLOW_JAVA_ENCODINGS, false);
-        setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
-        setFeature(LOAD_EXTERNAL_DTD, true);
-        setFeature(NOTIFY_BUILTIN_REFS, false);
-        setFeature(NOTIFY_CHAR_REFS, false);
+		fFeatures.put(WARN_ON_UNDECLARED_ELEMDEF, Boolean.FALSE);
+		fFeatures.put(ALLOW_JAVA_ENCODINGS, Boolean.FALSE);
+		fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
+		fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
+		fFeatures.put(NOTIFY_BUILTIN_REFS, Boolean.FALSE);
+		fFeatures.put(NOTIFY_CHAR_REFS, Boolean.FALSE);
 
         // add default recognized properties
         final String[] recognizedProperties = {
@@ -331,46 +321,30 @@ public class SchemaParsingConfig extends BasicParserConfiguration
         	setProperty(XMLGRAMMAR_POOL, fGrammarPool);
         }
 
-        fEntityManager = createEntityManager();
-        setProperty(ENTITY_MANAGER, fEntityManager);
+        fEntityManager = new XMLEntityManager();
+        fProperties.put(ENTITY_MANAGER, fEntityManager);
         addComponent(fEntityManager);
 
-        fErrorReporter = createErrorReporter();
+        fErrorReporter = new XMLErrorReporter();
         fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
-        setProperty(ERROR_REPORTER, fErrorReporter);
+		fProperties.put(ERROR_REPORTER, fErrorReporter);
         addComponent(fErrorReporter);
 
-        fScanner = createDocumentScanner();
-        setProperty(DOCUMENT_SCANNER, fScanner);
-        if (fScanner instanceof XMLComponent) {
-            addComponent((XMLComponent)fScanner);
-        }
+        fScanner = new XMLNSDocumentScannerImpl();
+		fProperties.put(DOCUMENT_SCANNER, fScanner);
+		addComponent((XMLComponent)fScanner);
 
-        fDTDScanner = createDTDScanner();
-        if (fDTDScanner != null) {
-            setProperty(DTD_SCANNER, fDTDScanner);
-            if (fDTDScanner instanceof XMLComponent) {
-                addComponent((XMLComponent)fDTDScanner);
-            }
-        }
+        fDTDScanner = new XMLDTDScannerImpl();
+		fProperties.put(DTD_SCANNER, fDTDScanner);
+        addComponent((XMLComponent)fDTDScanner);
 
-        fNamespaceBinder = createNamespaceBinder();
-        if (fNamespaceBinder != null) {
-            setProperty(NAMESPACE_BINDER, fNamespaceBinder);
-            addComponent(fNamespaceBinder);
-        }
-
-
-        fDatatypeValidatorFactory = createDatatypeValidatorFactory();
-        if (fDatatypeValidatorFactory != null) {
-            setProperty(DATATYPE_VALIDATOR_FACTORY,
+        
+        fDatatypeValidatorFactory = DTDDVFactory.getInstance();;
+		fProperties.put(DATATYPE_VALIDATOR_FACTORY,
                         fDatatypeValidatorFactory);
-        }
-        fValidationManager = createValidationManager();
-
-        if (fValidationManager != null) {
-            setProperty (VALIDATION_MANAGER, fValidationManager);
-        }
+        
+        fValidationManager = new ValidationManager();
+		fProperties.put(VALIDATION_MANAGER, fValidationManager);
 
         // add message formatters
         if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
@@ -378,10 +352,15 @@ public class SchemaParsingConfig extends BasicParserConfiguration
             fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
             fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
         }
+        
+		if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+			XSMessageFormatter xmft = new XSMessageFormatter();
+			fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+		}
 
         // set locale
         try {
-            setLocale(Locale.getDefault());
+            setLocale(Locale.getDefault()); 
         }
         catch (XNIException e) {
             // do nothing
@@ -584,7 +563,8 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     public void reset() throws XNIException {
 
         // set handlers
-        fSchemaDOMParser = createSchemaDOMParser();
+        if (fSchemaDOMParser == null)
+        	fSchemaDOMParser = new SchemaDOMParser(this);
         fDocumentHandler = fSchemaDOMParser;
         fDTDHandler = fSchemaDOMParser;
         fDTDContentModelHandler = fSchemaDOMParser;
@@ -598,21 +578,12 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     /** Configures the pipeline. */
     protected void configurePipeline() {
 
-        // REVISIT: This should be better designed. In other words, we
-        //          need to figure out what is the best way for people to
-        //          re-use *most* of the standard configuration but do 
-        //          things common things such as remove a component (e.g.
-        //          the validator), insert a new component (e.g. XInclude), 
-        //          etc... -Ac
-
         // setup document pipeline
-        fScanner.setDocumentHandler(fNamespaceBinder);
-        fNamespaceBinder.setDocumentHandler(fDocumentHandler);
-
-        fLastComponent = fNamespaceBinder;
+        fScanner.setDocumentHandler(fDocumentHandler);
+        fDocumentHandler.setDocumentSource(fScanner);
+        fLastComponent = fScanner;
 
         // setup dtd pipeline
-
         if (fDTDScanner != null) {
                 fDTDScanner.setDTDHandler(fDTDHandler);
                 fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
@@ -742,46 +713,6 @@ public class SchemaParsingConfig extends BasicParserConfiguration
 
     } // checkProperty(String)
 
-    // factory methods
-
-    /** Creates an entity manager. */
-    protected XMLEntityManager createEntityManager() {
-        return new XMLEntityManager();
-    } // createEntityManager():XMLEntityManager
-
-    /** Creates an error reporter. */
-    protected XMLErrorReporter createErrorReporter() {
-        return new XMLErrorReporter();
-    } // createErrorReporter():XMLErrorReporter
-
-    /** Create a document scanner. */
-    protected XMLDocumentScanner createDocumentScanner() {
-        return new XMLDocumentScannerImpl();
-    } // createDocumentScanner():XMLDocumentScanner
-
-    /** Create a DTD scanner. */
-    protected XMLDTDScanner createDTDScanner() {
-        return new XMLDTDScannerImpl();
-    } // createDTDScanner():XMLDTDScanner
-
-
-    /** Create a namespace binder. */
-    protected XMLNamespaceBinder createNamespaceBinder() {
-        return new XMLNamespaceBinder();
-    } // createNamespaceBinder():XMLNamespaceBinder
-    
-    /** Create a readonly DOM parser for loading schema. */
-    protected SchemaDOMParser createSchemaDOMParser() {
-        return new SchemaDOMParser(this);
-    }
-
-    /** Create a datatype validator factory. */
-    protected DTDDVFactory createDatatypeValidatorFactory() {
-        return DTDDVFactory.getInstance();
-    } // createDatatypeValidatorFactory():DatatypeValidatorFactory
-    protected ValidationManager createValidationManager(){
-        return new ValidationManager();
-    }
     
     
     //

@@ -106,7 +106,6 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
     /** Default constructor. */
     public SchemaDOMParser(XMLParserConfiguration config) {
-        schemaDOM = new SchemaDOM();
         this.config = config;
     }
 
@@ -129,6 +128,11 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     public void startDocument(XMLLocator locator, String encoding, 
                               NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
+		fErrorReporter = (XMLErrorReporter)config.getProperty(ERROR_REPORTER);
+		schemaDOM = new SchemaDOM(); 
+		fAnnotationDepth = -1;
+        fInnerAnnotationDepth = -1;
+        fDepth = -1;
         fLocator = locator;
         fNamespaceContext = namespaceContext;
     } // startDocument(XMLLocator,String,NamespaceContext, Augmentations)
@@ -200,18 +204,6 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             for (int i=text.offset; i<text.offset+text.length; i++) {
                 // and there is a non-whitespace character
                 if (!XMLChar.isSpace(text.ch[i])) {
-                    // only get the error reporter when reporting an error
-                    if (fErrorReporter == null) {
-                        try {
-                            fErrorReporter = (XMLErrorReporter)config.getProperty(ERROR_REPORTER);
-                        } catch (Exception e) {
-                            //ignore the excpetion
-                        }
-                        if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
-                            XSMessageFormatter xmft = new XSMessageFormatter();
-                            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
-                        }
-                    }
                     // the string we saw: starting from the first non-whitespace character.
                     String txt = new String(text.ch, i, text.length+text.offset-i);
                     // report an error
