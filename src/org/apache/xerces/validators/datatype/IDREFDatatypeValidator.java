@@ -59,8 +59,11 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Enumeration;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
+
+
 
 
 
@@ -81,8 +84,9 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     private Locale            fLocale           = null;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 
-
-
+    public static final  int       IDREF_STORE    = 0;
+    public static final  int       IDREF_CLEAR    = 1;
+    public static final  int       IDREF_VALIDATE = 2; 
 
 
 
@@ -91,9 +95,13 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-         boolean derivedByList ) throws InvalidDatatypeFacetException { 
-         fDerivedByList = derivedByList;
-         setBasetype( base ); // Set base type 
+                                    boolean derivedByList ) throws InvalidDatatypeFacetException { 
+
+        fDerivedByList = derivedByList;
+        setBasetype( base ); // Set base type 
+
+
+
     }
 
 
@@ -114,14 +122,34 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
-            //Pass content as a String
+        //Pass content as a String
 
-        this.fTableOfId = (Hashtable) state;
+        StateMessageDatatype message;
+        if ( this.fDerivedByList == false ){
+            if (state!= null){
+                message = (StateMessageDatatype) state;    
+                if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
+                    if ( this.fTableOfId != null ){
+                        fTableOfId.clear(); //This is pass to us through the state object
+                    }
+                    if ( this.fTableIDRefs != null ){
+                        fTableIDRefs.clear(); 
+                    }
+                    return null;
+                } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
+                    this.checkIdRefs();//Validate that all keyRef is a keyIds
+                } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
+                    this.fTableOfId = (Hashtable) message.getDatatypeObject();
+                    if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
+                        throw new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
+                    }
+                    addIdRef( content, state);// We are storing IDs 
+                }
+            }
+        } else {
 
-        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
-            throw new InvalidDatatypeValueException( "ID is not valid" );//Need Message
+
         }
-        addIdRef( content, state);
         return null;
     }
 
@@ -140,22 +168,22 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
 
     public Hashtable getFacets(){
-       return null;
-   }
-  /**
-     * Returns a copy of this object.
-     */
+        return null;
+    }
+    /**
+       * Returns a copy of this object.
+       */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-   /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
-     * @param base   the validator for this type's base type
-     */
+    /**
+      * Name of base type as a string.
+      * A Native datatype has the string "native"  as its
+      * base type.
+      * 
+      * @param base   the validator for this type's base type
+      */
     private void setBasetype(DatatypeValidator base){
         fBaseValidator = base;
     }
@@ -164,12 +192,12 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     private void addIdRef(String content, Object state) {
 
         if ( state == null ) {
-            if(content != null &&  this.fTableOfId.containsKey( content ) ){
+            if (content != null &&  this.fTableOfId.containsKey( content ) ){
                 return;
             }
-            if( this.fTableIDRefs == null ){
+            if ( this.fTableIDRefs == null ){
                 this.fTableIDRefs = new Hashtable();
-            } else if( fTableIDRefs.containsKey( content ) ){
+            } else if ( fTableIDRefs.containsKey( content ) ){
                 return;
             }
 
@@ -183,10 +211,35 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     } // addId(int):boolean
 
 
+    private void checkIdRefs() throws InvalidDatatypeValueException {
+        if ( this.fTableIDRefs == null)
+            return;
+        Enumeration en = this.fTableIDRefs.keys();
+        while (en.hasMoreElements()) {
+            Integer key = (Integer)en.nextElement();
+            if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key)) {
+                InvalidDatatypeValueException error =  new
+                                                       InvalidDatatypeValueException( "ID is not valid: " );
+                error.setMajorCode(XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED);
+                error.setMinorCode(XMLMessages.VC_IDREF);
+                throw error;
+            }
+            //    Object[] args = { key.intValue() };
 
-     /**
-     * set the locate to be used for error messages
-     */
+            //  fErrorReporter.reportError(fErrorReporter.getLocator(),
+            //                           XMLMessages.XML_DOMAIN,
+            //                         XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED,
+            //                       XMLMessages.VC_IDREF,
+            //                     args,
+            //                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+        }
+
+    } // checkIdRefs()
+
+
+    /**
+    * set the locate to be used for error messages
+    */
     public void setLocale(Locale locale) {
         fLocale = locale;
     }
@@ -202,3 +255,4 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
 
 }
+

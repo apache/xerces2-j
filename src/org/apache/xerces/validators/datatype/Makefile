@@ -22,6 +22,7 @@ TARGETS=\
 	RecurringDurationDatatypeValidator.class\
 	TimeDurationDatatypeValidator.class\
 	DatatypeValidatorFactoryImpl.class\
+	StateMessageDatatype.class\
 	XMLException.class 
 
 DIRS = 

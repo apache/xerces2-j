@@ -66,6 +66,22 @@ package org.apache.xerces.validators.datatype;
  * @version $Id$
  */
 public class InvalidDatatypeFacetException extends XMLException {
+    private int majorCode = -1;
+    private int minorCode  = -1;
+
+    public  int getMinorCode(){
+      return  minorCode;
+    }
+    public  int getMajorCode(){
+      return  majorCode;
+    }
+
+    public  void setMinorCode(int code ){
+      majorCode = code;
+    }
+    public  void setMajorCode(int code ){
+      minorCode = code;
+    }
 
     public InvalidDatatypeFacetException ( ){ 
         super();

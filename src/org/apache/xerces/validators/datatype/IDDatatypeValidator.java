@@ -91,29 +91,36 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
 
     /**
-     * Checks that "content" string is valid 
+     * Checks that "content" string is valid
      * datatype.
      * If invalid a Datatype validation exception is thrown.
      * 
      * @param content A string containing the content to be validated
-     * @param derivedBylist
-     *                Flag which is true when type
-     *                is derived by list otherwise it
-     *                it is derived by extension.
-     *                
+     * @param state  Generic Object state that can be use to pass
+     *               Structures
+     * @return 
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
-     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+     * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
         //Pass content as a String
 
-        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
-            throw new InvalidDatatypeValueException( "ID is not valid" );//Need Message
+        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+            InvalidDatatypeValueException error =  new
+                            InvalidDatatypeValueException( "ID is not valid: " );
+            error.setMajorCode(XMLMessages.MSG_ID_INVALID);
+            error.setMinorCode(XMLMessages.VC_ID);
+            throw error;
         }
         if(!addId( content, state) ){
-            throw new InvalidDatatypeValueException( "ID has to be unique" );
+            InvalidDatatypeValueException error = 
+                   new InvalidDatatypeValueException( "ID" + content +"has to be unique" );
+            error.setMajorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
+            error.setMinorCode(XMLMessages.VC_ID);
+            throw error;
+
         }
         return null;
     }
