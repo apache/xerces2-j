@@ -488,6 +488,11 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
      */
     public Grammar loadGrammar(XMLInputSource source)
                 throws IOException, XNIException {
+                	
+        // REVISIT: this method should have a namespace parameter specified by 
+        // user. In this case we can easily detect if a schema asked to be loaded
+        // is already in the local cache.
+              	
         reset();
         XSDDescription desc = new XSDDescription();
         desc.fContextType = XSDDescription.CONTEXT_PREPARSE;
@@ -667,6 +672,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             sid = xis.getSystemId();
             fXSDDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
             if (sid != null) {
+				fXSDDescription.setBaseSystemId(xis.getBaseSystemId());
                 fXSDDescription.setLiteralSystemId(sid);
                 fXSDDescription.setExpandedSystemId(sid);
                 fXSDDescription.fLocationHints = new String[]{sid};
@@ -711,12 +717,19 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             sid = xis.getSystemId();
             fXSDDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
             if (sid != null) {
+				fXSDDescription.setBaseSystemId(xis.getBaseSystemId());
                 fXSDDescription.setLiteralSystemId(sid);
                 fXSDDescription.setExpandedSystemId(sid);
                 fXSDDescription.fLocationHints = new String[]{sid};
             }
             String targetNamespace = null ;
-            SchemaGrammar grammar = loadSchema(fXSDDescription, xis, locationPairs);
+            // load schema
+			SchemaGrammar grammar = fSchemaHandler.parseSchema(xis,fXSDDescription, locationPairs);
+			// is full-checking enabled?  If so, if we're preparsing we'll
+			// need to let XSConstraints have a go at the new grammar.
+			if(fIsCheckedFully) {
+				XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
+			}                                   
             if(grammar != null){
                 targetNamespace = grammar.getTargetNamespace() ;
                 if(jaxpSchemaSourceNamespaces.contains(targetNamespace)){

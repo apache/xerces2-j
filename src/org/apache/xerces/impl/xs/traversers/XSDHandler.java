@@ -334,23 +334,31 @@ public class XSDHandler {
     public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc,
                                      Hashtable locationPairs)
             throws IOException {
-
         fLocationPairs = locationPairs;
-
-        // first try to find it in the bucket/pool, return if one is found
-        SchemaGrammar grammar = findGrammar(desc);
-        if (grammar != null)
-            return grammar;
-        
-        if (fSchemaParser != null) {
-            fSchemaParser.resetNodePool();
-        }
-
-        short referType = desc.getContextType();
-        String schemaNamespace = desc.getTargetNamespace();
-        // handle empty string URI as null
-        if (schemaNamespace != null) {
-            schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+               
+		if (fSchemaParser != null) {
+			fSchemaParser.resetNodePool();
+		}
+		
+        SchemaGrammar grammar = null;
+		String schemaNamespace  = null;
+		short referType = desc.getContextType();
+        // if loading using JAXP schemaSource property, or using grammar caching loadGrammar
+        // the desc.targetNamespace is always null.
+        // Therefore we should not attempt to find out if 
+        // the schema is already in the bucket, since in the case we have
+        // no namespace schema in the bucket, findGrammar will always return the 
+        // no namespace schema.
+        if (referType != XSDDescription.CONTEXT_PREPARSE){        
+        	// first try to find it in the bucket/pool, return if one is found
+        	grammar = findGrammar(desc);
+			if (grammar != null)
+				return grammar;
+			schemaNamespace = desc.getTargetNamespace();
+			// handle empty string URI as null
+			if (schemaNamespace != null) {
+				schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+			}	
         }
 
         // before parsing a schema, need to clear registries associated with
@@ -365,19 +373,27 @@ public class XSDHandler {
             // something went wrong right off the hop
             return null;
         }
-        if ( schemaNamespace == null && referType == XSDDescription.CONTEXT_PREPARSE) {
+        if ( referType == XSDDescription.CONTEXT_PREPARSE) {
             Element schemaElem = DOMUtil.getRoot(schemaRoot);
             schemaNamespace = DOMUtil.getAttrValue(schemaElem, SchemaSymbols.ATT_TARGETNAMESPACE);
-            if(schemaNamespace != null && schemaNamespace.length() > 0) {
-                schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
-                desc.setTargetNamespace(schemaNamespace);
-                String schemaId = XMLEntityManager.expandSystemId(desc.getLiteralSystemId(), desc.getBaseSystemId(), false);
-                XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
-                fTraversed.put(key, schemaRoot );
-                if (schemaId != null) {
-                    fDoc2SystemId.put(schemaRoot, schemaId );
-                }
-            }
+			if(schemaNamespace != null && schemaNamespace.length() > 0) {
+				// Since now we've discovered a namespace, we need to update xsd key
+				// and store this schema in traversed schemas bucket
+				schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+				desc.setTargetNamespace(schemaNamespace);
+			}
+			else {
+				schemaNamespace = null;
+			}
+			grammar = findGrammar(desc);
+			if (grammar != null)
+				return grammar;
+			String schemaId = XMLEntityManager.expandSystemId(is.getSystemId(), is.getBaseSystemId(), false);
+			XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
+			fTraversed.put(key, schemaRoot );
+			if (schemaId != null) {
+			    fDoc2SystemId.put(schemaRoot, schemaId );
+			}            
         } 
 
         // before constructing trees and traversing a schema, need to reset
@@ -1355,13 +1371,16 @@ public class XSDHandler {
                 // expand it, and check whether the same document has been
                 // parsed before. If so, return the document corresponding to
                 // that system id.
-                String schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
-                XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
-                if ((schemaDoc = (Document)fTraversed.get(key)) != null) {
-                    fLastSchemaWasDuplicate = true;
-                    return schemaDoc;
-                }
-
+				XSDKey key = null;
+				String schemaId = null;
+               	if (referType != XSDDescription.CONTEXT_PREPARSE){
+					schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
+               		key = new XSDKey(schemaId, referType, schemaNamespace);
+               		if ((schemaDoc = (Document)fTraversed.get(key)) != null) {
+                   		fLastSchemaWasDuplicate = true;
+                   		return schemaDoc;
+               		}	
+               	}
                 // If this is the first schema this Handler has
                 // parsed, it has to construct a DOMParser
                 if (fSchemaParser == null) {
@@ -1371,10 +1390,12 @@ public class XSDHandler {
                 }
                 fSchemaParser.parse(schemaSource);
                 schemaDoc = fSchemaParser.getDocument();
+ 			                
                 // now we need to store the mapping information from system id
                 // to the document. also from the document to the system id.
-                fTraversed.put(key, schemaDoc );
-               if (schemaId != null)
+                if (key != null)
+                	fTraversed.put(key, schemaDoc );
+                if (schemaId != null)
                     fDoc2SystemId.put(schemaDoc, schemaId );
                 fLastSchemaWasDuplicate = false;
                 return schemaDoc;
