@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -125,7 +125,7 @@ public class ElementImpl
 
     // for ElementNSImpl
     protected ElementImpl() {}
-    
+
     // Support for DOM Level 3 renameNode method.
     // Note: This only deals with part of the pb. CoreDocumentImpl
     // does all the work.
@@ -141,7 +141,7 @@ public class ElementImpl
     // Node methods
     //
 
-    
+
     /**
      * A short integer indicating what type of node this is. The named
      * constants for this value are defined in the org.w3c.dom.Node interface.
@@ -205,15 +205,18 @@ public class ElementImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-        String baseURI = this.ownerNode.getBaseURI();
+
+        //Absolute base URI is computed according to XML Base (http://www.w3.org/TR/xmlbase/#granularity)
+
+        //1.  the base URI specified by an xml:base attribute on the element, if one exists
         if (attributes != null) {
             Attr attrNode = (Attr)attributes.getNamedItem("xml:base");
             if (attrNode != null) {
                 String uri =  attrNode.getNodeValue();
                 if (uri.length() != 0 ) {// attribute value is always empty string
                     try {
-                       uri = new URI(baseURI, uri).toString();  
-                    } 
+                       uri = new URI(uri).toString();
+                    }
                     catch (org.apache.xerces.util.URI.MalformedURIException e){
                         // REVISIT: what should happen in this case?
                         return null;
@@ -222,8 +225,38 @@ public class ElementImpl
                 }
             }
         }
-        return baseURI;
-    }
+
+        //2.the base URI of the element's parent element within the document or external entity,
+        //if one exists
+        String parentElementBaseURI = this.parentNode().getBaseURI() ;
+        //base URI of parent element is not null
+        if(parentElementBaseURI != null){
+            try {
+                //return valid absolute base URI
+               return new URI(parentElementBaseURI).toString();
+            }
+            catch (org.apache.xerces.util.URI.MalformedURIException e){
+                // REVISIT: what should happen in this case?
+                return null;
+            }
+        }
+        //3. the base URI of the document entity or external entity containing the element
+
+        String baseURI = this.ownerNode.getBaseURI();
+
+        if(baseURI != null){
+            try {
+                //return valid absolute base URI
+               return new URI(baseURI).toString();
+            }
+            catch (org.apache.xerces.util.URI.MalformedURIException e){
+                // REVISIT: what should happen in this case?
+                return null;
+            }
+        }
+
+        return null;
+    } //getBaseURI
 
 
 
@@ -283,7 +316,7 @@ public class ElementImpl
         return (Attr)attributes.getNamedItem(name);
 
     } // getAttributeNode(String):Attr
-    
+
 
     /**
      * Returns a NodeList of all descendent nodes (children,
@@ -399,7 +432,7 @@ public class ElementImpl
      * Note that this call "succeeds" even if no attribute by this name
      * existed -- unlike removeAttributeNode, which will throw a not-found
      * exception in that case.
-     *	
+     *
      * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR) if the node is
      * readonly.
      */
@@ -409,7 +442,7 @@ public class ElementImpl
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
-    		
+
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -422,7 +455,7 @@ public class ElementImpl
 
     } // removeAttribute(String)
 
-  
+
     /**
      * Remove the specified attribute/value pair. If the removed
      * Attribute has a default value, it is immediately replaced.
@@ -446,7 +479,7 @@ public class ElementImpl
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
-    		
+
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -459,7 +492,7 @@ public class ElementImpl
 
     } // removeAttributeNode(Attr):Attr
 
-   
+
     /**
      * Add a new name/value pair, or replace the value of the existing
      * attribute having that name.
@@ -510,7 +543,7 @@ public class ElementImpl
 		}
 
 	} // setAttribute(String,String)
- 
+
     /**
      * Add a new attribute/value pair, or replace the value of the
      * existing attribute with that name.
@@ -536,10 +569,10 @@ public class ElementImpl
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      msg);
             }
-    	
+
             if (newAttr.getOwnerDocument() != ownerDocument) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
     		    throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
@@ -553,7 +586,7 @@ public class ElementImpl
     	return (Attr) attributes.setNamedItem(newAttr);
 
     } // setAttributeNode(Attr):Attr
-    
+
     //
     // DOM2: Namespace methods
     //
@@ -561,7 +594,7 @@ public class ElementImpl
     /**
      * Introduced in DOM Level 2. <p>
      *
-     * Retrieves an attribute value by local name and namespace URI. 
+     * Retrieves an attribute value by local name and namespace URI.
      *
      * @param namespaceURI
      *                      The namespace URI of the attribute to
@@ -586,7 +619,7 @@ public class ElementImpl
         return (attr == null) ? "" : attr.getValue();
 
     } // getAttributeNS(String,String):String
-    
+
     /**
      * Introduced in DOM Level 2. <p>
      *
@@ -607,7 +640,7 @@ public class ElementImpl
      *  setAttributeNode to assign it as the value of an attribute.
      *
      * @param namespaceURI      The namespace URI of the attribute to create
-     *                          or alter. 
+     *                          or alter.
      * @param qualifiedName     The qualified name of the attribute to create or
      *                          alter.
      * @param value             The value to set in string form.
@@ -667,24 +700,24 @@ public class ElementImpl
 			attributes.setNamedItemNS(newAttr);
 		}
 		else {
-            // change prefix and value                
+            // change prefix and value
             ((AttrNSImpl)newAttr).name= (prefix!=null)?(prefix+":"+localName):localName;
 			newAttr.setNodeValue(value);
 		}
 
     } // setAttributeNS(String,String,String)
-    
-    
+
+
     /**
      * Introduced in DOM Level 2. <p>
      *
      * Removes an attribute by local name and namespace URI. If the removed
      * attribute has a default value it is immediately replaced.
-     * The replacing attribute has the same namespace URI and local name, 
+     * The replacing attribute has the same namespace URI and local name,
      * as well as the original prefix.<p>
      *
      * @param namespaceURI  The namespace URI of the attribute to remove.
-     *                      
+     *
      * @param localName     The local name of the attribute to remove.
      * @throws                  NO_MODIFICATION_ALLOWED_ERR: Raised if this
      *                          node is readonly.
@@ -696,7 +729,7 @@ public class ElementImpl
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
-    		
+
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -708,14 +741,14 @@ public class ElementImpl
         attributes.safeRemoveNamedItemNS(namespaceURI, localName);
 
     } // removeAttributeNS(String,String)
-    
+
     /**
-     * Retrieves an Attr node by local name and namespace URI. 
+     * Retrieves an Attr node by local name and namespace URI.
      *
      * @param namespaceURI  The namespace URI of the attribute to
-     *                      retrieve. 
+     *                      retrieve.
      * @param localName     The local name of the attribute to retrieve.
-     * @return Attr         The Attr node with the specified attribute 
+     * @return Attr         The Attr node with the specified attribute
      *                      local name and namespace
      *                      URI or null if there is no such attribute.
      * @since WD-DOM-Level-2-19990923
@@ -731,16 +764,16 @@ public class ElementImpl
         return (Attr)attributes.getNamedItemNS(namespaceURI, localName);
 
     } // getAttributeNodeNS(String,String):Attr
- 
+
     /**
      * Introduced in DOM Level 2. <p>
      *
-     * Adds a new attribute. If an attribute with that local name and 
-     * namespace URI is already present in the element, it is replaced 
+     * Adds a new attribute. If an attribute with that local name and
+     * namespace URI is already present in the element, it is replaced
      * by the new one.
      *
-     * @param Attr      The Attr node to add to the attribute list. When 
-     *                  the Node has no namespaceURI, this method behaves 
+     * @param Attr      The Attr node to add to the attribute list. When
+     *                  the Node has no namespaceURI, this method behaves
      *                  like setAttributeNode.
      * @return Attr     If the newAttr attribute replaces an existing attribute
      *                  with the same local name and namespace URI, the *
@@ -770,7 +803,7 @@ public class ElementImpl
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
     		    throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      msg);
             }
             if (newAttr.getOwnerDocument() != ownerDocument) {
@@ -795,14 +828,14 @@ public class ElementImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-        
+
         if (attributes == null) {
             attributes = new AttributeMap(this, null);
         }
         return attributes.addItem(attr);
 
     }
-    
+
     /**
       * NON-DOM: get inded of an attribute
       */
@@ -816,8 +849,8 @@ public class ElementImpl
         }
         return attributes.getNamedItemIndex(namespaceURI, localName);
 
-    } 
-    
+    }
+
     /**
      * Introduced in DOM Level 2.
      */
@@ -904,7 +937,7 @@ public class ElementImpl
         }
         return true;
     }
-    
+
     /**
      * DOM Level 3: register the given attribute node as an ID attribute
      */
@@ -916,10 +949,10 @@ public class ElementImpl
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      msg);
             }
-        
+
             if (at.getOwnerElement() != this) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
@@ -933,7 +966,7 @@ public class ElementImpl
             ownerDocument.putIdentifier(at.getValue(), this);
         }
     }
-    
+
     /**
      * DOM Level 3: register the given attribute node as an ID attribute
      */
@@ -946,16 +979,16 @@ public class ElementImpl
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      msg);
             }
-        
+
             if (at.getOwnerElement() != this) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             }
         }
-        
+
         ((AttrImpl) at).isIdAttribute(makeId);
         if (!makeId) {
             ownerDocument.removeIdentifier(at.getValue());
@@ -978,10 +1011,10 @@ public class ElementImpl
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      msg);
             }
-        
+
             if (at.getOwnerElement() != this) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
@@ -995,7 +1028,7 @@ public class ElementImpl
             ownerDocument.putIdentifier(at.getValue(), this);
         }
    }
-   
+
     /**
      * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
      */
