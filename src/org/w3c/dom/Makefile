@@ -35,6 +35,7 @@ dirs:
 	${MAKE} -C events
 	${MAKE} -C html
 	${MAKE} -C traversal
+	${MAKE} -C range
 
 compile: ${TARGETS}
 
@@ -51,4 +52,5 @@ clean:
 	${MAKE} -C events clean
 	${MAKE} -C html clean
 	${MAKE} -C traversal clean
+	${MAKE} -C range clean
 
