@@ -523,6 +523,8 @@ public class XSWildcardDecl implements XSWildcard {
                 buffer.append("\"");
                 break;
             case NSCONSTRAINT_LIST:
+                if (fNamespaceList.length == 0)
+                    break;
                 buffer.append("\"");
                 if (fNamespaceList[0] != null)
                     buffer.append(fNamespaceList[0]);
