@@ -68,6 +68,7 @@ import org.w3c.dom.*;
 
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
+//import org.xml.sax.Attr;
 
 // Should move to use the xerces sax2 Attribute impl
 import org.apache.xerces.tree.AttributeListEx;
@@ -171,7 +172,7 @@ class AttributeSet implements NamedNodeMap, XmlWritable
 
             AttributeNode attrNode =
                 new AttributeNode(uri,
-                                  source.getRawName(i),
+                                  source.getQName(i),
                                   source.getValue(i),
                                   ex == null	// remember if it was specified
                                   ? true

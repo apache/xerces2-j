@@ -374,6 +374,34 @@ public class ElementNode extends NamespacedNode implements ElementEx
 	return attr.getValue();
     }
 
+    /** <b>DOM2:</b> Returns the value of the named attribute, or an empty
+     * string 
+     */
+    public boolean hasAttribute (String name)
+    {
+        if (attributes == null) {
+	    return false;	
+	} else if (attributes.getValue (name) != null) {
+	    return true;
+	}
+	return false;
+    }
+
+    /**
+     * <b>DOM2:</b>
+     * @since DOM Level 2
+     */
+    public boolean hasAttributeNS(String namespaceURI, String localName) {
+	if (attributes == null) {
+	    return false;
+        }
+	Attr attr = getAttributeNodeNS(namespaceURI, localName);
+	if (attr == null) {
+	    return false;
+        }
+	return true;
+    }
+
     public String getAttribute (String uri, String name)
     {
 	Attr	attr;
