@@ -238,18 +238,6 @@ public class MixedContentModel
                         }
                     }
                 }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
-                    if (children[outIndex].uri != fChildren[inIndex].uri) {
-                        return outIndex;
-                    }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
-                    if (fChildren[inIndex].uri == children[outIndex].uri) {
-                        return outIndex;
-                    }
-                }
 
                 // advance index
                 inIndex++;
@@ -284,23 +272,6 @@ public class MixedContentModel
                                 break;
                         }
                     }
-                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                            break;
-                    }
-                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
-                        if (children[outIndex].uri == fChildren[inIndex].uri) {
-                            break;
-                        }
-                    }
-                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
-                        if (fChildren[inIndex].uri != children[outIndex].uri) {
-                            break;
-                        }
-                    }
-                    // REVISIT: What about checking for multiple ANY matches?
-                    //          The content model ambiguity *could* be checked
-                    //          by the caller before constructing the mixed
-                    //          content model.
                 }
 
                 // We did not find this one, so the validation failed
