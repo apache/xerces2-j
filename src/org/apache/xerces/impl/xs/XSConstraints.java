@@ -1059,7 +1059,8 @@ public class XSConstraints {
       //
       // Check that the derived element's type is derived from the base's.
       //
-      if (!checkTypeDerivationOk(dElement.fType, bElement.fType, bElement.fFinal)) {
+      if (!checkTypeDerivationOk(dElement.fType, bElement.fType,
+                                 (short)(SchemaSymbols.EXTENSION|SchemaSymbols.LIST|SchemaSymbols.UNION))) {
           throw new XMLSchemaException("rcase-NameAndTypeOK.7",
                                   new Object[]{dElement.fName});
       }
