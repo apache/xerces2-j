@@ -190,6 +190,9 @@ public class XMLEntityManager
     /** Debug switching readers for encodings. */
     private static final boolean DEBUG_ENCODINGS = false;
 
+    // should be diplayed trace resolving messages
+    private static final boolean DEBUG_RESOLVER = false;
+    
     //
     // Data
     //
@@ -476,6 +479,12 @@ public class XMLEntityManager
                                         String baseSystemId)
         throws IOException, XNIException {
 
+        // if no base systemId given, assume that it's relative
+        // to the systemId of the current scanned entity
+        if (baseSystemId == null) {
+            baseSystemId = fCurrentEntity.systemId;
+        }
+
         // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
@@ -489,18 +498,18 @@ public class XMLEntityManager
             if (inputSource != null) {
                 xmlInputSource = new XMLInputSource(inputSource);
                 xmlInputSource.setBaseSystemId(baseSystemId);
-                String expandedSystemId = expandSystemId(systemId, baseSystemId);
+                String resolvedSystemId = inputSource.getSystemId();
+                if (resolvedSystemId == null) {
+                    resolvedSystemId = systemId;
+                }
+                String expandedSystemId =
+                    expandSystemId(resolvedSystemId, baseSystemId);
                 xmlInputSource.setExpandedSystemId(expandedSystemId);
             }
         }
 
         // do default resolution
         if (xmlInputSource == null) {
-            // if no base systemId given, assume that it's relative
-            // to the systemId of the current scanned entity
-            if (baseSystemId == null) {
-                baseSystemId = fCurrentEntity.systemId;
-            }
 
             // create the input source
             xmlInputSource = new XMLInputSource(systemId);
@@ -510,6 +519,12 @@ public class XMLEntityManager
             xmlInputSource.setExpandedSystemId(expandedSystemId);
         }
 
+        if (DEBUG_RESOLVER) {
+            System.err.println("XMLEntityManager.resolveEntity(" + publicId + ")");
+            System.err.println(" = " + xmlInputSource);
+        }
+        
+        
         return xmlInputSource;
 
     } // resolveEntity(String,String,String):XMLInputSource
