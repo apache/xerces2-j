@@ -649,11 +649,11 @@ public class DTDGrammar
         fSimpleType.clear();
         if ( defaultType != null ) {
             if ( defaultType.equals( "#FIXED") ) {
-                fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_FIXED;
+                fSimpleType.defaultType = XMLSimpleType.DEFAULT_TYPE_FIXED;
             } else if ( defaultType.equals( "#IMPLIED") ) {
-                fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_IMPLIED;
+                fSimpleType.defaultType = XMLSimpleType.DEFAULT_TYPE_IMPLIED;
             } else if ( defaultType.equals( "#REQUIRED") ) {
-                fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_REQUIRED;
+                fSimpleType.defaultType = XMLSimpleType.DEFAULT_TYPE_REQUIRED;
             }
         }
         if ( DEBUG ) {
