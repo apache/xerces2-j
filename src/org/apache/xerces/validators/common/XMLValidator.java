@@ -2678,7 +2678,7 @@ public final class XMLValidator
             }
          }
 
-   }// parseSchemaLocaltion(String, Hashtable)
+   }// parseSchemaLocation(String, Hashtable)
 
 
    private void resolveSchemaGrammar( String loc, String uri) throws Exception {
@@ -2758,7 +2758,7 @@ public final class XMLValidator
             // pass parser's entity resolver (local Resolver), which also has reference to user's
             // entity resolver, and also can fall-back to entityhandler's expandSystemId()
             GeneralAttrCheck generalAttrCheck = new GeneralAttrCheck(fErrorReporter, fDataTypeReg);
-            tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled(), generalAttrCheck);
+            tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled(), generalAttrCheck, fExternalSchemas, fExternalNoNamespaceSchema);
             generalAttrCheck.checkNonSchemaAttributes(fGrammarResolver);
 
             //allowing xsi:schemaLocation to appear on any element

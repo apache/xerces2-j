@@ -145,6 +145,10 @@ public class TraverseSchema implements
     };
     // hopefully a string people will not use in their names very often...
     private static final String redefIdentifier = "_fn3dktizrknc9pi";
+    // fields to hold application-specified schemaLocations
+    private String fUnparsedExternalSchemas = null;
+    private Hashtable fExternalSchemas = null;
+    private String fExternalNoNamespaceSchema = null;
     // Flags for handleOccurrences to indicate any special
     // restrictions on minOccurs and maxOccurs relating to "all".
     //    NOT_ALL_CONTEXT    - not processing an <all>
@@ -508,13 +512,30 @@ public class TraverseSchema implements
                            String schemaURL,
                            EntityResolver entityResolver,
                            boolean fullChecking,
-                           GeneralAttrCheck generalAttrCheck
+                           GeneralAttrCheck generalAttrCheck,
+                           String externalSchemaLocations, String noNamespaceSchemaLocation 
                            ) throws Exception {
         fErrorReporter = errorReporter;
         fCurrentSchemaURL = schemaURL;
         fFullConstraintChecking = fullChecking;
         fEntityResolver = entityResolver;
         fGeneralAttrCheck = generalAttrCheck;
+        fUnparsedExternalSchemas = externalSchemaLocations;
+        if(externalSchemaLocations != null) {
+            StringTokenizer tokenizer = new StringTokenizer(externalSchemaLocations, " \n\t\r", false);
+            int tokenTotal = tokenizer.countTokens();
+            if (tokenTotal % 2 == 0 ) {
+                fExternalSchemas = new Hashtable();
+                String uri = null;
+                String location = null;
+                while (tokenizer.hasMoreTokens()) {
+                    uri = tokenizer.nextToken();
+                    location = tokenizer.nextToken();
+                    fExternalSchemas.put(location, uri);
+                }
+            }
+        }
+        fExternalNoNamespaceSchema = noNamespaceSchemaLocation;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
@@ -1084,6 +1105,7 @@ public class TraverseSchema implements
             parser.setFeature("http://xml.org/sax/features/validation", false);
             parser.setFeature("http://xml.org/sax/features/namespaces", true);
             parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+            parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
         }catch(  org.xml.sax.SAXNotRecognizedException e ) {
             e.printStackTrace();
         }catch( org.xml.sax.SAXNotSupportedException e ) {
@@ -1377,6 +1399,7 @@ public class TraverseSchema implements
             parser.setFeature("http://xml.org/sax/features/validation", false);
             parser.setFeature("http://xml.org/sax/features/namespaces", true);
             parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+            parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
         }catch(  org.xml.sax.SAXNotRecognizedException e ) {
             e.printStackTrace();
         }catch( org.xml.sax.SAXNotSupportedException e ) {
@@ -1927,7 +1950,74 @@ public class TraverseSchema implements
         Hashtable attrValues = generalCheck(importDecl, scope);
         checkContent(importDecl, XUtil.getFirstChildElement(importDecl), true);
 
-        String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+         String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
+         SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
+
+         if ((importedGrammar == null) || namespaceString.trim().equals(fTargetNSURIString)) {
+             importedGrammar = new SchemaGrammar();
+         } else {
+             return;
+         }
+
+         Element root = null;
+         if(namespaceString.length() == 0) {
+            if(fTargetNSURI == StringPool.EMPTY_STRING) {
+                // REVISIT:  localize
+                reportGenericSchemaError("src-import.1.2:  if the namespace attribute on an <import> element is not present, the <import>ing schema must have a targetNamespace");
+                // look in external-noNamespaceSchemaLocation property!
+                if(fExternalNoNamespaceSchema != null) {
+                    root = openImportedSchema(fExternalNoNamespaceSchema);
+                }
+            }
+        } else {
+            if(fTargetNSURIString.equals(namespaceString.trim())) {
+                // REVISIT:  localize
+                reportGenericSchemaError("src-import.1.1:  the namespace attribute of an <import> element must not be the same as the targetNamespace of the <import>ing schema");
+                // look in external-schemaLocation property!
+                if(fExternalSchemas != null) {
+                    Enumeration externalNamespaces = fExternalSchemas.keys();
+                    while(externalNamespaces.hasMoreElements()) {
+                        String namespace = (String)externalNamespaces.nextElement();
+                        if(namespace.trim().equals(namespaceString.trim())) {
+                            root = openImportedSchema((String)fExternalSchemas.get(namespace));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        String location = "";
+        if(root == null) { // try our own schemaLocation
+            Attr locationAttr = importDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
+            if(locationAttr != null) {
+                location = locationAttr.getValue(); 
+                root = openImportedSchema(location);
+            }
+         }
+         if (root != null) {
+             String targetNSURI = getTargetNamespaceString(root);
+             if (!targetNSURI.equals(namespaceString) ) {
+                 // REVISIT: Localize
+                 reportGenericSchemaError("imported schema '"+location+"' has a different targetNameSpace '"
+                                          +targetNSURI+"' from what is declared '"+namespaceString+"'.");
+             }
+             else {
+                 TraverseSchema impSchema = new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking, fGeneralAttrCheck, fUnparsedExternalSchemas, fExternalNoNamespaceSchema);
+                 Enumeration ics = impSchema.fIdentityConstraints.keys();
+                 while(ics.hasMoreElements()) {
+                    Object icsKey = ics.nextElement();
+                    fIdentityConstraints.put(icsKey, impSchema.fIdentityConstraints.get(icsKey));
+                }
+                 Enumeration icNames = impSchema.fIdentityConstraintNames.keys();
+                 while(icNames.hasMoreElements()) {
+                    String icsNameKey = (String)icNames.nextElement();
+                    fIdentityConstraintNames.put(icsNameKey, impSchema.fIdentityConstraintNames.get(icsNameKey));
+                }
+            }
+         }
+    }
+    
+    private Element openImportedSchema(String location) throws Exception {
         // expand it before passing it to the parser
         InputSource source = null;
         if (fEntityResolver != null) {
@@ -1946,35 +2036,13 @@ public class TraverseSchema implements
          }
 
          if (fImportLocations.contains((Object)location)) {
-             return;
+             return null;
          }
-         fImportLocations.addElement((Object)location);
         // check to make sure we're not importing ourselves...
         if(source.getSystemId().equals(fCurrentSchemaURL)) {
             // REVISIT:  localize
-            return;
+            return null;
         }
-
-         String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
-         if(namespaceString.length() == 0) {
-            if(fTargetNSURI == StringPool.EMPTY_STRING) {
-                // REVISIT:  localize
-                reportGenericSchemaError("src-import.1.2:  if the namespace attribute on an <import> element is not present, the <import>ing schema must have a targetNamespace");
-            }
-        } else {
-            if(fTargetNSURIString.equals(namespaceString.trim())) {
-                // REVISIT:  localize
-                reportGenericSchemaError("src-import.1.1:  the namespace attribute of an <import> element must not be the same as the targetNamespace of the <import>ing schema");
-            }
-        }
-
-         SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
-
-         if (importedGrammar == null) {
-             importedGrammar = new SchemaGrammar();
-         } else {
-             return;
-         }
 
          DOMParser parser = new IgnoreWhitespaceParser();
          parser.setEntityResolver( new Resolver() );
@@ -2006,6 +2074,7 @@ public class TraverseSchema implements
              parser.setFeature("http://xml.org/sax/features/validation", false);
              parser.setFeature("http://xml.org/sax/features/namespaces", true);
              parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+             parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
          }catch(  org.xml.sax.SAXNotRecognizedException e ) {
              e.printStackTrace();
          }catch( org.xml.sax.SAXNotSupportedException e ) {
@@ -2025,32 +2094,11 @@ public class TraverseSchema implements
          if (document != null) {
              root = document.getDocumentElement();
          }
-
-         if (root != null) {
-             String targetNSURI = getTargetNamespaceString(root);
-             if (!targetNSURI.equals(namespaceString) ) {
-                 // REVISIT: Localize
-                 reportGenericSchemaError("imported schema '"+location+"' has a different targetNameSpace '"
-                                          +targetNSURI+"' from what is declared '"+namespaceString+"'.");
-             }
-             else {
-                 TraverseSchema impSchema = new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking, fGeneralAttrCheck);
-                 Enumeration ics = impSchema.fIdentityConstraints.keys();
-                 while(ics.hasMoreElements()) {
-                    Object icsKey = ics.nextElement();
-                    fIdentityConstraints.put(icsKey, impSchema.fIdentityConstraints.get(icsKey));
-                }
-                 Enumeration icNames = impSchema.fIdentityConstraintNames.keys();
-                 while(icNames.hasMoreElements()) {
-                    String icsNameKey = (String)icNames.nextElement();
-                    fIdentityConstraintNames.put(icsNameKey, impSchema.fIdentityConstraintNames.get(icsNameKey));
-                }
-            }
-         }
-         else {
-             reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
-         }
-    }
+         if(root != null) {
+            fImportLocations.addElement((Object)location);
+        }
+        return root;
+    } // openImportedSchema
 
     // utility method for finding the targetNamespace (and flagging errors if they occur)
     private String getTargetNamespaceString( Element root) throws Exception {
