@@ -3213,7 +3213,6 @@ public final class XMLValidator
                      // now we look at whether there is a type
                      // relation and whether the type (and element) allow themselves to be substituted for.
 
-                     System.err.println(elementIndex + " " + typeInfo.templateElementIndex);
                      TraverseSchema.ComplexTypeInfo tempType = typeInfo;
                      TraverseSchema.ComplexTypeInfo destType = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex);
                      for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
