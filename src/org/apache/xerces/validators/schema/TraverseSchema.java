@@ -2593,8 +2593,10 @@ public class TraverseSchema implements
         }
 
         int uriIndex = -1;
-        if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fAttributeDefaultQualified || isTopLevel(attrDecl) ) {
+        if ( fTargetNSURIString.length() > 0 &&
+             ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+             fAttributeDefaultQualified || isTopLevel(attrDecl) )
+             ) {
             uriIndex = fTargetNSURI;
         }
 
