@@ -72,7 +72,7 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class QNameDV extends TypeValidator {
 
-    private static final String EMPTY_STRING = "";
+    private static final String EMPTY_STRING = "".intern();
 
     public short getAllowedFacets() {
         return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE);
@@ -89,11 +89,11 @@ public class QNameDV extends TypeValidator {
             prefix = context.getSymbol(content.substring(0,colonptr));
             localpart = content.substring(colonptr+1);
         } else {
-            prefix = context.getSymbol(EMPTY_STRING);
+            prefix = EMPTY_STRING;
             localpart = content;
         }
 
-        // both prefix (if any) and localpart must be valid NCName
+        // both prefix (if any) a nd localpart must be valid NCName
         if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix))
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "QName"});
 

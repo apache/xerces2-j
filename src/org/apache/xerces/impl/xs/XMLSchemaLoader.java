@@ -74,6 +74,7 @@ import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.DefaultErrorHandler;
 
 import java.util.Locale;
@@ -102,9 +103,6 @@ import java.io.FileNotFoundException;
  */
 
 public class XMLSchemaLoader implements XMLGrammarLoader {
-
-    // given that we internalize strings, no point in adding this to SymbolTable explicitly
-    public static final String EMPTY_STRING = "";
 
     // Feature identifiers:
 
@@ -469,7 +467,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         if(fExternalNoNSSchema != null) {
             LocationArray noNs = new LocationArray();
             noNs.addLocation(fExternalNoNSSchema);
-            locationPairs.put(EMPTY_STRING, noNs);
+            locationPairs.put(XMLSymbols.EMPTY_STRING, noNs);
         }
         SchemaGrammar grammar = loadSchema(desc, source, locationPairs); 
         if(grammar != null && fGrammarPool != null) {
@@ -509,7 +507,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             desc.fromInstance()) {
             // use empty string as the key for absent namespace
             String namespace = desc.getTargetNamespace();
-            String ns = namespace == null ? EMPTY_STRING : namespace;
+            String ns = namespace == null ? XMLSymbols.EMPTY_STRING : namespace;
             // get the location hint for that namespace
             LocationArray tempLA = (LocationArray)locationPairs.get(ns);
             if(tempLA != null) 

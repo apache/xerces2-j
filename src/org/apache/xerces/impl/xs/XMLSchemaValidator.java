@@ -2226,7 +2226,7 @@ public class XMLSchemaValidator
         }
         if (nsLocation != null) {
             fNoNamespaceLocationArray.addLocation(nsLocation);
-            fLocationPairs.put(XMLSchemaLoader.EMPTY_STRING, fNoNamespaceLocationArray);
+            fLocationPairs.put(XMLSymbols.EMPTY_STRING, fNoNamespaceLocationArray);
         }
 
     }//storeLocations

@@ -1135,7 +1135,7 @@ public class XSAttributeChecker {
                         // kludge to handle chameleon includes/redefines...
                         if (oneAttr.dvIndex == DT_QNAME) {
                             QName qname = (QName)avalue;
-                            if(qname.prefix == fSchemaHandler.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
+                            if(qname.prefix == XMLSymbols.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
                                 qname.uri = schemaDoc.fTargetNamespace;
                         }
                         attrValues[oneAttr.valueIndex] = avalue;
@@ -1370,7 +1370,7 @@ public class XSAttributeChecker {
                     String token = t.nextToken ();
                     QName qname = (QName)fExtraDVs[DT_QNAME].validate(token, schemaDoc.fValidationContext, null);
                     // kludge to handle chameleon includes/redefines...
-                    if(qname.prefix == fSchemaHandler.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
+                    if(qname.prefix == XMLSymbols.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
                         qname.uri = schemaDoc.fTargetNamespace;
                     memberType.addElement(qname);
                 }
@@ -1672,7 +1672,7 @@ public class XSAttributeChecker {
             if (rawname == XMLSymbols.PREFIX_XMLNS || rawname.startsWith("xmlns:")) {
                 prefix = null;
                 if (rawname.length() == 5)
-                    prefix = fSchemaHandler.EMPTY_STRING;
+                    prefix = XMLSymbols.EMPTY_STRING;
                 else if (rawname.charAt(5) == ':')
                     prefix = fSymbolTable.addSymbol(DOMUtil.getLocalName(sattr));
                 if (prefix != null) {

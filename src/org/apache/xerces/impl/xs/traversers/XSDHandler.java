@@ -145,13 +145,6 @@ public class XSDHandler {
     // as unlikely as possible to cause collisions.
     public final static String REDEF_IDENTIFIER = "_fn3dktizrknc9pi";
 
-    // please note the difference between SchemaHandler.EMPTY_STRING and
-    // SchemaSymbols.EMPTY_STRING:
-    //   the one in SchemaHandler is only for namespace binding purpose, it's
-    //   used as a legal prefix, and it's added to the current symbol table;
-    //   while the one in SchemaSymbols is for general purpose: just empty.
-    public String EMPTY_STRING;
-
     //
     //protected data that can be accessable by any traverser
     // stores <notation> decl
@@ -200,10 +193,10 @@ public class XSDHandler {
 
     // convinence methods
     private String null2EmptyString(String ns) {
-        return ns == null ? EMPTY_STRING : ns;
+        return ns == null ? XMLSymbols.EMPTY_STRING : ns;
     }
     private String emptyString2Null(String ns) {
-        return ns == EMPTY_STRING ? null : ns;
+        return ns == XMLSymbols.EMPTY_STRING ? null : ns;
     }
 
     // This vector stores strings which are combinations of the
@@ -1206,7 +1199,7 @@ public class XSDHandler {
         }
         if (nameToFind == null) return null;
         int commaPos = nameToFind.indexOf(",");
-        QName qNameToFind = new QName(EMPTY_STRING, nameToFind.substring(commaPos+1),
+        QName qNameToFind = new QName(XMLSymbols.EMPTY_STRING, nameToFind.substring(commaPos+1),
             nameToFind.substring(commaPos), (commaPos == 0)? null : nameToFind.substring(0, commaPos));
         Object retObj = getGlobalDecl(currSchema, type, qNameToFind, elmNode);
         if(retObj == null) {
@@ -1482,8 +1475,6 @@ public class XSDHandler {
         fEntityResolver = entityResolver;
         fSymbolTable = symbolTable;
         fGrammarPool = grammarPool;
-
-        EMPTY_STRING = fSymbolTable.addSymbol(XMLSymbols.EMPTY_STRING);
 
         resetSchemaParserErrorHandler();
         
@@ -1783,12 +1774,12 @@ public class XSDHandler {
     private String findQName(String name, XSDocumentInfo schemaDoc) {
         SchemaNamespaceSupport currNSMap = schemaDoc.fNamespaceSupport;
         int colonPtr = name.indexOf(':');
-        String prefix = EMPTY_STRING;
+        String prefix = XMLSymbols.EMPTY_STRING;
         if (colonPtr > 0)
             prefix = name.substring(0, colonPtr);
         String uri = currNSMap.getURI(fSymbolTable.addSymbol(prefix));
         String localpart = (colonPtr == 0)?name:name.substring(colonPtr+1);
-        if (prefix == this.EMPTY_STRING && uri == null && schemaDoc.fIsChameleonSchema)
+        if (prefix == XMLSymbols.EMPTY_STRING && uri == null && schemaDoc.fIsChameleonSchema)
             uri = schemaDoc.fTargetNamespace;
         if (uri == null)
             return ","+localpart;
@@ -1816,7 +1807,7 @@ public class XSDHandler {
                 if (ref.length() != 0) {
                     String processedRef = findQName(ref, schemaDoc);
                     if (originalQName.equals(processedRef)) {
-                        String prefix = EMPTY_STRING;
+                        String prefix = XMLSymbols.EMPTY_STRING;
                         String localpart = ref;
                         int colonptr = ref.indexOf(":");
                         if (colonptr > 0) {

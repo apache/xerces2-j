@@ -63,6 +63,7 @@ import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
@@ -210,7 +211,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             // store groups redefined by restriction in the grammar so
             // that we can get at them at full-schema-checking time.
             Object redefinedGrp = fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(XSDHandler.GROUP_TYPE,
-                new QName(fSchemaHandler.EMPTY_STRING, strNameAttr, strNameAttr, schemaDoc.fTargetNamespace),
+                new QName(XMLSymbols.EMPTY_STRING, strNameAttr, strNameAttr, schemaDoc.fTargetNamespace),
                 schemaDoc, elmNode);
             if(redefinedGrp != null) {
                 // store in grammar

@@ -67,8 +67,6 @@ import org.apache.xerces.util.SymbolTable;
  */
 public final class SchemaSymbols {
 
-    public static final String EMPTY_STRING                   = "";
-
     // strings that's not added to the schema symbol table, because they
     // are not symbols in the schema document.
     // the validator can choose to add them by itself.

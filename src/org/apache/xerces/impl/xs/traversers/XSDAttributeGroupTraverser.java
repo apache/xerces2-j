@@ -60,6 +60,7 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
 
@@ -178,7 +179,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // check for restricted redefine:
         XSAttributeGroupDecl redefinedAttrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(
                 XSDHandler.ATTRIBUTEGROUP_TYPE, 
-                new QName(fSchemaHandler.EMPTY_STRING, nameAttr, nameAttr, schemaDoc.fTargetNamespace), 
+                new QName(XMLSymbols.EMPTY_STRING, nameAttr, nameAttr, schemaDoc.fTargetNamespace), 
                 schemaDoc, elmNode); 
         if(redefinedAttrGrp != null) {
             String err = attrGrp.validRestrictionOf(redefinedAttrGrp);

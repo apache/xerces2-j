@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.impl.xs.util.*;
 import java.util.Vector;
 
@@ -418,9 +419,8 @@ public class XSModelImpl implements XSModel {
         return null;
     }
 
-    private static final String EMPTY_STRING = "";
     private static final String null2EmptyString(String str) {
-        return str == null ? EMPTY_STRING : str;
+        return str == null ? XMLSymbols.EMPTY_STRING : str;
     }
     
 } // class XSModelImpl
