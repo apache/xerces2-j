@@ -80,7 +80,6 @@ import java.util.Hashtable;
 
 // for scanning DTD
 import org.apache.xerces.framework.XMLDTDScanner;
-import org.xml.sax.misc.NamespaceHandler;
 
 public final class DTDValidator
     implements XMLValidator,
