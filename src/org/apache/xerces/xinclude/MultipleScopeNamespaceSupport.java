@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,6 +73,8 @@ import org.apache.xerces.xni.NamespaceContext;
  * up to the beginning of the current scope.  Other scopes are not searched.
  * 
  * @author Peter McCracken, IBM
+ * 
+ * @version $Id$
  */
 public class MultipleScopeNamespaceSupport extends NamespaceSupport {
 

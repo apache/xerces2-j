@@ -131,7 +131,11 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * Specifically, it is missing support for XPointer document fragments.  Thus, only whole
  * documents can be included using this component in the pipeline.
  * </p>
+ * 
  * @author Peter McCracken, IBM
+ * 
+ * @version $Id$
+ * 
  * @see XIncludeNamespaceSupport
  */
 public class XIncludeHandler

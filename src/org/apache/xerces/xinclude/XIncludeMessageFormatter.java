@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,8 @@ import org.apache.xerces.util.MessageFormatter;
  * XIncludeMessageFormatter provides error messages for the XInclude 1.0 Candidate Recommendation
  * 
  * @author Peter McCracken, IBM
+ * 
+ * @version $Id$
  */
 public class XIncludeMessageFormatter implements MessageFormatter {
     
