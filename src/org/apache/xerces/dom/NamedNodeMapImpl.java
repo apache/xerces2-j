@@ -498,19 +498,26 @@ public class NamedNodeMapImpl
     protected int findNamePoint(String namespaceURI, String name) {
         
         if (nodes == null) return -1;
-        if (namespaceURI == null) return -1;
         if (name == null) return -1;
         
         // This is a linear search through the same nodes Vector.
         // The Vector is sorted on the DOM Level 1 nodename.
         // The DOM Level 2 NS keys are namespaceURI and Localname, 
         // so we must linear search thru it.
-        
+        // In addition, to get this to work with nodes without any namespace
+        // (namespaceURI and localNames are both null) we then use the nodeName
+        // as a seconday key.
         for (int i = 0; i < nodes.size(); i++) {
             NodeImpl a = (NodeImpl)nodes.elementAt(i);
-            if (namespaceURI.equals(a.getNamespaceURI())
-                && name.equals(a.getLocalName())
-                ) {
+            String aNamespaceURI = a.getNamespaceURI();
+            String aLocalName = a.getLocalName();
+            if (((namespaceURI == null && aNamespaceURI == null)
+                 ||
+                 namespaceURI.equals(aNamespaceURI))
+                &&
+                (name.equals(aLocalName)
+                 ||
+                 (aLocalName == null && name.equals(a.getNodeName())))) {
                 return i;
             }
         }
