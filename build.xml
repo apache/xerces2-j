@@ -386,6 +386,23 @@ Copyright:
     <delete file="${build.dir}/${Name}-src${version_postfix}.tar"/>
   </target>
 
+  <!-- Prepares the tools distribution -->
+  <target name="tools" depends="init">
+    <echo message="Building the tools distribution files (zip,tar)"/>
+    <delete dir="${distbin.dir}"/>
+    <mkdir dir="${distbin.dir}"/>
+    <mkdir dir="${distbin.dir}/tools"/>
+    <copy todir="${distbin.dir}/tools" >
+        <fileset dir="tools"/>
+    </copy>
+    <zip zipfile="${build.dir}/${Name}-tools${version_postfix}.zip" basedir="${build.dir}"
+         includes="${name}-${appendit}/**"/>
+    <tar tarfile="${build.dir}/${Name}-tools${version_postfix}.tar" basedir="${build.dir}"
+         includes="${name}-${appendit}/**"/>
+    <gzip zipfile="${build.dir}/${Name}-tools${version_postfix}.tar.gz"
+          src="${build.dir}/${Name}-tools${version_postfix}.tar" />
+  </target>
+
   <!-- =================================================================== -->
   <!-- Prepares the binary distribution                                    -->
   <!-- =================================================================== -->
