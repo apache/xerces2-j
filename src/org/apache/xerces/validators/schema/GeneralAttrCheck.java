@@ -1254,12 +1254,12 @@ public class GeneralAttrCheck {
             // get all values appeared with this attribute name
             Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
             String attrVal;
-            String attrName = (String)values.get(0);
+            String attrName = (String)values.elementAt(0);
             // for each of the values
             int count = values.size();
             for (int i = 1; i < count; i++) {
                 // normalize it according to the whiteSpace facet
-                attrVal = normalize((String)values.get(i), dv.getWSFacet());
+                attrVal = normalize((String)values.elementAt(i), dv.getWSFacet());
                 try {
                     // and validate it using the DatatypeValidator
                     dv.validate(attrVal,null);
