@@ -145,7 +145,7 @@ public class DOMASBuilderImpl
      * Constructs a DOM Builder using the dtd/xml schema parser configuration.
      */
     public DOMASBuilderImpl() {
-        super(new DTDXSParserConfiguration());
+        super(new XMLGrammarCachingConfiguration());
     } // <init>
 
     /**
@@ -159,7 +159,7 @@ public class DOMASBuilderImpl
      * Constructs a DOM Builder using the specified symbol table.
      */
     public DOMASBuilderImpl(SymbolTable symbolTable) {
-        super(new DTDXSParserConfiguration(symbolTable));
+        super(new XMLGrammarCachingConfiguration(symbolTable));
     } // <init>(SymbolTable)
 
 
@@ -168,7 +168,7 @@ public class DOMASBuilderImpl
      * grammar pool.
      */
     public DOMASBuilderImpl(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
-        super(new DTDXSParserConfiguration(symbolTable, grammarPool));
+        super(new XMLGrammarCachingConfiguration(symbolTable, grammarPool));
         fGrammarPool = grammarPool;
     }
 

@@ -207,10 +207,10 @@ extends AbstractDOMParser implements DOMBuilder {
     //
 
     /**
-     * Constructs a DOM Builder using the dtd/xml schema parser configuration.
+     * Constructs a DOM Builder using the standard parser configuration.
      */
     public DOMBuilderImpl() {
-        this(new DTDXSParserConfiguration());
+        this(new StandardParserConfiguration());
     } // <init>
 
     /**
@@ -254,7 +254,7 @@ extends AbstractDOMParser implements DOMBuilder {
      * Constructs a DOM Builder using the specified symbol table.
      */
     public DOMBuilderImpl(SymbolTable symbolTable) {
-        this(new DTDXSParserConfiguration(symbolTable));
+        this(new StandardParserConfiguration(symbolTable));
     } // <init>(SymbolTable)
 
 
@@ -263,7 +263,7 @@ extends AbstractDOMParser implements DOMBuilder {
      * grammar pool.
      */
     public DOMBuilderImpl(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
-        this(new DTDXSParserConfiguration(symbolTable, grammarPool));
+        this(new StandardParserConfiguration(symbolTable, grammarPool));
     }
 
     /**
