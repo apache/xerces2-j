@@ -2700,13 +2700,13 @@ public final class XMLValidator
        Grammar grammar = null;
        if (uri!=null) {
            if (fGrammarIsDTDGrammar && uri.length()==0) {
-               fErrorReporter.reportError(fErrorReporter.getLocator(), 
+               fErrorReporter.reportError(fErrorReporter.getLocator(),
                                           XMLMessages.XML_DOMAIN,
-                                          XMLMessages.MSG_DTD_SCHEMA_ERROR, 
-                                          XMLMessages.MSG_DTD_SCHEMA_ERROR, 
+                                          XMLMessages.MSG_DTD_SCHEMA_ERROR,
+                                          XMLMessages.MSG_DTD_SCHEMA_ERROR,
                                           null,
                                           fErrorReporter.ERRORTYPE_WARNING);
-           }  else {         
+           }  else {
                 grammar = fGrammarResolver.getGrammar(uri);
            }
        }
@@ -3302,7 +3302,7 @@ public final class XMLValidator
                   (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
 
                   if (typeInfo==null) {
-                     if (uri.length() == 0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
+                     if (uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
                         fXsiTypeValidator = dataTypeReg.getDatatypeValidator(localpart);
                      } else
                         fXsiTypeValidator = dataTypeReg.getDatatypeValidator(uri+","+localpart);
