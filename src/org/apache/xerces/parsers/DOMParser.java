@@ -168,7 +168,12 @@ public class DOMParser
     protected int                  fDocumentIndex;
     protected int                  fDocumentTypeIndex;
     protected int                  fCurrentNodeIndex;
-
+    
+    //DOM Level 3 WD - experimental
+    
+    protected int                  fCurrentEntityName; //name of current entity reference
+    protected int                  fCurrentEntityNode; //index of entity node corresponding to current entity reference
+    
     // full expansion data
 
     protected DocumentImpl fDocumentImpl;
@@ -349,6 +354,10 @@ public class DOMParser
         fDocumentIndex = -1;
         fDocumentTypeIndex = -1;
         fCurrentNodeIndex = -1;
+        
+        //DOM Level 3 WD - experimental
+        fCurrentEntityNode = -1;  
+        fCurrentEntityName = -1; 
 
         // init full expansion
         fDocumentImpl = null;
@@ -957,19 +966,51 @@ public class DOMParser
 
     /** XML declaration. */
     public void xmlDecl(int versionIndex, int encodingIndex, int standaloneIndex) throws Exception {
-
-        // release strings
-        fStringPool.releaseString(versionIndex);
-        fStringPool.releaseString(encodingIndex);
-        fStringPool.releaseString(standaloneIndex);
+        boolean standalone = (standaloneIndex!=-1)?(fStringPool.toString(standaloneIndex).equals("yes"))?true:false:false;
+        if (fDocumentImpl != null) { //full node expansion
+             fDocumentImpl.setVersion(fStringPool.toString(versionIndex));
+             fDocumentImpl.setEncoding(fStringPool.toString(encodingIndex));
+             fDocumentImpl.setStandalone(standalone);
+         }
+         else {              
+             fDeferredDocumentImpl.setVersion(fStringPool.toString(versionIndex));
+             fDeferredDocumentImpl.setEncoding(fStringPool.toString(encodingIndex));
+             fDeferredDocumentImpl.setStandalone(standalone);
+         }
     }
 
-    /** Text declaration. */
+    /** Text declaration. 
+     * added DOM Level 3 WD support - experimental
+    */    
     public void textDecl(int versionIndex, int encodingIndex) throws Exception {
-
-        // release strings
-        fStringPool.releaseString(versionIndex);
-        fStringPool.releaseString(encodingIndex);
+        if (fDeferredDocumentImpl != null)   {
+            String name = fStringPool.toString(fCurrentEntityName);
+            // we only support one context for entity references (name !=null)
+            if (fDocumentTypeIndex != -1 && name != null) {
+                // find Entity decl for fCurrentEntityName.
+                int entityDecl = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+                while (entityDecl != -1) {
+                    if (fDeferredDocumentImpl.getNodeType(entityDecl, false) == Node.ENTITY_NODE
+                    && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) { 
+                        break;
+                    }
+                    entityDecl = fDeferredDocumentImpl.getPrevSibling(entityDecl, false);
+                }
+                fCurrentEntityNode = entityDecl;
+                fDeferredDocumentImpl.setEntityInfo(entityDecl, versionIndex, encodingIndex);
+            }    
+        }
+       // full node expansion
+       else { 
+            NamedNodeMap entities = fDocumentType.getEntities();
+            if (entities!=null) {
+                EntityImpl entityNode = (EntityImpl)entities.getNamedItem(fCurrentElementNode.getNodeName());
+                if (entityNode !=null) {
+                    entityNode.setVersion(fStringPool.toString(versionIndex));
+                    entityNode.setEncoding(fStringPool.toString(encodingIndex));
+                }
+            }
+        }
     }
 
     /** Report the start of the scope of a namespace declaration. */
@@ -1321,11 +1362,13 @@ public class DOMParser
     /** Start entity reference. */
     public void startEntityReference(int entityName, int entityType,
                                      int entityContext) throws Exception {
-
+        
+        fCurrentEntityName = entityName;
         // are we ignoring entity reference nodes?
         if (!fCreateEntityReferenceNodes) {
             return;
         }
+        
 
         // ignore built-in entities
         if (entityName == fAmpIndex ||
@@ -1335,19 +1378,21 @@ public class DOMParser
             entityName == fQuotIndex) {
             return;
         }
-
+         
         // we only support one context for entity references right now...
         if (entityContext != XMLEntityHandler.ENTITYREF_IN_CONTENT) {
             return;
         }
-
+        
         // deferred node expansion
+        
         if (fDeferredDocumentImpl != null) {
-
+            
             int entityRefIndex = fDeferredDocumentImpl.createEntityReference(entityName);
             fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, entityRefIndex);
-
+            
             fCurrentNodeIndex = entityRefIndex;
+            
         }
 
         // full node expansion
@@ -1371,7 +1416,6 @@ public class DOMParser
     /** End entity reference. */
     public void endEntityReference(int entityName, int entityType,
                                    int entityContext) throws Exception {
-
         // are we ignoring entity reference nodes?
         if (!fCreateEntityReferenceNodes) {
             return;
@@ -1403,28 +1447,35 @@ public class DOMParser
             if (fDeferredDocumentImpl.getNodeType(erChild, false) != Node.ENTITY_REFERENCE_NODE)  return;
 
             erChild = fDeferredDocumentImpl.getLastChild(erChild, false); // first Child of EntityReference
-
             if (fDocumentTypeIndex != -1) {
-                // find Entity decl for this EntityReference.
-                int entityDecl = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
-                while (entityDecl != -1) {
-                    if (fDeferredDocumentImpl.getNodeType(entityDecl, false) == Node.ENTITY_NODE
-                    && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) // string compare...
-                    {
-                        break;
+                // if we have seen <?xml..> decl then Entity decl was found and 
+                // set in textDecl() using fCurrentEntityNode
+                if (fCurrentEntityNode  == -1) {
+                    // find Entity decl for this EntityReference.
+                    int entityDecl = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+                    while (entityDecl != -1) {
+                        if (fDeferredDocumentImpl.getNodeType(entityDecl, false) == Node.ENTITY_NODE
+                            && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) // string compare...
+                        {
+                            break;
+                        }
+                        entityDecl = fDeferredDocumentImpl.getPrevSibling(entityDecl, false);
                     }
-                    entityDecl = fDeferredDocumentImpl.getPrevSibling(entityDecl, false);
+                    fCurrentEntityNode = entityDecl;
                 }
-
-                if (entityDecl != -1
-                    && fDeferredDocumentImpl.getLastChild(entityDecl, false) == -1) {
+                 if (fCurrentEntityNode != -1
+                    && fDeferredDocumentImpl.getLastChild(fCurrentEntityNode, false) == -1) {
                     // found entityDecl with same name as this reference
                     // AND it doesn't have any children.
 
                     // we don't need to iterate, because the whole structure
                     // should already be connected to the 1st child.
-                    fDeferredDocumentImpl.setAsLastChild(entityDecl, erChild);
+                    fDeferredDocumentImpl.setAsLastChild(fCurrentEntityNode, erChild);
                 }
+                 // done with current entity reference.
+                 // reset values
+                 fCurrentEntityNode  = -1; 
+                 fCurrentEntityName = -1;
             }
 
         }
