@@ -80,6 +80,15 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
 
     /** DTD validator */
     private XMLDTDValidatorFilter fDTDValidator;
+    
+    /** 
+     * Saw spaces after element name or between attributes.
+     * 
+     * This is reserved for the case where scanning of a start element spans
+     * several methods, as is the case when scanning the start of a root element 
+     * where a DTD external subset may be read after scanning the element name.
+     */
+    private boolean fSawSpace;
 
     /**
      * The scanner is responsible for removing DTD validator
@@ -304,24 +313,235 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
         return empty;
 
     } // scanStartElement():boolean
+    
+    /**
+     * Scans the name of an element in a start or empty tag. 
+     * 
+     * @see #scanStartElement()
+     */
+    protected void scanStartElementName ()
+        throws IOException, XNIException {
+        // Note: namespace processing is on by default
+        fEntityScanner.scanQName(fElementQName);
+        // Must skip spaces here because the DTD scanner
+        // would consume them at the end of the external subset.
+        fSawSpace = fEntityScanner.skipSpaces();
+    } // scanStartElementName()
+    
+    /**
+     * Scans the remainder of a start or empty tag after the element name.
+     * 
+     * @see #scanStartElement
+     * @return True if element is empty.
+     */    
+    protected boolean scanStartElementAfterName()
+        throws IOException, XNIException {
+
+        // REVISIT - [Q] Why do we need this local variable? -- mrglavas
+        String rawname = fElementQName.rawname;
+        if (fBindNamespaces) {
+            fNamespaceContext.pushContext();
+            if (fScannerState == SCANNER_STATE_ROOT_ELEMENT) {
+                if (fPerformValidation) {
+                    fErrorReporter.reportError(
+                        XMLMessageFormatter.XML_DOMAIN,
+                        "MSG_GRAMMAR_NOT_FOUND",
+                        new Object[] { rawname },
+                        XMLErrorReporter.SEVERITY_ERROR);
+
+                    if (fDoctypeName == null
+                        || !fDoctypeName.equals(rawname)) {
+                        fErrorReporter.reportError(
+                            XMLMessageFormatter.XML_DOMAIN,
+                            "RootElementTypeMustMatchDoctypedecl",
+                            new Object[] { fDoctypeName, rawname },
+                            XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                }
+            }
+        }
+
+        // push element stack
+        fCurrentElement = fElementStack.pushElement(fElementQName);
+
+        // attributes
+        boolean empty = false;
+        fAttributes.removeAllAttributes();
+        do {
+        	
+            // end tag?
+            int c = fEntityScanner.peekChar();
+            if (c == '>') {
+                fEntityScanner.scanChar();
+                break;
+            } else if (c == '/') {
+                fEntityScanner.scanChar();
+                if (!fEntityScanner.skipChar('>')) {
+                    reportFatalError(
+                        "ElementUnterminated",
+                        new Object[] { rawname });
+                }
+                empty = true;
+                break;
+            } else if (!isValidNameStartChar(c) || !fSawSpace) {
+                // Second chance. Check if this character is a high
+                // surrogate of a valid name start character.
+                if (!isValidNameStartHighSurrogate(c) || !fSawSpace) {
+                    reportFatalError(
+                        "ElementUnterminated",
+                        new Object[] { rawname });
+                }
+            }
+
+            // attributes
+            scanAttribute(fAttributes);
+            
+            // spaces
+            fSawSpace = fEntityScanner.skipSpaces();
+
+        } while (true);
+
+        if (fBindNamespaces) {
+            // REVISIT: is it required? forbit xmlns prefix for element
+            if (fElementQName.prefix == XMLSymbols.PREFIX_XMLNS) {
+                fErrorReporter.reportError(
+                    XMLMessageFormatter.XMLNS_DOMAIN,
+                    "ElementXMLNSPrefix",
+                    new Object[] { fElementQName.rawname },
+                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+
+            // bind the element
+            String prefix =
+                fElementQName.prefix != null
+                    ? fElementQName.prefix
+                    : XMLSymbols.EMPTY_STRING;
+            // assign uri to the element
+            fElementQName.uri = fNamespaceContext.getURI(prefix);
+            // make sure that object in the element stack is updated as well
+            fCurrentElement.uri = fElementQName.uri;
+
+            if (fElementQName.prefix == null && fElementQName.uri != null) {
+                fElementQName.prefix = XMLSymbols.EMPTY_STRING;
+                // making sure that the object in the element stack is updated too.
+                fCurrentElement.prefix = XMLSymbols.EMPTY_STRING;
+            }
+            if (fElementQName.prefix != null && fElementQName.uri == null) {
+                fErrorReporter.reportError(
+                    XMLMessageFormatter.XMLNS_DOMAIN,
+                    "ElementPrefixUnbound",
+                    new Object[] {
+                        fElementQName.prefix,
+                        fElementQName.rawname },
+                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+
+            // bind attributes (xmlns are already bound bellow)
+            int length = fAttributes.getLength();
+            for (int i = 0; i < length; i++) {
+                fAttributes.getName(i, fAttributeQName);
+
+                String aprefix =
+                    fAttributeQName.prefix != null
+                        ? fAttributeQName.prefix
+                        : XMLSymbols.EMPTY_STRING;
+                String uri = fNamespaceContext.getURI(aprefix);
+                // REVISIT: try removing the first "if" and see if it is faster.
+                //
+                if (fAttributeQName.uri != null
+                    && fAttributeQName.uri == uri) {
+                    continue;
+                }
+                if (aprefix != XMLSymbols.EMPTY_STRING) {
+                    fAttributeQName.uri = uri;
+                    if (uri == null) {
+                        fErrorReporter.reportError(
+                            XMLMessageFormatter.XMLNS_DOMAIN,
+                            "AttributePrefixUnbound",
+                            new Object[] {
+                                fElementQName.rawname,
+                                fAttributeQName.rawname,
+                                aprefix },
+                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
+                    fAttributes.setURI(i, uri);
+                }
+            }
+
+            if (length > 1) {
+                QName name = fAttributes.checkDuplicatesNS();
+                if (name != null) {
+                    if (name.uri != null) {
+                        fErrorReporter.reportError(
+                            XMLMessageFormatter.XMLNS_DOMAIN,
+                            "AttributeNSNotUnique",
+                            new Object[] {
+                                fElementQName.rawname,
+                                name.localpart,
+                                name.uri },
+                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    } else {
+                        fErrorReporter.reportError(
+                            XMLMessageFormatter.XMLNS_DOMAIN,
+                            "AttributeNotUnique",
+                            new Object[] {
+                                fElementQName.rawname,
+                                name.rawname },
+                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
+                }
+            }
+        }
+
+        // call handler
+        if (fDocumentHandler != null) {
+            if (empty) {
+
+                //decrease the markup depth..
+                fMarkupDepth--;
+
+                // check that this element was opened in the same entity
+                if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+                    reportFatalError(
+                        "ElementEntityMismatch",
+                        new Object[] { fCurrentElement.rawname });
+                }
+
+                fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
+
+                if (fBindNamespaces) {
+                    fNamespaceContext.popContext();
+                }
+                //pop the element off the stack..
+                fElementStack.popElement(fElementQName);
+            } else {
+                fDocumentHandler.startElement(fElementQName, fAttributes, null);
+            }
+        }
+
+        if (DEBUG_CONTENT_SCANNING)
+            System.out.println("<<< scanStartElementAfterName(): " + empty);
+        return empty;
+        
+    } // scanStartElementAfterName()
 
     /**
-    * Scans an attribute.
-    * <p>
-    * <pre>
-    * [41] Attribute ::= Name Eq AttValue
-    * </pre>
-    * <p>
-    * <strong>Note:</strong> This method assumes that the next
-    * character on the stream is the first character of the attribute
-    * name.
-    * <p>
-    * <strong>Note:</strong> This method uses the fAttributeQName and
-    * fQName variables. The contents of these variables will be
-    * destroyed.
-    *
-    * @param attributes The attributes list for the scanned attribute.
-    */
+     * Scans an attribute.
+     * <p>
+     * <pre>
+     * [41] Attribute ::= Name Eq AttValue
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> This method assumes that the next
+     * character on the stream is the first character of the attribute
+     * name.
+     * <p>
+     * <strong>Note:</strong> This method uses the fAttributeQName and
+     * fQName variables. The contents of these variables will be
+     * destroyed.
+     *
+     * @param attributes The attributes list for the scanned attribute.
+     */
     protected void scanAttribute(XMLAttributesImpl attributes)
         throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING)
@@ -571,9 +791,41 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
          */
         protected boolean scanRootElementHook()
             throws IOException, XNIException {
+            
+            if (fExternalSubsetResolver != null && !fSeenDoctypeDecl 
+                && (fValidation || fLoadExternalDTD)) {
+                scanStartElementName();
+                resolveExternalSubsetAndRead();
+                reconfigurePipeline();
+                if (scanStartElementAfterName()) {
+                    setScannerState(SCANNER_STATE_TRAILING_MISC);
+                    setDispatcher(fTrailingMiscDispatcher);
+                    return true;
+                }
+            }
+            else {
+                reconfigurePipeline();
+                if (scanStartElement()) {
+                    setScannerState(SCANNER_STATE_TRAILING_MISC);
+                    setDispatcher(fTrailingMiscDispatcher);
+                    return true;
+                }
+            }
+            return false;
+
+        } // scanRootElementHook():boolean
+        
+        /**
+         * Re-configures pipeline by removing the DTD validator 
+         * if no DTD grammar exists. If no validator exists in the
+         * pipeline or there is no DTD grammar, namespace binding
+         * is performed by the scanner in the enclosing class.
+         */
+        private void reconfigurePipeline() {
             if (fDTDValidator == null) {
                 fBindNamespaces = true;
-            } else if (!fDTDValidator.hasGrammar()) {
+            }
+            else if (!fDTDValidator.hasGrammar()) {
                 fBindNamespaces = true;
                 fPerformValidation = fDTDValidator.validate();
                 // re-configure pipeline
@@ -585,14 +837,6 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
                 fDTDValidator.setDocumentSource(null);
                 fDTDValidator.setDocumentHandler(null);
             }
-
-            if (scanStartElement()) {
-                setScannerState(SCANNER_STATE_TRAILING_MISC);
-                setDispatcher(fTrailingMiscDispatcher);
-                return true;
-            }
-            return false;
-
-        } // scanRootElementHook():boolean
+        } // reconfigurePipeline()
     }
 }

@@ -115,6 +115,12 @@ public class XMLDocumentFragmentScannerImpl
     /** Feature identifier: notify built-in refereces. */
     protected static final String NOTIFY_BUILTIN_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_BUILTIN_REFS_FEATURE;
+        
+    // property identifiers
+    
+    /** Property identifier: entity resolver. */
+    protected static final String ENTITY_RESOLVER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
     
     // recognized features and properties
 
@@ -139,10 +145,12 @@ public class XMLDocumentFragmentScannerImpl
         SYMBOL_TABLE,
         ERROR_REPORTER,
         ENTITY_MANAGER,
+        ENTITY_RESOLVER,
     };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS = {
+        null,
         null,
         null,
         null,
@@ -185,6 +193,9 @@ public class XMLDocumentFragmentScannerImpl
     
     /** Standalone. */
     protected boolean fStandalone;
+    
+    /** External subset resolver. **/
+    protected ExternalSubsetResolver fExternalSubsetResolver;
 
     // element information
 
@@ -250,6 +261,15 @@ public class XMLDocumentFragmentScannerImpl
 
     /** External entity. */
     private XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
+    
+    /** 
+     * Saw spaces after element name or between attributes.
+     * 
+     * This is reserved for the case where scanning of a start element spans
+     * several methods, as is the case when scanning the start of a root element 
+     * where a DTD external subset may be read after scanning the element name.
+     */
+    private boolean fSawSpace;
 
     //
     // Constructors
@@ -293,6 +313,7 @@ public class XMLDocumentFragmentScannerImpl
         
         // reset entity scanner
         fEntityScanner = fEntityManager.getEntityScanner();
+        
         // keep dispatching "events"
         fEntityManager.setEntityHandler(this);
         do {
@@ -348,12 +369,24 @@ public class XMLDocumentFragmentScannerImpl
 		setDispatcher(fContentDispatcher);
         
 
-        if (!fParserSettings) {
+        if (fParserSettings) {
+            // parser settings have changed. reset them.
+        	
             // xerces features
             try {
                 fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
             } catch (XMLConfigurationException e) {
                 fNotifyBuiltInRefs = false;
+            }
+            
+            // xerces properties
+            try {
+                Object resolver = componentManager.getProperty(ENTITY_RESOLVER);
+                fExternalSubsetResolver = (resolver instanceof ExternalSubsetResolver) ?
+                    (ExternalSubsetResolver) resolver : null;
+            }
+            catch (XMLConfigurationException e) {
+                fExternalSubsetResolver = null;
             }
         }
 
@@ -434,10 +467,16 @@ public class XMLDocumentFragmentScannerImpl
             if (suffixLength == Constants.ENTITY_MANAGER_PROPERTY.length() && 
                 propertyId.endsWith(Constants.ENTITY_MANAGER_PROPERTY)) {
                 fEntityManager = (XMLEntityManager)value;
+                return;
             }
-            return;
+            if (suffixLength == Constants.ENTITY_RESOLVER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.ENTITY_RESOLVER_PROPERTY)) {
+                fExternalSubsetResolver = (value instanceof ExternalSubsetResolver) ?
+                    (ExternalSubsetResolver) value : null;
+                return;
+            }
         }
-
+        
     } // setProperty(String,Object)
 
     /** 
@@ -785,6 +824,102 @@ public class XMLDocumentFragmentScannerImpl
         return empty;
 
     } // scanStartElement():boolean
+    
+    /**
+     * Scans the name of an element in a start or empty tag. 
+     * 
+     * @see #scanStartElement()
+     */
+    protected void scanStartElementName ()
+        throws IOException, XNIException {
+        // name
+        if (fNamespaces) {
+            fEntityScanner.scanQName(fElementQName);
+        }
+        else {
+            String name = fEntityScanner.scanName();
+            fElementQName.setValues(null, name, name, null);
+        }
+        // Must skip spaces here because the DTD scanner
+        // would consume them at the end of the external subset.
+        fSawSpace = fEntityScanner.skipSpaces();
+    } // scanStartElementName()
+
+    /**
+     * Scans the remainder of a start or empty tag after the element name.
+     * 
+     * @see #scanStartElement
+     * @return True if element is empty.
+     */
+    protected boolean scanStartElementAfterName()
+        throws IOException, XNIException {
+        String rawname = fElementQName.rawname;
+
+        // push element stack
+        fCurrentElement = fElementStack.pushElement(fElementQName);
+
+        // attributes
+        boolean empty = false;
+        fAttributes.removeAllAttributes();
+        do {
+        	
+            // end tag?
+            int c = fEntityScanner.peekChar();
+            if (c == '>') {
+                fEntityScanner.scanChar();
+                break;
+            }
+            else if (c == '/') {
+                fEntityScanner.scanChar();
+                if (!fEntityScanner.skipChar('>')) {
+                    reportFatalError("ElementUnterminated",
+                                     new Object[]{rawname});
+                }
+                empty = true;
+                break;
+            }
+            else if (!isValidNameStartChar(c) || !fSawSpace) {
+                // Second chance. Check if this character is a high
+                // surrogate of a valid name start character.
+                if (!isValidNameStartHighSurrogate(c) || !fSawSpace) {
+                    reportFatalError("ElementUnterminated",
+                                     new Object[] { rawname });
+                }
+            }
+
+            // attributes
+            scanAttribute(fAttributes);
+            
+            // spaces
+            fSawSpace = fEntityScanner.skipSpaces();
+
+        } while (true);
+
+        // call handler
+        if (fDocumentHandler != null) {
+            if (empty) {
+
+                //decrease the markup depth..
+                fMarkupDepth--;
+                // check that this element was opened in the same entity
+                if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+                    reportFatalError("ElementEntityMismatch",
+                                     new Object[]{fCurrentElement.rawname});
+                }
+
+                fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
+
+                //pop the element off the stack..
+                fElementStack.popElement(fElementQName);
+            }
+            else {
+                fDocumentHandler.startElement(fElementQName, fAttributes, null);
+            }
+        }
+
+        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanStartElementAfterName(): "+empty);
+        return empty;
+    } // scanStartElementAfterName()
 
     /** 
      * Scans an attribute.
@@ -1050,8 +1185,6 @@ public class XMLDocumentFragmentScannerImpl
         return fMarkupDepth;
  
     } // scanEndElement():int
-
-    public static final String CHAR_REF = "characterReference";
 
     /**
      * Scans a character reference.

@@ -20,6 +20,7 @@ import java.io.CharConversionException;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.xerces.impl.dtd.XMLDTDDescription;
 import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.NamespaceSupport;
@@ -210,6 +211,9 @@ public class XMLDocumentScannerImpl
 
     /** String buffer. */
     private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    
+    /** External subset source. */
+    private XMLInputSource fExternalSubsetSource = null;
 
     //
     // Constructors
@@ -263,8 +267,8 @@ public class XMLDocumentScannerImpl
         fDoctypePublicId = null;
         fDoctypeSystemId = null;
         fSeenDoctypeDecl = false;
-		fScanningDTD = false;
-       
+        fScanningDTD = false;
+        fExternalSubsetSource = null;
 
 		if (!fParserSettings) {
 			// parser settings have not been changed
@@ -554,6 +558,14 @@ public class XMLDocumentScannerImpl
         }
 
         fHasExternalDTD = fDoctypeSystemId != null;
+        
+        // Attempt to locate an external subset with an external subset resolver.
+        if (!fHasExternalDTD && fExternalSubsetResolver != null) {
+            XMLDTDDescription desc = new XMLDTDDescription(null, 
+                null, fEntityManager.getCurrentResourceIdentifier().getExpandedSystemId(), null, fDoctypeName);
+            fExternalSubsetSource = fExternalSubsetResolver.getExternalSubset(desc);
+            fHasExternalDTD = fExternalSubsetSource != null;
+        }
 
         // call handler
         if (fDocumentHandler != null) {
@@ -562,8 +574,12 @@ public class XMLDocumentScannerImpl
             //       subset) is parsed correctly but SAX2 requires that
             //       it knows the root element name and public and system
             //       identifier for the startDTD call. -Ac
-            fDocumentHandler.doctypeDecl(fDoctypeName, fDoctypePublicId, fDoctypeSystemId,
-                                         null);
+            if (fExternalSubsetSource == null) {
+                fDocumentHandler.doctypeDecl(fDoctypeName, fDoctypePublicId, fDoctypeSystemId, null);
+            }
+            else {
+                fDocumentHandler.doctypeDecl(fDoctypeName, fExternalSubsetSource.getPublicId(), fExternalSubsetSource.getSystemId(), null);
+            }
         }
 
         // is there an internal subset?
@@ -805,22 +821,36 @@ public class XMLDocumentScannerImpl
                                 setDispatcher(fDTDDispatcher);
                                 return true;
                             }
-                            if (fDoctypeSystemId != null && ((fValidation || fLoadExternalDTD) 
+                            
+                            // handle external subset
+                            if (fDoctypeSystemId != null) {
+                                if (((fValidation || fLoadExternalDTD) 
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
-                                setScannerState(SCANNER_STATE_DTD_EXTERNAL);
-                                setDispatcher(fDTDDispatcher);
-                                return true;
-                            } 
-                            else {
-                                // Send endDTD() call if: 
-                                // a) systemId is null
-                                // b) "load-external-dtd" and validation are false
-                                // c) DTD grammar is cached
-                                
-                                // in XNI this results in 3 events:  doctypeDecl, startDTD, endDTD
-                                // in SAX this results in 2 events: startDTD, endDTD
-                                fDTDScanner.setInputSource(null);
+                                    setScannerState(SCANNER_STATE_DTD_EXTERNAL);
+                                    setDispatcher(fDTDDispatcher);
+                                    return true;
+                                }
                             }
+                            else if (fExternalSubsetSource != null) {
+                                if (((fValidation || fLoadExternalDTD) 
+                                    && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
+                                    // This handles the case of a DOCTYPE that had neither an internal subset or an external subset.
+                                    fDTDScanner.setInputSource(fExternalSubsetSource);
+                                    fExternalSubsetSource = null;
+                                    setScannerState(SCANNER_STATE_DTD_EXTERNAL_DECLS);
+                                    setDispatcher(fDTDDispatcher);
+                                    return true;
+                                }                       	
+                            }
+                            
+                            // Send endDTD() call if: 
+                            // a) systemId is null or if an external subset resolver could not locate an external subset.
+                            // b) "load-external-dtd" and validation are false
+                            // c) DTD grammar is cached
+                                
+                            // in XNI this results in 3 events:  doctypeDecl, startDTD, endDTD
+                            // in SAX this results in 2 events: startDTD, endDTD
+                            fDTDScanner.setInputSource(null);
                             setScannerState(SCANNER_STATE_PROLOG);
                             break;
                         }
@@ -917,18 +947,29 @@ public class XMLDocumentScannerImpl
                                 fMarkupDepth--;
 
                                 // scan external subset next
-                                if (fDoctypeSystemId != null && (fValidation || fLoadExternalDTD) 
+                                if (fDoctypeSystemId != null) {
+                                    if ((fValidation || fLoadExternalDTD) 
                                         && (fValidationManager == null || !fValidationManager.isCachedDTD())) {
-                                    setScannerState(SCANNER_STATE_DTD_EXTERNAL);
+                                        setScannerState(SCANNER_STATE_DTD_EXTERNAL);
+                                        break;
+                                    }
                                 }
-
-                                // break out of here
-                                else {
-                                    setScannerState(SCANNER_STATE_PROLOG);
-                                    setDispatcher(fPrologDispatcher);
-                                    fEntityManager.setEntityHandler(XMLDocumentScannerImpl.this);
-                                    return true;
+                                else if (fExternalSubsetSource != null) {
+                                    if ((fValidation || fLoadExternalDTD) 
+                                        && (fValidationManager == null || !fValidationManager.isCachedDTD())) {
+                                        // This handles the case of a DOCTYPE that only had an internal subset.
+                                        fDTDScanner.setInputSource(fExternalSubsetSource);
+                                        fExternalSubsetSource = null;
+                                        setScannerState(SCANNER_STATE_DTD_EXTERNAL_DECLS);
+                                        break;
+                                    }
                                 }
+                                
+                                // break out of this dispatcher.
+                                setScannerState(SCANNER_STATE_PROLOG);
+                                setDispatcher(fPrologDispatcher);
+                                fEntityManager.setEntityHandler(XMLDocumentScannerImpl.this);
+                                return true;
                             }
                             break;
                         }
@@ -1062,7 +1103,17 @@ public class XMLDocumentScannerImpl
         protected boolean scanRootElementHook()
             throws IOException, XNIException {
 
-            if (scanStartElement()) {
+            if (fExternalSubsetResolver != null && !fSeenDoctypeDecl 
+                && (fValidation || fLoadExternalDTD)) {
+                scanStartElementName();
+                resolveExternalSubsetAndRead();
+                if (scanStartElementAfterName()) {
+                    setScannerState(SCANNER_STATE_TRAILING_MISC);
+                    setDispatcher(fTrailingMiscDispatcher);
+                    return true;
+                }
+            }
+            else if (scanStartElement()) {
                 setScannerState(SCANNER_STATE_TRAILING_MISC);
                 setDispatcher(fTrailingMiscDispatcher);
                 return true;
@@ -1086,6 +1137,35 @@ public class XMLDocumentScannerImpl
             //throw e;
 
         } // endOfFileHook()
+        
+        /**
+         * <p>Attempt to locate an external subset for a document that does not otherwise
+         * have one. If an external subset is located, then it is scanned.</p>
+         */
+        protected void resolveExternalSubsetAndRead()
+            throws IOException, XNIException {
+            XMLDTDDescription desc = new XMLDTDDescription(null, 
+                null, fEntityManager.getCurrentResourceIdentifier().getExpandedSystemId(), null, fElementQName.rawname);
+            XMLInputSource src = fExternalSubsetResolver.getExternalSubset(desc);
+            if (src != null) {
+                fDoctypeName = fElementQName.rawname;
+                fDoctypePublicId = src.getPublicId();
+                fDoctypeSystemId = src.getSystemId();
+                // call document handler
+                if (fDocumentHandler != null) {
+                    // This inserts a doctypeDecl event into the stream though no 
+                    // DOCTYPE existed in the instance document.
+                    fDocumentHandler.doctypeDecl(fDoctypeName, fDoctypePublicId, fDoctypeSystemId, null);
+                }
+                try {
+                    fDTDScanner.setInputSource(src);
+                    while (fDTDScanner.scanDTDExternalSubset(true));
+                }
+                finally {
+                    fEntityManager.setEntityHandler(XMLDocumentScannerImpl.this);
+                }
+            }
+        } // resolveExternalSubsetAndRead()
 
     } // class ContentDispatcher
 
