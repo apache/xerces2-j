@@ -177,7 +177,7 @@ public class SAX2Writer
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
                 out.print(' ');
-                out.print(attrs.getRawName(i));
+                out.print(attrs.getQName(i));
                 out.print("=\"");
                 out.print(normalize(attrs.getValue(i)));
                 out.print('"');
@@ -315,11 +315,11 @@ public class SAX2Writer
 
         int len = (attrs != null) ? attrs.getLength() : 0;
         for (int i = 0; i < len; i++) {
-            String name = attrs.getRawName(i);
+            String name = attrs.getQName(i);
             int count = attributes.getLength();
             int j = 0;
             while (j < count) {
-                if (name.compareTo(attributes.getRawName(j)) < 0) {
+                if (name.compareTo(attributes.getQName(j)) < 0) {
                     break;
                 }
                 j++;

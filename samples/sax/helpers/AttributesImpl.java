@@ -134,12 +134,12 @@ public class AttributesImpl
     } // getLocalName(int):String
 
     /** Returns the attribute raw name by index. */
-    public String getRawName(int index) {
+    public String getQName(int index) {
 
         ListNode node = getListNodeAt(index);
         return node != null ? node.raw : null;
 
-    } // getRawName(int):String
+    } // getQName(int):String
 
     /** Returns the attribute type by index. */
     public String getType(int index) {
