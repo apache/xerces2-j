@@ -67,9 +67,9 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLComponent;
-import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;

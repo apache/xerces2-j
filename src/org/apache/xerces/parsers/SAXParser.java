@@ -59,6 +59,7 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 /**
  * This is the main Xerces SAX parser class. It uses the abstract SAX parser
@@ -87,7 +88,7 @@ public class SAXParser
     /**
      * Constructs a SAX parser using the specified parser configuration.
      */
-    public SAXParser(ParserConfiguration config) {
+    public SAXParser(XMLParserConfiguration config) {
         super(config);
     } // <init>(ParserConfiguration)
 

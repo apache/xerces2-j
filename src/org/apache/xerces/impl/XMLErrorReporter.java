@@ -62,8 +62,8 @@ import java.util.Locale;
 
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.MessageFormatter;
-import org.apache.xerces.xni.XMLComponent;
-import org.apache.xerces.xni.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;

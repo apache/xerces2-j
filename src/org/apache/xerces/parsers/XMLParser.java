@@ -60,6 +60,9 @@ package org.apache.xerces.parsers;
 import java.io.IOException;
 import java.util.Locale;
 
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.impl.Constants;
+
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -82,7 +85,16 @@ public abstract class XMLParser {
     // Data
     //
 
-    ParserConfiguration fConfiguration;
+    XMLParserConfiguration fConfiguration;
+
+    // constants
+
+    static final String ENTITY_RESOLVER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+    static final String ERROR_REPORTER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+    static final String ERROR_HANDLER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
 
     //
     // Constructors
@@ -91,11 +103,11 @@ public abstract class XMLParser {
     /**
      * Default Constructor.
      */
-    protected XMLParser(ParserConfiguration config) {
+    protected XMLParser(XMLParserConfiguration config) {
 
         fConfiguration = config;
 
-    } // <init>(ParserConfiguration)
+    } // <init>(XMLParserConfiguration)
 
     //
     // Public methods
@@ -117,7 +129,8 @@ public abstract class XMLParser {
     public void parse(String systemId)
         throws SAXException, IOException {
 
-        fConfiguration.parse(systemId);
+        InputSource source = new InputSource(systemId);
+        fConfiguration.parse(source);
 
     } // parse(String)
 
@@ -145,7 +158,15 @@ public abstract class XMLParser {
      */
     public void setEntityResolver(EntityResolver resolver) {
 
-        fConfiguration.setEntityResolver(resolver);
+        try {
+            fConfiguration.setProperty(ENTITY_RESOLVER, resolver, false);
+        }
+        catch (SAXNotSupportedException e) {
+            // shouldn't happen...
+        }
+        catch (SAXNotRecognizedException e) {
+            // shouldn't happen...
+        }
 
     } // setEntityResolver(EntityResolver)
 
@@ -158,7 +179,17 @@ public abstract class XMLParser {
      */
     public EntityResolver getEntityResolver() {
 
-        return fConfiguration.getEntityResolver();
+        try {
+            return (EntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER,
+                                                              false);
+        }
+        catch (SAXNotSupportedException e) {
+            // shouldn't happen...
+        }
+        catch (SAXNotRecognizedException e) {
+            // shouldn't happen...
+        }
+        return null;
 
     } // getEntityResolver():EntityResolver
 
@@ -182,7 +213,15 @@ public abstract class XMLParser {
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
 
-        fConfiguration.setErrorHandler(errorHandler);
+        try {
+            fConfiguration.setProperty(ERROR_HANDLER, errorHandler, false);
+        }
+        catch (SAXNotSupportedException e) {
+            // shouldn't happen...
+        }
+        catch (SAXNotRecognizedException e) {
+            // shouldn't happen...
+        }
 
     } // setErrorHandler(ErrorHandler)
 
@@ -195,7 +234,17 @@ public abstract class XMLParser {
      */
     public ErrorHandler getErrorHandler() {
 
-        return fConfiguration.getErrorHandler();
+        try {
+            return (ErrorHandler) fConfiguration.getProperty(ERROR_HANDLER,
+                                                             false);
+        }
+        catch (SAXNotSupportedException e) {
+            // shouldn't happen...
+        }
+        catch (SAXNotRecognizedException e) {
+            // shouldn't happen...
+        }
+        return null;
 
     } // getErrorHandler():ErrorHandler
 
@@ -220,7 +269,7 @@ public abstract class XMLParser {
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        fConfiguration.setFeature(featureId, state);
+        fConfiguration.setFeature(featureId, state, true);
 
     } // setFeature(String,boolean)
 
@@ -233,7 +282,7 @@ public abstract class XMLParser {
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        fConfiguration.setProperty(propertyId, value);
+        fConfiguration.setProperty(propertyId, value, true);
 
     } // setProperty(String,Object)
 
@@ -253,10 +302,6 @@ public abstract class XMLParser {
 
     } // setLocale(Locale)
 
-    //
-    // XMLComponentManager methods
-    //
-
     /**
      * Returns the state of a feature.
      * 
@@ -270,7 +315,7 @@ public abstract class XMLParser {
     public boolean getFeature(String featureId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        return fConfiguration.getFeature(featureId);
+        return fConfiguration.getFeature(featureId, true);
 
     } // getFeature(String):boolean
 
@@ -287,21 +332,8 @@ public abstract class XMLParser {
     public Object getProperty(String propertyId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        return fConfiguration.getProperty(propertyId);
+        return fConfiguration.getProperty(propertyId, true);
 
     } // getProperty(String):Object
-
-    //
-    // Protected methods
-    //
-
-    /**
-     * reset all components before parsing
-     */
-    protected void reset() throws SAXException {
-
-        fConfiguration.reset();
-
-    } // reset()
 
 } // class XMLParser

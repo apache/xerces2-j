@@ -69,11 +69,12 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xni.XMLComponent;
-import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -110,7 +111,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public abstract class BasicParserConfiguration
-    extends ParserConfiguration {
+    implements XMLParserConfiguration {
 
     //
     // Data
@@ -151,6 +152,42 @@ public abstract class BasicParserConfiguration
 
     protected XMLDTDContentModelHandler fDTDContentModelHandler;
 
+    // constants
+
+    static final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX +
+        Constants.SYMBOL_TABLE_PROPERTY;
+    static final String ENTITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+    static final String ERROR_REPORTER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+    static final String LOCATOR =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCATOR_PROPERTY;
+
+    static final String VALIDATION =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    static final String NAMESPACES =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+    static final String EXTERNAL_GENERAL_ENTITIES =
+        Constants.SAX_FEATURE_PREFIX +
+        Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+    static final String EXTERNAL_PARAMETER_ENTITIES =
+        Constants.SAX_FEATURE_PREFIX +
+        Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+    static final String WARN_ON_DUPLICATE_ATTDEF =
+        Constants.XERCES_FEATURE_PREFIX +
+        Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE;
+    static final String WARN_ON_UNDECLARED_ELEMDEF =
+        Constants.XERCES_FEATURE_PREFIX +
+        Constants.WARN_ON_UNDECLARED_ELEMDEF_FEATURE;
+    static final String ALLOW_JAVA_ENCODINGS =
+        Constants.XERCES_FEATURE_PREFIX +
+        Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
+    static final String CONTINUE_AFTER_FATAL_ERROR =
+        Constants.XERCES_FEATURE_PREFIX +
+        Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
+    static final String LOAD_EXTERNAL_DTD =
+        Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+
     //
     // Constructors
     //
@@ -168,23 +205,14 @@ public abstract class BasicParserConfiguration
         fProperties = new Hashtable();
 
         // set default values for features
-        final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
         fFeatures.put(VALIDATION, Boolean.FALSE);
-        final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
         fFeatures.put(NAMESPACES, Boolean.TRUE);
-        final String EXTERNAL_GENERAL_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
         fFeatures.put(EXTERNAL_GENERAL_ENTITIES, Boolean.TRUE);
-        final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
         fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
-        final String WARN_ON_DUPLICATE_ATTDEF = Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE;
         fFeatures.put(WARN_ON_DUPLICATE_ATTDEF, Boolean.FALSE);
-        final String WARN_ON_UNDECLARED_ELEMDEF = Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_UNDECLARED_ELEMDEF_FEATURE;
         fFeatures.put(WARN_ON_UNDECLARED_ELEMDEF, Boolean.FALSE);
-        final String ALLOW_JAVA_ENCODINGS = Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
         fFeatures.put(ALLOW_JAVA_ENCODINGS, Boolean.FALSE);
-        final String CONTINUE_AFTER_FATAL_ERROR = Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
         fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
-        final String LOAD_EXTERNAL_DTD = Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
         fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
 
         fNeedInitialize = true;
@@ -198,7 +226,6 @@ public abstract class BasicParserConfiguration
      */
     protected BasicParserConfiguration(SymbolTable symbolTable) {
         this();
-        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fSymbolTable = symbolTable;
         fProperties.put(SYMBOL_TABLE, fSymbolTable);
     } // <init>(SymbolTable)
@@ -213,14 +240,12 @@ public abstract class BasicParserConfiguration
     protected void initialize() {
 
         // create and register missing components
-        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fSymbolTable = (SymbolTable) fProperties.get(SYMBOL_TABLE);
         if (fSymbolTable == null) {
             fSymbolTable = new SymbolTable();
             fProperties.put(SYMBOL_TABLE, fSymbolTable);
         }
 
-        final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
         fEntityManager = (XMLEntityManager) fProperties.get(ENTITY_MANAGER);
         if (fEntityManager == null) {
             fEntityManager = createEntityManager();
@@ -228,7 +253,6 @@ public abstract class BasicParserConfiguration
         }
         fComponents.addElement(fEntityManager);
 
-        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
         fErrorReporter = (XMLErrorReporter) fProperties.get(ERROR_REPORTER);
         if (fErrorReporter == null) {
             fErrorReporter =
@@ -238,6 +262,7 @@ public abstract class BasicParserConfiguration
         fComponents.addElement(fErrorReporter);
 
         fLocator = (Locator) fEntityManager.getEntityScanner();
+        fProperties.put(LOCATOR, fLocator);
 
         XMLMessageFormatter xmft = new XMLMessageFormatter();
         fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
@@ -258,54 +283,6 @@ public abstract class BasicParserConfiguration
     // Public methods
     //
 
-    /**
-     * Parses the input source specified by the given system identifier.
-     * <p>
-     * This method is equivalent to the following:
-     * <pre>
-     *     parse(new InputSource(systemId));
-     * </pre>
-     *
-     * @param source The input source.
-     *
-     * @exception org.xml.sax.SAXException Throws exception on SAX error.
-     * @exception java.io.IOException Throws exception on i/o error.
-     */
-    public void parse(String systemId)
-        throws SAXException, IOException {
-
-        InputSource source = new InputSource(systemId);
-        parse(source);
-        try {
-            Reader reader = source.getCharacterStream();
-            if (reader != null) {
-                reader.close();
-            }
-            else {
-                InputStream is = source.getByteStream();
-                if (is != null) {
-                    is.close();
-                }
-            }
-        }
-        catch (IOException e) {
-            // ignore
-        }
-
-    } // parse(String)
-
-    /**
-     * parse
-     *
-     * @param inputSource
-     *
-     * @exception org.xml.sax.SAXException
-     * @exception java.io.IOException
-     */
-    public abstract void parse(InputSource inputSource) 
-        throws SAXException, IOException;
-
-
     public void setDocumentHandler(XMLDocumentHandler handler) {
         fDocumentHandler = handler;
     }
@@ -318,72 +295,6 @@ public abstract class BasicParserConfiguration
         fDTDContentModelHandler = handler;
     }
 
-    /**
-     * Sets the resolver used to resolve external entities. The EntityResolver
-     * interface supports resolution of public and system identifiers.
-     *
-     * @param resolver The new entity resolver. Passing a null value will
-     *                 uninstall the currently installed resolver.
-     */
-    public void setEntityResolver(EntityResolver resolver) {
-
-        final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
-        fProperties.put(ENTITY_RESOLVER, resolver);
-
-    } // setEntityResolver(EntityResolver)
-
-    /**
-     * Return the current entity resolver.
-     *
-     * @return The current entity resolver, or null if none
-     *         has been registered.
-     * @see #setEntityResolver
-     */
-    public EntityResolver getEntityResolver() {
-
-        final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
-        return (EntityResolver)fProperties.get(ENTITY_RESOLVER);
-
-    } // getEntityResolver():EntityResolver
-
-    /**
-     * Allow an application to register an error event handler.
-     *
-     * <p>If the application does not register an error handler, all
-     * error events reported by the SAX parser will be silently
-     * ignored; however, normal processing may not continue.  It is
-     * highly recommended that all SAX applications implement an
-     * error handler to avoid unexpected bugs.</p>
-     *
-     * <p>Applications may register a new or different handler in the
-     * middle of a parse, and the SAX parser must begin using the new
-     * handler immediately.</p>
-     *
-     * @param errorHandler The error handler.
-     * @exception java.lang.NullPointerException If the handler 
-     *            argument is null.
-     * @see #getErrorHandler
-     */
-    public void setErrorHandler(ErrorHandler errorHandler) {
-
-        final String ERROR_HANDLER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
-        fProperties.put(ERROR_HANDLER, errorHandler);
-
-    } // setErrorHandler(ErrorHandler)
-
-    /**
-     * Return the current error handler.
-     *
-     * @return The current error handler, or null if none
-     *         has been registered.
-     * @see #setErrorHandler
-     */
-    public ErrorHandler getErrorHandler() {
-
-        final String ERROR_HANDLER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
-        return (ErrorHandler)fProperties.get(ERROR_HANDLER);
-
-    } // getErrorHandler():ErrorHandler
 
     /**
      * Set the state of a feature.
@@ -394,6 +305,7 @@ public abstract class BasicParserConfiguration
      *
      * @param featureId The unique identifier (URI) of the feature.
      * @param state The requested state of the feature (true or false).
+     * @param check     Whether to check if the feature is recognized.
      *
      * @exception org.xml.sax.SAXNotRecognizedException If the
      *            requested feature is not known.
@@ -403,10 +315,12 @@ public abstract class BasicParserConfiguration
      * @exception org.xml.sax.SAXException If there is any other
      *            problem fulfilling the request.
      */
-    public void setFeature(String featureId, boolean state)
+    public void setFeature(String featureId, boolean state, boolean check)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        checkFeature(featureId);
+        if (check) {
+            checkFeature(featureId);
+        }
 
         // forward to every component
         int count = fComponents.size();
@@ -417,18 +331,27 @@ public abstract class BasicParserConfiguration
         // then store the information
         fFeatures.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
 
-    } // setFeature(String,boolean)
+    } // setFeature(String,boolean, boolean)
 
     /**
-     * setProperty
+     * Sets the value of a property. This method is called by the parser
+     * and gets propagated to components in this parser configuration.
      * 
-     * @param propertyId 
-     * @param value 
+     * @param propertyId The property identifier.
+     * @param value      The value of the property.
+     * @param check      Whether to check if the property is recognized.
+     *
+     * @throws SAXNotRecognizedException Thrown if the property is not
+     *                                   recognized by this configuration
+     *                                   or any of its components.
+     * @throws SAXNotSupportedException Thrown if the value is not supported.
      */
-    public void setProperty(String propertyId, Object value)
+    public void setProperty(String propertyId, Object value, boolean check)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        checkProperty(propertyId);
+        if (check) {
+            checkProperty(propertyId);
+        }
 
         // forward to every component
         int count = fComponents.size();
@@ -439,7 +362,50 @@ public abstract class BasicParserConfiguration
         // then store the information
         fProperties.put(propertyId, value);
 
-    } // setProperty(String,Object)
+    } // setProperty(String,Object, boolean)
+
+    /**
+     * Returns the state of a feature.
+     * 
+     * @param featureId The feature identifier.
+     * @param check     Whether to check if the feature is recognized.
+     * 
+     * @throws SAXNotRecognizedException Thrown if the feature is not 
+     *                                   recognized.
+     * @throws SAXNotSupportedException Thrown if the feature is not
+     *                                  supported.
+     */
+    public boolean getFeature(String featureId, boolean check)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        if (check) {
+            checkFeature(featureId);
+        }
+        Boolean state = (Boolean) fFeatures.get(featureId);
+        return state.booleanValue();
+
+    } // getFeature(String, boolean):boolean
+
+    /**
+     * Returns the value of a property.
+     * 
+     * @param propertyId The property identifier.
+     * @param check      Whether to check if the property is recognized.
+     * 
+     * @throws SAXNotRecognizedException Thrown if the feature is not 
+     *                                   recognized.
+     * @throws SAXNotSupportedException Thrown if the feature is not
+     *                                  supported.
+     */
+    public Object getProperty(String propertyId, boolean check)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        if (check) {
+            checkProperty(propertyId);
+        }
+        return fProperties.get(propertyId);
+
+    } // getProperty(String, boolean):Object
 
     /**
      * Set the locale to use for messages.
@@ -474,10 +440,7 @@ public abstract class BasicParserConfiguration
     public boolean getFeature(String featureId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        checkFeature(featureId);
-
-        Boolean state = (Boolean) fFeatures.get(featureId);
-        return state.booleanValue();
+        return getFeature(featureId, true);
 
     } // getFeature(String):boolean
 
@@ -494,27 +457,13 @@ public abstract class BasicParserConfiguration
     public Object getProperty(String propertyId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        checkProperty(propertyId);
-
-        return fProperties.get(propertyId);
+        return getProperty(propertyId, true);
 
     } // getProperty(String):Object
 
     public Locator getLocator() {
         return fLocator;
     } // getLocator():Locator
-
-    public SymbolTable getSymbolTable() {
-        return fSymbolTable;
-    } // getSymbolTable():SymbolTable
-
-    public Hashtable getFeatureTable() {
-        return fFeatures;
-    }
-
-    public Hashtable getPropertyTable() {
-        return fProperties;
-    }
 
     //
     // Protected methods

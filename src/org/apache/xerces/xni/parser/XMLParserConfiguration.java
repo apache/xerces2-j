@@ -58,6 +58,7 @@
 package org.apache.xerces.xni.parser;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
@@ -157,13 +158,14 @@ public interface XMLParserConfiguration
      * 
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
+     * @param check     Whether to check if the feature is recognized.
      *
      * @throws SAXNotRecognizedException Thrown if the feature is not
      *                                   recognized by this configuration
      *                                   or any of its components.
      * @throws SAXNotSupportedException Thrown if the state is not supported.
      */
-    public void setFeature(String featureId, boolean state)
+    public void setFeature(String featureId, boolean state, boolean check)
         throws SAXNotRecognizedException, SAXNotSupportedException;
 
     /**
@@ -172,13 +174,42 @@ public interface XMLParserConfiguration
      * 
      * @param propertyId The property identifier.
      * @param value      The value of the property.
+     * @param check      Whether to check if the property is recognized.
      *
      * @throws SAXNotRecognizedException Thrown if the property is not
      *                                   recognized by this configuration
      *                                   or any of its components.
      * @throws SAXNotSupportedException Thrown if the value is not supported.
      */
-    public void setProperty(String propertyId, Object value)
+    public void setProperty(String propertyId, Object value, boolean check)
+        throws SAXNotRecognizedException, SAXNotSupportedException;
+
+    /**
+     * Returns the state of a feature.
+     * 
+     * @param featureId The feature identifier.
+     * @param check     Whether to check if the feature is recognized.
+     * 
+     * @throws SAXNotRecognizedException Thrown if the feature is not 
+     *                                   recognized.
+     * @throws SAXNotSupportedException Thrown if the feature is not
+     *                                  supported.
+     */
+    public boolean getFeature(String featureId, boolean check)
+        throws SAXNotRecognizedException, SAXNotSupportedException;
+
+    /**
+     * Returns the value of a property.
+     * 
+     * @param propertyId The property identifier.
+     * @param check      Whether to check if the property is recognized.
+     * 
+     * @throws SAXNotRecognizedException Thrown if the feature is not 
+     *                                   recognized.
+     * @throws SAXNotSupportedException Thrown if the feature is not
+     *                                  supported.
+     */
+    public Object getProperty(String propertyId, boolean check)
         throws SAXNotRecognizedException, SAXNotSupportedException;
 
     /**
@@ -206,5 +237,17 @@ public interface XMLParserConfiguration
      * @param dtdContentModelHandler The DTD content model handler.
      */
     public void setDTDContentModelHandler(XMLDTDContentModelHandler dtdContentModelHandler);
+
+    /**
+     * Set the locale to use for messages.
+     *
+     * @param locale The locale object to use for localization of messages.
+     *
+     * @exception SAXException An exception thrown if the parser does not
+     *                         support the specified locale.
+     *
+     * @see org.xml.sax.Parser
+     */
+    public void setLocale(Locale locale) throws SAXException;
 
 } // interface ParserConfiguration

@@ -183,6 +183,9 @@ public final class Constants {
     /** Error handler property ("internal/error-handler"). */
     public static final String ERROR_HANDLER_PROPERTY = "internal/error-handler";
 
+    /** Locator property ("internal/locator"). */
+    public static final String LOCATOR_PROPERTY = "internal/locator";
+
     /** Entity manager property ("internal/entity-manager"). */
     public static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
 

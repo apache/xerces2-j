@@ -64,6 +64,7 @@ import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -126,7 +127,7 @@ public abstract class AbstractDOMParser
     //
 
     /** Default constructor. */
-    protected AbstractDOMParser(ParserConfiguration config) {
+    protected AbstractDOMParser(XMLParserConfiguration config) {
         super(config);
     } // <init>(ParserConfiguration)
 
@@ -148,7 +149,7 @@ public abstract class AbstractDOMParser
      *
      * @throws SAXException Thrown on initialization error.
      */
-    public void reset() throws SAXException {
+    protected void reset() throws SAXException {
         super.reset();
 
         // reset dom information

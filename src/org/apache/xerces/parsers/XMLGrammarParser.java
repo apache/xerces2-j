@@ -57,7 +57,6 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.xml.sax.SAXNotRecognizedException;
@@ -68,8 +67,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public abstract class XMLGrammarParser
-    extends XMLParser
-    implements XMLComponentManager {
+    extends XMLParser {
 
     //
     // Data
@@ -90,33 +88,5 @@ public abstract class XMLGrammarParser
     protected XMLGrammarParser(SymbolTable symbolTable) {
         super(new StandardParserConfiguration(symbolTable));
     }
-
-    //
-    // XMLComponentManager methods
-    //
-
-    /**
-     * getFeature
-     * 
-     * @param featureId 
-     * 
-     * @return 
-     */
-    public boolean getFeature(String featureId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-        return false;
-    } // getFeature
-
-    /**
-     * getProperty
-     * 
-     * @param propertyId 
-     * 
-     * @return 
-     */
-    public Object getProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-        return null;
-    } // getProperty
 
 } // class XMLGrammarParser

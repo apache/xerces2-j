@@ -134,9 +134,9 @@ public interface XMLComponent {
         throws SAXNotRecognizedException, SAXNotSupportedException;
 
     /** Returns the set of features that this component recognizes. */
-    public String[] getRecognizedFeatures();
+    //    public String[] getRecognizedFeatures();
 
     /** Returns the set of properties that this component recognizes. */
-    public String[] getRecognizedProperties();
+    //    public String[] getRecognizedProperties();
 
 } // interface XMLComponent

@@ -73,11 +73,11 @@ import org.apache.xerces.util.XMLChar;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLComponent;
-import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDocumentSource;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;

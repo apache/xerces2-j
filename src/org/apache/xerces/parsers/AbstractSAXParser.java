@@ -65,12 +65,14 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -114,28 +116,21 @@ public abstract class AbstractSAXParser
     /** Lexical handler. */
     protected LexicalHandler fLexicalHandler;
 
-    // symbols
+    // constants
        
-    /** Symbol: empty string (""). */
-    private String fEmptySymbol;
+    static final private String fEmptyString = "";
 
-    // state
-
-    /** 
-     * True if a parse is in progress. This state is needed because
-     * some features/properties cannot be set while parsing (e.g.
-     * validation and namespaces).
-     */
-    protected boolean fParseInProgress = false;
+    static final String LOCATOR =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCATOR_PROPERTY;
 
     //
     // Constructors
     //
 
     /** Default constructor. */
-    protected AbstractSAXParser(ParserConfiguration config) {
+    protected AbstractSAXParser(XMLParserConfiguration config) {
         super(config);
-    } // <init>(ParserConfiguration)
+    } // <init>(XMLParserConfiguration)
 
     //
     // XMLDocumentHandler methods
@@ -230,7 +225,7 @@ public abstract class AbstractSAXParser
 
         // SAX2
         if (fContentHandler != null) {
-            String uri = element.uri != null ? element.uri : fEmptySymbol;
+            String uri = element.uri != null ? element.uri : fEmptyString;
             fContentHandler.startElement(uri, element.localpart,
                                          element.rawname, attributes);
         }
@@ -305,7 +300,7 @@ public abstract class AbstractSAXParser
 
         // SAX2
         if (fContentHandler != null) {
-            String uri = element.uri != null ? element.uri : fEmptySymbol;
+            String uri = element.uri != null ? element.uri : fEmptyString;
             fContentHandler.endElement(uri, element.localpart,
                                        element.rawname);
         }
@@ -697,7 +692,18 @@ public abstract class AbstractSAXParser
      */
     public void setDocumentHandler(DocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
-        fDocumentHandler.setDocumentLocator(fConfiguration.getLocator());
+        try {
+            Locator locator = (Locator) fConfiguration.getProperty(LOCATOR,
+                                                                   false);
+            fDocumentHandler.setDocumentLocator(locator);
+        }
+        catch (SAXNotSupportedException e) {
+            // should not happen
+        }
+        catch (SAXNotRecognizedException e) {
+            // should not happen
+        }
+
     } // setDocumentHandler(DocumentHandler)
 
     //
@@ -773,7 +779,6 @@ public abstract class AbstractSAXParser
         // SAX2 Features
         //
 
-        Hashtable features = fConfiguration.getFeatureTable();
         if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
 
@@ -784,7 +789,7 @@ public abstract class AbstractSAXParser
             //   and xmlns* attributes must not be reported.
             //
             if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                features.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
+                fConfiguration.setFeature(featureId, state, false);
                 return;
             }
             // http://xml.org/sax/features/string-interning
@@ -848,7 +853,6 @@ public abstract class AbstractSAXParser
         // SAX2 Features
         //
 
-        Hashtable features = fConfiguration.getFeatureTable();
         if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature =
                 featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
@@ -860,8 +864,7 @@ public abstract class AbstractSAXParser
             //   and xmlns* attributes must not be reported.
             //
             if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                Boolean state = (Boolean) features.get(featureId);
-                return state.booleanValue();
+                return fConfiguration.getFeature(featureId, false);
             }
             // http://xml.org/sax/features/string-interning
             //   controls the use of java.lang.String#intern() for strings
@@ -1167,22 +1170,5 @@ public abstract class AbstractSAXParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fLexicalHandler;
     } // getLexicalHandler():LexicalHandler
-
-    //
-    // XMLDocumentParser methods
-    //
-
-    /** 
-     * Reset all components before parsing. 
-     *
-     * @throws SAXException Thrown if an error occurs during initialization.
-     */
-    public void reset() throws SAXException {
-        super.reset();
-
-        // save needed symbols
-        fEmptySymbol = fConfiguration.getSymbolTable().addSymbol("");
-
-    } // reset()
 
 } // class AbstractSAXParser

@@ -59,6 +59,7 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 /**
  * This is the main Xerces DOM parser class. It uses the abstract DOM parser
@@ -87,7 +88,7 @@ public class DOMParser
     /**
      * Constructs a DOM parser using the specified parser configuration.
      */
-    public DOMParser(ParserConfiguration config) {
+    public DOMParser(XMLParserConfiguration config) {
         super(config);
     } // <init>(ParserConfiguration)
 

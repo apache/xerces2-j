@@ -59,6 +59,7 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 /**
  * This is a concrete vanilla XML parser class. It uses the abstract parser
@@ -88,7 +89,7 @@ public class XMLDocumentParser
     /**
      * Constructs a document parser using the specified parser configuration.
      */
-    public XMLDocumentParser(ParserConfiguration config) {
+    public XMLDocumentParser(XMLParserConfiguration config) {
         super(config);
     } // <init>(ParserConfiguration)
 

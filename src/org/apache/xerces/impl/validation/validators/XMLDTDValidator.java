@@ -69,8 +69,6 @@ import org.apache.xerces.impl.validation.XMLElementDecl;
 import org.apache.xerces.impl.validation.grammars.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLComponent;
-import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentFilter;
@@ -79,6 +77,8 @@ import org.apache.xerces.xni.XMLDTDFilter;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelFilter;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;

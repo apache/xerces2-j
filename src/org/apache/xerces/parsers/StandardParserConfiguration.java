@@ -129,6 +129,21 @@ public class StandardParserConfiguration
      */
     protected boolean fParseInProgress = false;
 
+    // constants
+
+    static final String GRAMMAR_POOL =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+    static final String DOCUMENT_SCANNER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
+    static final String DTD_SCANNER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
+    static final String VALIDATOR =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
+    static final String DATATYPE_VALIDATOR_FACTORY =
+        Constants.XERCES_PROPERTY_PREFIX +
+        Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
+
+
     //
     // Constructors
     //
@@ -155,7 +170,6 @@ public class StandardParserConfiguration
                               GrammarPool grammarPool) {
         super(symbolTable);
 
-        final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
         fGrammarPool = grammarPool;
         fProperties.put(GRAMMAR_POOL, fGrammarPool);
     }
@@ -171,14 +185,12 @@ public class StandardParserConfiguration
         super.initialize();
 
         // create and register missing components
-        final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
         fGrammarPool = (GrammarPool) fProperties.get(GRAMMAR_POOL);
         if (fGrammarPool == null) {
             fGrammarPool = new GrammarPool();
             fProperties.put(GRAMMAR_POOL, fGrammarPool);
         }
 
-        final String DOCUMENT_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
         fScanner = (XMLDocumentScanner) fProperties.get(DOCUMENT_SCANNER);
         if (fScanner == null) {
             fScanner = createDocumentScanner();
@@ -186,7 +198,6 @@ public class StandardParserConfiguration
         }
         fComponents.addElement(fScanner);
 
-        final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fDTDScanner = (XMLDTDScanner) fProperties.get(DTD_SCANNER);
         if (fDTDScanner == null) {
             fDTDScanner = createDTDScanner();
@@ -194,7 +205,6 @@ public class StandardParserConfiguration
         }
         fComponents.addElement(fDTDScanner);
 
-        final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
         fValidator = (XMLValidator) fProperties.get(VALIDATOR);
         if (fValidator == null) {
             fValidator = createValidator();
@@ -202,7 +212,6 @@ public class StandardParserConfiguration
         }
         fComponents.addElement(fValidator);
         
-        final String DATATYPE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
         fDatatypeValidatorFactory = (DatatypeValidatorFactory)
             fProperties.get(DATATYPE_VALIDATOR_FACTORY);
         if (fDatatypeValidatorFactory == null) {
