@@ -43,6 +43,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
+import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.ParserConfigurationSettings;
@@ -66,6 +67,7 @@ import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
 
 /**
@@ -214,8 +216,12 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
 
     // XSLoader attributes
     private DOMStringList fRecognizedParameters = null;
-	/** DOM L3 error handler */
-	private DOMErrorHandlerWrapper fErrorHandler = null;
+	
+    /** DOM L3 error handler */
+    private DOMErrorHandlerWrapper fErrorHandler = null;
+    
+    /** DOM L3 resource resolver */
+    private DOMEntityResolverWrapper fResourceResolver = null;
 
     // default constructor.  Create objects we absolutely need:
     public XMLSchemaLoader() {
@@ -1082,41 +1088,45 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
      * @see org.apache.xerces.dom3.DOMConfiguration#canSetParameter(java.lang.String, java.lang.Object)
      */
     public boolean canSetParameter(String name, Object value) {
-		if(value instanceof Boolean){
-			boolean state = ((Boolean)value).booleanValue();
-			if (name.equals(Constants.DOM_VALIDATE) ||
-			    name.equals(SCHEMA_FULL_CHECKING) ||
-			    name.equals(CONTINUE_AFTER_FATAL_ERROR) ||
-			    name.equals(ALLOW_JAVA_ENCODINGS) ||
-			    name.equals(STANDARD_URI_CONFORMANT_FEATURE)){
-			    	return true;
-
-			}
-			return false;			
-		}
-		if (name.equals(Constants.DOM_ERROR_HANDLER)||
-		    name.equals(SYMBOL_TABLE) ||
-			name.equals(ERROR_REPORTER) ||
-			name.equals(ERROR_HANDLER) ||
-			name.equals(ENTITY_RESOLVER) ||
-			name.equals(XMLGRAMMAR_POOL) ||
-			name.equals(SCHEMA_LOCATION) ||
-			name.equals(SCHEMA_NONS_LOCATION) ||
-			name.equals(JAXP_SCHEMA_SOURCE)){
-				return true;
-		}
+        if(value instanceof Boolean){
+            boolean state = ((Boolean)value).booleanValue();
+            if (name.equals(Constants.DOM_VALIDATE) ||
+                name.equals(SCHEMA_FULL_CHECKING) ||
+                name.equals(CONTINUE_AFTER_FATAL_ERROR) ||
+                name.equals(ALLOW_JAVA_ENCODINGS) ||
+                name.equals(STANDARD_URI_CONFORMANT_FEATURE)) {
+                return true;
+                
+            }
+            return false;			
+        }
+        if (name.equals(Constants.DOM_ERROR_HANDLER) ||
+            name.equals(Constants.DOM_RESOURCE_RESOLVER) ||
+            name.equals(SYMBOL_TABLE) ||
+            name.equals(ERROR_REPORTER) ||
+            name.equals(ERROR_HANDLER) ||
+            name.equals(ENTITY_RESOLVER) ||
+            name.equals(XMLGRAMMAR_POOL) ||
+            name.equals(SCHEMA_LOCATION) ||
+            name.equals(SCHEMA_NONS_LOCATION) ||
+            name.equals(JAXP_SCHEMA_SOURCE)) {
+            return true;
+        }
         return false;
     }
-
+    
     /* (non-Javadoc)
      * @see org.apache.xerces.dom3.DOMConfiguration#getParameter(java.lang.String)
      */
     public Object getParameter(String name) throws DOMException {
-		if (name.equals(Constants.DOM_ERROR_HANDLER)){
-			if (fErrorHandler != null){
-				return fErrorHandler.getErrorHandler();
-			}
-		}
+        
+        if (name.equals(Constants.DOM_ERROR_HANDLER)){
+            return (fErrorHandler != null) ? fErrorHandler.getErrorHandler() : null;
+        }
+        else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
+            return (fResourceResolver != null) ? fResourceResolver.getEntityResolver() : null;
+        }
+        
         try {
             boolean feature = getFeature(name);
             return (feature) ? Boolean.TRUE : Boolean.FALSE;
@@ -1135,31 +1145,33 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
             }
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.apache.xerces.dom3.DOMConfiguration#getParameterNames()
      */
     public DOMStringList getParameterNames() {
         if (fRecognizedParameters == null){
-        	Vector v = new Vector();
-			v.add("validate");
-			v.add(SYMBOL_TABLE);
-			v.add(ERROR_REPORTER);
-			v.add(ERROR_HANDLER);
-			v.add(ENTITY_RESOLVER);
-			v.add(XMLGRAMMAR_POOL);
-			v.add(SCHEMA_LOCATION);
-			v.add(SCHEMA_NONS_LOCATION);
-			v.add(JAXP_SCHEMA_SOURCE);
-			v.add(SCHEMA_FULL_CHECKING);
-			v.add(CONTINUE_AFTER_FATAL_ERROR);
-			v.add(ALLOW_JAVA_ENCODINGS);
-			v.add(STANDARD_URI_CONFORMANT_FEATURE);
-        	fRecognizedParameters = new DOMStringListImpl(v);      	
+            Vector v = new Vector();
+            v.add(Constants.DOM_VALIDATE);
+            v.add(Constants.DOM_ERROR_HANDLER);
+            v.add(Constants.DOM_RESOURCE_RESOLVER);
+            v.add(SYMBOL_TABLE);
+            v.add(ERROR_REPORTER);
+            v.add(ERROR_HANDLER);
+            v.add(ENTITY_RESOLVER);
+            v.add(XMLGRAMMAR_POOL);
+            v.add(SCHEMA_LOCATION);
+            v.add(SCHEMA_NONS_LOCATION);
+            v.add(JAXP_SCHEMA_SOURCE);
+            v.add(SCHEMA_FULL_CHECKING);
+            v.add(CONTINUE_AFTER_FATAL_ERROR);
+            v.add(ALLOW_JAVA_ENCODINGS);
+            v.add(STANDARD_URI_CONFORMANT_FEATURE);
+            fRecognizedParameters = new DOMStringListImpl(v);      	
         }
         return fRecognizedParameters;
     }
-
+    
     /* (non-Javadoc)
      * @see org.apache.xerces.dom3.DOMConfiguration#setParameter(java.lang.String, java.lang.Object)
      */
@@ -1198,22 +1210,40 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
             }
             return;
-
+            
         }
-
+        if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
+            if (value instanceof LSResourceResolver) {
+                try {
+                    fResourceResolver = new DOMEntityResolverWrapper((LSResourceResolver) value);
+                    setEntityResolver(fResourceResolver);
+                } 
+                catch (XMLConfigurationException e) {}
+            } else {
+                // REVISIT: type mismatch
+                String msg =
+                    DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "FEATURE_NOT_SUPPORTED",
+                        new Object[] { name });
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+            }
+            return;
+        }
+        
         try {
             setProperty(name, value);
         } catch (Exception ex) {
-
+            
             String msg =
                 DOMMessageFormatter.formatMessage(
-                    DOMMessageFormatter.DOM_DOMAIN,
-                    "FEATURE_NOT_SUPPORTED",
-                    new Object[] { name });
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "FEATURE_NOT_SUPPORTED",
+                        new Object[] { name });
             throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
-
+            
         }
-
+        
     }
     
 	private XMLInputSource dom2xmlInputSource(LSInput is) {
