@@ -434,7 +434,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         fFirstChunk = false;
         fCurrentCDATASection = null;
         fCurrentCDATASectionIndex = -1;
-
     } // reset()
 
     //
@@ -1171,12 +1170,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         }
         else {
             fCurrentNodeIndex = -1;
-        }
-
-        if (fDocumentImpl != null) {  
-            // Xerces implementation -- should be able to copy some properties.
-            CoreDocumentImpl doc = (CoreDocumentImpl)fDocument;
-            doc.copyConfigurationProperties(fConfiguration);
         }
 
     } // endDocument()

@@ -175,7 +175,6 @@ public class DOMNormalizer implements XMLGrammarPool  {
     /** DOM Error object */
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
 
-    
     // 
     // Constructor
     // 
@@ -184,6 +183,11 @@ public class DOMNormalizer implements XMLGrammarPool  {
 
 
     protected void reset(XMLComponentManager componentManager){
+        if (componentManager == null) {
+            fSymbolTable = null;
+            fValidationHandler = null;
+            return;
+        }
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (fSymbolTable == null) {
             fSymbolTable = new SymbolTable();
@@ -306,17 +310,12 @@ public class DOMNormalizer implements XMLGrammarPool  {
                         }
                     }
                 }
-                String prefix;
                 if (fValidationHandler != null) {
                     // REVISIT: possible solutions to discard default content are:
                     //         either we pass some flag to XML Schema validator
                     //         or rely on the PSVI information.
                     fAttrProxy.setAttributes(attributes, fDocument, elem);
-                    prefix = elem.getPrefix();
-                    fQName.setValues((prefix!=null && prefix.length() ==0)?null:prefix,
-                                      elem.getLocalName(), 
-                                      elem.getNodeName(), 
-                                      elem.getNamespaceURI());
+                    updateQName(elem, fQName); // updates global qname
                     fValidationHandler.startElement(fQName, fAttrProxy, null);
                 }
 
@@ -341,16 +340,11 @@ public class DOMNormalizer implements XMLGrammarPool  {
 
 
                 if (fValidationHandler != null) {
-                    // need to reset values for a global Qname
-                    prefix = elem.getPrefix();
-                    fQName.setValues((prefix!=null && prefix.length() ==0)?null:prefix,
-                                      elem.getLocalName(), 
-                                      elem.getNodeName(), 
-                                      elem.getNamespaceURI());
+                    updateQName(elem, fQName); // updates global qname
                     fValidationHandler.endElement(fQName, null);
                     int count = fNamespaceBinder.getDeclaredPrefixCount();
                     for (int i = count - 1; i >= 0; i--) {
-                        prefix = fNamespaceBinder.getDeclaredPrefixAt(i);
+                        String prefix = fNamespaceBinder.getDeclaredPrefixAt(i);
                         fValidationHandler.endPrefixMapping(prefix, null);
                     }
                 }
@@ -880,8 +874,20 @@ public class DOMNormalizer implements XMLGrammarPool  {
         
     }
 
+    protected void updateQName (Node node, QName qname){
 
-    protected static final class XMLAttributesProxy 
+        String prefix    = node.getPrefix();
+        String namespace = node.getNamespaceURI();
+        String localName = node.getLocalName();
+        // REVISIT: the symbols are added too often: start/endElement
+        //          and in the namespaceFixup. Should reduce number of calls to symbol table.
+        qname.prefix = (prefix!=null && prefix.length()!=0)?fSymbolTable.addSymbol(prefix):null;
+        qname.localpart = (localName != null)?fSymbolTable.addSymbol(localName):null;
+        qname.rawname = fSymbolTable.addSymbol(node.getNodeName()); 
+        qname.uri =  (namespace != null)?fSymbolTable.addSymbol(namespace):null;
+    }
+
+    protected final class XMLAttributesProxy 
         implements XMLAttributes{
         protected AttributeMap fAttributes;
         protected CoreDocumentImpl fDocument;
@@ -955,11 +961,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
 
         public void getName(int attrIndex, QName attrName){
             if (fAttributes !=null) {
-                Attr attr = (Attr)fAttributes.getItem(attrIndex);
-                attrName.localpart = attr.getLocalName();
-                attrName.uri = attr.getNamespaceURI();
-                attrName.prefix = attr.getPrefix();
-                attrName.rawname = attr.getNodeName();
+                updateQName((Node)fAttributes.getItem(attrIndex), attrName);
             }
         }
 

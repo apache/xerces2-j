@@ -90,6 +90,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -183,9 +184,10 @@ public class CoreDocumentImpl
     // DOM Revalidation 
     protected DOMNormalizer domNormalizer = null;
     protected DOMValidationConfiguration fConfiguration= null;
-    protected SymbolTable fSymbolTable = null;
+    protected ShadowedSymbolTable fSymbolTable = null;
     protected XMLEntityResolver fEntityResolver = null;
     protected Grammar fGrammar = null;
+    
 
     /** Table for quick check of child insertion. */
     protected static int[] kidOK;
@@ -884,7 +886,7 @@ public class CoreDocumentImpl
     public void copyConfigurationProperties(XMLParserConfiguration config){
         // REVISIT: how should we copy symbol table?
         //          it usually grows with the parser, do we need to carry all data per document?
-        fSymbolTable = (SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE);
+        fSymbolTable = new ShadowedSymbolTable((SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE));
         fEntityResolver =  config.getEntityResolver();
         
         // REVISIT: store one grammar per document is not efficient and might not be enough
@@ -925,6 +927,8 @@ public class CoreDocumentImpl
         if ((features & VALIDATION) != 0) {
 
             if (fConfiguration == null) {
+                // if symbol table is not available                
+                // it will be created by the configuration
                 fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
             }
             fConfiguration.reset();

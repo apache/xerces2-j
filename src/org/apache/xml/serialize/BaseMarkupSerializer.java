@@ -1039,8 +1039,8 @@ public abstract class BaseMarkupSerializer
             endCDATA();
             content();
             child = node.getFirstChild();
-            if ( child == null || 
-                 !((Boolean)fFeatures.get("expand-entity-references")).booleanValue() ) {
+            if ( child == null || (fFeatures !=null && 
+                 !((Boolean)fFeatures.get("expand-entity-references")).booleanValue() )) {
                 _printer.printText("&");
                 _printer.printText(node.getNodeName());
                 _printer.printText(";");
@@ -1069,7 +1069,7 @@ public abstract class BaseMarkupSerializer
             Entity            entity;
             Notation          notation;
             int               i;
-
+            
             // If there is a document type, use the SAX events to
             // serialize it.
             docType = ( (Document) node ).getDoctype();
@@ -1215,7 +1215,7 @@ public abstract class BaseMarkupSerializer
                 state.inCData = true;
             }
             index = text.indexOf( "]]>" );
-            if (index >=0 && !((Boolean)fFeatures.get("split-cdata-sections")).booleanValue()) {
+            if (index >=0 && (fFeatures != null && !((Boolean)fFeatures.get("split-cdata-sections")).booleanValue())) {
                // issue fatal error
                 if (fDOMErrorHandler != null) {
                     modifyDOMError("The character sequence \"]]>\" must not appear in content"+
@@ -1228,7 +1228,7 @@ public abstract class BaseMarkupSerializer
                     }
                 }
             }
-            else if (index >=0 && ((Boolean)fFeatures.get("split-cdata-sections")).booleanValue()) {
+            else if (index >=0 && (fFeatures !=null &&((Boolean)fFeatures.get("split-cdata-sections")).booleanValue())) {
                // issue warning
                if (fDOMErrorHandler != null) {
                    modifyDOMError("Spliting a CDATA section containing the CDATA section termination marker ']]>' ", 

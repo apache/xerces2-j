@@ -237,7 +237,10 @@ implements DOMImplementation, DOMImplementationLS {
      * DOM Level 3 WD - Experimental.
      */                
     public DOMWriter createDOMWriter() {
-        return new XMLSerializer();
+        XMLSerializer serializer = new XMLSerializer();
+        serializer.setNamespaces(true);
+        serializer.initDOMFeatures();
+        return serializer;
     }
     /**
      * DOM Level 3 WD - Experimental.

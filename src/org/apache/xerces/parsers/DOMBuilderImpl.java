@@ -69,20 +69,23 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.dom3.ls.DOMBuilder;
 import org.apache.xerces.dom3.ls.DOMEntityResolver;
 import org.apache.xerces.dom3.ls.DOMBuilderFilter;
 import org.apache.xerces.dom3.ls.DOMInputSource;
 
+
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -124,7 +127,7 @@ extends AbstractDOMParser implements DOMBuilder {
     Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
 
-    // Schema validation types:
+    // DOM L3 Schema validation types:
     protected static final String XML_SCHEMA_VALIDATION = "http://www.w3.org/2001/XMLSchema";
     protected static final String DTD_VALIDATION = "http://www.w3.org/TR/REC-xml";
 
@@ -604,6 +607,26 @@ extends AbstractDOMParser implements DOMBuilder {
 
         return xis;
     }
+
+
+
+    /**
+     * Overwrite endDocument call to copy some information 
+     * required for re-validation of DOM tree.
+     * 
+     * @param augs
+     * @exception XNIException
+     */
+    public void endDocument(Augmentations augs) throws XNIException {
+        super.endDocument(augs);
+
+        // If this is a DOM Level 3 implementation we should copy some information
+        if (fDocumentImpl != null) {  
+            CoreDocumentImpl doc = (CoreDocumentImpl)fDocument;
+            doc.copyConfigurationProperties(fConfiguration);
+        }
+
+    } // endDocument()
 
 
 
