@@ -11,8 +11,7 @@ There are two ways the parser classes can be
 	  this string to the <code>org.xml.sax.helpers.ParserFactory.makeParser()</code>
 	  method to instantiate it. This method is useful if your application will need to switch between different parser configurations. The code snippet shown below is using this method to instantiate a DOMParser.</p> 
 
-	   <source>
-import org.xml.sax.Parser;
+<source>import org.xml.sax.Parser;
 import org.xml.sax.helpers.ParserFactory; 
 import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Document;
@@ -38,8 +37,7 @@ try {
 
 Document doc = ((DOMParser) parser).getDocument(); 
 
-  ...
-	 </source>
+  ...</source>
 
 	 <p>The second way to instantiate a parser class is to <em>explicitly
 	 instantiate</em> the parser class, as shown in this example,
@@ -47,8 +45,7 @@ Document doc = ((DOMParser) parser).getDocument();
 	 exactly which parser configuration you need, and you are sure
 	 that you will not need to switch configurations.</p>
 
-	 <source>
-import org.apache.xerces.parsers.DOMParser;
+<source>import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import java.io.IOException;
@@ -70,12 +67,12 @@ try {
 // The next line is only for DOM Parsers
 Document doc = parser.getDocument();
 
-  ...
-	 </source>
+  ...</source>
 
 	<p>Once you have the Document object, you can call any method on it as defined by the DOM specification.</p>
    </a>
 	</faq>
+	
 	<faq title="Creating a DOM Parser">
 		<q>How do I create a DOM parser?</q>
         <a><p>Use one of the methods in the question above, and use 
@@ -84,6 +81,7 @@ Document doc = parser.getDocument();
 		<code>getDocument()</code> method on the parser instance.</p> 
 		</a>
 	</faq>
+	
 	<faq title="Creating a SAX Parser">
 		<q>How do I create a SAX parser?</q>
 		<a><p>Use one of the methods in the question above, and use 
@@ -92,6 +90,7 @@ Document doc = parser.getDocument();
 		methods to set the various handlers provided by SAX. </p>
 		</a>
 	</faq>
+	
 	<faq title="Controlling parser options">
 		<q>How do I control the various parser options?</q>
 		<a><p>For this release, all of the parser control API's have
@@ -129,6 +128,7 @@ Document doc = parser.getDocument();
 	    Node. </p> 
 		</a>
 	</faq>
+	
 	<faq title="Handling Errors">
 		<q>How do handle errors?</q>
 		<a><p>When you create a parser instance, the default error handler does nothing. 
@@ -139,6 +139,7 @@ Document doc = parser.getDocument();
 		DOM based or SAX based parser.</p>
 		</a>
 	</faq>
+	
 	<faq title="Controlling Entity Representation">
 		<q>How can I control the way that entities are represented in
 		the DOM?</q>
@@ -159,13 +160,14 @@ Document doc = parser.getDocument();
         node containing the entity expansion as text.</p>
 		</a>
 	</faq>
-	<faq title="Non-Validating">
-		<q>Why does "non-validating" not mean "well-formedness checking only"?</q>
-		<a><p>Using a "non-validating" parser does not mean that only well-formedness 
+	
+	<faq title="Why does &quot;non-validating&quot; not mean &quot;well-formedness checking only&quot;?">
+		<q>Why does &quot;non-validating&quot; not mean &quot;well-formedness checking only&quot;?</q>
+		<a><p>Using a &quot;non-validating&quot; parser does not mean that only well-formedness 
         checking is done! There are still many things that the XML specification 
 		requires of the parser, including entity substitution, defaulting of 
 		attribute values, and attribute normalization.</p>
-        <p>This table describes what "non-validating" really means for &javaparsername; parsers. 
+        <p>This table describes what &quot;non-validating&quot; really means for &javaparsername; parsers. 
 		In this table, "no DTD" means no internal or external DTD subset is present.</p>
 		
         <table>
@@ -173,51 +175,16 @@ Document doc = parser.getDocument();
 				<th colspan="2">non-validating parsers</th>
 				<th colspan="2">validating parsers</th>
           	</tr>
-          	<tr>
-				<tn/>
-				<th>DTD present</th>
-				<th>no DTD</th>
-				<th>DTD present</th>
-				<th>no DTD</th>
-          	</tr>
-          	<tr>
-				<th>DTD is read</th>
-				<td>Yes</td>
-				<td>No</td>
-				<td>Yes</td>
-				<td>Error</td>
-          	</tr>
-          	<tr>
-				<th>entity substitution</th>
-				<td>Yes</td>
-				<td>No</td>
-				<td>Yest</td>
-				<td>Error</td>
-          	</tr>
-          	<tr>
-				<th>defaulting of attributes</th>
-				<td>Yes</td>
-				<td>No</td>
-				<td>Yes</td>
-				<td>Error</td>
-          	</tr>
-          	<tr>
-				<th>attribute normalization</th>
-				<td>Yes</td>
-				<td>No</td>
-				<td>Yes</td>
-				<td>Error</td>
-          	</tr>
-          	<tr>
-				<th>checking against model</th>
-				<td>No</td>
-				<td>No</td>
-				<td>Yes</td>
-				<td>Error</td>
-          	</tr>
+          	<tr><tn/>							<th>DTD present</th>	<th>no DTD</th>	<th>DTD present</th>	<th>no DTD</th></tr>
+          	<tr><th>DTD is read</th>			<td>Yes</td>			<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
+          	<tr><th>entity substitution</th>	<td>Yes</td>			<td>No</td>		<td>Yest</td>			<td>Error</td></tr>
+          	<tr><th>defaulting of attributes</th>	<td>Yes</td>		<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
+          	<tr><th>attribute normalization</th>	<td>Yes</td>		<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
+          	<tr><th>checking against model</th>		<td>No</td>			<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
         </table>
 		</a>
 	</faq>
+	
 	<faq title="Associating Data with a Node">
 		<q>How do associate my own data with a node in the DOM tree?</q>
 		<a><p>The class <code>org.apache.xerces.dom.NodeImpl</code> provides a 
@@ -225,6 +192,7 @@ Document doc = parser.getDocument();
          	method that you can use to attach any object to a node in the DOM tree.</p>
 		</a>
 	</faq>
+	
 	<faq title="Parsing Several Documents">
 		<q>How do I more efficiently parse several documents sharing a common DTD?</q>
 		<a>	<p>DTDs are not currently cached by the parser. The common DTD, since it is 
@@ -243,6 +211,7 @@ Document doc = parser.getDocument();
         	</ul>
 		</a>
 	</faq>
+	
     <faq title="How do access the DOM Level 2 functionality">
         <q>How do I access the DOM Level 2 functionality</q>
         <a><p>Because the DOM Level 2 spec is not frozen yet, the interfaces

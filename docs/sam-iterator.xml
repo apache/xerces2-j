@@ -3,11 +3,11 @@
 
 <s1 title="IteratorView Sample">
 	<s2 title="IteratorView">
-		<p>The IteratorView is an interactive UI sample that displays the DOM tree. It
+		<p>The <code>IteratorView></code> is an interactive UI sample that displays the DOM tree. It
 		shows the progress of the iteration by moving the selection within the DOM tree.
 		Buttons act as a control panel, allowing the user to interactively iterate through
 		the tree,  remove nodes, add nodes, and view the results immediately in the tree.</p>
-		<p>The IteratorView uses an example filter, NameNodeFilter, that can be controlled
+		<p>The <code>IteratorView></code> uses an example filter, <code>NameNodeFilter</code>, that can be controlled
 		from the UI and a DOMTreeFull class that displays the full DOM tree with all
 		the nodes.</p>
 
@@ -17,32 +17,32 @@
 
 		<s3 title="Iterator Group">
 		<ul>
-			<li>Next - calls the next() functions and selects the next node in the tree.</li>
-			<li>Previous - calls the previous() function a and selects the previous node in
+			<li>Next - calls the <code>next()</code> functions and selects the next node in the tree.</li>
+			<li>Previous - calls the <code>previous()</code> function a and selects the previous node in
      		the tree.</li>
 		</ul>
 		</s3>
 		<s3 title="Selected Node Group">
      	<ul>
-			<li>remove - remove the selected Node and update the DOM tree. You
+			<li><code>remove</code> - remove the selected Node and update the DOM tree. You
     		 must press an iterator button to see next or  previous node selection. </li>
-     		<li>add - add a text node, to see the results of adding a node on the iterator.
+     		<li><code>add</code> - add a text node, to see the results of adding a node on the iterator.
      		position. Again you must first press next or previous </li>
 		</ul>
 		</s3>
 		<s3 title="Iterator Settings Group">
      	<ul>
-			<li>createNodeIterator - calls the factory method to create a new iterator 
-   			with the corresponding whatToShow and NodenameFilter settings.</li>
+			<li><code>createNodeIterator</code> - calls the factory method to create a new iterator 
+   			with the corresponding <code>whatToShow</code> and <code>NameNodeFilter</code> settings.</li>
 				<ul>
 					<li>The root is set to be the root of the document, so it 
 					starts at the top level each time.</li>
 				</ul>
 			 
-			<li>whatToShow - you can singly or multiply select values and the 
+			<li><code>whatToShow</code> - you can singly or multiply select values and the 
 			iterator is constrained to showing these types.</li>
-			<li>NodeNameFilter - An empty string is converted to null and given 
-			to the NodeNameFilter class.</li>
+			<li><code>NodeNameFilter</code> - An empty string is converted to null and given 
+			to the <code>NodeNameFilter</code> class.</li>
 				<ul>
 					<li>An empty string matches all nodes.</li>
 					<li>A non-empty string is forced to match node names.</li>
@@ -52,8 +52,6 @@
       </s3>
     </s2>      
 	<s2 title="Running IteratorView">                           
-		<source>
-    		java dom.traversal.IteratorView &lt;fileName&gt; 
-	 	</source>
+<source>java dom.traversal.IteratorView &lt;fileName&gt;</source>
 	</s2>
 </s1>

@@ -79,18 +79,13 @@
 		<p>Documents that use XML Schema grammars specify the location of the
 		grammar using an xmlns attribute attached to the root / top-level element 
 		in the document. Here is an example: </p>
-		<source>
-&lt;document xmlns=&amp;document.xsd&gt;
+<source>&lt;document xmlns=&amp;document.xsd&gt;
 ...
-&lt;/document&gt;
-		</source>
+&lt;/document&gt;</source>
 		<p>Another requirement is that the XML Schema document's grammar must 
 		have a &lt;!DOCTYPE ...&gt; line specifying the DTD for XML Schema grammar. 
 		The DOCTYPE must specify the following system identifier:<br/>
-		<code>
-http://www.w3.org/XML/Group/1999/09/23-xmlschema/structures/structures.dtd
-		</code>
-		</p>
+		<code>http://www.w3.org/XML/Group/1999/09/23-xmlschema/structures/structures.dtd</code></p>
 		<p>Also, there must be an attribute declaration for the xmlns attribute 
 		used to find the schema (document in the example above).</p>
 		<p>Review the sample file, "data/personal.xsd" for an example of an XML 

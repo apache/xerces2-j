@@ -63,8 +63,8 @@ validation, <!-- <link idref="configure-validation"> -->above <!--
           		<li>IBM-1208</li>
           		<li>ISO Latin-1 (ISO-8859-1)</li>
           		<li>ISO Latin-2 (ISO-8859-2) [Bosnian, Croatian, Czech, 
-					<br/>Hungarian, Polish, Romanian, Serbian (in Latin transcription),
-					<br/>Serbocroatian, Slovak, Slovenian, Upper and Lower Sorbian]</li>
+					Hungarian, Polish, Romanian, Serbian (in Latin transcription), 
+					Serbocroatian, Slovak, Slovenian, Upper and Lower Sorbian]</li>
           		<li>ISO Latin-3 (ISO-8859-3) [Maltese, Esperanto]</li>
           		<li>ISO Latin-4 (ISO-8859-4)</li>
           		<li>ISO Latin Cyrillic (ISO-8859-5)</li>

@@ -3,56 +3,60 @@
 
 <s1 title="TreeWalker Sample">
     <s2 title="TreeWalker">
-        <p>The TreeWalkerviewView is an interactive UI sample that displays the DOM
+        <p>The <code>TreeWalkerviewView</code> is an interactive UI sample that displays the DOM
         tree. It show the progress of the tree traversal by moving the selection within the
         DOM tree. Buttons act as a control panel, allowing the user to interactively
         traverse the tree,  remove nodes, add nodes, and view the results immediately in
         the tree. </p>
-        <p>The TreeWalkerviewView uses an example filter, NameNodeFilter, that can be
-        controlled from the UI and a DOMTreeFull class that displays the full DOM tree
+        <p>The <code>TreeWalkerviewView</code> uses an example filter, 
+		<code>NameNodeFilter</code>, that can be controlled from the UI and a 
+		<code>DOMTreeFull</code> class that displays the full DOM tree
         with all the nodes.</p>
-        <p>The controls are called through to to the corresponding TreeWalker function. If
-        you are familiar with the DOM Level 2 Traversal specification, these controls are
+        <p>The controls are called through to to the corresponding 
+		<code>TreeWalker</code> function. If you are familiar with the DOM 
+		Level 2 Traversal specification, these controls are
         fairly easy to understand.</p>
         <s3 title="Document Order Traversal Group">
             <ul>
-                <li>Next - calls the next() functions and selects the next in the  tree.</li>
-                <li>Previous - calls the previous() function a and selects the previous node in
-                the DOM tree.</li>
+                <li>Next - calls the <code>next()</code> functions and selects 
+				the next in the tree.</li>
+                <li>Previous - calls the <code>previous()</code> function a and 
+				selects the previous node in the DOM tree.</li>
             </ul>
         </s3>
         <s3 title="Walk Group">
-        <p>Parent, Previous Sibling, Next Sibling, First Child, Last Child - call the
-        corresponding function in TreeWalker and show the result as a selected Node.</p>
+	        <p>Parent, Previous Sibling, Next Sibling, First Child, Last Child - call the
+	        corresponding function in TreeWalker and show the result as a selected Node.</p>
         </s3>
         <s3 title="Selected Node Group">
             <ul>
                 <li>current - set the current node to the selected node.</li>
                 <li>remove - remove the selected node and update the tree. 
-          You must press a button to see next or previous node selection.</li>
+          		You must press a button to see next or previous node selection.</li>
                 <li>add - add a text node. 
-          You must press a button to see next or previous node selection.</li>
+          		You must press a button to see next or previous node selection.</li>
             </ul>
         </s3>
         <s3 title="Filter Settings Group">
             <ul>
-                <li>createNodeTreeWalker - calls the factory method to create a new
-                TreeWalker with the corresponding whatToShow and NodenameFilter
+                <li><code>createNodeTreeWalker</code> - calls the factory 
+				method to create a new <code>TreeWalker</code> with the 
+				corresponding <code>whatToShow</code> and <code>NodenameFilter</code>
                 settings. The selected node becomes the TreeWalker root.</li>
-                <li>whatToShow - you can singly or multiply select these values by pressing
-                the control key and the TreeWalker is constrained to these types.</li>
-                <li>NodeNameFilter - an empty string is converted to null and given to the
-                NodeNameFilter example filter class provided.</li>
-                    <ul>
-                        <li>An empty string (null) matches ALL nodes.</li>
-                        <li>A non-empty string is  forced to match node names.</li>
-                    </ul>
+                <li><code>whatToShow</code> - you can singly or multiply select 
+				these values by pressing the control key and the 
+				<code>TreeWalker</code> is constrained to these types.</li>
+                <li><code>NodeNameFilter</code> - an empty string is 
+				converted to null and given to the
+                <code>NodeNameFilter</code> example filter class provided.</li>
+                <ul>
+                    <li>An empty string (null) matches ALL nodes.</li>
+                    <li>A non-empty string is forced to match node names.</li>
+                </ul>
             </ul>
           </s3>     
     </s2>                                                    
     <s2 title="Running TreeWalker">
-        <source>
-            java dom.traversal.TreeWalkerView &lt;fileName&gt; 
-        </source>
+<source>java dom.traversal.TreeWalkerView &lt;fileName&gt;</source>
     </s2>
 </s1>
