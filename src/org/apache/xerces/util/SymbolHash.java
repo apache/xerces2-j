@@ -138,7 +138,7 @@ public class SymbolHash {
      */
     public String put(QName qName, Object value) {
 
-        String key = qName.uri.concat(qName.localpart);
+        String key = (qName.uri == null)?qName.localpart:qName.uri.concat(qName.localpart);
 
         // search for identical key
         int bucket = hash(key) % fTableSize;
@@ -164,6 +164,13 @@ public class SymbolHash {
         return null;
     }
 
+    // this tries to save a bit of GC'ing by at least keeping the fBuckets array around.
+    public void clear() {
+        for (int i=0; i<fTableSize; i++) {
+            fBuckets[i] = new Entry();
+        }
+    } // clear():  void
+
     public Object get (QName qName){
 
         String key = qName.uri.concat(qName.localpart);
@@ -181,7 +188,7 @@ public class SymbolHash {
         // search for identical key
         int length = key.length();
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
-            if (length == entry.characters.length) {
+            if (entry.characters != null && length == entry.characters.length) {
                 for (int i = 0; i < length; i++) {
                     if (key.charAt(i) != entry.characters[i]) {
                         continue OUTER;
@@ -223,12 +230,12 @@ public class SymbolHash {
      * in a linked list.
      */
     protected static final class Entry {
-	/**
-        * key is a name or QName 
-        */
-	public String key;
+	    /**
+         * key is a name or QName 
+         */
+	    public String key;
 
-	public Object value;
+	    public Object value;
 	
         /** 
          * key characters. This information is duplicated here for
@@ -240,14 +247,20 @@ public class SymbolHash {
         public Entry next;
 
 
-	public Entry(String key, Object value, Entry next) {
-	    this.key = key;
-	    this.value = value;
-	    this.next = next;
+        public Entry() {
+            key = null;
+            value = null;
+            characters = null;
+            next = null;
+        }
+	    public Entry(String key, Object value, Entry next) {
+	        this.key = key;
+	        this.value = value;
+	        this.next = next;
             characters = new char[key.length()];
             key.getChars(0, characters.length, characters, 0);
-	}
-    }
+	    }
+    } // entry
 
 } // class SymbolHash
 
