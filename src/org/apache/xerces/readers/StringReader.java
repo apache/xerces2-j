@@ -681,10 +681,20 @@ final class StringReader extends XMLEntityReader {
         int index = fData.indexOf(':', nameOffset);
         if (index != -1) {
             qname.prefix = fStringPool.addSymbol(fData.substring(nameOffset, index));
-            qname.localpart = fStringPool.addSymbol(fData.substring(index, index + fCurrentOffset));
+            int indexOfSpaceChar = fData.indexOf( ' ', index + 1 );//one past : look for blank
+            String localPart;
+            if( indexOfSpaceChar != -1 ){//found one
+                localPart = fData.substring(index+1, indexOfSpaceChar );
+                qname.localpart  = fStringPool.addSymbol(localPart);
+            } else{//then get up to end of String
+                int lenfData     = fData.length();
+                localPart = fData.substring( index + 1, fData.length );
+                qname.localpart  = fStringPool.addSymbol(localPart);
+            }
+            qname.localpart  = fStringPool.addSymbol(localPart);
         }
         else {
-            qname.localpart = qname.rawname;
+            qname.localpart  = qname.rawname;
         }
 
     } // scanQName(char,QName)
