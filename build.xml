@@ -78,7 +78,7 @@ Copyright:
     <property name="tests.dir" value="./tests"/>
     <property name="tools.dir" value="./tools"/>
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
-    <property name="version.file" value="org/apache/xerces/framework/Version.java"/>
+    <property name="version.file" value="org/apache/xerces/impl/Version.java"/>
 
     <property name="packages" value="org.*"/>
 
@@ -158,7 +158,8 @@ Copyright:
              excludes="**/classfiles_updated **/CVS* **/.#*
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java "/>
+                       **/DTDImporter.java **/apache/wml/** **/apache/html/**
+                       org/w3c/dom/html/** org/apache/xml/**"/>
 	<deltree dir="${build.src}/whiteboard"/>
 
     <!-- substitute tokens as needed -->
@@ -183,7 +184,7 @@ Copyright:
   <target name="jar" depends="compile">
     <jar jarfile="${build.dir}/${name}.jar"
          basedir="${build.dest}"
-         includes="org/**, javax/**"/>
+         includes="org/**, javax/**" excludes="**/Makefile **/*.html"/>
   </target>
 
   <!-- =================================================================== -->
@@ -191,7 +192,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="samples" depends="jar">
     <mkdir dir="${build.samples}"/>
-    <copydir src="${samples.dir}" dest="${build.samples}" />
+    <copydir src="${samples.dir}" dest="${build.samples}" excludes="ui/**"/>
     <javac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/${name}.jar"
