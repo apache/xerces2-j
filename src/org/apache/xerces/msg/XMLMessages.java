@@ -96,7 +96,8 @@ public class XMLMessages extends ListResourceBundle {
     // 2.9 Standalone Document Declaration
         { "SDDeclInvalid", "The standalone document declaration value must be \"yes\" or \"no\", not \"{0}\"." },
     // 2.12 Language Identification
-        { "XMLLangInvalid", "The xml:lang attribute value \"{0}\" is an invalid language identifier." },
+    // Deleted see http://www.w3.org/XML/xml-19980210-errata#E73 and bug 2793
+
     // 3. Logical Structures
         { "ETagRequired", "The element type \"{0}\" must be terminated by the matching end-tag \"</{0}>\"." },
     // 3.1 Start-Tags, End-Tags, and Empty-Element Tags

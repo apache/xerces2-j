@@ -206,7 +206,7 @@ public class XMLMessages implements XMLMessageProvider {
         MSG_ENTITY_NOT_DECLARED = 62,      //  entity was not declared
         MSG_REFERENCE_TO_UNPARSED_ENTITY = 63,
         MSG_REFERENCE_TO_EXTERNAL_ENTITY = 64,
-        MSG_XML_LANG_INVALID = 65,         //  xml:lang attribute value does not match LanguageID production
+        MSG_AVAILABLE0  = 65,         
         MSG_CDSECT_UNTERMINATED = 66,      //  CDATA sections must end with "]]>"
         MSG_DUPLICATE_TYPE_IN_MIXED_CONTENT = 67,
         MSG_ELEMENT_ENTITY_MISMATCH = 68,
@@ -382,7 +382,7 @@ public class XMLMessages implements XMLMessageProvider {
         "EntityNotDeclared",            //  62, "The entity \"{0}\" was referenced, but not declared."
         "ReferenceToUnparsedEntity",    //  63, "The unparsed entity reference \"&{0};\" is not permitted."
         "ReferenceToExternalEntity",    //  64, "The external entity reference \"&{0};\" is not permitted in an attribute value."
-        "XMLLangInvalid",               //  65, "The xml:lang attribute value \"{0}\" is an invalid language identifier."
+        "MSG_AVAILABLE0",               //  65, 
         "CDSectUnterminated",           //  66, "The CDATA section must end with \"]]>\"."
         "DuplicateTypeInMixedContent",  //  67, "The element type \"{0}\" was already specified in this content model."
         "ElementEntityMismatch",        //  68, "The element \"{0}\" must start and end within the same entity."
@@ -557,6 +557,7 @@ public class XMLMessages implements XMLMessageProvider {
         VC_ENTITY_DECLARED = 62,            // 4.1 [68] The entity was referenced, but not declared
         WFC_PARSED_ENTITY = 63,             // 4.1 [68] An unparsed entity was referenced
         WFC_NO_EXTERNAL_ENTITY_REFERENCES = 64, // 3.1 [42] reference to external entity in AttValue
+        // xml:lang no longer checked http://www.w3.org/XML/xml-19980210-errata#E73
         P33_INVALID = 65,                   // 2.12 [33] xml:lang attribute value must match LanguageID production
         P18_UNTERMINATED = 66,              // 2.7 [18] CDATA sections must end with "]]>"
         VC_NO_DUPLICATE_TYPES = 67,         // 3.2.2 [51] The same type must not appear more than once in a mixed content declaration
@@ -968,14 +969,8 @@ public class XMLMessages implements XMLMessageProvider {
                        "Attribute values cannot contain direct or indirect entity references to\n" +
                        "external entities."),
     // P33_INVALID = 65
-        new Constraint("2.12", "[33]", "2.12 [33] LanguageID ::= Langcode ('-' Subcode)*",
-                       "[33] LanguageID ::= Langcode ('-' Subcode)*\n" +
-                       "[34] Langcode ::= ISO639Code |  IanaCode |  UserCode\n" +
-                       "[35] ISO639Code ::= ([a-z] | [A-Z]) ([a-z] | [A-Z])\n" +
-                       "[36] IanaCode ::= ('i' | 'I') '-' ([a-z] | [A-Z])+\n" +
-                       "[37] UserCode ::= ('x' | 'X') '-' ([a-z] | [A-Z])+\n" +
-                       "[38] Subcode ::= ([a-z] | [A-Z])+\n" +
-                       "An xml:lang attribute value must match the LanguageID production."),
+        new Constraint("2.12", "[33]", "2.12 (Productions 33 through 38 have been removed)",
+                       "(Productions 33 through 38 have been removed)"),
     // P18_UNTERMINATED = 66
         new Constraint("2.7", "[18]", "2.7 [18] CDSect ::= CDStart CData CDEnd",
                        "[18] CDSect ::= CDStart CData CDEnd\n" +

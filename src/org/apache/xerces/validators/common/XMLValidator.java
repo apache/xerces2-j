@@ -2498,11 +2498,7 @@ public final class XMLValidator
             int attName = attrList.getAttrName(index);
             int attPrefix = attrList.getAttrPrefix(index);
             if (fStringPool.equalNames(attName, fXMLLang)) {
-               /***
-               // NOTE: This check is done in the validateElementsAndAttributes
-               //       method.
-               fDocumentScanner.checkXMLLangAttributeValue(attrList.getAttValue(index));
-               /***/
+               /*  No check: http://www.w3.org/XML/xml-19980210-errata#E73 and bug 2793 */
             } else if (fStringPool.equalNames(attName, fNamespacesPrefix)) {
                int uri = fStringPool.addSymbol(attrList.getAttValue(index));
                fNamespacesScope.setNamespaceForPrefix(StringPool.EMPTY_STRING, uri);
@@ -3050,14 +3046,6 @@ public final class XMLValidator
                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                }
             }
-            int index = fAttrList.getFirstAttr(fAttrListHandle);
-            while (index != -1) {
-               if (fStringPool.equalNames(fAttrList.getAttrName(index), fXMLLang)) {
-                  fDocumentScanner.checkXMLLangAttributeValue(fAttrList.getAttValue(index));
-                  break;
-               }
-               index = fAttrList.getNextAttr(index);
-            }
          }
          return;
       }
@@ -3593,21 +3581,11 @@ public final class XMLValidator
             }
             System.out.println(">");
          }
-         // REVISIT: Validation. Do we need to recheck for the xml:lang
-         //          attribute? It was already checked above -- perhaps
-         //          this is to check values that are defaulted in? If
-         //          so, this check could move to the attribute decl
-         //          callback so we can check the default value before
-         //          it is used.
          if (fAttrListHandle != -1 && !fNeedValidationOff ) {
             int index = fAttrList.getFirstAttr(fAttrListHandle);
             while (index != -1) {
                int attrNameIndex = attrList.getAttrName(index);
 
-               if (fStringPool.equalNames(attrNameIndex, fXMLLang)) {
-                  fDocumentScanner.checkXMLLangAttributeValue(attrList.getAttValue(index));
-                  // break;
-               }
                // here, we validate every "user-defined" attributes
                int _xmlns = fStringPool.addSymbol("xmlns");
 

@@ -563,62 +563,6 @@ public final class XMLDocumentScanner {
         return value;
     }
 
-    /**
-     * Check the value of an XML Language attribute
-     * @param langValue the handle in the string pool of the value to be checked
-     * @exception java.lang.Exception
-     */
-    public void checkXMLLangAttributeValue(int langValue) throws Exception {
-        String lang = fStringPool.toString(langValue);
-        int offset = -1;
-        if (lang.length() >= 2) {
-            char ch0 = lang.charAt(0);
-            if (lang.charAt(1) == '-') {
-                if (ch0 == 'i' || ch0 == 'I' || ch0 == 'x' || ch0 == 'X') {
-                    offset = 1;
-                }
-            } else {
-                char ch1 = lang.charAt(1);
-                if (((ch0 >= 'a' && ch0 <= 'z') || (ch0 >= 'A' && ch0 <= 'Z')) &&
-                    ((ch1 >= 'a' && ch1 <= 'z') || (ch1 >= 'A' && ch1 <= 'Z'))) {
-                        offset = 2;
-                }
-            }
-        }
-        if (offset > 0 && lang.length() > offset) {
-            char ch = lang.charAt(offset++);
-            if (ch != '-') {
-                offset = -1;
-            } else {
-                while (true) {
-                    if (ch == '-') {
-                        if (lang.length() == offset) {
-                            offset = -1;
-                            break;
-                        }
-                        ch = lang.charAt(offset++);
-                        if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z')) {
-                            offset = -1;
-                            break;
-                        }
-                        if (lang.length() == offset)
-                            break;
-                    } else if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z')) {
-                        offset = -1;
-                        break;
-                    } else if (lang.length() == offset)
-                        break;
-                    ch = lang.charAt(offset++);
-                }
-            }
-        }
-        if (offset == -1) {
-            reportFatalXMLError(XMLMessages.MSG_XML_LANG_INVALID,
-                                XMLMessages.P33_INVALID,
-                                lang);
-        }
-    }
-
     //
     //
     //
