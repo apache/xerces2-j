@@ -144,11 +144,19 @@ implements DOMWriter {
     // data
     //
 
-    protected final NamespaceSupport fNamespaceSupport = new NamespaceSupport();
+    /** stores namespaces in scope */
+    protected final NamespaceSupport fNSBinder = new NamespaceSupport();
+
+    /** stores all namespace bindings on the current element */
+    protected final NamespaceSupport fLocalNSBinder = new NamespaceSupport();
+
+    /** symbol table for serialization */
     protected final SymbolTable fSymbolTable = new SymbolTable();    
+
     protected String fEmptySymbol;
     protected String fXmlSymbol;
     protected String fXmlnsSymbol;
+
     // is node dom level 1 node?
     protected boolean fDOML1 = false;
     // counter for new prefix names
@@ -162,7 +170,7 @@ implements DOMWriter {
 
     /**
      * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
+     * calling {@link #setOutFputCharStream} or {@link #setOutputByteStream}
      * first.
      */
     public XMLSerializer() {
@@ -239,7 +247,7 @@ implements DOMWriter {
         String       name;
         String       value;
         boolean      addNSAttr = false;
-        
+
         if (DEBUG) {
             System.out.println("==>startElement("+namespaceURI+","+localName+
                                ","+rawName+")");
@@ -665,11 +673,14 @@ implements DOMWriter {
         String prefix;
         String uri;
 
+        // reset local binder
+        fLocalNSBinder.reset(fSymbolTable);
+        fLocalNSBinder.pushContext();
 
         // add new namespace context
-        fNamespaceSupport.pushContext();
+        fNSBinder.pushContext();
         if (DEBUG) {
-            System.out.println("==>startElement: " +elem.getNodeName());
+            System.out.println("==>startElement: " +elem.getNodeName() +" ns="+elem.getNamespaceURI());
         }
         tagName = elem.getTagName();
         state = getElementState();
@@ -729,7 +740,8 @@ implements DOMWriter {
         if ((uri !=null && prefix !=null ) && uri.length() == 0 && prefix.length()!=0) {
             // uri is an empty string and element has some prefix
             // the namespace alg later will fix up the namespace attributes
-            // remove element prefix
+            // remove element prefix 
+            prefix = null; 
             _printer.printText( '<' );
             _printer.printText( elem.getLocalName() );
             _printer.indent();
@@ -742,17 +754,34 @@ implements DOMWriter {
 
         // REVISIT: should we report error/warning if DOM 1 nodes mix with DOM 2 nodes?
 
-        // -----------------------------------------
+        // ---------------------------------------------------------
         // Fix up namespaces for element: per DOM L3 
+        // Need to consider the following cases:
+        //
+        // case 1: <foo:elem xmlns:ns1="myURI" xmlns="default"/> 
+        // Assume "foo", "ns1" are declared on the parent. We should not miss 
+        // redeclaration for both "ns1" and default namespace. To solve this 
+        // we add a local binder that stores declaration only for current element.
+        // This way we avoid outputing duplicate declarations for the same element
+        // as well as we are not omitting redeclarations.
+        //
+        // case 2: <elem xmlns="" xmlns="default"/> 
+        // We need to bind default namespace to empty string, to be able to 
+        // omit duplicate declarations for the same element
+        //
+        // ---------------------------------------------------------
         // check if prefix/namespace is correct for current element
-        // -----------------------------------------
+        // ---------------------------------------------------------
         if (uri != null) {  // Element has a namespace
 
             uri = fSymbolTable.addSymbol(uri);
             prefix = prefix == null ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
-            if (fNamespaceSupport.getURI(prefix) == uri) {
-                // this namespace was declared at parent level
-                // do nothing
+            if (fNSBinder.getURI(prefix) == uri) {
+                // The xmlns:prefix=namespace or xmlns="default" was declared at parent.
+                // The binder always stores mapping of empty prefix to "".
+                // (NOTE: local binder does not store this kind of binding!)
+                // Thus the case where element was declared with uri="" (with or without a prefix)
+                // will be covered here.
 
             }
             else {
@@ -760,25 +789,10 @@ implements DOMWriter {
                 // or
                 // conflict: the prefix is bound to another URI
 
-                // check if uri is an empty string && element has prefix
-                if (uri == fEmptySymbol && prefix != fEmptySymbol) {
+                printNamespaceAttr(prefix, uri);
+                fLocalNSBinder.declarePrefix(prefix, uri);
+                fNSBinder.declarePrefix(prefix, uri);
 
-                    // the element prefix is already removed above
-                    prefix = fEmptySymbol;
-                    if (fNamespaceSupport.getURI(prefix) !=null) {
-                        // xmlns default namespace is bound to something
-                        // undeclare it
-
-                        // print default namespace declaration
-                        printNamespaceAttr(prefix, uri);
-                        fNamespaceSupport.declarePrefix(prefix, uri);
-                    }
-                }
-                else {
-                    // add or modify local declaration
-                    printNamespaceAttr(prefix, uri);
-                    fNamespaceSupport.declarePrefix(prefix, uri);
-                }
 
             }
         }
@@ -805,13 +819,14 @@ implements DOMWriter {
                     }
                 }
             }
-            else { // uri=null and no colon
-
-                if (fNamespaceSupport.getURI(fEmptySymbol) !=null) {
-                    // there is a default namespace decl that is bound to something else
+            else { // uri=null and no colon (DOM L2 node)
+                uri = fNSBinder.getURI(fEmptySymbol);
+                if (uri !=null && uri.length() > 0) {
+                    // there is a default namespace decl that is bound to
+                    // non-zero length uri, output xmlns=""
                     printNamespaceAttr(fEmptySymbol, fEmptySymbol);
-                    fNamespaceSupport.declarePrefix(fEmptySymbol, uri);
-
+                    fLocalNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
+                    fNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
                 }
             }
         }
@@ -820,53 +835,90 @@ implements DOMWriter {
         // Fix up namespaces for attributes: per DOM L3 
         // check if prefix/namespace is correct the attributes
         // -----------------------------------------
-
+        String localUri;
         if (attrMap !=null) {
+
+            // REVISIT: common code for handling namespace attributes for DOM L2 nodes
+            //          and DOM L1 nodes. Currently because we don't skip invalid declarations
+            //          for L1, we might output more namespace declarations than we would have
+            //          if namespace processing was performed (duplicate decls on different elements)
+            // Open issues:
+            // 1. Is it allowed to mix DOM L1 with DOM L2 nodes
+            // 2. Should we skip invalid namespace declarations or attributes not with QName
+            //    [what should be the default behaviour]
+            // 3. What should happen if the tree is DOM L1 tree (no namespace processing was
+            //    performed)? Should we attempt any fixup??
+            //
 
             for (i = 0; i < attrMap.getLength(); i++) {
 
                 attr = (Attr) attrMap.item( i );
                 value = attr.getValue();
-                name = attr.getNodeName();
+                name = attr.getNodeName();                
+                uri = attr.getNamespaceURI();
+                
+                // Fix attribute that was declared with a prefix and namespace=""
+                if (uri !=null && uri.length() == 0) {
+                    uri=null;
+                    // we must remove prefix for this attribute
+                    name=attr.getLocalName();
+                }
+
                 if (DEBUG) {
                     System.out.println("==>process attribute: "+attr.getNodeName());
                 }
-                uri = attr.getNamespaceURI();
-
-
+                // make sure that value is never null.
+                if (value == null) {
+                    value=fEmptySymbol;
+                }
 
                 if (uri != null) {  // attribute has namespace !=null
                     prefix = attr.getPrefix();
                     prefix = prefix == null ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
                     String localpart = fSymbolTable.addSymbol( attr.getLocalName());
 
-                    uri = fSymbolTable.addSymbol(uri);
-
-                    // find if for this prefix a URI was already declared
-                    String declaredURI =  fNamespaceSupport.getURI(prefix);
 
                     // check if attribute is a namespace decl 
                     if (prefix == fXmlnsSymbol) { //xmlns:prefix
-
-                        // REVISIT: should we skip invalid xmlns declaration
-                        //          xmlns:foo = "" ??
-                        if (fNamespaceSupport.getURI(localpart) == null) {
-                            // this declaration is not in the scope
-                            printNamespaceAttr(localpart, value);
-                            fNamespaceSupport.declarePrefix(localpart, value);
+                        uri =  fNSBinder.getURI(localpart); // global prefix mapping
+                        localUri = fLocalNSBinder.getURI(localpart);  // local prefix mapping
+                        
+                        // don't output local declaration which is identical to the 
+                        // global declaration
+                        if (uri == null || ( localUri == null && !uri.equals(value))) {
+                            // REVISIT: we are skipping invalid decls
+                            //          xmlns:foo = ""
+                            if (value.length() != 0) { 
+                                printNamespaceAttr(localpart, value);
+                                fNSBinder.declarePrefix(localpart, value);
+                                fLocalNSBinder.declarePrefix(localpart, value);
+                            }
                         }
                         continue;
                     }
                     else if (localpart == fXmlnsSymbol && prefix == fEmptySymbol) { // xmlns
-                        if (fNamespaceSupport.getURI(fEmptySymbol) == null) {
-                            // this declaration is not in the scope
+                        // empty prefix is always bound ("" or some string)
+                        uri = fNSBinder.getURI(fEmptySymbol);
+                        localUri=fLocalNSBinder.getURI(fEmptySymbol);
+                        if (localUri == null) {
+                            // there was no local default ns decl
+
+                            // REVISIT: should we output duplicate xmlns="" decls?
+                            //if (value.length() !=0 && !uri.equals(value)) {
+                            
                             printNamespaceAttr(fEmptySymbol, value);
-                            fNamespaceSupport.declarePrefix(fEmptySymbol, value);
+                            fLocalNSBinder.declarePrefix(fEmptySymbol, value);
+                            fNSBinder.declarePrefix(fEmptySymbol, value);
+                            
                         }
                         continue;
-
                     }
-                    
+
+                    uri = fSymbolTable.addSymbol(uri);
+
+                    // find if for this prefix a URI was already declared
+                    String declaredURI =  fNSBinder.getURI(prefix);
+
                     if (prefix == fEmptySymbol || declaredURI != uri) {
                         // attribute has no prefix (default namespace decl does not apply to attributes) 
                         // OR
@@ -877,7 +929,7 @@ implements DOMWriter {
                         name  = attr.getNodeName();
                         // Find if any prefix for attributes namespace URI is available
                         // in the scope
-                        String declaredPrefix = fNamespaceSupport.getPrefix(uri);
+                        String declaredPrefix = fNSBinder.getPrefix(uri);
                         if (declaredPrefix == null || declaredPrefix == fEmptySymbol) {
                             // could not find a prefix/prefix is empty string
                             if (DEBUG) {
@@ -886,14 +938,17 @@ implements DOMWriter {
                             if (prefix != fEmptySymbol) {
                                 // no need to create a new prefix:
                                 // use the one on the attribute
-                            } else {                            
+                            }
+                            else {
                                 // create new prefix
                                 prefix = "NS" +fNamespaceCounter++; 
                             }
                             // add declaration for the new prefix
                             printNamespaceAttr(prefix, uri);
-                            fNamespaceSupport.declarePrefix(prefix, uri);
-                        }  else {
+                            fLocalNSBinder.declarePrefix(prefix, value);
+                            fNSBinder.declarePrefix(prefix, uri);
+                        }
+                        else {
                             // use the prefix that was found (declared previously for this URI
                             prefix = declaredPrefix;
                         }
@@ -906,30 +961,33 @@ implements DOMWriter {
                 else { // attribute uri == null
 
                     // data
-                    name = attr.getNodeName();
                     int colon = name.indexOf(':');
                     int colon2 = name.lastIndexOf(':');
-                    value = attr.getValue();
-                    // check if attribute is a namespace decl 
+                    //
+                    // process namespace declarations
+                    //
                     if (name.startsWith(fXmlnsSymbol)) {
                         //
                         //  DOM Level 1 node!
                         // 
                         if (colon < 0) {  // xmlns decl
-                            if (fNamespaceSupport.getURI(fEmptySymbol) == null) {
-                                // this declaration is not in the scope
-                                fNamespaceSupport.declarePrefix(fEmptySymbol, (value==null)?fEmptySymbol:value);
+                            // empty prefix is always bound ("" or some string)
+                            uri = fNSBinder.getURI(fEmptySymbol); 
+                            localUri=fLocalNSBinder.getURI(fEmptySymbol);
+                            if (localUri == null) {
+                            
+                              // REVISIT: should we output duplicate xmlns="" decls?
+                              //if (value.length() !=0 && !uri.equals(value)) {
+                                fNSBinder.declarePrefix(fEmptySymbol, value);
+                                fLocalNSBinder.declarePrefix(fEmptySymbol, value);
+                                printAttribute (name, value, attr.getSpecified());
                             }
-                            else {
-                                // duplicate declaration
-                                // skip
-                                continue;
-                            }
-
+                            continue;
                         }
                         else if (colon == colon2) { // xmlns:prefix decl
                             // get prefix
                             prefix = name.substring(6);
+                            prefix = (prefix.length() ==0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
                             if (prefix.length() == 0) {
                                 // report an error - invalid namespace declaration
                                 if (fDOMErrorHandler != null) {
@@ -937,26 +995,34 @@ implements DOMWriter {
                                     boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                                 }
                                 // REVISIT: skip invalid declaration?
-                                // continue;
+                                // report an error later on
+                                //continue;
 
                             }
-                            else if (value != null && value.length() == 0) {
+                            else if (value.length() == 0) {
                                 if (fDOMErrorHandler != null) {
                                     modifyDOMError("Namespace declaration syntax is incorrect "+name, DOMError.SEVERITY_ERROR);
                                     boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                                 }
                                 // REVISIT: skip invalid declaration?
-                                // continue;
+                                // report an error later on
+                                //continue;
                             }
-                            else if (fNamespaceSupport.getURI(prefix) == null) {
-                                // this declaration is not in the scope
-                                fNamespaceSupport.declarePrefix(prefix, value);
 
+                            uri =  fNSBinder.getURI(prefix);           // global prefix mapping
+                            localUri = fLocalNSBinder.getURI(prefix);  // local prefix mapping
+                            if (uri == null || ( localUri == null && !uri.equals(value))) {
+                                // REVISIT: we are skipping invalid decls
+                                //          xmlns:foo = ""
+                                if (value.length() != 0) { 
+                                    //printNamespaceAttr(prefix, value);
+                                    fNSBinder.declarePrefix(prefix, value);
+                                    fLocalNSBinder.declarePrefix(prefix, value);
+                                   
+                                }
+                                // REVISIT: only if we can skip continue;
                             }
-                        } else { // colon !=colon
-                            // will report error for this case later in the code
                         }
-
                     }
 
                     if (colon > -1) {
@@ -980,19 +1046,17 @@ implements DOMWriter {
                             }
                         }
 
-                        // REVISIT: should we skip invalid declarations?
-                        printAttribute (name, (value==null)?fEmptySymbol:value, attr.getSpecified());
+                        printAttribute (name, value, attr.getSpecified());
                     }
                     else { // uri=null and no colon
                         // no fix up is needed: default namespace decl does not 
                         // apply to attributes
 
-                        printAttribute (name, (value==null)?fEmptySymbol:value, attr.getSpecified());
+                        printAttribute (name, value, attr.getSpecified());
                     }
-
                 }
             }
-        }
+        } // end loop for attributes
 
 
 
@@ -1009,14 +1073,14 @@ implements DOMWriter {
                 serializeNode( child );
                 child = child.getNextSibling();
             }
-            fNamespaceSupport.popContext();
+            fNSBinder.popContext();
             endElementIO( null, null, tagName );
         }
         else {
             if (DEBUG) {
                 System.out.println("==>endElement: " +elem.getNodeName());
             }
-            fNamespaceSupport.popContext();
+            fNSBinder.popContext();
             _printer.unindent();
             _printer.printText( "/>" );
             // After element but parent element is no longer empty.
@@ -1042,9 +1106,15 @@ implements DOMWriter {
     private void printNamespaceAttr(String prefix, String uri) throws IOException{
         _printer.printSpace();
         if (prefix == fEmptySymbol) {
+            if (DEBUG) {
+                System.out.println("=>add xmlns=\""+uri+"\" declaration");
+            }
             _printer.printText( fXmlnsSymbol );
         }
         else {
+            if (DEBUG) {
+                System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
+            }
             _printer.printText( fXmlnsSymbol+ ":"+prefix );
         }
         _printer.printText( "=\"" );
@@ -1434,7 +1504,10 @@ implements DOMWriter {
 
     public boolean reset() {
         super.reset();
-        fNamespaceSupport.reset(fSymbolTable);
+        fNSBinder.reset(fSymbolTable);
+        // during serialization always have a mapping to empty string
+        // so we assume there is a declaration.
+        fNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
         fNamespaceCounter = 1;
         fXmlSymbol = fSymbolTable.addSymbol("xml");
         fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
@@ -1444,6 +1517,7 @@ implements DOMWriter {
     }
 
 }
+
 
 
 
