@@ -80,11 +80,40 @@
   <q>How can I tell the parser to validate against XML Schema and not to report DTD validation errors?</q>
   <a>
    <p>
-     Currently this is impossible. We hope that JAXP 1.2 will provide this capability 
-     via its schema language property. Otherwise, we might introduce a Xerces 
-     language property that will allow specifying the language against which validation will occur.
+    With JAXP 1.2 (or higher), you can instruct the parser to validate against XML Schema only. Using
+    JAXP if the schema language property has been set to <code>http://www.w3.org/2001/XMLSchema</code>
+    and the parser has been configured to validate then your documents will be validated against 
+    XML Schema only, even if they have a DTD.
    </p>
-   </a>
+   <p>By doing the following you can configure a SAX parser to validate against XML Schema only:</p>
+   <source>import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+...
+SAXParserFactory spf = SAXParserFactory.newInstance();
+spf.setValidating(true);
+spf.setNamespaceAware(true);
+SAXParser parser = spf.newSAXParser();
+parser.setProperty(
+    "http://java.sun.com/xml/jaxp/properties/schemaLanguage",
+    "http://www.w3.org/2001/XMLSchema");
+...
+</source>
+   <p>For a DocumentBuilder this can be accomplished by doing the following:</p>
+   <source>import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+...
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+dbf.setNamespaceAware(true);
+dbf.setValidating(true);
+dbf.setAttribute(
+    "http://java.sun.com/xml/jaxp/properties/schemaLanguage",
+    "http://www.w3.org/2001/XMLSchema");
+DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+...
+</source>
+  </a>
  </faq>
 
 </faqs>
