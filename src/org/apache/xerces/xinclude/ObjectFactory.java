@@ -337,8 +337,11 @@ class ObjectFactory {
         //restrict the access to package as speicified in java.security policy
         SecurityManager security = System.getSecurityManager();
         try{
-            if(security != null){
-                security.checkPackageAccess(className);
+            if (security != null) {
+                final int lastDot = className.lastIndexOf(".");
+                String packageName = className;
+                if (lastDot != -1) packageName = className.substring(0, lastDot);
+                security.checkPackageAccess(packageName);
             }
         }catch(SecurityException e){
             throw e ;
