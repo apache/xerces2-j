@@ -653,6 +653,8 @@ class RegexParser {
                     while (off < this.regexlen
                            && (ch = this.regex.charAt(off++)) >= '0' && ch <= '9') {
                         min = min*10 +ch-'0';
+                        if (min < 0)
+                            throw ex("parser.quantifier.5", this.offset);
                     }
                 }
                 else {
@@ -672,6 +674,8 @@ class RegexParser {
                                && (ch = this.regex.charAt(off++)) >= '0'
                                && ch <= '9') {
                             max = max*10 +ch-'0';
+                            if (max < 0)
+                                throw ex("parser.quantifier.5", this.offset);
                         }
 
                         if (min > max)
