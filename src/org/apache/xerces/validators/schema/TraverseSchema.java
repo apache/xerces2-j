@@ -574,7 +574,7 @@ public class TraverseSchema implements
                 traverseSimpleTypeDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE )) {
                 traverseComplexTypeDecl(child);
-            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { // && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { 
                 traverseElementDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //traverseAttributeGroupDecl(child);
@@ -1003,7 +1003,7 @@ public class TraverseSchema implements
                         enumData.addElement(enumVal);
                         //Enumerations can have annotations ? ( 0 | 1 )
                         Element enumContent =  XUtil.getFirstChildElement( facetElt );
-                        if( enumContent != null && enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                        if( enumContent != null && enumContent != null && enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
                             traverseAnnotationDecl( content );   
                          } 
                         //TODO: If enumContent is encounter  again should raise validation error
@@ -1247,6 +1247,8 @@ public class TraverseSchema implements
         child = null;
 
         if (baseIsComplexSimple) {
+
+            contentSpecType = XMLElementDecl.TYPE_SIMPLE;
             
             int numEnumerationLiterals = 0;
             int numFacets = 0;
@@ -1271,7 +1273,6 @@ public class TraverseSchema implements
                                    child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION));
                  child = XUtil.getNextSiblingElement(child)) 
             {
-
                 if ( child.getNodeType() == Node.ELEMENT_NODE ) {
                     Element facetElt = (Element) child;
                     numFacets++;
@@ -1280,7 +1281,7 @@ public class TraverseSchema implements
                         enumData.addElement(facetElt.getAttribute(SchemaSymbols.ATT_VALUE));
                         //Enumerations can have annotations ? ( 0 | 1 )
                         Element enumContent =  XUtil.getFirstChildElement( facetElt );
-                        if( enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                        if( enumContent != null && enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
                             traverseAnnotationDecl( child );   
                         }
                         // TO DO: if Jeff check in new changes to TraverseSimpleType, copy them over
@@ -1308,18 +1309,25 @@ public class TraverseSchema implements
             // if content = textonly, base is a datatype
         if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
             //TO DO
-            if (fDatatypeRegistry.getDatatypeValidator(base) == null) // must be datatype
+            if (base.length() == 0) {
+                simpleTypeValidator = baseTypeValidator = fDatatypeRegistry.getDatatypeValidator(SchemaSymbols.ATTVAL_STRING);
+            }
+            else if (fDatatypeRegistry.getDatatypeValidator(base) == null) // must be datatype
                         reportSchemaError(SchemaMessageProvider.NotADatatype,
                                           new Object [] { base }); //REVISIT check forward refs
             //handle datatypes
             contentSpecType = XMLElementDecl.TYPE_SIMPLE;
+            /****
             left = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
                                                  fStringPool.addSymbol(base),
                                                  -1, false);
+            /****/                                                 
 
         } 
         else {   
-            contentSpecType = XMLElementDecl.TYPE_CHILDREN;
+            if (!baseIsComplexSimple) {
+                contentSpecType = XMLElementDecl.TYPE_CHILDREN;
+            }
             csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
             boolean mixedContent = false;
             //REVISIT: is the default content " elementOnly"
@@ -1426,11 +1434,19 @@ public class TraverseSchema implements
                                           new Object [] { childName });
                 }
 
+                // if base is complextype with simpleType content, can't have any particle children at all.
+                if (baseIsComplexSimple && seeParticle) {
+                    reportGenericSchemaError("In complexType "+typeName+", base type is complextype with simpleType content, can't have any particle children at all");
+                    hadContent = false;
+                    left = index = -2;
+                    contentSpecType = XMLElementDecl.TYPE_SIMPLE;
+                    break;
+                }
+
                 // check the minOccurs and maxOccurs of the particle, and fix the  
                 // contentspec accordingly
                 if (seeParticle) {
                     index = expandContentModel(index, child);
-
                 } //end of if (seeParticle)
 
                 if (seeAll && seeOtherParticle) {
@@ -1499,6 +1515,7 @@ public class TraverseSchema implements
         //add a template element to the grammar element decl pool.
         int typeNameIndex = fStringPool.addSymbol(typeName);
         int templateElementNameIndex = fStringPool.addSymbol("$"+typeName);
+
         typeInfo.templateElementIndex = 
             fSchemaGrammar.addElementDecl(new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
                                           (fTargetNSURI==-1) ? -1 : fCurrentScope, scopeDefined,
@@ -1515,9 +1532,17 @@ public class TraverseSchema implements
             String childName = child.getNodeName();
 
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+                if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
+                    reportGenericSchemaError("In complexType "+typeName+", base type has simpleType content and derivation method is 'restriction', can't have any attribute children at all");
+                    break;
+                }
                 traverseAttributeDecl(child, typeInfo);
             } 
             else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
+                if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
+                    reportGenericSchemaError("In complexType "+typeName+", base type has simpleType content and derivation method is 'restriction', can't have any attribute children at all");
+                    break;
+                }
                 traverseAttributeGroupDecl(child,typeInfo);
             }
         }
@@ -2269,8 +2294,11 @@ public class TraverseSchema implements
             String childName = child.getNodeName();
             
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                
-                typeNameIndex = traverseComplexTypeDecl(child);
+                if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
+                    reportGenericSchemaError("anoymous complexType error element '" + name +"' has a name attribute"); 
+                }
+                else 
+                    typeNameIndex = traverseComplexTypeDecl(child);
                 if (typeNameIndex != -1 ) {
                     typeInfo = (ComplexTypeInfo)
                         fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
@@ -2283,7 +2311,11 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //   TO DO:  the Default and fixed attribute handling should be here.                
-                typeNameIndex = traverseSimpleTypeDecl(child);
+                if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
+                    reportGenericSchemaError("anoymous complexType error element '" + name +"' has a name attribute"); 
+                }
+                else 
+                    typeNameIndex = traverseSimpleTypeDecl(child);
                 if (typeNameIndex != -1) {
                     dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
                 }
@@ -2391,6 +2423,7 @@ public class TraverseSchema implements
             contentSpecNodeIndex = typeInfo.contentSpecHandle;
             contentSpecType = typeInfo.contentType;
             scopeDefined = typeInfo.scopeDefined;
+            dv = typeInfo.datatypeValidator;
         }
         
         // if element belongs to a simple type
