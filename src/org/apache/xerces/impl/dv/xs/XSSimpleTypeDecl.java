@@ -2182,7 +2182,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 			}
 			else if (fValidationDV == DV_INTEGER) {
 				strs = new String[size+1];
-				strs[size] = "[+\\-]?[0-9]+";
+				strs[size] = "[\\-+]?[0-9]+";
 			}
 			else {
 				strs = new String[size];
