@@ -1574,6 +1574,9 @@ public class XMLSchemaValidator
     /** Handle element. */
     Augmentations handleStartElement(QName element, XMLAttributes attributes, Augmentations augs) {
 
+        if (DEBUG) {
+            System.out.println("==>handleStartElement: " +element);
+        }
         // should really determine whether a null augmentation is to
         // be returned on a case-by-case basis, rather than assuming
         // this method will always produce augmentations...
@@ -1581,40 +1584,7 @@ public class XMLSchemaValidator
             augs = fAugmentations;
             augs.clear();
         }
-        if (DEBUG) {
-            System.out.println("handleStartElement: " +element);
-        }
 
-        if (fNormalizeData) {
-            // reset values
-            fFirstChunk = true;
-            fUnionType  = false;
-            fWhiteSpace = -1;
-        }
-
-        // if we are not skipping this element, and there is a content model,
-        // we try to find the corresponding decl object for this element.
-        // the reason we move this part of code here is to make sure the
-        // error reported here (if any) is stored within the parent element's
-        // context, instead of that of the current element.
-        Object decl = null;
-        if (fSkipValidationDepth < 0 && fCurrentCM != null) {
-            decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
-            // it could be an element decl or a wildcard decl
-            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
-                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                //REVISIT: is it the only case we will have particle = null?
-                if (ctype.fParticle != null) {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
-                }
-                else {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
-                }
-            }
-        }
-
-        // push error reporter context: record the current position
-        fXSIErrorReporter.pushContext();
 
         // we receive prefix binding events before this one,
         // so at this point, the prefix bindings for this element is done,
@@ -1676,6 +1646,14 @@ public class XMLSchemaValidator
 
             fDoValidation = fValidation;
         }
+        
+        // update normalization flags
+        if (fNormalizeData) {
+            // reset values
+            fFirstChunk = true;
+            fUnionType  = false;
+            fWhiteSpace = -1;
+        }
 
         // if we are in the content of "skip", then just skip this element
         // REVISIT:  is this the correct behaviour for ID constraints?  -NG
@@ -1683,6 +1661,30 @@ public class XMLSchemaValidator
             fElementDepth++;
             return augs;
         }
+
+        // if we are not skipping this element, and there is a content model,
+        // we try to find the corresponding decl object for this element.
+        // the reason we move this part of code here is to make sure the
+        // error reported here (if any) is stored within the parent element's
+        // context, instead of that of the current element.
+        Object decl = null;
+        if (fSkipValidationDepth < 0 && fCurrentCM != null) {
+            decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
+            // it could be an element decl or a wildcard decl
+            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
+                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                //REVISIT: is it the only case we will have particle = null?
+                if (ctype.fParticle != null) {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
+                }
+                else {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
+                }
+            }
+        }
+
+        // push error reporter context: record the current position
+        fXSIErrorReporter.pushContext();
 
         // if it's not the root element, we push the current states in the stacks
         if (fElementDepth != -1) {
@@ -1693,16 +1695,21 @@ public class XMLSchemaValidator
             fNilStack[fElementDepth] = fNil;
             fTypeStack[fElementDepth] = fCurrentType;
             fCMStack[fElementDepth] = fCurrentCM;
+            fCMStateStack[fElementDepth] = fCurrCMState;
             fStringContent[fElementDepth] = fSawCharacters;
             fSawChildrenStack[fElementDepth] = fSawChildren;
         }
-
-        // get the element decl for this element
+        
+        // increase the element depth after we've saved 
+        // all states for the parent element
+        fElementDepth++;
         fCurrentElemDecl = null;
+        XSWildcardDecl wildcard = null;
+        fCurrentType = null;
         fNil = false;
 
-        XSWildcardDecl wildcard = null;
-        // now check what kind of decl this element maps to
+        // check what kind of declaration the "decl" from 
+        // oneTransition() maps to
         if (decl != null) {
             if (decl instanceof XSElementDecl) {
                 fCurrentElemDecl = (XSElementDecl)decl;
@@ -1712,25 +1719,19 @@ public class XMLSchemaValidator
             }
         }
 
-        // save the current content model state in the stack
-        if (fElementDepth != -1)
-            fCMStateStack[fElementDepth] = fCurrCMState;
-
-        // increase the element depth after we've saved all states for the
-        // parent element
-        fElementDepth++;
-
         // if the wildcard is skip, then return
         if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP) {
             fSkipValidationDepth = fElementDepth;
             return augs;
         }
 
-        // try again to get the element decl
+        // try again to get the element decl:
+        // case 1: find declaration for root element
+        // case 2: find declaration for element from another namespace
         if (fCurrentElemDecl == null) {
-
             //try to find schema grammar by different means..
-            SchemaGrammar sGrammar = findSchemaGrammar(XSDDescription.CONTEXT_ELEMENT , element.uri , null , element, attributes ) ;
+            SchemaGrammar sGrammar = findSchemaGrammar(XSDDescription.CONTEXT_ELEMENT , 
+                                                       element.uri , null , element, attributes ) ;
 
             if (sGrammar != null){
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
@@ -1743,8 +1744,6 @@ public class XMLSchemaValidator
         if (fCurrentElemDecl != null && fCurrentElemDecl.isAbstract())
             reportSchemaError("cvc-elt.2", new Object[]{element.rawname});
 
-        // get the type for the current element
-        fCurrentType = null;
         if (fCurrentElemDecl != null) {
             // then get the type
             fCurrentType = fCurrentElemDecl.fType;
@@ -1753,7 +1752,7 @@ public class XMLSchemaValidator
         // get type from xsi:type
         String xsiType = attributes.getValue(URI_XSI, XSI_TYPE);
         if (xsiType != null)
-            getAndCheckXsiType(element, xsiType, attributes);
+            fCurrentType = getAndCheckXsiType(element, xsiType, attributes);
 
         // if the element decl is not found
         if (fCurrentType == null) {
@@ -1851,7 +1850,7 @@ public class XMLSchemaValidator
         String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
         // only deal with xsi:nil when there is an element declaration
         if (xsiNil != null && fCurrentElemDecl != null)
-            getXsiNil(element, xsiNil);
+            fNil = getXsiNil(element, xsiNil);
 
         // now validate everything related with the attributes
         // first, get the attribute group
@@ -1942,7 +1941,7 @@ public class XMLSchemaValidator
 
             // pop error reporter context: get all errors for the current
             // element, and remove them from the error list
-            String[] errors = fXSIErrorReporter.popContext();
+            // String[] errors = fXSIErrorReporter.popContext();
 
             // PSVI: validation attempted:
             // use default values in psvi item for
@@ -2326,7 +2325,7 @@ public class XMLSchemaValidator
         return new XMLInputSource(publicId, systemId, null);
     }
 
-    void getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
+    XSTypeDecl getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
         // This method also deals with clause 1.2.1.2 of the constraint
         // Validation Rule: Schema-Validity Assessment (Element)
 
@@ -2339,7 +2338,7 @@ public class XMLSchemaValidator
         }
         catch (InvalidDatatypeValueException e) {
             reportSchemaError("cvc-elt.4.1", new Object[]{element.rawname, URI_XSI+","+XSI_TYPE, xsiType});
-            return;
+            return null;
         }
 
         // 4.2 The local name and namespace name (as defined in QName Interpretation (3.15.3)), of the actual value of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (3.15.4)
@@ -2359,7 +2358,7 @@ public class XMLSchemaValidator
         // still couldn't find the type, report an error
         if (type == null) {
             reportSchemaError("cvc-elt.4.2", new Object[]{element.rawname, xsiType});
-            return;
+            return null;
         }
 
         // if there is no current type, set this one as current.
@@ -2373,10 +2372,10 @@ public class XMLSchemaValidator
                 reportSchemaError("cvc-elt.4.3", new Object[]{element.rawname, xsiType});
         }
 
-        fCurrentType = type;
+        return type;
     }//getAndCheckXsiType
 
-    void getXsiNil(QName element, String xsiNil) {
+    boolean getXsiNil(QName element, String xsiNil) {
         // Element Locally Valid (Element)
         // 3 The appropriate case among the following must be true:
         // 3.1 If {nillable} is false, then there must be no attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is nil.
@@ -2389,13 +2388,14 @@ public class XMLSchemaValidator
             String value = xsiNil.trim();
             if (value.equals(SchemaSymbols.ATTVAL_TRUE) ||
                 value.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
-                fNil = true;
                 if (fCurrentElemDecl != null &&
                     fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUE) {
                     reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
                 }
+                return true;
             }
         }
+        return false;
     }
 
     void processAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
@@ -2418,14 +2418,17 @@ public class XMLSchemaValidator
             // PSVI attribute: validation context
             attrPSVI.fValidationContext = fValidationRoot;
         }
+ 
 
+
+        
         // add default attributes
         if (attrGrp != null) {
             addDefaultAttributes(element, attributes, attrGrp);
         }
 
         // if we don't do validation, we don't need to validate the attributes
-        if (!fDoValidation){
+        if (!fDoValidation || attributes.getLength() == 0){
             // PSVI: validity is unknown, and validation attempted is none
             // this is a default value thus we should not set anything else here.
             return;
@@ -2440,8 +2443,10 @@ public class XMLSchemaValidator
 
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
+
                 // get attribute PSVI
                 attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
+                
                 // for the 4 xsi attributes, get appropriate decl, and validate
                 if (fTempQName.uri == URI_XSI) {
                     XSAttributeDecl attrDecl = null;
@@ -2483,9 +2488,10 @@ public class XMLSchemaValidator
         // get the corresponding attribute decl
         for (int index = 0; index < attCount; index++) {
             attributes.getName(index, fTempQName);
-            // get attribute PSVI
+            
+            // get attribute PSVI 
             attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
-
+            
             // for the 4 xsi attributes, get appropriate decl, and validate
             if (fTempQName.uri == URI_XSI) {
                 XSAttributeDecl attrDecl = null;
@@ -2717,10 +2723,7 @@ public class XMLSchemaValidator
             if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
 
-                // needed to update type for DOM Parser to implement getElementById
-                String type = (currDecl.fType.isIDType())?"ID":"CDATA";
-
-                int attrIndex = attributes.addAttribute(attName, type, (defaultValue!=null)?defaultValue.normalizedValue:"");
+                int attrIndex = attributes.addAttribute(attName, "CDATA", (defaultValue!=null)?defaultValue.normalizedValue:"");
 
                 // PSVI: attribute is "schema" specified
                 Augmentations augs = attributes.getAugmentations(attrIndex);
