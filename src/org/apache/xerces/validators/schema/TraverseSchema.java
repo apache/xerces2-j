@@ -413,6 +413,8 @@ public class TraverseSchema implements
     private int fScopeCount=0;
     private int fCurrentScope=TOP_LEVEL_SCOPE;
     private int fSimpleTypeAnonCount = 0;
+    private Stack fCurrentTypeNameStack = new Stack();
+    private Hashtable fElementRecurseComplex = new Hashtable();
 
     private boolean fDefaultQualified = false;
     private int fTargetNSURI;
@@ -1092,6 +1094,7 @@ public class TraverseSchema implements
         int complexTypeName      =  fStringPool.addSymbol(
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
+        boolean isNamedType = false;
 
         if ( DEBUGGING )
             System.out.println("traversing complex Type : " + typeName +","+base+","+content+".");
@@ -1099,6 +1102,10 @@ public class TraverseSchema implements
         if (typeName.equals("")) { // gensym a unique name
             //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
             typeName = "#"+fAnonTypeCount++;
+        }
+        else {
+            fCurrentTypeNameStack.push(typeName);
+            isNamedType = true;
         }
 
         int scopeDefined = fScopeCount++;
@@ -1576,12 +1583,48 @@ public class TraverseSchema implements
 
         // before exit the complex type definition, restore the scope, mainly for nested Anonymous Types
         fCurrentScope = previousScope;
+        if (isNamedType) {
+            fCurrentTypeNameStack.pop();
+            checkRecursingComplexType();
+            fCurrentTypeNameStack.clear();
+        }
 
         typeNameIndex = fStringPool.addSymbol(typeName);
         return typeNameIndex;
 
 
     } // end of method: traverseComplexTypeDecl
+
+    private void checkRecursingComplexType() throws Exception {
+        if ( fCurrentTypeNameStack.empty() ) {
+            if (! fElementRecurseComplex.isEmpty() ) {
+                Enumeration e = fElementRecurseComplex.keys();
+                while( e.hasMoreElements() ) {
+                    String nameThenScope = (String) e.nextElement();
+                    String typeName = (String) fElementRecurseComplex.get(nameThenScope);
+                    int comma = nameThenScope.indexOf(",");
+                    String eltName = nameThenScope.substring(0, comma);
+                    int enclosingScope = Integer.parseInt(nameThenScope.substring(comma+1));
+                    ComplexTypeInfo typeInfo = 
+                        (ComplexTypeInfo) fComplexTypeRegistry.get(fTargetNSURIString+","+typeName);
+                    if (typeInfo==null) {
+                        throw new Exception ( "Internal Error in void checkRecursingComplexType(). " );
+                    }
+                    else {
+                        int nameIndex = fStringPool.addSymbol(eltName);
+                        int elementIndex = fSchemaGrammar.addElementDecl(new QName(-1, nameIndex, nameIndex, -1), 
+                                                                         enclosingScope, typeInfo.scopeDefined, 
+                                                                         typeInfo.contentType, 
+                                                                         typeInfo.contentSpecHandle, 
+                                                                         typeInfo.attlistHead, 
+                                                                         typeInfo.datatypeValidator);
+                        fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
+                    }
+
+                }
+            }
+        }
+    }
 
     private void checkParticleDerivationOK(Element derivedTypeNode, Element baseTypeNode) {
         //TO DO: !!!
@@ -2374,9 +2417,17 @@ public class TraverseSchema implements
                     if (dv == null) {
                         Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                         if (topleveltype != null) {
-                            typeNameIndex = traverseComplexTypeDecl( topleveltype );
-                            typeInfo = (ComplexTypeInfo)
-                                fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                            if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
+                                //then we found a recursive element using complexType.
+                                // REVISIT: this will be broken when recursing happens between 2 schemas
+                                fElementRecurseComplex.put(name+","+fCurrentScope, localpart);
+                                return new QName(-1, fStringPool.addSymbol(name), fStringPool.addSymbol(name), -1);
+                            }
+                            else {
+                                typeNameIndex = traverseComplexTypeDecl( topleveltype );
+                                typeInfo = (ComplexTypeInfo)
+                                    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                            }
                         }
                         else {
                             topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
