@@ -908,8 +908,6 @@ public abstract class AbstractDOMParser
             EntityImpl entity = (EntityImpl)entities.getNamedItem(name);
             if (entity == null) {
                 entity = (EntityImpl)fDocumentImpl.createEntity(name);
-                Text textNode = fDocumentImpl.createTextNode(text.toString());
-                entity.appendChild(textNode);
                 entities.setNamedItem(entity);
             }
         }
@@ -932,8 +930,6 @@ public abstract class AbstractDOMParser
             if (!found) {
                 int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
                                     name, null, null, null);
-                int textIndex = fDeferredDocumentImpl.createDeferredTextNode(text.toString(), false);
-                fDeferredDocumentImpl.appendChild(entityIndex, textIndex);
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
             }
         }

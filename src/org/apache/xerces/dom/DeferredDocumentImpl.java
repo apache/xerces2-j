@@ -501,13 +501,15 @@ public class DeferredDocumentImpl
         int cloneIndex = createNode((short)nodeType);
         int cchunk = cloneIndex >> CHUNK_SHIFT;
         int cindex = cloneIndex & CHUNK_MASK;
-        fNodeName[cchunk][cindex] = getChunkValue(fNodeName, nchunk, nindex);
-        fNodeValue[cchunk][cindex] = getChunkValue(fNodeValue, nchunk, nindex);
-        fNodeURI[cchunk][cindex] = getChunkValue(fNodeURI, nchunk, nindex);
+        setChunkValue(fNodeName, fNodeName[nchunk][nindex], cchunk, cindex);
+        setChunkValue(fNodeValue, fNodeValue[nchunk][nindex], cchunk, cindex);
+        setChunkValue(fNodeURI, fNodeURI[nchunk][nindex], cchunk, cindex);
         int extraIndex = fNodeExtra[nchunk][nindex];
         if (extraIndex != -1) {
-            int cloneExtraIndex = cloneNode(extraIndex, false);
-            fNodeExtra[cchunk][cindex] = cloneExtraIndex;
+            if (nodeType != Node.ATTRIBUTE_NODE && nodeType != Node.TEXT_NODE) {
+                extraIndex = cloneNode(extraIndex, false);
+            }
+            setChunkIndex(fNodeExtra, extraIndex, cchunk, cindex);
         }
 
         // clone and attach children
@@ -1796,7 +1798,7 @@ public class DeferredDocumentImpl
         data[chunk][index] = value;
         return ovalue;
     }
-    private final String setChunkValue(Object data[][], String value,
+    private final String setChunkValue(Object data[][], Object value,
                                        int chunk, int index) {
         if (value == null) {
             return clearChunkValue(data, chunk, index);

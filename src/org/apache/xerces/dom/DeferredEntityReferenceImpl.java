@@ -185,48 +185,11 @@ public class DeferredEntityReferenceImpl
         needsSyncChildren(false);
 
         // get children
-        DocumentType doctype = ownerDocument.getDoctype();
-        boolean found = false;
-        if (doctype != null) {
-
-            // we don't want to generate any event for this so turn them off
-            boolean orig = ownerDocument.getMutationEvents();
-            ownerDocument.setMutationEvents(false);
-
-            NamedNodeMap entities = doctype.getEntities();
-            if (entities != null) {
-                Entity entity = (Entity)entities.getNamedItem(getNodeName());
-                if (entity != null) {
-
-                    // we found the entity
-                    found = true;
-
-                    // clone entity at this reference
-                    boolean ro = isReadOnly();
-                    isReadOnly(false);
-                    Node child = entity.getFirstChild();
-                    while (child != null) {
-                        appendChild(child.cloneNode(true));
-                        child = child.getNextSibling();
-                    }
-                    // set it back to readonly if what it was
-                    if (ro) {
-                        setReadOnly(true, true);
-                    }
-                }
-            }
-            // set mutation events flag back to its original value
-            ownerDocument.setMutationEvents(orig);
-        }
-
-        // if not found, create entity at this reference
-        if (!found) {
-            isReadOnly(false);
-            DeferredDocumentImpl ownerDocument =
-                (DeferredDocumentImpl) ownerDocument();
-            ownerDocument.synchronizeChildren(this, fNodeIndex);
-            setReadOnly(true, true);
-        }
+        isReadOnly(false);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) ownerDocument();
+        ownerDocument.synchronizeChildren(this, fNodeIndex);
+        setReadOnly(true, true);
 
     } // synchronizeChildren()
 
