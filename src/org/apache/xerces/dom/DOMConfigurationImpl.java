@@ -148,8 +148,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected final static short VALIDATE            = 0x1<<6;
     protected final static short PSVI                = 0x1<<7;
     protected final static short WELLFORMED          = 0x1<<8;
+    protected final static short NSDECL              = 0x1<<9;
 
-    protected final static short INFOSET_TRUE_PARAMS = NAMESPACES | COMMENTS | WELLFORMED;
+    protected final static short INFOSET_TRUE_PARAMS = NAMESPACES | COMMENTS | WELLFORMED | NSDECL;
     protected final static short INFOSET_FALSE_PARAMS = ENTITIES | DTNORMALIZATION | CDATA;
     protected final static short INFOSET_MASK = INFOSET_TRUE_PARAMS | INFOSET_FALSE_PARAMS;
 
@@ -254,7 +255,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         features |= COMMENTS;
         features |= CDATA;
         features |= SPLITCDATA;
-        features |=  WELLFORMED;
+        features |= WELLFORMED;
+        features |= NSDECL;
 
         if (symbolTable == null) {
             symbolTable = new SymbolTable();
@@ -544,6 +546,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             else if (name.equalsIgnoreCase(Constants.DOM_WELLFORMED)) {
                 features = (short) (state ? features | WELLFORMED : features & ~WELLFORMED );
             }
+            else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+                features = (short) (state ? features | NSDECL : features & ~NSDECL);
+            }
             else if (name.equalsIgnoreCase(Constants.DOM_INFOSET)) {
                 // Setting to false has no effect.
                 if (state) {
@@ -566,8 +571,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
             }
-            else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
-                    || name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
+			else if ( name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
                 if (!state) { // false is not supported
                     String msg =
                         DOMMessageFormatter.formatMessage(
@@ -576,7 +580,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             new Object[] { name });
                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-
             }
             else if (name.equalsIgnoreCase(SEND_PSVI) ){
                 // REVISIT: turning augmentation of PSVI is not support,
@@ -788,6 +791,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (name.equalsIgnoreCase(Constants.DOM_WELLFORMED)) {
 			return (features & WELLFORMED) != 0 ? Boolean.TRUE : Boolean.FALSE;
 		}
+		else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+		    return (features & NSDECL) != 0 ? Boolean.TRUE : Boolean.FALSE;
+		} 
 		else if (name.equalsIgnoreCase(Constants.DOM_INFOSET)) {
 			return (features & INFOSET_MASK) == INFOSET_TRUE_PARAMS ? Boolean.TRUE : Boolean.FALSE;
 		}
@@ -803,10 +809,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         }
         else if (name.equalsIgnoreCase(Constants.DOM_PSVI)) {
             return (features & PSVI) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        }
-		else if (
-			name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
-				|| name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
+        }		
+        else if (name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
 			return Boolean.TRUE;
 		}
 		else if (name.equalsIgnoreCase(Constants.DOM_ERROR_HANDLER)) {
@@ -879,8 +883,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 || name.equalsIgnoreCase(Constants.DOM_VALIDATE)
                 || name.equalsIgnoreCase(Constants.DOM_WELLFORMED)
                 || name.equalsIgnoreCase(Constants.DOM_INFOSET)
+                || name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
                 ) {
-                return true ;
+                return true;
             }//features whose parameter value can not be set to 'true'
             else if (
                 name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)
@@ -890,8 +895,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     ) {
                     return (value.equals(Boolean.TRUE)) ? false : true;
             }//features whose parameter value can not be set to 'false'
-            else if( name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
-                    || name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+            else if( name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
                     || name.equalsIgnoreCase(SEND_PSVI)
                     ) {
                     return (value.equals(Boolean.TRUE)) ? true : false;

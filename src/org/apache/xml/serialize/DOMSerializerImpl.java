@@ -156,11 +156,12 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             boolean state = ((Boolean) value).booleanValue();
             if (name.equalsIgnoreCase(Constants.DOM_INFOSET)){
                 if (state){
-                    features &=~ENTITIES;
-                    features &=~CDATA;
-                    features |=NAMESPACES;
-                    features |=WELLFORMED;
-                    features |=COMMENTS;                 
+                    features &= ~ENTITIES;
+                    features &= ~CDATA;
+                    features |= NAMESPACES;
+                    features |= NSDECL;
+                    features |= WELLFORMED;
+                    features |= COMMENTS;                 
                 }
                 // false does not have any effect
             } else if (name.equalsIgnoreCase(Constants.DOM_XMLDECL)) {
@@ -221,9 +222,15 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-            } else if (
-                name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
-                    || name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+            }else if (
+			name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+				//namespace-declaration has effect only if namespaces is true
+				features =
+					(short) (state
+						? features | NSDECL
+						: features & ~NSDECL);
+				serializer.fNamespacePrefixes = state;							
+            } else if (name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
                     || name.equalsIgnoreCase(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                 // false is not supported
                 if (!state) {
@@ -289,7 +296,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             || name.equalsIgnoreCase(Constants.DOM_INFOSET)
             || name.equalsIgnoreCase(Constants.DOM_ENTITIES)
             || name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)
-            || name.equalsIgnoreCase(Constants.DOM_COMMENTS)){
+            || name.equalsIgnoreCase(Constants.DOM_COMMENTS)
+            || name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)){
 	            // both values supported
 				return true;
 			}
@@ -303,8 +311,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 				// true is not supported
 				return !value;
 			}
-			else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
-			        || name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+			else if (name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
 			        || name.equalsIgnoreCase(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
 				// false is not supported
 				return value;
@@ -383,18 +390,20 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             return (features & SPLITCDATA) != 0 ? Boolean.TRUE : Boolean.FALSE;
         } else if (name.equalsIgnoreCase(Constants.DOM_WELLFORMED)) {
             return (features & WELLFORMED) != 0 ? Boolean.TRUE : Boolean.FALSE;
+        } else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+            return (features & NSDECL) != 0 ? Boolean.TRUE : Boolean.FALSE;            
         } else if (name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE) ||
-                   name.equalsIgnoreCase(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
-                    || name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+                   name.equalsIgnoreCase(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
             return Boolean.TRUE;
         }else if (name.equalsIgnoreCase(Constants.DOM_DISCARD_DEFAULT_CONTENT)){
             return ((features & DISCARDDEFAULT)!=0)?Boolean.TRUE:Boolean.FALSE;
         }else if (name.equalsIgnoreCase(Constants.DOM_INFOSET)){
             if ((features & ENTITIES) == 0 &&
-                 (features & CDATA) ==0 &&
-                 (features & NAMESPACES) !=0 &&
-                 (features & WELLFORMED) !=0 &&
-                 (features & COMMENTS) !=0){
+                 (features & CDATA) == 0 &&
+                 (features & NAMESPACES) != 0 &&
+                 (features & NSDECL) != 0 &&
+                 (features & WELLFORMED) != 0 &&
+                 (features & COMMENTS) != 0) {
                      return Boolean.TRUE;
                  }                 
                  return Boolean.FALSE;
@@ -954,7 +963,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         ser.reset();
         ser.features = features;
         ser.fDOMErrorHandler = fErrorHandler;
-        ser.fNamespaces = (features & NAMESPACES) !=0;
+        ser.fNamespaces = (features & NAMESPACES) != 0;
+        ser.fNamespacePrefixes = (features & NSDECL) != 0;
         ser._format.setOmitComments((features & COMMENTS)==0);
         ser._format.setOmitXMLDeclaration((features & XMLDECL) == 0);   
  

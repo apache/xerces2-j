@@ -124,6 +124,11 @@ extends BaseMarkupSerializer {
      */
     protected boolean fNamespaces = false;
 
+    /**
+     * Controls whether namespace prefixes will be printed out during serialization
+     */
+    protected boolean fNamespacePrefixes = true;
+	
 
     private boolean fPreserveSpace;
 
@@ -841,7 +846,9 @@ extends BaseMarkupSerializer {
                     // the prefix is either undeclared 
                     // or
                     // conflict: the prefix is bound to another URI
-                    printNamespaceAttr(prefix, uri);
+                    if (fNamespacePrefixes) {
+                        printNamespaceAttr(prefix, uri);
+                    }
                     fLocalNSBinder.declarePrefix(prefix, uri);
                     fNSBinder.declarePrefix(prefix, uri);
                 }
@@ -868,7 +875,9 @@ extends BaseMarkupSerializer {
                     if (uri !=null && uri.length() > 0) {
                         // there is a default namespace decl that is bound to
                         // non-zero length uri, output xmlns=""
-                        printNamespaceAttr(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+                        if (fNamespacePrefixes) {
+                            printNamespaceAttr(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+                        }
                         fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
                         fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
                     }
@@ -918,7 +927,7 @@ extends BaseMarkupSerializer {
                         // check if we need to output this declaration
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 
-                                  prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
+                                  prefix.length() == 0) ? XMLSymbols.EMPTY_STRING : fSymbolTable.addSymbol(prefix);
                         localpart = fSymbolTable.addSymbol( attr.getLocalName());
                         if (prefix == XMLSymbols.PREFIX_XMLNS) { //xmlns:prefix
                             localUri = fLocalNSBinder.getURI(localpart);  // local prefix mapping
@@ -926,7 +935,13 @@ extends BaseMarkupSerializer {
                             if (value.length() != 0 ) {
                                 if (localUri == null) {
                                     // declaration was not printed while fixing element namespace binding
-                                    printNamespaceAttr(localpart, value);
+                                    
+                                    // If the DOM Level 3 namespace-prefixes feature is set to false
+                                    // do not print xmlns attributes
+                                    if (fNamespacePrefixes) {
+                                        printNamespaceAttr(localpart, value);
+                                    }
+                                    	
                                     // case 4: <elem xmlns:xx="foo" xx:attr=""/>
                                     // where attribute is bound to "bar". 
                                     // If the xmlns:xx is output here first, later we should not
@@ -948,7 +963,9 @@ extends BaseMarkupSerializer {
                             value = fSymbolTable.addSymbol(value);
                             if (localUri == null ){
                                 // declaration was not printed while fixing element namespace binding
-                                printNamespaceAttr(XMLSymbols.EMPTY_STRING, value);
+                                if (fNamespacePrefixes) {
+                                    printNamespaceAttr(XMLSymbols.EMPTY_STRING, value);
+                                }
                                 // case 4 does not apply here since attributes can't use
                                 // default namespace
                             }
@@ -997,7 +1014,9 @@ extends BaseMarkupSerializer {
                                 name=prefix+":"+localpart;
                             }
                             // add declaration for the new prefix
-                            printNamespaceAttr(prefix, uri);
+                            if (fNamespacePrefixes) {
+                                printNamespaceAttr(prefix, uri);
+                            }
                             value = fSymbolTable.addSymbol(value);
                             fLocalNSBinder.declarePrefix(prefix, value);
                             fNSBinder.declarePrefix(prefix, uri);

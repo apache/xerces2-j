@@ -33,7 +33,11 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -103,7 +107,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     // Data
     //
 
-
+    /** Include namespace declaration attributes in the document. **/
+    protected boolean fNamespaceDeclarations = true;
+    
     // REVISIT: this value should be null by default and should be set during creation of
     //          LSParser
     protected String fSchemaType = null;
@@ -130,9 +136,11 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         configuration));
         if (schemaType != null) {
             if (schemaType.equals (Constants.NS_DTD)) {
-                fConfiguration.setFeature (
-                Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE,
-                false);
+                //Schema validation is false by default and hence there is no
+                //need to set it to false here.  Also, schema validation is  
+                //not a recognized feature for DTDConfiguration's and so 
+                //setting this feature here would result in a Configuration 
+                //Exception.            
                 fConfiguration.setProperty (
                 Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE,
                 Constants.NS_DTD);
@@ -187,10 +195,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, true);
         fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
         fConfiguration.setFeature(NAMESPACES, true);
-
+		
         fConfiguration.setFeature(DYNAMIC_VALIDATION, false);
         fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, false);
-        fConfiguration.setFeature(NORMALIZE_DATA, false);
         fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, false);
 
         // set other default values
@@ -205,7 +212,13 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         fConfiguration.setFeature (Constants.DOM_CERTIFIED, true);
 
         // Xerces datatype-normalization feature is on by default
-        fConfiguration.setFeature ( NORMALIZE_DATA, false );
+        // This is a recognized feature only for XML Schemas. If the
+        // configuration doesn't support this feature, ignore it.
+        try {
+            fConfiguration.setFeature ( NORMALIZE_DATA, false );
+        }
+        catch (XMLConfigurationException exc) {}
+    
     } // <init>(XMLParserConfiguration)
 
     /**
@@ -247,6 +260,11 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      */
     public void reset () {
         super.reset ();
+        
+        // get state of namespace-declarations parameter.
+        fNamespaceDeclarations = 
+            fConfiguration.getFeature(Constants.DOM_NAMESPACE_DECLARATIONS);
+                
         // DOM Filter
         if (fSkippedElemStack!=null) {
             fSkippedElemStack.removeAllElements ();
@@ -336,8 +354,10 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 else if (name.equalsIgnoreCase (Constants.DOM_INFOSET)) {
                     // Setting false has no effect.
                     if (state) {
-                        // true: namespaces, comments, element-content-whitespace
+                        // true: namespaces, namespace-declarations, 
+                        // comments, element-content-whitespace
                         fConfiguration.setFeature(NAMESPACES, true);
+                        fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
                         fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, true);
                         fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
 
@@ -352,8 +372,10 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 else if (name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)) {
                     fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, state);
                 }
-                else if (name.equalsIgnoreCase (Constants.DOM_NAMESPACE_DECLARATIONS)
-                || name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
+                else if (name.equalsIgnoreCase (Constants.DOM_NAMESPACE_DECLARATIONS)) {
+                    fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, state);
+                }
+                else if (name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
                 || name.equalsIgnoreCase (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                     if (!state) { // false is not supported
                         String msg =
@@ -616,6 +638,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             // to the configuration and is changing the values
             // of these features directly on it.
             boolean infoset = fConfiguration.getFeature(NAMESPACES) &&
+                fConfiguration.getFeature(Constants.DOM_NAMESPACE_DECLARATIONS) &&
                 fConfiguration.getFeature(INCLUDE_COMMENTS_FEATURE) &&
                 fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE) &&
                 !fConfiguration.getFeature(DYNAMIC_VALIDATION) &&
@@ -695,8 +718,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 // true is not supported
                 return (state) ? false : true;
             }
-            else if (name.equalsIgnoreCase (Constants.DOM_NAMESPACE_DECLARATIONS)
-            || name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
+            else if (name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
             || name.equalsIgnoreCase (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                 // false is not supported
                 return (state) ? true : false;
@@ -709,6 +731,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             || name.equalsIgnoreCase (Constants.DOM_ENTITIES)
             || name.equalsIgnoreCase (Constants.DOM_INFOSET)
             || name.equalsIgnoreCase (Constants.DOM_NAMESPACES)
+            || name.equalsIgnoreCase (Constants.DOM_NAMESPACE_DECLARATIONS)
             || name.equalsIgnoreCase (Constants.DOM_VALIDATE)
             || name.equalsIgnoreCase (Constants.DOM_VALIDATE_IF_SCHEMA)
             || name.equalsIgnoreCase (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
@@ -991,4 +1014,30 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         return; // If not busy then this is noop
     }
 
+    /**
+     * The start of an element. If the document specifies the start element
+     * by using an empty tag, then the startElement method will immediately
+     * be followed by the endElement method, with no intervening methods.
+     * Overriding the parent to handle DOM_NAMESPACE_DECLARATIONS=false.
+     *
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startElement (QName element, XMLAttributes attributes, Augmentations augs) {
+        // namespace declarations parameter has no effect if namespaces is false.
+        if (!fNamespaceDeclarations && fNamespaceAware) {
+            int len = attributes.getLength();
+            for (int i = len - 1; i >= 0; --i) {
+                if (XMLSymbols.PREFIX_XMLNS == attributes.getPrefix(i) ||
+                    XMLSymbols.PREFIX_XMLNS == attributes.getQName(i)) {
+                    attributes.removeAttributeAt(i);
+                }
+            }
+        }
+        super.startElement(element, attributes, augs);
+    }
+	
 } // class DOMParserImpl
