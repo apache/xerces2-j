@@ -360,7 +360,11 @@ public class XMLAttributesImpl
         if (index < 0 || index >= fLength) {
             return null;
         }
-        return fAttributes[index].type;
+        String type = fAttributes[index].type;
+        if(type.indexOf('(') == 0 && type.lastIndexOf(')') == type.length()-1) {
+            return "NMTOKEN";
+        }
+        return type;
     } // getType(int):String
 
     /**
