@@ -325,6 +325,7 @@ public final class XMLValidator
    private char[] fCharRefData = null;
    private boolean fSendCharDataAsCharArray = false;
    private boolean fBufferDatatype = false;
+   // holds normalized or unnormalized string element value, 
    private StringBuffer fDatatypeBuffer = new StringBuffer();
 
    private QName fTempQName = new QName();
@@ -343,8 +344,8 @@ public final class XMLValidator
     private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
     private boolean fTrailing = false;  // Previous chunk had a trailing space
     private short fWhiteSpace = DatatypeValidator.COLLAPSE;  //whiteSpace: preserve/replace/collapse
-    private StringBuffer fStringBuffer = new StringBuffer(CHUNK_SIZE);  //holds normalized str value
-    private StringBuffer fTempBuffer = new StringBuffer(CHUNK_SIZE);  //holds unnormalized str value
+    private StringBuffer fNormalizedStr = new StringBuffer(CHUNK_SIZE);  //holds normalized str value
+    private StringBuffer fUnnormalizedStr = new StringBuffer(CHUNK_SIZE);  //holds unnormalized str value
 
 
 
@@ -750,8 +751,8 @@ public final class XMLValidator
      */
 
     private int normalizeWhitespace( StringBuffer chars, boolean collapse) {
-        int length = fTempBuffer.length();
-        fStringBuffer.setLength(0);
+        int length = fUnnormalizedStr.length();
+        fNormalizedStr.setLength(0);
         boolean skipSpace = collapse;
         boolean sawNonWS = false;
         int leading = 0;
@@ -762,7 +763,7 @@ public final class XMLValidator
             if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
-                    fStringBuffer.append(' ');
+                    fNormalizedStr.append(' ');
                     skipSpace = collapse;
                 }
                 if (!sawNonWS) {
@@ -771,16 +772,16 @@ public final class XMLValidator
                 }
             }
             else {
-                fStringBuffer.append((char)c);
+                fNormalizedStr.append((char)c);
                 skipSpace = false;
                 sawNonWS = true;
             }
         }
         if (skipSpace) {
-            c = fStringBuffer.length();
+            c = fNormalizedStr.length();
             if ( c != 0) {
                 // if we finished on a space trim it but also record it
-                fStringBuffer.setLength (--c);
+                fNormalizedStr.setLength (--c);
                 trailing = 2;
             }
             else if (leading != 0 && !sawNonWS) {
@@ -789,7 +790,7 @@ public final class XMLValidator
                 trailing = 2;
             }
         }
-        //value.setValues(fStringBuffer);
+        //value.setValues(fNormalizedStr);
         return collapse ? leading + trailing : 0;
     }
 
@@ -824,24 +825,24 @@ public final class XMLValidator
                 fDatatypeBuffer.append(chars, offset, length);
             }
             else {
-                fTempBuffer.setLength(0);
-                fTempBuffer.append(chars, offset, length);
-                int spaces = normalizeWhitespace(fTempBuffer, (fWhiteSpace==DatatypeValidator.COLLAPSE));
-                int nLength = fStringBuffer.length();
+                fUnnormalizedStr.setLength(0);
+                fUnnormalizedStr.append(chars, offset, length);
+                int spaces = normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace==DatatypeValidator.COLLAPSE));
+                int nLength = fNormalizedStr.length();
                 if (nLength > 0) {
                     if (!fFirstChunk && (fWhiteSpace==DatatypeValidator.COLLAPSE) && fTrailing) {
-                         fStringBuffer.insert(0, ' ');
+                         fNormalizedStr.insert(0, ' ');
                          nLength++;
                     }
                     if ((length-offset)!=nLength) {
                         char[] newChars = new char[nLength];
-                        fStringBuffer.getChars(0, nLength , newChars, 0);
+                        fNormalizedStr.getChars(0, nLength , newChars, 0);
                         chars = newChars;
                         offset = 0;
                         length = nLength;
                     }
                     else {
-                       fStringBuffer.getChars(0, nLength , chars, 0);
+                       fNormalizedStr.getChars(0, nLength , chars, 0);
                     }
                     fDatatypeBuffer.append(chars, offset, length);
 
@@ -904,15 +905,15 @@ public final class XMLValidator
             else {
                 String str =  fStringPool.toString(data);
                 int length = str.length();
-                fTempBuffer.setLength(0);
-                fTempBuffer.append(str);
-                int spaces = normalizeWhitespace(fTempBuffer, (fWhiteSpace == DatatypeValidator.COLLAPSE));
+                fUnnormalizedStr.setLength(0);
+                fUnnormalizedStr.append(str);
+                int spaces = normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace == DatatypeValidator.COLLAPSE));
                 if (fWhiteSpace != DatatypeValidator.PRESERVE) {
                     //normalization was done.
                     fStringPool.releaseString(data);
-                    data = fStringPool.addString(fStringBuffer.toString());
+                    data = fStringPool.addString(fNormalizedStr.toString());
                 }
-                fDatatypeBuffer.append(fStringBuffer.toString());
+                fDatatypeBuffer.append(fNormalizedStr.toString());
             }
         }
       }
@@ -4113,7 +4114,7 @@ public final class XMLValidator
 
        //REVISIT: some code might be shared: see normalizeWhitespace()
        //
-       fStringBuffer.setLength(0);
+       fNormalizedStr.setLength(0);
        int length = value.length();
        boolean skipSpace = true;
        char c= 0;
@@ -4123,18 +4124,18 @@ public final class XMLValidator
             if (c == 0x20) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
-                    fStringBuffer.append(' ');
+                    fNormalizedStr.append(' ');
                     skipSpace = true;
                 }
             }
             else {
-                fStringBuffer.append((char)c);
+                fNormalizedStr.append((char)c);
                 skipSpace = false;
             }
        }
-       if (fStringBuffer.length() == unTrimValue.length())
+       if (fNormalizedStr.length() == unTrimValue.length())
            return origIndex;
-       return fStringPool.addSymbol(fStringBuffer.toString());
+       return fStringPool.addSymbol(fNormalizedStr.toString());
    }
 
    /** Character data in content. */
@@ -4327,7 +4328,14 @@ public final class XMLValidator
                                      "but no datatypevalidator was found, element "+fTempElementDecl.name
                                      +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                } else {
-                   String value =fDatatypeBuffer.toString();
+                   String value = fDatatypeBuffer.toString();
+                   if (!fNormalizeContents && fWhiteSpace != DatatypeValidator.PRESERVE) {
+                       // normalize data before validating it
+                       fUnnormalizedStr.setLength(0);
+                       fUnnormalizedStr.append(value);
+                       normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace==DatatypeValidator.COLLAPSE));
+                       value = fNormalizedStr.toString();
+                   }
                    String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
                    int hasFixed =  (((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED);
                    if (fNil) {
