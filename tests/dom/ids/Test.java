@@ -59,6 +59,8 @@ package dom.ids;
 
 import java.io.PrintWriter;
 
+import org.apache.xerces.dom.AttrImpl;
+import org.apache.xerces.dom.ElementImpl;
 import org.w3c.dom.*;
 
 import org.xml.sax.SAXException;
@@ -164,6 +166,31 @@ public class Test {
 
         elem = doc.getElementById("id02");
         Assertion.assert(elem ==null, "elem by id '02'");
+        
+        ElementImpl person = (ElementImpl)doc.getElementsByTagNameNS(null, "person").item(0);
+        person.removeAttribute("id");
+        person.removeAttribute("id2");
+        person.setAttributeNS(null, "idAttr", "eb0009");
+        person.setIdAttribute("idAttr", true);
+        
+        elem = doc.getElementById("eb0009");
+        Assertion.assert(elem !=null, "elem by id 'eb0009'");
+       
+        doc.getDocumentElement().removeChild(person);
+        elem = doc.getElementById("eb0009");
+        Assertion.assert(elem ==null, "element with id 'eb0009 removed'");
+
+        doc.getDocumentElement().appendChild(person);
+        elem = doc.getElementById("eb0009");
+        Assertion.assert(elem !=null, "elem by id 'eb0009'");
+        AttrImpl attr = (AttrImpl)person.getAttributeNode("idAttr");
+        Assertion.assert(attr.getIsId(), "attribute is id");
+
+        person.setIdAttribute("idAttr", false);
+        elem = doc.getElementById("eb0009");
+        Assertion.assert(elem ==null, "element with id 'eb0009 removed'");
+        
+        Assertion.assert(!attr.getIsId(), "attribute is not id");        
 
         System.out.println("done.");
 
