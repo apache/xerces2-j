@@ -1621,6 +1621,7 @@ public class XMLDocumentFragmentScannerImpl
                         case SCANNER_STATE_DOCTYPE: {
                             reportFatalError("DoctypeIllegalInContent",
                                              null);
+                            setScannerState(SCANNER_STATE_CONTENT);
                         }
                     }
                 } while (complete || again);
