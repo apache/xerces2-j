@@ -62,18 +62,25 @@ import org.apache.xerces.xni.QName;
 /**
  * This class constructs content models for a given grammar.
  * 
- * @author Elena Litani
- * @author IBM
+ * @author Elena Litani, IBM
  * @version $Id$
  */
 public class CMBuilder {
 
 
-    private int fLeafCount = 0;
     private final QName fQName1 = new QName();
     private final QName fQName2 = new QName();
-    private XSParticleDecl fParticleLeft = new XSParticleDecl();
+    private XSParticleDecl fParticle = new XSParticleDecl();
+    private XSParticleDecl fTempParticle = new XSParticleDecl();
     private XSParticleDecl fParticleRight = new XSParticleDecl();
+    private XSElementDecl fTempElement = new XSElementDecl();
+
+    //
+    // REVISIT: need to add grammar resolver if current impl of grammar remains
+    //          the same.
+    //
+    
+    
 
     /**
      * When the element has a 'CONTENTTYPE_ELEMENT' model, this method is called to
@@ -82,35 +89,35 @@ public class CMBuilder {
      * it creates the standard DFA style model.
      * 
      * @param grammar
-     * @param particle
-     * @param particleIndex
+     * @param fParticleIndex
      * @return 
      */
     public XSCMValidator createChildModel(SchemaGrammar grammar, 
-                                          XSParticleDecl particle, 
-                                          int particleIndex) {
+                                          int fParticleIndex) {
 
         //
         //  Get the content spec node for the element we are working on.
         //  This will tell us what kind of node it is, which tells us what
         //  kind of model we will try to create.
         //
-
-        //XMLContentSpec particle = new XMLContentSpec();
-        short particleType = particle.type;
-        if ((particleType & 0x0f ) == XSParticleDecl.PARTICLE_ANY ||
-            (particleType & 0x0f ) == XSParticleDecl.PARTICLE_ANY_OTHER ||
-            (particleType & 0x0f ) == XSParticleDecl.PARTICLE_ANY_LIST) {
+        fParticle = grammar.getParticleDecl(fParticleIndex, fParticle);
+        fTempParticle.clear();
+        fParticleRight.clear();
+        //XMLContentSpec fParticle = new XMLContentSpec();
+        short fParticleType = fParticle.type;
+        if ((fParticleType & 0x0f ) == XSParticleDecl.PARTICLE_ANY ||
+            (fParticleType & 0x0f ) == XSParticleDecl.PARTICLE_ANY_OTHER ||
+            (fParticleType & 0x0f ) == XSParticleDecl.PARTICLE_ANY_LIST) {
             // let fall through to build a DFAContentModel
         }
 
-        else if (particleType == XSParticleDecl.PARTICLE_ELEMENT) {
+        else if (fParticleType == XSParticleDecl.PARTICLE_ELEMENT) {
             //
             //  Check that the left value is not SchemaGrammar.I_EMPTY_DECL, since any content model
             //  with PCDATA should be MIXED, so we should not have gotten here.
             //
-            if (particle.value == SchemaGrammar.I_EMPTY_DECL && 
-                particle.otherValue == SchemaGrammar.I_EMPTY_DECL)
+            if (fParticle.value == SchemaGrammar.I_EMPTY_DECL && 
+                fParticle.otherValue == SchemaGrammar.I_EMPTY_DECL)
                 throw new RuntimeException("ImplementationMessages.VAL_NPCD");
 
             //
@@ -118,46 +125,62 @@ public class CMBuilder {
             //  just one instance of one element. That one is definitely a
             //  simple content model.
             //
-            String elementName = grammar.getElementName(particle.value);
-            fQName1.setValues(null, elementName, null, particle.uri );
-            return new XSSimpleCM(particleType, fQName1, particle.value, 
+            // fParticle otherUri holds local name of the element.
+            fQName1.setValues(null, fParticle.otherUri, null, fParticle.uri );
+            return new XSSimpleCM(fParticleType, fQName1, fParticle.value, 
                                   null, SchemaGrammar.I_EMPTY_DECL);
         }
-        else if ((particleType == XSParticleDecl.PARTICLE_CHOICE)
-                 ||  (particleType == XSParticleDecl.PARTICLE_SEQUENCE)) {
+        else if ((fParticleType == XSParticleDecl.PARTICLE_CHOICE)
+                 ||  (fParticleType == XSParticleDecl.PARTICLE_SEQUENCE)) {
             //
             //  Lets see if both of the children are leafs. If so, then it
             //  it has to be a simple content model
             //
-            grammar.getParticleDecl(particle.value, fParticleLeft);
-            grammar.getParticleDecl(particle.otherValue, fParticleRight);
+            
+            fTempParticle = grammar.getParticleDecl(fParticle.value, fTempParticle);
+            fParticleRight = grammar.getParticleDecl(fParticle.otherValue, fParticleRight);
 
 
-            if ((fParticleLeft.type == XSParticleDecl.PARTICLE_ELEMENT)
+            if ((fTempParticle.type == XSParticleDecl.PARTICLE_ELEMENT)
                 &&  (fParticleRight.type == XSParticleDecl.PARTICLE_ELEMENT)) {
                 //
                 //  Its a simple choice or sequence, so we can do a simple
                 //  content model for it.
                 //
-                String elementName = grammar.getElementName(fParticleLeft.value);
-                fQName1.setValues(null, elementName, null, fParticleLeft.uri );
+                // otherUri - stores local name of the element.
+                fQName1.setValues(null, fTempParticle.otherUri, null, fTempParticle.uri );
 
-                elementName = grammar.getElementName(fParticleRight.value);
-                fQName1.setValues(null, elementName, null, fParticleRight.uri );
+                fQName1.setValues(null, fParticleRight.otherUri, null, fParticleRight.uri );
 
-                return new XSSimpleCM(particleType, fQName1, fParticleLeft.value, 
+                return new XSSimpleCM(fParticleType, fQName1, fTempParticle.value, 
                                       fQName2, fParticleRight.value);
             }
 
         }
-        else if ((particleType == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
-                 ||  (particleType == XSParticleDecl.PARTICLE_ZERO_OR_MORE)
-                 ||  (particleType == XSParticleDecl.PARTICLE_ONE_OR_MORE)) {
+        else if ((fParticleType == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
+                 ||  (fParticleType == XSParticleDecl.PARTICLE_ZERO_OR_MORE)
+                 ||  (fParticleType == XSParticleDecl.PARTICLE_ONE_OR_MORE)) {
             //
             //  Its a repetition, so see if its one child is a leaf. If so
             //  its a repetition of a single element, so we can do a simple
             //  content model for that.
-            //
+            fTempParticle = grammar.getParticleDecl(fParticle.value, fTempParticle);
+
+            if (fTempParticle.type == XSParticleDecl.PARTICLE_ELEMENT) {
+                //
+                //  It is, so we can create a simple content model here that
+                //  will check for this repetition. We pass -1 for the unused
+                //  right node.
+                //
+                fQName1.setValues(null, fTempParticle.otherUri, null, fTempParticle.uri );
+                return new XSSimpleCM(fParticleType, fQName1, fParticle.value, 
+                                      null, SchemaGrammar.I_EMPTY_DECL);
+            }
+            else if (fTempParticle.type==XSParticleDecl.PARTICLE_ALL) {
+                // REVISIT: add ALL content model
+            }
+        
+            
         }
         else {
             throw new RuntimeException("ImplementationMessages.VAL_CST");
@@ -169,44 +192,92 @@ public class CMBuilder {
         //  encapsulates all of the work to create the DFA.
         //
 
-        fLeafCount = 0;
-
-        //CMNode cmn    = buildSyntaxTree(particleIndex, particle);
-
-        // REVISIT: has to be fLeafCount because we convert x+ to x,x*, one more leaf
-        //return new DFAContentModel(  cmn, fLeafCount, isDTD(), );
-
+        //REVISIT: add DFA Content Model
         return null;
-    } // createChildModel(int):ContentModelValidator
+    } 
 
 
-    public int expandParticleTree(SchemaGrammar grammar, int particleIndex, XSParticleDecl particle) {
+    public int expandParticleTree(SchemaGrammar grammar, int fParticleIndex) {
 
         // We may want to consider trying to combine this with buildSyntaxTree at some
         // point (if possible)
+        if (!grammar.fDeferParticleExpantion) {
+            return fParticleIndex;
+        }
+        fTempParticle = grammar.getParticleDecl(fParticleIndex, fTempParticle);
+        int maxOccurs = fTempParticle.maxOccurs;
+        int minOccurs = fTempParticle.minOccurs;
+        short fParticleType = fTempParticle.type;
+        
+        if (((fParticleType & 0x0f) == XSParticleDecl.PARTICLE_ANY) ||
+            ((fParticleType & 0x0f) == XSParticleDecl.PARTICLE_ANY_OTHER) ||
+            ((fParticleType & 0x0f) == XSParticleDecl.PARTICLE_ANY_LIST) ||
+            (fParticleType == XSParticleDecl.PARTICLE_ELEMENT)) {
 
+          // When checking Unique Particle Attribution, rename leaf elements
+          if (grammar.fUPAChecking) {
+            // REVISIT: implement
+          }
 
-        int maxOccurs = particle.maxOccurs;
-        int minOccurs = particle.minOccurs;
-        short particleType = particle.type;
+          return expandContentModel(grammar, fParticleIndex, minOccurs, maxOccurs);
+        }
+        else if (fParticleType == XSParticleDecl.PARTICLE_CHOICE ||
+                 fParticleType == XSParticleDecl.PARTICLE_ALL ||
+                 fParticleType == XSParticleDecl.PARTICLE_SEQUENCE) {
 
-        // 
-        // REVISIT: implement this function!
+          int left = fTempParticle.value;
+          int right = fTempParticle.otherValue;
+          
+          //REVISIT: look at uri and switch grammar if necessary
+          left =  expandParticleTree(grammar, left);
 
-        return particleIndex;
+          if (right == SchemaGrammar.I_EMPTY_DECL)
+             return expandContentModel(grammar, left, minOccurs, maxOccurs);
+
+          right =  expandParticleTree(grammar, right);
+
+          // When checking Unique Particle Attribution, we always create new
+          // new node to store different name for different groups
+          if (grammar.fUPAChecking) {
+              //REVISIT:
+              //contentSpecIndex = addContentSpecNode (type, left, right, false);
+          } else {
+            fTempParticle.value = left;
+            fTempParticle.otherValue = right;
+            grammar.setParticleDecl(fParticleIndex, fTempParticle);
+            
+          }
+          return expandContentModel(grammar, fParticleIndex, minOccurs, maxOccurs);
+        }
+        else {
+          // When checking Unique Particle Attribution, we have to rename
+          // uri even on zero_or_one, zero_or_more and one_or_more
+          if (grammar.fUPAChecking) {
+              //REVISIT:
+              //return addContentSpecNode (fParticleType,
+              //                           convertContentSpecTree(fTempParticle.value),
+              //                           convertContentSpecTree(fTempParticle.otherValue),
+              //                           false);
+          } else {
+              return fParticleIndex;
+          }
+        }
+        return fParticleIndex;
     }
 
 
 
-    private int expandContentModel(SchemaGrammar grammar, int index, XSParticleDecl particle) {
+    private int expandContentModel(SchemaGrammar grammar, int index, 
+                                   int minOccurs, int maxOccurs) {
 
         int leafIndex = index;
-        int maxOccurs = particle.maxOccurs;
-        int minOccurs = particle.minOccurs;
         
-        //REVISIT: add uri/other uri to particle creation methods
-        //String uri = particle.uri;
-        //String otherUri = particle.otherUri;
+        //REVISIT: add uri/other uri to fParticle creation methods
+        //String uri = fParticle.uri;
+        //String otherUri = fParticle.otherUri;
+
+        // REVISIT: should we handle (maxOccurs - minOccurs) = {1,2} as
+        //          separate case?
 
         if (minOccurs==1 && maxOccurs==1) {
             return index;

@@ -98,6 +98,7 @@ public class SchemaGrammar {
     // public fields
     //
     public boolean fDeferParticleExpantion = true;
+    public boolean fUPAChecking = false;
     
     
     /** Chunk shift (8). */
@@ -556,18 +557,6 @@ public class SchemaGrammar {
     } // getElementDecl(int,XSElementDecl):XSElementDecl
 
 
-    public String getElementName(int elementDeclIndex) {
-
-        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
-            return null;
-        }
-
-        int chunk = elementDeclIndex >> CHUNK_SHIFT;
-        int index = elementDeclIndex &  CHUNK_MASK;
-
-        return fElementDeclName[chunk][index];
-    }
-
 
     /**
      * getElementDecl
@@ -889,6 +878,22 @@ public class SchemaGrammar {
         fParticleMaxOccurs[chunk][index] = max;
     }
 
+     public void setParticleDecl (int particleIndex, XSParticleDecl particle){
+        if (particleIndex < 0 || particleIndex >= fParticleCount )
+            return;
+
+        int chunk = particleIndex >> CHUNK_SHIFT;
+        int index = particleIndex & CHUNK_MASK;
+
+        fParticleType[chunk][index] = particle.type;
+        fParticleUri[chunk][index] = particle.uri;
+        fParticleValue[chunk][index] = particle.value;
+        fParticleOtherUri[chunk][index] = particle.otherUri;
+        fParticleOtherValue[chunk][index] = particle.otherValue;
+        fParticleMinOccurs[chunk][index] = particle.minOccurs;
+        fParticleMaxOccurs[chunk][index] = particle.maxOccurs;
+    }
+
     /**
      * getParticleDecl
      * 
@@ -1034,6 +1039,8 @@ public class SchemaGrammar {
      * @exception Exception
      */
     
+    // REVISIT: this method should be moved to CMBuilder.
+    //          
     public XSCMValidator getContentModel(int typeIndex) {
 
         if (typeIndex < 0 || typeIndex >= fXSTypeCount)
@@ -1060,8 +1067,7 @@ public class SchemaGrammar {
         int particleIndex = typeDecl.fParticleIndex;
         if (fDeferParticleExpantion) {
             // expand particle
-            getParticleDecl(particleIndex, fParticleDecl);
-            particleIndex = fCMBuilder.expandParticleTree(this, typeDecl.fParticleIndex, fParticleDecl);
+            particleIndex = fCMBuilder.expandParticleTree(this, typeDecl.fParticleIndex);
             
         }
         // And create the content model according to the spec type
@@ -1083,7 +1089,7 @@ public class SchemaGrammar {
             //  create a SimpleListContentModel object. If its complex, it
             //  will create a DFAContentModel object.
             //
-             cmValidator = fCMBuilder.createChildModel(this, fParticleDecl, particleIndex);
+             cmValidator = fCMBuilder.createChildModel(this, particleIndex);
         } else {
             throw new RuntimeException("Unknown content type for a element decl "
                                      + "in getElementContentModelValidator() in Grammar class");

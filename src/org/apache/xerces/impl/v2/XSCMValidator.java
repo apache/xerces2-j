@@ -60,36 +60,40 @@ package org.apache.xerces.impl.v2;
 import org.apache.xerces.xni.QName;
 
 /**
+ * Note: State of the content model is stored in the validator
  * 
  * @author Sandy Gao, IBM
- * @author  Elena Litani, IBM
+ * @author Elena Litani, IBM
  * @version $Id$
  */
 public interface XSCMValidator {
 
     
     /**
-     * This methods to be called on entering a first element whose type 
-     * has this content model. It will store and reset state of the content model.
+     * This methods to be called on entering a first element whose type
+     * has this content model. It will return the initial state of the content model
+     * 
+     * @return Start state of the content model
      */
-    public void startContentModel();
+    public Object startContentModel();
 
 
     /**
      * The method corresponds to one transaction in the content model.
      * 
      * @param elementName
-     *               Current element
+     * @param state  Current state
      * @return element index corresponding to the element from the Schema grammar
      */
-    public int oneTransition (QName elementName);
+    public int oneTransition (QName elementName, Object state);
     
     
     /**
      * The method indicates the end of list of children
      * 
+     * @param state  Current state of the content model
      * @return true if the last state was a valid final state
      */
-    public boolean endContentModel ();
+    public boolean endContentModel (Object state);
 
 } // XSCMValidator 
