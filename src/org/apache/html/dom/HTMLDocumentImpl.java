@@ -372,9 +372,25 @@ public class HTMLDocumentImpl
     }
 
 
+    public final NodeList getElementsByTagName( String tagName )
+    {
+	return super.getElementsByTagName( tagName.toUpperCase() );
+    }
+
+
+    public final NodeList getElementsByTagNameNS( String namespaceURI,
+					          String localName )
+    {
+	if ( namespaceURI != null && namespaceURI.length() > 0 )
+	    return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase() );
+	else
+	    return super.getElementsByTagName( localName.toUpperCase() );
+    } 
+
+
     public Element createElementNS( String namespaceURI, String qualifiedName )
     {
-	if ( namespaceURI == null )
+	if ( namespaceURI == null || namespaceURI.length() == 0 )
 	    return createElement( qualifiedName );
 	else
 	    return super.createElementNS( namespaceURI, qualifiedName );
