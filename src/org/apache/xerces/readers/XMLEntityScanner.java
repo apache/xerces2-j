@@ -293,26 +293,35 @@ implements Locator {
     throws IOException {
         int       charValue;
         int       countScannedChars    = 0;
-        char[]    scanContentScanned   = new char[128];
+        char[]    scanContentArray   = new char[128];
 
 
         while ( countScannedChars < 128 ) {
             charValue = this.fPushbackReader.read();
             if ( charValue == '<' ) {
+                System.out.println( "<" );
             } else if ( charValue == '&' ) {
+                System.out.println( "&" );            
             } else if ( charValue == ']' ) {
+                System.out.println( "&" );
             } else if ( XMLChar.isSpace( charValue ) ) {
+                 if ( charValue == 0x0a ) {
+                    fLineNumber++;
+                    fColumnNumber = 1;
+                }
             } else if ( XMLChar.isInvalid( charValue ) ) {
             } else {
             }
-
-
-            scanContentScanned[countScannedChars++] = (char) charValue;
+            scanContentArray[countScannedChars++] = (char) charValue;
             fCharPosition++;
         }
         //content.setValues(scanCharArray,0,countScannedChars);
+        content.setValues(scanContentArray,0,countScannedChars);
 
-        return true;
+        if( countScannedChars == 128 )
+            return true;
+        else
+            return false;
     } // scanContent
 
 
