@@ -5362,7 +5362,10 @@ throws Exception {
             else {
                 uriIndex = fTargetNSURI;
             }
-            attQName = new QName(-1,attName,attName,uriIndex);
+            // attQName = new QName(-1,attName,attName,uriIndex);
+            // Above line replaced by following 2 to work around a JIT problem.
+            attQName = new QName();
+            attQName.setValues(-1,attName,attName,uriIndex);
 
         }
         else if(refAtt == null) {
