@@ -897,6 +897,8 @@ public class XMLSchemaValidator
 
     public boolean characterData(String data, Augmentations augs){
 
+        fSawText = fSawText || data.length() > 0;
+        
         // REVISIT: this methods basically duplicates implementation of
         //          handleCharacters(). We should be able to reuse some code
 
@@ -1130,11 +1132,11 @@ public class XMLSchemaValidator
     /** Element depth: -2: validator not in pipeline; >= -1 current depth. */
     int fElementDepth;
 
-    /** Child count. */
-    int fChildCount;
+    /** Seen sub elements. */
+    boolean fSubElement;
 
-    /** Element decl stack. */
-    int[] fChildCountStack = new int[INITIAL_STACK_SIZE];
+    /** Seen sub elements stack. */
+    boolean[] fSubElementStack = new boolean[INITIAL_STACK_SIZE];
 
     /** Current element declaration. */
     XSElementDecl fCurrentElemDecl;
@@ -1181,6 +1183,12 @@ public class XMLSchemaValidator
     /** Temporary string buffers. */
     final StringBuffer fBuffer = new StringBuffer();
 
+    /** Did we see any character data? */
+    boolean fSawText = false;
+
+    /** stack to record if we saw character data */
+    boolean[] fSawTextStack = new boolean[INITIAL_STACK_SIZE];
+    
     /** Did we see non-whitespace character data? */
     boolean fSawCharacters = false;
 
@@ -1408,7 +1416,7 @@ public class XMLSchemaValidator
         fNFullValidationDepth = -1;
         fNNoneValidationDepth = -1;
         fElementDepth = -1;
-        fChildCount = 0;
+        fSubElement = false;
 
         // datatype normalization
         fEntityRef = false;
@@ -1490,15 +1498,15 @@ public class XMLSchemaValidator
 
         if (fElementDepth == fElemDeclStack.length) {
             int newSize = fElementDepth + INC_STACK_SIZE;
-            int[] newArrayI = new int[newSize];
-            System.arraycopy(fChildCountStack, 0, newArrayI, 0, fElementDepth);
-            fChildCountStack = newArrayI;
+            boolean[] newArrayB = new boolean[newSize];
+            System.arraycopy(fSubElementStack, 0, newArrayB, 0, fElementDepth);
+            fSubElementStack = newArrayB;
 
             XSElementDecl[] newArrayE = new XSElementDecl[newSize];
             System.arraycopy(fElemDeclStack, 0, newArrayE, 0, fElementDepth);
             fElemDeclStack = newArrayE;
 
-            boolean[] newArrayB = new boolean[newSize];
+            newArrayB = new boolean[newSize];
             System.arraycopy(fNilStack, 0, newArrayB, 0, fElementDepth);
             fNilStack = newArrayB;
 
@@ -1514,6 +1522,10 @@ public class XMLSchemaValidator
             System.arraycopy(fCMStack, 0, newArrayC, 0, fElementDepth);
             fCMStack = newArrayC;
 
+            newArrayB = new boolean[newSize];
+            System.arraycopy(fSawTextStack, 0, newArrayB, 0, fElementDepth);
+            fSawTextStack = newArrayB;
+            
             newArrayB = new boolean[newSize];
             System.arraycopy(fStringContent, 0, newArrayB, 0, fElementDepth);
             fStringContent = newArrayB;
@@ -1549,6 +1561,8 @@ public class XMLSchemaValidator
         if (fSkipValidationDepth >= 0)
             return text;
 
+        fSawText = fSawText || text.length > 0;
+        
         // Note: data in EntityRef and CDATA is normalized as well
         // if whitespace == -1 skip normalization, because it is a complexType
         // or a union type.
@@ -1773,8 +1787,8 @@ public class XMLSchemaValidator
         // if it's not the root element, we push the current states in the stacks
         if (fElementDepth != -1) {
             ensureStackCapacity();
-            fChildCountStack[fElementDepth] = fChildCount+1;
-            fChildCount = 0;
+            fSubElementStack[fElementDepth] = true;
+            fSubElement = false;
             fElemDeclStack[fElementDepth] = fCurrentElemDecl;
             fNilStack[fElementDepth] = fNil;
             fNotationStack[fElementDepth] = fNotation;
@@ -1782,6 +1796,7 @@ public class XMLSchemaValidator
             fStrictAssessStack[fElementDepth] = fStrictAssess;
             fCMStack[fElementDepth] = fCurrentCM;
             fCMStateStack[fElementDepth] = fCurrCMState;
+            fSawTextStack[fElementDepth] = fSawText;
             fStringContent[fElementDepth] = fSawCharacters;
             fSawChildrenStack[fElementDepth] = fSawChildren;
         }
@@ -1798,6 +1813,7 @@ public class XMLSchemaValidator
 
         // and the buffer to hold the value of the element
         fBuffer.setLength(0);
+        fSawText = false;
         fSawCharacters = false;
         fSawChildren = false;
 
@@ -2048,7 +2064,7 @@ public class XMLSchemaValidator
                 fNFullValidationDepth = fSkipValidationDepth-1;
                 fSkipValidationDepth = -1;
                 fElementDepth--;
-                fChildCount = fChildCountStack[fElementDepth];
+                fSubElement = fSubElementStack[fElementDepth];
                 fCurrentElemDecl = fElemDeclStack[fElementDepth];
                 fNil = fNilStack[fElementDepth];
                 fNotation = fNotationStack[fElementDepth];
@@ -2056,6 +2072,7 @@ public class XMLSchemaValidator
                 fCurrentCM = fCMStack[fElementDepth];
                 fStrictAssess = fStrictAssessStack[fElementDepth];
                 fCurrCMState = fCMStateStack[fElementDepth];
+                fSawText = fSawTextStack[fElementDepth];
                 fSawCharacters = fStringContent[fElementDepth];
                 fSawChildren = fSawChildrenStack[fElementDepth];
             }
@@ -2150,7 +2167,7 @@ public class XMLSchemaValidator
             fElementDepth--;
 
             // get the states for the parent element.
-            fChildCount = fChildCountStack[fElementDepth];
+            fSubElement = fSubElementStack[fElementDepth];
             fCurrentElemDecl = fElemDeclStack[fElementDepth];
             fNil = fNilStack[fElementDepth];
             fNotation = fNotationStack[fElementDepth];
@@ -2158,6 +2175,7 @@ public class XMLSchemaValidator
             fCurrentCM = fCMStack[fElementDepth];
             fStrictAssess = fStrictAssessStack[fElementDepth];
             fCurrCMState = fCMStateStack[fElementDepth];
+            fSawText = fSawTextStack[fElementDepth];
             fSawCharacters = fStringContent[fElementDepth];
             fSawChildren = fSawChildrenStack[fElementDepth];
 
@@ -2751,7 +2769,7 @@ public class XMLSchemaValidator
     void processElementContent(QName element) {
         // 1 If the item is ?valid? with respect to an element declaration as per Element Locally Valid (Element) (?3.3.4) and the {value constraint} is present, but clause 3.2 of Element Locally Valid (Element) (?3.3.4) above is not satisfied and the item has no element or character information item [children], then schema. Furthermore, the post-schema-validation infoset has the canonical lexical representation of the {value constraint} value as the item's [schema normalized value] property.
         if (fCurrentElemDecl != null && fCurrentElemDecl.fDefault != null &&
-            fBuffer.length() == 0 && fChildCount == 0 && !fNil) {
+            !fSawText && !fSubElement && !fNil) {
 
             int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
             if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < bufLen) {
@@ -2770,7 +2788,7 @@ public class XMLSchemaValidator
         // Element Locally Valid (Element)
         // 3.2.1 The element information item must have no character or element information item [children].
         if (fNil) {
-            if (fChildCount != 0 || content.length() != 0){
+            if (fSubElement || fSawText){
                 reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_NIL});
             }
         }
@@ -2781,7 +2799,7 @@ public class XMLSchemaValidator
         // 5.1 If the declaration has a {value constraint}, the item has neither element nor character [children] and clause 3.2 has not applied, then all of the following must be true:
         if (fCurrentElemDecl != null &&
             fCurrentElemDecl.getConstraintType() != XSConstants.VC_NONE &&
-            fChildCount == 0 && content.length() == 0 && !fNil) {
+            !fSubElement && !fSawText && !fNil) {
             // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
             if (fCurrentType != fCurrentElemDecl.fType) {
                 //REVISIT:we should pass ValidatedInfo here.
@@ -2805,7 +2823,7 @@ public class XMLSchemaValidator
                 fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED &&
                 !fNil) {
                 // 5.2.2.1 The element information item must have no element information item [children].
-                if (fChildCount != 0)
+                if (fSubElement)
                     reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
                 // 5.2.2.2 The appropriate case among the following must be true:
                 if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
@@ -2861,7 +2879,7 @@ public class XMLSchemaValidator
         // 3.1 If the type definition is a simple type definition, then all of the following must be true:
         if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
             // 3.1.2 The element information item must have no element information item [children].
-            if (fChildCount != 0)
+            if (fSubElement)
                 reportSchemaError("cvc-type.3.1.2", new Object[]{element.rawname});
             // 3.1.3 If clause 3.2 of Element Locally Valid (Element) (3.3.4) did not apply, then the normalized value must be valid with respect to the type definition as defined by String Valid (3.14.4).
             if (!fNil) {
@@ -2897,12 +2915,12 @@ public class XMLSchemaValidator
         if (!fNil) {
             // 2.1 If the {content type} is empty, then the element information item has no character or element information item [children].
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY &&
-                (fChildCount != 0 || textContent.length() != 0 || fSawChildren)) {
+                (fSubElement || fSawText || fSawChildren)) {
                 reportSchemaError("cvc-complex-type.2.1", new Object[]{element.rawname});
             }
             // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the normalized value of the element information item is valid with respect to that simple type definition as defined by String Valid (3.14.4).
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                if (fChildCount != 0)
+                if (fSubElement)
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 XSSimpleType dv = ctype.fXSSimpleType;
                 try {
