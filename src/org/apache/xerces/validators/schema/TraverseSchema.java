@@ -819,7 +819,7 @@ public class TraverseSchema implements
                  }
                  catch (ParticleRecoverableError e) {
                     String message = e.getMessage();
-                    reportGenericSchemaError("ComplexType '" + typeInfo.typeName + "': " + message);
+                    reportGenericSchemaError("ComplexType '" + typeInfo.typeName + " " + baseTypeInfo.typeName + "': " + message);
                  }
                }
             }
@@ -3313,8 +3313,6 @@ public class TraverseSchema implements
         if ( DEBUGGING )
             System.out.println("traversing complex Type : " + typeName);
 
-        fCurrentTypeNameStack.push(typeName);
-
         int typeNameIndex = fStringPool.addSymbol(typeName);
 
 
@@ -3345,6 +3343,8 @@ public class TraverseSchema implements
 
             }
         }
+
+        fCurrentTypeNameStack.push(typeName);
 
         int scopeDefined = fScopeCount++;
         int previousScope = fCurrentScope;
@@ -3463,7 +3463,7 @@ public class TraverseSchema implements
         fCurrentScope = previousScope;
         if (savedGroupNameStack != null)
           fCurrentGroupNameStack = savedGroupNameStack;
-	fCurrentTypeNameStack.pop();
+	    fCurrentTypeNameStack.pop();
         checkRecursingComplexType();
 
         //set template element's typeInfo

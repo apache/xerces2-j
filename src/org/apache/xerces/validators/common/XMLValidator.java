@@ -1411,6 +1411,7 @@ public final class XMLValidator
             }
             int result = checkContent(elementIndex,
                                       children, childrenOffset, childrenLength);
+            fCurrentDV = null;
 
             if ( DEBUG_SCHEMA_VALIDATION )
                System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
