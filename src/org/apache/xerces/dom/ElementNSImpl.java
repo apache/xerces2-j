@@ -95,13 +95,19 @@ public class ElementNSImpl
 			    String qualifiedName) 
         throws DOMException
     {
-	this.ownerDocument = ownerDocument;
 	// treat an empty string as a null
 	if (namespaceURI != null && !namespaceURI.equals("")) {
-	    this.namespaceURI =  namespaceURI;
+	    this.namespaceURI = namespaceURI;
 	} else {
 	    this.namespaceURI = null;
 	}
+        
+    	if (!DocumentImpl.isXMLName(qualifiedName)) {
+    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    	                               "INVALID_CHARACTER_ERR");
+        }
+
+	this.ownerDocument = ownerDocument;
 	this.name = qualifiedName;
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
@@ -113,24 +119,16 @@ public class ElementNSImpl
             this.localName = qualifiedName.substring(index+1);
         }
         
-    	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
-        }
-        
-        if (prefix != null && prefix.equals("xml")) {
-            if (namespaceURI != null && !namespaceURI.equals("") 
-            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace")) 
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (prefix != null && (namespaceURI == null || namespaceURI.equals(""))) 
-        {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-    	}
+	if (prefix != null && prefix.equals("xml")) {
+	    if (this.namespaceURI == null) {
+		this.namespaceURI = "http://www.w3.org/XML/1998/namespace";
+	    }
+	    else if (!namespaceURI.equals("http://www.w3.org/XML/1998/namespace")) {
+
+		throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+					   "NAMESPACE_ERR");
+	    }
+	}
 
 	syncData = true;
 

@@ -94,14 +94,20 @@ public class AttrNSImpl
 			 String namespaceURI, 
 			 String qualifiedName) {
 
-        this.ownerDocument = ownerDocument;
-        this.name = qualifiedName;
 	// treat an empty string as a null
 	if (namespaceURI != null && !namespaceURI.equals("")) {
 	    this.namespaceURI = namespaceURI;
 	} else {
 	    this.namespaceURI = null;
 	}
+        
+    	if (!DocumentImpl.isXMLName(qualifiedName)) {
+    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    	                               "INVALID_CHARACTER_ERR");
+        }
+
+        this.ownerDocument = ownerDocument;
+        this.name = qualifiedName;
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
             this.prefix = null;
@@ -110,11 +116,6 @@ public class AttrNSImpl
         else {
             this.prefix = qualifiedName.substring(0, index); 
             this.localName = qualifiedName.substring(index+1);
-        }
-        
-    	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
         }
         
 	if (this.namespaceURI == null) {
