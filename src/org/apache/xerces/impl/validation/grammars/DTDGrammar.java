@@ -483,7 +483,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
 
 
       fQName.clear();
-      fQName.setValues(null, attributeName, null, null);
+      fQName.setValues(null, attributeName, attributeName, null);
 
 
       fAttributeDecl.clear();
