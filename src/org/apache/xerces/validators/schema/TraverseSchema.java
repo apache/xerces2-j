@@ -281,6 +281,9 @@ public class TraverseSchema implements
         public boolean containsAttrTypeID () {
            return ((miscFlags & CT_CONTAINS_ATTR_TYPE_ID)!=0);
         }
+        public boolean declSeen () {
+           return ((miscFlags & CT_DECL_SEEN)!=0);
+        }
 
         public void setIsAbstractType() {
            miscFlags |= CT_IS_ABSTRACT;
@@ -288,10 +291,16 @@ public class TraverseSchema implements
         public void setContainsAttrTypeID() {
            miscFlags |= CT_CONTAINS_ATTR_TYPE_ID;
         }
+        public void setDeclSeen() {
+           miscFlags |= CT_DECL_SEEN;               
+        }
           
     }
     private static final int CT_IS_ABSTRACT=1;
     private static final int CT_CONTAINS_ATTR_TYPE_ID=2;
+    private static final int CT_DECL_SEEN=4;    // indicates that the declaration was 
+                                                // traversed as opposed to processed due 
+                                                // to a forward reference
 
     private class ComplexTypeRecoverableError extends Exception {
         ComplexTypeRecoverableError() {super();}
@@ -2893,8 +2902,13 @@ public class TraverseSchema implements
         return found;
     }
 
+    // wrapper traverseComplexTypeDecl method
+    private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception { 
+        return traverseComplexTypeDecl (complexTypeDecl, false);
+    }
+
     /**
-     * Traverse ComplexType Declaration - CR Implementation.
+     * Traverse ComplexType Declaration - Rec Implementation.
      *  
      *       <complexType 
      *         abstract = boolean 
@@ -2908,10 +2922,12 @@ public class TraverseSchema implements
      *                    ( (attribute | attributeGroup)* , anyAttribute?))))  
      *       </complexType>
      * @param complexTypeDecl
+     * @param forwardRef
      * @return 
      */
     
-    private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception { 
+    private int traverseComplexTypeDecl( Element complexTypeDecl, boolean forwardRef) 
+            throws Exception {
         
         // General Attribute Checking
         int scope = isTopLevel(complexTypeDecl)?
@@ -2950,6 +2966,7 @@ public class TraverseSchema implements
 
         int typeNameIndex = fStringPool.addSymbol(typeName);
 
+       
         // ------------------------------------------------------------------
         // Check if the type has already been registered
         // ------------------------------------------------------------------
@@ -2958,6 +2975,15 @@ public class TraverseSchema implements
             String fullName = fTargetNSURIString+","+typeName;
             ComplexTypeInfo temp = (ComplexTypeInfo) fComplexTypeRegistry.get(fullName);
             if (temp != null ) {
+                // check for duplicate declarations
+                if (!forwardRef)  {
+                   if (temp.declSeen()) 
+                      reportGenericSchemaError("Duplicate declaration for complexType " +
+                                                typeName);
+                   else 
+                      temp.setDeclSeen();
+                   
+                }
                 return fStringPool.addSymbol(fullName);
             }
         }
@@ -3049,6 +3075,8 @@ public class TraverseSchema implements
         typeInfo.scopeDefined = scopeDefined; 
         if (isAbstract.equals(SchemaSymbols.ATTVAL_TRUE)) 
           typeInfo.setIsAbstractType();  
+        if (!forwardRef)
+          typeInfo.setDeclSeen();
         typeName = fTargetNSURIString + "," + typeName;
         typeInfo.typeName = new String(typeName);
 
@@ -3720,7 +3748,7 @@ public class TraverseSchema implements
                                  "ct-props-correct.3:  Recursive type definition");
                         }
                         
-                        baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
+                        baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode, true );
                         baseComplexTypeInfo = (ComplexTypeInfo)
                         fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); 
                         //REVISIT: should it be fullBaseName;
@@ -5362,6 +5390,7 @@ throws Exception {
             else {
                 uriIndex = fTargetNSURI;
             }
+            
             // attQName = new QName(-1,attName,attName,uriIndex);
             // Above line replaced by following 2 to work around a JIT problem.
             attQName = new QName();
@@ -6372,7 +6401,7 @@ throws Exception {
                                 return new QName(-1, nameIndex, nameIndex, uriInd);
                             }
                             else {
-                                typeNameIndex = traverseComplexTypeDecl( topleveltype );
+                                typeNameIndex = traverseComplexTypeDecl( topleveltype, true );
                                 typeInfo = (ComplexTypeInfo)
                                     fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
                             }
