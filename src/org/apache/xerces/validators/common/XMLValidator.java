@@ -1419,7 +1419,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         fGrammar = null;
         fGrammarNameSpaceIndex = -1;
-        fGrammarResolver = null;
+        //fGrammarResolver = null;
+        if (fGrammarResolver != null) {
+            fGrammarResolver.clearGrammarResolver();
+        }
         fGrammarIsDTDGrammar = false;
         fGrammarIsSchemaGrammar = false;
 
