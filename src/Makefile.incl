@@ -57,7 +57,7 @@ PACKAGES = \
 	org.apache.wml.dom \
 	org.w3c.dom \
 	org.w3c.dom.events \
-	org.w3c.dom.range \
+	org.w3c.dom.ranges \
 	org.w3c.dom.traversal \
 	org.w3c.dom.html \
 	org.xml.sax \
