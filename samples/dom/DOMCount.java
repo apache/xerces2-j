@@ -57,6 +57,7 @@
 
 package dom;
 
+import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;

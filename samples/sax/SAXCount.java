@@ -57,8 +57,7 @@
 
 package sax;                    
 
-import dom.Features;
-import dom.Arguments;
+import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -122,8 +121,6 @@ extends HandlerBase {
     /** Prints the output from the SAX callbacks. */
     public static void print(String parserName, String uri, boolean validate) {
 
-        Features feature = new Features( setValidation, setNameSpaces, 
-                                         setSchemaSupport, false );
         try {
             SAXCount counter = new SAXCount();
 
@@ -134,11 +131,11 @@ extends HandlerBase {
                 //if (validate && parser instanceof XMLReader)
                 if ( parser instanceof XMLReader ){
                     ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
-                                                    feature.isValidationSet());
+                                                    setValidation);
                     ((XMLReader)parser).setFeature( "http://xml.org/sax/features/namespaces",
-                                                    feature.isNamespaceSet() );
+                                                    setNameSpaces );
                     ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema",
-                                                    feature.isSchemasupportSet() );
+                                                    setSchemaSupport );
 
                 }
             } catch (Exception ex) {

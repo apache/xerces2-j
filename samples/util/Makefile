@@ -1,8 +1,7 @@
 # Makefile for directory ./util
 
 TARGETS=\
-	Arguments.class\
-	Features.class\
+	Arguments.class
 
 DIRS = 
 

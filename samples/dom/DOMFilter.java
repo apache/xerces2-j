@@ -57,6 +57,8 @@
 
 package dom;                    
 
+import util.Arguments;
+
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -67,6 +69,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 
 /**
  * A sample DOM filter. This sample program illustrates how to
@@ -105,18 +108,14 @@ public class DOMFilter {
             DOMParserWrapper parser = 
             (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
 
-            try {
-                parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
-                                   setDeferredDOM );
-                parser.setFeature( "http://xml.org/sax/features/validation", 
-                                   setValidation );
-                parser.setFeature( "http://xml.org/sax/features/namespaces",
-                                   setNameSpaces );
-                parser.setFeature( "http://apache.org/xml/features/validation/schema",
-                                   setSchemaSupport );
-            } catch (SAXException e) {
-                System.out.println("error in setting up parser feature");
-            }
+            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+                               setDeferredDOM );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                               setValidation );
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                               setNameSpaces );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                               setSchemaSupport );
 
 
             Document document = parser.parse(uri);
