@@ -75,9 +75,26 @@
      Configuration</jump>
     </li>
     <li>
-     <jump href='javadocs/xni/org/apache/xerces/xni/psvi/package-summary.html'>PSVI interfaces</jump>
+     <jump href='javadocs/xni/org/apache/xerces/xni/grammars/package-summary.html'>Grammar
+     Interfaces</jump>
     </li>
    </ul>
+  </ul>
+ </s2>
+ <s2 title='XML Schema API Documentation'>
+  <p>
+   The XML Schema API defines a set of interfaces for accessing and querying
+   the post schema validation infoset (PSVI) defined in
+   <jump href="http://www.w3.org/TR/xmlschema-1/#PSVI_contributions">Contributions 
+   to the post-schema-validation infoset (Appendix C.2)</jump>. These interfaces
+   provide access to the XML Schema components, which follow as a consequence of 
+   validation and/or assessment and also provide a means for accessing the PSVI 
+   from a document instance.
+  </p>
+  <ul>
+   <li>
+    <jump href='javadocs/xs/index.html'>XML Schema API</jump>
+   </li>
   </ul>
  </s2>
 <s2 title='DOM Level 3 API'>
