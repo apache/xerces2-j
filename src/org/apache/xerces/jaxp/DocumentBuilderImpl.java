@@ -145,14 +145,11 @@ public class DocumentBuilderImpl extends DocumentBuilder {
 
     /**
      * Non-preferred: use the getDOMImplementation() method instead of this
-     * one
+     * one to get a DOM Level 2 DOMImplementation object and then use DOM
+     * Level 2 methods to create a DOM Document object.
      */
     public Document newDocument() {
-        DOMImplementation di = getDOMImplementation();
-        // XXX What should the root element be named???
-        String qName = "root";
-        DocumentType docType = di.createDocumentType(qName, null, null);
-        return di.createDocument(null, qName, docType);
+        return new org.apache.xerces.dom.DocumentImpl();
     }
 
     public DOMImplementation getDOMImplementation() {
