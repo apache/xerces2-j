@@ -68,7 +68,6 @@ Copyright:
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
     <echo message= "---------------- ${Name} ${version} [${year}] ---------------"/>
-    <property name="build.compiler" value="classic"/>
     <property name="debug" value="off"/>
     <property name="optimize" value="on"/>
     <property name="deprecation" value="off"/>
