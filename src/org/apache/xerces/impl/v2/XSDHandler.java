@@ -410,12 +410,13 @@ class XSDHandler {
             //          effect.
 
             XSDocumentInfo newSchemaInfo = null;
-             if (fLastSchemaWasDuplicate) {
-                 newSchemaInfo = (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
-             } else {
+            if (fLastSchemaWasDuplicate) {
+                newSchemaInfo = (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
+            } else {
                 newSchemaInfo = constructTrees(newSchemaRoot, schemaNamespace);
             }
-            if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
+            if (localName.equals(SchemaSymbols.ELT_REDEFINE) &&
+                newSchemaInfo != null) {
                 // must record which schema we're redefining so that we can
                 // rename the right things later!
                 fRedefine2XSDMap.put(child, newSchemaInfo);
