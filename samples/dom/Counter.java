@@ -100,9 +100,6 @@ public class Counter {
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
     protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
     
-    /** Namespace prefixes feature id (http://xml.org/sax/features/namespace-prefixes). */
-    protected static final String NAMESPACE_PREFIXES_FEATURE_ID = "http://xml.org/sax/features/namespace-prefixes";
-
     /** Validation feature id (http://xml.org/sax/features/validation). */
     protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
 
@@ -272,7 +269,6 @@ public class Counter {
         ParserWrapper parser = null;
         int repetition = DEFAULT_REPETITION;
         boolean namespaces = DEFAULT_NAMESPACES;
-        boolean namespacePrefixes = DEFAULT_NAMESPACE_PREFIXES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         
@@ -321,10 +317,6 @@ public class Counter {
                     namespaces = option.equals("n");
                     continue;
                 }
-                if (option.equalsIgnoreCase("np")) {
-                    namespacePrefixes = option.equals("np");
-                    continue;
-                }
                 if (option.equalsIgnoreCase("v")) {
                     validation = option.equals("v");
                     continue;
@@ -358,12 +350,6 @@ public class Counter {
             }
             catch (SAXException e) {
                 System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
-            }
-            try {
-                parser.setFeature(NAMESPACE_PREFIXES_FEATURE_ID, namespacePrefixes);
-            }
-            catch (SAXException e) {
-                System.err.println("warning: Parser does not support feature ("+NAMESPACE_PREFIXES_FEATURE_ID+")");
             }
             try {
                 parser.setFeature(VALIDATION_FEATURE_ID, validation);
