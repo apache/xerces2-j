@@ -1090,7 +1090,8 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
-                if (fDocumentImpl != null) {
+                if (fDocumentImpl != null
+                    && fGrammarAccess && fGrammarResolver.size() > 0) {
                     if (fDocumentType == null) {
                         String rootName = elementName;
                         String systemId = ""; // REVISIT: How do we get this value? -Ac
@@ -1106,15 +1107,11 @@ public class DOMParser
                         //          at the DOM Level 2 CR didn't yield any
                         //          information. -Ac
                     }
-                    if (fGrammarAccess) {
-                        if (fGrammarResolver.size() > 0) {
-                            Enumeration schemas = fGrammarResolver.nameSpaceKeys();
-                            Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
-                            if (schemaDocument != null) {
-                                Element schema = schemaDocument.getDocumentElement();
-                                XUtil.copyInto(schema, fDocumentType);
-                            }
-                        }
+                    Enumeration schemas = fGrammarResolver.nameSpaceKeys();
+                    Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
+                    if (schemaDocument != null) {
+                        Element schema = schemaDocument.getDocumentElement();
+                        XUtil.copyInto(schema, fDocumentType);
                     }
                 }
             }
