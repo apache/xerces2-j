@@ -1282,24 +1282,19 @@ public class XMLDTDScanner
             }
             scanLiteral(fLiteral, false);
             systemId = fLiteral.toString();
-            if (!isPEDecl) {
-                // NDATA
-                if (!skipSeparator(true, !scanningInternalSubset())) {
-                    reportFatalError("MSG_SPACE_REQUIRED_AFTER_SYSTEMLITERAL_IN_EXTERNALID",
-                                     null);
-                }
 
-                if (fEntityScanner.skipString("NDATA")) {
-                    // spaces
-                    if (!skipSeparator(true, !scanningInternalSubset())) {
-                        reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
-                                         new Object[]{name});
-                    }
-                    notation = fEntityScanner.scanName();
-                    if (notation == null) {
-                        reportFatalError("MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL",
-                                         new Object[]{name});
-                    }
+            // NDATA
+            if (skipSeparator(false, !scanningInternalSubset())
+                && !isPEDecl && fEntityScanner.skipString("NDATA")) {
+                // spaces
+                if (!skipSeparator(true, !scanningInternalSubset())) {
+                    reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
+                                     new Object[]{name});
+                }
+                notation = fEntityScanner.scanName();
+                if (notation == null) {
+                    reportFatalError("MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL",
+                                     new Object[]{name});
                 }
             }
         }
