@@ -108,10 +108,10 @@ public class DatatypeValidatorRegistry {
                                                                        SchemaSymbols.ATTVAL_RESTRICTION));
 
         addValidator("IDREFS", createDatatypeValidator( "IDREF", null ,
-                                                                       SchemaSymbols.ATTVAL_RESTRICTION) );
+                                                                       SchemaSymbols.ATTVAL_LIST) );
 
         addValidator("ENTITIES", createDatatypeValidator( "ENTITY", null ,
-                                                                       SchemaSymbols.ATTVAL_RESTRICTION) );
+                                                                       SchemaSymbols.ATTVAL_LIST) );
 
         facets = new Hashtable();
         facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
@@ -119,7 +119,7 @@ public class DatatypeValidatorRegistry {
                                                                        SchemaSymbols.ATTVAL_RESTRICTION ));
 
         addValidator("NMTOKENS", createDatatypeValidator("NMTOKEN", facets,
-                                                                       SchemaSymbols.ATTVAL_RESTRICTION ));
+                                                                       SchemaSymbols.ATTVAL_LIST));
 
 
         facets = new Hashtable();
