@@ -1683,12 +1683,12 @@ public class XSchemaValidator implements XMLValidator {
         catch (SAXException se) {
             se.getException().printStackTrace();
             System.err.println("error parsing schema file");
-            System.exit(1);
+//            System.exit(1);
         }
         catch (Exception e) {
             e.printStackTrace();
             System.err.println("error parsing schema file");
-            System.exit(1);
+//            System.exit(1);
         }
         fSchemaDocument = fSchemaParser.getDocument();
         if (fSchemaDocument == null) {
@@ -1703,7 +1703,7 @@ public class XSchemaValidator implements XMLValidator {
         }
         catch (Exception e) {
             e.printStackTrace(System.err);
-            System.exit(1);
+//            System.exit(1);
         }
     }
 
@@ -2206,7 +2206,7 @@ public class XSchemaValidator implements XMLValidator {
         return index;
 	}
 
-	public int traverseDatatypeDecl(Element datatypeDecl) {
+	public int traverseDatatypeDecl(Element datatypeDecl) throws Exception {
 		int newTypeName = fStringPool.addSymbol(datatypeDecl.getAttribute(ATT_NAME));
 		int export = fStringPool.addSymbol(datatypeDecl.getAttribute(ATT_EXPORT));
 
@@ -2449,7 +2449,7 @@ public class XSchemaValidator implements XMLValidator {
 		// attribute default type
 		int attDefaultType = -1;
 		int attDefaultValue = -1;
-		boolean required = attrDecl.getAttribute("required").equals("true");
+		boolean required = attrDecl.getAttribute("minoccurs").equals("1");
 		if (required) {
 			attDefaultType = fStringPool.addSymbol("#REQUIRED");
 		} else {
@@ -3012,16 +3012,16 @@ public class XSchemaValidator implements XMLValidator {
     }
 
 	private void reportSchemaError(int major, Object args[]) {
-	    try {
+//	    try {
     		fErrorReporter.reportError(fErrorReporter.getLocator(),
 	    							   SchemaMessageProvider.SCHEMA_DOMAIN,
 		    						   major,
 			    					   SchemaMessageProvider.MSG_NONE,
 				    				   args,
 					    			   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-		} catch (Exception e) {
-		    e.printStackTrace();
-		}
+//		} catch (Exception e) {
+//		    e.printStackTrace();
+//		}
 	}
 
     //
@@ -3113,7 +3113,7 @@ public class XSchemaValidator implements XMLValidator {
 
         String integerSubtypeTable[][] = {
             { "non-negative-integer", DatatypeValidator.MININCLUSIVE , "0"},
-            { "postive-integer", DatatypeValidator.MININCLUSIVE, "1"},
+            { "positive-integer", DatatypeValidator.MININCLUSIVE, "1"},
             { "non-positive-integer", DatatypeValidator.MAXINCLUSIVE, "0"},
             { "negative-integer", DatatypeValidator.MAXINCLUSIVE, "-1"}
         };
@@ -3149,7 +3149,7 @@ public class XSchemaValidator implements XMLValidator {
                 } catch (UnknownFacetException ufe) {
                     System.out.println("Internal error initializing registry - Unknown facet: "+integerSubtypeTable[i][0]);
                 }
-                fRegistry.put(integerSubtypeTable[0], v);
+                fRegistry.put(integerSubtypeTable[i][0], v);
             }
         }
 
