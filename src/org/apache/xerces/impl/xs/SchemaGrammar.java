@@ -67,6 +67,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 import java.util.Hashtable;
@@ -87,7 +88,7 @@ import java.util.Vector;
  * @version $Id$
  */
 
-public class SchemaGrammar implements Grammar, XSNamespaceItem {
+public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
 
     // the target namespace of grammar
     String fTargetNamespace;
@@ -845,4 +846,14 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
         return new StringListImpl(fLocations);
     }
     
+    /**
+     * Return an <code>XSModel</code> that represents components in this schema
+     * grammar.
+     * 
+     * @return  an <code>XSModel</code> representing this schema grammar
+     */
+    public XSModel toXSModel() {
+        return new XSModelImpl(new SchemaGrammar[]{this});
+    }
+
 } // class SchemaGrammar
