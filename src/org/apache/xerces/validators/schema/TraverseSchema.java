@@ -463,7 +463,25 @@ public class TraverseSchema implements
         return uriStr;
     }
 
-    public  TraverseSchema(Element root, StringPool stringPool, SchemaGrammar schemaGrammar, GrammarResolver grammarResolver) throws Exception {
+    public  TraverseSchema(Element root, StringPool stringPool, 
+                           SchemaGrammar schemaGrammar, 
+                           GrammarResolver grammarResolver,
+                           XMLErrorReporter errorReporter
+                           ) throws Exception {
+        fErrorReporter = errorReporter;
+        doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
+    }
+
+    public  TraverseSchema(Element root, StringPool stringPool, 
+                           SchemaGrammar schemaGrammar, 
+                           GrammarResolver grammarResolver
+                           ) throws Exception {
+        doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
+    }
+
+    public  void doTraverseSchema(Element root, StringPool stringPool, 
+                           SchemaGrammar schemaGrammar, 
+                           GrammarResolver grammarResolver) throws Exception {
 
         fNamespacesScope = new NamespacesScope(this);
         
@@ -473,7 +491,7 @@ public class TraverseSchema implements
         fGrammarResolver = grammarResolver;
         
         if (fGrammarResolver == null) {
-            reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchem");
+            reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchema");
         }
         else{
             fSchemaGrammar.setComplexTypeRegistry(fComplexTypeRegistry);
@@ -589,7 +607,7 @@ public class TraverseSchema implements
      * @param simpleTypeDecl
      * @return 
      */
-    private int traverseSimpleTypeDecl( Element simpleTypeDecl ) {
+    private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
         
         String varietyProperty       =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
         String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
@@ -2828,26 +2846,29 @@ public class TraverseSchema implements
     }
 
     private void reportGenericSchemaError (String error) throws Exception {
-        System.err.println("__TraverseSchemaError__ : " + error);       
-            // reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
+        if (fErrorReporter == null) {
+            System.err.println("__TraverseSchemaError__ : " + error);       
+        }
+        else {
+            reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
+        }        
     }
 
-    private void reportSchemaError(int major, Object args[]) {
-        try {
-            /*fErrorReporter.reportError(fErrorReporter.getLocator(),
+
+    private void reportSchemaError(int major, Object args[]) throws Exception {
+        if (fErrorReporter == null) {
+            System.out.println("__TraverseSchemaError__ : " + SchemaMessageProvider.fgMessageKeys[major]);
+            for (int i=0; i< args.length ; i++) {
+                System.out.println((String)args[i]);    
+            }
+        }
+        else {
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
                                        SchemaMessageProvider.SCHEMA_DOMAIN,
                                        major,
                                        SchemaMessageProvider.MSG_NONE,
                                        args,
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                                       */
-            System.out.println("__TraverseSchemaError__ : " + SchemaMessageProvider.fgMessageKeys[major]);
-            for (int i=0; i< args.length ; i++) {
-                System.out.println((String)args[i]);    
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

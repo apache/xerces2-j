@@ -3260,11 +3260,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     schemaCandidateURIs.removeElement(uri);
                 }
 
+                //TO DO: This should be a feature that can be turned on or off
+                /*****
                 for (int i=0; i< schemaCandidateURIs.size(); i++) {
                 
                     String uri = (String) schemaCandidateURIs.elementAt(i);
                     resolveSchemaGrammar(uri);
                 }
+                /*****/
 
             }
 
@@ -3397,7 +3400,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             if (fGrammar == null) {
                 fGrammar = new SchemaGrammar();
             }
-            tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)fGrammar, fGrammarResolver);
+            tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)fGrammar, fGrammarResolver, fErrorReporter);
         }
         catch (Exception e) {
             e.printStackTrace(System.err);
