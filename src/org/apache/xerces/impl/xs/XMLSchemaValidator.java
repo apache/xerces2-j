@@ -1793,6 +1793,11 @@ public class XMLSchemaValidator
             return augs;
         }
 
+        //try to find schema grammar by different means..
+        SchemaGrammar sGrammar = findSchemaGrammar(XSDDescription.CONTEXT_ELEMENT,
+                                                   element.uri, null,
+                                                   element, attributes);
+
         // if we are not skipping this element, and there is a content model,
         // we try to find the corresponding decl object for this element.
         // the reason we move this part of code here is to make sure the
@@ -1865,9 +1870,6 @@ public class XMLSchemaValidator
         // case 1: find declaration for root element
         // case 2: find declaration for element from another namespace
         if (fCurrentElemDecl == null) {
-            //try to find schema grammar by different means..
-            SchemaGrammar sGrammar = findSchemaGrammar(XSDDescription.CONTEXT_ELEMENT , 
-                                                       element.uri , null , element, attributes ) ;
             if (sGrammar != null){
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
             }
