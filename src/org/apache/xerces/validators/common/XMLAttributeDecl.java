@@ -86,6 +86,12 @@ public class XMLAttributeDecl {
     public static final int TYPE_SIMPLE = 9;
     //public static final int TYPE_LIST = 10;
 
+    // default type
+
+    public static final int DEFAULT_TYPE_NOTHING = 0;
+    public static final int DEFAULT_TYPE_FIXED = 1;
+    public static final int DEFAULT_TYPE_REQUIRED = 2;
+
     //
     // Data
     //
@@ -106,7 +112,7 @@ public class XMLAttributeDecl {
 
     // values
 
-    public String defaultType;
+    public int defaultType;
 
     public String defaultValue;
 
@@ -129,15 +135,19 @@ public class XMLAttributeDecl {
     public void clear() {
         name.clear();
         datatypeValidator = null;
-	type = -1;
+        type = -1;
+        list = false;
+        defaultType = DEFAULT_TYPE_NOTHING;
+        defaultValue = null;
     }
 
     public void setValues(XMLAttributeDecl attributeDecl) {
         name.setValues(attributeDecl.name);
         datatypeValidator = attributeDecl.datatypeValidator;
-	type = attributeDecl.type;
-	defaultType = attributeDecl.defaultType;
-	defaultValue = attributeDecl.defaultValue;
+        type = attributeDecl.type;
+        list = attributeDecl.list;
+        defaultType = attributeDecl.defaultType;
+        defaultValue = attributeDecl.defaultValue;
     }
 
     //
