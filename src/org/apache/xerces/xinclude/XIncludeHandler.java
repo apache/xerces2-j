@@ -209,6 +209,9 @@ public class XIncludeHandler
     /** property identifier: buffer size. */
     public static final String BUFFER_SIZE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.BUFFER_SIZE_PROPERTY;
+    
+    protected static final String PARSER_SETTINGS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES =
@@ -374,6 +377,14 @@ public class XIncludeHandler
         for (int i = 0; i < fSawInclude.length; ++i) {
             fSawInclude[i] = false;
         }
+        
+        try {
+            if (!componentManager.getFeature(PARSER_SETTINGS)) {
+                // if parser settings have not changed return.
+                return;
+            }
+        } 
+        catch (XMLConfigurationException e) {}
 
         try {
             fSendUEAndNotationEvents =
