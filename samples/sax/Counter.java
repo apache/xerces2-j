@@ -595,7 +595,7 @@ public class Counter
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
-        System.err.println("              NOTE: Requires use of -v and not supported by all parsers.");
+        System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -m  | -M    Turn on/off memory usage report");
         System.err.println("  -t  | -T    Turn on/off \"tagginess\" report.");
         System.err.println("  --rem text  Output user defined comment before next parse.");
