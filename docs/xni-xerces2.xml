@@ -419,7 +419,7 @@ public class MyComponent
    </tr>
    <tr>
     <th>Type</th>
-    <td>org.apache.xerces.impl.XMLDTDValidator</td>
+    <td>org.apache.xerces.impl.dtd.XMLDTDValidator</td>
    </tr>
   </table>
   <p>Required properties:</p>
@@ -487,7 +487,7 @@ public class MyComponent
    </tr>
    <tr>
     <th>Type</th>
-    <td>org.apache.xerces.impl.XMLSchemaValidator</td>
+    <td>org.apache.xerces.impl.xs.XMLSchemaValidator</td>
    </tr>
   </table>
   <p>Required properties:</p>
