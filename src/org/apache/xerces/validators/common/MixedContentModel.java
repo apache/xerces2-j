@@ -419,4 +419,10 @@ public class MixedContentModel
         return -1;
     }
 
+
+    public ContentLeafNameTypeVector getContentLeafNameTypeVector() {
+        return null;
+    }
+
+
 } // class MixedContentModel

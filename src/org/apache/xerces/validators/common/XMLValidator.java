@@ -191,6 +191,9 @@ public final class XMLValidator
     private DefaultEntityHandler fEntityHandler = null;
     private QName fCurrentElement = new QName();
 
+    private ContentLeafNameTypeVector[] fContentLeafStack = new ContentLeafNameTypeVector[8];
+    private int[] fValidationFlagStack = new int[8];
+
     private int[] fScopeStack = new int[8];
     private int[] fGrammarNameSpaceIndexStack = new int[8];
 
@@ -254,6 +257,8 @@ public final class XMLValidator
     
     private boolean fGrammarIsDTDGrammar = false;
     private boolean fGrammarIsSchemaGrammar = false;
+
+    private boolean fNeedValidationOff = false;
 
     // symbols
 
@@ -773,10 +778,32 @@ public final class XMLValidator
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
 
+        if (fNeedValidationOff) {
+            fValidating = false;
+            fNeedValidationOff = false;
+        }
+
+        if (fValidating && fGrammarIsSchemaGrammar) {
+            pushContentLeafStack();
+        }
+
+        fValidationFlagStack[fElementDepth] = fValidating ? 0 : -1;
+
         fScopeStack[fElementDepth] = fCurrentScope;
         fGrammarNameSpaceIndexStack[fElementDepth] = fGrammarNameSpaceIndex;
 
     } // callStartElement(QName)
+
+    private void pushContentLeafStack() throws Exception {
+        int contentType = getContentSpecType(fCurrentElementIndex);
+        if ( contentType == XMLElementDecl.TYPE_CHILDREN) {
+            XMLContentModel cm = getElementContentModel(fCurrentElementIndex);
+            ContentLeafNameTypeVector cv = cm.getContentLeafNameTypeVector();
+            if (cm != null) {
+                fContentLeafStack[fElementDepth] = cv;
+            }
+        }
+    }
 
     private void ensureStackCapacity ( int newElementDepth) {
   
@@ -811,6 +838,14 @@ public final class XMLValidator
             newStack = new int[newElementDepth * 2];
             System.arraycopy(fContentSpecTypeStack, 0, newStack, 0, newElementDepth);
             fContentSpecTypeStack = newStack;
+
+            newStack = new int[newElementDepth * 2];
+            System.arraycopy(fValidationFlagStack, 0, newStack, 0, newElementDepth);
+            fValidationFlagStack = newStack;
+
+            ContentLeafNameTypeVector[] newStackV = new ContentLeafNameTypeVector[newElementDepth * 2];
+            System.arraycopy(fContentLeafStack, 0, newStackV, 0, newElementDepth);
+            fContentLeafStack = newStackV;
         }
     }
 
@@ -830,6 +865,7 @@ public final class XMLValidator
                                        new Object[] { fStringPool.toString(elementType) },
                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
         }
+
         fElementDepth--;
         if (fValidating) {
             int elementIndex = fCurrentElementIndex;
@@ -916,6 +952,8 @@ public final class XMLValidator
         fCurrentElementEntity = fElementEntityStack[fElementDepth];
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
+
+        fValidating = fValidationFlagStack[fElementDepth] == 0 ? true : false;
 
         fCurrentScope = fScopeStack[fElementDepth];
 
@@ -1975,12 +2013,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
         }
 
-        //REVISIT: is this the right place to check on if the Schema has changed?
-
-        if ( fValidating && element.uri != fGrammarNameSpaceIndex && element.uri != -1  ) {
-            fGrammarNameSpaceIndex = element.uri;
-            switchGrammar(fGrammarNameSpaceIndex);
-        }
 
         if (fAttrListHandle != -1) {
             int index = attrList.getFirstAttr(fAttrListHandle);
@@ -2251,8 +2283,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                               XMLAttrList attrList) 
         throws Exception {
         
-        if (fGrammar == null && 
-            !fValidating && !fNamespacesEnabled) {
+        if ((fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )|| 
+            (fGrammar == null && !fValidating && !fNamespacesEnabled) ) {
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
             fInElementContent = false;
@@ -2271,6 +2303,95 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
         
         int elementIndex = -1;
+        int contentSpecType = -1;
+
+        boolean skipThisOne = false;
+        boolean laxThisOne = false;
+
+        if ( fGrammarIsSchemaGrammar && fContentLeafStack[fElementDepth] != null ) {
+            ContentLeafNameTypeVector cv = fContentLeafStack[fElementDepth];
+
+            QName[] fElemMap = cv.leafNames;
+            for (int i=0; i<cv.leafCount; i++) {
+                int type = cv.leafTypes[i]  ;
+                //System.out.println("******* see a ANY_OTHER_SKIP, "+type+","+element+","+fElemMap[i]+"\n*******");
+                
+                if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    if (fElemMap[i].uri==element.uri
+                        && fElemMap[i].localpart == element.localpart)
+                        break;
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+                    int uri = fElemMap[i].uri;
+                    if (uri == -1 || uri == element.uri) {
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+                    if (element.uri == -1) {
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                    if (fElemMap[i].uri != element.uri) {
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_SKIP) {
+                    int uri = fElemMap[i].uri;
+                    if (uri == -1 || uri == element.uri) {
+                        skipThisOne = true;
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP) {
+                    if (element.uri == -1) {
+                        skipThisOne = true;
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP) {
+                    if (fElemMap[i].uri != element.uri) {
+                        skipThisOne = true;
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LAX) {
+                    int uri = fElemMap[i].uri;
+                    if (uri == -1 || uri == element.uri) {
+                        laxThisOne = true;
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX) {
+                    if (element.uri == -1) {
+                        laxThisOne = true;
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_LAX) {
+                    if (fElemMap[i].uri != element.uri) {
+                        laxThisOne = true;
+                        break;
+                    }
+                }
+
+            }
+
+        }
+        
+        if (skipThisOne) {
+            fNeedValidationOff = true;
+        }
+        else {
+       
+            //REVISIT: is this the right place to check on if the Schema has changed?
+
+        if ( fNamespacesEnabled && fValidating && element.uri != fGrammarNameSpaceIndex && element.uri != -1  ) {
+            fGrammarNameSpaceIndex = element.uri;
+            switchGrammar(fGrammarNameSpaceIndex);
+        }
+
 
         //REVISIT, is it possible, fValidating is false and fGrammar is no null.???
         if ( fGrammar != null ){
@@ -2315,12 +2436,17 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 /****/
 
                 /****/
-                if (elementIndex == -1)
-                    if (DEBUG_SCHEMA_VALIDATION)
-                        System.out.println("!!! can not find elementDecl in the grammar, " +
-                                       " the element localpart: " + element.localpart+"["+fStringPool.toString(element.localpart) +"]" +
-                                       " the element uri: " + element.uri+"["+fStringPool.toString(element.uri) +"]" +
-                                       " and the current enclosing scope: " + fCurrentScope );
+                if (elementIndex == -1) {
+                    if (laxThisOne) {
+                        fNeedValidationOff = true;
+                    }
+                    else
+                        if (DEBUG_SCHEMA_VALIDATION)
+                            System.out.println("!!! can not find elementDecl in the grammar, " +
+                                               " the element localpart: " + element.localpart+"["+fStringPool.toString(element.localpart) +"]" +
+                                               " the element uri: " + element.uri+"["+fStringPool.toString(element.uri) +"]" +
+                                               " and the current enclosing scope: " + fCurrentScope );
+                }
                 /****/
             }
 
@@ -2408,8 +2534,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
         }
 
-        int contentSpecType =  getContentSpecType(elementIndex);
-        if (contentSpecType == -1 && fValidating) {
+        contentSpecType =  getContentSpecType(elementIndex);
+        if (contentSpecType == -1 && fValidating && !fNeedValidationOff ) {
             reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
                                       XMLMessages.VC_ELEMENT_VALID,
                                       element.rawname);
@@ -2440,7 +2566,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //          so, this check could move to the attribute decl
         //          callback so we can check the default value before
         //          it is used.
-        if (fAttrListHandle != -1) {
+        if (fAttrListHandle != -1 && !fNeedValidationOff ) {
             int index = fAttrList.getFirstAttr(fAttrListHandle);
             while (index != -1) {
                 int attrNameIndex = attrList.getAttrName(index);
@@ -2623,6 +2749,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }// end of if (fGrammar != null)
                 index = fAttrList.getNextAttr(index);
             }
+        }
         }
         if (fAttrListHandle != -1) {
             int index = attrList.getFirstAttr(fAttrListHandle);

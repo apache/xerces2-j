@@ -162,6 +162,20 @@ public class XMLContentSpec {
     /** Represents any local element (XML Schema: ##local). */
     public static final int CONTENTSPECNODE_ANY_LOCAL = 8;
 
+    /** prcessContent is 'lax' **/
+    public static final int CONTENTSPECNODE_ANY_LAX = 22;
+
+    public static final int CONTENTSPECNODE_ANY_OTHER_LAX = 23;
+
+    public static final int CONTENTSPECNODE_ANY_LOCAL_LAX = 24;
+
+    /** processContent is 'skip' **/
+    
+    public static final int CONTENTSPECNODE_ANY_SKIP = 38;
+
+    public static final int CONTENTSPECNODE_ANY_OTHER_SKIP = 39;
+
+    public static final int CONTENTSPECNODE_ANY_LOCAL_SKIP = 40;
     //
     // Data
     //
@@ -278,7 +292,7 @@ public class XMLContentSpec {
 
             // build string
             StringBuffer str = new StringBuffer();
-            int    parentContentSpecType = contentSpec.type;
+            int    parentContentSpecType = contentSpec.type & 0x0f;
             int    nextContentSpec;
             switch (parentContentSpecType) {
                 case XMLContentSpec.CONTENTSPECNODE_LEAF: {

@@ -6,6 +6,7 @@ TARGETS=\
 	CMNode.class\
 	CMStateSet.class\
 	CMUniOp.class\
+	ContentLeafNameTypeVector.class\
 	DFAContentModel.class\
 	InsertableElementsInfo.class\
 	MixedContentModel.class\

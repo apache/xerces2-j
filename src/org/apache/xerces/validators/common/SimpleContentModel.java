@@ -750,4 +750,7 @@ public class SimpleContentModel
         return -1;
     }
 
+    public ContentLeafNameTypeVector getContentLeafNameTypeVector() {
+          return null;
+    }
 } // class SimpleContentModel

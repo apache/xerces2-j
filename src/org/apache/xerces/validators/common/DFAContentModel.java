@@ -182,6 +182,8 @@ public class DFAContentModel
     /** Array mapping ANY types to the leaf list. */
     private int fLeafListType[] = null;
 
+    private ContentLeafNameTypeVector fLeafNameTypeVector = null;
+
     /**
      * The string pool of our parser session. This is set during construction
      * and kept around.
@@ -379,7 +381,7 @@ public class DFAContentModel
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                int type = fElemMapType[elemIndex];
+                int type = fElemMapType[elemIndex] & 0x0f ;
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                     //System.out.println("fElemMap["+elemIndex+"]: "+fElemMap[elemIndex]);
                     if (fDTD) {
@@ -498,7 +500,7 @@ public class DFAContentModel
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                int type = fElemMapType[elemIndex];
+                int type = fElemMapType[elemIndex] & 0x0f;
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                     if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex] ) )
                         break;
@@ -709,6 +711,10 @@ public class DFAContentModel
         return -1;
     }
 
+    public ContentLeafNameTypeVector getContentLeafNameTypeVector() {
+        return fLeafNameTypeVector;
+    }
+
     //
     // Private methods
     //
@@ -814,6 +820,12 @@ public class DFAContentModel
         {
             fElemMap[outIndex] = new QName();
 
+            if ( (fLeafListType[outIndex] & 0x0f) != 0 ) {
+                if (fLeafNameTypeVector == null) {
+                    fLeafNameTypeVector = new ContentLeafNameTypeVector();
+                }
+            }
+
             // Get the current leaf's element index
             final QName element = fLeafList[outIndex].getElement();
 
@@ -828,7 +840,8 @@ public class DFAContentModel
                 }
                 else {
                     if (fElemMap[inIndex].uri == element.uri &&
-                        fElemMap[inIndex].localpart == element.localpart)
+                        fElemMap[inIndex].localpart == element.localpart && 
+                        fElemMapType[inIndex] == fLeafListType[outIndex] )
                         break;
                 }
             }
@@ -844,6 +857,10 @@ public class DFAContentModel
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
                 fElemMapSize++;
             }
+        }
+        // set up the fLeafNameTypeVector object if there is one.
+        if (fLeafNameTypeVector != null) {
+            fLeafNameTypeVector.setValues(fElemMap, fElemMapType, fElemMapSize);
         }
 
         //
@@ -1209,9 +1226,9 @@ public class DFAContentModel
         nodeCur.setMaxStates(fLeafCount);
 
         // Recurse as required
-        if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY ||
-            nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
-            nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+        if ((nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            (nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            (nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
             // REVISIT: Don't waste these structures.
             QName qname = new QName(-1, -1, -1, ((CMAny)nodeCur).getURI());
             fLeafList[curIndex] = new CMLeaf(qname, ((CMAny)nodeCur).getPosition());

@@ -1151,16 +1151,35 @@ public class TraverseSchema implements
     private int traverseAny(Element child) throws Exception {
         int anyIndex = -1;
         String namespace = child.getAttribute(SchemaSymbols.ATT_NAMESPACE).trim();
+        String processContents = child.getAttribute("processContents").trim();
+
+        int processContentsAny = XMLContentSpec.CONTENTSPECNODE_ANY;
+        int processContentsAnyOther = XMLContentSpec.CONTENTSPECNODE_ANY_OTHER;
+        int processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL;
+
+        if (processContents.length() > 0 && !processContents.equals("strict")) {
+            if (processContents.equals("lax")) {
+                processContentsAny = XMLContentSpec.CONTENTSPECNODE_ANY_LAX;
+                processContentsAnyOther = XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_LAX;
+                processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX;
+            }
+            else if (processContents.equals("skip")) {
+                processContentsAny = XMLContentSpec.CONTENTSPECNODE_ANY_SKIP;
+                processContentsAnyOther = XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP;
+                processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP;
+            }
+        }
+
         if (namespace.length() == 0 || namespace.equals("##any")) {
-            anyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, -1, false);
+            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, -1, false);
         }
         else if (namespace.equals("##other")) {
             String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
             int uriIndex = fStringPool.addSymbol(uri);
-            anyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY_OTHER, -1, uriIndex, false);
+            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyOther, -1, uriIndex, false);
         }
         else if (namespace.equals("##local")) {
-            anyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL, -1, -1, false);
+            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, -1, false);
         }
         else if (namespace.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(namespace);
@@ -1174,19 +1193,19 @@ public class TraverseSchema implements
             }
             String uri = (String)tokens.elementAt(0);
             int uriIndex = fStringPool.addSymbol(uri);
-            int leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, uriIndex, false);
+            int leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
             int valueIndex = leafIndex;
             int count = tokens.size();
             if (count > 1) {
                 uri = (String)tokens.elementAt(1);
                 uriIndex = fStringPool.addSymbol(uri);
-                leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, uriIndex, false);
+                leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
                 int otherValueIndex = leafIndex;
                 int choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, valueIndex, otherValueIndex, false);
                 for (int i = 2; i < count; i++) {
                     uri = (String)tokens.elementAt(i);
                     uriIndex = fStringPool.addSymbol(uri);
-                    leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, uriIndex, false);
+                    leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
                     otherValueIndex = leafIndex;
                     choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, choiceIndex, otherValueIndex, false);
                 }
@@ -1201,11 +1220,6 @@ public class TraverseSchema implements
             reportGenericSchemaError("Empty namespace attribute for any element");
         }
 
-        String processContents = child.getAttribute("processContents");
-        if (processContents.length() > 0 && !processContents.equals("strict")) {
-            // REVISIT: Localize
-            reportGenericSchemaError("Only value of strict supported for processContents attribute");
-        }
         return anyIndex;
     }
 
@@ -1856,7 +1870,7 @@ public class TraverseSchema implements
             } //end looping through the children
 
             if ( ! ( seeOtherParticle || seeAll ) && (elementContent || mixedContent)
-                 && base.length() == 0 ) {
+                 &&  (base.length() == 0 || ( base.length() > 0 && derivedByRestriction))  ) {
                 contentSpecType = XMLElementDecl.TYPE_SIMPLE;
                 simpleTypeValidator = getDatatypeValidator("", SchemaSymbols.ATTVAL_STRING);
                 // REVISIT: Localize

@@ -173,4 +173,7 @@ public interface XMLContentModel {
     public int whatCanGoHere(boolean fullyValid, 
                              InsertableElementsInfo info) throws Exception;
 
+    public ContentLeafNameTypeVector getContentLeafNameTypeVector() ;
+
+
 } // interface XMLContentModel
