@@ -193,7 +193,7 @@ Copyright:
     </copy>
 
     <javac srcdir="${build.src}"
-           excludes="**/RevalidatingDOMParser.java "
+           excludes="**/RevalidatingDOMParser.java **/v1/** **/v2/**"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
@@ -271,6 +271,7 @@ Copyright:
   <!-- Creates the API documentation                                       -->
   <!-- =================================================================== -->
   <target name="javadocs" depends="prepare-src">
+    <!--
     <mkdir dir="${build.javadocs}"/>
     <javadoc packagenames="${packages}"
              sourcepath="${build.src}"
@@ -281,6 +282,43 @@ Copyright:
              windowtitle="${Name} API"
              doctitle="${Name}"
              bottom="${copyright}" />
+    -->
+    <mkdir dir='${build.dir}/docs/api'/>
+    <javadoc packagenames='javax.xml.parsers,org.w3c.*,org.xml.*'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/api'
+      author='true' version='true'
+      windowtitle='XML Standard API' doctitle='XML Standard API'
+      bottom='${copyright}'
+      locale='en_US'/>
+    <mkdir dir='${build.dir}/docs/xni'/>
+    <javadoc packagenames='org.apache.xerces.xni.*'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/xni'
+      author='true' version='true'
+      windowtitle='Xerces Native Interface' 
+      doctitle='Xerces Native Interface'
+      bottom='${copyright}'
+      locale='en_US'/>
+    <mkdir dir='${build.dir}/docs/xerces2'/>
+    <javadoc packagenames='org.apache.xerces.dom.*,
+                           org.apache.xerces.impl.*,
+                           org.apache.xerces.jaxp,
+                           org.apache.xerces.parsers,
+                           org.apache.xerces.util'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/xerces2'
+      author='true' version='true'
+      windowtitle='Xerces2 Implementation' 
+      doctitle='Xerces2 Implementation'
+      bottom='${copyright}'
+      locale='en_US'/>
+    <mkdir dir='${build.dir}/docs/other'/>
+    <javadoc packagenames='org.apache.html.*,
+                           org.apache.wml.*,
+                           org.apache.xml.serialize.*'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/other'
+      author='true' version='true'
+      windowtitle='Other Classes' doctitle='Other Classes'
+      bottom='${copyright}'
+      locale='en_US'/>
   </target>
 
   <!-- =================================================================== -->

@@ -2,9 +2,100 @@
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
 <s1 title='API JavaDoc'>
  <s2 title='Standard API Documentation'>
+  <p>
+   Always try to use only the standard XML APIs when writing
+   XML applications. This will keep your application shielded
+   from changes in the underlying implementation of those
+   standard APIs and also gives you more flexibility to change
+   the implementation of the standard pieces without modifying
+   your application code.
+  </p>
+  <ul>
+   <li><jump href='../api/index.html'>Standard API</jump></li>
+   <ul>
+    <li>Java API for XML Processing (JAXP)</li>
+    <ul>
+     <li>
+      <jump href='../api/javax/xml/parsers/package-summary.html'>XML
+      Parser Factories</jump>
+     </li>
+    </ul>
+    <li>Document Object Model (DOM)</li>
+    <ul>
+     <li>
+      <jump href='../api/org/w3c/dom/package-summary.html'>Core</jump>
+     </li>
+     <li>
+      <jump href='../api/org/w3c/dom/events/package-summary.html'>Events</jump>
+     </li>
+     <li>
+      <jump href='../api/org/w3c/dom/html/package-summary.html'>HTML</jump>
+     </li>
+     <li>
+      <jump href='../api/org/w3c/dom/ranges/package-summary.html'>Ranges</jump>
+     </li>
+     <li>
+      <jump href='../api/org/w3c/dom/traversal/package-summary.html'>Traversal</jump>
+     </li>
+    </ul>
+    <li>Simple API for XML (SAX)</li>
+    <ul>
+     <li>
+      <jump href='../api/org/xml/sax/package-summary.html'>Core</jump>
+     </li>
+     <li>
+      <jump href='../api/org/xml/sax/helpers/package-summary.html'>Helper Classes</jump>
+     </li>
+     <li>
+      <jump href='../api/org/xml/sax/ext/package-summary.html'>Extensions</jump>
+     </li>
+    </ul>
+   </ul>
+  </ul>
  </s2>
- <s2 title='Xerces-J User API Documentation'>
+ <s2 title='Xerces Native Interface Documentation'>
+  <p>
+   If you need functionality that is not available in the 
+   standard APIs like DOM and SAX, then perhaps using the Xerces
+   Native Interface (XNI) will provide the information to build
+   the appropriate parsing tools for your application. For more
+   detailed information regarding XNI, refer to the 
+   <link idref='xni'>XNI Manual</link>.
+  </p>
+  <ul>
+   <li>
+    <jump href='../xni/index.html'>Xerces Native Interface</jump>
+   </li>
+   <ul>
+    <li>
+     <jump href='../xni/org/apache/xerces/xni/package-summary.html'>Core</jump>
+    </li>
+    <li>
+     <jump href='../xni/org/apache/xerces/xni/parser/package-summary.html'>Parser
+     Configuration</jump>
+    </li>
+   </ul>
+  </ul>
  </s2>
- <s2 title='Xerces-J Developer API Documentation'>
+ <s2 title='Xerces2 Implementation Documentation'>
+  <p>
+   For maintainers and developers of the Xerces2 reference
+   implementation, it's important to know the internal APIs
+   used.
+  </p>
+  <ul>
+   <li>
+    <jump href='../xerces2/index.html'>Xerces2 Implementation</jump>
+   </li>
+  </ul>
+ </s2>
+ <s2 title='Other Classes Documentation'>
+  <p>
+   The Xerces2 package also contains other implementation classes.
+   You can jump to the API for these classes via the following links:
+  </p>
+  <ul>
+   <li><jump href='../other/index.html'>Other Classes</jump></li>
+  </ul>
  </s2>
 </s1>
