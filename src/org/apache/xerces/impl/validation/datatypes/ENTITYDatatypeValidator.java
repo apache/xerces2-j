@@ -171,6 +171,7 @@ implements StatefullDatatypeValidator {
     public void initialize( Object grammar ) {
         //System.out.println("ENTITYDatatypeValidator initialized" );
         fGrammar = (Grammar) grammar;
+        //System.out.println("grammar = " + fGrammar );
     }
 
     /**

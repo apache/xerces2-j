@@ -1339,6 +1339,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         // check VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
+
+            fValENTITY.initialize(fCurrentGrammar);//Initialize ENTITY, ENTITIES validators 
+            fValENTITIES.initialize(fCurrentGrammar);
+
+
             Enumeration entities = fNDataDeclNotations.keys();
             while (entities.hasMoreElements()) {
                 String entity = (String) entities.nextElement();
@@ -2355,17 +2360,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         */
 
 
-        //Initialize ID, IDREF, IDREFS, ENTITY & ENTITIES Validators
+        //Initialize ID, IDREF, IDREFS validators
         if( fTableOfIDs == null ){
             fTableOfIDs = new Hashtable();//Initialize table of IDs
         }
         fValID.initialize(fTableOfIDs);
         fValIDRef.initialize(fTableOfIDs);
         fValIDRefs.initialize(fTableOfIDs);
-        fValENTITY.initialize(fCurrentGrammar);
-        fValENTITIES.initialize(fCurrentGrammar);
-
-    }
+         }
 
     /** ensure element stack capacity */
     private void ensureStackCapacity ( int newElementDepth) {
