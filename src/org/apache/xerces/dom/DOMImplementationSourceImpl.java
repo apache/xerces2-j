@@ -17,11 +17,11 @@
 package org.apache.xerces.dom;
 
 import java.util.StringTokenizer;
-
+import java.util.Vector;
 import org.apache.xerces.dom3.DOMImplementationList;
 import org.apache.xerces.dom3.DOMImplementationSource;
-import org.apache.xerces.dom3.bootstrap.DOMImplementationListImpl;
 import org.w3c.dom.DOMImplementation;
+import org.apache.xerces.dom.DOMImplementationListImpl;
 
 /**
  * Supply one the right implementation, based upon requested features. Each
@@ -29,7 +29,7 @@ import org.w3c.dom.DOMImplementation;
  * binding-specific list of available sources so that its
  * <code>DOMImplementation</code> objects are made available.
  * 
- * <p>See also the <a href='http://www.w3.org/2001/10/WD-DOM-Level-3-Core-20011017'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#DOMImplementationSource'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * 
  * @version $Id$
  */
@@ -57,14 +57,11 @@ public class DOMImplementationSourceImpl
         if (testImpl(impl, features)) {
             return impl;
         }
-
         
         return null;
     }
     
     /**
-     * DOM Level 3 Core - CR
-     *
      * A method to request a list of DOM implementations that support the 
      * specified features and versions, as specified in .
      * @param features A string that specifies which features and versions 
@@ -78,17 +75,16 @@ public class DOMImplementationSourceImpl
     public DOMImplementationList getDOMImplementationList(String features) {
         // first check whether the CoreDOMImplementation would do
         DOMImplementation impl = CoreDOMImplementationImpl.getDOMImplementation();
-        DOMImplementationListImpl list = new DOMImplementationListImpl();
+		final Vector implementations = new Vector();
         if (testImpl(impl, features)) {
-            list.add(impl);
+			implementations.addElement(impl);
         }
         impl = DOMImplementationImpl.getDOMImplementation();
         if (testImpl(impl, features)) {
-            list.add(impl);
+			implementations.addElement(impl);
         }
 
-
-        return list;
+        return new DOMImplementationListImpl(implementations);
     }
 
     boolean testImpl(DOMImplementation impl, String features) {

@@ -16,21 +16,21 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.dom3.DOMImplementationList;
-import org.apache.xerces.dom3.bootstrap.DOMImplementationListImpl;
 import org.apache.xerces.impl.xs.XSImplementationImpl;
+import org.apache.xerces.dom3.DOMImplementationList;
 import org.w3c.dom.DOMImplementation;
+import java.util.Vector;
 
 /**
  * Allows to retrieve <code>XSImplementation</code>, DOM Level 3 Core and LS implementations
  * and PSVI implementation.
- * <p>See also the <a href='http://www.w3.org/2001/10/WD-DOM-Level-3-Core-20011017'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#DOMImplementationSource'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @author Elena Litani, IBM
  * @version $Id$
  */
 public class DOMXSImplementationSourceImpl
-    extends DOMImplementationSourceImpl{
-
+    extends DOMImplementationSourceImpl {
+    
     /**
      * A method to request a DOM implementation.
      * @param features A string that specifies which features are required. 
@@ -43,25 +43,23 @@ public class DOMXSImplementationSourceImpl
     public DOMImplementation getDOMImplementation(String features) {
         DOMImplementation impl = super.getDOMImplementation(features);
         if (impl != null){
-        	return impl;
+            return impl;
         }
-		// if not try the PSVIDOMImplementation
-		impl = PSVIDOMImplementationImpl.getDOMImplementation();
-		if (testImpl(impl, features)) {
-			return impl;
-		}
-		// if not try the XSImplementation
-		impl = XSImplementationImpl.getDOMImplementation();
-		if (testImpl(impl, features)) {
-			return impl;
-		}
+        // if not try the PSVIDOMImplementation
+        impl = PSVIDOMImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            return impl;
+        }
+        // if not try the XSImplementation
+        impl = XSImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            return impl;
+        }
         
         return null;
     }
     
     /**
-     * DOM Level 3 Core - CR
-     *
      * A method to request a list of DOM implementations that support the 
      * specified features and versions, as specified in .
      * @param features A string that specifies which features and versions 
@@ -73,18 +71,24 @@ public class DOMXSImplementationSourceImpl
      *   features.
      */
     public DOMImplementationList getDOMImplementationList(String features) {
-        // first check whether the CoreDOMImplementation would do
-		DOMImplementationListImpl list = (DOMImplementationListImpl)super.getDOMImplementationList(features);
-		DOMImplementation impl = PSVIDOMImplementationImpl.getDOMImplementation();
-		if (testImpl(impl, features)) {
-			list.add(impl);
-		}
+        final Vector implementations = new Vector();
         
-         impl = XSImplementationImpl.getDOMImplementation();
-        if (testImpl(impl, features)) {
-            list.add(impl);
+        // first check whether the CoreDOMImplementation would do
+        DOMImplementationList list = super.getDOMImplementationList(features);
+        //Add core DOMImplementations
+        for (int i=0; i < list.getLength(); i++ ) {
+            implementations.addElement(list.item(i));
         }
-        return list;
+        
+        DOMImplementation impl = PSVIDOMImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            implementations.addElement(impl);
+        }
+        
+        impl = XSImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            implementations.addElement(impl);
+        }
+        return new DOMImplementationListImpl(implementations); 
     }
-
 }
