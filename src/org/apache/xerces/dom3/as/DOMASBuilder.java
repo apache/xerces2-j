@@ -16,6 +16,7 @@ import org.w3c.dom.ls.DOMInputSource;
 import org.w3c.dom.ls.DOMBuilder;
 
 /**
+ * @deprecated
  * An Abstract Schema parser interface.
  * <p><code>DOMASBuilder</code> provides an API for parsing Abstract Schemas 
  * and building the corresponding <code>ASModel</code> tree. 

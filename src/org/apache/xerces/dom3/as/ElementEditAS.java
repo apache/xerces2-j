@@ -17,6 +17,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Attr;
 
 /**
+ * @deprecated
  * This interface extends the <code>Element</code> interface with additional 
  * methods for guided document editing. An object implementing this 
  * interface must also implement NodeEditAS interface.

@@ -13,6 +13,7 @@
 package org.apache.xerces.dom3.as;
 
 /**
+ * @deprecated
  * Models a general entity declaration in an abstract schema. The abstract 
  * schema does not handle any parameter entity. It is assumed that the 
  * parameter entities are expanded by the implementation as the abstract 

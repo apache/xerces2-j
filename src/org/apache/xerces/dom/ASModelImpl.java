@@ -64,7 +64,7 @@ import org.apache.xerces.dom3.as.*;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 
 /**
- *  To begin with, an abstract schema is a generic structure that could 
+ * To begin with, an abstract schema is a generic structure that could 
  * contain both internal and external subsets. An <code>ASModel</code> is an 
  * abstract object that could map to a DTD , an XML Schema , a database 
  * schema, etc. An <code>ASModel</code> could represent either an internal 
@@ -83,7 +83,7 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
  * etc. 
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025'>
  * Document Object Model (DOM) Level 3 Abstract Schemas and Load and Save Specification</a>.
- *
+ * @deprecated
  * @author Pavani Mukthipudi
  * @author Neil Graham
  * @version $Id$

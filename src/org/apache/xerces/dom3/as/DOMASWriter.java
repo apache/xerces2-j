@@ -15,6 +15,7 @@ package org.apache.xerces.dom3.as;
 import org.w3c.dom.ls.DOMWriter;
 
 /**
+ * @deprecated
  *  A Abstract Schema serialization interface. 
  * <p> DOMASWriters provides an API for serializing Abstract Schemas out in 
  * the form of a source Abstract Schema. The Abstract Schema is written to 

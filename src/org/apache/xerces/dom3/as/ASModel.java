@@ -15,6 +15,7 @@ package org.apache.xerces.dom3.as;
 import org.w3c.dom.DOMException;
 
 /**
+ * @deprecated
  *  To begin with, an abstract schema is a generic structure that could 
  * contain both internal and external subsets. An <code>ASModel</code> is an 
  * abstract object that could map to a DTD , an XML Schema , a database 

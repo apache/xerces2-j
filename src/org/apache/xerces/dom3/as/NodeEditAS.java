@@ -15,6 +15,7 @@ package org.apache.xerces.dom3.as;
 import org.w3c.dom.Node;
 
 /**
+ * @deprecated
  * This interface extends a <code>Node</code> from  with additional methods 
  * for guided document editing. The expectation is that an instance of the 
  * <code>DOMImplementationAS</code> interface can be obtained by using 

@@ -13,6 +13,7 @@
 package org.apache.xerces.dom3.as;
 
 /**
+ * @deprecated
  * The datatypes supported by DOM AS implementations. Further datatypes may be 
  * added in the Schema/PSVI spec. 
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025'>Document Object Model (DOM) Level 3 Abstract Schemas and Load

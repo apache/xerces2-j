@@ -85,6 +85,7 @@ import org.apache.xerces.util.SymbolTable;
  * This is Abstract Schema DOM Builder class. It extends the DOMBuilderImpl
  * class. Provides support for preparsing schemas.
  *
+ * @deprecated
  * @author Pavani Mukthipudi, Sun Microsystems Inc.
  * @author Neil Graham, IBM
  * @version $Id$

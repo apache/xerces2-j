@@ -13,6 +13,7 @@
 package org.apache.xerces.dom3.as;
 
 /**
+ * @deprecated
  * The <code>ASObject</code> interface is analogous to a <code>Node</code> in 
  * , e.g., an element declaration. 
  * <p>Opaque.

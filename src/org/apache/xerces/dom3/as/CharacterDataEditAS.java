@@ -13,6 +13,7 @@
 package org.apache.xerces.dom3.as;
 
 /**
+ * @deprecated
  * This interface extends the <code>NodeEditAS</code> interface with 
  * additional methods for document editing. An object implementing this 
  * interface must also implement NodeEditAS interface.

@@ -15,6 +15,7 @@ package org.apache.xerces.dom3.as;
 import org.w3c.dom.DOMException;
 
 /**
+ * @deprecated
  * Objects implementing the <code>ASNamedObjectMap</code> interface are used 
  * to represent collections of abstract schema nodes that can be accessed by 
  * name. Note that <code>ASNamedObjectMap</code> does not inherit from 

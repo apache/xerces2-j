@@ -78,7 +78,8 @@ import org.apache.xerces.parsers.DOMASBuilderImpl;
  * so that's how I've implemented it.
  * <P>
  * This particular class, along with DocumentImpl, supports the DOM
- * Core, DOM Level 2 optional mofules, and Abstract Schemas (Experimental). 
+ * Core, DOM Level 2 optional mofules, and Abstract Schemas (Experimental).
+ * @deprecated 
  * @version $Id$
  * @since PR-DOM-Level-1-19980818.
  */

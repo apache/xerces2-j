@@ -13,6 +13,7 @@
 package org.apache.xerces.dom3.as;
 
 /**
+ * @deprecated
  *  Abstract Schemas operations may throw a <code>DOMSystemException</code> as 
  * described in their descriptions. 
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025'>Document Object Model (DOM) Level 3 Abstract Schemas and Load

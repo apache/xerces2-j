@@ -13,6 +13,7 @@
 package org.apache.xerces.dom3.as;
 
 /**
+ * @deprecated
  * The <code>ASObjectList</code> interface provides the abstraction of an 
  * ordered collection of AS nodes, without defining or constraining how this 
  * collection is implemented. <code>ASObjectList</code> objects in the DOM 

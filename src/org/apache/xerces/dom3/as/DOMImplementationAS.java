@@ -13,6 +13,7 @@
 package org.apache.xerces.dom3.as;
 
 /**
+ * @deprecated
  *  This interface allows creation of an <code>ASModel</code>. The expectation 
  * is that an instance of the <code>DOMImplementationAS</code> interface can 
  * be obtained by using binding-specific casting methods on an instance of 
