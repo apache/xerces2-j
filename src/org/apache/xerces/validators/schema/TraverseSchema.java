@@ -2719,11 +2719,20 @@ public class TraverseSchema implements
 
         String ref       = attrDecl.getAttribute(SchemaSymbols.ATT_REF); 
         String datatype  = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
+		// various tests if 'ref' is present:
+		if(!ref.equals("")) {
+			if(!attNameStr.equals(""))
+				// REVISIT:  localize 
+   	    	    reportGenericSchemaError ( "Attribute " + attNameStr + " cannot refer to another attribute, but it refers to " + ref);
+			if(!datatype.equals(""))
+				// REVISIT:  localize 
+       	        reportGenericSchemaError ( "Attribute with reference " + ref + " cannot also contain a type");
+		}
+		Element simpleTypeChild = findAttributeSimpleType(attrDecl);
+
         String localpart = null;
 
-        if (!ref.equals("")) {
-            if (XUtil.getFirstChildElement(attrDecl) != null)
-                reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+		if (!ref.equals("")) {
             String prefix = "";
             localpart = ref;
             int colonptr = ref.indexOf(":");
@@ -2757,16 +2766,9 @@ public class TraverseSchema implements
 
 
         if (datatype.equals("")) {
-            Element child = XUtil.getFirstChildElement(attrDecl);
-
-            while (child != null && 
-                             !child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE))
-                child = XUtil.getNextSiblingElement(child);
-
-
-            if (child != null && child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+            if (simpleTypeChild != null) { 
                 attType        = XMLAttributeDecl.TYPE_SIMPLE;
-                dataTypeSymbol = traverseSimpleTypeDecl(child);
+                dataTypeSymbol = traverseSimpleTypeDecl(simpleTypeChild);
                 localpart = fStringPool.toString(dataTypeSymbol);
             } 
             else {
@@ -2779,6 +2781,8 @@ public class TraverseSchema implements
             dv = fDatatypeRegistry.getDatatypeValidator(localpart);
 
         } else {
+			if(simpleTypeChild != null)
+            	reportGenericSchemaError("Attribute declarations may not contain both a type and a simpleType declaration");
 
             String prefix = "";
             localpart = datatype;
@@ -2829,7 +2833,7 @@ public class TraverseSchema implements
                         }
                     }
                 }
-            } else {
+            } else { //isn't of the schema for schemas namespace...
 
                 // check if the type is from the same Schema
 
@@ -2856,19 +2860,22 @@ public class TraverseSchema implements
         int attDefaultValue = -1;
 
         String  use      = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
+
+        boolean prohibited = use.equals(SchemaSymbols.ATTVAL_PROHIBITED);
         boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
-
-
         if (dv == null) {
             // REVISIT: Localize
             reportGenericSchemaError("could not resolve the type or get a null validator for datatype : " 
                                      + fStringPool.toString(dataTypeSymbol));
         }
 
-        if (required) {
+        if (prohibited) 
+            attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED; 
+        else if (required) {
             attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
         } else {
-            if (use.equals(SchemaSymbols.ATTVAL_FIXED)) {
+			// perhaps a controversial change:  no "use" in lcoal scope means "fixed"!
+            if (use.equals(SchemaSymbols.ATTVAL_FIXED) || (!isTopLevel(attrDecl) && !use.equals(SchemaSymbols.ATTVAL_DEFAULT))) {
                 String fixed = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
                 if (!fixed.equals("")) {
                     attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
@@ -2882,12 +2889,6 @@ public class TraverseSchema implements
                     attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
                     attDefaultValue = fStringPool.addString(defaultValue);
                 } 
-            }
-            else if (use.equals(SchemaSymbols.ATTVAL_PROHIBITED)) {
-                
-                //REVISIT, TO DO. !!!
-                attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
-                //attDefaultValue = fStringPool.addString("");
             }
             else {
                 attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
@@ -3120,6 +3121,27 @@ public class TraverseSchema implements
         return -1;
     } // end of method traverseAttributeGroupFromAnotherSchema
     
+	// This simple method takes an attribute declaration as a parameter and
+	// returns null if there is no simpleType defined or the simpleType
+	// declaration if one exists.  It also throws an error if more than one
+	// <annotation> or <simpleType> group is present.
+	private Element findAttributeSimpleType(Element attrDecl) throws Exception {
+		Element child = XUtil.getFirstChildElement(attrDecl);
+	    	if (child == null)
+	   		return null;
+		if (child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE))
+			return child;
+		if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
+			child = XUtil.getNextSiblingElement(child);
+	    	if (child == null)
+	   		return null;
+		if (child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE) &&
+				XUtil.getNextSiblingElement(child) == null) 
+			return child;
+		//REVISIT: localize
+		reportGenericSchemaError ( "An attribute declaration must contain at most one annotation preceding at most one simpleType");
+		return null;
+	} // end findAttributeSimpleType
 
     /**
      * Traverse element declaration:
@@ -3746,10 +3768,13 @@ public class TraverseSchema implements
             return true;
         }
         /****/
+	/* why not make this more efficient by simply returning the conditional's value?  NG
         if (component.getParentNode().getLocalName().endsWith(SchemaSymbols.ELT_SCHEMA) ) {
             return true;
         }
-        return false;
+        return false; 
+	*****/
+        return (component.getParentNode().getLocalName().endsWith(SchemaSymbols.ELT_SCHEMA) ); 
     }
     
     DatatypeValidator getTypeValidatorFromNS(String newSchemaURI, String localpart) throws Exception {

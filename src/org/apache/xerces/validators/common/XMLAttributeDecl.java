@@ -94,6 +94,7 @@ public class XMLAttributeDecl {
     public static final int DEFAULT_TYPE_FIXED = 1;
     public static final int DEFAULT_TYPE_REQUIRED = 2;
     public static final int DEFAULT_TYPE_DEFAULT = 3;
+    public static final int DEFAULT_TYPE_PROHIBITED = 7;
 
     // schema: attribte wildcard processContents property, share the defaultType field
     public static final int PROCESSCONTENTS_STRICT = 4;

@@ -95,7 +95,8 @@ public class SchemaMessages extends ListResourceBundle {
 		{ "UnexpectedError", "UnexpectedError" },
                 {"ContentError", "Content (annotation?,..) is incorrect for type {0}"},
                 {"AnnotationError", "Annotation can only appear once: type {0}"},
-                {"ListUnionRestrictionError","List | Union | Restriction content is invalid for type {0}"}
+                {"ListUnionRestrictionError","List | Union | Restriction content is invalid for type {0}"},
+		{ "ProhibitedAttributePresent", "An attribute declared \"prohibited\" is present in this element definition." },
                 
    };
     

@@ -161,6 +161,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         ContentError = 25,
         AnnotationError = 26,
         ListUnionRestrictionError = 27,
+        ProhibitedAttributePresent = 28,
         // ...
         MSG_MAX_CODE = 31;
     //
@@ -197,6 +198,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
 		"UnclassifiedError",			//	24,	"Unclassified error."
         "ContentError",                 //  25, "Content (annotation?,..) is incorrect for type {0}"
         "AnnotationError",                //  26, "Annotation can only appear once: type {0}"
-        "ListUnionRestrictionError"       //  27, "List | Union | Restriction content is invalid for type {0}"
+        "ListUnionRestrictionError",       //  27, "List | Union | Restriction content is invalid for type {0}"
+        "ProhibitedAttributePresent",	    		// 	28,	attribue dcld prohibited is present
     };
 }

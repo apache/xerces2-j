@@ -814,7 +814,8 @@ NamespacesScope.NamespacesHandler {
       //
       // Check after all specified attrs are scanned
       // (1) report error for REQUIRED attrs that are missing (V_TAGc)
-      // (2) add default attrs (FIXED and NOT_FIXED)
+      // (2) report error for PROHIBITED attrs that are present (V_TAGc)
+      // (3) add default attrs (FIXED and NOT_FIXED)
       //
 
       if (!fSeenRootElement) {
@@ -1596,8 +1597,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       //
       // Check after all specified attrs are scanned
       // (1) report error for REQUIRED attrs that are missing (V_TAGc)
-      // (2) check that FIXED attrs have matching value (V_TAGd)
-      // (3) add default attrs (FIXED and NOT_FIXED)
+      // (2) report error for PROHIBITED attrs that are present (V_TAGc)
+      // (3) check that FIXED attrs have matching value (V_TAGd)
+      // (4) add default attrs (FIXED and NOT_FIXED)
       //
       fGrammar.getElementDecl(elementIndex,fTempElementDecl);
 
@@ -1620,10 +1622,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
          boolean specified = false;
          boolean required = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
+         boolean prohibited = attDefType == XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
 
          if (firstCheck != -1) {
             boolean cdata = attType == fCDATASymbol;
-            if (!cdata || required || attValue != -1) {
+            if (!cdata || required || prohibited || attValue != -1) {
                int i = attrList.getFirstAttr(firstCheck);
                while (i != -1 && (lastCheck == -1 || i <= lastCheck)) {
 
@@ -1631,6 +1634,16 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                        (  fStringPool.equalNames(attrList.getAttrLocalpart(i), attName)
                           && fStringPool.equalNames(attrList.getAttrURI(i), fTempAttDecl.name.uri) ) ) {
 
+            		if (prohibited && validationEnabled) {
+                  		Object[] args = { fStringPool.toString(elementNameIndex),
+                     		fStringPool.toString(attName)};
+						fErrorReporter.reportError(fErrorReporter.getLocator(),
+								SchemaMessageProvider.SCHEMA_DOMAIN,
+								SchemaMessageProvider.ProhibitedAttributePresent,
+								SchemaMessageProvider.MSG_NONE,
+								args,
+								XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+               		}
                      if (validationEnabled && attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) {
                         int alistValue = attrList.getAttValue(i);
                         if (alistValue != attValue &&
