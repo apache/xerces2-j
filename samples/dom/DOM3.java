@@ -141,7 +141,7 @@ public class DOM3 implements DOMErrorHandler, DOMParserFilter {
             Document doc = builder.parseURI(argv[0]);
 
             // set error handler on the Document
-            config = doc.getConfig();
+            config = doc.getDomConfig();
             
             config.setParameter("error-handler", errorHandler);
 
