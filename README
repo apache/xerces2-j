@@ -2,7 +2,7 @@
 
 Table of Contents
 
- 1. Building Source
+ 1. Building Xerces
  2. Building Documentation
  3. Special Instructions
     3.1 Building on Windows Platform
@@ -10,7 +10,7 @@ Table of Contents
 
 ---------------------------------------------------------------------
 
-1. Building Source
+1. Building Xerces
 
    The top level Makefile will build everything, including the
    documentation. If you only want to compile the source code and
@@ -32,11 +32,13 @@ Table of Contents
 
      Xerces-J-tools.x.y.z.zip
 
-   where "x.y.z" is the version of the Xerces-J parser for which
-   you want to build the documentation. Extract the tools package
-   in the same directory where you extracted the source
-   distribution.
-   
+   where "x.y.z" is either the exact version or the version just before
+   the version of the Xerces-J parser for which you want to build the
+   documentation. Extract the tools package in the top directory of the
+   Xerces Java tree so that you get something like:
+
+     xerces_a_b_c/tools
+
    Then, from the top of the Xerces Java tree, type the following
    command to build the documentation:
    
