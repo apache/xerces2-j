@@ -1317,6 +1317,9 @@ public class XMLSchemaValidator
 
         //reset XSDDescription
         fLocationPairs.clear();
+        
+        // cleanup id table
+        fValidationState.resetIDTables();
 
         // get schema location properties
         try {
