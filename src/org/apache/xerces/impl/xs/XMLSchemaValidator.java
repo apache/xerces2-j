@@ -123,7 +123,6 @@ import java.util.StringTokenizer;
  *
  * @author Sandy Gao IBM
  * @author Elena Litani IBM
- * @author Eric Ye IBM
  * @author Andy Clark IBM
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @version $Id$
@@ -852,6 +851,9 @@ public class XMLSchemaValidator
     /** Skip validation. */
     int fSkipValidationDepth;
 
+    /** Partial validation depth */
+    int fPartialValidationDepth;
+
     /** Element depth. */
     int fElementDepth;
 
@@ -1064,6 +1066,7 @@ public class XMLSchemaValidator
         fValidationRootDepth = -1;
         fValidationRoot = null;
         fSkipValidationDepth = -1;
+        fPartialValidationDepth = -1;
         fElementDepth = -1;
         fChildCount = 0;
 
@@ -1512,7 +1515,7 @@ public class XMLSchemaValidator
             augs.putItem(ELEM_PSVI, fCurrentPSVI);
         }
         fCurrentPSVI.reset();
-
+        
         // if we are skipping, return
         // if there is no validation root, return
         if (fSkipValidationDepth >= 0 || fValidationRootDepth == -1) {
@@ -1520,6 +1523,8 @@ public class XMLSchemaValidator
             // restore the states.
             if (fSkipValidationDepth == fElementDepth &&
                 fSkipValidationDepth > 0) {
+                // set the parial validation depth to the depth of parent
+                fPartialValidationDepth = fSkipValidationDepth-1;
                 fSkipValidationDepth = -1;
                 fElementDepth--;
                 fChildCount = fChildCountStack[fElementDepth];
@@ -1607,6 +1612,20 @@ public class XMLSchemaValidator
             }
             fValidationState.resetIDTables();
         }
+        
+        // PSVI: validation attempted
+        if (fElementDepth <= fPartialValidationDepth) {
+            // the element had child with a content skip.
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.PARTIAL_VALIDATION;           
+            if (fElementDepth == fPartialValidationDepth) {
+                // set depth to the depth of the parent
+                fPartialValidationDepth--;
+            }
+        } 
+        else {        
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.FULL_VALIDATION;
+        }
+
 
         // decrease element depth and restore states
         fElementDepth--;
@@ -1639,9 +1658,6 @@ public class XMLSchemaValidator
 
         // PSVI: error codes
         fCurrentPSVI.fErrorCodes = errors;
-        // PSVI: validation attempted
-        // REVISIT: element could be partially valid
-        fCurrentPSVI.fValidationAttempted = ElementPSVI.FULL_VALIDATION;
         // PSVI: validity
         fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALID_VALIDITY
                                                   : ElementPSVI.INVALID_VALIDITY;
