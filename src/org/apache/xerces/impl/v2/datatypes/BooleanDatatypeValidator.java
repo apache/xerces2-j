@@ -60,7 +60,7 @@ package org.apache.xerces.impl.v2.datatypes;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import org.apache.xerces.impl.v2.SchemaSymbols;
-import org.apache.xerces.impl.v1.util.regex.RegularExpression;
+import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 /**
  *

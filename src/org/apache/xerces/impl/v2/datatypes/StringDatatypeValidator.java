@@ -63,7 +63,7 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.text.Collator;
 import org.apache.xerces.impl.v2.SchemaSymbols;
-import org.apache.xerces.impl.v1.util.regex.RegularExpression;
+import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 /**
  * StringValidator validates that XML content is a W3C string type.

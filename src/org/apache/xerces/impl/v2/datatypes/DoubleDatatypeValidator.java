@@ -61,7 +61,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 import org.apache.xerces.impl.v2.SchemaSymbols;
-import org.apache.xerces.impl.v1.util.regex.RegularExpression;
+import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 /**
  * @author Elena Litani

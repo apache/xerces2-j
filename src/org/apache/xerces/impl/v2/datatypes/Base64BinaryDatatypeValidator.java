@@ -62,8 +62,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 import org.apache.xerces.impl.v2.SchemaSymbols;
-import org.apache.xerces.impl.v1.util.regex.RegularExpression;
-import org.apache.xerces.impl.v1.util.Base64;
+import org.apache.xerces.impl.v2.util.regex.RegularExpression;
+import org.apache.xerces.impl.v2.util.Base64;
 
 /**
  * Base64BinaryValidator validates that XML content is a W3C string type.

@@ -64,7 +64,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.io.IOException;
 import org.apache.xerces.impl.v2.SchemaSymbols;
-import org.apache.xerces.impl.v1.util.regex.RegularExpression;
+import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 /**
  * AbstractNumericValidator is a base class of decimal, double, and float 

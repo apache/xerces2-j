@@ -70,7 +70,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import org.apache.xerces.impl.v2.XSTypeDecl;
 
-import org.apache.xerces.impl.v1.util.regex.RegularExpression;
+import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
 
