@@ -117,7 +117,7 @@ public class AttrNSImpl
         this.namespaceURI = namespaceURI;
         if (namespaceURI !=null) {
   	        this.namespaceURI = (namespaceURI.length() == 0)? null
-                                 : namespaceURI.intern();
+                                 : namespaceURI;
 
 		}
 		int colon1 = qname.indexOf(':');
@@ -130,8 +130,8 @@ public class AttrNSImpl
 			if (ownerDocument().errorChecking) {
 				if (qname.equals("xmlns")
 					&& (namespaceURI == null
-						|| namespaceURI != NamespaceContext.XMLNS_URI)
-					|| (namespaceURI == NamespaceContext.XMLNS_URI
+						|| !namespaceURI.equals(NamespaceContext.XMLNS_URI))
+					|| (namespaceURI.equals(NamespaceContext.XMLNS_URI)
 						&& !qname.equals("xmlns"))) {
 					String msg =
 						DOMMessageFormatter.formatMessage(

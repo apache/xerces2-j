@@ -130,8 +130,8 @@ public class ElementNSImpl
 			ownerDocument().checkQName(null, localName);
 			if (qname.equals("xmlns")
 				&& (namespaceURI == null
-					|| namespaceURI != NamespaceContext.XMLNS_URI)
-				|| (namespaceURI == NamespaceContext.XMLNS_URI
+					|| !namespaceURI.equals(NamespaceContext.XMLNS_URI))
+				|| (namespaceURI.equals(NamespaceContext.XMLNS_URI)
 					&& !qname.equals("xmlns"))) {
 				String msg =
 					DOMMessageFormatter.formatMessage(

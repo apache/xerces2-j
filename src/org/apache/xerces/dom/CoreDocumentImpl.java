@@ -2123,7 +2123,7 @@ public class CoreDocumentImpl
 				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
 			}
 			else if (prefix.equals("xml")
-					&& namespace != NamespaceContext.XML_URI) {
+					&& !namespace.equals(NamespaceContext.XML_URI)) {
 				String msg =
 					DOMMessageFormatter.formatMessage(
 						DOMMessageFormatter.DOM_DOMAIN,
@@ -2133,9 +2133,9 @@ public class CoreDocumentImpl
 			}
 			else if (
 				prefix.equals("xmlns")
-					&& namespace != NamespaceContext.XMLNS_URI
+					&& !namespace.equals(NamespaceContext.XMLNS_URI)
 					|| (!prefix.equals("xmlns")
-						&& namespace == NamespaceContext.XMLNS_URI)) {
+						&& namespace.equals(NamespaceContext.XMLNS_URI))) {
 				String msg =
 					DOMMessageFormatter.formatMessage(
 						DOMMessageFormatter.DOM_DOMAIN,
