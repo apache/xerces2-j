@@ -57,12 +57,9 @@
 
 package org.apache.xerces.impl;
 
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.FilterReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
@@ -71,24 +68,18 @@ import java.util.Locale;
 import java.util.Stack;
 import java.util.Vector;
 
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.io.ASCIIReader;
 import org.apache.xerces.impl.io.UCSReader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
-
 import org.apache.xerces.util.EncodingMap;
-import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
-
-import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLResourceIdentifier;
-import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -1087,14 +1078,14 @@ public class XMLEntityManager
         if(version == Constants.XML_VERSION_1_0) {
             if(fXML10EntityScanner == null) {
                 fXML10EntityScanner = new XMLEntityScanner();
-                fXML10EntityScanner.reset(fSymbolTable, this);
+                fXML10EntityScanner.reset(fSymbolTable, this, fErrorReporter);
             }
             fEntityScanner = fXML10EntityScanner;
             fEntityScanner.setCurrentEntity(fCurrentEntity);
         } else {
             if(fXML11EntityScanner == null) {
                 fXML11EntityScanner = new XML11EntityScanner();
-                fXML11EntityScanner.reset(fSymbolTable, this);
+                fXML11EntityScanner.reset(fSymbolTable, this, fErrorReporter);
             }
             fEntityScanner = fXML11EntityScanner;
             fEntityScanner.setCurrentEntity(fCurrentEntity);
@@ -1108,7 +1099,7 @@ public class XMLEntityManager
             if(fXML10EntityScanner == null) {
                 fXML10EntityScanner = new XMLEntityScanner();
             }
-            fXML10EntityScanner.reset(fSymbolTable, this);
+            fXML10EntityScanner.reset(fSymbolTable, this, fErrorReporter);
             fEntityScanner = fXML10EntityScanner;
         }
         return fEntityScanner;
@@ -1237,10 +1228,12 @@ public class XMLEntityManager
 
         fCurrentEntity = null;
         // reset scanner
-        if(fXML10EntityScanner != null) 
-            fXML10EntityScanner.reset(fSymbolTable, this);
-        if(fXML11EntityScanner != null) 
-            fXML11EntityScanner.reset(fSymbolTable, this);
+        if(fXML10EntityScanner != null){ 
+            fXML10EntityScanner.reset(fSymbolTable, this, fErrorReporter);
+        }
+        if(fXML11EntityScanner != null) {
+            fXML11EntityScanner.reset(fSymbolTable, this, fErrorReporter);
+        }
 
         // DEBUG
         if (DEBUG_ENTITIES) {

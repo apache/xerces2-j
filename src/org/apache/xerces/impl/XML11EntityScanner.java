@@ -57,43 +57,12 @@
 
 package org.apache.xerces.impl;
 
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.FilterReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URL;
-import java.util.Hashtable;
-import java.util.Stack;
-import java.util.Vector;
 
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.io.ASCIIReader;
-import org.apache.xerces.impl.io.UCSReader;
-import org.apache.xerces.impl.io.UTF8Reader;
-import org.apache.xerces.impl.msg.XMLMessageFormatter;
-import org.apache.xerces.impl.validation.ValidationManager;
-
-import org.apache.xerces.util.EncodingMap;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLStringBuffer;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XML11Char;
-import org.apache.xerces.util.XMLResourceIdentifierImpl;
-
+import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLComponent;
-import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
  * Implements the entity scanner methods in
@@ -111,7 +80,7 @@ public class XML11EntityScanner
     //
 
     /** Default constructor. */
-    public XML11EntityScanner( ) {
+    public XML11EntityScanner() {
         super();
     } // <init>()
 

@@ -64,6 +64,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.io.UCSReader;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.XMLStringBuffer;
 
 import java.io.IOException;
@@ -91,12 +92,17 @@ public class XMLEntityScanner implements XMLLocator {
 
     protected int fBufferSize = XMLEntityManager.DEFAULT_BUFFER_SIZE;
 
+    /**
+     * Error reporter. This property identifier is:
+     * http://apache.org/xml/properties/internal/error-reporter
+     */
+    protected XMLErrorReporter fErrorReporter;
     //
     // Constructors
     //
 
     /** Default constructor. */
-    public XMLEntityScanner( ) {
+    public XMLEntityScanner() {
     } // <init>()
 
     //
@@ -490,6 +496,7 @@ public class XMLEntityScanner implements XMLLocator {
             int index = -1;
             while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
                 char c = fCurrentEntity.ch[fCurrentEntity.position];
+
                 if (c == ':') {
                     if (index != -1) {
                         break;
@@ -531,8 +538,15 @@ public class XMLEntityScanner implements XMLLocator {
                     prefix = fSymbolTable.addSymbol(fCurrentEntity.ch,
                                                     offset, prefixLength);
                     int len = length - prefixLength - 1;
+                    int startLocal = index +1;
+                    if (!XMLChar.isNameStart(fCurrentEntity.ch[startLocal])){
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                 "IllegalQName",
+                                                  null,
+                                                  XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
                     localpart = fSymbolTable.addSymbol(fCurrentEntity.ch,
-                                                       index + 1, len);
+                                                       startLocal, len);
 
                 }
                 else {
@@ -1478,10 +1492,12 @@ public class XMLEntityScanner implements XMLLocator {
     }
 
     // reset what little state we have...
-    public void reset(SymbolTable symbolTable, XMLEntityManager entityManager) {
+    public void reset(SymbolTable symbolTable, XMLEntityManager entityManager,
+                        XMLErrorReporter reporter) {
         fCurrentEntity = null;
         fSymbolTable = symbolTable;
         fEntityManager = entityManager;
+        fErrorReporter = reporter;
     }
 
     //
