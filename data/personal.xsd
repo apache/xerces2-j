@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- <!DOCTYPE schema SYSTEM "structures.dtd"> -->
-<!DOCTYPE schema PUBLIC "-//W3C/DTD XML Schema Version 1.0//EN" 
-                        "http://www.w3.org/XML/Group/1999/09/23-xmlschema/structures/structures.dtd">
+<!DOCTYPE schema PUBLIC "-//W3C//DTD XMLSCHEMA 19991216//EN"
+                        "http://www.w3.org/TR/1999/WD-xmlschema-1-19991217/structures.dtd">
 <schema>
 
  <element name="personnel">
-  <archetype>
+  <type>
    <element ref="person" minOccurs='1' maxOccurs='*'/>
    <attribute name="xmlns"/>
-  </archetype>
+  </type>
  </element>
 
  <element name="family">
-  <archetype content="mixed"/>
+  <type content="mixed"/>
  </element>
 
  <element name="given">
-  <archetype content="mixed"/>
+  <type content="mixed"/>
  </element>
 
  <element name="name">
-  <archetype>
+  <type>
    <element ref="family"/>
    <element ref="given" minOccurs='0' maxOccurs='1'/>
-  </archetype>
+  </type>
  </element>
 
  <element name="email" type="integer">
@@ -31,20 +30,20 @@
  </element>
 
  <element name="url">
-  <archetype content="empty">
+  <type content="empty">
    <attribute name="href" type="string" default="http://"/>
-  </archetype>
+  </type>
  </element>
 
  <element name="link">
-  <archetype content="empty">
+  <type content="empty">
    <attribute name="manager" type="IDREF"/>
    <attribute name="subordinates" type="IDREFS"/>
-  </archetype>
+  </type>
  </element>
 
  <element name="person">
-  <archetype>
+  <type>
    <element ref="name"/>
    <element ref="email" minOccurs='0' maxOccurs='*'/>
    <element ref="url"   minOccurs='0' maxOccurs='*'/>
@@ -53,19 +52,20 @@
    <attribute name="id"  type="ID"/>
    <attribute name="note" type="string"/>
    <attribute name="contr" type="NMTOKEN" default="false">
-	<enumeration>
-	 <literal>true</literal>
-	 <literal>false</literal>
-	</enumeration>
+    <datatype source="string">
+     <enumeration value="true"/>
+     <enumeration value="false"/>
+    </datatype>
    </attribute>
    <attribute name="salary" type="integer"/>
-  </archetype>
+  </type>
  </element>
 
  <notation name='gif' public='-//APP/Photoshop/4.0' system='photoshop.exe'/>
 
+<!--
  <textEntity name='internal-entity'>entity-value</textEntity>
  <externalEntity name='external-entity' public='-//ENTITY' system='external-entity.ent'/>
  <unparsedEntity name='unparsed-entity' system='unparsed-entity.ent' notation='gif'/>
-
+-->
 </schema>

@@ -1,39 +1,122 @@
-<!-- Note that the expansion of 'facets' below is less
-     restrictive than that imposed by the XML Schema schema for
-     datatypes:  There should in fact be no more than one of each of
+<!-- DTD for XML Schemas: Part 2: Datatypes -->
+<!-- $Id$ -->
+<!-- Note this DTD is NOT the normative datatypes DTD - - the
+     prose copy in the datatypes REC is the normative version (which
+     shouldn't differ from this one except for this comment and entity
+     expansions, but just in case -->
+<!ENTITY % p ''> <!-- can be overriden in the internal subset of a
+                      schema document to establish a namespace prefix -->
+
+<!-- Define all the element names, with optional prefix -->
+<!ENTITY % datatype "%p;datatype">
+<!ENTITY % maxExclusive "%p;maxExclusive">
+<!ENTITY % minExclusive "%p;minExclusive">
+<!ENTITY % maxInclusive "%p;maxInclusive">
+<!ENTITY % minInclusive "%p;minInclusive">
+<!ENTITY % precision "%p;precision">
+<!ENTITY % scale "%p;scale">
+<!ENTITY % length "%p;length">
+<!ENTITY % minlength "%p;minlength">
+<!ENTITY % maxlength "%p;maxlength">
+<!ENTITY % enumeration "%p;enumeration">
+<!ENTITY % pattern "%p;pattern">
+<!ENTITY % encoding "%p;encoding">
+<!ENTITY % period "%p;period">
+
+<!-- annotation elements -->
+<!ENTITY % annotation "%p;annotation">
+<!ENTITY % appinfo "%p;appinfo">
+<!ENTITY % info "%p;info">
+
+
+<!-- Define some entities for informative use as attribute types -->
+<!ENTITY % URI "CDATA">
+<!ENTITY % URIList "CDATA">
+<!ENTITY % QName "CDATA">
+<!ENTITY % NCName "NMTOKEN">
+<!ENTITY % non-negative-integer "NMTOKEN">
+<!ENTITY % boolean "(true|false)">
+<!ENTITY % derivationChoice "(restriction|extension)">
+<!ENTITY % derivationSet "CDATA">
+      <!-- #all or space-separated list drawn from derivationChoice -->
+<!ENTITY % exactSet "CDATA">
+      <!-- #all or space-separated list drawn from
+                                        derivationChoice + 'equivClass' -->
+
+<!-- Note that the use of 'facet' below is less restrictive than is
+     really intended:  There should in fact be no more than one of each of
      minInclusive, minExclusive, maxInclusive, maxExclusive,
-     precision, scale, lexicalRepresentation, enumeration,
-     length, maxLength within datatype -->
-<!ENTITY % minBound '(minInclusive | minExclusive)'>
-<!ENTITY % maxBound '(maxInclusive | maxExclusive)'>
+     precision, scale,
+     length, maxlength, minlength, encoding, period within datatype,
+     and the min- and max- variants of Inclusive and Exclusive are
+     mutually exclusive.
+     On the other hand,  pattern and enumeration may repeat -->
+<!ENTITY % minBound '(%minInclusive; | %minExclusive;)'>
+<!ENTITY % maxBound '(%maxInclusive; | %maxExclusive;)'>
 <!ENTITY % bounds '%minBound; | %maxBound;'>
-<!ENTITY % numeric 'precision | scale'>
-<!ENTITY % ordered '%bounds; | %numeric;'>   
+<!ENTITY % numeric '%precision; | %scale;'>
+<!ENTITY % ordered '%bounds; | %numeric;'>
 <!ENTITY % unordered
-   'lexicalRepresentation | enumeration | length | maxLength'>   
-<!ENTITY % facets '%ordered; | %unordered;'>
-<!ELEMENT datatype (basetype, (%facets;)*)>   
-<!ATTLIST datatype   
-    name NMTOKEN #REQUIRED   
-    export (true|false) 'true'>   
-   
-<!ELEMENT basetype EMPTY>   
-<!ATTLIST basetype   
-    name NMTOKEN #REQUIRED   
-    schemaAbbrev NMTOKEN #IMPLIED   
-    schemaName CDATA #IMPLIED>   
-   
-<!ELEMENT maxExclusive (#PCDATA)>   
-<!ELEMENT minExclusive (#PCDATA)>   
-<!ELEMENT maxInclusive (#PCDATA)>   
-<!ELEMENT minInclusive (#PCDATA)>   
-   
-<!ELEMENT precision (#PCDATA)>   
-<!ELEMENT scale (#PCDATA)>   
-   
-<!ELEMENT length (#PCDATA)>   
-<!ELEMENT maxLength (#PCDATA)>   
-<!ELEMENT enumeration (literal)+>   
-<!ELEMENT literal (#PCDATA)>   
-<!ELEMENT lexicalRepresentation (lexical)+>   
-<!ELEMENT lexical (#PCDATA)>
+   '%pattern; | %enumeration; | %length; | %maxlength; | %minlength;
+    | %encoding; | %period;'>
+<!ENTITY % facet '%ordered; | %unordered;'>
+<!ENTITY % facetAttr 'value CDATA #REQUIRED'>
+<!ENTITY % facetModel '(%annotation;)?'>
+<!ELEMENT %datatype; ((%annotation;)?,(%facet;)*)>
+<!ATTLIST %datatype;
+    name     %NCName;        #IMPLIED
+    source   %QName;         #REQUIRED
+    final    %derivationSet; ''
+    abstract %boolean;       'false'>
+<!-- name is required at top level -->
+
+<!ELEMENT %maxExclusive; %facetModel;>
+<!ATTLIST %maxExclusive; %facetAttr;>
+<!ELEMENT %minExclusive; %facetModel;>
+<!ATTLIST %minExclusive; %facetAttr;>
+
+<!ELEMENT %maxInclusive; %facetModel;>
+<!ATTLIST %maxInclusive; %facetAttr;>
+<!ELEMENT %minInclusive; %facetModel;>
+<!ATTLIST %minInclusive; %facetAttr;>
+
+<!ELEMENT %precision; %facetModel;>
+<!ATTLIST %precision; %facetAttr;>
+<!ELEMENT %scale; %facetModel;>
+<!ATTLIST %scale; %facetAttr;>
+
+<!ELEMENT %length; %facetModel;>
+<!ATTLIST %length; %facetAttr;>
+<!ELEMENT %minlength; %facetModel;>
+<!ATTLIST %minlength; %facetAttr;>
+<!ELEMENT %maxlength; %facetModel;>
+<!ATTLIST %maxlength; %facetAttr;>
+
+<!-- This one can be repeated -->
+<!ELEMENT %enumeration; %facetModel;>
+<!ATTLIST %enumeration; %facetAttr;>
+
+<!-- This one can be repeated -->
+<!ELEMENT %pattern; %facetModel;>
+<!ATTLIST %pattern; %facetAttr;>
+
+<!ELEMENT %encoding; %facetModel;>
+<!ATTLIST %encoding; %facetAttr;>
+<!ELEMENT %period; %facetModel;>
+<!ATTLIST %period; %facetAttr;>
+
+<!-- Annotation is either application information or documentation -->
+<!-- By having these here they are available for datatypes as well
+     as all the structures elements -->
+
+<!ELEMENT %annotation; (%appinfo; | %info;)*>
+
+<!-- User must define annotation elements in internal subset for this
+     to work -->
+<!ELEMENT %appinfo; ANY>   <!-- too restrictive -->
+<!ATTLIST %appinfo;
+          source     %URI;      #IMPLIED>
+<!ELEMENT %info; ANY>   <!-- too restrictive -->
+<!ATTLIST %info;
+          source     %URI;      #IMPLIED
+          xml:lang   CDATA      #IMPLIED>

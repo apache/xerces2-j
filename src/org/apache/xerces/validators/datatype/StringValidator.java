@@ -115,6 +115,7 @@ public class StringValidator implements InternalDatatypeValidator {
 	}
 	
 	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+	    facetData = new Hashtable(); // reset old facets
         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
             if (key.equals(DatatypeValidator.LENGTH)) {
@@ -135,6 +136,7 @@ public class StringValidator implements InternalDatatypeValidator {
             } else if (key.equals(DatatypeValidator.MINEXCLUSIVE)) {
             } else if (key.equals(DatatypeValidator.PATTERN)) {
             } else if (key.equals(DatatypeValidator.ENUMERATION)) {
+                facetData.put(key,facets.get(key));
             } else {
                 throw new IllegalFacetException();
             }

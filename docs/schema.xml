@@ -13,12 +13,15 @@
 	</s2>
 	<s2 title="Introduction">
 		<p>This package contains an implementation of a subset of the 
-		<jump href="http://www.w3.org/XML/Group/Schemas.html">
-		W3C XML Schema Language</jump> as specified in the 17 
-		December 1999 Working Draft. The parsers contained in this 
-		package are able to read and validate XML documents with the 
-		grammar specified in either DTD or XML Schema format.  There
-		is no functionality for accessing typed data.</p>
+		W3C XML Schema Language as specified in the 17 December 1999
+        Working Drafts for <jump
+        href="http://www.w3.org/TR/xmlschema-1/">Structures</jump> and
+        <jump
+        href="http://www.w3.org/TR/xmlschema-2/">Datatypes</jump>. The
+        parsers contained in this package are able to read and
+        validate XML documents with the grammar specified in either
+        DTD or XML Schema format.  There is no functionality for
+        accessing typed data.</p> 
 		<p>We are making this package available in order to get 
 		feedback on the features in the XML Schema language 
 		design and on representing an XML document&apos;s grammar 
@@ -35,17 +38,21 @@
 	</s2>
 	<s2 title="Structure Limitations">
 		<ul>
-			<li>elementDecls, archeTypes, modelGroups and attributeGroup 
+			<li>elements, types, groups and attributeGroups
 			share the same namespace</li>
-			<li>All archetypes, elements, modelGroups and attributeGroups 
+			<li>All types, elements, groups and attributeGroups 
 			must be declared before they are used.</li>
-			<li>On archetypes the following are unsupported:</li>
+			<li>On types the following are unsupported:</li>
 				<ul>
-					<li>open, refine-able, and closed models</li>
-					<li>nested element decls</li>
+                    <li><code>final</code>, <code>abstract</code>,
+                    <code>exact</code>, <code>nullable</code>.</li>
+					<li>nested <code>element</code> declarations</li>
 				</ul>
-			<li>None of the items in section 5, import, inclusion, export, 
-			or refinement, are supported.</li>
+            <li>Only the <code>&lt;any/&gt;</code> wildcard is supported</li>
+            <li>Type derivation (section 3.6) is not supported</li>
+            <li>Unique, key and key reference constraints (section
+            3.7) are not supported.</li>
+			<li>None of the mechanisms in section 4, are supported.</li>
 		</ul>
 	</s2>
 	<s2 title="Datatype Limitations">
@@ -57,15 +64,15 @@
 			<tr><th>Schema type</th><th>Java type</th></tr>
 			<tr><td>boolean</td><td>Boolean</td></tr>
 			<tr><td>integer</td><td>Integer</td></tr>
-			<tr><td>decimal</td><td>Double</td></tr>
-			<tr><td>real</td><td>Double</td></tr>
+			<tr><td>decimal</td><td>BigDecimal</td></tr>
+			<tr><td>float</td><td>float</td></tr>
+			<tr><td>double</td><td>double</td></tr>
 		</table>
 		<ul>
 			<li>The NMTOKEN, NMTOKENS, Name, NCName, ID, IDREF,
 			ENTITY, ENTITIES, NOTATION are only supported on attributes. At
 			the moment they cannot be applied to element content.</li>
-			<li>The timeInstant, timeDuration, recurringInstant, date, time, 
-			binary, uri, and language datatypes are not supported.</li>
+			<li>The recurringInstant, date, time, and language datatypes are not supported.</li>
 			<li>Datatype qualifiers on attributes are not supported.</li>
 	    </ul>
 	</s2>
@@ -86,8 +93,8 @@
 &lt;/document&gt;</source>
 		<p>Another requirement is that the XML Schema document's grammar must 
 		have a &lt;!DOCTYPE ...&gt; line specifying the DTD for XML Schema grammar. 
-		The DOCTYPE must specify the following system identifier:<br/>
-		<code>http://www.w3.org/XML/Group/1999/09/23-xmlschema/structures/structures.dtd</code></p>
+		The DOCTYPE must specify the following system identifier:<br/></p>
+<source>http://www.w3.org/TR/1999/WD-xmlschema-1-19991217/structures.dtd</source>
 		<p>Also, there must be an attribute declaration for the xmlns attribute 
 		used to find the schema (document in the example above).</p>
 		<p>Review the sample file, "data/personal.xsd" for an example of an XML 

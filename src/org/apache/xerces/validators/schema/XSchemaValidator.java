@@ -116,6 +116,8 @@ import org.apache.xerces.validators.datatype.DoubleValidator;
 import org.apache.xerces.validators.datatype.DecimalValidator;
 import org.apache.xerces.validators.datatype.TimeDurationValidator;
 import org.apache.xerces.validators.datatype.TimeInstantValidator;
+import org.apache.xerces.validators.datatype.BinaryValidator;
+import org.apache.xerces.validators.datatype.URIValidator;
 import org.apache.xerces.msg.SchemaMessages;
 
 /**
@@ -165,6 +167,7 @@ public class XSchemaValidator implements XMLValidator {
     private int fGroupCount = 0;
     private int fModelGroupCount = 0;
     private int fAttributeGroupCount = 0;
+    private int fDatatypeCount = 0;
     private Hashtable fForwardRefs = new Hashtable(); // REVISIT w/ more efficient structure later
     private Hashtable fAttrGroupUses = new Hashtable();
 
@@ -172,19 +175,19 @@ public class XSchemaValidator implements XMLValidator {
 
     private static final String ELT_COMMENT = "comment";
     private static final String ELT_DATATYPEDECL = "datatype";
-    private static final String ELT_ARCHETYPEDECL = "archetype";
+    private static final String ELT_ARCHETYPEDECL = "type";
     private static final String ELT_ELEMENTDECL = "element";
-    private static final String ELT_GROUP = "group";
-    private static final String ELT_ATTRGROUPDECL = "attrGroup";
-    private static final String ELT_ATTRGROUPREF = "attrGroupRef";
-    private static final String ELT_MODELGROUPDECL = "modelGroup";
-    private static final String ELT_MODELGROUPREF = "modelGroupRef";
-    private static final String ELT_TEXTENTITYDECL = "textEntity";
-    private static final String ELT_EXTERNALENTITYDECL = "externalEntity";
-    private static final String ELT_UNPARSEDENTITYDECL = "unparsedEntity";
+    private static final String ELT_GROUPDECL = "group";
+    private static final String ELT_ATTRGROUPDECL = "attributeGroup";
+//    private static final String ELT_TEXTENTITYDECL = "textEntity";
+//    private static final String ELT_EXTERNALENTITYDECL = "externalEntity";
+//    private static final String ELT_UNPARSEDENTITYDECL = "unparsedEntity";
     private static final String ELT_NOTATIONDECL = "notation";
-    private static final String ELT_REFINES = "refines";
+//    private static final String ELT_REFINES = "refines";
+    private static final String ELT_RESTRICTIONS = "restrictions";
     private static final String ELT_ATTRIBUTEDECL = "attribute";
+    private static final String ELT_ANNOTATION = "annotation";
+    private static final String ELT_ANY = "any";
     private static final String ATT_NAME = "name";
     private static final String ATT_CONTENT = "content";
     private static final String ATT_MODEL = "model";
@@ -199,14 +202,16 @@ public class XSchemaValidator implements XMLValidator {
     private static final String ATT_SCHEMANAME = "schemaName";
     private static final String ATT_MINOCCURS = "minOccurs";
     private static final String ATT_MAXOCCURS = "maxOccurs";
-    private static final String ATT_EXPORT = "export";
+//    private static final String ATT_EXPORT = "export";
+    private static final String ATT_SOURCE = "source";
+    private static final String ATT_VALUE = "value";
     private static final String ATTVAL_ANY = "any";
     private static final String ATTVAL_MIXED = "mixed";
     private static final String ATTVAL_EMPTY = "empty";
     private static final String ATTVAL_CHOICE = "choice";
     private static final String ATTVAL_SEQ = "seq";
     private static final String ATTVAL_ALL = "all";
-    private static final String ATTVAL_ELEMONLY = "elemOnly";
+    private static final String ATTVAL_ELEMONLY = "elementOnly";
     private static final String ATTVAL_TEXTONLY = "textOnly";
 
     private Document fSchemaDocument;
@@ -1726,14 +1731,14 @@ public class XSchemaValidator implements XMLValidator {
 				traverseElementDecl(child);
 			} else if (name.equals(ELT_ATTRGROUPDECL)) {
 				traverseAttrGroup(child);
-			} else if (name.equals(ELT_MODELGROUPDECL)) {
-				traverseModelGroup(child);
+			} else if (name.equals(ELT_GROUPDECL) && child.getAttribute(ATT_REF).equals("")) {
+				traverseGroup(child);
 			}
 
             //
             // Entities
             //
-
+/*
             else if (name.equals(ELT_TEXTENTITYDECL) ||
                      name.equals(ELT_EXTERNALENTITYDECL) ||
                      name.equals(ELT_UNPARSEDENTITYDECL)) {
@@ -1757,7 +1762,7 @@ public class XSchemaValidator implements XMLValidator {
                     }
                 }
             }
-
+*/
             //
             // Notation
             //
@@ -1813,176 +1818,142 @@ public class XSchemaValidator implements XMLValidator {
 	private int traverseTypeDecl(Element typeDecl) throws Exception {
 		String typeName = typeDecl.getAttribute(ATT_NAME);
 		String content = typeDecl.getAttribute(ATT_CONTENT);
-		String model = typeDecl.getAttribute(ATT_MODEL);
-		String order = typeDecl.getAttribute(ATT_ORDER);
-		String type = typeDecl.getAttribute(ATT_TYPE);
-		String deflt = typeDecl.getAttribute(ATT_DEFAULT);
-		String fixed = typeDecl.getAttribute(ATT_FIXED);
-		String schemaAbbrev = typeDecl.getAttribute(ATT_SCHEMAABBREV);
-		String schemaName = typeDecl.getAttribute(ATT_SCHEMANAME);
-		
+		String source = typeDecl.getAttribute(ATT_SOURCE);
+
 		if (typeName.equals("")) { // gensym a unique name
 		    typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
 		}
 		
-		// integrity checks
-		if (type.equals("")) {
-		    if (!schemaAbbrev.equals(""))
-				reportSchemaError(SchemaMessageProvider.AttMissingType,
-							new Object [] { "schemaAbbrev" });
-		    if (!schemaName.equals(""))
-				reportSchemaError(SchemaMessageProvider.AttMissingType,
-							new Object [] { "schemaName" });
-		    if (!deflt.equals(""))
-				reportSchemaError(SchemaMessageProvider.AttMissingType,
-							new Object [] { "default" });
-		    if (!fixed.equals(""))
-				reportSchemaError(SchemaMessageProvider.AttMissingType,
-							new Object [] { "fixed" });
-		} else {
-            if (fDatatypeRegistry.getValidatorFor(type) != null) // must be datatype
-				reportSchemaError(SchemaMessageProvider.NotADatatype,
-								  new Object [] { type }); //REVISIT check forward refs
-            if (!content.equals(ATTVAL_TEXTONLY)) //REVISIT: check if attribute was specified, if not, set
-				reportSchemaError(SchemaMessageProvider.TextOnlyContentWithType, null);
-		    // REVISIT handle datatypes
-		}
-		
-		Element child = XUtil.getFirstChildElement(typeDecl);
-		Element refines = null;
-
-		// skip the refines
-		if (child != null && child.getNodeName().equals(ELT_REFINES)) {
-			reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-							  new Object [] { "Refinement" });
-			refines = child;
-			child = XUtil.getNextSiblingElement(child);
-		}
-		
-		int contentSpecType = 0;
-		int csnType = 0;
-        boolean mixedContent = false;
-        boolean elementContent = false;
-        boolean textContent = false;
-        boolean buildAll = false;
-        int allChildren[] = null;
-        int allChildCount = 0;
-		int left = -2;
-		int right = -2;
-		boolean hadContent = false;
-		
-        if (order.equals(ATTVAL_CHOICE)) {
-			csnType = XMLContentSpecNode.CONTENTSPECNODE_CHOICE;
-			contentSpecType = fStringPool.addSymbol("CHILDREN");
-		} else if (order.equals(ATTVAL_SEQ)) {
-			csnType = XMLContentSpecNode.CONTENTSPECNODE_SEQ;
-			contentSpecType = fStringPool.addSymbol("CHILDREN");
-		} else if (order.equals(ATTVAL_ALL)) {
-            buildAll = true;
-            allChildren = new int[((org.apache.xerces.dom.NodeImpl)typeDecl).getLength()];
-            allChildCount = 0;
-		}
-
-		if (content.equals(ATTVAL_EMPTY)) {
-			contentSpecType = fStringPool.addSymbol("EMPTY");
-			left = -1; // no contentSpecNode needed
-		} else if (content.equals(ATTVAL_ANY)) {
-			contentSpecType = fStringPool.addSymbol("ANY");
-			left = -1; // no contentSpecNode needed
-		} else if (content.equals(ATTVAL_MIXED)) {
-		    contentSpecType = fStringPool.addSymbol("MIXED");
-		    mixedContent = true;
-		    csnType = XMLContentSpecNode.CONTENTSPECNODE_CHOICE;
-		} else if (content.equals(ATTVAL_ELEMONLY)) {
-            elementContent = true;
-		} else if (content.equals(ATTVAL_TEXTONLY)) {
-            textContent = true;
-        }
-
-        if (mixedContent) {
-    	    // add #PCDATA leaf
-            left = fElementDeclPool.addContentSpecNode(XMLContentSpecNode.CONTENTSPECNODE_LEAF,
-					      							   -1, // -1 means "#PCDATA" is name
-													   -1, false);
-        }
-
+		Element child = null;
+        int contentSpecType = 0;
+        int csnType = 0;
+        int left = -2;
+        int right = -2;
         Vector uses = new Vector();
-		for (;
-			 child != null;
-			 child = XUtil.getNextSiblingElement(child)) {
-			int index = -2;
-            hadContent = true;
-			String childName = child.getNodeName();
-			if (childName.equals(ELT_ELEMENTDECL)) {
-			    if (child.getAttribute(ATT_REF).equals("")) { // elt decl
-			        if (elementContent)   //REVISIT: no support for nested type declarations
-						reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-										  new Object [] { "Nesting element declarations" });
-        			else
-						reportSchemaError(SchemaMessageProvider.NestedOnlyInElemOnly, null);
-    			} else if (mixedContent || elementContent) { // elt ref
-    			    index = traverseElementRef(child);
-    			} else {
-					reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
-    			}
-			} else if (childName.equals(ELT_GROUP)) {
-			    if (elementContent && !buildAll) {
-    			    int groupNameIndex = traverseGroup(child);
-	    			index = getContentSpec(getElement(groupNameIndex));
-				} else if (!elementContent)
-					reportSchemaError(SchemaMessageProvider.OnlyInEltContent,
-									  new Object [] { "group" });
-			    else // buildAll
-					reportSchemaError(SchemaMessageProvider.OrderIsAll,
-									  new Object [] { "group" } );
-			} else if (childName.equals(ELT_MODELGROUPREF)) {
-			    if (elementContent && !buildAll) {
-    				int modelGroupNameIndex = traverseModelGroup(child);
-	    			index = getContentSpec(getElement(modelGroupNameIndex));
-		    		if (index == -1)
-						reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-										  new Object [] { "Forward reference to model group" });
-				    index = expandContentModel(index, child);
-				} else if (!elementContent)
-					reportSchemaError(SchemaMessageProvider.OnlyInEltContent,
-									  new Object [] { "modelGroupRef" });
-				else // buildAll
-					reportSchemaError(SchemaMessageProvider.OrderIsAll,
-									  new Object [] { "modelGroupRef" });
-			} else if (childName.equals(ELT_ATTRIBUTEDECL) || childName.equals(ELT_ATTRGROUPREF)) {
-			    break; // attr processing is done below
-			} else { // datatype qual
-			    if (type.equals(""))
-					reportSchemaError(SchemaMessageProvider.DatatypeWithType, null);
-			    else
-					reportSchemaError(SchemaMessageProvider.DatatypeQualUnsupported,
-									  new Object [] { childName });
-			}
-            uses.addElement(new Integer(index));
-			if (buildAll) {
-			    allChildren[allChildCount++] = index;
-			} else if (left == -2) {
-				left = index;
-			} else if (right == -2) {
-				right = index;
-			} else {
-   				left = fElementDeclPool.addContentSpecNode(csnType, left, right, false);
-    			right = index;
-   			}
-		}
-		if (buildAll) {
-		    left = buildAllModel(allChildren,allChildCount);
-		} else {
-		    if (hadContent && right != -2)
-       		    left = fElementDeclPool.addContentSpecNode(csnType, left, right, false);
 		
-    		if (mixedContent && hadContent) {
-	    		// set occurrence count
-		    	left = fElementDeclPool.addContentSpecNode(XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_MORE,
-													   left, -1, false);
-	    	}
-		}
+   		// skip refinement and annotations
+        child = null;
+		for (child = XUtil.getFirstChildElement(typeDecl);
+		     child != null && (child.getNodeName().equals(ELT_RESTRICTIONS) ||
+		                       child.getNodeName().equals(ELT_ANNOTATION));
+		     child = XUtil.getNextSiblingElement(child)) {
+    		if (child.getNodeName().equals(ELT_RESTRICTIONS))
+	    		reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
+		    					  new Object [] { "Restriction" });
+	    }
+
+        // if content = textonly, source is a datatype
+        if (content.equals(ATTVAL_TEXTONLY)) {
+            if (fDatatypeRegistry.getValidatorFor(source) == null) // must be datatype
+	    		reportSchemaError(SchemaMessageProvider.NotADatatype,
+		    					  new Object [] { source }); //REVISIT check forward refs
+            //handle datatypes
+            contentSpecType = fStringPool.addSymbol("DATATYPE");
+            left = fElementDeclPool.addContentSpecNode(XMLContentSpecNode.CONTENTSPECNODE_LEAF,
+									                   fStringPool.addSymbol(source),
+													   -1, false);
+            
+        } else {   
+            contentSpecType = fStringPool.addSymbol("CHILDREN");
+            csnType = XMLContentSpecNode.CONTENTSPECNODE_SEQ;
+            boolean mixedContent = false;
+            boolean elementContent = false;
+            boolean textContent = false;
+            left = -2;
+            right = -2;
+            boolean hadContent = false;
 		
+            if (content.equals(ATTVAL_EMPTY)) {
+                contentSpecType = fStringPool.addSymbol("EMPTY");
+                left = -1; // no contentSpecNode needed
+            } else if (content.equals(ATTVAL_MIXED) || content.equals("")) {
+                contentSpecType = fStringPool.addSymbol("MIXED");
+                mixedContent = true;
+                csnType = XMLContentSpecNode.CONTENTSPECNODE_CHOICE;
+            } else if (content.equals(ATTVAL_ELEMONLY)) {
+                elementContent = true;
+            } else if (content.equals(ATTVAL_TEXTONLY)) {
+                textContent = true;
+            }
+            
+            if (mixedContent) {
+                // a    dd #PCDATA leaf
+                left = fElementDeclPool.addContentSpecNode(XMLContentSpecNode.CONTENTSPECNODE_LEAF,
+                                                           -1, // -1 means "#PCDATA" is name
+                                                           -1, false);
+            }
+
+            for (;
+                 child != null;
+                 child = XUtil.getNextSiblingElement(child)) {
+                int index = -2;
+                hadContent = true;
+                String childName = child.getNodeName();
+                if (childName.equals(ELT_ELEMENTDECL)) {
+                    if (child.getAttribute(ATT_REF).equals("") && 
+                        child.getAttribute(ATT_TYPE).equals("")) { // elt decl
+                        if (elementContent)   //R   EVISIT: no support for nested type declarations
+                            reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
+                                              new Object [] { "Nesting element declarations" });
+                        else
+                            reportSchemaError(SchemaMessageProvider.NestedOnlyInElemOnly, null);
+                    } else if (mixedContent || elementContent) {
+                        if (!child.getAttribute(ATT_TYPE).equals("")) {
+                            int elementNameIndex = traverseElementDecl(child);
+                            index = fElementDeclPool.addContentSpecNode(XMLContentSpecNode.CONTENTSPECNODE_LEAF,
+                                                                        elementNameIndex,
+                                                                        -1, false);
+                        } else // ATT_REF != ""
+                            index = traverseElementRef(child);
+                    } else {
+                        reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
+                    }
+                } else if (childName.equals(ELT_GROUPDECL)) {
+                    if (elementContent) {
+                        int groupNameIndex = 0;
+                        if (child.getAttribute(ATT_REF).equals("")) {
+                            groupNameIndex = traverseGroup(child);
+                        } else
+                            groupNameIndex = traverseGroupRef(child);
+                        index = getContentSpec(getElement(groupNameIndex));
+                    } else if (!elementContent)
+                        reportSchemaError(SchemaMessageProvider.OnlyInEltContent,
+                                          new Object [] { "group" });
+                    else // buildAll    
+                        reportSchemaError(SchemaMessageProvider.OrderIsAll,
+                                          new Object [] { "group" } );
+                } else if (childName.equals(ELT_ATTRIBUTEDECL)) {
+                    break; // attr processing is done be    low
+                } else if (childName.equals(ELT_ANY)) {
+                    contentSpecType = fStringPool.addSymbol("ANY");
+                    left = -1;
+                } else { // datatype qual   
+                    if (source.equals(""))
+                        reportSchemaError(SchemaMessageProvider.DatatypeWithType, null);
+                    else
+                        reportSchemaError(SchemaMessageProvider.DatatypeQualUnsupported,
+                                          new Object [] { childName });
+                }
+                uses.addElement(new Integer(index));
+                if (left == -2) {
+                    left = index;
+                } else if (right == -2) {
+                    right = index;
+                } else {
+                    left = fElementDeclPool.addContentSpecNode(csnType, left, right, false);
+                    right = index;
+                }
+            }
+            
+            if (hadContent && right != -2)
+                left = fElementDeclPool.addContentSpecNode(csnType, left, right, false);
+		
+            if (mixedContent && hadContent) {
+                // set occurrence count
+                left = fElementDeclPool.addContentSpecNode(XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_MORE,
+                                                           left, -1, false);
+            }
+        }
 		// stick in ElementDeclPool as a hack
 		int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
 		int typeIndex = fElementDeclPool.addElementDecl(typeNameIndex, contentSpecType, left, false);
@@ -1997,7 +1968,7 @@ public class XSchemaValidator implements XMLValidator {
 			String childName = child.getNodeName();
 			if (childName.equals(ELT_ATTRIBUTEDECL)) {
 				traverseAttributeDecl(child, typeIndex);
-			} else if (childName.equals(ELT_ATTRGROUPREF)) {
+			} else if (childName.equals(ELT_ATTRGROUPDECL) && !child.getAttribute(ATT_REF).equals("")) {
     			int index = traverseAttrGroupRef(child);
     			if (getContentSpec(getElement(index)) == -1) {
 					reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
@@ -2058,12 +2029,22 @@ public class XSchemaValidator implements XMLValidator {
             hadContent = true;
 			String childName = child.getNodeName();
 			if (childName.equals(ELT_ELEMENTDECL)) {
-			    if (child.getAttribute(ATT_REF).equals(""))
+			    if (child.getAttribute(ATT_REF).equals("") && 
+                    child.getAttribute(ATT_TYPE).equals("")) { //elt decl
 					reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
 									  new Object [] { "Nesting element declarations" });
-			    else
-    			    index = traverseElementRef(child);
-			} else if (childName.equals(ELT_GROUP)) {
+                } else {
+                    if (!child.getAttribute(ATT_TYPE).equals("")) {
+    			       int elementNameIndex = traverseElementDecl(child);
+    			       index = fElementDeclPool.addContentSpecNode(XMLContentSpecNode.CONTENTSPECNODE_LEAF,
+    			                                                   elementNameIndex,
+    			                                                   -1, false);
+    			       
+                    } else {
+                        index = traverseElementRef(child); 
+                    }
+                }
+			} else if (childName.equals(ELT_GROUPDECL)) {
 			    if (!buildAll) {
     			    int groupNameIndex = traverseGroup(child);
 	    			groupIndices[numGroups++] = groupNameIndex;
@@ -2071,14 +2052,6 @@ public class XSchemaValidator implements XMLValidator {
 		    	} else
 					reportSchemaError(SchemaMessageProvider.OrderIsAll,
 									  new Object [] { "group" } );
-			} else if (childName.equals(ELT_MODELGROUPREF)) {
-			    if (!buildAll) {
-                    int modelGroupNameIndex = traverseModelGroupRef(child);
-                    index = getContentSpec(getElement(modelGroupNameIndex));
-                    index = expandContentModel(index, child);
-                } else
-					reportSchemaError(SchemaMessageProvider.OrderIsAll,
-									  new Object [] { "modelGroupRef" });
 			} else {
 				reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
 								  new Object [] { "group", childName });
@@ -2109,107 +2082,28 @@ public class XSchemaValidator implements XMLValidator {
         return groupNameIndex;
 	}
 
-	private int traverseModelGroup(Element modelGroupDecl) throws Exception {
-		String modelGroupName = modelGroupDecl.getAttribute(ATT_NAME);
-		String order = modelGroupDecl.getAttribute(ATT_ORDER);
-		
-		if (modelGroupName.equals("")) { // gensym a unique name
-		    modelGroupName = "http://www.apache.org/xml/xerces/internalModelGroup"+fModelGroupCount++;
-		}
-		
-		Element child = XUtil.getFirstChildElement(modelGroupDecl);
-
-		int contentSpecType = 0;
-		int csnType = 0;
-        boolean buildAll = false;
-        int allChildren[] = null;
-        int allChildCount = 0;
-		
-		if (order.equals(ATTVAL_CHOICE)) {
-			csnType = XMLContentSpecNode.CONTENTSPECNODE_CHOICE;
-			contentSpecType = fStringPool.addSymbol("CHILDREN");
-		} else if (order.equals(ATTVAL_SEQ)) {
-			csnType = XMLContentSpecNode.CONTENTSPECNODE_SEQ;
-			contentSpecType = fStringPool.addSymbol("CHILDREN");
-		} else if (order.equals(ATTVAL_ALL)) {
-			buildAll = true;
-            allChildren = new int[((org.apache.xerces.dom.NodeImpl)modelGroupDecl).getLength()];
-            allChildCount = 0;
-		}
-		int left = -2;
-		int right = -2;
-		boolean hadContent = false;
-
-		for (;
-			 child != null;
-			 child = XUtil.getNextSiblingElement(child)) {
-			int index = -2;
-            hadContent = true;
-			String childName = child.getNodeName();
-			if (childName.equals(ELT_ELEMENTDECL)) {
-			    if (child.getAttribute(ATT_REF).equals(""))
-					reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-									  new Object [] { "Nesting element declarations" });
-			    else {
-    			    index = traverseElementRef(child);
-                }
-			} else if (childName.equals(ELT_GROUP)) {
-			    int groupNameIndex = traverseGroup(child);
-				index = getContentSpec(getElement(groupNameIndex));
-			} else if (childName.equals(ELT_MODELGROUPREF)) {
-                int modelGroupNameIndex = traverseModelGroupRef(child);
-                index = getContentSpec(getElement(modelGroupNameIndex));
-                index = expandContentModel(index, child);
-			} else {
-				reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-								  new Object [] { "modelGroup", childName });
-			}
-			if (buildAll) {
-			    allChildren[allChildCount++] = index;
-			} else if (left == -2) {
-				left = index;
-			} else if (right == -2) {
-				right = index;
-			} else {
-   				left = fElementDeclPool.addContentSpecNode(csnType, left, right, false);
-    			right = index;
-   			}
-		}
-		if (buildAll) {
-		    left = buildAllModel(allChildren,allChildCount);
-		} else {
-			if (hadContent && right != -2)
-				left = fElementDeclPool.addContentSpecNode(csnType, left, right, false);
-		}
-
-		left = expandContentModel(left, modelGroupDecl);
-
-		// stick in ElementDeclPool as a hack
-		int modelGroupNameIndex = fStringPool.addSymbol(modelGroupName); //REVISIT namespace clashes possible
-		int modelGroupIndex = fElementDeclPool.addElementDecl(modelGroupNameIndex, contentSpecType, left, false);
-
-        return modelGroupNameIndex;
-	}
-
-	private int traverseModelGroupRef(Element modelGroupRef) {
-	    String name = modelGroupRef.getAttribute(ATT_NAME);
+	private int traverseGroupRef(Element groupRef) {
+	    String name = groupRef.getAttribute(ATT_REF);
 	    int index = fStringPool.addSymbol(name);
-//	    if (getContentSpec(getElement(index)) == -1) fElementDeclPool.setContentSpec(index, -2);
-        return index;
+	    return index;
 	}
 
 	public int traverseDatatypeDecl(Element datatypeDecl) throws Exception {
-		int newTypeName = fStringPool.addSymbol(datatypeDecl.getAttribute(ATT_NAME));
-		int export = fStringPool.addSymbol(datatypeDecl.getAttribute(ATT_EXPORT));
+		int newTypeName;
+		
+ 		if (datatypeDecl.getAttribute(ATT_NAME).equals("")) {
+    		String newTypeString = "http://www.apache.org/xml/xerces/internalDatatype"+fGroupCount++;
+		    newTypeName = fStringPool.addSymbol(newTypeString);
+	 	} else
+    		newTypeName = fStringPool.addSymbol(datatypeDecl.getAttribute(ATT_NAME));
+		int basetype = fStringPool.addSymbol(datatypeDecl.getAttribute(ATT_SOURCE));
 
-		Element datatypeChild = XUtil.getFirstChildElement(datatypeDecl);
-		int basetype = fStringPool.addSymbol(datatypeChild.getNodeName());
 		// check that base type is defined
 		//REVISIT: how do we do the extension mechanism? hardwired type name?
-		DatatypeValidator baseValidator = fDatatypeRegistry.getValidatorFor(datatypeChild.getAttribute(ATT_NAME));
+		DatatypeValidator baseValidator = fDatatypeRegistry.getValidatorFor(datatypeDecl.getAttribute(ATT_SOURCE));
 		if (baseValidator == null) {
 			reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-							  new Object [] { datatypeChild.getAttribute(ATT_NAME), datatypeDecl.getAttribute(ATT_NAME) });
+							  new Object [] { datatypeDecl.getAttribute(ATT_SOURCE), datatypeDecl.getAttribute(ATT_NAME) });
 			return -1;
 		}
 
@@ -2219,19 +2113,19 @@ public class XSchemaValidator implements XMLValidator {
 		Hashtable facetData = new Hashtable();
 		Vector enumData = new Vector();
 
-		Node facet = datatypeChild.getNextSibling();
+        // Skip annotations
+		Node facet = datatypeDecl.getFirstChild();
+		while (facet != null && facet.getNodeName().equals(ELT_ANNOTATION))
+		    facet = facet.getNextSibling();
 		while (facet != null) {
 			if (facet.getNodeType() == Node.ELEMENT_NODE) {
+			    Element facetElt = (Element) facet;
 				numFacets++;
-				if (facet.getNodeName().equals(DatatypeValidator.ENUMERATION)) {
-					Node literal = XUtil.getFirstChildElement(facet);
-					while (literal != null) {
-						numEnumerationLiterals++;
-						enumData.addElement(literal.getFirstChild().getNodeValue());
-						literal = XUtil.getNextSiblingElement(literal);
-					}
+    			if (facetElt.getNodeName().equals(DatatypeValidator.ENUMERATION)) {
+					numEnumerationLiterals++;
+					enumData.addElement(facetElt.getAttribute(ATT_VALUE));
 				} else {
-					facetData.put(facet.getNodeName(),facet.getFirstChild().getNodeValue());
+					facetData.put(facetElt.getNodeName(),facetElt.getAttribute(ATT_VALUE));
 				}
 			}
 			facet = facet.getNextSibling();
@@ -2250,7 +2144,7 @@ public class XSchemaValidator implements XMLValidator {
 			reportSchemaError(SchemaMessageProvider.DatatypeError,
 							  new Object [] { e.getMessage() });
 		}
-        return -1;
+        return newTypeName;
 	}
 
 	private int traverseElementDecl(Element elementDecl) throws Exception {
@@ -2260,26 +2154,23 @@ public class XSchemaValidator implements XMLValidator {
 
 		String name = elementDecl.getAttribute(ATT_NAME);
 		String ref = elementDecl.getAttribute(ATT_REF);
-		String archRef = elementDecl.getAttribute(ATT_ARCHREF);
 		String type = elementDecl.getAttribute(ATT_TYPE);
-		String schemaAbbrev = elementDecl.getAttribute(ATT_SCHEMAABBREV);
-		String schemaName = elementDecl.getAttribute(ATT_SCHEMANAME);
 		String minOccurs = elementDecl.getAttribute(ATT_MINOCCURS);
 		String maxOccurs = elementDecl.getAttribute(ATT_MAXOCCURS);
-		String export = elementDecl.getAttribute(ATT_EXPORT);
+		String dflt = elementDecl.getAttribute(ATT_DEFAULT);
+		String fixed = elementDecl.getAttribute(ATT_FIXED);
 
         int attrCount = 0;
 		if (!ref.equals("")) attrCount++;
 		if (!type.equals("")) attrCount++;
-		if (!archRef.equals("")) attrCount++;
 		//REVISIT top level check for ref & archref
 		if (attrCount > 1)
 			reportSchemaError(SchemaMessageProvider.OneOfTypeRefArchRef, null);
 		
-		if (!ref.equals("") || !archRef.equals("")) {
+		if (!ref.equals("")) {
 		    if (XUtil.getFirstChildElement(elementDecl) != null)
 				reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
-		   	int typeName = (!ref.equals("")) ? fStringPool.addSymbol(ref) : fStringPool.addSymbol(archRef);
+		   	int typeName = fStringPool.addSymbol(ref);
 		   	contentSpecNodeIndex = getContentSpec(getElement(typeName));
 		   	contentSpecType = getContentSpecType(getElement(typeName));
 
@@ -2398,7 +2289,14 @@ public class XSchemaValidator implements XMLValidator {
 		int enumeration = -1;
 		String datatype = attrDecl.getAttribute(ATT_TYPE);
 		if (datatype.equals("")) {
-			attType = fStringPool.addSymbol("CDATA");
+		    Element child = XUtil.getFirstChildElement(attrDecl);
+		    while (child != null && !child.getNodeName().equals(ELT_DATATYPEDECL))
+		        child = XUtil.getNextSiblingElement(child);
+		    if (child != null && child.getNodeName().equals(ELT_DATATYPEDECL)) {
+		        attType = fStringPool.addSymbol("DATATYPE");
+		        enumeration = traverseDatatypeDecl(child);
+		    } else 
+    			attType = fStringPool.addSymbol("CDATA");
 		} else {
 			if (datatype.equals("string")) {
 				attType = fStringPool.addSymbol("CDATA");
@@ -2459,6 +2357,7 @@ public class XSchemaValidator implements XMLValidator {
 					attDefaultType = fStringPool.addSymbol("#IMPLIED");
 				}
 			}
+			// check default value is valid for the datatype.
 			if (attType == fStringPool.addSymbol("DATATYPE") && attDefaultValue != -1) {
         		try { // REVISIT - integrate w/ error handling
                     String type = fStringPool.toString(enumeration);
@@ -2499,7 +2398,7 @@ public class XSchemaValidator implements XMLValidator {
 			 child != null;
 			 child = XUtil.getNextSiblingElement(child)) {
 			String childName = child.getNodeName();
-			if (childName.equals(ELT_ATTRGROUPREF)) {
+			if (childName.equals(ELT_ATTRGROUPDECL) && !child.getAttribute(ATT_REF).equals("")) {
 			    groupIndices[numGroups++] = traverseAttrGroupRef(child);
 			    if (getContentSpec(getElement(groupIndices[numGroups-1])) == -1) {
 					reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
@@ -2552,7 +2451,7 @@ public class XSchemaValidator implements XMLValidator {
 	}
 
 	private int traverseAttrGroupRef(Element attrGroupRef) {
-	    String name = attrGroupRef.getAttribute(ATT_NAME);
+	    String name = attrGroupRef.getAttribute(ATT_REF);
 	    int index = fStringPool.addSymbol(name);
         return index;
 	}
@@ -3023,12 +2922,14 @@ public class XSchemaValidator implements XMLValidator {
     static class Resolver implements EntityResolver {
 
         private static final String SYSTEM[] = {
-            "http://www.w3.org/XML/Group/1999/09/23-xmlschema/structures/structures.dtd",
-            "http://www.w3.org/XML/Group/1999/09/23-xmlschema/datatypes/datatypes.dtd",
+            "http://www.w3.org/TR/1999/WD-xmlschema-1-19991217/structures.dtd",
+            "http://www.w3.org/TR/1999/WD-xmlschema-2-19991217/datatypes.dtd",
+            "http://www.w3.org/TR/1999/WD-xmlschema-1-19991217/versionInfo.ent",
             };
         private static final String PATH[] = {
             "structures.dtd",
             "datatypes.dtd",
+            "versionInfo.ent",
             };
 
         public InputSource resolveEntity(String publicId, String systemId)
@@ -3121,12 +3022,13 @@ public class XSchemaValidator implements XMLValidator {
             fRegistry.put("double", new DoubleValidator());
             fRegistry.put("timeDuration", new TimeDurationValidator());
             fRegistry.put("timeInstant", new TimeInstantValidator());
+            fRegistry.put("binary", new BinaryValidator());
+            fRegistry.put("uri", new URIValidator());
             //REVISIT - enable the below
-            //fRegistry.put("binary", new BinaryValidator());
             //fRegistry.put("date", new DateValidator());
             //fRegistry.put("timePeriod", new TimePeriodValidator());
             //fRegistry.put("time", new TimeValidator());
-            //fRegistry.put("uri", new URIValidator());
+
 
             DatatypeValidator v = null;
             for (int i = 0; i < integerSubtypeTable.length; i++) {
