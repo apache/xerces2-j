@@ -53,43 +53,45 @@ Copyright:
 
 <project default="package" basedir=".">
 
-  <property name="name" value="xerces"/>
-  <property name="Name" value="Xerces"/>
-  <property name="version" value="1.0.2"/>
-  <property name="year" value="1999"/>
+  <target name="init">
+    <property name="name" value="xerces"/>
+    <property name="Name" value="Xerces"/>
+    <property name="version" value="1.0.2"/>
+    <property name="year" value="1999"/>
 
-  <property name="build.compiler" value="classic"/>
-  <property name="debug" value="off"/>
+    <property name="build.compiler" value="classic"/>
+    <property name="debug" value="off"/>
 
-  <property name="src.dir" value="./src"/>
-  <property name="docs.dir" value="./docs"/>
-  <property name="data.dir" value="./data"/>
-  <property name="samples.dir" value="./samples"/>
-  <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
-  <property name="version.file" value="???"/>
+    <property name="src.dir" value="./src"/>
+    <property name="docs.dir" value="./docs"/>
+    <property name="data.dir" value="./data"/>
+    <property name="samples.dir" value="./samples"/>
+    <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
+    <property name="version.file" value="???"/>
 
-  <property name="site.book" value="${docs.dir}/site-book.xml"/>
-  <property name="site.dir" value="../../xml-site/sources/${name}"/>
-  <property name="site.docs" value="../../xml-site/targets/${name}"/>
+    <property name="site.book" value="${docs.dir}/site-book.xml"/>
+    <property name="site.dir" value="../../xml-site/sources/${name}"/>
+    <property name="site.docs" value="../../xml-site/targets/${name}"/>
 
-  <property name="packages" value="org.*"/>
+    <property name="packages" value="org.*"/>
 
-  <property name="style" value="../../xml-site/style/"/>
-  <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
+    <property name="style" value="../../xml-site/style/"/>
+    <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
 
-  <property name="build.dir" value="./build"/>
-  <property name="build.src" value="./build/src"/>
-  <property name="build.dest" value="./build/classes"/>
-  <property name="build.docs" value="./build/docs/html"/>
-  <property name="build.samples" value="./build/samples"/>
-  <property name="build.javadocs" value="./build/javadocs"/>
+    <property name="build.dir" value="./build"/>
+    <property name="build.src" value="./build/src"/>
+    <property name="build.dest" value="./build/classes"/>
+    <property name="build.docs" value="./build/docs/html"/>
+    <property name="build.samples" value="./build/samples"/>
+    <property name="build.javadocs" value="./build/javadocs"/>
 
-  <property name="dist.dir" value="./dist"/>
+    <property name="dist.dir" value="./dist"/>
+  </target>
 
   <!-- =================================================================== -->
   <!-- Prepares the build directory                                        -->
   <!-- =================================================================== -->
-  <target name="prepare">
+  <target name="prepare" depends="init">
     <mkdir dir="${build.dir}"/>
   </target>
 
@@ -150,7 +152,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Creates the web site                                                -->
   <!-- =================================================================== -->
-  <target name="site">
+  <target name="site" depends="init">
     <mkdir dir="${site.docs}"/>
     <java class="${doc.generator}" args="targetDirectory=${site.docs} ${site.book} ${style}"/>
   </target>  
@@ -204,7 +206,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
-  <target name="clean">
+  <target name="clean" depends="init">
     <deltree dir="${build.dir}"/>
     <deltree dir="${dist.dir}"/>
   </target>
