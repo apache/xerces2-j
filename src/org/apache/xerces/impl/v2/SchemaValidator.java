@@ -1086,20 +1086,22 @@ public class SchemaValidator
         if (fCurrentCM != null) {
             Object decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
             // it could be an element decl or a wildcard decl
-            if (decl == null) {
-                if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
-                    XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                    //REVISIT: is it the only case we will have particle = null?
-                    if (ctype.fParticle != null) {
-                        reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
-                    } else {
-                        reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
-                    }
+            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
+                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                //REVISIT: is it the only case we will have particle = null?
+                if (ctype.fParticle != null) {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
+                } else {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
                 }
-            } else if (decl instanceof XSElementDecl) {
-                fCurrentElemDecl = (XSElementDecl)decl;
-            } else {
-                wildcard = (XSWildcardDecl)decl;
+            }
+
+            if (decl != null) {
+                if (decl instanceof XSElementDecl) {
+                    fCurrentElemDecl = (XSElementDecl)decl;
+                } else {
+                    wildcard = (XSWildcardDecl)decl;
+                }
             }
         }
 
