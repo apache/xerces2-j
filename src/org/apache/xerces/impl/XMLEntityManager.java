@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2003 The Apache Software Foundation.
+ * Copyright (c) 1999-2004 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1598,6 +1598,13 @@ public class XMLEntityManager
 
         // system id has to be a valid URI
         if (strict) {
+            
+            // check if there is a system id before 
+            // trying to expand it.
+            if (systemId == null) {
+                return null;
+            }
+            
             try {
                 // if it's already an absolute one, return it
                 URI uri = new URI(systemId);
