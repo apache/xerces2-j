@@ -714,6 +714,10 @@ public abstract class XMLParser
      */
     protected void setValidation(boolean validate) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/validation): parse is in progress.\n"+
+                                               "http://xml.org/sax/features/validation");
+        }
         try {
             fDTDValidator.setValidationEnabled(validate);
             getSchemaValidator().setValidationEnabled(validate);
@@ -753,6 +757,10 @@ public abstract class XMLParser
      */
     protected void setExternalGeneralEntities(boolean expand)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/external-general-entities): parse is in progress.\n"+
+                                               "http://xml.org/sax/features/external-general-entities");
+        }
         if (!expand) {
             throw new SAXNotSupportedException("http://xml.org/sax/features/external-general-entities");
         }
@@ -790,6 +798,10 @@ public abstract class XMLParser
      */
     protected void setExternalParameterEntities(boolean expand)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/external-general-entities): parse is in progress.\n"+
+                                               "http://xml.org/sax/features/external-general-entities");
+        }
         if (!expand) {
             throw new SAXNotSupportedException("http://xml.org/sax/features/external-parameter-entities");
         }
@@ -822,6 +834,10 @@ public abstract class XMLParser
      */
     protected void setNamespaces(boolean process) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/namespaces): parse is in progress.\n"+
+                                               "http://xml.org/sax/features/namespaces");
+        }
         fNamespacesEnabled = process;
         fDTDValidator.setNamespacesEnabled(process);
         getSchemaValidator().setNamespacesEnabled(process);
