@@ -64,6 +64,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * Wraps the Xerces DOM parser and extends NonValidatingDOMParser
@@ -77,7 +79,6 @@ public class DOMParser
     // Data
     //
 
-    Features feature = null;
 
 
     /** Parser. */
@@ -107,29 +108,19 @@ public class DOMParser
 
     /** Parses the specified URI and returns the document. */
     public Document parse(String uri) throws Exception {
-
-        try {
-            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
-                             feature.isDeferredDOMSet() );
-            parser.setFeature( "http://xml.org/sax/features/validation", 
-                             feature.isValidationSet());
-            parser.setFeature( "http://xml.org/sax/features/namespaces",
-                             feature.isNamespaceSet() );
-            parser.setFeature( "http://apache.org/xml/features/validation/schema",
-                             feature.isSchemasupportSet() );
-        } catch (SAXException e) {
-            System.out.println("error in setting up parser feature");
-        }
-
         parser.parse(uri);
         return parser.getDocument();
 
     } // parse(String):Document
 
-    public void setFeatures(Features fea ) {
-        feature = fea;
+
+    public void     setFeature(String featureId, boolean state)
+            throws  SAXNotRecognizedException, SAXNotSupportedException {
+            parser.setFeature( featureId, state );
     }
 
+
+   
     //
     // ErrorHandler methods
     //
