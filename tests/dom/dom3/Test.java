@@ -57,20 +57,45 @@
 
 
 package dom.dom3;
-import  org.apache.xerces.dom.*;
-import  org.w3c.dom.*;
-import  org.w3c.dom.ls.*;
-
 import java.io.Reader;
-
 import java.io.StringReader;
+
+import org.apache.xerces.dom.CoreDocumentImpl;
+import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xerces.dom.NodeImpl;
+import org.apache.xerces.dom.TextImpl;
+import org.apache.xerces.dom3.DOMConfiguration;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMImplementationRegistry;
+import org.apache.xerces.dom3.DOMLocator;
+import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.w3c.dom.ls.DOMBuilder;
+import org.w3c.dom.ls.DOMEntityResolver;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMWriter;
 
 import dom.util.Assertion;
 
 /**
  * The program tests vacarious DOM Level 3 functionality
  */
-public class Test implements DOMErrorHandler{
+public class Test implements DOMErrorHandler, DOMEntityResolver{
+    
+    static int errorCounter = 0;
+    static DOMErrorHandler errorHandler = new Test();
+    static DOMEntityResolver resolver = new Test();
+    
     public static void main( String[] argv) {
         try {
             boolean namespaces = true;
@@ -86,15 +111,16 @@ public class Test implements DOMErrorHandler{
                                                        null);
 
             DOMWriter writer = impl.createDOMWriter();
-            builder.setFeature("http://xml.org/sax/features/namespaces",namespaces);
-            builder.setFeature("http://xml.org/sax/features/validation",false);
+            DOMConfiguration config = writer.getConfig();
+            config.setParameter("namespaces",(namespaces)?Boolean.TRUE:Boolean.FALSE);
+            config.setParameter("validate",Boolean.FALSE);
             
-            //************************
+            //----------------------------
             // TEST: lookupNamespacePrefix
             //       isDefaultNamespace
             //       lookupNamespaceURI
-            //************************
-            System.out.println("TEST #1: lookupNamespacePrefix, isDefaultNamespace, lookupNamespaceURI, input: tests/dom/dom3/input.xml");
+            //----------------------------
+            //System.out.println("TEST #1: lookupNamespacePrefix, isDefaultNamespace, lookupNamespaceURI, input: tests/dom/dom3/input.xml");
             {
 
                 Document doc = builder.parseURI("tests/dom/dom3/input.xml");
@@ -153,17 +179,22 @@ public class Test implements DOMErrorHandler{
                 Assertion.assert(elem.lookupNamespaceURI("xsi").equals("http://www.w3.org/2001/XMLSchema-instance"), 
                                  "[bar:leaf].lookupNamespaceURI('xsi') == 'http://www.w3.org/2001/XMLSchema-instance'" );
 
+            
             }
 
             //************************
             //* Test normalizeDocument()
             //************************
-            System.out.println("TEST #2: normalizeDocumention() - 3 errors, input: tests/dom/dom3/schema.xml");
+            //System.out.println("TEST #2: normalizeDocumention() - 3 errors, input: tests/dom/dom3/schema.xml");
             {
-                builder.setFeature("validate", true);
+                errorCounter = 0;
+                config = builder.getConfig();
+                config.setParameter("error-handler",errorHandler);
+                config.setParameter("validate", Boolean.TRUE);
                 DocumentImpl core = (DocumentImpl)builder.parseURI("tests/dom/dom3/schema.xml");
-
-
+                Assertion.assert(errorCounter == 0, "No errors should be reported");
+                
+                errorCounter = 0;    
                 NodeList ls2 = core.getElementsByTagName("decVal");
                 Element testElem = (Element)ls2.item(0);
                 testElem.removeAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns");
@@ -186,27 +217,79 @@ public class Test implements DOMErrorHandler{
                 root.insertBefore(newElem, testElem);
 
                 root.appendChild(core.createElementNS("UndefinedNamespace", "NS1:foo"));
-                core.setErrorHandler(new Test());
-                core.setNormalizationFeature("validate", true);
+                config = core.getConfig();
+                config.setParameter("error-handler",errorHandler);
+                config.setParameter("validate", Boolean.TRUE);
                 core.normalizeDocument();
+                Assertion.assert(errorCounter == 3, "3 errors should be reported");
 
-                core.setNormalizationFeature("validate", false);
-                core.setNormalizationFeature("comments", false);
+                errorCounter = 0;
+                config.setParameter("validate", Boolean.FALSE);
+                config.setParameter("comments", Boolean.FALSE);
                 core.normalizeDocument();
+                Assertion.assert(errorCounter == 0, "No errors should be reported");
 
 
-                builder.setFeature("validate", false);
+                config = builder.getConfig();
+                config.setParameter("validate", Boolean.FALSE);
                 
-
             }
 
 
             //************************
+            //* Test normalizeDocument()
+            //************************
+            // System.out.println("TEST #3: normalizeDocumention() + psvi, input: data/personal-schema.xml");
+            {
+                errorCounter = 0;
+                config = builder.getConfig();
+                config.setParameter("error-handler",errorHandler);
+                config.setParameter("validate", Boolean.TRUE);
+                config.setParameter("psvi", Boolean.TRUE);
+                DocumentImpl core = (DocumentImpl)builder.parseURI("data/personal-schema.xml");
+                Assertion.assert(errorCounter == 0, "No errors should be reported");
+
+                NodeList ls2 = core.getElementsByTagName("person");
+
+                Element testElem = (Element)ls2.item(0);
+                Assertion.assert(((ElementPSVI)testElem).getElementDeclaration().getName().equals("person"), "testElem decl");
+                Element e1 = core.createElementNS(null, "person");
+                
+                core.getDocumentElement().appendChild(e1);
+                e1.setAttributeNS(null, "id", "newEmp");
+                Element e2 = core.createElementNS(null, "name");
+                e2.appendChild(core.createElementNS(null, "family"));
+                e2.appendChild(core.createElementNS(null, "given"));
+                e1.appendChild(e2);
+                e1.appendChild(core.createElementNS(null, "email"));
+                Element e3 = core.createElementNS(null, "link");
+                e3.setAttributeNS(null, "manager", "Big.Boss");
+                e1.appendChild(e3);
+
+                testElem.removeAttributeNode(testElem.getAttributeNodeNS(null, "contr"));
+                NamedNodeMap map = testElem.getAttributes();
+                config = core.getConfig();
+                errorCounter = 0;
+                config.setParameter("psvi", Boolean.TRUE);
+                config.setParameter("error-handler",errorHandler);
+                config.setParameter("validate", Boolean.TRUE);
+                core.normalizeDocument();
+                Assertion.assert(errorCounter == 0, "No errors should be reported");
+                Assertion.assert(((ElementPSVI)e1).getElementDeclaration().getName().equals("person"), "e1 decl");              
+                
+                config = builder.getConfig();
+                config.setParameter("validate", Boolean.FALSE);
+                
+
+            }
+
+            //************************
             //* Test normalizeDocument(): core tests
             //************************
-            System.out.println("TEST #3: normalizeDocument() core");
+            // System.out.println("TEST #4: normalizeDocument() core");
             {
 
+                // check that namespace normalization algorithm works correctly
                 Document doc= new DocumentImpl(); 
                 Element root = doc.createElementNS("http://www.w3.org/1999/XSL/Transform", "xsl:stylesheet");
                 doc.appendChild(root);
@@ -229,13 +312,13 @@ public class Test implements DOMErrorHandler{
                 Element child4 = doc.createElementNS(null, "child4");
                 child4.setAttributeNS("http://a1", "xsl:attr1", "");
                 child4.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "default");
-
                 child3.appendChild(child4);
                 root.appendChild(child3);
 
-                doc.normalizeDocument();
+                ((CoreDocumentImpl)doc).normalizeDocument();
+                
                 //
-                // make sure algorithm works correctly
+                // assertions
                 //
 
                 // xsl:stylesheet should include 2 namespace declarations
@@ -287,6 +370,20 @@ public class Test implements DOMErrorHandler{
 
                 Assertion.assert(child3.getAttributes().getLength() == 5, "xsl:child3 has 5 attrs");
                 
+                // child 4
+                Attr temp = child4.getAttributeNodeNS("http://www.w3.org/2000/xmlns/", "xmlns");
+                Assertion.assert(temp.getNodeName().equals("xmlns"), "attribute name is xmlns");
+                Assertion.assert(temp.getNodeValue().length() == 0, "xmlns=''");
+                
+                /*
+                OutputFormat format = new OutputFormat((Document)doc);
+                format.setLineSeparator(LineSeparator.Windows);
+                format.setIndenting(true);
+                format.setLineWidth(0);             
+                format.setPreserveSpace(true);
+                XMLSerializer serializer = new XMLSerializer(System.out, format);
+                serializer.serialize(doc); 
+                */               
 
             }
 
@@ -294,7 +391,7 @@ public class Test implements DOMErrorHandler{
             //************************
             //* Test normalizeDocument(): core tests
             //************************
-            System.out.println("TEST #4: namespace fixup during serialization");
+            //System.out.println("TEST #4: namespace fixup during serialization");
             {
 
                 Document doc= new DocumentImpl(); 
@@ -325,6 +422,7 @@ public class Test implements DOMErrorHandler{
 
 
                 // serialize data
+                writer.getConfig().setParameter("namespaces", Boolean.TRUE);
                 String xmlData = writer.writeToString(doc);
                 Reader r = new StringReader(xmlData);
                 DOMInputSource in = impl.createDOMInputSource();
@@ -410,11 +508,12 @@ public class Test implements DOMErrorHandler{
             //       
             //************************
            
-            System.out.println("TEST #4: wholeText, input: tests/dom/dom3/wholeText.xml");
+            //System.out.println("TEST #5: wholeText, input: tests/dom/dom3/wholeText.xml");
            {
-           
-            builder.setFeature("validate", false);
-            builder.setFeature("entities", true);
+            config = builder.getConfig();
+            config.setParameter("error-handler",errorHandler);
+            config.setParameter("validate", Boolean.FALSE);
+            config.setParameter("entities", Boolean.TRUE);
             DocumentImpl doc = (DocumentImpl)builder.parseURI("tests/dom/dom3/wholeText.xml");
 
             Element root = doc.getDocumentElement();
@@ -450,13 +549,13 @@ public class Test implements DOMErrorHandler{
             // replace text for node which is not yet attached to the tree
             Text text = doc.createTextNode("readonly");
             ((NodeImpl)text).setReadOnly(true, true);
-            text = text.replaceWholeText("Data");
+            text = ((TextImpl)text).replaceWholeText("Data");
             Assertion.assert(text.getNodeValue().equals("Data"), "New value 'Data'");
 
             // test with second child that does not have any content
             test = (Element)doc.getElementsByTagName("elem").item(1);
             try {            
-                ((Text)test.getFirstChild()).replaceWholeText("can't replace");
+                ((TextImpl)test.getFirstChild()).replaceWholeText("can't replace");
             } catch (DOMException e){
                Assertion.assert(e !=null);
             }
@@ -464,6 +563,63 @@ public class Test implements DOMErrorHandler{
             //Assertion.assert(((Text)test.getFirstChild()).getWholeText().equals(compare3), "Compare3");
             
            }
+
+            //************************
+            // TEST: schema-type
+            //       schema-location
+            //       
+            //************************
+            {
+                errorCounter = 0;
+                config = builder.getConfig();
+                config.setParameter("error-handler",errorHandler);
+                config.setParameter("entity-resolver",resolver);
+                config.setParameter("validate", Boolean.TRUE);
+                config.setParameter("psvi", Boolean.TRUE);
+                
+                // schema-type is not set validate against both grammars 
+                errorCounter = 0;
+                DocumentImpl core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
+                Assertion.assert(errorCounter == 4, "4 errors should be reported");
+                
+                errorCounter = 0;
+                // set schema-type to be XML Schema 
+                config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
+                // test parsing a file that has both XML schema and DTD
+                core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both.xml");
+                Assertion.assert(errorCounter == 0, "No errors should be reported");
+                
+            
+                // parse a file with XML schema and DTD but validate against DTD only
+                errorCounter = 0;
+                config.setParameter("schema-type","http://www.w3.org/TR/REC-xml");
+                core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
+                Assertion.assert(errorCounter == 3, "3 errors should be reported");
+                
+                // parse a file with DTD only but set schema-location and 
+                // validate against XML Schema
+                // set schema location
+                
+                
+                core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
+                
+                // normalize document
+                errorCounter = 0;
+                Element root = core2.getDocumentElement();
+                root.removeAttributeNS("http://www.w3.org/2001/XMLSchema", "xsi");               
+                root.removeAttributeNS("http://www.w3.org/2001/XMLSchema", "noNamespaceSchemaLocation");
+                config = core2.getConfig();
+                config.setParameter("error-handler",errorHandler);
+                config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
+                config.setParameter("schema-location","personal.xsd");
+                config.setParameter("entity-resolver",resolver);
+                config.setParameter("validate", Boolean.TRUE);
+                core2.normalizeDocument();
+                Assertion.assert(errorCounter == 1, "1 error should be reported: "+errorCounter);
+ 
+    
+            }
+
 
         } catch ( Exception ex ) {
             ex.printStackTrace();
@@ -475,6 +631,7 @@ public class Test implements DOMErrorHandler{
         fError.setLength(0);
         short severity = error.getSeverity();
         if (severity == error.SEVERITY_ERROR) {
+            errorCounter++;
             fError.append("[Error]");
         }
 
@@ -513,10 +670,35 @@ public class Test implements DOMErrorHandler{
             fError.append(error.getMessage());
 
         }
-        System.out.println(fError.toString());
+         //System.out.println(fError.toString());
         return true;
 
     }
+    
+	/**
+	 * @see org.w3c.dom.ls.DOMEntityResolver#resolveEntity(String, String, String)
+	 */
+	public DOMInputSource resolveEntity(String publicId, String systemId, String baseURI) {
+		try {
+			DOMImplementationLS impl =
+				(DOMImplementationLS) DOMImplementationRegistry.newInstance().getDOMImplementation(
+					"LS-Load");
+			DOMInputSource source = impl.createDOMInputSource();
+			if (systemId.equals("personal.xsd")) {
+				source.setSystemId("data/personal.xsd");
+			}
+			else {
+				source.setSystemId("data/personal.dtd");
+			}
+
+			return source;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+    
+   
 }
 
 
