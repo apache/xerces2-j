@@ -328,10 +328,10 @@ public class DOMAddLines extends DOMParser  {
 
    /** Prints the usage. */
    private static void printUsage() {
-      System.err.println("usage: jre dom.DOMAddLines uri ...");
+      System.err.println("usage: jre dom.DOMAddLines (options) uri ...");
       System.err.println();
-      System.err.println("  -h       This help screen.");
-      System.err.println("  -i       don't print ignorable white spaces");
+      System.err.println("  -h       Display help screen.");
+      System.err.println("  -i       Don't print ignorable white spaces.");
 
    } // printUsage()
 
