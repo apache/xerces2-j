@@ -1227,10 +1227,6 @@ public abstract class AbstractSAXParser
      */
     public void setEntityResolver(EntityResolver resolver) {
 
-        // not per SAX 1, but per SAX 2.0 and JAXP 1.1 expectations
-        if(resolver == null) {
-            throw new NullPointerException();
-        }
         try {
             fConfiguration.setProperty(ENTITY_RESOLVER,
                                        new EntityResolverWrapper(resolver));
@@ -1280,16 +1276,10 @@ public abstract class AbstractSAXParser
      * handler immediately.</p>
      *
      * @param errorHandler The error handler.
-     * @exception java.lang.NullPointerException If the handler
-     *            argument is null.
      * @see #getErrorHandler
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
 
-        // not per SAX 1, but per SAX 2.0 and JAXP 1.1 expectations
-        if(errorHandler == null) {
-            throw new NullPointerException();
-        }
         try {
             fConfiguration.setProperty(ERROR_HANDLER,
                                        new ErrorHandlerWrapper(errorHandler));
@@ -1354,21 +1344,10 @@ public abstract class AbstractSAXParser
      *
      * @param dtdHandler The DTD handler.
      *
-     * @exception java.lang.NullPointerException If the handler
-     *            argument is null.
-     *
+
      * @see #getDTDHandler
      */
     public void setDTDHandler(DTDHandler dtdHandler) {
-        // REVISIT: SAX1 doesn't require a null pointer exception
-        //          to be thrown but SAX2 does. [Q] How do we
-        //          resolve this? Currently I'm erring on the side
-        //          of SAX2. -Ac
-        // This is what the JCK requires; 2.0 is assumed to supersede the
-        // SAX 1 behaviour - neilg
-        if (dtdHandler == null) {
-            throw new NullPointerException();
-        }
         fDTDHandler = dtdHandler;
     } // setDTDHandler(DTDHandler)
 
@@ -1411,16 +1390,9 @@ public abstract class AbstractSAXParser
      *
      * @param contentHandler The content handler.
      *
-     * @exception java.lang.NullPointerException If the handler
-     *            argument is null.
-     *
      * @see #getContentHandler
      */
     public void setContentHandler(ContentHandler contentHandler) {
-        // not per SAX 1, but per SAX 2.0 and JAXP 1.1 expectations
-        if(contentHandler == null) {
-            throw new NullPointerException();
-        }
         fContentHandler = contentHandler;
     } // setContentHandler(ContentHandler)
 

@@ -133,17 +133,20 @@ public class ErrorHandlerWrapper
     public void warning(String domain, String key, 
                         XMLParseException exception) throws XNIException {
 
-        SAXParseException saxException = createSAXParseException(exception);
-        try {
-            fErrorHandler.warning(saxException);
+        if (fErrorHandler != null) {
+        	SAXParseException saxException = createSAXParseException(exception);
+        	
+        	try {
+        		fErrorHandler.warning(saxException);
+        	}
+        	catch (SAXParseException e) {
+        		throw createXMLParseException(e);
+        	}
+        	catch (SAXException e) {
+        		throw createXNIException(e);
+        	}
         }
-        catch (SAXParseException e) {
-            throw createXMLParseException(e);
-        }
-        catch (SAXException e) {
-            throw createXNIException(e);
-        }
-
+        
     } // warning(String,String,XMLParseException)
 
     /**
@@ -164,16 +167,19 @@ public class ErrorHandlerWrapper
      */
     public void error(String domain, String key, 
                       XMLParseException exception) throws XNIException {
-
-        SAXParseException saxException = createSAXParseException(exception);
-        try {
-            fErrorHandler.error(saxException);
-        }
-        catch (SAXParseException e) {
-            throw createXMLParseException(e);
-        }
-        catch (SAXException e) {
-            throw createXNIException(e);
+        
+        if (fErrorHandler != null) {
+        	SAXParseException saxException = createSAXParseException(exception);
+        	
+        	try {
+        		fErrorHandler.error(saxException);
+        	}
+        	catch (SAXParseException e) {
+        		throw createXMLParseException(e);
+        	}
+        	catch (SAXException e) {
+        		throw createXNIException(e);
+        	}
         }
 
     } // error(String,String,XMLParseException)
@@ -204,16 +210,19 @@ public class ErrorHandlerWrapper
      */
     public void fatalError(String domain, String key, 
                            XMLParseException exception) throws XNIException {
-
-        SAXParseException saxException = createSAXParseException(exception);
-        try {
-            fErrorHandler.fatalError(saxException);
-        }
-        catch (SAXParseException e) {
-            throw createXMLParseException(e);
-        }
-        catch (SAXException e) {
-            throw createXNIException(e);
+                           	
+        if (fErrorHandler != null) {
+        	SAXParseException saxException = createSAXParseException(exception);
+        	
+        	try {
+        		fErrorHandler.fatalError(saxException);
+        	}
+        	catch (SAXParseException e) {
+        		throw createXMLParseException(e);
+        	}
+        	catch (SAXException e) {
+        		throw createXNIException(e);
+        	}
         }
 
     } // fatalError(String,String,XMLParseException)
