@@ -181,15 +181,6 @@ final class HTMLdtd
      */
     public static boolean isEmptyTag( String tagName )
     {
-        // BR AREA LINK IMG PARAM HR INPUT COL BASE META BASEFONT ISINDEX FRAME
-	/*
-        return ( tagName.equals( "BR" ) || tagName.equals( "AREA" ) ||
-                 tagName.equals( "LINK" ) || tagName.equals( "IMG" ) ||
-                 tagName.equals( "PARAM" ) || tagName.equals( "HR" ) ||
-                 tagName.equals( "INPUT" ) || tagName.equals( "COL" ) ||
-                 tagName.equals( "BASE" ) || tagName.equals( "META" ) ||
-                 tagName.equals( "BASEFONT" ) || tagName.equals( "ISINDEX" ) );
-	*/
 	return isElement( tagName, EMPTY );
     }
 
@@ -204,16 +195,6 @@ final class HTMLdtd
      */
     public static boolean isElementContent( String tagName )
     {
-        // DL OL UL SELECT OPTGROUP TABLE THEAD TFOOT TBODY COLGROUP TR HEAD HTML
-	/*
-        return ( tagName.equals( "DL" ) || tagName.equals( "OL" ) ||
-                 tagName.equals( "UL" ) || tagName.equals( "SELECT" ) ||
-                 tagName.equals( "OPTGROUP" ) || tagName.equals( "TABLE" ) ||
-                 tagName.equals( "THEAD" ) || tagName.equals( "TFOOT" ) ||
-                 tagName.equals( "TBODY" ) || tagName.equals( "COLGROUP" ) ||
-                 tagName.equals( "TR" ) || tagName.equals( "HEAD" ) ||
-                 tagName.equals( "HTML" ) );
-	*/
 	return isElement( tagName, ELEM_CONTENT );
     }
 
@@ -228,10 +209,6 @@ final class HTMLdtd
      */
     public static boolean isPreserveSpace( String tagName )
     {
-        // PRE TEXTAREA
-	/*
-        return ( tagName.equals( "PRE" ) || tagName.equals( "TEXTAREA" ) );
-	*/
 	return isElement( tagName, PRESERVE );
     }
 
@@ -246,17 +223,6 @@ final class HTMLdtd
      */
     public static boolean isOptionalClosing( String tagName )
     {
-        // BODY HEAD HTML P DT DD LI OPTION THEAD TFOOT TBODY TR COLGROUP TH TD FRAME
-	/*
-        return ( tagName.equals( "BODY" ) || tagName.equals( "HEAD" ) ||
-                 tagName.equals( "HTML" ) || tagName.equals( "P" ) ||
-                 tagName.equals( "DT" ) || tagName.equals( "DD" ) ||
-                 tagName.equals( "LI" ) || tagName.equals( "OPTION" ) ||
-                 tagName.equals( "THEAD" ) || tagName.equals( "TFOOT" ) ||
-                 tagName.equals( "TBODY" ) || tagName.equals( "TR" ) ||
-                 tagName.equals( "COLGROUP" ) || tagName.equals( "TH" ) ||
-                 tagName.equals( "TD" ) || tagName.equals( "FRAME" ) );
-	*/
 	return isElement( tagName, OPT_CLOSING );
     }
 
@@ -270,11 +236,6 @@ final class HTMLdtd
      */
     public static boolean isOnlyOpening( String tagName )
     {
-        //DT DD LI OPTION
-	/*
-        return ( tagName.equals( "DT" ) || tagName.equals( "DD" ) ||
-		 tagName.equals( "LI" ) || tagName.equals( "OPTION" ) );
-	*/
 	return isElement( tagName, ONLY_OPENING );
     }
 
@@ -291,73 +252,25 @@ final class HTMLdtd
      */    
     public static boolean isClosing( String tagName, String openTag )
     {
-        // BODY (closing HTML, end of document)
-        // HEAD (BODY, closing HTML, end of document)
+	// Several elements are defined as closing the HEAD
         if ( openTag.equalsIgnoreCase( "HEAD" ) )
-	    /*
-            return ! ( tagName.equals( "ISINDEX" ) || tagName.equals( "TITLE" ) ||
-		       tagName.equals( "META" ) || tagName.equals( "SCRIPT" ) ||
-		       tagName.equals( "STYLE" ) || tagName.equals( "LINK" ) );
-	    */
 	    return ! isElement( tagName, ALLOWED_HEAD );
-        // P (P, H1-H6, UL, OL, DL, PRE, DIV, BLOCKQUOTE, FORM, HR, TABLE, ADDRESS, FIELDSET, closing BODY, closing HTML, end of document)
+	// P closes iteself
         if ( openTag.equalsIgnoreCase( "P" ) )
-	    /*
-            return ( tagName.endsWith( "P" ) || tagName.endsWith( "H1" ) ||
-                     tagName.endsWith( "H2" ) || tagName.endsWith( "H3" ) ||
-                     tagName.endsWith( "H4" ) || tagName.endsWith( "H5" ) ||
-                     tagName.endsWith( "H6" ) || tagName.endsWith( "UL" ) ||
-                     tagName.endsWith( "OL" ) || tagName.endsWith( "DL" ) ||
-                     tagName.endsWith( "PRE" ) || tagName.endsWith( "DIV" ) ||
-                     tagName.endsWith( "BLOCKQUOTE" ) || tagName.endsWith( "FORM" ) ||
-                     tagName.endsWith( "HR" ) || tagName.endsWith( "TABLE" ) ||
-                     tagName.endsWith( "ADDRESS" ) || tagName.endsWith( "FIELDSET" ) );
-	    */
 	    return isElement( tagName, CLOSE_P );
+	// DT closes DD, DD closes DT
         if ( openTag.equalsIgnoreCase( "DT" ) || openTag.equalsIgnoreCase( "DD" ) )
 	    return isElement( tagName, CLOSE_DD_DT );
-        // DT (DD)
-	/*
-        if ( openTag.equals( "DT" ) )
-            return tagName.endsWith( "DD" );
-	*/
-        // DD (DT, closing DL)
-	/*
-	if ( openTag.equals( "DD" ) )
-            return tagName.endsWith( "DT" );
-	*/
+	// LI and OPTION close themselves
         if ( openTag.equalsIgnoreCase( "LI" ) || openTag.equalsIgnoreCase( "OPTION" ) )
 	    return isElement( tagName, CLOSE_SELF );
-        // LI (LI, closing UL/OL)
-	/*
-        if ( openTag.equals( "LI" ) )
-            return tagName.endsWith( "LI" );
-	*/
-        // OPTION (OPTION, OPTGROUP closing or opening, closing SELECT)
-	/*
-        if ( openTag.equals( "OPTION" ) )
-            return tagName.endsWith( "OPTION" );
-	*/
-        // THEAD (TFOOT, TBODY, TR, closing TABLE
-        // TFOOT (TBODY, TR, closing TABLE)
-        // TBODY (TBODY, closing TABLE)
-        // COLGROUP (THEAD, TBODY, TR, closing TABLE)
-        // TR (TR, closing THEAD, TFOOT, TBODY, TABLE)
+	// Each of these table sections closes all the others
         if ( openTag.equalsIgnoreCase( "THEAD" ) || openTag.equalsIgnoreCase( "TFOOT" ) ||
              openTag.equalsIgnoreCase( "TBODY" ) || openTag.equalsIgnoreCase( "TR" ) || 
              openTag.equalsIgnoreCase( "COLGROUP" ) )
-	    /*
-            return ( tagName.endsWith( "THEAD" ) || tagName.endsWith( "TFOOT" ) ||
-                     tagName.endsWith( "TBODY" ) || tagName.endsWith( "TR" ) ||
-                     tagName.endsWith( "COLGROUP" ) );
-	    */
 	    return isElement( tagName, CLOSE_TABLE );
-        // TH (TD, TH, closing TR)
-        // TD (TD, TH, closing TR)
+	// TD closes TH and TH closes TD
         if ( openTag.equalsIgnoreCase( "TH" ) || openTag.equalsIgnoreCase( "TD" ) )
-	    /*
-            return ( tagName.endsWith( "TD" ) || tagName.endsWith( "TH" ) );
-	    */
 	    return isElement( tagName, CLOSE_TH_TD );
         return false;
     }
@@ -574,7 +487,7 @@ final class HTMLdtd
 	_elemDefs = new Hashtable();
 	defineElement( "ADDRESS", CLOSE_P );
 	defineElement( "AREA", EMPTY );
-	defineElement( "BASE", EMPTY );
+	defineElement( "BASE",  EMPTY | ALLOWED_HEAD );
 	defineElement( "BASEFONT", EMPTY );
 	defineElement( "BLOCKQUOTE", CLOSE_P );
 	defineElement( "BODY", OPT_CLOSING );
@@ -602,6 +515,7 @@ final class HTMLdtd
 	defineElement( "ISINDEX", EMPTY | ALLOWED_HEAD );
 	defineElement( "LI", OPT_CLOSING | ONLY_OPENING | CLOSE_SELF );
 	defineElement( "LINK", EMPTY | ALLOWED_HEAD );
+	defineElement( "MAP", EMPTY | ALLOWED_HEAD );
 	defineElement( "META", EMPTY | ALLOWED_HEAD );
 	defineElement( "OL", ELEM_CONTENT | CLOSE_P );
 	defineElement( "OPTGROUP", ELEM_CONTENT );
@@ -610,6 +524,7 @@ final class HTMLdtd
 	defineElement( "PARAM", EMPTY );
 	defineElement( "PRE", PRESERVE | CLOSE_P );
 	defineElement( "SCRIPT", ALLOWED_HEAD | PRESERVE );
+	defineElement( "NOSCRIPT", ALLOWED_HEAD | PRESERVE );
 	defineElement( "SELECT", ELEM_CONTENT );
 	defineElement( "STYLE", ALLOWED_HEAD | PRESERVE );
 	defineElement( "TABLE", ELEM_CONTENT | CLOSE_P );
