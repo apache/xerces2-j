@@ -399,7 +399,7 @@ public class XMLAttributes
         if (index < 0 || index >= fSize) {
             return null;
         }
-        return fAttributes[index].name.localpart;
+        return fAttributes[index].name.rawname;
     }
 
     //
