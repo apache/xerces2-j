@@ -201,8 +201,12 @@ public class XMLValidator
     private QName fTempQName = new QName();
     private StringBuffer fDatatypeBuffer = new StringBuffer();
 
-    /** ndata notation list */
+    /** ndata notation hash */
     private Hashtable fNDataDeclNotations = new Hashtable();
+
+    /** mixed element type hash */
+    private String fDTDElementDeclName = null;
+    private Vector fMixedElementTypes = new Vector();
 
     // symbols
 
@@ -1351,6 +1355,11 @@ public class XMLValidator
     public void startContentModel(String elementName, short type)
         throws SAXException {
 
+        if (fValidation) {
+            fDTDElementDeclName = elementName;
+            fMixedElementTypes.removeAllElements();
+        }
+
         // call handlers
         fDTDGrammar.startContentModel(elementName, type);
         if (fDTDContentModelHandler != null) {
@@ -1375,6 +1384,18 @@ public class XMLValidator
      * @see TYPE_MIXED
      */
     public void mixedElement(String elementName) throws SAXException {
+        // check VC: No duplicate Types, in a single mixed-content declaration
+        if (fValidation) {
+            if (fMixedElementTypes.contains(elementName)) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "DuplicateTypeInMixedContent",
+                                           new Object[]{fDTDElementDeclName, elementName},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
+            else {
+                fMixedElementTypes.addElement(elementName);
+            }
+        }
 
         // call handlers
         fDTDGrammar.mixedElement(elementName);
