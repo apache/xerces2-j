@@ -452,6 +452,9 @@ public class XMLDTDScanner
         }
 
         if (name.equals("[dtd]")) {
+            if (fIncludeSectDepth != 0) {
+                reportFatalError("IncludeSectUnterminated", null);
+            }
             fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
             if (fDTDHandler != null) {
@@ -1592,6 +1595,7 @@ public class XMLDTDScanner
                 else {
                     fEntityScanner.scanChar();
                     if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
+                        reportFatalError("IgnoreSectUnterminated", null);
                         return;
                     }
                 }
