@@ -79,6 +79,7 @@ public class BooleanValidator implements DatatypeValidator {
     private int    _facetsDefined = 0;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     private static  final String _valueSpace[]  = { "false", "true", "0", "1" };
+    private int       _derivedBy       = DatatypeValidator.DERIVED_BY_RESTRICTION;//default
 
     /**
      * validate that a string matches the boolean datatype
@@ -88,11 +89,13 @@ public class BooleanValidator implements DatatypeValidator {
      * is not valid.
      */
 
-    public void validate(String content, boolean derivedByList) throws InvalidDatatypeValueException {
+    public void validate(String content) throws InvalidDatatypeValueException {
         if ( _facetsDefined == 0 )// No Facets to validate against
             return;
 
-        if ( derivedByList == true ) {
+
+        if( _derivedBy == DatatypeValidator.DERIVED_BY_RESTRICTION  ){ 
+
             ;// What does it mean?
         } else {
             checkContent( content );
@@ -115,18 +118,24 @@ public class BooleanValidator implements DatatypeValidator {
      * @exception IllegalFacetValueException
      * @exception ConstrainException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException,
+    public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException,
     IllegalFacetException, IllegalFacetValueException, ConstrainException {
 
-        for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-            String key = (String) e.nextElement();
+        if ( derivationBy.equals( SchemaSymbols.ATTVAL_RESTRICTION ) ) {
+           _derivedBy = DatatypeValidator.DERIVED_BY_RESTRICTION;
 
-            if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                _facetsDefined += DatatypeValidator.FACET_PATTERN;
-                _pattern = (String)facets.get(key);
-            } else {
-                throw new IllegalFacetException();
+            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                String key = (String) e.nextElement();
+
+                if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                    _facetsDefined += DatatypeValidator.FACET_PATTERN;
+                    _pattern = (String)facets.get(key);
+                } else {
+                    throw new IllegalFacetException();
+                }
             }
+        }else { // By List
+
         }
     }
 

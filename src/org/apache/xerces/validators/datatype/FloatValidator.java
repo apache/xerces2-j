@@ -75,6 +75,8 @@ public class FloatValidator implements DatatypeValidator {
    private String    fBaseValidator = "native";
    private float[] _enumFloats      = null;
    private String  _pattern         = null;
+   private int       _derivationBy     = DatatypeValidator.DERIVED_BY_RESTRICTION;
+
    
    private float   _maxInclusive    = Float.MAX_VALUE;
    private float   _maxExclusive    = Float.MAX_VALUE;
@@ -97,9 +99,9 @@ public class FloatValidator implements DatatypeValidator {
      *  is not a W3C real type
      */
 
-    public void validate(String content, boolean derivedBylist) 
+    public void validate(String content) 
                   throws InvalidDatatypeValueException {
-        if( ! derivedBylist  ){ 
+        if( _derivationBy == DatatypeValidator.DERIVED_BY_RESTRICTION  ){ 
              float f = 0;
              try {
                  f = Float.valueOf(content).floatValue();
@@ -120,7 +122,7 @@ public class FloatValidator implements DatatypeValidator {
              }
     }
 
-    public void setFacets(Hashtable facets) throws UnknownFacetException, 
+    public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException, 
                            IllegalFacetException, IllegalFacetValueException, ConstrainException {
 
          for (Enumeration e = facets.keys(); e.hasMoreElements();) {

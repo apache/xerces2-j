@@ -590,7 +590,7 @@ public class TraverseSchema implements
      * @return 
      */
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) {
-        //TODO Add the derivedBy List
+        
         String varietyProperty       =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
         String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
         String baseTypeQNameProperty =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE );
@@ -681,7 +681,7 @@ public class TraverseSchema implements
         try {
             DatatypeValidator newValidator = (DatatypeValidator) baseValidator.getClass().newInstance();
            if (numFacets > 0)
-               newValidator.setFacets(facetData);
+               newValidator.setFacets(facetData, varietyProperty );
            fDatatypeRegistry.addValidator(fStringPool.toString(newSimpleTypeName),newValidator);
            } catch (Exception e) {
                e.printStackTrace(System.err);
@@ -949,7 +949,7 @@ public class TraverseSchema implements
 
             // overide the facets of the baseTypeValidator
             if (numFacets > 0)
-                baseTypeValidator.setFacets(facetData);
+                baseTypeValidator.setFacets(facetData, derivedBy );
 
             // now we are ready with our own simpleTypeValidator
             simpleTypeValidator = baseTypeValidator;
@@ -1470,7 +1470,7 @@ public class TraverseSchema implements
                     dv = fDatatypeRegistry.getDatatypeValidator(datatype);
                     if (dv != null) 
                         //REVISIT
-                        dv.validate(fStringPool.toString(attDefaultValue), attIsList);
+                        dv.validate(fStringPool.toString(attDefaultValue));
                     else
                         reportSchemaError(SchemaMessageProvider.NoValidatorFor,
                                           new Object [] { datatype });

@@ -88,6 +88,7 @@ public class StringValidator implements DatatypeValidator {
     private String    _minInclusive    = null;
     private String    _minExclusive    = null;
     private int       _facetsDefined   = 0;
+    private int       _derivedBy       = DatatypeValidator.DERIVED_BY_RESTRICTION;//default
 
     private boolean isMaxExclusiveDefined = false;
     private boolean isMaxInclusiveDefined = false;
@@ -103,13 +104,14 @@ public class StringValidator implements DatatypeValidator {
      *                   not a W3C string type
      * @exception InvalidDatatypeValueException
      */
-    public void validate(String content, boolean derivedByList)  throws InvalidDatatypeValueException
+    public void validate(String content)  throws InvalidDatatypeValueException
     {
         if ( _facetsDefined == 0 )// No Facets to validate against
             return;
 
         StringTokenizer parsedList = null;
-        if ( derivedByList == true ) {
+
+        if( _derivedBy == DatatypeValidator.DERIVED_BY_RESTRICTION  ){ 
             parsedList = new StringTokenizer( content );
             try {
                 while ( parsedList.hasMoreTokens() ) {
@@ -124,99 +126,103 @@ public class StringValidator implements DatatypeValidator {
     }
 
 
-    public void setFacets(Hashtable facets) throws UnknownFacetException,
+    public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException,
     IllegalFacetException, IllegalFacetValueException, ConstrainException 
     {
-        for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-            String key = (String) e.nextElement();
+        if( derivationBy.equals( SchemaSymbols.ATTVAL_RESTRICTION )){
+            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                String key = (String) e.nextElement();
 
-            if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                _facetsDefined += DatatypeValidator.FACET_LENGTH;
-                String lengthValue = (String)facets.get(key);
-                try {
-                    _length     = Integer.parseInt( lengthValue );
-                } catch (NumberFormatException nfe) {
-                    throw new IllegalFacetValueException("Length value '"+lengthValue+"' is invalid.");
-                }
-                if( _length < 0 )
-                    throw new IllegalFacetValueException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
+                if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+                    _facetsDefined += DatatypeValidator.FACET_LENGTH;
+                    String lengthValue = (String)facets.get(key);
+                    try {
+                        _length     = Integer.parseInt( lengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new IllegalFacetValueException("Length value '"+lengthValue+"' is invalid.");
+                    }
+                    if ( _length < 0 )
+                        throw new IllegalFacetValueException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
-            } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                _facetsDefined += DatatypeValidator.FACET_MINLENGTH;
-                String minLengthValue = (String)facets.get(key);
-                try {
-                    _minLength     = Integer.parseInt( minLengthValue );
-                } catch (NumberFormatException nfe) {
-                    throw new IllegalFacetValueException("maxLength value '"+minLengthValue+"' is invalid.");
+                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                    _facetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    String minLengthValue = (String)facets.get(key);
+                    try {
+                        _minLength     = Integer.parseInt( minLengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new IllegalFacetValueException("maxLength value '"+minLengthValue+"' is invalid.");
+                    }
+                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
+                    _facetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    String maxLengthValue = (String)facets.get(key);
+                    try {
+                        _maxLength     = Integer.parseInt( maxLengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new IllegalFacetValueException("maxLength value '"+maxLengthValue+"' is invalid.");
+                    }
+                } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                    _facetsDefined += DatatypeValidator.FACET_PATTERN;
+                    _pattern = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    _facetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    _enumeration = (Vector)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                    _facetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                    _maxInclusive = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                    _facetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                    _maxExclusive = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                    _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                    _minInclusive = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                    _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                    _minExclusive = (String)facets.get(key);
+                } else {
+                    throw new IllegalFacetException();
                 }
-            } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                _facetsDefined += DatatypeValidator.FACET_MAXLENGTH;
-                String maxLengthValue = (String)facets.get(key);
-                try {
-                    _maxLength     = Integer.parseInt( maxLengthValue );
-                } catch (NumberFormatException nfe) {
-                    throw new IllegalFacetValueException("maxLength value '"+maxLengthValue+"' is invalid.");
-                }
-            } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                _facetsDefined += DatatypeValidator.FACET_PATTERN;
-                _pattern = (String)facets.get(key);
-            } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                _facetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                _enumeration = (Vector)facets.get(key);
-            } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-                _facetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
-                _maxInclusive = (String)facets.get(key);
-            } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-                _facetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
-                _maxExclusive = (String)facets.get(key);
-            } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-                _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-                _minInclusive = (String)facets.get(key);
-            } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-                _minExclusive = (String)facets.get(key);
-            } else {
-                throw new IllegalFacetException();
             }
-        }
 
-        if(((_facetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-            if(((_facetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ){
-                  throw new ConstrainException(
-                   "It is an error for both length and maxLength to be members of facets." );  
-             }else if(((_facetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ){
-                  throw new ConstrainException(
-                   "It is an error for both length and minLength to be members of facets." );
-             }
-        }
-
-        if( ( (_facetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                  DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) )
-        {
-            if( _minLength < _maxLength )
-            {
-                throw new ConstrainException( "Value of minLength = " + _minLength +
-                         "must be greater that the value of maxLength" + _maxLength );
+            if (((_facetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
+                if (((_facetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
+                    throw new ConstrainException(
+                                                "It is an error for both length and maxLength to be members of facets." );  
+                } else if (((_facetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
+                    throw new ConstrainException(
+                                                "It is an error for both length and minLength to be members of facets." );
+                }
             }
-        }
 
-        isMaxExclusiveDefined = ((_facetsDefined & 
-                       DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
-        isMaxInclusiveDefined = ((_facetsDefined & 
-                       DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
-        isMinExclusiveDefined = ((_facetsDefined &
-                       DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
-        isMinInclusiveDefined = ((_facetsDefined &
-                       DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
+            if ( ( (_facetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
+                                       DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
+                if ( _minLength < _maxLength ) {
+                    throw new ConstrainException( "Value of minLength = " + _minLength +
+                                                  "must be greater that the value of maxLength" + _maxLength );
+                }
+            }
 
-        if( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
-            throw new ConstrainException(
-          "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
-        }
-        if( isMinExclusiveDefined && isMinInclusiveDefined ) {
-          throw new ConstrainException(
-          "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
-        }
+            isMaxExclusiveDefined = ((_facetsDefined & 
+                                      DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
+            isMaxInclusiveDefined = ((_facetsDefined & 
+                                      DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
+            isMinExclusiveDefined = ((_facetsDefined &
+                                      DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
+            isMinInclusiveDefined = ((_facetsDefined &
+                                      DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
+
+            if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
+                throw new ConstrainException(
+                                            "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+            }
+            if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
+                throw new ConstrainException(
+                                            "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+            }
+      } else { //derived by list
+
+
+
+      }
     }
 
     public void setBasetype( String base) {
@@ -248,50 +254,50 @@ public class StringValidator implements DatatypeValidator {
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+_enumeration);
         }
 
-        if( isMaxExclusiveDefined == true ){
+        if ( isMaxExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, _maxExclusive );
-            if( comparisonResult > 0 ){
+            if ( comparisonResult > 0 ) {
                 throw new InvalidDatatypeValueException( "Value '"+content+ "'  must be" +
-                                "lexicographically less than" + _maxExclusive );
-                                                   
-            }
-            
-        }
-        if( isMaxInclusiveDefined == true ){
-           int comparisonResult;
-           comparisonResult  = compare( content, _maxInclusive );
-           if( comparisonResult >= 0 )
-               throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                               "lexicographically less or equal than" + _maxInclusive );
-       }
+                                                         "lexicographically less than" + _maxExclusive );
 
-        if( isMinExclusiveDefined == true ){
-           int comparisonResult;
-           comparisonResult  = compare( content, _minExclusive );
-           if( comparisonResult < 0 )
-               throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                                "lexicographically greater than" + _minExclusive );
-       }
-        if( isMinInclusiveDefined == true ){
+            }
+
+        }
+        if ( isMaxInclusiveDefined == true ) {
+            int comparisonResult;
+            comparisonResult  = compare( content, _maxInclusive );
+            if ( comparisonResult >= 0 )
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
+                                                         "lexicographically less or equal than" + _maxInclusive );
+        }
+
+        if ( isMinExclusiveDefined == true ) {
+            int comparisonResult;
+            comparisonResult  = compare( content, _minExclusive );
+            if ( comparisonResult < 0 )
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
+                                                         "lexicographically greater than" + _minExclusive );
+        }
+        if ( isMinInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult = compare( content, _minInclusive );
-           if( comparisonResult <= 0 )
-               throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                              "lexicographically greater or equal than" + _minInclusive );
-       }
+            if ( comparisonResult <= 0 )
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
+                                                         "lexicographically greater or equal than" + _minInclusive );
+        }
 
-        if( (_facetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+        if ( (_facetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             RegularExpression regex = new RegularExpression(_pattern, "X" );
-            if( regex.matches( content) == false )
+            if ( regex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
-                              "does not match regular expression facet" + _pattern );
+                                                        "does not match regular expression facet" + _pattern );
         }
 
     }
     private void checkContentList( String content )throws InvalidDatatypeValueException
     {
-    //Revisit
+        //Revisit
     }
     private int compare( String content, String facetValue ){
         Locale    loc       = Locale.getDefault();

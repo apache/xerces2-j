@@ -105,7 +105,7 @@ public class DecimalValidator implements DatatypeValidator {
      *  is not a W3C decimal type
      */
 
-    public void validate(String content, boolean list) throws InvalidDatatypeValueException {
+    public void validate(String content) throws InvalidDatatypeValueException {
         BigDecimal d = null;
         try {
             d = new BigDecimal(content);
@@ -168,7 +168,7 @@ public class DecimalValidator implements DatatypeValidator {
         return facetsAreConsistent;
     }
 
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
         if (fBaseValidator != null)
             if (!fBaseValidator.ensureFacetsAreConsistent(facets))
                 throw new IllegalFacetValueException(

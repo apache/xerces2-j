@@ -85,7 +85,7 @@ public class NOTATIONValidator implements DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content, boolean derivedByList ) throws InvalidDatatypeValueException{
+    public void validate(String content ) throws InvalidDatatypeValueException{
     }
 
     /**
@@ -108,7 +108,7 @@ public class NOTATIONValidator implements DatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.IllegalFacetException
      * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    public void setFacets(Hashtable facets, String derivedBy) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
     }
 
     /**

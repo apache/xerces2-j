@@ -71,18 +71,18 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  */
 
 public class DoubleValidator implements DatatypeValidator {
-
-   private Locale    fLocale        = null;
-   private String    fBaseValidator = "native";
-   private double[] _enumDoubles      = null;
-   private String  _pattern         = null;
+   private Locale    fLocale           = null;
+   private String    fBaseValidator    = "native";
+   private int       _derivationBy     = DatatypeValidator.DERIVED_BY_RESTRICTION;
+   private double[]  _enumDoubles      = null;
+   private String    _pattern          = null;
    
-   private double   _maxInclusive    = Double.MAX_VALUE;
-   private double   _maxExclusive    = Double.MAX_VALUE;
-   private double   _minInclusive    = Double.MIN_VALUE;
-   private double   _minExclusive    = Double.MIN_VALUE;
+   private double    _maxInclusive    = Double.MAX_VALUE;
+   private double    _maxExclusive    = Double.MAX_VALUE;
+   private double    _minInclusive    = Double.MIN_VALUE;
+   private double    _minExclusive    = Double.MIN_VALUE;
 
-   private int     _facetsDefined   = 0;
+   private int       _facetsDefined   = 0;
 
    private boolean isMaxExclusiveDefined = false;
    private boolean isMaxInclusiveDefined = false;
@@ -98,9 +98,9 @@ public class DoubleValidator implements DatatypeValidator {
      *  is not a W3C real type
      */
 
-    public void validate(String content, boolean derivedBylist) 
+    public void validate(String content) 
                   throws InvalidDatatypeValueException {
-        if( ! derivedBylist  ){ 
+        if( _derivationBy == DatatypeValidator.DERIVED_BY_RESTRICTION  ){ 
              double d = 0.0;
              try {
                  d = Double.valueOf(content).doubleValue();
@@ -121,7 +121,7 @@ public class DoubleValidator implements DatatypeValidator {
              }
     }
 
-    public void setFacets(Hashtable facets) throws UnknownFacetException, 
+    public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException, 
                            IllegalFacetException, IllegalFacetValueException, ConstrainException {
 
          for (Enumeration e = facets.keys(); e.hasMoreElements();) {

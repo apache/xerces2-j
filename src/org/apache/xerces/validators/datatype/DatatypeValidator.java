@@ -84,6 +84,8 @@ public interface DatatypeValidator {
     public static final int FACET_ENCODING     = 1<<11;
     public static final int FACET_DURATION     = 1<<12;
     public static final int FACET_PERIOD       = 1<<13;
+    public static final int DERIVED_BY_RESTRICTION   = 1;
+    public static final int DERIVED_BY_LIST          = 1<<1;
 
 
 
@@ -103,7 +105,7 @@ public interface DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content, boolean derivedByList ) throws InvalidDatatypeValueException;
+    public void validate(String content ) throws InvalidDatatypeValueException;
 
     /**
      * set the facets for this datatype
@@ -121,11 +123,13 @@ public interface DatatypeValidator {
      * @exception UnknownFacetException
      * @exception IllegalFacetException
      * @exception IllegalFacetValueException
-     * @see         org.apache.xerces.validators.schema.SchemaSymbols
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetException
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
+     * @exception ConstrainException
+     * @see org.apache.xerces.validators.schema.SchemaSymbols
+     * @see org.apache.xerces.validators.datatype.IllegalFacetException
+     * @see org.apache.xerces.validators.datatype.IllegalFacetValueException
+     * @see org.apache.xerces.validators.datatype.ConstrainException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, 
+    public void setFacets(Hashtable facets,String  derivationType ) throws UnknownFacetException, 
         IllegalFacetException, IllegalFacetValueException,  ConstrainException; 
 
     /**

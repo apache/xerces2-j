@@ -67,6 +67,7 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  * according to RFC 2396
  *
  * @author Ted Leung
+ * @author Jeffrey Rodriguez
  * @version Revision: %M% %I% %W% %Q%
  */
 
@@ -75,28 +76,13 @@ public class URIReferenceValidator implements DatatypeValidator {
     private Locale fLocale = null;
 	
 	/**
-     * validate that a string is a W3C uri type
-     *
-     * validate returns true or false depending on whether the string content is an
-     * instance of the W3C uri datatype
-     * 
-     * @param content A string containing the content to be validated
-     *
-     * @exception throws InvalidDatatypeException if the content is
-     *  not a W3C uri type
-     */
+        */
 
-	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
+	public void validate(String content) throws InvalidDatatypeValueException {
         // just say yes
 	}
 			
-	public void validate(int contentIndex) throws InvalidDatatypeValueException {
-	}
-	
-	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-	}
-	
-	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
+	public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
 	}
 
 	public void setBasetype(String base) {

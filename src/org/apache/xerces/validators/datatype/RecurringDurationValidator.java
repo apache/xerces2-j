@@ -79,7 +79,7 @@ public class RecurringDurationValidator implements DatatypeValidator {
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
      */
-    public void validate(String content, boolean list) throws InvalidDatatypeValueException{
+    public void validate(String content) throws InvalidDatatypeValueException{
     }
 
     /**
@@ -97,7 +97,7 @@ public class RecurringDurationValidator implements DatatypeValidator {
      * @exception throws IllegalFacetException
      * @exception throws IllegalFacetValueException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
+    public void setFacets(Hashtable facets, String derivedBy ) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
     }
 
     /**
