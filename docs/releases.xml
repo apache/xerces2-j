@@ -30,8 +30,8 @@
     </add>
     <update>
      <note>
-      Implemented the <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/">XInclude</jump>
-      Candidate Recommendation (April 2004), excluding support for XPointer.
+      Implemented the <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/">XInclude</jump>
+      Proposed Recommendation (September 2004), excluding support for XPointer.
      </note>
      <submitter name='Michael Glavassevich'/>
     </update>

@@ -66,7 +66,7 @@
       Yes. The XInclude specification requires processors to use the base URI
       (as specified in the <jump href="http://www.w3.org/TR/xmlbase/">XML Base</jump>
       recommendation) to resolve relative IRIs to compute the
-      <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/#include-location">include location</jump>.
+      <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/#include-location">include location</jump>.
       Support for XML Base was added to the XInclude implementation in Xerces 2.6.0.
      </p>
     </a>
@@ -88,7 +88,7 @@
     <a>
      <p>
       Currently, our implementation of XInclude is not fully complete, and we do
-      not support <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/#XPCore">XPointer</jump>
+      not support <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/#XPCore">XPointer</jump>
       references.  We hope that in the future we will have a
       fully compliant XInclude processor that can handle this feature.
      </p>
@@ -99,11 +99,10 @@
     <q>Are the values of the content negotiation attributes used in an HTTP request?</q>
     <a>
      <p>
-      Currently, the values of the <code>accept</code> and <code>accept-language</code> attributes 
-      from an <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/#include_element">include</jump>
-      element are only included in an HTTP request for included items when parse="text". We hope
-      that in the future we will be able to support content negotiation for included items
-      when parse="xml".
+      Yes, the values of the <code>accept</code> and <code>accept-language</code> attributes 
+      from an <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/#include_element">include</jump>
+      element are included as request properties in an HTTP request. Support for content negotation 
+      when parse="xml" was added to the XInclude implementation in Xerces 2.7.0.
      </p>
     </a>
   </faq>
