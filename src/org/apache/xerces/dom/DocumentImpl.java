@@ -57,7 +57,6 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -368,9 +367,9 @@ public class DocumentImpl
     void replacedText(NodeImpl node) {
         // notify ranges
         if (ranges != null) {
-            Enumeration enum = ranges.elements();
-            while (enum.hasMoreElements()) {
-                ((RangeImpl)enum.nextElement()).receiveReplacedText(node);
+            int size = ranges.size();
+            for (int i = 0; i != size; i++) {
+                ((RangeImpl)ranges.elementAt(i)).receiveReplacedText(node);
             }
         }
     }
@@ -382,11 +381,10 @@ public class DocumentImpl
     void deletedText(NodeImpl node, int offset, int count) {
         // notify ranges
         if (ranges != null) {
-            Enumeration enum = ranges.elements();
-            while (enum.hasMoreElements()) {
-                ((RangeImpl)enum.nextElement()).receiveDeletedText(node,
-                                                                   offset,
-                                                                   count);
+            int size = ranges.size();
+            for (int i = 0; i != size; i++) {
+                ((RangeImpl)ranges.elementAt(i)).receiveDeletedText(node,
+                                                                offset, count);
             }
         }
     }
@@ -398,11 +396,10 @@ public class DocumentImpl
     void insertedText(NodeImpl node, int offset, int count) {
         // notify ranges
         if (ranges != null) {
-            Enumeration enum = ranges.elements();
-            while (enum.hasMoreElements()) {
-                ((RangeImpl)enum.nextElement()).receiveInsertedText(node,
-                                                                    offset,
-                                                                    count);
+            int size = ranges.size();
+            for (int i = 0; i != size; i++) {
+                ((RangeImpl)ranges.elementAt(i)).receiveInsertedText(node,
+                                                                offset, count);
             }
         }
     }
@@ -414,11 +411,10 @@ public class DocumentImpl
     void splitData(Node node, Node newNode, int offset) {
         // notify ranges
         if (ranges != null) {
-            Enumeration enum = ranges.elements();
-            while (enum.hasMoreElements()) {
-                ((RangeImpl)enum.nextElement()).receiveSplitData(node,
-                                                                 newNode,
-                                                                 offset);
+            int size = ranges.size();
+            for (int i = 0; i != size; i++) {
+                ((RangeImpl)ranges.elementAt(i)).receiveSplitData(node,
+                                                              newNode, offset);
             }
         }
     }
@@ -1101,17 +1097,17 @@ public class DocumentImpl
 
         // notify iterators
         if (iterators != null) {
-            Enumeration enum = iterators.elements();
-            while (enum.hasMoreElements()) {
-                ((NodeIteratorImpl)enum.nextElement()).removeNode(oldChild);
+            int size = iterators.size();
+            for (int i = 0; i != size; i++) {
+               ((NodeIteratorImpl)iterators.elementAt(i)).removeNode(oldChild);
             }
         }
 
         // notify ranges
         if (ranges != null) {
-            Enumeration enum = ranges.elements();
-            while (enum.hasMoreElements()) {
-                ((RangeImpl)enum.nextElement()).removeNode(oldChild);
+            int size = ranges.size();
+            for (int i = 0; i != size; i++) {
+                ((RangeImpl)ranges.elementAt(i)).removeNode(oldChild);
             }
         }
 
