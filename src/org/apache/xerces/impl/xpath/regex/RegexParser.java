@@ -773,6 +773,8 @@ class RegexParser {
             break;
 
           case T_CHAR:
+            if (this.chardata == ']' || this.chardata == '{' || this.chardata == '}')
+                throw this.ex("parser.atom.4", this.offset-1);
             tok = Token.createChar(this.chardata);
             int high = this.chardata;
             this.next();
