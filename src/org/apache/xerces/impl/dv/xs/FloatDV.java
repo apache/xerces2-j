@@ -23,6 +23,8 @@ import org.apache.xerces.xs.datatypes.XSFloat;
 /**
  * Represent the schema type "float"
  *
+ * @xerces.internal 
+ *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM
  *

@@ -19,9 +19,9 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
- * <p><b>EXPERIMENTAL: This class should not be considered stable.
- * It is likely it may be altered or replaced/removed in the future.</b></p>
  * Validator for <precisionDecimal> datatype (W3C Schema 1.1)
+ * 
+ * @xerces.experimental
  * 
  * @author Ankit Pasricha, IBM
  * 

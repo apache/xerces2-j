@@ -25,6 +25,8 @@ import java.util.StringTokenizer;
  * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM
  * 
+ * @xerces.internal 
+ * 
  * @version $Id$
  */
 public class ListDatatypeValidator implements DatatypeValidator {

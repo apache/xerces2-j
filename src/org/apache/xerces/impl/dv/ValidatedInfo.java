@@ -21,6 +21,8 @@ import org.apache.xerces.xs.ShortList;
 /**
  * Class to get the information back after content is validated. This info
  * would be filled by validate().
+ * 
+ * @xerces.internal 
  *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  *

@@ -22,6 +22,8 @@ import org.apache.xerces.util.XML11Char;
 /**
  * NMTOKEN datatype validator for NMTokens from XML 1.1.
  *
+ * @xerces.internal 
+ *
  * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM
  * @author Neil Graham, IBM

@@ -20,6 +20,9 @@ package org.apache.xerces.impl.dv.util;
  * format validation
  *
  * This class encodes/decodes hexadecimal data
+ * 
+ * @xerces.internal  
+ * 
  * @author Jeffrey Rodriguez
  * @version $Id$
  */

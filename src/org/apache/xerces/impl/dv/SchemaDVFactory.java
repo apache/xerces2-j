@@ -30,6 +30,8 @@ import org.apache.xerces.xs.XSObjectList;
  *
  * The implementation should store the built-in datatypes in static data, so
  * that they can be shared by multiple parser instance, and multiple threads.
+ * 
+ * @xerces.internal 
  *
  * @author Sandy Gao, IBM
  *

@@ -30,6 +30,8 @@ import org.apache.xerces.util.XMLChar;
  * production.</P>
  * <P>The Value space of IDREF is scoped to a specific
  * instance document</P>
+ *
+ * @xerces.internal  
  * 
  * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM

@@ -32,6 +32,8 @@ import org.apache.xerces.impl.dv.*;
  * The value space of ENTITY is scoped to a specific
  * instance document.</P>
  * 
+ * @xerces.internal  
+ *
  * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM
  * 

@@ -23,6 +23,8 @@ import org.apache.xerces.util.XMLChar;
 /**
  * Represent the schema type "IDREF"
  *
+ * @xerces.internal 
+ *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM
  *

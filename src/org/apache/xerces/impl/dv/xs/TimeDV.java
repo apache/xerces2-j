@@ -21,6 +21,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * Validator for &lt;time&gt; datatype (W3C Schema Datatypes)
+ * 
+ * @xerces.internal 
  *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.

@@ -22,6 +22,8 @@ import java.util.Hashtable;
 
 /**
  * the factory to create/return built-in schema DVs and create user-defined DVs
+ * 
+ * @xerces.internal 
  *
  * @author Sandy Gao, IBM
  *

@@ -24,6 +24,8 @@ import java.io.*;
  * It is package private and therefore is not exposed as part of the JAXP
  * API.
  *
+ * @xerces.internal 
+ *
  * Security related methods that only work on J2SE 1.2 and newer.
  */
 class SecuritySupport12 extends SecuritySupport {

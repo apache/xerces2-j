@@ -30,6 +30,9 @@ import org.apache.xerces.impl.dv.*;
  * character has a corresponding Universal Code Set
  * code point ([ISO 10646],[Unicode] and [Unicode3]),
  * which is an integer.</P>
+ * 
+ * @xerces.internal 
+ * 
  * @version $Id$
  */
 public class StringDatatypeValidator implements DatatypeValidator {

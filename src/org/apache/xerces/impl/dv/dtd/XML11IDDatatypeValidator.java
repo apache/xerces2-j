@@ -34,6 +34,8 @@ import org.apache.xerces.util.XML11Char;
  * must uniquely identify the elements which bear
  * them.</P>
  * 
+ * @xerces.internal  
+ * 
  * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM
  * @author Neil Graham, IBM

@@ -22,6 +22,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
 /**
  * Represent the schema type "anySimpleType"
  *
+ * @xerces.internal 
+ *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM
  *

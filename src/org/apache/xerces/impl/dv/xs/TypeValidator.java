@@ -24,6 +24,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
  * class. It provides extra information XSSimpleTypeDecl requires from each
  * type: allowed facets, converting String to actual value, check equality,
  * comparison, etc.
+ * 
+ * @xerces.internal 
  *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM

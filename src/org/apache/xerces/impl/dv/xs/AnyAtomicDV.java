@@ -20,9 +20,9 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
- * <p><b>EXPERIMENTAL: This class should not be considered stable.
- * It is likely it may be altered or replaced/removed in the future.</b></p>
  * Represent the schema type "anyAtomicType"
+ * 
+ * @xerces.experimental
  *
  * @author Ankit Pasricha, IBM
  * 

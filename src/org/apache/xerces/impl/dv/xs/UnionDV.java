@@ -21,6 +21,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * Represent the schema union types
+ * 
+ * @xerces.internal 
  *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM

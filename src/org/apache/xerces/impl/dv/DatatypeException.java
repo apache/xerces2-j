@@ -25,6 +25,8 @@ import java.util.MissingResourceException;
  * created from an error message. For Schema types, it needs an error code
  * (as defined in Appendix C of the structure spec), plus an array of arguents,
  * for error message substitution.
+ * 
+ * @xerces.internal 
  *
  * @author Sandy Gao, IBM
  *

@@ -23,6 +23,8 @@ import org.apache.xerces.xs.datatypes.XSDouble;
 /**
  * Represent the schema type "double"
  *
+ * @xerces.internal 
+ *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM
  *

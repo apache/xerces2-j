@@ -23,6 +23,8 @@ import org.apache.xerces.impl.dv.DatatypeValidator;
 
 /**
  * the factory to create/return built-in XML 1.1 DVs and create user-defined DVs
+ * 
+ * @xerces.internal  
  *
  * @author Neil Graham, IBM
  *

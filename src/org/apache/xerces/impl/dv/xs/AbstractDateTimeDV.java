@@ -28,6 +28,8 @@ import org.apache.xerces.impl.Constants;
  *          two parser instances at the same time, then the same simple type
  *          decl object can be used to validate two strings at the same time.
  *          -SG
+ *          
+ * @xerces.internal 
  *
  * @author Elena Litani
  * @author Len Berman

@@ -36,6 +36,8 @@ import java.io.InputStreamReader;
  * The code also runs both as part of an unbundled jar file and
  * when bundled as part of the JDK.
  * <p>
+ * 
+ * @xerces.internal 
  *
  * @version $Id$
  */

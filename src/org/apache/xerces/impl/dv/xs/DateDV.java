@@ -21,6 +21,8 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 /**
  * Validator for <date> datatype (W3C Schema datatypes)
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystems Inc.
  *

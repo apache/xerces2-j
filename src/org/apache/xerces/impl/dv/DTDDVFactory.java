@@ -22,6 +22,8 @@ import java.util.Hashtable;
  * The factory to create and return DTD types. The implementation should
  * store the created datatypes in static data, so that they can be shared by
  * multiple parser instance, and multiple threads.
+ * 
+ * @xerces.internal 
  *
  * @author Sandy Gao, IBM
  *

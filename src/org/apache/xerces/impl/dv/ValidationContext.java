@@ -19,6 +19,8 @@ package org.apache.xerces.impl.dv;
 /**
  * ValidationContext has all the information required for the
  * validation of: id, idref, entity, notation, qname
+ * 
+ * @xerces.internal 
  *
  * @author Sandy Gao, IBM
  * @version $Id$

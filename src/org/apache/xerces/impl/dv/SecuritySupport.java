@@ -22,6 +22,8 @@ import java.io.*;
  * This class is duplicated for each JAXP subpackage so keep it in sync.
  * It is package private and therefore is not exposed as part of the JAXP
  * API.
+ * 
+ * @xerces.internal 
  *
  * Base class with security related methods that work on JDK 1.1.
  */

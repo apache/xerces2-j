@@ -22,6 +22,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
 /**
  * Represent the schema type "integer"
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

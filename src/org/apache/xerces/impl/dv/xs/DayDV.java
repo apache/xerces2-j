@@ -22,6 +22,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
 /**
  * Validator for &lt;gDay&gt; datatype (W3C Schema datatypes)
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
  * @version $Id$

@@ -24,6 +24,8 @@ import org.apache.xerces.util.XMLChar;
  *
  * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM
+ *
+ * @xerces.internal  
  * 
  * @version $Id$
  */

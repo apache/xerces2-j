@@ -20,6 +20,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * Used to validate the <dayTimeDuration> type
+ *
+ * @xerces.internal 
  * 
  * @author Ankit Pasricha, IBM
  * 

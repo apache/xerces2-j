@@ -20,6 +20,8 @@ import org.apache.xerces.xs.XSException;
 
 /**
  * Implementation of <code>org.apache.xerces.xs.datatypes.ByteList</code>.
+ *
+ * @xerces.internal 
  * 
  * @author Ankit Pasricha, IBM
  * 

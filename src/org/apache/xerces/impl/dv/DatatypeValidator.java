@@ -21,6 +21,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
 /**
  * The interface that a DTD datatype must implement. The implementation of this
  * interface must be thread-safe.
+ * 
+ * @xerces.internal
  *
  * @author Sandy Gao, IBM
  *

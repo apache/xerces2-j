@@ -33,6 +33,8 @@ import org.apache.xerces.util.XMLChar;
  * document as a value of this type; i.e., ID values
  * must uniquely identify the elements which bear
  * them.</P>
+ *
+ * @xerces.internal  
  * 
  * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM
