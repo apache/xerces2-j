@@ -480,11 +480,34 @@ public class XMLDTDScannerImpl
 
         super.endEntity(name);
 
+        // Handle end of PE
+        boolean reportEntity = fReportEntity;
+        if (name.startsWith("%")) {
+            // check well-formedness of the enity
+            int startMarkUpDepth = popPEStack();
+            if (startMarkUpDepth != fMarkUpDepth) {
+                reportEntity = false;
+                if (fValidation) {
+                // Proper nesting of parameter entities is a Validity Constraint
+                // and must not be enforced when validation is off
+                // REVISIT: Should this be a fatal error? -Ac
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "ImproperDeclarationNesting",
+                                           new Object[]{ name },
+                                           XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+            if (fEntityScanner.isExternal()) {
+                fExtEntityDepth--;
+            }
+        }
+
         // call handler
-        if (fDTDHandler != null && fReportEntity) {
+        if (fDTDHandler != null && reportEntity) {
             fDTDHandler.endEntity(name);
         }
 
+        // end DTD
         if (name.equals("[dtd]")) {
             if (fIncludeSectDepth != 0) {
                 reportFatalError("IncludeSectUnterminated", null);
@@ -495,21 +518,6 @@ public class XMLDTDScannerImpl
                 fDTDHandler.endDTD();
             }
             fExtEntityDepth--;
-        }
-        else if (name.charAt(0) == '%') {
-            // check well-formedness of the enity
-            int startMarkUpDepth = popPEStack();
-            // Proper nesting of parameter entities is a Validity Constraint
-            // and must not be enforced when validation is off
-            if (fValidation && startMarkUpDepth != fMarkUpDepth) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "ImproperDeclarationNesting",
-                                           new Object[]{ name },
-                                           XMLErrorReporter.SEVERITY_ERROR);
-            }
-            if (fEntityScanner.isExternal()) {
-                fExtEntityDepth--;
-            }
         }
 
     } // endEntity(String)
@@ -761,13 +769,13 @@ public class XMLDTDScannerImpl
 
         fReportEntity = false;
         skipSeparator(false, !scanningInternalSubset());
-        fReportEntity = true;
         // end
         if (!fEntityScanner.skipChar('>')) {
             reportFatalError("ElementDeclUnterminated", new Object[]{name});
         }
+        fReportEntity = true;
         fMarkUpDepth--;
-
+        
         // call handler
         if (fDTDHandler != null) {
             fDTDHandler.elementDecl(name, contentModel);
