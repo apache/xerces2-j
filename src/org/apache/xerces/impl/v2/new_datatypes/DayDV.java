@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -19,7 +19,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -27,7 +27,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -58,9 +58,12 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
+import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
+
 /**
  * Validator for <gDay> datatype (W3C Schema datatypes)
- * 
+ *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
  * @version $Id$
@@ -90,7 +93,7 @@ public class DayDV extends AbstractDateTimeDV{
 
     /**
      * Parses, validates and computes normalized version of gDay object
-     * 
+     *
      * @param str    The lexical representation of gDay object ---DD
      *               with possible time zone Z or (-),(+)hh:mm
      *               Pattern: ---(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?
@@ -111,10 +114,10 @@ public class DayDV extends AbstractDateTimeDV{
             throw new SchemaDateTimeException ("Error in day parsing");
         }
 
-        //initialize values 
+        //initialize values
         date[CY]=YEAR;
         date[M]=MONTH;
-        
+
         date[D]=parseInt(fStart+3,fStart+5);
 
 
@@ -130,7 +133,7 @@ public class DayDV extends AbstractDateTimeDV{
 
 	   //validate and normalize
         validateDateTime(date);
-        
+
         if ( date[utc]!=0 && date[utc]!='Z' ) {
             normalize(date);
         }
@@ -139,7 +142,7 @@ public class DayDV extends AbstractDateTimeDV{
 
     /**
      * Converts gDay object representation to String
-     * 
+     *
      * @param date   gDay object
      * @return lexical representation of gDay: ---DD with an optional time zone sign
      */

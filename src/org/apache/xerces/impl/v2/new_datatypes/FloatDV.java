@@ -58,9 +58,9 @@
 package org.apache.xerces.impl.v2.new_datatypes;
 
 //internal imports
-import org.apache.xerces.impl.v2.XSSimpleTypeDecl;
+import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
+import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
 
-//java import
 
 /**
  * @version $Id$
@@ -92,8 +92,12 @@ public class FloatDV extends AbstractNumericDV{
 
     // Float equals method takes care of cases specified for Float in schema spec.
     public boolean isEqual(Object value1, Object value2){
-        if(value1 instanceof Float && value2 instanceof Float)
-            return ((Float)value1).equals((Float)value2);
+        if(value1 != null && value2 != null){
+            if(value1 instanceof Float && value2 instanceof Float){
+                return ((Float)value1).equals((Float)value2);
+            }
+            return false;
+        }
         else //REVISIT: should we throw error for not getting right object or to be taken care in XSSimpleTypeDecl.
             return false;
     }//isEqual()

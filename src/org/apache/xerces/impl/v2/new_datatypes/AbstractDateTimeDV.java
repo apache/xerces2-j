@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
+
 /**
  * This is the base class of all date/time datatype validators.
  * It implements common code for parsing, validating and comparing datatypes.
@@ -129,13 +131,14 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         timeZone = new int[2];
     }
 
+
    // the parameters are in compiled form (from getCompiledValue)
     public boolean isEqual(Object value1, Object value2){
-        return compareDates((int[])value1,(int[])value2)==TypeValidator.COMPARE_EQUAL?true:false;
+        return compareDates((int[])value1,(int[])value2)==COMPARE_EQUAL?true:false;
     }//IsEqual()
 
    // the parameters are in compiled form (from getCompiledValue)
-    public int compare (Object value1, Object value2) {
+       public int compare (Object value1, Object value2) {
             return compareDates((int[])value1, (int[])value2);
     }//compare()
 
@@ -162,7 +165,7 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
      * @return less, greater, less_equal, greater_equal, equal
      */
 
-    protected  short compareDates(int[] date1, int[] date2) {
+    protected  int compareDates(int[] date1, int[] date2) {
         if ( date1[utc]==date2[utc] ) {
             return compareOrder(date1, date2);
         }
@@ -188,8 +191,8 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
             normalize(fTempDate);
             c2 = compareOrder(date1, fTempDate);
 
-            if ( (c1==TypeValidator.COMPARE_LESS && c2==TypeValidator.COMPARE_GREATER) ||
-                 (c1==TypeValidator.COMPARE_GREATER && c2==TypeValidator.COMPARE_LESS) ) {
+            if ( (c1==COMPARE_LESS && c2==COMPARE_GREATER) ||
+                 (c1==COMPARE_GREATER && c2==COMPARE_LESS) ) {
                 return INDETERMINATE;
             }
             //REVISIT: wait for clarification on this case from schema
@@ -224,8 +227,8 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
             if (DEBUG) {
                System.out.println("fTempDate=" + dateToString(fTempDate));
             }
-            if ( (c1==TypeValidator.COMPARE_LESS && c2==TypeValidator.COMPARE_GREATER) ||
-                 (c1==TypeValidator.COMPARE_GREATER && c2==TypeValidator.COMPARE_LESS) ) {
+            if ( (c1==COMPARE_LESS && c2==COMPARE_GREATER) ||
+                 (c1==COMPARE_GREATER && c2==COMPARE_LESS) ) {
                 return INDETERMINATE;
             }
             //REVISIT: wait for clarification on this case from schema
@@ -248,13 +251,13 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
 
         for ( int i=0;i<TOTAL_SIZE;i++ ) {
             if ( date1[i]<date2[i] ) {
-                return TypeValidator.COMPARE_LESS;
+                return COMPARE_LESS;
             }
             else if ( date1[i]>date2[i] ) {
-                return TypeValidator.COMPARE_GREATER;
+                return COMPARE_GREATER;
             }
         }
-        return TypeValidator.COMPARE_EQUAL;
+        return COMPARE_EQUAL;
     }
 
 

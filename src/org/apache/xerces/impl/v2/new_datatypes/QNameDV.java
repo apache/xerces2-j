@@ -59,6 +59,8 @@ package org.apache.xerces.impl.v2.new_datatypes;
 
 //internal imports
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
+import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
 
 import java.util.Locale;
 import java.text.Collator;

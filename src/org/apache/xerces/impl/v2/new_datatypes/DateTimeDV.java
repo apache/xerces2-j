@@ -57,6 +57,9 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
+import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
+
 /**
  * Validator for <dateTime> datatype (W3C Schema Datatypes)
  *

@@ -57,6 +57,13 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
+import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
+
+import java.util.Locale;
+import java.text.Collator;
+
+
 /**
  * @version $Id$
  */
@@ -67,6 +74,7 @@ public class StringDV extends AbstractStringDV{
     public short getPrimitiveDV(){
 	      return XSSimpleTypeDecl.DV_STRING;
     }//getPrimitiveDV()
+
 
     // the following methods might not be supported by every DV.
     // but XSSimpleTypeDecl should know which type supports which methods,

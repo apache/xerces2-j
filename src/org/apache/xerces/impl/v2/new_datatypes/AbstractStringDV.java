@@ -57,6 +57,9 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
+import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
+
 import java.util.Locale;
 /**
  * @version $Id$
@@ -104,7 +107,7 @@ public abstract class AbstractStringDV implements TypeValidator{
 
     // the parameters are in compiled form (from getCompiledValue)
     public int getDataLength(Object value){
-        return -1;
+        return ((String)value).length() ;
     }
 
     // the parameters are in compiled form (from getCompiledValue)
