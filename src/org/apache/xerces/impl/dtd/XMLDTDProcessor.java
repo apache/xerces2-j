@@ -980,7 +980,7 @@ public class XMLDTDProcessor
                     type == XMLSymbols.fENTITIESSymbol ||
                     type == XMLSymbols.fIDREFSSymbol) {
 
-                    StringTokenizer tokenizer = new StringTokenizer(value);
+                    StringTokenizer tokenizer = new StringTokenizer(value," ");
                     if (tokenizer.hasMoreTokens()) {
                         while (true) {
                             String nmtoken = tokenizer.nextToken();
