@@ -415,35 +415,44 @@ public abstract class ParentNode
             // Convert to internal type, to avoid repeated casting
             ChildNode refInternal = (ChildNode)refChild;
 
-            ChildNode prev;
-            // Find the node we're inserting after, if any (null if
-            // inserting to head of list)
-            prev = (refInternal == null)
-                   ? lastChild() : refInternal.previousSibling;
-
             // Attach up
             newInternal.ownerNode = this;
             newInternal.isOwned(true);
 
-            // Attach after
-            newInternal.previousSibling = prev;
-            if (refInternal == firstChild) {
+            // Attach before and after
+            // Note: firstChild.previousSibling == lastChild!!
+            if (firstChild == null) {
+                // this our first and only child
                 firstChild = newInternal;
                 newInternal.isFirstChild(true);
-            }
-            else {
-                prev.nextSibling = newInternal;
-            }
-
-            // Attach before
-            newInternal.nextSibling = refInternal;
-            if (refInternal == null) {
-                // store lastChild as previous sibling of first child
-                firstChild.previousSibling = newInternal;
-            }
-            else {
-                refInternal.previousSibling = newInternal;
-                refInternal.isFirstChild(false);
+                newInternal.previousSibling = newInternal;
+            } else {
+                if (refInternal == null) {
+                    // this is an append
+                    ChildNode lastChild = firstChild.previousSibling;
+                    lastChild.nextSibling = newInternal;
+                    newInternal.previousSibling = lastChild;
+                    firstChild.previousSibling = newInternal;
+                } else {
+                    // this is an insert
+                    if (refChild == firstChild) {
+                        // at the head of the list
+                        firstChild.isFirstChild(false);
+                        newInternal.nextSibling = firstChild;
+                        newInternal.previousSibling =
+                            firstChild.previousSibling;
+                        firstChild.previousSibling = newInternal;
+                        firstChild = newInternal;
+                        newInternal.isFirstChild(true);
+                    } else {
+                        // somewhere in the middle
+                        ChildNode prev = refInternal.previousSibling;
+                        newInternal.nextSibling = refInternal;
+                        prev.nextSibling = newInternal;
+                        refInternal.previousSibling = newInternal;
+                        newInternal.previousSibling = prev;
+                    }
+                }
             }
 
             changed();
@@ -632,44 +641,42 @@ public abstract class ParentNode
             }
         } // End mutation preprocessing
 
-        // Patch tree past oldChild
-        ChildNode prev = oldInternal.previousSibling;
-        ChildNode next = oldInternal.nextSibling;
-
-        if (oldInternal != firstChild) {
-            prev.nextSibling = next;
-        }
-        else {
-            oldInternal.isFirstChild(false);
-            firstChild = next;
-            if (next != null) {
-                next.isFirstChild(true);
-            }
-        }
-
-        if (next != null) {     // oldInternal != lastChild
-            next.previousSibling = prev;
-        }
-        else {
-            if (firstChild != null) {
-                // store lastChild as previous sibling of first child
-                firstChild.previousSibling = prev;
-            }
-        }
-
         // update cached length if we have any
         if (nodeListLength != -1) {
             nodeListLength--;
         }
         if (nodeListIndex != -1) {
             // if the removed node is the cached node
-            // update the cache to its (now former) previous sibling
+            // move the cache to its (soon former) previous sibling
             if (nodeListNode == oldInternal) {
                 nodeListIndex--;
                 nodeListNode = oldInternal.previousSibling();
             } else {
                 // otherwise just invalidate the cache
                 nodeListIndex = -1;
+            }
+        }
+
+        // Patch linked list around oldChild
+        // Note: lastChild == firstChild.previousSibling
+        if (oldInternal == firstChild) {
+            // removing first child
+            oldInternal.isFirstChild(false);
+            firstChild = oldInternal.nextSibling;
+            if (firstChild != null) {
+                firstChild.isFirstChild(true);
+                firstChild.previousSibling = oldInternal.previousSibling;
+            }
+        } else {
+            ChildNode prev = oldInternal.previousSibling;
+            ChildNode next = oldInternal.nextSibling;
+            prev.nextSibling = next;
+            if (next == null) {
+                // removing last child
+                firstChild.previousSibling = prev;
+            } else {
+                // removing some other child in the middle
+                next.previousSibling = prev;
             }
         }
 
