@@ -7,17 +7,65 @@
         TBD
     </desc>
     <changes>
-        <update> 
+        <add>
+          <note>Store PSVI in DOM tree: when the new DOM document is used,
+                element/attribute nodes can be casted to Element/AttributePSVI
+                interfaces to retrieve PSVI properties.
+          </note>
+          <submitter name='Sandy Gao'/>
+        </add>
+        <add>
+          <note>Provided a way to convert preparsed schema grammars to XSModels.
+          </note>
+          <submitter name='Sandy Gao'/>
+        </add>
+        <update>
           <note>
             Message localization changes.
           </note>
           <submitter name='Sandy Gao, Neil Graham, Elena Litani, Lisa Martin'/>
+        </update>
+        <update>
+          <note>Send all element PSVI properties on endElement calls, so that
+                the application doesn't need to stack them when startElement
+                is called.
+          </note>
+          <submitter name='Sandy Gao'/>
+        </update>
+        <update>
+          <note>Made it possible to build a Schema Datatype jar file. Now it
+                can be used as a standalone data type library.
+          </note>
+          <submitter name='Sandy Gao'/>
+        </update>
+        <update>
+          <note>Performance update: avoid using exceptions to determine whether
+                an array needs to be resized.
+          </note>
+          <submitter name='Henry Zongaro, Sandy Gao'/>
+        </update>
+        <update>
+          <note>Performance update: avoid adding the commonly used XML symbols
+                to the symbol table again and again.
+          </note>
+          <submitter name='Sandy Gao'/>
+        </update>
+        <update>
+          <note>Performance update: improve scanning speed by skipping end tag
+                names and using proper input buffer size.
+          </note>
+          <submitter name='Neeraj Bajaj, Sandy Gao'/>
         </update>
         <fix>
             <note>Applied fixes to Xerces's regular expression suport to address
                 a number of bugs reported by users.
             </note>
             <submitter name="Kent Tamura, Neil Graham"/>
+        </fix>
+        <fix>
+            <note>General bug fixes.
+            </note>
+            <submitter name="Elena Litani, Neil Graham, Lisa Martin, Sandy Gao"/>
         </fix>
     </changes>
   </release>
