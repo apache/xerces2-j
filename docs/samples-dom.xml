@@ -19,6 +19,7 @@
    <li><link anchor='GetElementsByTagName'>dom.GetElementsByTagName</link></li>
    <li><link anchor='Writer'>dom.Writer</link></li>
    <li><link anchor='ASBuilder'>dom.ASBuilder</link></li>
+   <li><link anchor='DOM3'>dom.DOM3</link></li>
   </ul>
   <!--
     - These samples should be redone.
@@ -193,6 +194,8 @@
    </table>
   </s3>
  </s2>
+
+
  <anchor name='ASBuilder'/>
  <s2 title='Sample dom.ASBuilder'>
   <p>
@@ -200,6 +203,8 @@
    documents and how to validate instance documents against
    preparsed schema grammars.
   </p>
+  <note>The Abstract Schema module implementation is <code>deprecated</code>. You should use 
+        Xerces Grammar cashing functionality to pre-parse schemas.</note>
   <s3 title='usage'>
    <source>java dom.ASBuilder [-f|-F] -a uri ... [-i uri ...]</source>
   </s3>
@@ -211,6 +216,25 @@
    </table>
   </s3>
  </s2>
+
+ <anchor name='DOM3'/>
+ <s2 title='Sample dom.DOM3'>
+  <p>
+   This sample program illustrates how to use the DOM Level 3 API. </p>
+   <note>This sample is <strong>not</strong> included in the default Xerces distribution. 
+   The sample uses the DOM Level 3 interfaces and will
+ <strong>not</strong> complile with the default Xerces build.
+   </note>
+  <p>To access this sample you need to check out the code from CVS and build Xerces with 
+   <code>jars-dom3</code> build target (for more information, please refer to 
+  <link idref='faq-write'>How do I access the DOM Level 3 functionality?</link>.</p>
+   
+  
+  <s3 title='usage'>
+   <source>java dom.DOM3 uri</source>
+  </s3>
+ </s2>
+
  <!--
    - These samples should be redone.
  <anchor name='IteratorView'/>

@@ -1,98 +1,114 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='Performance FAQs'>
- <faq title='General Performance'>
-  <q>General Performance</q>
-  <a>
-   <p>
-    Don't use XML where it doesn't make sense. XML is not a panacea. 
-    You will not get good performance by transferring and parsing a 
-    lot of XML files. 
-   </p>
-   <p>Using XML is memory, CPU, and network intensive.</p>
-  </a>
- </faq>
- <faq title='Parser Performance'>
-  <q>Parser Performance</q>
-  <a>
-   <p>
-    Avoid creating a new parser each time you parse; reuse parser 
-    instances. A pool of reusable parser instances might be a good idea 
-    if you have multiple threads parsing at the same time.
-   </p>
-   <p>
-    The parser configuration will affect the performance of the parser.
-    If you are interested in evaluating the parser performance with DTDs use the StandardParserConfiguration (Note: this is the default parser configuration). 
-    For testing the performance for XML Schema evaluation turn on the schema validation feature (this will insert the XML Schema Validator in the pipeline).
-   </p>
-  </a>
- </faq>
- <faq title='Parsing Documents Performance'>
-  <q>Parsing Documents Performance</q>
-  <a>
-   <p>
-    There are a variety of things that you can do to improve the
-    performance when parsing documents:
-   </p>
-   <ul>
-    <li>
-     Convert the document to US ASCII ("US-ASCII") or Unicode 
-     ("UTF-8" or "UTF-16") before parsing. Documents written using 
-     ASCII are the fastest to parse because each character is 
-     guaranteed to be a single byte and map directly to their 
-     equivalent Unicode value. For documents that contain Unicode 
-     characters beyond the ASCII range, multiple byte sequences 
-     must be read and converted for each character. There is a 
-     performance penalty for this conversion. The UTF-16 encoding 
-     alleviates some of this penalty because each character is 
-     specified using two bytes, assuming no surrogate characters. 
-     However, using UTF-16 can roughly double the size of the 
-     original document which takes longer to parse.
-    </li>
-    <li>
-     Explicitly specify "US-ASCII" encoding if your document is in 
-     ASCII format. If no encoding is specified, the XML specification 
-     requires the parser to assume UTF-8 which is slower to process.
-    </li>
-    <li>
-     Avoid external entities and external DTDs. The extra file 
-     opens and transcoding setup is expensive.
-    </li>
-    <li>
-     Reduce character count; smaller documents are parsed quicker. 
-     Replace elements with attributes where it makes sense. Avoid 
-     gratuitous use of whitespace because the parser must scan past it.
-    </li>
-    <li>
-     Avoid using too many default attributes. Defaulting attribute
-     values slows down processing.
-    </li>
-   </ul>
-  </a>
- </faq>
- <faq title='XML Application Performance'>
-  <q>XML Application Performance</q>
-  <a>
-   <ul>
-    <li>If you don't need validation (and infoset augmentation) of XML documents, don't include validators (DTD or XML Schema) in the pipeline. Including the validator components in the pipeline will result in a performance hit for your application: if a validator component is present in the pipeline, Xerces will try to augment the infoset even if the validation feature is set to false.
-If you are only interested in validating against DTDs don't include XML Schema validator in the pipeline.
+  <faq title='General Performance'>
+    <q>General Performance</q>
+    <a>
+      <p>
+	Don't use XML where it doesn't make sense. XML is not a panacea. 
+	You will not get good performance by transferring and parsing a 
+	lot of XML files. 
+      </p>
+      <p>Using XML is memory, CPU, and network intensive.</p>
+    </a>
+  </faq>
+  <faq title='Parser Performance'>
+    <q>Parser Performance</q>
+    <a>
+      <p>
+	Avoid creating a new parser each time you parse; reuse parser 
+	instances. A pool of reusable parser instances might be a good idea 
+	if you have multiple threads parsing at the same time.
+      </p>
+      <p>
+	The parser configuration will affect the performance of the parser.
+	If you are interested in evaluating the parser performance with DTDs use the 
+	<code>DTDConfiguration</code> (<em>Note</em>: you can build Xerces with DTD-only support 
+	using <em>dtdjars</em> build target). 
+	For testing the performance for XML Schema validation turn on the schema validation feature and use 
+	the <code>StandardParserConfiguration </code> (<em>Note</em>: this is the default parser
+	configuration).
+      </p>
+    </a>
+  </faq>
+  <faq title='Parsing Documents Performance'>
+    <q>Parsing Documents Performance</q>
+    <a>
+      <p>
+	There are a variety of things that you can do to improve the
+	performance when parsing documents:
+      </p>
+      <ul>
+	<li>
+	  Convert the document to US ASCII ("US-ASCII") or Unicode 
+	  ("UTF-8" or "UTF-16") before parsing. Documents written using 
+	  ASCII are the fastest to parse because each character is 
+	  guaranteed to be a single byte and map directly to their 
+	  equivalent Unicode value. For documents that contain Unicode 
+	  characters beyond the ASCII range, multiple byte sequences 
+	  must be read and converted for each character. There is a 
+	  performance penalty for this conversion. The UTF-16 encoding 
+	  alleviates some of this penalty because each character is 
+	  specified using two bytes, assuming no surrogate characters. 
+	  However, using UTF-16 can roughly double the size of the 
+	  original document which takes longer to parse.
+	</li>
+	<li>
+	  Explicitly specify "US-ASCII" encoding if your document is in 
+	  ASCII format. If no encoding is specified, the XML specification 
+	  requires the parser to assume UTF-8 which is slower to process.
+	</li>
+	<li>
+	  Avoid external entities and external DTDs. The extra file 
+	  opens and transcoding setup is expensive.
+	</li>
+	<li>
+	  Reduce character count; smaller documents are parsed quicker. 
+	  Replace elements with attributes where it makes sense. Avoid 
+	  gratuitous use of whitespace because the parser must scan past it.
+	</li>
+	<li>
+	  Avoid using too many default attributes. Defaulting attribute
+	  values slows down processing.
+	</li>
+      </ul>
+    </a>
+  </faq>
+  <faq title='XML Application Performance'>
+    <q>XML Application Performance</q>
+    <a>
+      <ul>
+	<li><strong>Validation</strong> -- if you don't need validation (and infoset augmentation) 
+	  of XML documents, 
+	  don't include validators (DTD or XML Schema) in the pipeline. 
+	  Including the validator components in the pipeline will result in a performance 
+	  hit for your application: if a validator component is present in the pipeline, 
+	  Xerces will try to augment the infoset even if the validation feature is set to false.
+	  If you are only interested in validating against DTDs don't include 
+	  XML Schema validator in the pipeline.
 
-    </li>
-    <li> If you don't need validation, avoid using a DOCTYPE line in your XML document. 
-     The current version of the parser will always read the DTD if the DOCTYPE line
-     is specified even when validation feature is set to false.
-    </li>
-    <li>
-     By default, the DOM feature defer-node-expansion is true, causing DOM nodes to 
-     be expanded as the tree is traversed.  
-     This allows the parser to return
-     a document faster than if the tree is fully expanded during parsing and
-     improves memory usage when the whole tree is not traversed.    
-     If memory usage using DOM is still a concern, SAX should be considered;      
-     the SAX parser uses very little memory and notifies the   
-     application as parts of the document are parsed.
-    </li>
-   </ul>
-  </a>
- </faq>
+	</li>
+	<li> <strong>DOCTYPE</strong> -- if you don't need validation, 
+	  avoid using a DOCTYPE line in your XML document. 
+	  The current version of the parser will always read the DTD if the DOCTYPE line
+	  is specified even when validation feature is set to false.
+	</li>
+	<li> <strong>Deferred DOM</strong>  --
+	  by default, the DOM feature <em>defer-node-expansion</em> is true, 
+	  causing DOM nodes to be expanded as the tree is traversed. 
+	  The performance tests produced by <em>Denis Sosnoski</em> showed that Xerces DOM with 
+	  deferred node expansion offers poor performance and large memory size 
+	  for small documents (0K-10K). Thus, for best performance when using Xerces DOM 
+	  with smaller documents you should disable the deferred node expansion feature.
+	  For larger documents (~100K and higher) the deferred DOM offers 
+	  better performance than non-deferred DOM but uses a large memory size.
+	</li>
+	<li><strong>SAX</strong> --
+	  if memory usage using DOM is a concern, SAX should be considered;      
+	  the SAX parser uses very little memory and notifies the   
+	  application as parts of the document are parsed.
+	</li>
+      </ul>
+    </a>
+  </faq>
 </faqs>

@@ -17,7 +17,8 @@
       <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
 	  Implementation</link> page. 
       </p>
-      <note>Always run <strong>build clean</strong> before build specialized Xerces.</note>
+      <note>Always remove build directory (either manually or by executing build <code>clean</code> target)
+            before building specialized Xerces jars.</note>
     </a>
   </faq>
  <faq title='Creating a DOM Parser'>

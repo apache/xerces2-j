@@ -1,133 +1,137 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
 <s1 title='&ParserNameLong; Readme'>
- <s2 title='&ParserNameLong; &ParserVersion; Release'>
-  <p>
-   Welcome to the future! Xerces2 is the next generation of
-   high performance, fully compliant XML parsers in the Apache
-   Xerces family. This new version of Xerces introduces the
-   Xerces Native Interface (XNI), a complete framework for
-   building parser components and configurations that is
-   extremely modular and easy to program. 
-  </p>
-  <p>
-   The Apache Xerces2 parser is the reference implementation 
-   of XNI but other parser components, configurations, and parsers
-   can be written using the Xerces Native Interface. For complete
-   design and implementation documents, refer to the 
-   <link idref='xni'>XNI Manual</link>.
-  </p>
-  <p>
-   Xerces 2 is a <jump href='http://www.w3.org/TR/xmlschema-1/#key-fullyConforming'>fully conforming</jump> XML Schema processor. 
-   For more information, refer to the <link idref='limitations-schema'>XML Schema Limitations</link> page. 
-  </p>
-  <p>
-   Xerces 2 also provides a partial implementation of Document Object Model Level 3  
-    <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/'>Core</jump>, 
-    
-    <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html'>Load and Save</jump> and <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>Abstract Schemas</jump> [<strong>deprecated</strong>] Working Drafts. 
-For more information, refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page. 
-  </p>
+  <s2 title='&ParserNameLong; &ParserVersion; Release'>
+    <p>
+      Welcome to the future! Xerces2 is the next generation of
+      high performance, fully compliant XML parsers in the Apache
+      Xerces family. This new version of Xerces introduces the
+      Xerces Native Interface (XNI), a complete framework for
+      building parser components and configurations that is
+      extremely modular and easy to program. 
+    </p>
+    <p>
+      The Apache Xerces2 parser is the reference implementation 
+      of XNI but other parser components, configurations, and parsers
+      can be written using the Xerces Native Interface. For complete
+      design and implementation documents, refer to the 
+      <link idref='xni'>XNI Manual</link>.
+    </p>
+    <p>
+      Xerces 2 is a <jump href='http://www.w3.org/TR/xmlschema-1/#key-fullyConforming'>
+	fully conforming</jump> XML Schema processor. 
+      For more information, refer to the <link idref='limitations-schema'>
+	XML Schema Limitations</link> page. 
+    </p>
+    <p>
+      Xerces 2 also provides a partial implementation of Document Object Model Level 3  
+      <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/'>Core</jump>, 
+      
+      <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html'>
+	Load and Save</jump> and 
+      <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>
+	Abstract Schemas</jump> [<strong>deprecated</strong>] Working Drafts. 
+      For more information, refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page. 
+    </p>
 
-  <p>
-   Please use 
-   <jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>
-   to report any bugs that you find.
-  </p>
-  <p>You can find the latest Xerces 2 jars
-   <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>here</jump>.
-   </p>
- </s2>
- <s2 title='Features of This Release'>
-  <p>
-   The &ParserNameLong; &ParserVersion; supports the
-   following standards and APIs:
-  </p>
-  <ul>
-   <li>
-    <jump href='http://www.w3.org/XML/'>eXtensible Markup Language</jump>
-    (XML) 1.0 
-    <jump href='http://www.w3.org/TR/2000/REC-xml-20001006'>Second 
-    Edition</jump> Recommendation
-   </li>
-   <li>
-    <jump href='http://www.w3.org/TR/REC-xml-names/'>Namespaces
-    in XML</jump> Recommendation
-   </li>
-   <li>
-    <jump href='http://www.w3.org/DOM/'>Document Object Model</jump>
-    (DOM) Level 2
-    <jump href='http://www.w3.org/TR/DOM-Level-2-Core/'>Core</jump>,
-    <jump href='http://www.w3.org/TR/DOM-Level-2-Events'>Events</jump>,
-    and
-    <jump href='http://www.w3.org/TR/DOM-Level-2-Traversal-Range'>Traversal
-    and Range</jump> Recommendations
-   </li>
-   <li>
-    <jump href='http://sax.sourceforge.net/'>Simple API for XML</jump>
-    (SAX) 2.0
-    <jump href='http://prdownloads.sourceforge.net/sax/sax2-r2pre2.jar'>Core</jump>,
-    and
-    <jump href='http://prdownloads.sourceforge.net/sax/sax2-ext-1.0.zip'>Extension</jump>
-   </li>
-   <li>
-    <jump href='http://java.sun.com/xml/xml_jaxp.html'>Java APIs for 
-    XML Processing</jump> (JAXP) 1.1
-   </li>
-   <li>
-    <jump href='http://www.w3.org/XML/Schema'>XML Schema</jump> 1.0
-    <jump href='http://www.w3.org/TR/xmlschema-1/'>Structures</jump>
-    and
-    <jump href='http://www.w3.org/TR/xmlschema-2/'>Datatypes</jump>
-    Recommendations
-   </li>
-   
-  </ul>
- </s2>
- 
-  <s2 title='Backwards compatibility'>
-   <p> According to the DOM Level 3 specification and 
-<jump href="http://www.w3.org/2000/11/DOM-Level-2-errata#core-26">DOM Level 2 errata
-</jump> the createElementNS and createAttributeNS methods convert empty string 
-namespaceURI to null. 
-Please, let us know if this change affects your application.</p>
+    <p>
+      Please use 
+      <jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>
+      to report any bugs that you find.
+    </p>
+    <p>You can find the latest Xerces 2 jars
+      <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>here</jump>.
+    </p>
   </s2>
- 
- <s2 title='Changes from Previous Release'>
+  <s2 title='Features of This Release'>
+    <p>
+      The &ParserNameLong; &ParserVersion; supports the
+      following standards and APIs:
+    </p>
+    <ul>
+      <li>
+	<jump href='http://www.w3.org/XML/'>eXtensible Markup Language</jump>
+	(XML) 1.0 
+	<jump href='http://www.w3.org/TR/2000/REC-xml-20001006'>Second 
+	  Edition</jump> Recommendation
+      </li>
+      <li>
+	<jump href='http://www.w3.org/TR/REC-xml-names/'>Namespaces
+	  in XML</jump> Recommendation
+      </li>
+      <li>
+	<jump href='http://www.w3.org/DOM/'>Document Object Model</jump>
+	(DOM) Level 2
+	<jump href='http://www.w3.org/TR/DOM-Level-2-Core/'>Core</jump>,
+	<jump href='http://www.w3.org/TR/DOM-Level-2-Events'>Events</jump>,
+	and
+	<jump href='http://www.w3.org/TR/DOM-Level-2-Traversal-Range'>Traversal
+	  and Range</jump> Recommendations
+      </li>
+      <li>
+	<jump href='http://sax.sourceforge.net/'>Simple API for XML</jump>
+	(SAX) 2.0
+	<jump href='http://prdownloads.sourceforge.net/sax/sax2-r2pre2.jar'>Core</jump>,
+	and
+	<jump href='http://prdownloads.sourceforge.net/sax/sax2-ext-1.0.zip'>Extension</jump>
+      </li>
+      <li>
+	<jump href='http://java.sun.com/xml/xml_jaxp.html'>Java APIs for 
+	  XML Processing</jump> (JAXP) 1.1
+      </li>
+      <li>
+	<jump href='http://www.w3.org/XML/Schema'>XML Schema</jump> 1.0
+	<jump href='http://www.w3.org/TR/xmlschema-1/'>Structures</jump>
+	and
+	<jump href='http://www.w3.org/TR/xmlschema-2/'>Datatypes</jump>
+	Recommendations
+      </li>
+      
+    </ul>
+  </s2>
+  
+  <s2 title='Backwards compatibility'>
+    <p> According to the DOM Level 3 specification and 
+      <jump href="http://www.w3.org/2000/11/DOM-Level-2-errata#core-26">DOM Level 2 errata
+      </jump> the createElementNS and createAttributeNS methods convert empty string 
+      namespaceURI to null. 
+      Please, let us know if this change affects your application.</p>
+  </s2>
+  
+  <s2 title='Changes from Previous Release'>
     
-  <p>
-   The &ParserNameLong; &ParserVersion; is a bug fix of the previous release. This
-   release is more stable and can be used in production environment:
-  </p>
-  
-  <ul>
-   <li>Added the support of reporting line/column numbers of schema errors.</li>
-   <li>Enabled processing of base 64-encoded material on OS/390.</li>
-   <li>Updated DTD datatypes to use the new datatype interfaces.</li>
-  </ul>
-  <p>
-  
-   For a more complete list of changes, refer to the 
-   <link idref='releases'>Release Information</link> page.
-  </p>	      
- </s2>
- <s2 title='Changes from Xerces 1.x'>
-  <p>
-   Xerces2 is a nearly complete rewrite of the Xerces 1.x codebase
-   in order to make the code cleaner, more modular, and easier to
-   maintain. It includes a completely redesigned and rewritten XML Schema validation engine. 
+    <p>
+      The &ParserNameLong; &ParserVersion; fixes bugs and adds new functionality.
+    </p>
+    
+    <ul>
+      <li>Added XMLResourceIdentifier to xni.XMLDTDHandler.startExternalSubset()</li>
+      <li>Added implementation to XML Schema Component / PSVI interfaces.</li>
+      <li>Added DOM Level 3 revalidation support against XML Schemas.</li>
+    </ul>
+    <p>
+      
+      For a more complete list of changes, refer to the 
+      <link idref='releases'>Release Information</link> page.
+    </p>	      
+  </s2>
+  <s2 title='Changes from Xerces 1.x'>
+    <p>
+      Xerces2 is a nearly complete rewrite of the Xerces 1.x codebase
+      in order to make the code cleaner, more modular, and easier to
+      maintain. It includes a completely redesigned and rewritten XML Schema validation engine. 
 
-   Applications using only the standard interfaces such as
-   JAXP, DOM, and SAX should not see any differences. 
-  </p>
- </s2>
- <s2 title='License Information'>
-  <p>
-   The &ParserName; &ParserVersion; release is available
-   in source code and precompiled binary (JAR files) form. 
-   Both &ParserName; packages are made available under the 
-   <jump href='http://xml.apache.org/LICENSE'>Apache Software
-   License</jump>.
-  </p>
- </s2>
+      Applications using only the standard interfaces such as
+      JAXP, DOM, and SAX should not see any differences. 
+    </p>
+  </s2>
+  <s2 title='License Information'>
+    <p>
+      The &ParserName; &ParserVersion; release is available
+      in source code and precompiled binary (JAR files) form. 
+      Both &ParserName; packages are made available under the 
+      <jump href='http://xml.apache.org/LICENSE'>Apache Software
+	License</jump>.
+    </p>
+  </s2>
 </s1>
