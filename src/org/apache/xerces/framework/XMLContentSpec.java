@@ -162,6 +162,9 @@ public class XMLContentSpec {
     /** Represents any local element (XML Schema: ##local). */
     public static final int CONTENTSPECNODE_ANY_LOCAL = 8;
 
+    /** Represents <ALL> */
+    public static final int CONTENTSPECNODE_ALL = 9;
+
     /** prcessContent is 'lax' **/
     public static final int CONTENTSPECNODE_ANY_LAX = 22;
 
@@ -189,6 +192,7 @@ public class XMLContentSpec {
      * @see CONTENTSPECNODE_ONE_OR_MORE
      * @see CONTENTSPECNODE_CHOICE
      * @see CONTENTSPECNODE_SEQ
+     * @see CONTENTSPECNODE_ALL
      */
     public int type;
 
@@ -399,10 +403,12 @@ public class XMLContentSpec {
                     str.append('+');
                     break;
                 }
+                case XMLContentSpec.CONTENTSPECNODE_ALL:
                 case XMLContentSpec.CONTENTSPECNODE_CHOICE:
                 case XMLContentSpec.CONTENTSPECNODE_SEQ: {
                     appendContentSpec(provider, stringPool,
-                                      contentSpec, str, true, parentContentSpecType );
+                                      contentSpec, str, true,
+                                      parentContentSpecType );
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ANY: {
@@ -548,11 +554,15 @@ public class XMLContentSpec {
                 break;
             }
             case XMLContentSpec.CONTENTSPECNODE_CHOICE:
-            case XMLContentSpec.CONTENTSPECNODE_SEQ: {
-                if (parens) {
-                    str.append('(');
-                }
+            case XMLContentSpec.CONTENTSPECNODE_SEQ:
+            case XMLContentSpec.CONTENTSPECNODE_ALL: {
                 int type = contentSpec.type;
+                if (parens) {
+                    if (type == XMLContentSpec.CONTENTSPECNODE_ALL)
+                        str.append("all(");
+                    else
+                        str.append('(');
+                }
                 int otherValue = contentSpec.otherValue;
                 provider.getContentSpec(contentSpec.value, contentSpec);
                 appendContentSpec(provider, stringPool,
