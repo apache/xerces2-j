@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -481,6 +481,9 @@ import java.text.CharacterIterator;
  * @version $Id$
  */
 public class RegularExpression implements java.io.Serializable {
+    
+    private static final long serialVersionUID = 3905241217112815923L;
+
     static final boolean DEBUG = false;
 
     /**

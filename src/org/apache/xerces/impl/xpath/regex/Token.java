@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import java.util.Hashtable;
  * @version $Id$
  */
 class Token implements java.io.Serializable {
+
+    private static final long serialVersionUID = 4049923761862293040L;
+
     static final boolean COUNTTOKENS = true;
     static int tokens = 0;
 
@@ -1088,6 +1091,9 @@ class Token implements java.io.Serializable {
      * This class represents a node in parse tree.
      */
     static class StringToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 3257288015452780086L;
+        
         String string;
         int refNumber;
 
@@ -1116,6 +1122,9 @@ class Token implements java.io.Serializable {
      * This class represents a node in parse tree.
      */
     static class ConcatToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 4050760502994940212L;
+        
         Token child;
         Token child2;
         
@@ -1148,6 +1157,9 @@ class Token implements java.io.Serializable {
      * This class represents a node in parse tree.
      */
     static class CharToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 3257284751277569842L;
+        
         int chardata;
 
         CharToken(int type, int ch) {
@@ -1209,6 +1221,9 @@ class Token implements java.io.Serializable {
      * This class represents a node in parse tree.
      */
     static class ClosureToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 3545230349706932537L;
+        
         int min;
         int max;
         Token child;
@@ -1275,6 +1290,9 @@ class Token implements java.io.Serializable {
      * This class represents a node in parse tree.
      */
     static class ParenToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 3257572797621219636L;
+        
         Token child;
         int parennumber;
 
@@ -1330,6 +1348,9 @@ class Token implements java.io.Serializable {
      * (?(condition)yes-pattern|no-pattern)
      */
     static class ConditionToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 3761408607870399794L;
+        
         int refNumber;
         Token condition;
         Token yes;
@@ -1373,6 +1394,9 @@ class Token implements java.io.Serializable {
      * (ims-ims: .... )
      */
     static class ModifierToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 3258689892778324790L;
+        
         Token child;
         int add;
         int mask;
@@ -1413,6 +1437,9 @@ class Token implements java.io.Serializable {
      * for UNION or CONCAT.
      */
     static class UnionToken extends Token implements java.io.Serializable {
+
+        private static final long serialVersionUID = 3256723987530003507L;
+        
         Vector children;
 
         UnionToken(int type) {
