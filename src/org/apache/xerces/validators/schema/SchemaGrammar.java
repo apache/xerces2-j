@@ -140,12 +140,12 @@ public class SchemaGrammar extends Grammar{
 
     // Set if we defer min/max expansion for content trees.   This is required if we 
     // are doing particle derivation checking for schema.
-    private boolean deferContentSpecExpansion = true;
+    private boolean deferContentSpecExpansion = false;
  
     // Set if we check Unique Particle Attribution
     // This one onle takes effect when deferContentSpecExpansion is set
-    private boolean checkUniqueParticleAttribution = true;
-    private boolean checkingUPA = true;
+    private boolean checkUniqueParticleAttribution = false;
+    private boolean checkingUPA = false;
     // store the original uri
     private int fContentSpecOrgUri[][] = new int[INITIAL_CHUNK_COUNT][];
 
