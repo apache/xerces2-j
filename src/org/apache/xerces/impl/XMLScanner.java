@@ -366,9 +366,10 @@ public abstract class XMLScanner
         final int STATE_DONE = 3;
         int state = STATE_VERSION;
 
-        boolean versionMissingReported = false;
+        boolean dataFoundForTarget = false;
         boolean sawSpace = fEntityScanner.skipSpaces();
         while (fEntityScanner.peekChar() != '?') {
+            dataFoundForTarget = true;
             String name = scanPseudoAttribute(scanningTextDecl, fString);
             switch (state) {
                 case STATE_VERSION: {
@@ -390,7 +391,6 @@ public abstract class XMLScanner
                     }
                     else if (name == fEncodingSymbol) {
                         if (!scanningTextDecl) {
-                            versionMissingReported = true;
                             reportFatalError("VersionInfoRequired", null);
                         }
                         if (!sawSpace) {
@@ -464,8 +464,23 @@ public abstract class XMLScanner
             }
             sawSpace = fEntityScanner.skipSpaces();
         }
+
+        // REVISIT: should we remove this error reporting?
         if (scanningTextDecl && state != STATE_DONE) {
             reportFatalError("MorePseudoAttributes", null);
+        }
+        
+        // If there is no data in the xml or text decl then we fail to report error 
+        // for version or encoding info above.
+        if (scanningTextDecl) {
+            if (!dataFoundForTarget && encoding == null) {
+                reportFatalError("EncodingDeclRequired", null);
+            }
+        }
+        else {
+            if (!dataFoundForTarget && version == null) {
+                reportFatalError("VersionInfoRequired", null);
+            }
         }
 
         // end
@@ -477,14 +492,6 @@ public abstract class XMLScanner
 
         }
         
-        // If there is no data in the xml decl then we fail to report error 
-        // for version info above. But, if already the error is reported above 
-        // and we reach here, maybe continue-after-fatal-error is true, then 
-        // don't report the same error again.
-        if (version == null && !versionMissingReported) {
-            reportFatalError("VersionInfoRequired", null);
-        }
-
         // fill in return array
         pseudoAttributeValues[0] = version;
         pseudoAttributeValues[1] = encoding;
