@@ -115,3 +115,4 @@ public interface XSCMValidator {
     public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException;
 
 } // XSCMValidator
+

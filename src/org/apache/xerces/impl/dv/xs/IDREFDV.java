@@ -87,3 +87,4 @@ public class IDREFDV extends TypeValidator{
     }
 
 }//IDREF class
+
