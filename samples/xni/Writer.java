@@ -56,10 +56,30 @@
  */
 
 package xni;                    
-
+                    
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
+/***
+import sax.helpers.AttributesImpl;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.Parser;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.ParserAdapter;
+import org.xml.sax.helpers.ParserFactory;
+import org.xml.sax.helpers.XMLReaderFactory;
+/***/
 import org.apache.xerces.parsers.XMLDocumentParser;
+import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
@@ -70,27 +90,18 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+/***/
 
 /**
- * A sample XNI counter. The output of this program shows the time
- * and count of elements, attributes, ignorable whitespaces, and 
- * characters appearing in the document. 
- * <p>
- * This class is useful as a "poor-man's" performance tester to
- * compare the speed and accuracy of various parser configurations. 
- * However, it is important to note that the first parse time of a
- * parser will include both VM class load time and parser 
- * initialization that would not be present in subsequent parses 
- * with the same file. 
- * <p>
- * <strong>Note:</strong> The results produced by this program
- * should never be accepted as true performance measurements.
+ * A sample XNI writer. This sample program illustrates how to
+ * use the XNI XMLDocumentHandler callbacks in order to print a
+ * document that is parsed.
  *
  * @author Andy Clark, IBM
  *
  * @version $Id$
  */
-public class Counter
+public class Writer 
     extends XMLDocumentParser 
     implements XMLErrorHandler {
 
@@ -104,10 +115,6 @@ public class Counter
     protected static final String NAMESPACES_FEATURE_ID = 
         "http://xml.org/sax/features/namespaces";
     
-    /** Namespace prefixes feature id (http://xml.org/sax/features/namespace-prefixes). */
-    protected static final String NAMESPACE_PREFIXES_FEATURE_ID = 
-        "http://xml.org/sax/features/namespace-prefixes";
-
     /** Validation feature id (http://xml.org/sax/features/validation). */
     protected static final String VALIDATION_FEATURE_ID = 
         "http://xml.org/sax/features/validation";
@@ -122,14 +129,8 @@ public class Counter
     protected static final String DEFAULT_PARSER_CONFIG = 
         "org.apache.xerces.parsers.StandardParserConfiguration";
 
-    /** Default repetition (1). */
-    protected static final int DEFAULT_REPETITION = 1;
-
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
-
-    /** Default namespace prefixes (false). */
-    protected static final boolean DEFAULT_NAMESPACE_PREFIXES = false;
 
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
@@ -137,40 +138,31 @@ public class Counter
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
 
-    /** Default memory usage report (false). */
-    protected static final boolean DEFAULT_MEMORY_USAGE = false;
-
-    /** Default "tagginess" report (false). */
-    protected static final boolean DEFAULT_TAGGINESS = false;
+    /** Default canonical output (false). */
+    protected static final boolean DEFAULT_CANONICAL = false;
 
     //
     // Data
     //
 
-    /** Number of elements. */
-    protected long fElements;
+    /** Print writer. */
+    protected PrintWriter fOut;
 
-    /** Number of attributes. */
-    protected long fAttributes;
+    /** Canonical output. */
+    protected boolean fCanonical;
 
-    /** Number of characters. */
-    protected long fCharacters;
+    /** Element depth. */
+    protected int fElementDepth;
 
-    /** Number of ignorable whitespace characters. */
-    protected long fIgnorableWhitespace;
-
-    /** Number of characters of tags. */
-    protected long fTagCharacters;
-
-    /** Number of other content characters for the "tagginess" calculation. */
-    protected long fOtherCharacters;
+    /** In DTD. */
+    protected boolean fInDTD;
 
     //
     // Constructors
     //
 
     /** Default constructor. */
-    public Counter(XMLParserConfiguration configuration) {
+    public Writer(XMLParserConfiguration configuration) {
         super(configuration);
         fConfiguration.setErrorHandler(this);
     } // <init>(XMLParserConfiguration)
@@ -179,66 +171,47 @@ public class Counter
     // Public methods
     //
 
-    /** Prints the results. */
-    public void printResults(PrintWriter out, String uri, long time, 
-                             long memory, boolean tagginess,
-                             int repetition) {
+    /** Sets whether output is canonical. */
+    public void setCanonical(boolean canonical) {
+        fCanonical = canonical;
+    } // setCanonical(boolean)
 
-        // filename.xml: 631 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
-        out.print(uri);
-        out.print(": ");
-        if (repetition == 1) {
-            out.print(time);
-        }
-        else {
-            out.print(time);
-            out.print('/');
-            out.print(repetition);
-            out.print('=');
-            out.print(time/repetition);
-        }
-        out.print(" ms");
-        if (memory != Long.MIN_VALUE) {
-            out.print(", ");
-            out.print(memory);
-            out.print(" bytes");
-        }
-        out.print(" (");
-        out.print(fElements);
-        out.print(" elems, ");
-        out.print(fAttributes);
-        out.print(" attrs, ");
-        out.print(fIgnorableWhitespace);
-        out.print(" spaces, ");
-        out.print(fCharacters);
-        out.print(" chars)");
-        if (tagginess) {
-            out.print(' ');
-            long totalCharacters = fTagCharacters + fOtherCharacters
-                                 + fCharacters + fIgnorableWhitespace;
-            long tagValue = fTagCharacters * 100 / totalCharacters;
-            out.print(tagValue);
-            out.print("% tagginess");
-        }
-        out.println();
-        out.flush();
+    /** Sets the output stream for printing. */
+    public void setOutput(OutputStream stream, String encoding)
+        throws UnsupportedEncodingException {
 
-    } // printResults(PrintWriter,String,long)
+        if (encoding == null) {
+            encoding = "UTF8";
+        }
+
+        java.io.Writer writer = new OutputStreamWriter(stream, encoding);
+        fOut = new PrintWriter(writer);
+
+    } // setOutput(OutputStream,String)
+
+    /** Sets the output writer. */
+    public void setOutput(java.io.Writer writer) {
+            
+        fOut = writer instanceof PrintWriter
+             ? (PrintWriter)writer : new PrintWriter(writer);
+
+    } // setOutput(java.io.Writer)
 
     //
-    // ContentHandler methods
+    // XMLDocumentHandler methods
     //
 
     /** Start document. */
     public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException {
 
-        fElements            = 0;
-        fAttributes          = 0;
-        fCharacters          = 0;
-        fIgnorableWhitespace = 0;
-        fTagCharacters       = 0;
-        fOtherCharacters     = 0;
+        fElementDepth = 0;
+        fInDTD = false;
+
+        if (!fCanonical) {
+            fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            fOut.flush();
+        }
 
     } // startDocument(XMLLocator,String)
 
@@ -246,22 +219,24 @@ public class Counter
     public void startElement(QName element, XMLAttributes attrs) 
         throws XNIException {
 
-        fElements++;
-        fTagCharacters++; // open angle bracket
-        fTagCharacters += element.rawname.length();
+        fElementDepth++;
+        fOut.print('<');
+        fOut.print(element.rawname);
         if (attrs != null) {
-            int attrCount = attrs.getLength();
-            fAttributes += attrCount;
-            for (int i = 0; i < attrCount; i++) {
-                fTagCharacters++; // space
-                fTagCharacters += attrs.getQName(i).length();
-                fTagCharacters++; // '='
-                fTagCharacters++; // open quote
-                fOtherCharacters += attrs.getValue(i).length();
-                fTagCharacters++; // close quote
+            /***
+            attrs = sortAttributes(attrs);
+            /***/
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+                fOut.print(' ');
+                fOut.print(attrs.getQName(i));
+                fOut.print("=\"");
+                normalizeAndPrint(attrs.getValue(i));
+                fOut.print('"');
             }
         }
-        fTagCharacters++; // close angle bracket
+        fOut.print('>');
+        fOut.flush();
 
     } // startElement(QName,XMLAttributes)
 
@@ -269,51 +244,116 @@ public class Counter
     public void emptyElement(QName element, XMLAttributes attrs) 
         throws XNIException {
 
-        fElements++;
-        fTagCharacters++; // open angle bracket
-        fTagCharacters += element.rawname.length();
+        fElementDepth++;
+        fOut.print('<');
+        fOut.print(element.rawname);
         if (attrs != null) {
-            int attrCount = attrs.getLength();
-            fAttributes += attrCount;
-            for (int i = 0; i < attrCount; i++) {
-                fTagCharacters++; // space
-                fTagCharacters += attrs.getQName(i).length();
-                fTagCharacters++; // '='
-                fTagCharacters++; // open quote
-                fOtherCharacters += attrs.getValue(i).length();
-                fTagCharacters++; // close quote
+            /***
+            attrs = sortAttributes(attrs);
+            /***/
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+                fOut.print(' ');
+                fOut.print(attrs.getQName(i));
+                fOut.print("=\"");
+                normalizeAndPrint(attrs.getValue(i));
+                fOut.print('"');
             }
         }
-        fTagCharacters++; // forward slash
-        fTagCharacters++; // close angle bracket
+        fOut.print("/>");
+        fOut.flush();
 
-    } // startElement(QName,XMLAttributes)
+    } // emptyElement(QName,XMLAttributes)
 
     /** Characters. */
     public void characters(XMLString text) throws XNIException {
 
-        fCharacters += text.length;
+        normalizeAndPrint(text);
+        fOut.flush();
 
     } // characters(XMLString);
 
     /** Ignorable whitespace. */
     public void ignorableWhitespace(XMLString text) throws XNIException {
 
-        fIgnorableWhitespace += text.length;
+        characters(text);
+        fOut.flush();
 
     } // ignorableWhitespace(XMLString);
 
+    /** End element. */
+    public void endElement(QName element) throws XNIException {
+
+        fElementDepth--;
+        fOut.print("</");
+        fOut.print(element.rawname);
+        fOut.print('>');
+        fOut.flush();
+
+    } // endElement(QName)
+
+    /** Start CDATA section. */
+    public void startCDATA() throws XNIException {
+    } // startCDATA()
+
+    /** End CDATA section. */
+    public void endCDATA() throws XNIException {
+    } // endCDATA()
+
+    //
+    // Shared XMLDocumentHandler and XMLDTDHandler methods
+    //
+
     /** Processing instruction. */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data) 
         throws XNIException {
-        fTagCharacters += 2; // "<?"
-        fTagCharacters += target.length();
-        if (data.length > 0) {
-            fTagCharacters++; // space
-            fOtherCharacters += data.length;
+
+        if (fElementDepth > 0) {
+            fOut.print("<?");
+            fOut.print(target);
+            if (data != null && data.length > 0) {
+                fOut.print(' ');
+                fOut.print(data.toString());
+            }
+            fOut.print("?>");
+            fOut.flush();
         }
-        fTagCharacters += 2; // "?>"
+
     } // processingInstruction(String,XMLString)
+
+    /** Comment. */
+    public void comment(XMLString text) throws XNIException {
+        if (!fCanonical && fElementDepth > 0) {
+            fOut.print("<!--");
+            normalizeAndPrint(text);
+            fOut.print("-->");
+            fOut.flush();
+        }
+    } // comment(XMLString)
+
+    /** Start entity. */
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId) throws XNIException {
+    } // startEntity(String,String,String,String)
+
+    /** End entity. */
+    public void endEntity(String name) throws XNIException {
+    } // endEntity(String)
+
+    //
+    // XMLDTDHandler methods
+    //
+
+    /** Start DTD. */
+    public void startDTD(XMLLocator locator) throws XNIException {
+        fInDTD = true;
+    } // startDTD(XMLLocator)
+
+    /** End DTD. */
+    public void endDTD() throws XNIException {
+        fInDTD = false;
+    } // endDTD()
 
     //
     // XMLErrorHandler methods
@@ -332,7 +372,7 @@ public class Counter
     } // error(String,String,XMLParseException)
 
     /** Fatal error. */
-    public void fatalError(String domain, String key, XMLParseException ex)
+    public void fatalError(String domain, String key, XMLParseException ex) 
         throws XNIException {
         printError("Fatal Error", ex);
         throw ex;
@@ -341,6 +381,87 @@ public class Counter
     //
     // Protected methods
     //
+
+    /** Returns a sorted list of attributes. */
+    /***
+    protected XMLAttributes sortAttributes(XMLAttributes attrs) {
+
+        XMLAttributesImpl attributes = new XMLAttributesImpl();
+
+        int len = (attrs != null) ? attrs.getLength() : 0;
+        for (int i = 0; i < len; i++) {
+            String name = attrs.getQName(i);
+            int count = attributes.getLength();
+            int j = 0;
+            while (j < count) {
+                if (name.compareTo(attributes.getQName(j)) < 0) {
+                    break;
+                }
+                j++;
+            }
+            attributes.insertAttributeAt(j, name, attrs.getType(i), 
+                                         attrs.getValue(i));
+        }
+
+        return attributes;
+
+    } // sortAttributes(XMLAttributeList):XMLAttributeList
+    /***/
+
+    /** Normalizes and prints the given string. */
+    protected void normalizeAndPrint(String s) {
+
+        int len = (s != null) ? s.length() : 0;
+        for (int i = 0; i < len; i++) {
+            char c = s.charAt(i);
+            normalizeAndPrint(c);
+        }
+
+    } // normalizeAndPrint(String)
+
+    /** Normalizes and prints the given array of characters. */
+    protected void normalizeAndPrint(XMLString text) {
+        for (int i = 0; i < text.length; i++) {
+            normalizeAndPrint(text.ch[text.offset + i]);
+        }
+    } // normalizeAndPrint(XMLString)
+    
+    /** Normalizes and print the given character. */
+    protected void normalizeAndPrint(char c) {
+
+        switch (c) {
+            case '<': {
+                fOut.print("&lt;");
+                break;
+            }
+            case '>': {
+                fOut.print("&gt;");
+                break;
+            }
+            case '&': {
+                fOut.print("&amp;");
+                break;
+            }
+            case '"': {
+                fOut.print("&quot;");
+                break;
+            }
+            case '\r':
+            case '\n': {
+                if (fCanonical) {
+                    fOut.print("&#");
+                    fOut.print(Integer.toString(c));
+                    fOut.print(';');
+                    break;
+                }
+                // else, default print char
+            }
+            default: {
+                fOut.print(c);
+            }
+        }
+
+    } // normalizeAndPrint(char)
 
     /** Prints the error message. */
     protected void printError(String type, XMLParseException ex) {
@@ -367,7 +488,7 @@ public class Counter
     } // printError(String,XMLParseException)
 
     //
-    // MAIN
+    // Main
     //
 
     /** Main program entry point. */
@@ -380,16 +501,12 @@ public class Counter
         }
 
         // variables
-        PrintWriter out = new PrintWriter(System.out);
-        XMLDocumentParser parser = null;
+        Writer writer = null;
         XMLParserConfiguration parserConfig = null;
-        int repetition = DEFAULT_REPETITION;
         boolean namespaces = DEFAULT_NAMESPACES;
-        boolean namespacePrefixes = DEFAULT_NAMESPACE_PREFIXES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
-        boolean memoryUsage = DEFAULT_MEMORY_USAGE;
-        boolean tagginess = DEFAULT_TAGGINESS;
+        boolean canonical = DEFAULT_CANONICAL;
         
         // process arguments
         for (int i = 0; i < argv.length; i++) {
@@ -400,17 +517,18 @@ public class Counter
                     // get parser name
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -p option.");
-                        continue;
                     }
                     String parserName = argv[i];
 
                     // create parser
                     try {
                         parserConfig = (XMLParserConfiguration)Class.forName(parserName).newInstance();
+                        /***
                         parserConfig.addRecognizedFeatures(new String[] {
                             NAMESPACE_PREFIXES_FEATURE_ID,
                         });
-                        parser = null;
+                        /***/
+                        writer = null;
                     }
                     catch (Exception e) {
                         parserConfig = null;
@@ -418,31 +536,8 @@ public class Counter
                     }
                     continue;
                 }
-                if (option.equals("x")) {
-                    if (++i == argv.length) {
-                        System.err.println("error: Missing argument to -x option.");
-                        continue;
-                    }
-                    String number = argv[i];
-                    try {
-                        int value = Integer.parseInt(number);
-                        if (value < 1) {
-                            System.err.println("error: Repetition must be at least 1.");
-                            continue;
-                        }
-                        repetition = value;
-                    }
-                    catch (NumberFormatException e) {
-                        System.err.println("error: invalid number ("+number+").");
-                    }
-                    continue;
-                }
                 if (option.equalsIgnoreCase("n")) {
                     namespaces = option.equals("n");
-                    continue;
-                }
-                if (option.equalsIgnoreCase("np")) {
-                    namespacePrefixes = option.equals("np");
                     continue;
                 }
                 if (option.equalsIgnoreCase("v")) {
@@ -453,29 +548,14 @@ public class Counter
                     schemaValidation = option.equals("s");
                     continue;
                 }
-                if (option.equalsIgnoreCase("m")) {
-                    memoryUsage = option.equals("m");
-                    continue;
-                }
-                if (option.equalsIgnoreCase("t")) {
-                    tagginess = option.equals("t");
-                    continue;
-                }
-                if (option.equals("-rem")) {
-                    if (++i == argv.length) {
-                        System.err.println("error: Missing argument to -# option.");
-                        continue;
-                    }
-                    System.out.print("# ");
-                    System.out.println(argv[i]);
+                if (option.equalsIgnoreCase("c")) {
+                    canonical = option.equals("c");
                     continue;
                 }
                 if (option.equals("h")) {
                     printUsage();
                     continue;
                 }
-                System.err.println("error: unknown option ("+option+").");
-                continue;
             }
 
             // use default parser?
@@ -484,9 +564,11 @@ public class Counter
                 // create parser
                 try {
                     parserConfig = (XMLParserConfiguration)Class.forName(DEFAULT_PARSER_CONFIG).newInstance();
+                    /***
                     parserConfig.addRecognizedFeatures(new String[] {
                         NAMESPACE_PREFIXES_FEATURE_ID,
                     });
+                    /***/
                 }
                 catch (Exception e) {
                     System.err.println("error: Unable to instantiate parser configuration ("+DEFAULT_PARSER_CONFIG+")");
@@ -495,8 +577,8 @@ public class Counter
             }
         
             // set parser features
-            if (parser == null) {
-                parser = new Counter(parserConfig);
+            if (writer == null) {
+                writer = new Writer(parserConfig);
             }
             try {
                 parserConfig.setFeature(NAMESPACES_FEATURE_ID, namespaces);
@@ -518,23 +600,18 @@ public class Counter
                     System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
                 }
             }
-    
+
             // parse file
             try {
-                long timeBefore = System.currentTimeMillis();
-                long memoryBefore = Runtime.getRuntime().freeMemory();
-                for (int j = 0; j < repetition; j++) {
-                    parser.parse(new XMLInputSource(null, arg, null));
-                }
-                long memoryAfter = Runtime.getRuntime().freeMemory();
-                long timeAfter = System.currentTimeMillis();
-                
-                long time = timeAfter - timeBefore;
-                long memory = memoryUsage 
-                            ? memoryBefore - memoryAfter : Long.MIN_VALUE;
-                ((Counter)parser).printResults(out, arg, time, 
-                                               memory, tagginess,
-                                               repetition);
+                writer.setOutput(System.out, "UTF8");
+            }
+            catch (UnsupportedEncodingException e) {
+                System.err.println("error: Unable to set output. Exiting.");
+                System.exit(1);
+            }
+            writer.setCanonical(canonical);
+            try {
+                writer.parse(new XMLInputSource(null, arg, null));
             }
             catch (XMLParseException e) {
                 // ignore
@@ -557,56 +634,35 @@ public class Counter
     /** Prints the usage. */
     private static void printUsage() {
 
-        System.err.println("usage: java xni.Counter (options) uri ...");
+        System.err.println("usage: java sax.Writer (options) uri ...");
         System.err.println();
         
         System.err.println("options:");
-        System.err.println("  -p name     Select parser configuration by name.");
-        System.err.println("  -x number   Select number of repetitions.");
-        System.err.println("  -n  | -N    Turn on/off namespace processing.");
-        System.err.println("  -np | -NP   Turn on/off namespace prefixes.");
-        System.err.println("              NOTE: Requires use of -n.");
-        System.err.println("  -v  | -V    Turn on/off validation.");
-        System.err.println("  -s  | -S    Turn on/off Schema validation support.");
-        System.err.println("              NOTE: Not supported by all parser configurations.");
-        System.err.println("  -m  | -M    Turn on/off memory usage report.");
-        System.err.println("  -t  | -T    Turn on/off \"tagginess\" report.");
-        System.err.println("  --rem text  Output user defined comment before next parse.");
-        System.err.println("  -h          This help screen.");
-
+        System.err.println("  -p name  Select parser configuration by name.");
+        System.err.println("  -n | -N  Turn on/off namespace processing.");
+        System.err.println("  -v | -V  Turn on/off validation.");
+        System.err.println("  -s | -S  Turn on/off Schema validation support.");
+        System.err.println("           NOTE: Not supported by all parsers.");
+        /***
+        System.err.println("  -c | -C  Turn on/off Canonical XML output.");
+        System.err.println("           NOTE: This is not W3C canonical output.");
+        /***/
+        System.err.println("  -h       This help screen.");
         System.err.println();
+
         System.err.println("defaults:");
         System.err.println("  Config:     "+DEFAULT_PARSER_CONFIG);
-        System.err.println("  Repetition: "+DEFAULT_REPETITION);
         System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
-        System.err.print("  Prefixes:   ");
-        System.err.println(DEFAULT_NAMESPACE_PREFIXES ? "on" : "off");
         System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
-        System.err.print("  Memory:     ");
-        System.err.println(DEFAULT_MEMORY_USAGE ? "on" : "off");
-        System.err.print("  Tagginess:  ");
-        System.err.println(DEFAULT_TAGGINESS ? "on" : "off");
-
-        System.err.println();
-        System.err.println("notes:");
-        System.err.println("  The speed and memory results from this program should NOT be used as the");
-        System.err.println("  basis of parser performance comparison! Real analytical methods should be");
-        System.err.println("  used. For better results, perform multiple document parses within the same");
-        System.err.println("  virtual machine to remove class loading from parse time and memory usage.");
-        System.err.println();
-        System.err.println("  The \"tagginess\" measurement gives a rough estimate of the percentage of");
-        System.err.println("  markup versus content in the XML document. The percent tagginess of a ");
-        System.err.println("  document is equal to the minimum amount of tag characters required for ");
-        System.err.println("  elements, attributes, and processing instructions divided by the total");
-        System.err.println("  amount of characters (characters, ignorable whitespace, and tag characters)");
-        System.err.println("  in the document.");
-        System.err.println();
-        System.err.println("  Not all features are supported by different parser configurations.");
+        /***
+        System.err.print("  Canonical:  ");
+        System.err.println(DEFAULT_CANONICAL ? "on" : "off");
+        /***/
 
     } // printUsage()
 
-} // class Counter
+} // class Writer
