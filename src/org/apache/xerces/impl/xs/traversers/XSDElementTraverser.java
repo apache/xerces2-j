@@ -165,7 +165,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         XSElementDecl element = null;
         if (elmDecl.getAttributeNode(SchemaSymbols.ATT_REF) != null) {
             if (refAtt != null) {
-                element = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt);
+                element = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt, elmDecl);
 
                 Element child = DOMUtil.getFirstChildElement(elmDecl);
                 if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -178,7 +178,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 // 2.1 One of ref or name must be present, but not both.
                 // 2.2 If ref is present, then all of <complexType>, <simpleType>, <key>, <keyref>, <unique>, nillable, default, fixed, form, block and type must be absent, i.e. only minOccurs, maxOccurs, id are allowed in addition to ref, along with <annotation>.
                 if (child != null) {
-                    reportSchemaError("src-element.2.2", new Object[]{refAtt});
+                    reportSchemaError("src-element.2.2", new Object[]{refAtt}, child);
                 }
             } else {
                 element = null;
@@ -300,7 +300,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         //          we need to back-patch both fSubGroup and fType
         //          if there is no type attribute and no anonymous type
         if (subGroupAtt != null) {
-            element.fSubGroup = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroupAtt);
+            element.fSubGroup = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroupAtt, elmDecl);
         }
 
         // get 'annotation'
@@ -332,7 +332,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // Handler type attribute
         if (elementType == null && typeAtt != null) {
-            elementType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
+            elementType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, elmDecl);
         }
 
         // Get it from the substitutionGroup declaration
@@ -388,15 +388,15 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // required attributes
         if (nameAtt == null) {
             if (isGlobal)
-                reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_ELEMENT, SchemaSymbols.ATT_NAME});
+                reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_ELEMENT, SchemaSymbols.ATT_NAME}, elmDecl);
             else
-                reportSchemaError("src-element.2.1", null);
+                reportSchemaError("src-element.2.1", null, elmDecl);
             nameAtt = NO_NAME;
         }
 
         // element
         if (child != null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, (unique | key | keyref)*))"});
+            reportSchemaError("s4s-elt-must-match", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, (unique | key | keyref)*))"}, child);
         }
 
         // Step 4: check 3.3.3 constraints
@@ -405,7 +405,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 1 default and fixed must not both be present.
         if (defaultAtt != null && fixedAtt != null) {
-            reportSchemaError("src-element.1", new Object[]{nameAtt});
+            reportSchemaError("src-element.1", new Object[]{nameAtt}, elmDecl);
         }
 
         // 2 If the item's parent is not <schema>, then all of the following must be true:
@@ -417,12 +417,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 3 type and either <simpleType> or <complexType> are mutually exclusive.
         if (haveAnonType && (typeAtt != null)) {
-            reportSchemaError("src-element.3", new Object[]{nameAtt});
+            reportSchemaError("src-element.3", new Object[]{nameAtt}, elmDecl);
         }
 
         // Step 5: check 3.3.6 constraints
         // check for NOTATION type
-        checkNotationType(nameAtt, elementType);
+        checkNotationType(nameAtt, elementType, elmDecl);
 
         // e-props-correct
 
@@ -431,7 +431,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault);
             if (element.fDefault.actualValue == null) {
-                reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue});
+                reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue}, elmDecl);
                 element.setConstraintType(XSElementDecl.NO_CONSTRAINT);
             }
         }
@@ -439,7 +439,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
            if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
-                reportSchemaError ("e-props-correct.3", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart});
+                reportSchemaError ("e-props-correct.3", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart}, elmDecl);
            }
         }
 
@@ -449,7 +449,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                  ((XSSimpleType)elementType).isIDType()) ||
                 (elementType.getXSType() == XSTypeDecl.COMPLEX_TYPE &&
                  ((XSComplexTypeDecl)elementType).containsTypeID())) {
-                reportSchemaError ("e-props-correct.4", new Object[]{element.fName});
+                reportSchemaError ("e-props-correct.4", new Object[]{element.fName}, elmDecl);
             }
         }
 

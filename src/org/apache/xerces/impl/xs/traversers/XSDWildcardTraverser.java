@@ -200,7 +200,7 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
             }
 
             if (child != null) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{"wildcard", "(annotation?)"});
+                reportSchemaError("s4s-elt-must-match", new Object[]{"wildcard", "(annotation?)"}, elmNode);
             }
         }
 

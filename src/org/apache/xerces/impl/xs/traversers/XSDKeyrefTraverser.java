@@ -88,21 +88,21 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         // create identity constraint
         String krName = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
         if(krName == null){
-            reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_KEYREF , SchemaSymbols.ATT_NAME });
+            reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_KEYREF , SchemaSymbols.ATT_NAME }, krElem);
             //return this array back to pool
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return;
         }
         QName kName = (QName)attrValues[XSAttributeChecker.ATTIDX_REFER];
         if(kName == null){
-            reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_KEYREF , SchemaSymbols.ATT_REFER });
+            reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_KEYREF , SchemaSymbols.ATT_REFER }, krElem);
             //return this array back to pool
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return;
         }
 
         UniqueOrKey key = null;
-        IdentityConstraint ret = (IdentityConstraint)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.IDENTITYCONSTRAINT_TYPE, kName);
+        IdentityConstraint ret = (IdentityConstraint)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.IDENTITYCONSTRAINT_TYPE, kName, krElem);
         // if ret == null, we've already reported an error in getGlobalDecl
         // we report an error only when ret != null, and the return type keyref
         if (ret != null) {
@@ -110,7 +110,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
                 ret.getType() == IdentityConstraint.UNIQUE) {
                 key = (UniqueOrKey)ret;
             } else {
-                reportSchemaError("src-resolve", new Object[]{kName.rawname, "identity constraint key/unique"});
+                reportSchemaError("src-resolve", new Object[]{kName.rawname, "identity constraint key/unique"}, krElem);
             }
         }
 
@@ -127,7 +127,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         //Schema Component Constraint: Identity-constraint Definition Properties Correct
         //2 If the {identity-constraint category} is keyref, the cardinality of the {fields} must equal that of the {fields} of the {referenced key}.
         if(key.getFieldCount() != keyRef.getFieldCount()) {
-            reportSchemaError("c-props-correct.2" , new Object [] {krName,key.getIdentityConstraintName()});
+            reportSchemaError("c-props-correct.2" , new Object [] {krName,key.getIdentityConstraintName()}, krElem);
         } else {
             // add key reference to element decl
             // and stuff this in the grammar

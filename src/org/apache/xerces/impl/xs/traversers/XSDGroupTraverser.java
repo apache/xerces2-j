@@ -102,16 +102,16 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // ref should be here.
         if (refAttr == null) {
-            reportSchemaError("s4s-att-must-appear", new Object[]{"group (local)", "ref"});
+            reportSchemaError("s4s-att-must-appear", new Object[]{"group (local)", "ref"}, elmNode);
         } else {
             // get global decl
             // index is a particle index.
-            group = (XSGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE, refAttr);
+            group = (XSGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE, refAttr, elmNode);
         }
 
         // no children are allowed
         if (DOMUtil.getFirstChildElement(elmNode) != null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{"group (local)", "(annotation?)"});
+            reportSchemaError("s4s-elt-must-match", new Object[]{"group (local)", "(annotation?)"}, elmNode);
         }
 
         int minOccurs = minAttr.intValue();
@@ -153,7 +153,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // must have a name
         if (strNameAttr == null) {
-            reportSchemaError("s4s-att-must-appear", new Object[]{"group (global)", "name"});
+            reportSchemaError("s4s-att-must-appear", new Object[]{"group (global)", "name"}, elmNode);
         }
 
         XSGroupDecl group = null;
@@ -162,7 +162,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         if (l_elmChild == null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"});
+            reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"}, elmNode);
         } else {
             String childName = l_elmChild.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -173,7 +173,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
 
             if (l_elmChild == null) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"});
+                reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"}, elmNode);
             } else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             } else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
@@ -182,13 +182,13 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             } else {
                 Object[] args = new Object [] { "group", childName};
-                reportSchemaError("GroupContentRestricted", args);
+                reportSchemaError("GroupContentRestricted", args, l_elmChild);
             }
 
             if (l_elmChild != null &&
                 DOMUtil.getNextSiblingElement(l_elmChild) != null) {
                 Object[] args = new Object [] { "group", childName};
-                reportSchemaError("GroupContentRestricted", args);
+                reportSchemaError("GroupContentRestricted", args, l_elmChild);
             }
 
             // add global group declaration to the grammar
@@ -205,7 +205,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             // that we can get at them at full-schema-checking time.
             Object redefinedGrp = fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(XSDHandler.GROUP_TYPE,
                 new QName(fSchemaHandler.EMPTY_STRING, strNameAttr, strNameAttr, schemaDoc.fTargetNamespace),
-                schemaDoc);
+                schemaDoc, elmNode);
             if(redefinedGrp != null) {
                 // store in grammar
                 grammar.addRedefinedGroupDecl(group, (XSGroupDecl)redefinedGrp);

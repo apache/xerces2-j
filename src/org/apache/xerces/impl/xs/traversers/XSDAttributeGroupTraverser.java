@@ -102,13 +102,13 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
         // ref should be here.
         if (refAttr == null) {
-            reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (local)", "ref"});
+            reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (local)", "ref"}, elmNode);
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
         }
 
         // get global decl
-        attrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, refAttr);
+        attrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, refAttr, elmNode);
 
 
         // no children are allowed here except annotation, which is optional.
@@ -122,7 +122,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
             if (child != null) {
                 Object[] args = new Object [] {refAttr};
-                reportSchemaError("src-attribute_group", args);
+                reportSchemaError("src-attribute_group", args, child);
             }
          } // if
 
@@ -144,7 +144,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
         // global declaration must have a name
         if (nameAttr == null) {
-            reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (global)", "name"});
+            reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (global)", "name"}, elmNode);
             nameAttr = "no name";
         }
 
@@ -169,7 +169,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         if (nextNode!=null) {
             // An invalid element was found...
             Object[] args = new Object [] {nameAttr, DOMUtil.getLocalName(nextNode)};
-            reportSchemaError("src-attribute_group", args);
+            reportSchemaError("src-attribute_group", args, nextNode);
         } 
  
         // Remove prohibited attributes from the set
@@ -179,11 +179,11 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         XSAttributeGroupDecl redefinedAttrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(
                 XSDHandler.ATTRIBUTEGROUP_TYPE, 
                 new QName(fSchemaHandler.EMPTY_STRING, nameAttr, nameAttr, schemaDoc.fTargetNamespace), 
-                schemaDoc); 
+                schemaDoc, elmNode); 
         if(redefinedAttrGrp != null) {
             String err = attrGrp.validRestrictionOf(redefinedAttrGrp);
             if (err != null) {
-                reportSchemaError("src-redefine.7.2.2", new Object [] {nameAttr, err});
+                reportSchemaError("src-redefine.7.2.2", new Object [] {nameAttr, err}, child);
             }
         }
 

@@ -152,7 +152,7 @@ abstract class XSDAbstractTraverser {
             // "appinfo" and "documentation"
             if (!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
                   (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
-                reportSchemaError("src-annotation", null);
+                reportSchemaError("src-annotation", null, child);
             }
 
             // General Attribute Checking
@@ -194,10 +194,6 @@ abstract class XSDAbstractTraverser {
             // General Attribute Checking
             Object[] attrs = null;
             facet = DOMUtil.getLocalName(content);
-            /*if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                Object[] args = {simpleTypeName};
-                reportSchemaError("ListUnionRestrictionError", args);
-            }*/
             if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc, hasQName);
                 String enumVal = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
@@ -211,11 +207,11 @@ abstract class XSDAbstractTraverser {
                     schemaDoc.fValidationContext.setNamespaceSupport(nsDecls);
                     try{
                         QName temp = (QName)fQNameDV.validate(enumVal, schemaDoc.fValidationContext, null);
-                        if (fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp) == null) {
-                            reportSchemaError("declaration-not-found", new Object [] {"notation", temp.localpart});
-                        }
+                        // try to get the notation decl. if failed, getGlobalDecl
+                        // reports an error, so we don't need to report one again.
+                        fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp, content);
                     }catch(InvalidDatatypeValueException ex){
-                        reportSchemaError(ex.getKey(), ex.getArgs());
+                        reportSchemaError(ex.getKey(), ex.getArgs(), content);
                     }
                     // restore to the normal namespace context
                     schemaDoc.fValidationContext.setNamespaceSupport(schemaDoc.fNamespaceSupport);
@@ -233,7 +229,7 @@ abstract class XSDAbstractTraverser {
                          child = DOMUtil.getNextSiblingElement(child);
                      }
                      if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                         reportSchemaError("s4s-elt-must-match", new Object[]{"enumeration", "(annotation?)"});
+                         reportSchemaError("s4s-elt-must-match", new Object[]{"enumeration", "(annotation?)"}, child);
                      }
                }
             }
@@ -257,7 +253,7 @@ abstract class XSDAbstractTraverser {
                          }
                          if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                               Object[] args = new Object [] {"Pattern facet has more than one annotation."};
-                             reportSchemaError("s4s-elt-must-match", new Object[]{"pattern", "(annotation?)"});
+                             reportSchemaError("s4s-elt-must-match", new Object[]{"pattern", "(annotation?)"}, child);
                          }
                    }
                 }
@@ -301,7 +297,7 @@ abstract class XSDAbstractTraverser {
 
                 // check for duplicate facets
                 if ((facetsPresent & currentFacet) != 0) {
-                    reportSchemaError("src-single-facet-value", new Object[]{"The facet '" + facet + "' is defined more than once."});
+                    reportSchemaError("src-single-facet-value", new Object[]{"The facet '" + facet + "' is defined more than once."}, content);
                 } else if (attrs[XSAttributeChecker.ATTIDX_VALUE] != null) {
                     facetsPresent |= currentFacet;
                     // check for fixed facet
@@ -350,7 +346,7 @@ abstract class XSDAbstractTraverser {
                         child = DOMUtil.getNextSiblingElement(child);
                     }
                     if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        reportSchemaError("s4s-elt-must-match", new Object[]{facet, "(annotation?)"});
+                        reportSchemaError("s4s-elt-must-match", new Object[]{facet, "(annotation?)"}, child);
                     }
                 }
             }
@@ -421,12 +417,12 @@ abstract class XSDAbstractTraverser {
                                             tempAttrUse.fAttrDecl.fName)==null) {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     if (idName != null) {
-                        reportSchemaError("cvc-complex-type.5.3",new Object[]{tempAttrUse.fAttrDecl.fName, idName});
+                        reportSchemaError("cvc-complex-type.5.3",new Object[]{tempAttrUse.fAttrDecl.fName, idName}, child);
                     }
                 }
                 else {
                     // REVISIT: what if one of the attribute uses is "prohibited"
-                    reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + tempAttrUse.fAttrDecl.fName + " found "});
+                    reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + tempAttrUse.fAttrDecl.fName + " found "}, child);
                 }
             }
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
@@ -442,12 +438,12 @@ abstract class XSDAbstractTraverser {
                     if (existingAttrUse == null) {
                         String idName = attrGrp.addAttributeUse(attrUseS[i]);
                         if (idName != null) {
-                            reportSchemaError("cvc-complex-type.5.3", new Object[]{attrUseS[i].fAttrDecl.fName, idName});
+                            reportSchemaError("cvc-complex-type.5.3", new Object[]{attrUseS[i].fAttrDecl.fName, idName}, child);
                         }
                     }
                     else {
                         // REVISIT: what if one of the attribute uses is "prohibited"
-                        reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + existingAttrUse.fAttrDecl.fName + " found "});
+                        reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + existingAttrUse.fAttrDecl.fName + " found "}, child);
                     }
                 }
 
@@ -460,7 +456,7 @@ abstract class XSDAbstractTraverser {
                         attrGrp.fAttributeWC = attrGrp.fAttributeWC.
                                                performIntersectionWith(tempAttrGrp.fAttributeWC, attrGrp.fAttributeWC.fProcessContents);
                         if (attrGrp.fAttributeWC == null) {
-                            reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"});                            
+                            reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"}, child);
                         }
                     }
                 }
@@ -482,7 +478,7 @@ abstract class XSDAbstractTraverser {
                     attrGrp.fAttributeWC = tempAttrWC.
                                            performIntersectionWith(attrGrp.fAttributeWC, tempAttrWC.fProcessContents);
                     if (attrGrp.fAttributeWC == null) {
-                        reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"});                            
+                        reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"}, child);
                     }
                 }
                 child = DOMUtil.getNextSiblingElement(child);
@@ -494,10 +490,6 @@ abstract class XSDAbstractTraverser {
 
     }
 
-    void reportSchemaError (String key, Object[] args) {
-        fSchemaHandler.reportSchemaError(key, args);
-    }
-
     void reportSchemaError (String key, Object[] args, Element ele) {
         fSchemaHandler.reportSchemaError(key, args, ele);
     }
@@ -506,12 +498,12 @@ abstract class XSDAbstractTraverser {
      * Element/Attribute traversers call this method to check whether
      * the type is NOTATION without enumeration facet
      */
-    void checkNotationType(String refName, XSTypeDecl typeDecl) {
+    void checkNotationType(String refName, XSTypeDecl typeDecl, Element elem) {
         if (typeDecl.getXSType() == typeDecl.SIMPLE_TYPE &&
             ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
             ((XSAtomicSimpleType)typeDecl).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION) {
             if ((((XSSimpleType)typeDecl).getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0) {
-                reportSchemaError("dt-enumeration-notation", new Object[]{refName});
+                reportSchemaError("dt-enumeration-notation", new Object[]{refName}, elem);
             }
         }
     }
@@ -537,7 +529,7 @@ abstract class XSDAbstractTraverser {
         if (isGroupChild && (!defaultMin || !defaultMax)) {
             Object[] args = new Object[]{parent.getAttribute(SchemaSymbols.ATT_NAME),
                 particleName};
-            reportSchemaError("MinMaxOnGroupChild", args);
+            reportSchemaError("MinMaxOnGroupChild", args, parent);
             min = max = 1;
         }
 
@@ -565,7 +557,7 @@ abstract class XSDAbstractTraverser {
                     errorMsg = "BadMinMaxForGroupWithAll";
                 }
                 Object[] args = new Object [] {"minOccurs", Integer.toString(min)};
-                reportSchemaError(errorMsg, args);
+                reportSchemaError(errorMsg, args, parent);
                 min = 1;
             }
 
@@ -582,7 +574,7 @@ abstract class XSDAbstractTraverser {
                 }
 
                 Object[] args = new Object [] {"maxOccurs", Integer.toString(max)};
-                reportSchemaError(errorMsg, args);
+                reportSchemaError(errorMsg, args, parent);
                 max = 1;
             }
         }

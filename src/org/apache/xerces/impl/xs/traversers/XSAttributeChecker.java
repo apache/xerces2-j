@@ -1024,7 +1024,7 @@ public class XSAttributeChecker {
         String elName = DOMUtil.getLocalName(element);
 
         if (uri == null || !uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
-            reportSchemaError("s4s-elt-schema-ns", new Object[] {elName});
+            reportSchemaError("s4s-elt-schema-ns", new Object[] {elName}, element);
         }
 
         Hashtable eleAttrsMap = fEleAttrsMapG;
@@ -1055,7 +1055,7 @@ public class XSAttributeChecker {
             // should never gets here.
             // when this method is called, the call already knows that
             // the element can appear.
-            reportSchemaError ("s4s-elt-invalid", new Object[] {elName});
+            reportSchemaError ("s4s-elt-invalid", new Object[] {elName}, element);
             return null;
         }
 
@@ -1091,7 +1091,7 @@ public class XSAttributeChecker {
                 // and not allowed on "document" and "appInfo"
                 if (attrURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ||
                     !oneEle.allowNonSchemaAttr) {
-                    reportSchemaError ("s4s-att-not-allowed", new Object[] {elName, attrName});
+                    reportSchemaError ("s4s-att-not-allowed", new Object[] {elName, attrName}, element);
                 }
                 else {
                     // for attributes from other namespace
@@ -1119,7 +1119,8 @@ public class XSAttributeChecker {
             OneAttr oneAttr = (OneAttr)attrList.get(attrName);
             if (oneAttr == null) {
                 reportSchemaError ("s4s-att-not-allowed",
-                                   new Object[] {elName, attrName});
+                                   new Object[] {elName, attrName},
+                                   element);
                 continue;
             }
 
@@ -1150,7 +1151,8 @@ public class XSAttributeChecker {
                 }
             } catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("s4s-att-invalid-value",
-                                   new Object[] {elName, attrName, ide.getKey()});
+                                   new Object[] {elName, attrName, ide.getKey()},
+                                   element);
                 if (oneAttr.dfltValue != null)
                     //attrValues.put(attrName, oneAttr.dfltValue);
                     attrValues[oneAttr.valueIndex] = oneAttr.dfltValue;
@@ -1191,7 +1193,8 @@ public class XSAttributeChecker {
             if (max != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
                 if (min > max) {
                     reportSchemaError ("p-props-correct.2.1",
-                                       new Object[] {elName, attrValues[ATTIDX_MINOCCURS], attrValues[ATTIDX_MAXOCCURS]});
+                                       new Object[] {elName, attrValues[ATTIDX_MINOCCURS], attrValues[ATTIDX_MAXOCCURS]},
+                                       element);
                     attrValues[ATTIDX_MINOCCURS] = attrValues[ATTIDX_MAXOCCURS];
                 }
             }
@@ -1504,15 +1507,14 @@ public class XSAttributeChecker {
         return retValue;
     }
 
-    void reportSchemaError(String key, Object args[]) {
-        fSchemaHandler.reportSchemaError(key, args);
-    }
-
     void reportSchemaError (String key, Object[] args, Element ele) {
         fSchemaHandler.reportSchemaError(key, args, ele);
     }
 
     // validate attriubtes from non-schema namespaces
+    // REVISIT: why we store the attributes in this way? why not just a list
+    //          of structure {element node, attr name/qname, attr value)?
+    // REVISIT: pass the proper element node to reportSchemaError
     public void checkNonSchemaAttributes(XSGrammarBucket grammarBucket) {
         // for all attributes
         Enumeration enum = fNonSchemaAttrs.keys();
@@ -1549,7 +1551,8 @@ public class XSAttributeChecker {
                     dv.validate((String)values.elementAt(i+1), null, null);
                 } catch(InvalidDatatypeValueException ide) {
                     reportSchemaError ("s4s-att-invalid-value",
-                                       new Object[] {elName, attrName, ide.getKey()});
+                                       new Object[] {elName, attrName, ide.getKey()},
+                                       null);
                 }
             }
         }

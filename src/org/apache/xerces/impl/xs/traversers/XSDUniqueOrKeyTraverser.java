@@ -90,7 +90,7 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         String uName = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
 
         if(uName == null){
-            reportSchemaError("s4s-att-must-appear", new Object [] {DOMUtil.getLocalName(uElem) , SchemaSymbols.ATT_NAME });
+            reportSchemaError("s4s-att-must-appear", new Object [] {DOMUtil.getLocalName(uElem) , SchemaSymbols.ATT_NAME }, uElem);
             //return this array back to pool
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return;

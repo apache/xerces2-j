@@ -121,7 +121,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
             else {
                 Object[] args = { childName};
-                reportSchemaError("AllContentRestricted", args);
+                reportSchemaError("AllContentRestricted", args, child);
             }
 
             if (left == null) {
@@ -271,7 +271,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                     else {
                         args = new Object[]{SchemaSymbols.ELT_SEQUENCE};
                     }
-                    reportSchemaError("AllContentLimited",args);
+                    reportSchemaError("AllContentLimited",args, child);
                 }
 
             }
@@ -292,7 +292,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 else {
                     args = new Object[]{SchemaSymbols.ELT_SEQUENCE};
                 }
-                reportSchemaError("SeqChoiceContentRestricted", args);
+                reportSchemaError("SeqChoiceContentRestricted", args, child);
             }
 
 

@@ -396,7 +396,7 @@ public class XSDHandler {
         resolveKeyRefs();
 
         // sixth phase: validate attribute of non-schema namespaces
-        // REVISIT: skip this for now. we reall don't want to do it.
+        // REVISIT: skip this for now. we really don't want to do it.
         //fAttributeChecker.checkNonSchemaAttributes(fGrammarBucket);
 
         // and return.
@@ -892,7 +892,8 @@ public class XSDHandler {
     // that lives in the Grammar.
     protected Object getGlobalDecl(XSDocumentInfo currSchema,
                                    int declType,
-                                   QName declToTraverse) {
+                                   QName declToTraverse,
+                                   Element elmNode) {
 
         // from the schema spec, all built-in types are present in all schemas,
         // so if the requested component is a type, and could be found in the
@@ -911,14 +912,14 @@ public class XSDHandler {
         // now check whether this document can access the requsted namespace
         if (!currSchema.isAllowedNS(declToTraverse.uri)) {
             // cannot get to this schema from the one containing the requesting decl
-            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri});
+            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
             return null;
         }
 
         // check whether there is grammar for the requested namespace
         SchemaGrammar sGrammar = fGrammarBucket.getGrammar(declToTraverse.uri);
         if (sGrammar == null) {
-            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]});
+            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]}, elmNode);
             return null;
         }
 
@@ -981,12 +982,12 @@ public class XSDHandler {
             decl = (Element)fUnparsedTypeRegistry.get(declKey);
             break;
         default:
-            reportSchemaError("Internal-Error", new Object [] {"XSDHandler asked to locate component of type " + declType + "; it does not recognize this type!"});
+            reportSchemaError("Internal-Error", new Object [] {"XSDHandler asked to locate component of type " + declType + "; it does not recognize this type!"}, elmNode);
         }
         
         // no DOM element found, so the component can't be located
         if (decl == null) {
-            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]});
+            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]}, elmNode);
             return null;
         }
 
@@ -996,7 +997,7 @@ public class XSDHandler {
         schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
         if (schemaWithDecl == null) {
             // cannot get to this schema from the one containing the requesting decl
-            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri});
+            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
             return null;
         }
         // a component is hidden, meaning either it's traversed, or being traversed.
@@ -1004,7 +1005,7 @@ public class XSDHandler {
         // a circular reference. error!
         if (DOMUtil.isHidden(decl)) {
             // decl must not be null if we're here...
-            reportSchemaError("st-props-correct.2", new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart});
+            reportSchemaError("st-props-correct.2", new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart}, elmNode);
             return null;
         }
 
@@ -1060,7 +1061,7 @@ public class XSDHandler {
     // @param currSchema:  schema doc in which the redefining component lives.
     // @return:  Object representing decl redefined if present, null
     // otherwise.
-    Object getGrpOrAttrGrpRedefinedByRestriction(int type, QName name, XSDocumentInfo currSchema) {
+    Object getGrpOrAttrGrpRedefinedByRestriction(int type, QName name, XSDocumentInfo currSchema, Element elmNode) {
         String realName = name.uri != null?name.uri+","+name.localpart:
                 ","+name.localpart;
         String nameToFind = null;
@@ -1078,14 +1079,14 @@ public class XSDHandler {
         int commaPos = nameToFind.indexOf(",");
         QName qNameToFind = new QName(EMPTY_STRING, nameToFind.substring(commaPos+1),
             nameToFind.substring(commaPos), (commaPos == 0)? null : nameToFind.substring(0, commaPos));
-        Object retObj = getGlobalDecl(currSchema, type, qNameToFind);
+        Object retObj = getGlobalDecl(currSchema, type, qNameToFind, elmNode);
         if(retObj == null) {
             switch (type) {
             case ATTRIBUTEGROUP_TYPE:
-                reportSchemaError("src-redefine.7.2.1", new Object []{name.localpart});
+                reportSchemaError("src-redefine.7.2.1", new Object []{name.localpart}, elmNode);
                 break;
             case GROUP_TYPE:
-                reportSchemaError("src-redefine.6.2.1", new Object []{name.localpart});
+                reportSchemaError("src-redefine.6.2.1", new Object []{name.localpart}, elmNode);
                 break;
             }
             return null;
@@ -1864,14 +1865,6 @@ public class XSDHandler {
     };
     private MyLocator xl = new MyLocator();
     
-    // REVISIT: TOREMOVE: should remove this method after all invocations
-    //                    have the extra ElementNSImpl parameter
-    void reportSchemaError(String key, Object[] args) {
-        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                   key, args,
-                                   XMLErrorReporter.SEVERITY_ERROR);
-    }
-
     void reportSchemaError(String key, Object[] args, Element ele) {
         if (ele instanceof ElementNSImpl) {
             ElementNSImpl e = (ElementNSImpl)ele;
