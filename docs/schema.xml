@@ -1,130 +1,79 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
-<s1 title="Schema">
-	<s2 title="Disclaimer">
-		<p>This package contains an implementation of the W3C XML 
-		Schema language. This implementation is experimental. The 
-		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump> 
-		language is in candidate recommendation stage: it is still
-		possible that some changes in the specification could
-		occur.  You should also not necessarily 
-		consider this implementation complete or correct. 
-		The limitations of this implementation are detailed below. 
-		Please read this document before using this package.</p>
-	</s2>
+<s1 title="Schema Implementation Limitations">
 	<s2 title="Introduction">
-		<p>This package contains an implementation of a subset of the 
-		W3C XML Schema Language as specified in the 24 October 2000
-        Candidate Recommendations for <jump
-        href="http://www.w3.org/TR/xmlschema-1/">Structures</jump> and
-        <jump
-        href="http://www.w3.org/TR/xmlschema-2/">Datatypes</jump>. The
-        parsers contained in this package are able to read and
-        validate XML documents with the grammar specified in either
-        DTD or XML Schema format.  There is no functionality for
-        accessing typed data.</p> 
-		<p>We are making this package available in order to get 
-		feedback on the features in the XML Schema language 
-		design and on representing an XML document&apos;s grammar 
-		as part of the document&apos;s DOM tree. We intend to update 
-		this package until it implements all of the functionality 
-		of the then current XML Schema Draft. If you are 
-		interested in a particular unimplemented feature, we welcome 
-		your feedback on the &javaparsername; mailing list.</p>
+		<p>This package contains an implementation of the W3C XML 
+		Schema Language, a recommendation of the Worldwide Web Consortium
+        available in two parts:  
+		<jump href="http://www.w3.org/TR/XMLSchema-1">XML Schema:  Structures</jump>  and
+		<jump href="http://www.w3.org/TR/XMLSchema-2">XML Schema:  Datatypes</jump>. 
+        We consider this implementation to be complete except for the
+        limitations cited below.  The implementation has been
+        extensively tested and known problem areas are set out below.
+        In this document we also discuss our interpretation of the
+        specifications where it seems to us particularly likely that
+        others might arrive at a different interpretation.
+        We would very much appreciate feedback on the package via
+        the&javaparsername; mailing list, and we
+        encourage the submission of bugs as described in
+        <jump href="faq-general.html#bugzilla">the FAQ.</jump>
+		Please read this document before using this package.
+        </p>
 	</s2>
 	<s2 title="Limitations">
-		<p>The XML Schema implementation in this package is a 
-		subset of the features defined in the 24 October 2000 
-		XML Schema Candidate Recommendations.</p>
-	</s2>
-    <s2 title='Components Supported'>
         <ul>
-            <li>Element declarations</li>
-            <li>Model group definitions: group</li>
-            <li>Model groups: all, choice, sequence</li>
-            <li>Attribute declarations</li>
-            <li>Attribute group definitions</li>
-            <li>Simple type definitions</li>
-            <li>Complex type definitions</li>
-            <li>Wildcards: any</li>
-            <li>Wildcards: anyAttribute</li>
-            <li>import and include</li>
-            <li>Notation declaration</li>
-            <li>Annotation</li>
-            <li>Redefine</li>
-            <li>Identity constraints: unique, key, keyref
-			(experimental)</li>
+            <li>No interface is provided for exposing the post-schema
+            validation infoset , beyond
+            that provided by DOM or SAX;</li>
+            <li> length, minLength, and maxLength facets are limited to the value 
+            2147483647. Items larger than this limit will not be validated 
+            correctly.</li>
+            <li> year and seconds values in date/time datatypes are limited to the 
+            value 2147483647. Items larger than this limit will not be validated 
+            correctly. </li>
         </ul>
     </s2>
-    <s2 title='Features Supported'>
+    <s2 title='Problem Areas'>
         <ul>
-            <li>Type derivation</li>
-            <li>Anonymous types</li>
-            <li>Nested element declaration</li>
-            <li>Separate symbol spaces for elements, types, groups, and
-                attribute groups</li>
-            <li>Substitution Groups</li>
-            <li>Target namespace</li>
-            <li>"xsi:schemaLocation" and "xsi:noNamespaceSchemaLocation"</li>
-            <li>Include</li>
-            <li>Import</li>
-            <li>"xsi:type"</li>
+            <li> Handling of &lt;any&gt; schema information items is
+            not completely correct;</li>
+            <li> &apos;id&apos; attributes appearing on schema 
+            element information items are not treated
+            correctly--uniqueness of their values is not
+            mandated;</li>
+            <li> relative URIs are not handled correctly;</li>
+            <li> Due to changes in the specification for Decimals in
+            JDK1.3, not all decimals that should be invalid according
+            to the Schema specs may be found by the parser;</li>
         </ul>
     </s2>
-    <s2 title='Features NOT Supported'>
+    <s2 title='Interpretation of Areas that are Unclear or
+            Implementation-Dependent'>
         <ul>
-            <li>Constraints in Chapter 5 and elsewhere in the
-			specifications</li>
-            <li>Nullable</li>
-            <li>Block and final</li>
-			<li>Fixed and default values of elements</li>
+            <li> QName: the specification does not define the unit of length. We 
+            chose to implement the length facet as being in units of XML characters 
+            in the value space ( # of chars in namespace URI + ":" +
+            local part );</li>
+            <li> We have interpreted the specs as requiring
+            &lt;keyref&gt; Identity Constraints to refer to
+            &lt;key&gt; or &lt;unique&gt; identity constraints within
+            the scope of the elements to which the &lt;keyref&gt; is
+            attached.  This interpretation is at variance with the
+            Schema Primer, which contains an example with a
+            &lt;keyref&gt; declared on an element used inside the
+            element of its corresponding &lt;key&gt;;</li>
         </ul>
     </s2>
-    <s2 title='Datatypes Supported'>
-        <ul>
-            <li>Built-in simple types (primitive, derived)</li>
-            <li>Simple type derivation (restriction, list, union)</li>
-            <li>Regular expressions</li>
-            <li>Binary (base64, hex)</li>
-            <li>Constraining facets</li>
-        </ul>
-    </s2>
-    <s2 title='Datatypes NOT Supported'>
-        <ul>
-            <li>Date/time -- ISO8601 (work in progress)</li>
-        </ul>
-    </s2>
-	<s2 title="Other Limitations">
-		<p>The schema is specified by the xsi:schemaLocation or
+	<s2 title="Other Notes">
+        <p> The parsers contained in this package are able to read and
+        validate XML documents with the grammar specified in either
+        DTD or XML Schema format.  
+		The schema is specified by the xsi:schemaLocation or
 		xsi:noNamespaceSchemaLocation attribute on the root 
 		element of the document. The xsi prefix must be bound to the 
 		Schema document instance namespace, as specified by the
-		candidate recommendation specification. See the sample provided in the
+		Recommendation. See the sample provided in the
 		Usage section.</p>
-		<p>When a schemaLocation attribute appears in an instance
-			document, only the first targetNamespace URI/schema
-			location pair will be considered (the remaining pairs will
-			be ignored).  Subsequent schemaLocation attributes will
-			also be ignored.  To validate an instance document against
-			multiple schemas, it is necessary to use &lt;include&gt;,
-			&lt;import&gt; or &lt;redefine&gt; element information items
-			within one of the schema documents.</p> 
-		<p>We also emphasize that support for schema ID constraints is
-		highly experimental.  Some of the limitations of this support
-		are:
-		</p>
-		<ul>
-		<li>Very little error-checking has been performed.</li> 
-		<li>Identity constraints will not work if the schema under
-		consideration has a targetNamespace.</li>
-		<li>The XPath expressions used for specifying selectors and
-		fields are
-		 a subset of XPath. Currently, only the self, child, and
-		 attribute axes are supported.</li>
-		 <li>Field values are currently compared in the lexical space. 
-		 Therefore, the values "1" and "1.0" are NOT equal for a 
-		 field of type "decimal" (even though they should be).</li>
-		 </ul>
 		 <p>Finally, note that in &lt;all&gt; model groups fewer than 8 elements must
 		 be used.</p>
 	</s2>
@@ -133,10 +82,12 @@
 		regular SAXParser and DOMParser classes. No special classes are 
 		required to parse documents that use a schema.</p>
 		<p>Documents that use XML Schema grammars specify the location of the
-		grammar using an xsi:schemaLocation attribute attached to the root / top-level element 
-		in the document. Here is an example with no target namspace: </p>
+		grammar using an xsi:schemaLocation attribute if they use
+        namespaces, and an xsi:noNamespaceSchemaLocation attribute
+        otherwise.  These should be attached to the root / top-level element 
+		in the document. Here is an example with no target namespace: </p>
 <source>&lt;document
-  xmlns:xsi='http://www.w3.org/2000/10/XMLSchema-instance'
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
   xsi:noNamespaceSchemaLocation='document.xsd'&gt;
 ...
 &lt;/document&gt;</source>
@@ -144,9 +95,9 @@
 		error to specify a different namespace than the target namespace
 		defined in the Schema.</p>
 <source>&lt;document
-  xmlns='NS'
-  xmlns:xsi='http://www.w3.org/2000/10/XMLSchema-instance' 
-  xsi:schemaLocation='NS document.xsd'&gt;
+  xmlns='http://my.com'
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+  xsi:schemaLocation='http://my.com document.xsd'&gt;
 ...
 &lt;/document&gt;</source>
 		<p>Review the sample file, 'data/personal.xsd' for an example of an XML 
