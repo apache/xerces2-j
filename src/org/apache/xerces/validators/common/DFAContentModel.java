@@ -371,6 +371,7 @@ public class DFAContentModel
         //  an element index to a state index.
         //
         int curState = 0;
+        int nextState = 0;
         for (int childIndex = 0; childIndex < length; childIndex++)
         {
             // Get the current element index out
@@ -381,36 +382,54 @@ public class DFAContentModel
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                int type = fElemMapType[elemIndex] & 0x0f ;
-                if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                    //System.out.println("fElemMap["+elemIndex+"]: "+fElemMap[elemIndex]);
-                    if (fDTD) {
-                        if (fElemMap[elemIndex].rawname == curElem.rawname) {
-                            break;
+                if (fDTD) {
+                    if (fElemMap[elemIndex].rawname == curElem.rawname) {
+                        nextState = fTransTable[curState][elemIndex];
+                        if (nextState != -1) 
+                          break;
+                    }
+                }
+                else {
+                    int type = fElemMapType[elemIndex] & 0x0f ;
+                    if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                        if (fElemMap[elemIndex].uri==curElem.uri
+                            && fElemMap[elemIndex].localpart == curElem.localpart)
+                            {
+                            nextState = fTransTable[curState][elemIndex];
+                            if (nextState != -1) 
+                                break;
                         }
                     }
-                    else {
-                        if (fElemMap[elemIndex].uri==curElem.uri
-                             && fElemMap[elemIndex].localpart == curElem.localpart)
-                            break;
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+                        int uri = fElemMap[elemIndex].uri;
+                        if (uri == -1 || uri == curElem.uri) {
+                            nextState = fTransTable[curState][elemIndex];
+                            if (nextState != -1) 
+                              break;
+                        }
+                    }
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+                        if (curElem.uri == -1) {
+                            nextState = fTransTable[curState][elemIndex];
+                            if (nextState != -1) 
+                              break;
+                        }
+                    }
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                        if (fElemMap[elemIndex].uri != curElem.uri) {
+                            nextState = fTransTable[curState][elemIndex];
+                            if (nextState != -1) 
+                              break;
+                        }
                     }
                 }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                    int uri = fElemMap[elemIndex].uri;
-                    if (uri == -1 || uri == curElem.uri) {
-                        break;
-                    }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                    if (curElem.uri == -1) {
-                        break;
-                    }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
-                    if (fElemMap[elemIndex].uri != curElem.uri) {
-                        break;
-                    }
-                }
+            }
+
+            // If "nextState" is -1, we found a match, but the transition is invalid 
+            if (nextState == -1) {
+                if (DEBUG_VALIDATE_CONTENT) 
+                    System.out.println("!!! not a legal transition");
+                return childIndex;
             }
 
             // If we didn't find it, then obviously not valid
@@ -428,18 +447,9 @@ public class DFAContentModel
                 return childIndex;
             }
 
-            //
-            //  Look up the next state for this input symbol when in the
-            //  current state.
-            //
-            curState = fTransTable[curState][elemIndex];
+            curState = nextState;                              
+            nextState = 0;
 
-            // If its not a legal transition, then invalid
-            if (curState == -1) {
-                if (DEBUG_VALIDATE_CONTENT) 
-                    System.out.println("!!! not a legal transition");
-                return childIndex;
-            }
         }
 
         //
@@ -455,6 +465,7 @@ public class DFAContentModel
         // success!
         return -1;
     }
+
 
     private boolean isEqual(QName name1, QName name2) {
             return name1.localpart == name2.localpart &&
@@ -491,6 +502,7 @@ public class DFAContentModel
         //  an element index to a state index.
         //
         int curState = 0;
+        int nextState = 0;
         for (int childIndex = 0; childIndex < length; childIndex++)
         {
             // Get the current element index out
@@ -500,27 +512,44 @@ public class DFAContentModel
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                int type = fElemMapType[elemIndex] & 0x0f;
+                int type = fElemMapType[elemIndex] & 0x0f ;
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                    if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex] ) )
-                        break;
+                    if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex]) ) {
+                        nextState = fTransTable[curState][elemIndex];
+                        if (nextState != -1) 
+                            break;
+                    }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                     int uri = fElemMap[elemIndex].uri;
                     if (uri == -1 || uri == curElem.uri) {
-                        break;
+                        nextState = fTransTable[curState][elemIndex];
+                        if (nextState != -1) 
+                          break;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
                     if (curElem.uri == -1) {
-                        break;
+                        nextState = fTransTable[curState][elemIndex];
+                        if (nextState != -1) 
+                          break;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
                     if (fElemMap[elemIndex].uri != curElem.uri) {
-                        break;
+                        nextState = fTransTable[curState][elemIndex];
+                        if (nextState != -1) 
+                          break;
                     }
                 }
+            
+            }
+
+            // If "nextState" is -1, we found a match, but the transition is invalid 
+            if (nextState == -1) {
+                if (DEBUG_VALIDATE_CONTENT) 
+                    System.out.println("!!! not a legal transition");
+                return childIndex;
             }
 
             // If we didn't find it, then obviously not valid
@@ -538,18 +567,9 @@ public class DFAContentModel
                 return childIndex;
             }
 
-            //
-            //  Look up the next state for this input symbol when in the
-            //  current state.
-            //
-            curState = fTransTable[curState][elemIndex];
+            curState = nextState;                              
+            nextState = 0;
 
-            // If its not a legal transition, then invalid
-            if (curState == -1) {
-                if (DEBUG_VALIDATE_CONTENT) 
-                    System.out.println("!!! not a legal transition");
-                return childIndex;
-            }
         }
 
         //
