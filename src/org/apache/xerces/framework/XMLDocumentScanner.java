@@ -174,6 +174,7 @@ public final class XMLDocumentScanner {
     boolean fSeenDoctypeDecl = false;
     boolean fStandalone = false;
     boolean fParseTextDecl = false;
+    boolean fScanningDTD = false;
     int fScannerState = SCANNER_STATE_XML_DECL;
     int fReaderId = -1;
     int fAttValueReader = -1;
@@ -381,6 +382,10 @@ public final class XMLDocumentScanner {
             fAttValueOffset = fEntityReader.currentOffset();
             fAttValueMark = fAttValueOffset;
         }
+
+        //also propagate the change to DTDScanner if there is one
+        if (fDTDScanner != null && fScanningDTD)
+            fDTDScanner.readerChange(nextReader, nextReaderId);
     }
 
     /**
@@ -391,6 +396,9 @@ public final class XMLDocumentScanner {
      * @exception java.lang.Exception
      */
     public void endOfInput(int entityName, boolean moreToFollow) throws Exception {
+        if (fDTDScanner != null && fScanningDTD){
+            fDTDScanner.endOfInput(entityName, moreToFollow);
+        }
         fDispatcher.endOfInput(entityName, moreToFollow);
     }
 
@@ -2094,6 +2102,8 @@ public final class XMLDocumentScanner {
 
     /** Scan doctype declaration. */
     private void scanDoctypeDecl(boolean standalone) throws Exception {
+        
+        fScanningDTD = true;
 
         /***
         fScanningDTD = true;
@@ -2139,6 +2149,7 @@ public final class XMLDocumentScanner {
             // REVISIT: What about validation and checking stuff?
         }
         /***/
+        fScanningDTD = false;
 
     } // scanDoctypeDecl(boolean)
 

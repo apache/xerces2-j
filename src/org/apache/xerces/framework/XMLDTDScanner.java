@@ -698,7 +698,10 @@ public final class XMLDTDScanner {
      * @exception java.lang.Exception
      */
     public void endOfInput(int entityNameIndex, boolean moreToFollow) throws Exception {
+	//REVISIT, why are we doing this?
         moreToFollow = fReaderId != fExternalSubsetReader;
+
+//	System.out.println("current Scanner state " + getScannerState() +","+ fScannerState + moreToFollow);
         switch (fScannerState) {
         case SCANNER_STATE_INVALID:
             throw new RuntimeException("FWK004 XMLDTDScanner.endOfInput: cannot happen: 2"+"\n2");
@@ -969,6 +972,7 @@ public final class XMLDTDScanner {
     public boolean scanDoctypeDecl() throws Exception
     {
         //System.out.println("XMLDTDScanner#scanDoctypeDecl()");
+
         fDTDGrammar = new DTDGrammar(fStringPool, fEventHandler);
         fDTDGrammar.callStartDTD();
         increaseMarkupDepth();
@@ -995,6 +999,7 @@ public final class XMLDTDScanner {
         if (fEntityReader.lookingAtSpace(true)) {
             fEntityReader.skipPastSpaces();
             if (!(lbrkt = fEntityReader.lookingAtChar('[', true)) && !fEntityReader.lookingAtChar('>', false)) {
+//System.out.println("XMLDTDScanner#scanDoctypeDecl() 1113");
                 if (!scanExternalID(false)) {
                     skipPastEndOfCurrentMarkup();
                     return false;
@@ -1008,6 +1013,7 @@ public final class XMLDTDScanner {
         } else
             lbrkt = fEntityReader.lookingAtChar('[', true);
         fDTDGrammar.doctypeDecl(fElementQName, publicId, systemId);
+//System.out.println("XMLDTDScanner#scanDoctypeDecl() 1114");
         if (lbrkt) {
             scanDecls(false);
             fEntityReader.skipPastSpaces();
@@ -1020,10 +1026,14 @@ public final class XMLDTDScanner {
             }
             return false;
         }
+//System.out.println("XMLDTDScanner#scanDoctypeDecl() 1115");
         decreaseMarkupDepth();
 
         //System.out.println("  scanExternalSubset: "+scanExternalSubset);
         if (scanExternalSubset) {
+            ((DefaultEntityHandler) fEntityHandler).startReadingFromExternalSubset( fStringPool.toString(publicId),
+										    fStringPool.toString(systemId),
+										    markupDepth());
             fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
         }
         fGrammarResolver.putGrammar("", fDTDGrammar);
@@ -1101,9 +1111,12 @@ public final class XMLDTDScanner {
         boolean dataok = true;
         boolean fragment = false;
         while (!fEntityReader.lookingAtChar(qchar, false)) {
+//ericye
+//System.out.println("XMLDTDScanner#scanDoctypeDecl() 3333333, "+fReaderId+", " + fScannerState+", " +fExternalSubsetReader);
             if (fEntityReader.lookingAtChar('#', true)) {
                 fragment = true;
             } else if (!fEntityReader.lookingAtValidChar(true)) {
+//System.out.println("XMLDTDScanner#scanDoctypeDecl() 555555 scan state: " + fScannerState);
                 dataok = false;
                 int invChar = fEntityReader.scanInvalidChar();
                 if (fScannerState == SCANNER_STATE_END_OF_INPUT)
@@ -1267,6 +1280,7 @@ public final class XMLDTDScanner {
         boolean parseTextDecl = extSubset;
         int prevState = setScannerState(SCANNER_STATE_MARKUP_DECL);
         while (fScannerState == SCANNER_STATE_MARKUP_DECL) {
+
             boolean newParseTextDecl = false;
             if (!extSubset && fEntityReader.lookingAtChar(']', false)) {
                 int subsetLength = fEntityReader.currentOffset() - subsetOffset;
@@ -1307,8 +1321,9 @@ public final class XMLDTDScanner {
                             abortMarkup(XMLMessages.MSG_MARKUP_NOT_RECOGNIZED_IN_DTD,
                                         XMLMessages.P29_NOT_RECOGNIZED);
                         }
-                    } else if (fEntityReader.skippedString(element_string))
+                    } else if (fEntityReader.skippedString(element_string)) {
                         scanElementDecl();
+		    }
                     else if (fEntityReader.skippedString(attlist_string))
                         scanAttlistDecl();
                     else if (fEntityReader.skippedString(entity_string))
@@ -1394,6 +1409,9 @@ public final class XMLDTDScanner {
             parseTextDecl = newParseTextDecl;
         }
         if (extSubset) {
+
+            ((DefaultEntityHandler) fEntityHandler).stopReadingFromExternalSubset();
+
             fDTDGrammar.stopReadingFromExternalSubset();
             fDTDGrammar.callEndDTD();
             // REVISIT: What should the namspace URI of a DTD be?
@@ -2357,6 +2375,7 @@ public final class XMLDTDScanner {
                 }
                 decreaseMarkupDepth();
                 fDTDGrammar.endEntityDecl();
+
                 // a hack by Eric
                 //REVISIT
                 fDTDGrammar.addInternalPEDecl(entityName, value);
@@ -2378,7 +2397,13 @@ public final class XMLDTDScanner {
                 }
                 decreaseMarkupDepth();
                 fDTDGrammar.endEntityDecl();
-                int entityIndex = fDTDGrammar.addExternalPEDecl(entityName, fPubidLiteral, fSystemLiteral);
+
+                //a hack by Eric
+                //REVISIT
+                fDTDGrammar.addExternalPEDecl(entityName, fPubidLiteral, fSystemLiteral);
+		int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalPEDecl(entityName, 
+											    fPubidLiteral, 
+											    fSystemLiteral, true);
             }
         } else {
             boolean single;
@@ -2426,7 +2451,14 @@ public final class XMLDTDScanner {
                     }
                     decreaseMarkupDepth();
                     fDTDGrammar.endEntityDecl();
-                    int entityIndex = fDTDGrammar.addExternalEntityDecl(entityName, fPubidLiteral, fSystemLiteral);
+
+		    //a hack by Eric
+		    //REVISIT
+                    fDTDGrammar.addExternalEntityDecl(entityName, fPubidLiteral, fSystemLiteral);
+		    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalEntityDecl(entityName, 
+										fPubidLiteral, 
+										fSystemLiteral, true);
+
                 } else {
                     if (!fEntityReader.lookingAtSpace(true)) {
                         abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL,
@@ -2457,7 +2489,14 @@ public final class XMLDTDScanner {
                     }
                     decreaseMarkupDepth();
                     fDTDGrammar.endEntityDecl();
-                    int entityIndex = fDTDGrammar.addUnparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
+		    
+		    //a hack by Eric
+		    //REVISIT
+                    fDTDGrammar.addUnparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
+		    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addUnparsedEntityDecl(entityName, 
+												    fPubidLiteral, 
+												    fSystemLiteral, 
+												    notationName, false);
                 }
             }
         }
