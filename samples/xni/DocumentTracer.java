@@ -678,7 +678,13 @@ public class DocumentTracer
             String arg = argv[i];
             System.err.println("# argv["+i+"]: "+arg);
             print(arg);
-            parser.parse(arg);
+            try {
+                parser.parse(arg);
+            }
+            catch (SAXException e) {
+                Exception ex = e.getException();
+                throw ex != null ? ex : e;
+            }
         }
     } // main(String[])
 
