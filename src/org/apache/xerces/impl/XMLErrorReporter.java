@@ -493,4 +493,11 @@ public class XMLErrorReporter
 
     } // setProperty(String,Object)
     
+    /**
+     * Get the internal XMLErrrorHandler.
+     */
+    public XMLErrorHandler getErrorHandler() {
+        return fErrorHandler;
+    }
+    
 } // class XMLErrorReporter
