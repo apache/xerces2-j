@@ -305,7 +305,7 @@ public class SchemaGrammar  extends Grammar {
     public final void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base) {
         if (fRGCount == fRedefinedGroupDecls.length)
             // double array size each time.
-            fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount << 2);
+            fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount << 1);
         fRedefinedGroupDecls[fRGCount++] = derived;
         fRedefinedGroupDecls[fRGCount++] = base;
     }

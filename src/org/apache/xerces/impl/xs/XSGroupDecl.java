@@ -73,4 +73,4 @@ public class XSGroupDecl {
     // particle of the group
     public XSParticleDecl fParticle = null;
 
-} // class XSWildcardDecl
+} // class XSGroupDecl
