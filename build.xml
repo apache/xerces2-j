@@ -1171,6 +1171,12 @@ Copyright:
     </java>
     <java fork="yes"
           classpath="${build.dir}/classes"
+          classname="dom.registry.Test"
+          failOnError="yes">
+    </java>
+
+    <java fork="yes"
+          classpath="${build.dir}/classes"
           classname="dom.dom3.Test"
           failOnError="yes">
     </java>

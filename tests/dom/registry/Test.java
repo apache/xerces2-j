@@ -70,6 +70,8 @@ public class Test {
 
     public static void main(String argv[])
     {                                  
+        
+        System.out.println("Running dom.registry.Test...");
         // set DOMImplementationSource
         System.setProperty(DOMImplementationRegistry.PROPERTY,
                           "org.apache.xerces.dom.DOMImplementationSourceImpl");
