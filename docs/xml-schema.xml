@@ -48,7 +48,7 @@
     </s2>
     <s2 title='Problem Areas/Known Bugs'>
         <ul>
-            <li> For larger values of maxOccurs, a StackOverflowError may occur.
+            <li> For larger values of maxOccurs, an OutOfMemoryError may occur.
       	    The workaround for this problem, if your application permits it, 
       	    is to change the maxOccurs value to unbounded.</li>
         </ul>
