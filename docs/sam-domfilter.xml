@@ -1,0 +1,76 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="DOMFilter Sample">
+	<s2 title="Running DOMFilter">
+		<p><code>DOMFilter</code> parses an XML document, searching for specific elements 
+		by name, or elements with specific attributes.</p>
+		<p>Requirements:</p>
+		<ul>
+			<li>&javaparsername; is loaded on your computer.</li>
+			<li>JDK is loaded on your computer.</li>
+		</ul>
+		<p>Source code: </p>
+		<ul>
+			<li>DOMFilter.java</li>
+		</ul>
+	</s2>
+	
+	<s2 title="DOMFilter">
+		<p><em>To run DOMFilter:</em></p>
+		<ol>
+			<li>open up a MS-DOS command line window</li>
+			<li>set the path to the jdk\bin directory</li>
+			<li>change directory to the latest &javaparserdirectory; directory</li>
+			<li>invoke the <code>DOMFilter</code> parser</li>
+		</ol>
+		
+		<p><em>On Windows:</em></p>
+		<p>The easiest way to do this is to create a .bat file using the 
+		Notepad editor. Then the <code>DOMFilter</code> can be invoked by double clicking 
+		on the file name or icon. The following command lines assume that 
+		both the jdk and the &javaparserdirectory; directories are located directly below 
+		the c: dirve.</p>
+<source>set path=c:\jdk1.1.8\bin;%PATH%
+set classpath=c:\&javaparserdirectory;\&javaparserdirectory;.jar;%CLASSPATH%
+set classpath=c:\&javaparserdirectory;\&javaparserdirectory;Samples;%CLASSPATH%
+cd c:\&javaparserdirectory;
+java dom.DOMFilter data\personal.xml</source>
+
+		<p><em>Switches:</em></p>
+		<p><code>DOMFilter</code> also allows you to change the default behavior using the 
+		following command line flags (type this in as one long command line): </p>
+		<ul>
+			<li>-p Specify the parser class to be used.
+			<br/>The available parsers are:</li>
+			<ul>
+				<li>dom.wrappers.NonValidatingDOMParser</li>
+				<li>dom.wrappers.DOMParser [default parser]</li>
+			</ul>
+			<li>-h Print DOMCount help information. [default is no help]</li>
+			<li>-e Specify the name of the element to search for. 
+			[defaults to matching all elements]</li>
+			<li>-a Specify the name of the attribute to search for. 
+			[defaults to matching all attributes]</li>
+		</ul>
+		<p>Running <code>DOMFilter</code> with the default settings is 
+		equivalent to running 
+		<code>DOMFilter</code> like this: </p>
+
+<source>java dom.DOMFilter -p dom.wrappers.DOMParser 
+    data\personal.xml </source>
+	
+		<p>Bringing up the help information: </p>
+<source>java dom.DOMFilter -h</source>
+	
+		<p>Searching for elements: </p>
+<source>java dom.DOMFilter -e family data\personal.xml</source>
+	
+		<p>Search for attributes: </p>
+<source>java dom.DOMFilter -a subordinates data\personal.xml</source>
+
+		<note>Parse your own XML file instead of data\personal.xml</note>
+
+
+	</s2>
+</s1>

@@ -1,0 +1,65 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
+
+<faqs title="Performance FAQs">
+
+	<faq title="General Performance">
+		<q>General Performance</q>
+		<a><p>Don't use XML where it doesn't make sense. XML is not a panacea. 
+		You will not get good performance by transferring and parsing a 
+		lot of XML files. </p>
+		<p>Using XML is memory, CPU, and network intensive.</p></a>
+	</faq>
+	
+	<faq title="Parser Performance">
+		<q>Parser Performance</q>
+		<a><p>Avoid creating a new parser each time you parse; reuse parser 
+		instances. A pool of reusable parser instances might be a good idea 
+		if you have multiple threads parsing at the same time.</p>
+		</a>
+	</faq>
+	<faq title="Parsing Documents Performance">
+		<q>Parsing Documents Performance</q>
+		<a><ul>
+			<li>Convert the document to US ASCII ("US-ASCII") or Unicode 
+			("UTF-8" or "UTF-16") before parsing. Documents written using 
+			ASCII are the fastest to parse because each character is 
+			guaranteed to be a single byte and map directly to their 
+			equivalent Unicode value. For documents that contain Unicode 
+			characters beyond the ASCII range, multiple byte sequences 
+			must be read and converted for each character. There is a 
+			performance penalty for this conversion. The UTF-16 encoding 
+			alleviates some of this penalty because each character is 
+			specified using two bytes, assuming no surrogate characters. 
+			However, using UTF-16 can roughly double the size of the 
+			original document which takes longer to parse.</li>
+			<li>Explicitly specify "US-ASCII" encoding if your document is in 
+			ASCII format. If no encoding is specified, the XML specification 
+			requires the parser to assume UTF-8 which is slower to process.</li>
+			<li>Avoid external entities and external DTDs. The extra file 
+			opens and transcoding setup is expensive.</li>
+			<li>Reduce character count; smaller documents are parsed quicker. 
+			Replace elements with attributes where it makes sense. Avoid 
+			gratuitous use of whitespace because the parser must scan past it.</li>
+			<li>Avoid using too many default attributes. Defaulting 
+			attribute values slows down processing.</li>
+		</ul>
+		</a>
+	</faq>
+	<faq title="XML Application Performance">
+		<q>XML Application Performance</q>
+		<a><ul>
+			<li>Turn validation off if you don't need it. Validation is 
+			expensive. Also, avoid using a DOCTYPE line in your XML document. 
+			The current version of the parser will always read the DTD if the 
+			DOCTYPE line is specified even when not validating.</li>
+			<li>For large documents, avoid using DOM which uses a lot of 
+			memory. Instead, use SAX if appropriate. The DOM parser requires 
+			that the entire document be read into memory before the 
+			application processes the document. The SAX parser uses very 
+			little memory and notifies the application as parts of the 
+			document are parsed.</li>
+		</ul>
+		</a>
+	</faq>
+</faqs>
