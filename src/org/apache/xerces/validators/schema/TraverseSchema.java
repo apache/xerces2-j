@@ -538,6 +538,8 @@ public class TraverseSchema implements
             fSchemaGrammar.setComplexTypeRegistry(fComplexTypeRegistry);
             fSchemaGrammar.setDatatypeRegistry(fDatatypeRegistry);
             fSchemaGrammar.setAttributeDeclRegistry(fAttributeDeclRegistry);
+            fSchemaGrammar.setNamespacesScope(fNamespacesScope);
+            fSchemaGrammar.setTargetNamespaceURI(fTargetNSURIString);
             fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
         }
         
@@ -2259,7 +2261,7 @@ public class TraverseSchema implements
     private int traverseAttributeGroupDeclFromAnotherSchema( String attGrpName , String uriStr, ComplexTypeInfo typeInfo ) throws Exception {
         
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
-        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+        if (uriStr == null || aGrammar == null || ! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found in #traverseAttributeGroupDeclFromAnotherSchema, schema uri : " + uriStr);
             return -1;
@@ -2272,6 +2274,11 @@ public class TraverseSchema implements
                                       + "\" was defined in schema : " + uriStr);
             return -1;
         }
+        
+        NamespacesScope saveNSMapping = fNamespacesScope;
+        int saveTargetNSUri = fTargetNSURI;
+        fTargetNSURI = fStringPool.addSymbol(aGrammar.getTargetNamespaceURI());
+        fNamespacesScope = aGrammar.getNamespacesScope();
 
         // attribute type
         int attType = -1;
@@ -2303,6 +2310,9 @@ public class TraverseSchema implements
                 // REVISIT: what about appInfo
             }
         }
+
+        fNamespacesScope = saveNSMapping;
+        fTargetNSURI = saveTargetNSUri;
         return -1;
     } // end of method traverseAttributeGroupFromAnotherSchema
     
@@ -2449,6 +2459,7 @@ public class TraverseSchema implements
         }
                 
         Element equivClassElementDecl = null;
+	int equivClassElementDeclIndex = -1;
         boolean noErrorSoFar = true;
 
         if ( equivClass.length() > 0 ) {
@@ -2457,9 +2468,19 @@ public class TraverseSchema implements
                 noErrorSoFar = false;
                 // REVISIT: Localize
                 reportGenericSchemaError("Equivclass affiliation element "
-                                         +equivClass
-                                         +" in element declaration " 
-                                         +name);  
+                                          +equivClass
+                                          +" in element declaration " 
+                                          +name);  
+            }
+            else {
+                equivClassElementDeclIndex = 
+                    fSchemaGrammar.getElementDeclIndex(getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+
+                if ( equivClassElementDeclIndex == -1) {
+                    traverseElementDecl(equivClassElementDecl);
+                    equivClassElementDeclIndex = 
+                        fSchemaGrammar.getElementDeclIndex(getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+                }
             }
         }
         
@@ -2613,14 +2634,7 @@ public class TraverseSchema implements
         // this element is ur-type
         else {
             // if there is equivClass affiliation, then grab its type and stick it to this element
-            if (equivClassElementDecl != null) {
-                int equivClassElementDeclIndex = 
-                    fSchemaGrammar.getElementDeclIndex(getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
-                if ( equivClassElementDeclIndex == -1) {
-                    traverseElementDecl(equivClassElementDecl);
-                    equivClassElementDeclIndex = 
-                        fSchemaGrammar.getElementDeclIndex(getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
-                }
+            if (equivClassElementDeclIndex != -1) {
                 ComplexTypeInfo equivClassEltType = fSchemaGrammar.getElementComplexTypeInfo( equivClassElementDeclIndex );
             }
         }
@@ -2969,14 +2983,15 @@ public class TraverseSchema implements
     private int traverseGroupDeclFromAnotherSchema( String groupName , String uriStr ) throws Exception {
         
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
-        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+        if (uriStr == null || aGrammar==null ||! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found in #traverseGroupDeclFromAnotherSchema, "+
                                      "schema uri: " + uriStr
                                      +", groupName: " + groupName);
             return -1;
         }
-        
+
+
         Element groupDecl = (Element) aGrammar.topLevelGroupDecls.get((Object)groupName);
         if (groupDecl == null) {
             // REVISIT: Localize
@@ -2984,6 +2999,11 @@ public class TraverseSchema implements
                                       + "\" was defined in schema : " + uriStr);
             return -1;
         }
+
+        NamespacesScope saveNSMapping = fNamespacesScope;
+        int saveTargetNSUri = fTargetNSURI;
+        fTargetNSURI = fStringPool.addSymbol(aGrammar.getTargetNamespaceURI());
+        fNamespacesScope = aGrammar.getNamespacesScope();
 
         boolean traverseElt = true; 
         if (fCurrentScope == TOP_LEVEL_SCOPE) {
@@ -3065,7 +3085,8 @@ public class TraverseSchema implements
         if (hadContent && right != -2)
             left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
 
-
+        fNamespacesScope = saveNSMapping;
+        fTargetNSURI = saveTargetNSUri;
         return left;
 
 

@@ -61,6 +61,7 @@
 package org.apache.xerces.validators.schema;
 
 import org.apache.xerces.framework.XMLContentSpec;
+import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
@@ -118,9 +119,21 @@ public class SchemaGrammar extends Grammar{
     Hashtable topLevelAttrDecls  = new Hashtable();
     Hashtable topLevelAttrGrpDecls = new Hashtable();
 
+    private NamespacesScope fNamespacesScope = null;
+    private String fTargetNamespaceURI = "";
+
     //
     // Public methods
     //
+
+    public NamespacesScope getNamespacesScope(){
+        return fNamespacesScope;
+    }
+
+    public String getTargetNamespaceURI(){
+        return fTargetNamespaceURI;
+    }
+
     public Hashtable getAttirubteDeclRegistry() {
         return fAttributeDeclRegistry;
     }
@@ -200,6 +213,14 @@ public class SchemaGrammar extends Grammar{
 
     protected void setDatatypeRegistry(DatatypeValidatorFactoryImpl dTypeReg){
         fDatatypeRegistry = dTypeReg;
+    }
+
+    protected void setNamespacesScope(NamespacesScope nsScope) {
+        fNamespacesScope = nsScope;
+    }
+
+    protected void setTargetNamespaceURI(String targetNSUri) {
+        fTargetNamespaceURI = targetNSUri;
     }
 
 
@@ -336,7 +357,7 @@ public class SchemaGrammar extends Grammar{
         super.setAttributeDecl(templateElementIndex, attrDeclIndex, fTempAttributeDecl);
     }
 
-    protected int getAttributeDeclIndex(int elementIndex, QName attribute) {
+    public int getAttributeDeclIndex(int elementIndex, QName attribute) {
         if (elementIndex == -1) {
             return -1;
         }
@@ -351,7 +372,7 @@ public class SchemaGrammar extends Grammar{
             attDefIndex = getNextAttributeDeclIndex(attDefIndex);
         }
         return -1;
-    } // getAttDef(int,QName)
+    } // getAttributeDeclIndex (int,QName)
 
     /**
      *@return the new contentSpec Index
