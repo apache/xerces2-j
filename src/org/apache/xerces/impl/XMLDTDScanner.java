@@ -801,6 +801,7 @@ public class XMLDTDScanner
                 // push current op on stack and reset it
                 pushContentStack(currentOp);
                 currentOp = 0;
+                skipSeparator(false, !scanningInternalSubset());
                 continue;
             }
             skipSeparator(false, !scanningInternalSubset());
