@@ -234,6 +234,14 @@ catch (SAXException e) {
    <see idref='generate-synthetic-annotations'/>
   </feature>
   
+  <feature name='http://apache.org/xml/features/honour-all-schemaLocations'
+           id='honour-all-schemaLocations'>
+    <true>All schema location hints will be used to locate the components for a given target namespace.</true>
+    <false>Only the first schema location hint encountered by the processor will be used to locate the components for a given target namespace.</false>
+    <default value='false'/>
+    <access parsing='read-only' not-parsing='read-write'/>
+    <since value='&ParserName; 2.7.0'/>
+  </feature>
 
   <feature name='http://xml.org/sax/features/external-general-entities'
            id='external-general-entities'>
@@ -385,6 +393,34 @@ catch (SAXException e) {
     It's recommended to set this feature to true if you want your
     application/documents to be truly portable across different XML processors.
    </note>
+  </feature>
+  
+  <feature name='http://apache.org/xml/features/xinclude'
+           id='xinclude'>
+   <true>Enable XInclude processing.</true>
+   <false>Do not perform XInclude processing.</false>
+   <default value='false'/>
+   <since value='&ParserName; 2.7.0'/>
+   <see idref='xinclude.fixup-base-uris'/>
+   <see idref='xinclude.fixup-language'/>
+  </feature>
+  
+  <feature name='http://apache.org/xml/features/xinclude/fixup-base-uris'
+           id='xinclude.fixup-base-uris'>
+   <true>Perform base URI fixup as specified by the XInclude Recommendation.</true>
+   <false>Do not perform base URI fixup.</false>
+   <default value='true'/>
+   <since value='&ParserName; 2.7.0'/>
+   <see idref='xinclude'/>
+  </feature>
+  
+  <feature name='http://apache.org/xml/features/xinclude/fixup-language'
+           id='xinclude.fixup-language'>
+   <true>Perform language fixup as specified by the XInclude Recommendation.</true>
+   <false>Do not perform language fixup.</false>
+   <default value='true'/>
+   <since value='&ParserName; 2.7.0'/>
+   <see idref='xinclude'/>
   </feature>
  </fcategory>
 
