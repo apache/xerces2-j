@@ -42,6 +42,14 @@ public class XIncludeParserConfiguration extends XML11Configuration {
     /** Feature identifier: allow notation and unparsed entity events to be sent out of order. */
     protected static final String ALLOW_UE_AND_NOTATION_EVENTS =
         Constants.SAX_FEATURE_PREFIX + Constants.ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE;
+    
+    /** Feature identifier: fixup base URIs. */
+    protected static final String XINCLUDE_FIXUP_BASE_URIS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FIXUP_BASE_URIS_FEATURE;
+    
+    /** Feature identifier: fixup language. */
+    protected static final String XINCLUDE_FIXUP_LANGUAGE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FIXUP_LANGUAGE_FEATURE;
 
     /** Property identifier: error reporter. */
     protected static final String XINCLUDE_HANDLER =
@@ -98,7 +106,9 @@ public class XIncludeParserConfiguration extends XML11Configuration {
         addCommonComponent(fXIncludeHandler);
         
         final String[] recognizedFeatures = {
-            ALLOW_UE_AND_NOTATION_EVENTS
+            ALLOW_UE_AND_NOTATION_EVENTS,
+            XINCLUDE_FIXUP_BASE_URIS,
+            XINCLUDE_FIXUP_LANGUAGE
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -108,6 +118,8 @@ public class XIncludeParserConfiguration extends XML11Configuration {
         addRecognizedProperties(recognizedProperties);
         
         setFeature(ALLOW_UE_AND_NOTATION_EVENTS, true);
+        setFeature(XINCLUDE_FIXUP_BASE_URIS, true);
+        setFeature(XINCLUDE_FIXUP_LANGUAGE, true);
         
         setProperty(XINCLUDE_HANDLER, fXIncludeHandler);
         setProperty(NAMESPACE_CONTEXT, new XIncludeNamespaceSupport());
