@@ -64,6 +64,10 @@ import org.w3c.dom.Document;
  *
  * @version $id$
  */
+
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+
 public interface DOMParserWrapper {
 
     //

@@ -57,7 +57,6 @@
 
 package dom.wrappers;
 
-import dom.Features;
 import dom.DOMParserWrapper;
 
 import org.w3c.dom.Document;

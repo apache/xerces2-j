@@ -136,7 +136,10 @@ public class DOMCount {
             long after = System.currentTimeMillis();
             counter.printResults(uri, after - before);
         } catch (org.xml.sax.SAXParseException spe) {
-        } catch (org.xml.sax.SAXException se) {
+        } catch (org.xml.sax.SAXNotRecognizedException ex ){
+        } catch (org.xml.sax.SAXNotSupportedException ex ){
+        }
+        catch (org.xml.sax.SAXException se) {
             if (se.getException() != null)
                 se.getException().printStackTrace(System.err);
             else
