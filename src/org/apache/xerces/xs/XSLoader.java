@@ -57,48 +57,74 @@
 
 package org.apache.xerces.xs;
 
+import org.apache.xerces.dom3.DOMConfiguration;
+import org.w3c.dom.ls.DOMInput;
+
 /**
- * Objects implementing the <code>XSNamedMap</code> interface are used to 
- * represent immutable collections of XML Schema components that can be 
- * accessed by name. Note that <code>XSNamedMap</code> does not inherit from 
- * <code>XSObjectList</code>. The <code>XSObject</code>s in 
- * <code>XSNamedMap</code>s are not maintained in any particular order. 
+ * An interface that provides a method to load XML Schema documents. This 
+ * interface uses the DOM Level 3 Core and Load and Save interfaces.
  */
-public interface XSNamedMap {
+public interface XSLoader {
     /**
-     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
-     * The range of valid child object indices is 0 to <code>length-1</code> 
-     * inclusive. 
+     *  The configuration of a document. It maintains a table of recognized 
+     * parameters. Using the configuration, it is possible to change the 
+     * behavior of the load methods. The configuration may support the 
+     * setting of and the retrieval of the following non-boolean parameters 
+     * defined on the <code>DOMConfiguration</code> interface: 
+     * <code>error-handler</code> (<code>DOMErrorHandler</code>) and 
+     * <code>entity-resolver</code> (<code>DOMEntityResolver</code>). 
+     * <br> The following list of boolean parameters is defined: 
+     * <dl>
+     * <dt>
+     * <code>"validate"</code></dt>
+     * <dd>
+     * <dl>
+     * <dt><code>true</code></dt>
+     * <dd>[optional] Validate an XML 
+     * Schema during loading. If validation errors are found, the error 
+     * handler is notified. </dd>
+     * <dt><code>false</code></dt>
+     * <dd>[required] (default) Do not 
+     * report errors during the loading of an XML Schema document. </dd>
+     * </dl></dd>
+     * </dl>
      */
-    public int getLength();
+    public DOMConfiguration getConfig();
 
     /**
-     *  Returns the <code>index</code>th item in the collection or 
-     * <code>null</code> if <code>index</code> is greater than or equal to 
-     * the number of objects in the list. The index starts at 0. 
-     * @param index  index into the collection. 
-     * @return  The <code>XSObject</code> at the <code>index</code>th 
-     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
-     *   the index specified is not valid. 
+     * Parses the content of XML Schema documents specified as the list of URI 
+     * references. If the URI contains a fragment identifier, the behavior 
+     * is not defined by this specification. 
+     * @param uri The list of URI locations.
+     * @return An XSModel representing the schema documents.
      */
-    public XSObject item(int index);
+    public XSModel loadURIList(StringList uri);
 
     /**
-     * Retrieves an <code>XSObject</code> specified by local name and 
-     * namespace URI.
-     * <br>Per , applications must use the value <code>null</code> as the 
-     * <code>namespace</code> parameter for methods if they wish to specify 
-     * no namespace.
-     * @param namespace The namespace URI of the <code>XSObject</code> to 
-     *   retrieve, or <code>null</code> if the <code>XSObject</code> has no 
-     *   namespace. 
-     * @param localName The local name of the <code>XSObject</code> to 
-     *   retrieve.
-     * @return A <code>XSObject</code> (of any type) with the specified local 
-     *   name and namespace URI, or <code>null</code> if they do not 
-     *   identify any object in this map.
+     *  Parses the content of XML Schema documents specified as a list of 
+     * <code>DOMInput</code>s. 
+     * @param is  The list of <code>DOMInput</code>s from which the XML 
+     *   Schema documents are to be read. 
+     * @return An XSModel representing schema documents.
      */
-    public XSObject itemByName(String namespace, 
-                               String localName);
+    public XSModel loadInputList(DOMInputList is);
+
+    /**
+     * Parse an XML Schema document from a location identified by a URI 
+     * reference. If the URI contains a fragment identifier, the behavior is 
+     * not defined by this specification. 
+     * @param uri The location of the XML Schema document to be read.
+     * @return An XSModel representing this schema.
+     */
+    public XSModel loadURI(String uri);
+
+    /**
+     *  Parse an XML Schema document from a resource identified by a 
+     * <code>DOMInput</code> . 
+     * @param is  The <code>DOMInputSource</code> from which the source 
+     *   document is to be read. 
+     * @return An XSModel representing this schema.
+     */
+    public XSModel load(DOMInput is);
 
 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -59,7 +59,6 @@ package org.apache.xerces.xs;
 
 /**
  * This interface represents the Particle schema component.
- * The interface may be updated or replaced. 
  */
 public interface XSParticle extends XSObject {
     /**
@@ -68,13 +67,16 @@ public interface XSParticle extends XSObject {
     public int getMinOccurs();
 
     /**
-     * [max occurs] determines the maximum number of terms that can occur. To 
-     * query for value of unbounded use <code>maxOccursUnbounded</code>. 
+     *  [max occurs]: determines the maximum number of terms that can occur. 
+     * To query for the value of unbounded use 
+     * <code>maxOccursUnbounded</code>. When the value of 
+     * <code>maxOccursUnbounded</code> is <code>true</code>, the value of 
+     * <code>maxOccurs</code> is unspecified. 
      */
     public int getMaxOccurs();
 
     /**
-     * [max occurs] whether the maxOccurs value is unbounded.
+     * [max occurs]: whether the maxOccurs value is unbounded.
      */
     public boolean getMaxOccursUnbounded();
 

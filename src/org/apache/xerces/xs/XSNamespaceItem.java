@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,14 +58,13 @@
 package org.apache.xerces.xs;
 
 /**
- * The interfaces represents the namespace schema information information 
- * item. Each namespace schema information information item corresponds to 
- * an XML Schema with unique namespace name.
- * The interface may be updated or replaced. 
+ * The interface represents the namespace schema information information item. 
+ * Each namespace schema information information item corresponds to an XML 
+ * Schema with a unique namespace name.
  */
 public interface XSNamespaceItem {
     /**
-     * [schema namespace]: A namespace name or <code>null</code>.
+     * [schema namespace]: A namespace name or <code>null</code> if absent.
      */
     public String getSchemaNamespace();
 
@@ -78,20 +77,22 @@ public interface XSNamespaceItem {
      *   <code>XSTypeDefinition.COMPLEX_TYPE</code> can also be used as the 
      *   <code>objectType</code> to retrieve only complex types or simple 
      *   types, instead of all types.
-     * @return A list of top-level definition of the specified type in 
-     *   <code>objectType</code> or <code>null</code>. 
+     * @return  A list of top-level definition of the specified type in 
+     *   <code>objectType</code> or an empty <code>XSNamedMap</code> if no 
+     *   such definitions exist. 
      */
     public XSNamedMap getComponents(short objectType);
 
     /**
-     *  [annotations]: a set of annotations.
+     *  [annotations]: a set of annotations if it exists, otherwise an empty 
+     * <code>XSObjectList</code>.
      */
     public XSObjectList getAnnotations();
 
     /**
      * Convenience method. Returns a top-level element declaration. 
      * @param name The name of the declaration.
-     * @return A top-level element declaration or <code>null</code> if such 
+     * @return A top-level element declaration or <code>null</code> if such a 
      *   declaration does not exist. 
      */
     public XSElementDeclaration getElementDeclaration(String name);
@@ -100,7 +101,7 @@ public interface XSNamespaceItem {
      * Convenience method. Returns a top-level attribute declaration. 
      * @param name The name of the declaration.
      * @return A top-level attribute declaration or <code>null</code> if such 
-     *   declaration does not exist. 
+     *   a declaration does not exist. 
      */
     public XSAttributeDeclaration getAttributeDeclaration(String name);
 
@@ -109,7 +110,7 @@ public interface XSNamespaceItem {
      * definition. 
      * @param name The name of the definition.
      * @return An <code>XSTypeDefinition</code> or <code>null</code> if such 
-     *   definition does not exist. 
+     *   a definition does not exist. 
      */
     public XSTypeDefinition getTypeDefinition(String name);
 
@@ -117,7 +118,7 @@ public interface XSNamespaceItem {
      * Convenience method. Returns a top-level attribute group definition. 
      * @param name The name of the definition.
      * @return A top-level attribute group definition or <code>null</code> if 
-     *   such definition does not exist. 
+     *   such a definition does not exist. 
      */
     public XSAttributeGroupDefinition getAttributeGroup(String name);
 
@@ -125,7 +126,7 @@ public interface XSNamespaceItem {
      * Convenience method. Returns a top-level model group definition. 
      * @param name The name of the definition.
      * @return A top-level model group definition definition or 
-     *   <code>null</code> if such definition does not exist. 
+     *   <code>null</code> if such a definition does not exist. 
      */
     public XSModelGroupDefinition getModelGroupDefinition(String name);
 
@@ -133,13 +134,13 @@ public interface XSNamespaceItem {
      * Convenience method. Returns a top-level notation declaration. 
      * @param name The name of the declaration.
      * @return A top-level notation declaration or <code>null</code> if such 
-     *   declaration does not exist. 
+     *   a declaration does not exist. 
      */
     public XSNotationDeclaration getNotationDeclaration(String name);
 
     /**
-     * [document location] - a list of locations URI for the documents that 
-     * contributed to the XSModel.
+     * [document location] - a list of location URIs for the documents that 
+     * contributed to the <code>XSModel</code>.
      */
     public StringList getDocumentLocations();
 

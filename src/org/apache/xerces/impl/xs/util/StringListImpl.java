@@ -101,6 +101,33 @@ public class StringListImpl implements StringList {
         return fLength;
     }
 
+    /**
+     *  Checks if the <code>GenericString</code> <code>item</code> is a member 
+     * of this list. 
+     * @param item  <code>GenericString</code> whose presence in this list is 
+     *   to be tested. 
+     * @return  True if this list contains the <code>GenericString</code> 
+     *   <code>item</code>. 
+     */
+    public boolean contains(String item) {
+        if (fVector != null)
+            return fVector.contains(item);
+        
+        if (item == null) {
+            for (int i = 0; i < fLength; i++) {
+                if (fArray[i] == null)
+                    return true;
+            }
+        }
+        else {
+            for (int i = 0; i < fLength; i++) {
+                if (item.equals(fArray[i]))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public String item(int index) {
         if (index < 0 || index >= fLength)
             return null;

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,33 +49,43 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.xs;
 
 /**
- *  The <code>StringList</code> is an ordered collection of 
+ *  The <code>StringList</code> is an immutable ordered collection of 
  * <code>GenericString</code>. 
- * The interface may be updated or replaced. 
  */
 public interface StringList {
     /**
-     *  The number of <code>GenericString</code> in the list. The range of 
+     *  The number of <code>GenericString</code>s in the list. The range of 
      * valid child object indices is 0 to <code>length-1</code> inclusive. 
      */
     public int getLength();
 
     /**
-     *  Returns the <code>index</code>th item in the collection. The index 
-     * starts at 0. If <code>index</code> is greater than or equal to the 
-     * number of objects in the list, this returns <code>null</code>. 
+     *  Checks if the <code>GenericString</code> <code>item</code> is a member 
+     * of this list. 
+     * @param item  <code>GenericString</code> whose presence in this list is 
+     *   to be tested. 
+     * @return  True if this list contains the <code>GenericString</code> 
+     *   <code>item</code>. 
+     */
+    public boolean contains(String item);
+
+    /**
+     *  Returns the <code>index</code>th item in the collection or 
+     * <code>null</code> if <code>index</code> is greater than or equal to 
+     * the number of objects in the list. The index starts at 0. 
      * @param index  index into the collection. 
      * @return  The <code>GenericString</code> at the <code>index</code>th 
      *   position in the <code>StringList</code>, or <code>null</code> if 
-     *   that is not a valid index. 
+     *   the index specified is not valid. 
      */
     public String item(int index);
 

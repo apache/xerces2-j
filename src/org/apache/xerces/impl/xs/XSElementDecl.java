@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
@@ -369,12 +370,24 @@ public class XSElementDecl implements XSElementDeclaration {
     }
     
 
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement
-		return null;
-	}
+        return null;
+    }
+
+    public Object getActualVC() {
+        return fDefault.actualValue;
+    }
+
+    public short getActualVCType() {
+        return fDefault.actualValueType;
+    }
+
+    public ShortList getItemValueTypes() {
+        return fDefault.itemValueTypes;
+    }
 
 } // class XSElementDecl

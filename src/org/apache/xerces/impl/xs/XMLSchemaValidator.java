@@ -2227,6 +2227,9 @@ public class XMLSchemaValidator
 			fCurrentPSVI.fNil = fNil;
 			fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
 			fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
+            fCurrentPSVI.fActualValue = fValidatedInfo.actualValue;
+            fCurrentPSVI.fActualValueType = fValidatedInfo.actualValueType;
+            fCurrentPSVI.fItemValueTypes = fValidatedInfo.itemValueTypes;
 
 			if (fStrictAssess) {
 				// get all errors for the current element, its attribute,
@@ -2742,8 +2745,9 @@ public class XMLSchemaValidator
 			// because it might still be useful to the user. But when the it's
 			// not valid, the normalized value is not trustable.
 			attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
-
-			attrPSVI.fActualValue = actualValue;
+            attrPSVI.fActualValue = fValidatedInfo.actualValue;
+            attrPSVI.fActualValueType = fValidatedInfo.actualValueType;
+            attrPSVI.fItemValueTypes = fValidatedInfo.itemValueTypes;
 
 			// PSVI: validation attempted:
 			attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;
@@ -2831,6 +2835,8 @@ public class XMLSchemaValidator
 					attrPSVI.fMemberType = defaultValue.memberType;
 					attrPSVI.fNormalizedValue = normalized;
 					attrPSVI.fActualValue = defaultValue.actualValue;
+                    attrPSVI.fActualValueType = defaultValue.actualValueType;
+                    attrPSVI.fItemValueTypes = defaultValue.itemValueTypes;
 					attrPSVI.fValidationContext = fValidationRoot;
 					attrPSVI.fValidity = AttributePSVI.VALIDITY_VALID;
 					attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;

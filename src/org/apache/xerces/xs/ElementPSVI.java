@@ -2,15 +2,15 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  
- * All rights reserved.
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -57,37 +57,31 @@
 
 package org.apache.xerces.xs;
 
-import org.apache.xerces.xs.*;
-
 /**
- * Represent a PSVI item for one element information item.
- * The interface may be updated or replaced. 
- * @author Elena Litani, IBM
- * @version $Id$
+ *  Represents a PSVI item for one element information item. 
  */
 public interface ElementPSVI extends ItemPSVI {
-
     /**
-     * An item isomorphic to the element declaration used to validate
-     * this element.
-     * 
-     * @return  an element declaration
+     * [element declaration]: an item isomorphic to the element declaration 
+     * used to validate this element. 
      */
     public XSElementDeclaration getElementDeclaration();
-    
+
     /**
-     * [notation] 
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation">XML Schema Part 1: Structures [notation]</a>
-     * @return The notation declaration. 
+     *  [notation]: the notation declaration. 
      */
     public XSNotationDeclaration getNotation();
 
     /**
-     * [schema information]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_information">XML Schema Part 1: Structures [schema information]</a>
-     * @return The schema information property if it's the validation root,
-     *         null otherwise.
+     * [nil]: true if clause 3.2 of Element Locally Valid (Element) (3.3.4) is 
+     * satisfied, otherwise false. 
+     */
+    public boolean getNil();
+
+    /**
+     * schema information: the schema information property if it is the 
+     * validation root, <code>null</code> otherwise. 
      */
     public XSModel getSchemaInformation();
-    
+
 }

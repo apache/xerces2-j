@@ -57,18 +57,17 @@
 
 package org.apache.xerces.xs;
 
+import org.w3c.dom.ls.DOMInput;
+
 /**
- * Objects implementing the <code>XSNamedMap</code> interface are used to 
- * represent immutable collections of XML Schema components that can be 
- * accessed by name. Note that <code>XSNamedMap</code> does not inherit from 
- * <code>XSObjectList</code>. The <code>XSObject</code>s in 
- * <code>XSNamedMap</code>s are not maintained in any particular order. 
+ *  The <code>DOMInputList</code> interface provides the abstraction of an 
+ * ordered collection of <code>DOMInput</code>s, without defining or 
+ * constraining how this collection is implemented. 
  */
-public interface XSNamedMap {
+public interface DOMInputList {
     /**
-     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
-     * The range of valid child object indices is 0 to <code>length-1</code> 
-     * inclusive. 
+     *  The number of <code>DOMInput</code>s in the list. The range of valid 
+     * child object indices is 0 to <code>length-1</code> inclusive. 
      */
     public int getLength();
 
@@ -77,28 +76,10 @@ public interface XSNamedMap {
      * <code>null</code> if <code>index</code> is greater than or equal to 
      * the number of objects in the list. The index starts at 0. 
      * @param index  index into the collection. 
-     * @return  The <code>XSObject</code> at the <code>index</code>th 
-     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
+     * @return  The <code>DOMInput</code> at the <code>index</code>th 
+     *   position in the <code>DOMInputList</code>, or <code>null</code> if 
      *   the index specified is not valid. 
      */
-    public XSObject item(int index);
-
-    /**
-     * Retrieves an <code>XSObject</code> specified by local name and 
-     * namespace URI.
-     * <br>Per , applications must use the value <code>null</code> as the 
-     * <code>namespace</code> parameter for methods if they wish to specify 
-     * no namespace.
-     * @param namespace The namespace URI of the <code>XSObject</code> to 
-     *   retrieve, or <code>null</code> if the <code>XSObject</code> has no 
-     *   namespace. 
-     * @param localName The local name of the <code>XSObject</code> to 
-     *   retrieve.
-     * @return A <code>XSObject</code> (of any type) with the specified local 
-     *   name and namespace URI, or <code>null</code> if they do not 
-     *   identify any object in this map.
-     */
-    public XSObject itemByName(String namespace, 
-                               String localName);
+    public DOMInput item(int index);
 
 }

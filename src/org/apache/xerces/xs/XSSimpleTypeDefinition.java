@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,8 +58,12 @@
 package org.apache.xerces.xs;
 
 /**
- * This interface represents the Simple Type Definition schema component.
- * The interface may be updated or replaced. 
+ * This interface represents the Simple Type Definition schema component. This 
+ * interface provides several query operations for facet components. Users 
+ * can either retrieve the defined facets as XML Schema components, using 
+ * the <code>facets</code> and the <code>multiValueFacets</code> attributes; 
+ * or users can separately query a facet's properties using methods such as 
+ * <code>getLexicalFacetValue</code>, <code>isFixedFacet</code>, etc. 
  */
 public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     // Variety definitions
@@ -135,7 +139,7 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     public static final short FACET_ENUMERATION         = 2048;
 
     /**
-     * A constant defined for the 'ordered' fundamental facet: Not ordered.
+     * A constant defined for the 'ordered' fundamental facet: not ordered.
      */
     public static final short ORDERED_FALSE             = 0;
     /**
@@ -148,7 +152,7 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      */
     public static final short ORDERED_TOTAL             = 2;
     /**
-     * [variety]: one of {atomic, list, union} or absent 
+     * [variety]: one of {atomic, list, union} or absent. 
      */
     public short getVariety();
 
@@ -160,6 +164,13 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     public XSSimpleTypeDefinition getPrimitiveType();
 
     /**
+     * Returns the closest built-in type category this type represents or 
+     * derived from. For example, if this simple type is a built-in derived 
+     * type integer the <code>INTEGER_DV</code> is returned.
+     */
+    public short getBuiltInKind();
+
+    /**
      * If variety is <code>list</code> the item type definition (an atomic or 
      * union simple type definition) is available, otherwise 
      * <code>null</code>. 
@@ -169,12 +180,12 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     /**
      * If variety is <code>union</code> the list of member type definitions (a 
      * non-empty sequence of simple type definitions) is available, 
-     * otherwise <code>null</code>. 
+     * otherwise an empty <code>XSObjectList</code>. 
      */
     public XSObjectList getMemberTypes();
 
     /**
-     * [facets]: get all facets defined on this type. The value is a bit 
+     * [facets]: all facets defined on this type. The value is a bit 
      * combination of FACET_XXX constants of all defined facets. 
      */
     public short getDefinedFacets();
@@ -188,7 +199,7 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     public boolean isDefinedFacet(short facetName);
 
     /**
-     * [facets]: get all facets defined and fixed on this type.
+     * [facets]: all defined facets for this type which are fixed.
      */
     public short getFixedFacets();
 
@@ -206,25 +217,28 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * values for <code>enumeration</code> and <code>pattern</code> facets. 
      * @param facetName The name of the facet, i.e. 
      *   <code>FACET_LENGTH, FACET_TOTALDIGITS </code> (see 
-     *   <code>XSConstants</code>).To retrieve value for pattern or 
-     *   enumeration, see <code>enumeration</code> and <code>pattern</code>.
+     *   <code>XSConstants</code>). To retrieve the value for a pattern or 
+     *   an enumeration, see <code>enumeration</code> and 
+     *   <code>pattern</code>.
      * @return A value of the facet specified in <code>facetName</code> for 
      *   this simple type definition or <code>null</code>. 
      */
     public String getLexicalFacetValue(short facetName);
 
     /**
-     * Returns a list of enumeration values. 
+     * A list of enumeration values if it exists, otherwise an empty 
+     * <code>StringList</code>. 
      */
     public StringList getLexicalEnumeration();
 
     /**
-     * Returns a list of pattern values. 
+     * A list of pattern values if it exists, otherwise an empty 
+     * <code>StringList</code>. 
      */
     public StringList getLexicalPattern();
 
     /**
-     *  Fundamental Facet: ordered 
+     *  Fundamental Facet: ordered. 
      */
     public short getOrdered();
 
@@ -244,19 +258,23 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     public boolean getNumeric();
 
     /**
-     * Optional. A set of [annotation]s. 
-     */
-    public XSObjectList getAnnotations();
-    /** 
-     * @return list of constraining facets.
-     * This method must not be used to retrieve 
-     * values for <code>enumeration</code> and <code>pattern</code> facets.
+     *  A list of constraining facets if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. Note: This method must not be used to 
+     * retrieve values for <code>enumeration</code> and <code>pattern</code> 
+     * facets. 
      */
     public XSObjectList getFacets();
-    
-    /** 
-     * @return list of enumeration and pattern facets.
+
+    /**
+     *  A list of enumeration and pattern constraining facets if it exists, 
+     * otherwise an empty <code>XSObjectList</code>. 
      */
     public XSObjectList getMultiValueFacets();
+
+    /**
+     *  [annotations]: a set of annotations for this simple type component if 
+     * it exists, otherwise an empty <code>XSObjectList</code>. 
+     */
+    public XSObjectList getAnnotations();
 
 }

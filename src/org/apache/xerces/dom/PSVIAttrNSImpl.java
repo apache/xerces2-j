@@ -97,6 +97,15 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
 
     /** schema normalized value property */
     protected String fNormalizedValue = null;
+    
+    /** schema actual value */
+    protected Object fActualValue = null;
+
+    /** schema actual value type */
+    protected short fActualValueType = XSConstants.UNAVAILABLE_DT;
+
+    /** actual value types if the value is a list */
+    protected ShortList fItemValueTypes = null;
 
     /** member type definition against which attribute was validated */
     protected XSSimpleTypeDefinition fMemberType = null;
@@ -228,17 +237,33 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
         this.fValidationAttempted = attr.getValidationAttempted();
         this.fErrorCodes = attr.getErrorCodes();
         this.fNormalizedValue = attr.getSchemaNormalizedValue();
+        this.fActualValue = attr.getActualNormalizedValue();
+        this.fActualValueType = attr.getActualNormalizedValueType();
+        this.fItemValueTypes = attr.getItemValueTypes();
         this.fTypeDecl = attr.getTypeDefinition();
         this.fMemberType = attr.getMemberTypeDefinition();
         this.fSpecified = attr.getIsSchemaSpecified();
     }
     
-	/* (non-Javadoc)
-	 * @see org.apache.xerces.xs.ItemPSVI#getActualValue()
-	 */
-	public Object getActualValue() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValue()
+     */
+    public Object getActualNormalizedValue() {
+        return this.fActualValue;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValueType()
+     */
+    public short getActualNormalizedValueType() {
+        return this.fActualValueType;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getItemValueTypes()
+     */
+    public ShortList getItemValueTypes() {
+        return this.fItemValueTypes;
+    }
 
 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -59,7 +59,6 @@ package org.apache.xerces.xs;
 
 /**
  * This interface represents the Wildcard schema component.
- * The interface may be updated or replaced. 
  */
 public interface XSWildcard extends XSTerm {
     // Namespace Constraint
@@ -90,7 +89,7 @@ public interface XSWildcard extends XSTerm {
      * If the item, or any items among its [children] is an element 
      * information item, has a uniquely determined declaration available, it 
      * must be valid with respect to that definition, that is, validate 
-     * where you can, don't worry when you can't.
+     * where you can and do not worry when you cannot.
      */
     public static final short PC_LAX                    = 3;
 
@@ -100,21 +99,23 @@ public interface XSWildcard extends XSTerm {
     public short getConstraintType();
 
     /**
-     * Namespace constraint. For <code>constraintType</code> 
-     * <code>LIST_NSCONSTRAINT</code>, the list contains allowed namespaces. 
-     * For <code>constraintType</code> <code>NOT_NSCONSTRAINT</code>, the 
-     * list contains disallowed namespaces. 
+     * Namespace constraint: For <code>constraintType</code> 
+     * <code>NSCONSTRAINT_LIST</code>, the list contains allowed namespaces. 
+     * For <code>constraintType</code> <code>NSCONSTRAINT_NOT</code>, the 
+     * list contains disallowed namespaces. For <code>constraintType</code> 
+     * <code>NSCONSTRAINT_ANY</code>, the <code>StringList</code> is empty. 
      */
     public StringList getNsConstraintList();
 
     /**
      * [process contents]: one of skip, lax or strict. Valid constants values 
-     * are: <code>PC_SKIP, PC_LAX, PC_STRICT</code>. 
+     * are: <code>PC_LAX</code>, <code>PC_SKIP</code> and 
+     * <code>PC_STRICT</code>. 
      */
     public short getProcessContents();
 
     /**
-     * Optional. An [annotation]. 
+     * An [annotation] if it exists, otherwise <code>null</code>. 
      */
     public XSAnnotation getAnnotation();
 

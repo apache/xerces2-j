@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,39 +49,31 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.xs;
 
 /**
- * This interface represents the Attribute Group Definition schema component
- * The interface may be updated or replaced. 
+ * This interface represents the Attribute Group Definition schema component.
  */
 public interface XSAttributeGroupDefinition extends XSObject {
     /**
-     * A set of [attribute uses]. 
+     * A set of [attribute uses] if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. 
      */
     public XSObjectList getAttributeUses();
-    
-    /**
-     * @param namespace The [target namespace] of this object, or <code>null</code> if it is 
-     * unspecified. 
-     * @param name  The name of type <code>NCName</code> of this declaration as defined in 
-     * XML Namespaces.
-     * @return XSAttributeUse declaration for the given {namespace, name} or null.
-     */
-    public XSAttributeUse getAttributeUse(String namespace, String name);
 
     /**
-     * Optional. A [wildcard]. 
+     * A [wildcard] if it exists, otherwise <code>null</code>. 
      */
     public XSWildcard getAttributeWildcard();
 
     /**
-     * Optional. An [annotation]. 
+     * An [annotation] if it exists, otherwise <code>null</code>. 
      */
     public XSAnnotation getAnnotation();
 

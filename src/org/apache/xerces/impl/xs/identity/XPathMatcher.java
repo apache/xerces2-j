@@ -365,7 +365,7 @@ public class XPathMatcher {
                                 for(; j<i && ((fMatched[j] & MATCHED) != MATCHED); j++);
                                 if(j==i) {
                                     AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(aIndex).getItem(Constants.ATTRIBUTE_PSVI);
-                                    fMatchedString = attrPSVI.getActualValue();
+                                    fMatchedString = attrPSVI.getActualNormalizedValue();
                                     matched(fMatchedString, false);
                                 }
                             }

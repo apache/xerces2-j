@@ -77,6 +77,7 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
@@ -236,6 +237,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     private XSSimpleTypeDecl fItemType;
     private XSSimpleTypeDecl[] fMemberTypes;
+    // The most specific built-in type kind.
+    private short fBuiltInKind;
 
     private String fTypeName;
     private String fTargetNamespace;
@@ -300,8 +303,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     //Create a new built-in primitive types (and id/idref/entity/integer)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
-                               short ordered, boolean bounded,
-                               boolean finite, boolean numeric, boolean isImmutable) {
+                               short ordered, boolean bounded, boolean finite,
+                               boolean numeric, boolean isImmutable, short builtInKind) {
         fIsImmutable = isImmutable;
         fBase = base;
         fTypeName = name;
@@ -321,8 +324,19 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         this.fFinite = finite;
         this.fNumeric = numeric;
         fAnnotations = null;
+        
+        // Specify the build in kind for this primitive type
+        fBuiltInKind = builtInKind;
     }
 
+    //Create a new simple type for restriction for built-in types
+    protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, String uri, short finalSet, boolean isImmutable,
+                XSObjectList annotations, short builtInKind) {
+        this(base, name, uri, finalSet, isImmutable, annotations);
+        // Specify the build in kind for this built-in type
+        fBuiltInKind = builtInKind;
+    }
+    
     //Create a new simple type for restriction.
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, String uri, short finalSet, boolean isImmutable,
                 XSObjectList annotations) {
@@ -367,6 +381,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         //we also set fundamental facets information in case applyFacets is not called.
         caclFundamentalFacets();
         fIsImmutable = isImmutable;
+
+        // Inherit from the base type
+        fBuiltInKind = base.fBuiltInKind;
     }
 
     //Create a new simple type for list.
@@ -388,6 +405,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         //setting fundamental facets
         caclFundamentalFacets();
         fIsImmutable = isImmutable;
+
+        // Values of this type are lists
+        fBuiltInKind = XSConstants.LIST_DT;
     }
 
     //Create a new simple type for union.
@@ -414,6 +434,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         // none of the schema-defined types are unions, so just set
         // fIsImmutable to false.
         fIsImmutable = false;
+
+        // No value can be of this type, so it's unavailable.
+        fBuiltInKind = XSConstants.UNAVAILABLE_DT;
     }
 
     //set values for restriction.
@@ -585,6 +608,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             // REVISIT: error situation. runtime exception?
             return (short)0;
         }
+    }
+
+    public short getBuiltInKind() {
+        return this.fBuiltInKind;
     }
 
     public XSSimpleTypeDefinition getPrimitiveType() {
@@ -1683,6 +1710,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             validatedInfo.normalizedValue = nvalue;
             Object avalue = fDVs[fValidationDV].getActualValue(nvalue, context);
             validatedInfo.actualValue = avalue;
+            validatedInfo.actualValueType = fBuiltInKind;
 
             return avalue;
 
@@ -1691,6 +1719,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             StringTokenizer parsedList = new StringTokenizer(nvalue, " ");
             int countOfTokens = parsedList.countTokens() ;
             Object[] avalue = new Object[countOfTokens];
+            boolean isUnion = fItemType.getVariety() == VARIETY_UNION;
+            short[] itemTypes = new short[isUnion ? countOfTokens : 1];
+            if (!isUnion)
+                itemTypes[0] = fItemType.fBuiltInKind;
             XSSimpleTypeDecl[] memberTypes = new XSSimpleTypeDecl[countOfTokens];
             for(int i = 0 ; i < countOfTokens ; i ++){
                 // we can't call fItemType.validate(), otherwise checkExtraRules()
@@ -1705,12 +1737,16 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     fItemType.checkFacets(validatedInfo);
                 }
                 memberTypes[i] = (XSSimpleTypeDecl)validatedInfo.memberType;
+                if (isUnion)
+                    itemTypes[i] = memberTypes[i].fBuiltInKind;
             }
 
             ListDV.ListData v = new ListDV.ListData(avalue);
             validatedInfo.actualValue = v;
+            validatedInfo.actualValueType = isUnion ? XSConstants.LISTOFUNION_DT : XSConstants.LIST_DT;
             validatedInfo.memberType = null;
             validatedInfo.memberTypes = memberTypes;
+            validatedInfo.itemValueTypes = new ShortListImpl(itemTypes, itemTypes.length);
             validatedInfo.normalizedValue = nvalue;
 
             return v;
@@ -2225,7 +2261,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return type != fAnySimpleType;
     }
 
-    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true);
+    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true, XSConstants.ANYSIMPLETYPE_DT);
 
     /**
      * Validation context used to validate facet values.
@@ -2582,7 +2618,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#isFixed()
          */
-        public boolean isFixed() {
+        public boolean getFixed() {
             return fixed;
         }
 

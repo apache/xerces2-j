@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -59,9 +59,8 @@ package org.apache.xerces.xs;
 
 /**
  *  The <code>XSNamesaceItemList</code> interface provides the abstraction of 
- * an ordered collection of <code>XSNamespaceItem</code>s, without defining 
- * or constraining how this collection is implemented. 
- * The interface may be updated or replaced. 
+ * an immutable ordered collection of <code>XSNamespaceItem</code>s, without 
+ * defining or constraining how this collection is implemented. 
  */
 public interface XSNamespaceItemList {
     /**
@@ -71,13 +70,13 @@ public interface XSNamespaceItemList {
     public int getLength();
 
     /**
-     *  Returns the <code>index</code>th item in the collection. The index 
-     * starts at 0. If <code>index</code> is greater than or equal to the 
-     * number of objects in the list, this returns <code>null</code>. 
+     *  Returns the <code>index</code>th item in the collection or 
+     * <code>null</code> if <code>index</code> is greater than or equal to 
+     * the number of objects in the list. The index starts at 0. 
      * @param index  index into the collection. 
      * @return  The <code>XSNamespaceItem</code> at the <code>index</code>th 
      *   position in the <code>XSNamespaceItemList</code>, or 
-     *   <code>null</code> if that is not a valid index. 
+     *   <code>null</code> if the index specified is not valid. 
      */
     public XSNamespaceItem item(int index);
 

@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.dv;
 
+import org.apache.xerces.xs.ShortList;
+
 /**
  * Class to get the information back after content is validated. This info
  * would be filled by validate().
@@ -79,6 +81,14 @@ public class ValidatedInfo {
     public Object actualValue;
 
     /**
+     * The type of the actual value. It's one of the _DT constants
+     * defined in XSConstants.java. The value is used to indicate
+     * the most specific built-in type.
+     * (i.e. short instead of decimal or integer).
+     */
+    public short actualValueType;
+
+    /**
      * If the type is a union type, then the member type which
      * actually validated the string value.
      */
@@ -92,6 +102,14 @@ public class ValidatedInfo {
      * then an array of member types used to validate the values.
      */
     public XSSimpleType[] memberTypes;
+
+    /**
+     * In the case the value is a list or a list of unions, this value
+     * indicates the type(s) of the items in the list.
+     * For a normal list, the length of the array is 1; for list of unions,
+     * the length of the array is the same as the length of the list.
+     */
+    public ShortList itemValueTypes;
 
     /**
      * reset the state of this object

@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
@@ -147,11 +148,23 @@ public class XSAttributeUseImpl implements XSAttributeUse {
                fDefault.actualValue.toString();
     }
 
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
-		return null;
-	}
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
+        return null;
+    }
+
+    public Object getActualVC() {
+        return fDefault.actualValue;
+    }
+
+    public short getActualVCType() {
+        return fDefault.actualValueType;
+    }
+
+    public ShortList getItemValueTypes() {
+        return fDefault.itemValueTypes;
+    }
 
 } // class XSAttributeUseImpl

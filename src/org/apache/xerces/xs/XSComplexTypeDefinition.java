@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -59,7 +59,6 @@ package org.apache.xerces.xs;
 
 /**
  * This interface represents the Complex Type Definition schema component.
- * The interface may be updated or replaced. 
  */
 public interface XSComplexTypeDefinition extends XSTypeDefinition {
     // Content Model Types
@@ -70,7 +69,7 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
      */
     public static final short CONTENTTYPE_EMPTY         = 0;
     /**
-     * Represents a simple content type. A content type which is a simple 
+     * Represents a simple content type. A content type which is simple 
      * validates elements with character-only children. 
      */
     public static final short CONTENTTYPE_SIMPLE        = 1;
@@ -100,17 +99,13 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
     public boolean getAbstract();
 
     /**
-     *  A set of attribute uses. 
+     *  A set of attribute uses if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. 
      */
     public XSObjectList getAttributeUses();
-    
-    /*
-     * Attribute Use
-     */
-     public XSAttributeUse getAttributeUse(String namespace, String name);
 
     /**
-     * Optional.An attribute wildcard. 
+     * An attribute wildcard if it exists, otherwise <code>null</code>. 
      */
     public XSWildcard getAttributeWildcard();
 
@@ -123,23 +118,23 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
     public short getContentType();
 
     /**
-     * A simple type definition corresponding to simple content model, 
-     * otherwise <code>null</code> 
+     * A simple type definition corresponding to a simple content model, 
+     * otherwise <code>null</code>. 
      */
     public XSSimpleTypeDefinition getSimpleType();
 
     /**
-     * A particle for mixed or element-only content model, otherwise 
-     * <code>null</code> 
+     * A particle for a mixed or element-only content model, otherwise 
+     * <code>null</code>. 
      */
     public XSParticle getParticle();
 
     /**
      * [prohibited substitutions]: a subset of {extension, restriction}
-     * @param restriction  Extention or restriction constants (see 
+     * @param restriction  Extension or restriction constants (see 
      *   <code>XSConstants</code>). 
-     * @return True if restriction is a prohibited substitution, otherwise 
-     *   false.
+     * @return True if <code>restriction</code> is a prohibited substitution, 
+     *   otherwise false.
      */
     public boolean isProhibitedSubstitution(short restriction);
 
@@ -151,7 +146,8 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
     public short getProhibitedSubstitutions();
 
     /**
-     * A set of [annotations]. 
+     * A set of [annotations] if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. 
      */
     public XSObjectList getAnnotations();
 

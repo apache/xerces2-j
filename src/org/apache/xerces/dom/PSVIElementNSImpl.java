@@ -103,6 +103,15 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     /** schema normalized value property */
     protected String fNormalizedValue = null;
 
+    /** schema actual value */
+    protected Object fActualValue = null;
+
+    /** schema actual value type */
+    protected short fActualValueType = XSConstants.UNAVAILABLE_DT;
+
+    /** actual value types if the value is a list */
+    protected ShortList fItemValueTypes = null;
+
     /** http://www.w3.org/TR/xmlschema-1/#e-notation*/
     protected XSNotationDeclaration fNotation = null;
 
@@ -200,7 +209,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-nil>XML Schema Part 1: Structures [nil]</a>
      * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false
      */
-    public boolean getIsNil() {
+    public boolean getNil() {
         return fNil;
     }
 
@@ -270,16 +279,32 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         this.fValidationAttempted = elem.getValidationAttempted();
         this.fErrorCodes = elem.getErrorCodes();
         this.fNormalizedValue = elem.getSchemaNormalizedValue();
+        this.fActualValue = elem.getActualNormalizedValue();
+        this.fActualValueType = elem.getActualNormalizedValueType();
+        this.fItemValueTypes = elem.getItemValueTypes();
         this.fMemberType = elem.getMemberTypeDefinition();
         this.fSpecified = elem.getIsSchemaSpecified();
     }
 
-	/* (non-Javadoc)
-	 * @see org.apache.xerces.xs.ItemPSVI#getActualValue()
-	 */
-	public Object getActualValue() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValue()
+     */
+    public Object getActualNormalizedValue() {
+        return this.fActualValue;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValueType()
+     */
+    public short getActualNormalizedValueType() {
+        return this.fActualValueType;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getItemValueTypes()
+     */
+    public ShortList getItemValueTypes() {
+        return this.fItemValueTypes;
+    }
 
 }

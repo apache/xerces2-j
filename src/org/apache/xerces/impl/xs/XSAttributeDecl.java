@@ -196,12 +196,24 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     public ValidatedInfo getValInfo() {
         return fDefault;
     }
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement
-		return null;
-	}
+        return null;
+    }
+
+    public Object getActualVC() {
+        return fDefault.actualValue;
+    }
+
+    public short getActualVCType() {
+        return fDefault.actualValueType;
+    }
+
+    public ShortList getItemValueTypes() {
+        return fDefault.itemValueTypes;
+    }
 
 } // class XSAttributeDecl

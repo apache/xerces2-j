@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,8 +58,7 @@
 package org.apache.xerces.xs;
 
 /**
- * This interface represents is the Model Group Definition schema component.
- * The interface may be updated or replaced. 
+ * This interface represents the Model Group Definition schema component.
  */
 public interface XSModelGroupDefinition extends XSObject {
     /**
@@ -68,7 +67,7 @@ public interface XSModelGroupDefinition extends XSObject {
     public XSModelGroup getModelGroup();
 
     /**
-     * Optional. An [annotation]. 
+     * An [annotation] if it exists, otherwise <code>null</code>. 
      */
     public XSAnnotation getAnnotation();
 

@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
@@ -65,6 +66,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.XSConstants;
 
 /**
  * Element PSV infoset augmentations implementation.
@@ -97,6 +99,15 @@ public class ElementPSVImpl implements ElementPSVI {
 
     /** schema normalized value property */
     protected String fNormalizedValue = null;
+
+    /** schema actual value */
+    protected Object fActualValue = null;
+
+    /** schema actual value type */
+    protected short fActualValueType = XSConstants.UNAVAILABLE_DT;
+
+    /** actual value types if the value is a list */
+    protected ShortList fItemValueTypes = null;
 
     /** http://www.w3.org/TR/xmlschema-1/#e-notation*/
     protected XSNotationDeclaration fNotation = null;
@@ -197,7 +208,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-nil>XML Schema Part 1: Structures [nil]</a>
      * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false
      */
-    public boolean getIsNil() {
+    public boolean getNil() {
         return fNil;
     }
 
@@ -252,6 +263,27 @@ public class ElementPSVImpl implements ElementPSVI {
         return fSchemaInformation;
     }
     
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValue()
+     */
+    public Object getActualNormalizedValue() {
+        return this.fActualValue;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValueType()
+     */
+    public short getActualNormalizedValueType() {
+        return this.fActualValueType;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getItemValueTypes()
+     */
+    public ShortList getItemValueTypes() {
+        return this.fItemValueTypes;
+    }
+
     /**
      * Reset() should be called in validator startElement(..) method.
      */
@@ -267,14 +299,9 @@ public class ElementPSVImpl implements ElementPSVI {
         fErrorCodes = null;
         fValidationContext = null;
         fNormalizedValue = null;
+        fActualValue = null;
+        fActualValueType = XSConstants.UNAVAILABLE_DT;
+        fItemValueTypes = null;
     }
-
-	/* (non-Javadoc)
-	 * @see org.apache.xerces.xs.ItemPSVI#getActualValue()
-	 */
-	public Object getActualValue() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,16 +49,16 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.xs;
 
 /**
  * This interface represents the Annotation schema component.
- * The interface may be updated or replaced. 
  */
 public interface XSAnnotation extends XSObject {
     // TargetType
@@ -67,33 +67,33 @@ public interface XSAnnotation extends XSObject {
      */
     public static final short W3C_DOM_ELEMENT           = 1;
     /**
-     * The object type is <code>org.w3c.dom.Document</code>.
-     */
-    public static final short W3C_DOM_DOCUMENT          = 2;
-    /**
      * The object type is <code>org.xml.sax.ContentHandler</code>.
      */
-    public static final short SAX_CONTENTHANDLER        = 3;
+    public static final short SAX_CONTENTHANDLER        = 2;
+    /**
+     * The object type is <code>org.w3c.dom.Document</code>.
+     */
+    public static final short W3C_DOM_DOCUMENT          = 3;
 
     /**
-     *  Write contents of the annotation to the specified DOM object. If the 
-     * specified <code>target</code> object is a DOM in-scope namespace 
+     *  Write contents of the annotation to the specified object. If the 
+     * specified <code>target</code> is a DOM object, in-scope namespace 
      * declarations for <code>annotation</code> element are added as 
-     * attributes nodes of the serialized <code>annotation</code>, otherwise 
-     * the corresponding events for all in-scope namespace declaration are 
-     * sent via specified document handler. 
+     * attribute nodes of the serialized <code>annotation</code>, otherwise 
+     * the corresponding events for all in-scope namespace declarations are 
+     * sent via the specified document handler. 
      * @param target  A target pointer to the annotation target object, i.e. 
-     *   <code>org.w3c.dom.Document</code>, 
-     *   <code>org.xml.sax.ContentHandler</code>. 
+     *   <code>org.w3c.dom.Document</code>, <code>org.w3c.dom.Element</code>
+     *   , <code>org.xml.sax.ContentHandler</code>. 
      * @param targetType  A target type. 
-     * @return If the <code>target</code> is recognized type and supported by 
-     *   this implementation return true, otherwise return false. 
+     * @return  True if the <code>target</code> is a recognized type and 
+     *   supported by this implementation, otherwise false. 
      */
     public boolean writeAnnotation(Object target, 
                                    short targetType);
 
     /**
-     * A text representation of annotation.
+     * A text representation of the annotation.
      */
     public String getAnnotationString();
 

@@ -57,12 +57,14 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.AttributePSVI;
+import org.apache.xerces.xs.XSConstants;
 
 /**
  * Attribute PSV infoset augmentations implementation.
@@ -86,8 +88,14 @@ public class AttributePSVImpl implements AttributePSVI {
     /** schema normalized value property */
     protected String fNormalizedValue = null;
     
-    /** schema actual value property */
+    /** schema actual value */
     protected Object fActualValue = null;
+
+    /** schema actual value type */
+    protected short fActualValueType = XSConstants.UNAVAILABLE_DT;
+
+    /** actual value types if the value is a list */
+    protected ShortList fItemValueTypes = null;
 
     /** member type definition against which attribute was validated */
     protected XSSimpleTypeDefinition fMemberType = null;
@@ -209,8 +217,25 @@ public class AttributePSVImpl implements AttributePSVI {
         return fDeclaration;
     }
     
-    public Object getActualValue(){
-        return fActualValue;
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValue()
+     */
+    public Object getActualNormalizedValue() {
+        return this.fActualValue;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getActualNormalizedValueType()
+     */
+    public short getActualNormalizedValueType() {
+        return this.fActualValueType;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.ItemPSVI#getItemValueTypes()
+     */
+    public ShortList getItemValueTypes() {
+        return this.fItemValueTypes;
     }
 
     /**
@@ -218,6 +243,9 @@ public class AttributePSVImpl implements AttributePSVI {
      */
     public void reset() {
         fNormalizedValue = null;
+        fActualValue = null;
+        fActualValueType = XSConstants.UNAVAILABLE_DT;
+        fItemValueTypes = null;
         fDeclaration = null;
         fTypeDecl = null;
         fSpecified = false;

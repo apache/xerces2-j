@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,17 +49,17 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.xs;
 
 /**
  * The <code>XSObject</code> is a base object for the XML Schema component 
  * model. 
- * The interface may be updated or replaced. 
  */
 public interface XSObject {
     /**
@@ -69,8 +69,13 @@ public interface XSObject {
     public short getType();
 
     /**
-     * The name of type <code>NCName</code> of this declaration as defined in 
-     * XML Namespaces.
+     * The name of type <code>NCName</code>, as defined in XML Namespaces, of 
+     * this declaration specified in the <code>{name}</code> property of the 
+     * component or <code>null</code> if the definition of this component 
+     * does not have a <code>{name}</code> property. For anonymous types, 
+     * the processor must construct and expose an anonymous type name that 
+     * is distinct from the name of every named type and the name of every 
+     * other anonymous type.
      */
     public String getName();
 
@@ -81,9 +86,9 @@ public interface XSObject {
     public String getNamespace();
 
     /**
-     * A namespace schema information itemcorresponding to the target 
-     * namespace of the component, if it's globally declared; or null 
-     * otherwise.
+     * A namespace schema information item corresponding to the target 
+     * namespace of the component, if it is globally declared; or 
+     * <code>null</code> otherwise.
      */
     public XSNamespaceItem getNamespaceItem();
 

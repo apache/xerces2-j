@@ -58,47 +58,35 @@
 package org.apache.xerces.xs;
 
 /**
- * Objects implementing the <code>XSNamedMap</code> interface are used to 
- * represent immutable collections of XML Schema components that can be 
- * accessed by name. Note that <code>XSNamedMap</code> does not inherit from 
- * <code>XSObjectList</code>. The <code>XSObject</code>s in 
- * <code>XSNamedMap</code>s are not maintained in any particular order. 
+ * This interface allows one to retrieve an instance of <code>XSLoader</code>. 
+ * This interface should be implemented on the same object that implements 
+ * DOMImplementation.
  */
-public interface XSNamedMap {
+public interface XSImplementation {
     /**
-     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
-     * The range of valid child object indices is 0 to <code>length-1</code> 
-     * inclusive. 
+     * A list containing the versions of XML Schema documents recognized by 
+     * this <code>XSImplemenation</code>.
      */
-    public int getLength();
+    public StringList getRecognizedVersions();
+    /**
+     * A list containing the versions of XML Schema documents recognized by 
+     * this <code>XSImplemenation</code>.
+     */
+    public void setRecognizedVersions(StringList recognizedVersions);
 
     /**
-     *  Returns the <code>index</code>th item in the collection or 
-     * <code>null</code> if <code>index</code> is greater than or equal to 
-     * the number of objects in the list. The index starts at 0. 
-     * @param index  index into the collection. 
-     * @return  The <code>XSObject</code> at the <code>index</code>th 
-     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
-     *   the index specified is not valid. 
+     * Creates a new XSLoader. The newly constructed loader may then be 
+     * configured and used to load XML Schemas.
+     * @param versions  A list containing the versions of XML Schema 
+     *   documents which can be loaded by the <code>XSLoader</code> or 
+     *   <code>null</code> to permit XML Schema documents of any recognized 
+     *   version to be loaded by the XSLoader. 
+     * @return  An XML Schema loader. 
+     * @exception XSException
+     *   NOT_SUPPORTED_ERR: Raised if the implementation does not support one 
+     *   of the specified versions.
      */
-    public XSObject item(int index);
-
-    /**
-     * Retrieves an <code>XSObject</code> specified by local name and 
-     * namespace URI.
-     * <br>Per , applications must use the value <code>null</code> as the 
-     * <code>namespace</code> parameter for methods if they wish to specify 
-     * no namespace.
-     * @param namespace The namespace URI of the <code>XSObject</code> to 
-     *   retrieve, or <code>null</code> if the <code>XSObject</code> has no 
-     *   namespace. 
-     * @param localName The local name of the <code>XSObject</code> to 
-     *   retrieve.
-     * @return A <code>XSObject</code> (of any type) with the specified local 
-     *   name and namespace URI, or <code>null</code> if they do not 
-     *   identify any object in this map.
-     */
-    public XSObject itemByName(String namespace, 
-                               String localName);
+    public XSLoader createXSLoader(StringList versions)
+                                   throws XSException;
 
 }

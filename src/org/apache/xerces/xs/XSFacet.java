@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002, 2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,25 +58,29 @@
 package org.apache.xerces.xs;
 
 /**
- * Describes a constraining facet. Enumeration and pattern facets are exposed
- * via XSMultiValueFacet interface.
+ * Describes a constraining facet. Enumeration and pattern facets are exposed 
+ * via <code>XSMultiValueFacet</code> interface.
  */
-public interface XSFacet extends XSObject{
+public interface XSFacet extends XSObject {
     /**
-     * @return The name of the facet: e.i. <code>length</code>, 
-     * <code>whiteSpace</code>, <code>pattern</code>, etc.
+     * The name of the facet, e.g. <code>FACET_LENGTH, FACET_TOTALDIGITS</code>
+     *  (see <code>XSConstants</code>). 
      */
     public short getFacetKind();
+
     /**
-     * @return Returns a value of a constraining facet. 
+     * A value of this facet. 
      */
-    public String getLexicalFacetValue();   
+    public String getLexicalFacetValue();
+
     /**
-     * Check whether a facet value is fixed. 
+     * [Facets]: check whether a facet is fixed. 
      */
-    public boolean isFixed();
+    public boolean getFixed();
+
     /**
-     * @return an annotation
+     *  An annotation if it exists, otherwise <code>null</code>. 
      */
     public XSAnnotation getAnnotation();
+
 }

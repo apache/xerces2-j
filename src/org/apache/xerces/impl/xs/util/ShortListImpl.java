@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002,2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,56 +49,70 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2003, International
+ * originally based on software copyright (c) 2002, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.xs;
+package org.apache.xerces.impl.xs.util;
+
+import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.XSException;
 
 /**
- * Objects implementing the <code>XSNamedMap</code> interface are used to 
- * represent immutable collections of XML Schema components that can be 
- * accessed by name. Note that <code>XSNamedMap</code> does not inherit from 
- * <code>XSObjectList</code>. The <code>XSObject</code>s in 
- * <code>XSNamedMap</code>s are not maintained in any particular order. 
+ * Containts a list of Object's.
+ *
+ * @author Sandy Gao, IBM
+ *
+ * @version $Id$
  */
-public interface XSNamedMap {
-    /**
-     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
-     * The range of valid child object indices is 0 to <code>length-1</code> 
-     * inclusive. 
-     */
-    public int getLength();
+public class ShortListImpl implements ShortList {
+
+    // The array to hold all data
+    private short[] fArray = null;
+    // Number of elements in this list
+    private int fLength = 0;
 
     /**
-     *  Returns the <code>index</code>th item in the collection or 
-     * <code>null</code> if <code>index</code> is greater than or equal to 
-     * the number of objects in the list. The index starts at 0. 
-     * @param index  index into the collection. 
-     * @return  The <code>XSObject</code> at the <code>index</code>th 
-     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
-     *   the index specified is not valid. 
+     * Construct an XSObjectList implementation
+     * 
+     * @param array     the data array
+     * @param length    the number of elements
      */
-    public XSObject item(int index);
+    public ShortListImpl(short[] array, int length) {
+        fArray = array;
+        fLength = length;
+    }
 
     /**
-     * Retrieves an <code>XSObject</code> specified by local name and 
-     * namespace URI.
-     * <br>Per , applications must use the value <code>null</code> as the 
-     * <code>namespace</code> parameter for methods if they wish to specify 
-     * no namespace.
-     * @param namespace The namespace URI of the <code>XSObject</code> to 
-     *   retrieve, or <code>null</code> if the <code>XSObject</code> has no 
-     *   namespace. 
-     * @param localName The local name of the <code>XSObject</code> to 
-     *   retrieve.
-     * @return A <code>XSObject</code> (of any type) with the specified local 
-     *   name and namespace URI, or <code>null</code> if they do not 
-     *   identify any object in this map.
+     * The number of <code>Objects</code> in the list. The range of valid
+     * child node indices is 0 to <code>length-1</code> inclusive.
      */
-    public XSObject itemByName(String namespace, 
-                               String localName);
+    public int getLength() {
+        return fLength;
+    }
 
-}
+    /**
+     *  Checks if the <code>unsigned short</code> <code>item</code> is a 
+     * member of this list. 
+     * @param item  <code>unsigned short</code> whose presence in this list 
+     *   is to be tested. 
+     * @return  True if this list contains the <code>unsigned short</code> 
+     *   <code>item</code>. 
+     */
+    public boolean contains(short item) {
+        for (int i = 0; i < fLength; i++) {
+            if (fArray[i] == item)
+                return true;
+        }
+        return false;
+    }
+    
+    public short item(int index) throws XSException {
+        if (index < 0 || index >= fLength)
+            throw new XSException(XSException.INDEX_SIZE_ERR, null);
+        return fArray[index];
+    }
+
+} // class XSParticle

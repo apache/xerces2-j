@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002, 2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,21 +58,24 @@
 package org.apache.xerces.xs;
 
 /**
- * Describes a multi value constraining facets: pattern and enumeration.
+ * Describes a multi-value constraining facets: pattern and enumeration.
  */
-public interface XSMultiValueFacet extends XSObject{
+public interface XSMultiValueFacet extends XSObject {
     /**
-     * @return The name of the facet: e.i. <code>enumeration</code>, 
-     * or <code>pattern</code>.
+     * The name of the facet, i.e. <code>FACET_ENUMERATION</code> and 
+     * <code>FACET_PATTERN</code> (see <code>XSConstants</code>). 
      */
     public short getFacetKind();
-    /**
-     * @return Returns values of this facet 
-     */
-    public StringList getLexicalFacetValues();   
 
     /**
-     * @return annotations
+     * Values of this facet. 
+     */
+    public StringList getLexicalFacetValues();
+
+    /**
+     * A set of [annotations] if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. 
      */
     public XSObjectList getAnnotations();
+
 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -60,20 +60,22 @@ package org.apache.xerces.xs;
 /**
  * This interface represents the Identity-constraint Definition schema 
  * component.
- * The interface may be updated or replaced. 
  */
 public interface XSIDCDefinition extends XSObject {
     // Identity Constraints
     /**
-     * 
+     * See the definition of <code>key</code> in the identity-constraint 
+     * category.
      */
     public static final short IC_KEY                    = 1;
     /**
-     * 
+     * See the definition of <code>keyref</code> in the identity-constraint 
+     * category.
      */
     public static final short IC_KEYREF                 = 2;
     /**
-     * 
+     * See the definition of <code>unique</code> in the identity-constraint 
+     * category.
      */
     public static final short IC_UNIQUE                 = 3;
 
@@ -88,19 +90,20 @@ public interface XSIDCDefinition extends XSObject {
     public String getSelectorStr();
 
     /**
-     * [fields]: a non-empty list of restricted XPath ([XPath]) expressions. 
+     * [fields]: a non-empty list of restricted  expressions. 
      */
     public StringList getFieldStrs();
 
     /**
      * [referenced key]: required if [identity-constraint category] is keyref, 
-     * forbidden otherwise. An identity-constraint definition with [
+     * <code>null</code> otherwise. An identity-constraint definition with [
      * identity-constraint category] equal to key or unique. 
      */
     public XSIDCDefinition getRefKey();
 
     /**
-     * A set of [annotations]. 
+     * A set of [annotations] if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. 
      */
     public XSObjectList getAnnotations();
 
