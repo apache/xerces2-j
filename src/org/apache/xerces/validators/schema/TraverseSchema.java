@@ -1087,36 +1087,13 @@ public class TraverseSchema implements
     
     //REVISIT: TO DO, base and derivation ???
     private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception{ 
-        int complexTypeAbstract  = fStringPool.addSymbol(
-                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
         String isAbstract = complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
-
-        int complexTypeBase      = fStringPool.addSymbol(
-                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ));
         String base = complexTypeDecl.getAttribute(SchemaSymbols.ATT_BASE);
-
-        int complexTypeBlock     = fStringPool.addSymbol(
-                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK ));
         String blockSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK );
-
-        int complexTypeContent   = fStringPool.addSymbol(
-                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_CONTENT ));
         String content = complexTypeDecl.getAttribute(SchemaSymbols.ATT_CONTENT);
-
-        int complexTypeDerivedBy =  fStringPool.addSymbol(
-                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY ));
         String derivedBy = complexTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
-
-        int complexTypeFinal     =  fStringPool.addSymbol(
-                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL ));
         String finalSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL );
-
-        int complexTypeID        = fStringPool.addSymbol(
-                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
         String typeId = complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID );
-
-        int complexTypeName      =  fStringPool.addSymbol(
-                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
         boolean isNamedType = false;
 
@@ -2323,44 +2300,6 @@ public class TraverseSchema implements
      * @exception Exception
      */
     private QName traverseElementDecl(Element elementDecl) throws Exception {
-        int elementBlock      =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_BLOCK ) );
-
-        int elementDefault    =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_DEFAULT ));
-
-        int elementEquivClass =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_EQUIVCLASS ));
-
-        int elementFinal      =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_FINAL ));
-
-        int elementFixed      =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_FIXED ));
-
-        int elementForm       =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_FORM ));
-
-        int elementID          =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
-
-        int elementMaxOccurs   =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
-
-        int elementMinOccurs  =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
-
-        int elemenName        =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_NAME ));
-
-        int elementNullable   =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_NULLABLE ));
-
-        int elementRef        =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_REF ));
-
-        int elementType       =  fStringPool.addSymbol(
-            elementDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
 
         int contentSpecType      = -1;
         int contentSpecNodeIndex = -1;
@@ -2833,19 +2772,6 @@ public class TraverseSchema implements
      * @exception Exception
      */
     private int traverseGroupDecl( Element groupDecl ) throws Exception {
-        int groupID         =  fStringPool.addSymbol(
-            groupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
-
-        int groupMaxOccurs  =  fStringPool.addSymbol(
-            groupDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
-        int groupMinOccurs  =  fStringPool.addSymbol(
-            groupDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
-
-        //int groupName      =  fStringPool.addSymbol(
-            //groupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
-
-        int grouRef        =  fStringPool.addSymbol(
-            groupDecl.getAttribute( SchemaSymbols.ATT_REF ));
 
         String groupName = groupDecl.getAttribute(SchemaSymbols.ATT_NAME);
         String ref = groupDecl.getAttribute(SchemaSymbols.ATT_REF);
@@ -3261,7 +3187,6 @@ public class TraverseSchema implements
     **/
 
     int traverseAll( Element allDecl) throws Exception {
-
 
         Element child = XUtil.getFirstChildElement(allDecl);
 
