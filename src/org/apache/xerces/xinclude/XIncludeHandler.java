@@ -1774,8 +1774,7 @@ public class XIncludeHandler
      * 
      * @param ent the UnparsedEntity to check for conflicts
      */
-    protected void checkAndSendUnparsedEntity(UnparsedEntity ent)
-        throws XIncludeFatalError {
+    protected void checkAndSendUnparsedEntity(UnparsedEntity ent) {
         if (isRootDocument()) {
             int index = fUnparsedEntities.indexOf(ent);
             if (index == -1) {
@@ -1823,8 +1822,7 @@ public class XIncludeHandler
      * 
      * @param not the Notation to check for conflicts
      */
-    protected void checkAndSendNotation(Notation not)
-        throws XIncludeFatalError {
+    protected void checkAndSendNotation(Notation not) {
         if (isRootDocument()) {
             int index = fNotations.indexOf(not);
             if (index == -1) {
