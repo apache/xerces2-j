@@ -146,7 +146,7 @@ public class XSImplementationImpl extends CoreDOMImplementationImpl
      */
     public StringList getRecognizedVersions() {
         StringListImpl list = new StringListImpl(new String[]{"1.0"}, 1);
-        return null;
+        return list;
     }
 
 } // class XSImplementationImpl
