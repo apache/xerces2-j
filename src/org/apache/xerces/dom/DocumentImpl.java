@@ -653,7 +653,7 @@ public class DocumentImpl
     public Node importNode(Node source, boolean deep)
         throws DOMException {
 
-    	NodeImpl newnode=null;
+    	Node newnode=null;
 
     	// Sigh. This doesn't work; too many nodes have private data that
     	// would have to be manually tweaked. May be able to add local
@@ -670,126 +670,138 @@ public class DocumentImpl
     	switch (type) {
     		
             case ELEMENT_NODE: {
-    			Element newelement = createElement(source.getNodeName());
-    			NamedNodeMap srcattr = source.getAttributes();
-    			if (srcattr != null) {
-    				for(int i = 0; i < srcattr.getLength(); i++) {
-    					newelement.setAttributeNode(
-    						(AttrImpl)importNode(srcattr.item(i), true));
+		Element newelement;
+		if (source.getLocalName() == null) {
+		    newelement = createElement(source.getNodeName());
+		} else {
+		    newelement = createElementNS(source.getNamespaceURI(),
+						 source.getNodeName());
+		}
+		NamedNodeMap srcattr = source.getAttributes();
+		if (srcattr != null) {
+		    for(int i = 0; i < srcattr.getLength(); i++) {
+			Attr attr = (Attr) importNode(srcattr.item(i), true);
+			newelement.setAttributeNode(attr);
                     }
                 }
-    			newnode = (NodeImpl)newelement;
-    			break;
+		newnode = newelement;
+		break;
             }
 
             case ATTRIBUTE_NODE: {
-    			newnode = (NodeImpl)createAttribute(source.getNodeName());
-    			// Kids carry value
-    			break;
+		if (source.getLocalName() == null) {
+		    newnode = createAttribute(source.getNodeName());
+		} else {
+		    newnode = createAttributeNS(source.getNamespaceURI(),
+						source.getNodeName());
+		}
+		// Kids carry value
+		break;
             }
 
-    		case TEXT_NODE: {
-    			newnode = (NodeImpl)createTextNode(source.getNodeValue());
-    			break;
+	    case TEXT_NODE: {
+		newnode = createTextNode(source.getNodeValue());
+		break;
             }
 
-    		case CDATA_SECTION_NODE: {
-    			newnode = (NodeImpl)createCDATASection(source.getNodeValue());
-    			break;
+	    case CDATA_SECTION_NODE: {
+		newnode = createCDATASection(source.getNodeValue());
+		break;
             }
 
-    		case ENTITY_REFERENCE_NODE: {
-    			newnode = (NodeImpl)createEntityReference(source.getNodeName());
-    			deep = false; // ????? Right Thing?
-    			// Value implied by doctype, so we should not copy it
-    			// -- instead, refer to local doctype, if any.
-    			break;
+    	    case ENTITY_REFERENCE_NODE: {
+		newnode = createEntityReference(source.getNodeName());
+		deep = false;
+		// Value implied by doctype, so we must not copy it
+		// -- instead, refer to local doctype, if any.
+		break;
             }
 
-    		case ENTITY_NODE: {
-    			Entity srcentity = (Entity)source;
-    			EntityImpl newentity = (EntityImpl)createEntity(source.getNodeName());
-    			newentity.setPublicId(srcentity.getPublicId());
-    			newentity.setSystemId(srcentity.getSystemId());
-    			newentity.setNotationName(srcentity.getNotationName());
-    			// Kids carry additional value
-    			newnode = newentity;
-    			break;
+    	    case ENTITY_NODE: {
+		Entity srcentity = (Entity)source;
+		EntityImpl newentity =
+		    (EntityImpl)createEntity(source.getNodeName());
+		newentity.setPublicId(srcentity.getPublicId());
+		newentity.setSystemId(srcentity.getSystemId());
+		newentity.setNotationName(srcentity.getNotationName());
+		// Kids carry additional value
+		newnode = newentity;
+		break;
             }
 
-    		case PROCESSING_INSTRUCTION_NODE: {
-    			newnode = (ProcessingInstructionImpl)createProcessingInstruction(source.getNodeName(), source.getNodeValue());
-    			break;
+    	    case PROCESSING_INSTRUCTION_NODE: {
+		newnode = createProcessingInstruction(source.getNodeName(),
+						      source.getNodeValue());
+		break;
             }
 
-    		case COMMENT_NODE: {
-    			newnode = (NodeImpl)createComment(source.getNodeValue());
-    			break;
+    	    case COMMENT_NODE: {
+		newnode = createComment(source.getNodeValue());
+		break;
             }
 
-    		case DOCUMENT_TYPE_NODE: {
-    		    DocumentTypeImpl doctype = (DocumentTypeImpl)source;
-    			DocumentTypeImpl newdoctype =
-    			    (DocumentTypeImpl)createDocumentType(
-    			        doctype.getNodeName(),
-    			        doctype.getPublicId(), 
-    			        doctype.getSystemId()
-    			        );
-    			// Values are on NamedNodeMaps
-    			NamedNodeMap smap = ((DocumentType)source).getEntities();
-    			NamedNodeMap tmap = newdoctype.getEntities();
-    			if(smap != null) {
-    				for(int i = 0; i < smap.getLength(); i++) {
-    					tmap.setNamedItem((EntityImpl)importNode(smap.item(i), true));
+    	    case DOCUMENT_TYPE_NODE: {
+		DocumentType srcdoctype = (DocumentType)source;
+		DocumentTypeImpl newdoctype = (DocumentTypeImpl)
+		    createDocumentType(srcdoctype.getNodeName(),
+				       srcdoctype.getPublicId(),
+				       srcdoctype.getSystemId());
+		// Values are on NamedNodeMaps
+		NamedNodeMap smap = srcdoctype.getEntities();
+		NamedNodeMap tmap = newdoctype.getEntities();
+		if(smap != null) {
+		    for(int i = 0; i < smap.getLength(); i++) {
+			tmap.setNamedItem(importNode(smap.item(i), true));
                     }
                 }
-    			smap = ((DocumentType)source).getNotations();
-    			tmap = newdoctype.getNotations();
-    			if (smap != null) {
-    				for(int i = 0; i < smap.getLength(); i++) {
-    					tmap.setNamedItem((NotationImpl)importNode(smap.item(i), true));
+		smap = srcdoctype.getNotations();
+		tmap = newdoctype.getNotations();
+		if (smap != null) {
+		    for(int i = 0; i < smap.getLength(); i++) {
+			tmap.setNamedItem(importNode(smap.item(i), true));
                     }
                 }
-    			// NOTE: At this time, the DOM definition of DocumentType
-    			// doesn't cover Elements and their Attributes. domimpl's
-    			// extentions in that area will not be preserved, even if
-    			// copying from domimpl to domimpl. We could special-case
-    			// that here. Arguably we should. Consider. ?????
-    		    newnode = newdoctype;
-    			break;
+		// NOTE: At this time, the DOM definition of DocumentType
+		// doesn't cover Elements and their Attributes. domimpl's
+		// extentions in that area will not be preserved, even if
+		// copying from domimpl to domimpl. We could special-case
+		// that here. Arguably we should. Consider. ?????
+		newnode = newdoctype;
+		break;
             }
 
-    		case DOCUMENT_FRAGMENT_NODE: {
-    			newnode = (NodeImpl)createDocumentFragment();
-    			// No name, kids carry value
-    			break;
+    	    case DOCUMENT_FRAGMENT_NODE: {
+		newnode = createDocumentFragment();
+		// No name, kids carry value
+		break;
             }
 
-    		case NOTATION_NODE: {
-    			Notation srcnotation = (Notation)source;
-    			NotationImpl newnotation = (NotationImpl)createNotation(source.getNodeName());
-    			newnotation.setPublicId(srcnotation.getPublicId());
-    			newnotation.setSystemId(srcnotation.getSystemId());
-    			// Kids carry additional value
-    			newnode = newnotation;
-    			// No name, no value
-    			break;
+    	    case NOTATION_NODE: {
+		Notation srcnotation = (Notation)source;
+		NotationImpl newnotation =
+		    (NotationImpl)createNotation(source.getNodeName());
+		newnotation.setPublicId(srcnotation.getPublicId());
+		newnotation.setSystemId(srcnotation.getSystemId());
+		// Kids carry additional value
+		newnode = newnotation;
+		// No name, no value
+		break;
             }
 
-    		case DOCUMENT_NODE : // Document can't be child of Document
-    		default: {			 // Unknown node type
-    			throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
-    			                           "DOM006 Hierarchy request error");
+    	    case DOCUMENT_NODE : // Document can't be child of Document
+    	    default: {		// Unknown node type
+		throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
+					   "DOM006 Hierarchy request error");
             }
         }
 
     	// If deep, replicate and attach the kids.
     	if (deep) {
-    		for (Node srckid = source.getFirstChild();
+	    for (Node srckid = source.getFirstChild();
                  srckid != null;
                  srckid = srckid.getNextSibling()) {
-    			newnode.appendChild(importNode(srckid, true));
-    		}
+		newnode.appendChild(importNode(srckid, true));
+	    }
         }
 
     	return newnode;
