@@ -82,7 +82,10 @@ import org.xml.sax.SAXException;
  * <li>Contents of SCRIPT and STYLE elements serialized as CDATA
  * </ul>
  *
- * @deprecated
+ * @deprecated This class was deprecated in Xerces 2.6.2. It is
+ * recommended that new applications use JAXP's Transformation API 
+ * for XML (TrAX) for serializing HTML. See the Xerces documentation
+ * for more information.
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer

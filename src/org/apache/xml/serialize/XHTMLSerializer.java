@@ -27,7 +27,10 @@ import java.io.Writer;
  * pretty serializing. For usage instructions see either {@link
  * Serializer} or {@link BaseMarkupSerializer}.
  *
- * @deprecated
+ * @deprecated This class was deprecated in Xerces 2.6.2. It is
+ * recommended that new applications use JAXP's Transformation API 
+ * for XML (TrAX) for serializing XHTML. See the Xerces documentation
+ * for more information.
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
