@@ -211,6 +211,9 @@ public class XMLDocumentScanner
 
     /** Seen doctype declaration. */
     protected boolean fSeenDoctypeDecl;
+
+    /** has external dtd */
+    protected boolean fHasExternalDTD;
     
     /** Standalone. */
     protected boolean fStandalone;
@@ -233,6 +236,9 @@ public class XMLDocumentScanner
 
     /** Namespaces. */
     protected boolean fNamespaces;
+
+    /** Validation */
+    protected boolean fValidation;
 
     // dispatchers
 
@@ -335,6 +341,7 @@ public class XMLDocumentScanner
         // sax features
         final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
         fNamespaces = componentManager.getFeature(NAMESPACES);
+        fValidation = componentManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
         fAttributes.setNamespaces(fNamespaces);
 
         // xerces properties
@@ -350,6 +357,7 @@ public class XMLDocumentScanner
         fCurrentElement = null;
         fElementStack.clear();
         fSeenDoctypeDecl = false;
+        fHasExternalDTD = false;
         fStandalone = false;
         fScanningDTD = false;
         fCurrentGrammar = null;
@@ -618,13 +626,14 @@ public class XMLDocumentScanner
             publicId = fStrings[1];
             fEntityScanner.skipSpaces();
         }
+        
+        fHasExternalDTD = systemId != null;
 
         // internal subset
         if (fEntityScanner.skipChar('[')) {
             fEntityManager.setEntityHandler(fDTDScanner);
             final boolean complete = true;
-            final boolean hasExternalDTD = systemId != null;
-            fDTDScanner.scanDTDInternalSubset(complete, fStandalone, hasExternalDTD);
+            fDTDScanner.scanDTDInternalSubset(complete, fStandalone, fHasExternalDTD);
             fEntityManager.setEntityHandler(this);
             // REVISIT: Do we need to emit an error here? We can usually
             //          assume that it will be consumed by the DTD scanner
@@ -1054,7 +1063,14 @@ public class XMLDocumentScanner
         }
         else {
             if (!fEntityManager.isDeclaredEntity(name)) {
-                reportFatalError("EntityNotDeclared", new Object[]{name});
+                //REVISIT: one more case needs to be included: external PE and standalone is no
+                if ( fHasExternalDTD && !fStandalone) {
+                    if (fValidation)
+                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared", 
+                                                    new Object[]{name}, XMLErrorReporter.SEVERITY_ERROR);
+                }
+                else 
+                    reportFatalError("EntityNotDeclared", new Object[]{name});
             }
             fEntityManager.startEntity(name, false);
         }
