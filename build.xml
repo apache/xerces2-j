@@ -268,13 +268,15 @@ Copyright:
   <!-- =================================================================== -->
   <target name="pack-src" depends="init">
     <echo message="Building the source distribution files (zip,tar)"/>
+    <deltree dir="${distbin.dir}"/>
+
     <mkdir dir="${distsrc.dir}"/>
     <mkdir dir="${distsrc.dir}/src"/>
     <mkdir dir="${distsrc.dir}/data"/>
     <mkdir dir="${distsrc.dir}/docs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
-    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*"
+    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*, *.class"
              includes="**/Makefile, **/Makefile.incl, org/**, javax/**"/>
     <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/.#*"/>
     <copydir src="${docs.dir}" dest="${distsrc.dir}/docs"
@@ -292,9 +294,10 @@ Copyright:
     <copyfile src="${basedir}/build.bat" dest="${distsrc.dir}/build.bat" />
 
     <zip zipfile="${build.dir}/${Name}-src${version_postfix}.zip" basedir="${build.dir}"
-         includes="${name}-${appendit}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
+
     <tar tarfile="${build.dir}/${Name}-src${version_postfix}.tar" basedir="${build.dir}"
-         includes="${name}-${appendit}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${Name}-src${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-src${version_postfix}.tar" />
   </target>
@@ -305,11 +308,14 @@ Copyright:
   <target name="pack-bin" depends="jar, sampjar, javadocs, docs">
 
     <echo message="Building the binary distribution files (zip,tar)"/>
+    <deltree dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}/data"/>
     <mkdir dir="${distbin.dir}/docs"/>
     <mkdir dir="${distbin.dir}/docs/html"/>
     <mkdir dir="${distbin.dir}/docs/apiDocs"/>
+    <mkdir dir="${distsrc.dir}/samples"/>
+
 
     <copydir src="${data.dir}" dest="${distbin.dir}/data" excludes="**/CVS*, **/*.#*"/>
     <copydir src="${build.docs}" dest="${distbin.dir}/docs/html"/>
@@ -321,10 +327,13 @@ Copyright:
     <copyfile src="LICENSE" dest="${distbin.dir}/LICENSE"/>
     <copyfile src="Readme.html" dest="${distbin.dir}/Readme.html"/>
 
+    <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
+
+
     <zip zipfile="${build.dir}/${Name}-bin${version_postfix}.zip" basedir="${build.dir}"
-         includes="${name}-${appendit}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
     <tar tarfile="${build.dir}/${Name}-bin${version_postfix}.tar" basedir="${build.dir}"
-         includes="${name}-${appendit}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${Name}-bin${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-bin${version_postfix}.tar" />
 
