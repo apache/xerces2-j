@@ -85,12 +85,12 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
     public static final String SPECIAL_TOKEN_NONE        = "NONE";
     public static final String SPECIAL_TOKEN_NMTOKEN     = "NMTOKEN";
     public static final String SPECIAL_TOKEN_NAME        = "Name";
-    public static final String SPECIAL_TOKEN_IDNAME      = "ID";
-    public static final String SPECIAL_TOKEN_IDREFNAME   = "IDREF";
+    public static final String SPECIAL_TOKEN_IDNAME      = "ID(Name)";
+    public static final String SPECIAL_TOKEN_IDREFNAME   = "IDREF(Name)";
     public static final String SPECIAL_TOKEN_NCNAME      = "NCName";
-    public static final String SPECIAL_TOKEN_IDNCNAME    = "ID";
-    public static final String SPECIAL_TOKEN_IDREFNCNAME = "IDREF";
-    public static final String SPECIAL_TOKEN_ENTITY      = "ENTITY";
+    public static final String SPECIAL_TOKEN_IDNCNAME    = "ID(NCName)";
+    public static final String SPECIAL_TOKEN_IDREFNCNAME = "IDREF(NCName)";
+    public static final String SPECIAL_TOKEN_ENTITY      = "ENTITY(NCName)";
 
     protected String fTokenType = SPECIAL_TOKEN_NONE; //flags special token parser
 

@@ -598,14 +598,6 @@ public class TraverseSchema implements
         int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
         Hashtable attrValues = generalCheck(root, scope);
 
-        //Make sure namespace binding is defaulted
-        String rootPrefix = root.getPrefix();
-        if( rootPrefix == null || rootPrefix.length() == 0 ){
-            String xmlns = root.getAttribute("xmlns");
-            if( xmlns.length() == 0 )
-                root.setAttribute("xmlns", SchemaSymbols.URI_SCHEMAFORSCHEMA );
-        }
-
         //Retrieve the targetNamespace URI information
         fTargetNSURIString = getTargetNamespaceString(root);
         fTargetNSURI = fStringPool.addSymbol(fTargetNSURIString);
