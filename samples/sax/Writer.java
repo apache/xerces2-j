@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,8 @@
 
 package sax;
 
+import java.lang.reflect.Method;
+
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -65,6 +67,7 @@ import java.io.UnsupportedEncodingException;
 import sax.helpers.AttributesImpl;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -145,6 +148,15 @@ public class Writer
 
     /** Element depth. */
     protected int fElementDepth;
+    
+    /** Document locator. */
+    protected Locator fLocator;
+    
+    /** Processing XML 1.1 document. */
+    protected boolean fXML11;
+    
+    /** In CDATA section. */
+    protected boolean fInCDATA;
 
     //
     // Constructors
@@ -187,17 +199,19 @@ public class Writer
     //
     // ContentHandler methods
     //
-
+    
+    /** Set Document Locator. */
+    public void setDocumentLocator(Locator locator) {
+    	fLocator = locator;
+    } // setDocumentLocator(Locator)
+    	
     /** Start document. */
     public void startDocument() throws SAXException {
 
         fElementDepth = 0;
-
-        if (!fCanonical) {
-            fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            fOut.flush();
-        }
-
+        fXML11 = false;
+        fInCDATA = false;
+        
     } // startDocument()
 
     /** Processing instruction. */
@@ -221,6 +235,27 @@ public class Writer
     public void startElement(String uri, String local, String raw,
                              Attributes attrs) throws SAXException {
 
+        // Root Element
+        if (fElementDepth == 0) {
+            if (fLocator != null) {
+                fXML11 = "1.1".equals(getVersion());
+                fLocator = null;
+            }
+
+            // The XML declaration cannot be printed in startDocument because
+            // the version reported by the Locator cannot be relied on until after
+            // the XML declaration in the instance document has been read.
+            if (!fCanonical) {
+                if (fXML11) {
+                    fOut.println("<?xml version=\"1.1\" encoding=\"UTF-8\"?>");
+                }
+                else {
+                    fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+                }
+                fOut.flush();
+            }
+        }
+        
         fElementDepth++;
         fOut.print('<');
         fOut.print(raw);
@@ -231,7 +266,7 @@ public class Writer
                 fOut.print(' ');
                 fOut.print(attrs.getQName(i));
                 fOut.print("=\"");
-                normalizeAndPrint(attrs.getValue(i));
+                normalizeAndPrint(attrs.getValue(i), true);
                 fOut.print('"');
             }
         }
@@ -244,7 +279,14 @@ public class Writer
     public void characters(char ch[], int start, int length)
         throws SAXException {
 
-        normalizeAndPrint(ch, start, length);
+        if (!fInCDATA) {
+            normalizeAndPrint(ch, start, length, false);
+        }
+        else {
+            for (int i = 0; i < length; ++i) {
+            	fOut.print(ch[start+i]);
+            }
+        }
         fOut.flush();
 
     } // characters(char[],int,int);
@@ -313,17 +355,27 @@ public class Writer
 
     /** Start CDATA section. */
     public void startCDATA() throws SAXException {
+        if (!fCanonical) {
+            fOut.print("<![CDATA[");
+            fInCDATA = true;
+        }
     } // startCDATA()
 
     /** End CDATA section. */
     public void endCDATA() throws SAXException {
+        if (!fCanonical) {
+            fInCDATA = false;
+            fOut.print("]]>");
+        }
     } // endCDATA()
 
     /** Comment. */
     public void comment(char ch[], int start, int length) throws SAXException {
         if (!fCanonical && fElementDepth > 0) {
             fOut.print("<!--");
-            normalizeAndPrint(ch, start, length);
+            for (int i = 0; i < length; ++i) {
+                fOut.print(ch[start+i]);
+            }
             fOut.print("-->");
             fOut.flush();
         }
@@ -358,25 +410,25 @@ public class Writer
     } // sortAttributes(AttributeList):AttributeList
 
     /** Normalizes and prints the given string. */
-    protected void normalizeAndPrint(String s) {
+    protected void normalizeAndPrint(String s, boolean isAttValue) {
 
         int len = (s != null) ? s.length() : 0;
         for (int i = 0; i < len; i++) {
             char c = s.charAt(i);
-            normalizeAndPrint(c);
+            normalizeAndPrint(c, isAttValue);
         }
 
-    } // normalizeAndPrint(String)
+    } // normalizeAndPrint(String,boolean)
 
     /** Normalizes and prints the given array of characters. */
-    protected void normalizeAndPrint(char[] ch, int offset, int length) {
+    protected void normalizeAndPrint(char[] ch, int offset, int length, boolean isAttValue) {
         for (int i = 0; i < length; i++) {
-            normalizeAndPrint(ch[offset + i]);
+            normalizeAndPrint(ch[offset + i], isAttValue);
         }
-    } // normalizeAndPrint(char[],int,int)
+    } // normalizeAndPrint(char[],int,int,boolean)
 
     /** Normalizes and print the given character. */
-    protected void normalizeAndPrint(char c) {
+    protected void normalizeAndPrint(char c, boolean isAttValue) {
 
         switch (c) {
             case '<': {
@@ -392,25 +444,53 @@ public class Writer
                 break;
             }
             case '"': {
-                fOut.print("&quot;");
+                // A '"' that appears in character data 
+                // does not need to be escaped.
+                if (isAttValue) {
+                    fOut.print("&quot;");
+                }
+                else {
+                    fOut.print("\"");
+                }
                 break;
             }
-            case '\r':
+            case '\r': {
+            	// If CR is part of the document's content, it
+            	// must not be printed as a literal otherwise
+            	// it would be normalized to LF when the document
+            	// is reparsed.
+            	fOut.print("&#xD;");
+            	break;
+            }
             case '\n': {
                 if (fCanonical) {
-                    fOut.print("&#");
-                    fOut.print(Integer.toString(c));
-                    fOut.print(';');
+                    fOut.print("&#xA;");
                     break;
                 }
                 // else, default print char
             }
             default: {
-                fOut.print(c);
+           	// In XML 1.1, control chars in the ranges [#x1-#x1F, #x7F-#x9F] must be escaped.
+            	//
+            	// Escape space characters that would be normalized to #x20 in attribute values
+            	// when the document is reparsed.
+            	//
+            	// Escape NEL (0x85) and LSEP (0x2028) that appear in content 
+            	// if the document is XML 1.1, since they would be normalized to LF 
+            	// when the document is reparsed.
+            	if (fXML11 && ((c >= 0x01 && c <= 0x1F && c != 0x09 && c != 0x0A) 
+            	    || (c >= 0x7F && c <= 0x9F) || c == 0x2028)
+            	    || isAttValue && (c == 0x09 || c == 0x0A)) {
+            	    fOut.print("&#x");
+            	    fOut.print(Integer.toHexString(c).toUpperCase());
+            	    fOut.print(";");
+                }
+                else {
+                    fOut.print(c);
+                }        
             }
         }
-
-    } // normalizeAndPrint(char)
+    } // normalizeAndPrint(char,boolean)
 
     /** Prints the error message. */
     protected void printError(String type, SAXParseException ex) {
@@ -435,6 +515,27 @@ public class Writer
         System.err.flush();
 
     } // printError(String,SAXParseException)
+
+    /** Extracts the XML version from the Locator. */
+    protected String getVersion() {
+        if (fLocator == null) {
+            return null;
+        }
+        String version = null;
+        Method getXMLVersion = null;
+        try {
+            getXMLVersion = fLocator.getClass().getMethod("getXMLVersion", new Class[]{});
+            // If Locator implements Locator2, this method will exist.
+            if (getXMLVersion != null) {
+                version = (String) getXMLVersion.invoke(fLocator, null);
+            }
+        } 
+        catch (Exception e) { 
+            // Either this locator object doesn't have 
+            // this method, or we're on an old JDK.
+        }
+        return version;
+    } // getVersion()
 
     //
     // Main
