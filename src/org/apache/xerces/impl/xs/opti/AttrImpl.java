@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -49,77 +49,76 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.xni;
+package org.apache.xerces.impl.xs.opti;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+
+import org.w3c.dom.DOMException;
+
 
 /**
- * Represents an interface to query namespace information.
+ * This class represents a single attribute.
  *
- * @author Andy Clark, IBM
+ * @author Rahul Srivastava, Sun Microsystems Inc.
  *
  * @version $Id$
  */
-public interface NamespaceContext {
+public class AttrImpl extends NodeImpl 
+                      implements Attr {
 
-    //
-    // Constants
-    //
-
-    /**
-     * The XML Namespace ("http://www.w3.org/XML/1998/namespace"). This is
-     * the Namespace URI that is automatically mapped to the "xml" prefix.
-     */
-    public final static String XML_URI = "http://www.w3.org/XML/1998/namespace".intern();
-
-    /**
-     * XML Information Set REC
-     * all namespace attributes (including those named xmlns, 
-     * whose [prefix] property has no value) have a namespace URI of http://www.w3.org/2000/xmlns/
-     */
-    public final static String XMLNS_URI = "http://www.w3.org/2000/xmlns/".intern();
-
-    //
-    // NamespaceContext methods
-    //
+    Element element;
+    String value;
+    
+    /** Default Constructor */
+    public AttrImpl() {
+        nodeType = Node.ATTRIBUTE_NODE;
+    }
     
     /**
-     * Look up a prefix and get the currently-mapped Namespace URI.
-     * <p>
-     * This method looks up the prefix in the current context.
-     * Use the empty string ("") for the default Namespace.
+     * Constructs an attribute.
      *
-     * @param prefix The prefix to look up.
-     *
-     * @return The associated Namespace URI, or null if the prefix
-     *         is undeclared in this context.
+     * @param element Element which owns this attribute
+     * @param prefix The QName prefix.
+     * @param localpart The QName localpart.
+     * @param rawname The QName rawname.
+     * @param uri The uri binding for the associated prefix.
+     * @param value The value of the attribute.
      */
-    public String getURI(String prefix);
-
-    /**
-     * Return a count of all prefixes currently declared, including
-     * the default prefix if bound.
-     */
-    public int getDeclaredPrefixCount();
-
-    /** 
-     * Returns the prefix at the specified index in the current context.
-     */
-    public String getDeclaredPrefixAt(int index);
-
-    /**
-     * Returns the parent namespace context or null if there is no
-     * parent context. The total depth of the namespace contexts 
-     * matches the element depth in the document.
-     * <p>
-     * <strong>Note:</strong> This method <em>may</em> return the same 
-     * NamespaceContext object reference. The caller is responsible for
-     * saving the declared prefix mappings before calling this method.
-     */
-    public NamespaceContext getParentContext();
-
-} // interface NamespaceContext
+    public AttrImpl(Element element, String prefix, String localpart, String rawname, String uri, String value) {
+        super(prefix, localpart, rawname, uri, Node.ATTRIBUTE_NODE);
+        this.element = element;
+        this.value = value;
+    }
+    
+    
+    public String getName() {
+        return rawname;
+    }
+    
+    
+    public boolean getSpecified() {
+        return true;
+    }
+    
+    public String getValue() {
+        return value;
+    }
+    
+    
+    public Element getOwnerElement() {
+        return element;
+    }
+    
+    
+    public void setValue(String value) throws DOMException {
+        this.value = value;
+    }
+}

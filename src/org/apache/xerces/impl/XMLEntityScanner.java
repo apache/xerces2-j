@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -67,7 +67,7 @@ import org.apache.xerces.xni.XMLString;
 /**
  * This class allows various parser scanners to scan basic XML constructs
  * from entities. This class works directly with the entity manager to
- * provide this functionality. 
+ * provide this functionality.
  * <p>
  * There is only one entity scanner and entity manager per parser. The
  * entity manager <em>could</em> implement the methods to perform entity
@@ -88,7 +88,7 @@ public abstract class XMLEntityScanner
     // Public methods
     //
 
-    /** 
+    /**
      * Returns the base system identifier of the currently scanned
      * entity, or null if none is available.
      */
@@ -97,10 +97,10 @@ public abstract class XMLEntityScanner
     /**
      * Sets the encoding of the scanner. This method is used by the
      * scanners if the XMLDecl or TextDecl line contains an encoding
-     * pseudo-attribute. 
+     * pseudo-attribute.
      * <p>
      * <strong>Note:</strong> The underlying character reader on the
-     * current entity will be changed to accomodate the new encoding. 
+     * current entity will be changed to accomodate the new encoding.
      * However, the new encoding is ignored if the current reader was
      * not constructed from an input stream (e.g. an external entity
      * that is resolved directly to the appropriate java.io.Reader
@@ -108,13 +108,13 @@ public abstract class XMLEntityScanner
      *
      * @param encoding The IANA encoding name of the new encoding.
      *
-     * @throws IOException  Thrown if the new encoding is not supported.                     
+     * @throws IOException  Thrown if the new encoding is not supported.
      *
      * @see org.apache.xerces.util.EncodingMap
      * @see org.apache.xerces.util.XMLChar#isValidIANAEncoding
      * @see org.apache.xerces.util.XMLChar#isValidJavaEncoding
      */
-    public abstract void setEncoding(String encoding) 
+    public abstract void setEncoding(String encoding)
         throws IOException;
 
     /** Returns true if the current entity being scanned is external. */
@@ -140,6 +140,8 @@ public abstract class XMLEntityScanner
      */
     public abstract int scanChar() throws IOException;
 
+    //public abstract boolean scanEndElementName(char [] startElementName) throws IOException ;
+    public abstract boolean scanEndElementName( String startElementName) throws IOException ;
     /**
      * Returns a string matching the NMTOKEN production appearing immediately
      * on the input as a symbol, or null if NMTOKEN Name string is present.
@@ -174,7 +176,7 @@ public abstract class XMLEntityScanner
      * @see org.apache.xerces.util.XMLChar#isNameStart
      */
     public abstract String scanName() throws IOException;
-    
+
     /**
      * Scans a qualified name from the input, setting the fields of the
      * QName structure appropriately.
@@ -255,11 +257,11 @@ public abstract class XMLEntityScanner
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
      */
-    public abstract int scanLiteral(int quote, XMLString content) 
+    public abstract int scanLiteral(int quote, XMLString content)
         throws IOException;
-    
+
     /**
-     * Scans a range of character data up to the specicied delimiter, 
+     * Scans a range of character data up to the specicied delimiter,
      * setting the fields of the XMLString structure, appropriately.
      * <p>
      * <strong>Note:</strong> The characters are consumed.
@@ -288,7 +290,7 @@ public abstract class XMLEntityScanner
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
      */
-    public abstract boolean scanData(String delimiter, XMLString data) 
+    public abstract boolean scanData(String delimiter, XMLString data)
         throws IOException;
 
     /**

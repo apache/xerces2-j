@@ -75,6 +75,7 @@ import org.apache.xerces.impl.io.ASCIIReader;
 import org.apache.xerces.impl.io.UCSReader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationManager;
 
 import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SymbolTable;
@@ -124,8 +125,13 @@ public class XMLEntityManager
     // Constants
     //
 
-    /** Default buffer size (2048). */
-    public static final int DEFAULT_BUFFER_SIZE = 2048;
+    /** Default buffer size (8192). */
+    public static final int DEFAULT_BUFFER_SIZE = 8192;
+
+    /** Default buffer size before we've finished with the XMLDecl:  */
+    public static final int DEFAULT_XMLDECL_BUFFER_SIZE = 64;
+
+    public static final int INTERNAL_ENTITY_BUFFER_SIZE = 4096;
 
     // feature identifiers
 
@@ -166,14 +172,14 @@ public class XMLEntityManager
         VALIDATION,
         EXTERNAL_GENERAL_ENTITIES,
         EXTERNAL_PARAMETER_ENTITIES,
-        ALLOW_JAVA_ENCODINGS,
+        ALLOW_JAVA_ENCODINGS
     };
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,
         ERROR_REPORTER,
-        ENTITY_RESOLVER,
+        ENTITY_RESOLVER
     };
 
     // debugging
@@ -364,6 +370,7 @@ public class XMLEntityManager
             Entity entity = new InternalEntity(name, text);
             fEntities.put(name, entity);
         }
+
     } // addInternalEntity(String,String)
 
     /**
@@ -407,10 +414,11 @@ public class XMLEntityManager
                     }
                 }
             }
-            Entity entity = new ExternalEntity(name, 
+            Entity entity = new ExternalEntity(name,
                     new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId)), null);
             fEntities.put(name, entity);
         }
+
     } // addExternalEntity(String,String,String,String)
 
     /**
@@ -452,6 +460,7 @@ public class XMLEntityManager
             Entity entity = new ExternalEntity(name, new XMLResourceIdentifierImpl(publicId, systemId, baseSystemId, null), notation);
             fEntities.put(name, entity);
         }
+
     } // addUnparsedEntity(String,String,String,String)
 
     /**
@@ -528,13 +537,20 @@ public class XMLEntityManager
          }
          if (needExpand)
             expandedSystemId = expandSystemId(literalSystemId, baseSystemId);
- 
+
        // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
-             fResourceIdentifier.clear();
-            fResourceIdentifier.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
-             xmlInputSource = fEntityResolver.resolveEntity(fResourceIdentifier);
+            XMLResourceIdentifierImpl ri = null;
+            if (resourceIdentifier instanceof XMLResourceIdentifierImpl) {
+                ri = (XMLResourceIdentifierImpl)resourceIdentifier;
+            }
+            else {
+                fResourceIdentifier.clear();
+                ri = fResourceIdentifier;
+            }
+            ri.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
+            xmlInputSource = fEntityResolver.resolveEntity(ri);
         }
 
         // do default resolution
@@ -585,6 +601,7 @@ public class XMLEntityManager
 
         // should we skip external entities?
         boolean external = entity.isExternal();
+
         if (external) {
             boolean unparsed = entity.isUnparsed();
             boolean parameter = entityName.startsWith("%");
@@ -594,18 +611,16 @@ public class XMLEntityManager
                 if (fEntityHandler != null) {
                     fResourceIdentifier.clear();
                     final String encoding = null;
-                    if (external) {
-                        ExternalEntity externalEntity = (ExternalEntity)entity;
-                        //REVISIT:  since we're storing expandedSystemId in the
-                        // externalEntity, how could this have got here if it wasn't already
-                        // expanded??? - neilg
-                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null); 
-                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null); 
-                        String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
-                        fResourceIdentifier.setValues(
-                                (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
-                                extLitSysId, extBaseSysId, expandedSystemId);
-                    }
+                    ExternalEntity externalEntity = (ExternalEntity)entity;
+                    //REVISIT:  since we're storing expandedSystemId in the
+                    // externalEntity, how could this have got here if it wasn't already
+                    // expanded??? - neilg
+                    String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
+                    String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
+                    String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
+                    fResourceIdentifier.setValues(
+                            (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
+                            extLitSysId, extBaseSysId, expandedSystemId);
                     fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
@@ -637,8 +652,8 @@ public class XMLEntityManager
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
                         // REVISIT:  for the same reason above...
-                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null); 
-                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null); 
+                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
+                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
                         String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
                         fResourceIdentifier.setValues(
                                 (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
@@ -805,16 +820,18 @@ public class XMLEntityManager
         // we've seen a new Reader. put it in a list, so that
         // we can close it later.
         fOwnReaders.addElement(reader);
-        
+
         // push entity on stack
         if (fCurrentEntity != null) {
             fEntityStack.push(fCurrentEntity);
         }
 
+        int bufferSize = isExternal ? fBufferSize : INTERNAL_ENTITY_BUFFER_SIZE ;
+        //int bufferSize = fBufferSize ;
         // create entity
-        fCurrentEntity = new ScannedEntity(name, 
+        fCurrentEntity = new ScannedEntity(name,
                 new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandedSystemId),
-                stream, reader, encoding, literal, false, isExternal);
+                stream, reader, encoding, literal, false, isExternal, bufferSize);
 
         // call handler
         if (fEntityHandler != null) {
@@ -831,7 +848,7 @@ public class XMLEntityManager
 
     // a list of Readers ever seen
     protected Vector fOwnReaders = new Vector();
-    
+
     /**
      * Close all opened InputStreams and Readers opened by this parser.
      */
@@ -847,7 +864,7 @@ public class XMLEntityManager
         // and clear the list
         fOwnReaders.removeAllElements();
     }
-    
+
     //
     // XMLComponent methods
     //
@@ -906,6 +923,7 @@ public class XMLEntityManager
         catch (XMLConfigurationException e) {
             fEntityResolver = null;
         }
+
         // initialize state
         fStandalone = false;
         fEntities.clear();
@@ -1180,7 +1198,7 @@ public class XMLEntityManager
      *
      * @param b4    The first four bytes of the input.
      * @param count The number of bytes actually read.
-     * @return a 2-element array:  the first element, an IANA-encoding string, 
+     * @return a 2-element array:  the first element, an IANA-encoding string,
      *  the second element a Boolean which is true iff the document is big endian, false
      *  if it's little-endian, and null if the distinction isn't relevant.
      */
@@ -1273,7 +1291,7 @@ public class XMLEntityManager
      *                     encoding name may be a Java encoding name;
      *                     otherwise, it is an ianaEncoding name.
      * @param isBigEndian   For encodings (like uCS-4), whose names cannot
-     *                      specify a byte order, this tells whether the order is bigEndian.  null menas 
+     *                      specify a byte order, this tells whether the order is bigEndian.  null menas
      *                      unknown or not relevant.
      *
      * @return Returns a reader.
@@ -1718,8 +1736,10 @@ public class XMLEntityManager
 
         // buffer
 
+        int bufferSize;
+
         /** Character buffer. */
-        public char[] ch = new char[fBufferSize];
+        public char[] ch = null ;
 
         /** Position in character buffer. */
         public int position;
@@ -1727,7 +1747,7 @@ public class XMLEntityManager
         /** Count of characters in buffer. */
         public int count;
 
-        // to allow the reader/nputStream to behave efficiently:
+        // to allow the reader/inputStream to behave efficiently:
         public boolean mayReadChunks;
 
         //
@@ -1738,7 +1758,7 @@ public class XMLEntityManager
         public ScannedEntity(String name,
                              XMLResourceIdentifier entityLocation,
                              InputStream stream, Reader reader,
-                             String encoding, boolean literal, boolean mayReadChunks, boolean isExternal) {
+                             String encoding, boolean literal, boolean mayReadChunks, boolean isExternal, int bufferSize) {
             super(name);
             this.entityLocation = entityLocation;
             this.stream = stream;
@@ -1747,6 +1767,8 @@ public class XMLEntityManager
             this.literal = literal;
             this.mayReadChunks = mayReadChunks;
             this.isExternal = isExternal;
+            this.bufferSize = bufferSize ;
+            ch = new char[this.bufferSize];
         } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean, boolean)
 
         //
@@ -1779,6 +1801,13 @@ public class XMLEntityManager
 
         } // toString():String
 
+        public void setBufferSize(int size){
+             bufferSize = size ;
+        }//setBufferSize
+
+        public int getBufferSize(){
+            return bufferSize ;
+        }//getBufferSize
     } // class ScannedEntity
 
     /**
@@ -1875,8 +1904,10 @@ public class XMLEntityManager
                     }
                     //fCurrentEntity.stream.reset();
                     fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding, null);
+                    //we have got the reader now.. we should read in chunks..
+                    //fCurrentEntity.mayReadChunks = true ;
                 } else {
-                    if (DEBUG_ENCODINGS) 
+                    if (DEBUG_ENCODINGS)
                         System.out.println("$$$ reusing old reader on stream");
                 }
             }
@@ -2263,6 +2294,50 @@ public class XMLEntityManager
             return false;
 
         } // scanQName(QName):boolean
+
+        //new method added...
+        /**
+         this method expects beginning of name ie coming after "</"
+         *
+         *@return Returns true if a qualified name appeared immediately on
+         *         the input and was scanned, false otherwise.
+         */
+        /** REVISIT:
+        public boolean scanEndElementName(char [] startElementName) throws IOException{
+
+            // load more characters, if needed
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0, true);
+            }
+
+            return isMatched(startElementName, getCharacters(startElementName.length) ) ;
+
+        }//peekEndElementName(int length)
+        */
+
+        /** REVISIT
+        public char[] getCharacters(int length) throws IOException{
+
+        }//getCharacters(length)
+        */
+
+        public boolean scanEndElementName(String startElementName) throws IOException {
+
+            return skipString(startElementName) ;
+
+        }
+
+        public boolean isMatched(char [] startElement, char [] endElement)  {
+             if(startElement.length == endElement.length){
+                 for(int i = 0 ; i < startElement.length ; i++){
+                    if(startElement[i] != endElement[i]){
+                        return false;
+                    }
+                 }
+             }
+             return false;
+
+        }//isMatched
 
         /**
          * Scans a range of parsed character data, setting the fields of the
@@ -2923,6 +2998,35 @@ public class XMLEntityManager
 
         } // skipSpaces():boolean
 
+        public boolean skipCharacters(char [] chars) throws IOException{
+
+            // load more characters, if needed
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0, true);
+            }
+
+            // skip string
+            final int length = chars.length ;
+            for (int i = 0; i < length; i++) {
+                char c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (c != chars[i]) {
+                    fCurrentEntity.position -= i + 1;
+                    return false;
+                }
+                if (i < length - 1 && fCurrentEntity.position == fCurrentEntity.count) {
+                    System.arraycopy(fCurrentEntity.ch, fCurrentEntity.count - i - 1, fCurrentEntity.ch, 0, i + 1);
+                    // REVISIT: Can a string to be skipped cross an
+                    //          entity boundary? -Ac
+                    if (load(i + 1, false)) {
+                        fCurrentEntity.position -= i + 1;
+                        return false;
+                    }
+                }
+            }
+            fCurrentEntity.columnNumber += length;
+            return true;
+        }
+
         /**
          * Skips the specified string appearing immediately on the input.
          * <p>
@@ -3158,6 +3262,7 @@ public class XMLEntityManager
         // Private methods
         //
 
+
         /**
          * Loads a chunk of text.
          *
@@ -3181,7 +3286,10 @@ public class XMLEntityManager
             }
 
             // read characters
-            int length = fCurrentEntity.ch.length - offset;
+            int length = fCurrentEntity.mayReadChunks?
+                    (fCurrentEntity.ch.length - offset):
+                    (DEFAULT_XMLDECL_BUFFER_SIZE);
+
             if (DEBUG_BUFFER) System.out.println("  length to try to read: "+length);
             int count = fCurrentEntity.reader.read(fCurrentEntity.ch, offset, length);
             if (DEBUG_BUFFER) System.out.println("  length actually read:  "+count);
@@ -3219,7 +3327,7 @@ public class XMLEntityManager
 
             return entityChanged;
 
-        } // load(int):boolean
+        } // load(int, boolean):boolean
 
     } // class EntityScanner
 
@@ -3231,7 +3339,7 @@ public class XMLEntityManager
     // methods.  This means that, once we discover the true (declared)
     // encoding of a document, we can neither backtrack to read the
     // whole doc again nor start reading where we are with a new
-    // reader.  
+    // reader.
     //
     // This class allows rewinding an inputStream by allowing a mark
     // to be set, and the stream reset to that position.  <strong>The
@@ -3252,7 +3360,7 @@ public class XMLEntityManager
         private int fOffset;
         private int fLength;
         private int fMark;
-    
+
         public RewindableInputStream(InputStream is) {
             fData = new byte[DEFAULT_BUFFER_SIZE];
             fInputStream = is;
@@ -3266,11 +3374,11 @@ public class XMLEntityManager
         public void setStartOffset(int offset) {
             fStartOffset = offset;
         }
-        
+
         public void rewind() {
             fOffset = fStartOffset;
         }
-    
+
         public int read() throws IOException {
             int b = 0;
             if (fOffset < fLength) {
@@ -3326,7 +3434,7 @@ public class XMLEntityManager
             fOffset += len;
             return len;
         }
-        
+
         public long skip(long n)
             throws IOException
         {
@@ -3350,21 +3458,27 @@ public class XMLEntityManager
                 return bytesLeft;
             }
             n -= bytesLeft;
+           /*
+            * In a manner of speaking, when this class isn't permitting more
+            * than one byte at a time to be read, it is "blocking".  The
+            * available() method should indicate how much can be read without
+            * blocking, so while we're in this mode, it should only indicate
+            * that bytes in its buffer are available; otherwise, the result of
+            * available() on the underlying InputStream is appropriate.
+            */
             return fInputStream.skip(n) + bytesLeft;
         }
-        
+
         public int available() throws IOException {
             int bytesLeft = fLength - fOffset;
             if (bytesLeft == 0) {
                 if (fOffset == fEndOffset) {
                     return -1;
                 }
-                return fInputStream.available();
+                return fCurrentEntity.mayReadChunks ? fInputStream.available()
+                                                    : 0;
             }
-            if (fLength == fEndOffset) {
-                return bytesLeft;
-            }
-            return fInputStream.available() + bytesLeft;
+            return bytesLeft;
         }
 
         public void mark(int howMuch) {
@@ -3381,7 +3495,7 @@ public class XMLEntityManager
 
         public void close() throws IOException {
             if (fInputStream != null) {
-                fInputStream.close(); 
+                fInputStream.close();
                 fInputStream = null;
             }
         }

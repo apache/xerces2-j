@@ -407,7 +407,7 @@ public abstract class AbstractSAXParser
                             attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
                             attributes.setValue(i, attrPSVI.getSchemaNormalizedValue());
                         }
-                    }
+                    } 
 
                     if ((fQName.prefix != null && fQName.prefix.equals("xmlns")) || 
                         fQName.rawname.equals("xmlns")) {
@@ -419,12 +419,11 @@ public abstract class AbstractSAXParser
                             // localpart should be empty string as per SAX documentation:
                             // http://www.saxproject.org/?selected=namespaces
                             fQName.prefix = "";
+                            fQName.uri = "";
                             fQName.localpart = "";
                             attributes.setName(i, fQName);
                         }
-                    } 
-                    
-
+                    }                     
                   
                 }
                 
