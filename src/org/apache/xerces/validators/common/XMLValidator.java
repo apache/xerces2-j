@@ -363,15 +363,14 @@ NamespacesScope.NamespacesHandler {
     private DatatypeValidatorFactoryImpl fDataTypeReg = 
     DatatypeValidatorFactoryImpl.getDatatypeRegistry();
 
-    private DatatypeValidator     fValID   = this.fDataTypeReg.getDatatypeValidator("ID" );
-    private DatatypeValidator fValIDRef    = this.fDataTypeReg.getDatatypeValidator("IDREF" );
-    private DatatypeValidator fValIDRefs   = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
-    private DatatypeValidator fValENTITY   = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
-    private DatatypeValidator fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
-    private DatatypeValidator fValNMTOKEN  = this.fDataTypeReg.getDatatypeValidator("NMTOKEN");
-    private DatatypeValidator fValNMTOKENS = this.fDataTypeReg.getDatatypeValidator("NMTOKENS");
-    private DatatypeValidator fValNOTATION = this.fDataTypeReg.getDatatypeValidator("NOTATION" );
-
+    private DatatypeValidator     fValID    = this.fDataTypeReg.getDatatypeValidator("ID" );
+    private DatatypeValidator fValIDRef     = this.fDataTypeReg.getDatatypeValidator("IDREF" );
+    private DatatypeValidator fValIDRefs    = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
+    private DatatypeValidator fValENTITY    = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
+    private DatatypeValidator fValENTITIES  = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
+    private DatatypeValidator fValNMTOKEN   = this.fDataTypeReg.getDatatypeValidator("NMTOKEN");
+    private DatatypeValidator fValNMTOKENS  = this.fDataTypeReg.getDatatypeValidator("NMTOKENS");
+    private DatatypeValidator fValNOTATION  = this.fDataTypeReg.getDatatypeValidator("NOTATION" );
 
     //
     // Constructors
@@ -1028,14 +1027,13 @@ NamespacesScope.NamespacesHandler {
                     reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
                                                ex.getMessage() ); 
 
-
                 }
             }
-            
+
             try {//Reset datatypes state
-               this.fValID.validate( null, this.fResetID );
-               this.fValIDRef.validate(null, this.fResetIDRef );
-               this.fValIDRefs.validate(null, this.fResetIDRef );
+                this.fValID.validate( null, this.fResetID );
+                this.fValIDRef.validate(null, this.fResetIDRef );
+                this.fValIDRefs.validate(null, this.fResetIDRef );
             } catch ( InvalidDatatypeValueException ex ) {
                 System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
             }
@@ -1635,6 +1633,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                         }
                     if (attType == fIDREFSymbol) {
+                        //System.out.println("On the FIDREFSymbol 1639" );
+                        //System.out.println( "stf = " + this.fStoreIDRef.getDatatypeObject() );
+
                         this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
                     } else if (attType == fIDREFSSymbol) {
                         this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
@@ -2392,7 +2393,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Validates element and attributes. */
     private void validateElementAndAttributes(QName element, 
                                               XMLAttrList attrList) 
-        throws Exception {
+    throws Exception {
 
         if ((fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )|| 
             (fGrammar == null && !fValidating && !fNamespacesEnabled) ) {
@@ -2938,7 +2939,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 String  unTrimValue      = fStringPool.toString(attValue);
                 String  value            = unTrimValue.trim();
                 //System.out.println("value = " + value );
-                                                               //changes fTempAttDef
+                //changes fTempAttDef
                 if (fValidationEnabled) {
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
@@ -2991,10 +2992,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                 }
                 try {
-                    //this.fIdDefs = (Hashtable) fValID.validate( value, null );
-                    //System.out.println("this.fIdDefs = " + this.fIdDefs );
-
                     this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                    fValIDRef.validate( value, this.fStoreIDRef ); //just in case we called id after IDREF
                 } catch ( InvalidDatatypeValueException ex ) {
                     reportRecoverableXMLError(ex.getMajorCode(),
                                               ex.getMinorCode(),
@@ -3037,33 +3036,24 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             break;
         case XMLAttributeDecl.TYPE_NOTATION:
             {
-                /* WIP
                 String  unTrimValue = fStringPool.toString(attValue);
-             String  value       = unTrimValue.trim();
-             if (fValidationEnabled) {
-                 if (value != unTrimValue) {
-                     if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                         reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                   XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                   fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                     }
-                 }
-             }
-             try {
-                 //this.fIdDefs = (Hashtable) fValID.validate( value, null );
-                 //System.out.println("this.fIdDefs = " + this.fIdDefs );
-
-                 this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
-             } catch ( InvalidDatatypeValueException ex ) {
-                 reportRecoverableXMLError(ex.getMajorCode(),
-                                           ex.getMinorCode(),
-                                           fStringPool.toString( attributeDecl.name.rawname), value );
-             }
-          }
-            */
-            av = fAttValidatorNOTATION;
-
-
+                String  value       = unTrimValue.trim();
+                if (fValidationEnabled) {
+                    if (value != unTrimValue) {
+                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                        }
+                    }
+                }
+                try {
+                    fValNOTATION.validate( value, null );
+                } catch ( InvalidDatatypeValueException ex ) {
+                    reportRecoverableXMLError(XMLMessages.MSG_NMTOKEN_INVALID,
+                                              XMLMessages.VC_NAME_TOKEN,
+                                              fStringPool.toString(attributeDecl.name.rawname), value);//TODO NMTOKENS messge
+                }
             }
             break;
         case XMLAttributeDecl.TYPE_NMTOKEN:
