@@ -1579,11 +1579,11 @@ public class XSAttributeChecker {
     // REVISIT: pass the proper element node to reportSchemaError
     public void checkNonSchemaAttributes(XSGrammarBucket grammarBucket) {
         // for all attributes
-        Enumeration enum = fNonSchemaAttrs.keys();
+        Enumeration keys = fNonSchemaAttrs.keys();
         XSAttributeDecl attrDecl;
-        while (enum.hasMoreElements()) {
+        while (keys.hasMoreElements()) {
             // get name, uri, localpart
-            String attrRName = (String)enum.nextElement();
+            String attrRName = (String)keys.nextElement();
             String attrURI = attrRName.substring(0,attrRName.indexOf(','));
             String attrLocal = attrRName.substring(attrRName.indexOf(',')+1);
             // find associated grammar

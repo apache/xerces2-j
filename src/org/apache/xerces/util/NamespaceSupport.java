@@ -125,9 +125,9 @@ public class NamespaceSupport implements NamespaceContext {
     public NamespaceSupport(NamespaceContext context) {
         pushContext();
         // copy declaration in the context
-        Enumeration enum = context.getAllPrefixes();
-        while (enum.hasMoreElements()){
-            String prefix = (String)enum.nextElement();
+        Enumeration prefixes = context.getAllPrefixes();
+        while (prefixes.hasMoreElements()){
+            String prefix = (String)prefixes.nextElement();
             String uri = context.getURI(prefix);
             declarePrefix(prefix, uri);
         }

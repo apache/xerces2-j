@@ -1193,21 +1193,21 @@ public class XMLDTDScannerImpl
 
             // call handler
             if (fDTDHandler != null) {
-                String[] enum = null;
+                String[] enumeration = null;
                 if (fEnumerationCount != 0) {
-                    enum = new String[fEnumerationCount];
-                    System.arraycopy(fEnumeration, 0, enum,
+                    enumeration = new String[fEnumerationCount];
+                    System.arraycopy(fEnumeration, 0, enumeration,
                                      0, fEnumerationCount);
                 }
                 // Determine whether the default value to be passed should be null. 
                 // REVISIT: should probably check whether fLiteral.ch is null instead. LM.
                 if (defaultType!=null && (defaultType.equals("#REQUIRED") || 
                                           defaultType.equals("#IMPLIED"))) {
-                    fDTDHandler.attributeDecl(elName, name, type, enum,
+                    fDTDHandler.attributeDecl(elName, name, type, enumeration,
                                               defaultType, null, null, null);
                 }
                 else {
-                    fDTDHandler.attributeDecl(elName, name, type, enum,
+                    fDTDHandler.attributeDecl(elName, name, type, enumeration,
                                               defaultType, fLiteral, fLiteral2, null);
                 }
             }

@@ -367,12 +367,12 @@ extends BaseMarkupSerializer {
             }
 
             if (_prefixes != null) {
-                Enumeration enum;
+                Enumeration keys;
 
-                enum = _prefixes.keys();
-                while (enum.hasMoreElements()) {
+                keys = _prefixes.keys();
+                while (keys.hasMoreElements()) {
                     _printer.printSpace();
-                    value = (String) enum.nextElement();
+                    value = (String) keys.nextElement();
                     name = (String) _prefixes.get( value );
                     if (name.length() == 0) {
                         _printer.printText( "xmlns=\"" );
