@@ -812,7 +812,7 @@ implements XMLComponent, XMLDocumentFilter {
             printElement("psv:validationContext",elemPSVI.getValidationContext());
 
             short validity = elemPSVI.getValidity();
-            if (validity == ItemPSVI.VALIDITY_UNKNOWN) {
+            if (validity == ItemPSVI.VALIDITY_NOTKNOWN) {
                 printElement("psv:validity","unknown");
             }
             else if (validity == ItemPSVI.VALIDITY_VALID) {
@@ -886,7 +886,7 @@ implements XMLComponent, XMLDocumentFilter {
             printElement("psv:validationContext",attrPSVI.getValidationContext());
 
             short validity = attrPSVI.getValidity();
-            if (validity == ItemPSVI.VALIDITY_UNKNOWN) {
+            if (validity == ItemPSVI.VALIDITY_NOTKNOWN) {
                 printElement("psv:validity","unknown");
             }
             else if (validity == ItemPSVI.VALIDITY_VALID) {
