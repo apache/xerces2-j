@@ -3,6 +3,25 @@
   <s:Body>
 	<length>3</length>
   </s:Body>
+
+  <!-- xmlns is removed during the modifications -->
+   <empty xmlns="">
+	<elem/>
+	<elem xmlns="newURI"><a/></elem>
+   </empty>
+
+  <!-- xmlns is not removed during the modifications -->
+   <empty xmlns="">
+	<elem/>
+	<elem xmlns="newURI"><a/></elem>
+   </empty>
+
+
+   <!-- tests from namespace spec -->
+   <x xmlns="http://www.w3.org" xmlns:n1="http://www.w3.org">
+  	<good a="1" b="2"/>
+  	<good a="1" n1:a="2"/>
+   </x>
 <!--add element in the same scope-->
 <s:bar xmlns:s="urn:schemas-xmlsoap-org:soap.v1"/>
 
@@ -20,6 +39,9 @@
 
 <!--create element: _attr_ bound to _hi_, local declaration of xmlns:attr = boo-->
 <attr:foo xmlns:attr="hi"/>
+
+<!--create element: with 2 xmlns-->
+<elem xmlns="namespace1"/>
 
 <!--
 1) noBooPrefixAttr had no prefix and bound to _boo_ URI (boo is not declared).

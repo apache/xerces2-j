@@ -143,6 +143,17 @@ public class TestNS {
                 parser.parse( argv[i] );
 
                 Document core = parser.getDocument();
+
+                NodeList ls2 = core.getElementsByTagName("empty");
+                Node testElem = ls2.item(0);
+                // testing empty element
+                if (testElem !=null) {
+                    
+                    NamedNodeMap testAttr = testElem.getAttributes();
+                    testAttr.removeNamedItemNS("http://www.w3.org/2000/xmlns/", "xmlns");
+                } 
+
+
                 if (modify) {
 
                     System.out.println("Modifying document...");
@@ -157,6 +168,9 @@ public class TestNS {
                     else {
                         System.out.println("Modifying information for the element: "+element.getNodeName());
                     }
+
+
+
 
                     // add element in same scope                            
                     element.appendChild(core.createComment("add element in the same scope"));
@@ -197,6 +211,22 @@ public class TestNS {
                     Element elm = core.createElementNS("hi","attr:foo");
                     Attr attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:attr");
                     attr.setValue("boo");
+                    elm.setAttributeNode(attr);
+                    element.appendChild(elm);
+                    element.appendChild(core.createTextNode("\n\n"));
+
+
+
+                    // add 2 xmlns attribute
+                    element.appendChild(core.createComment("create element: with 2 xmlns"));
+                    element.appendChild(core.createTextNode("\n"));
+                    elm = core.createElementNS("namespace1","elem");
+                    attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns");
+                    attr.setValue("boo");
+                    elm.setAttributeNode(attr);
+
+                    attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns");
+                    attr.setValue("world");
                     elm.setAttributeNode(attr);
                     element.appendChild(elm);
                     element.appendChild(core.createTextNode("\n\n"));
@@ -313,7 +343,7 @@ public class TestNS {
                 saxSerializer.endElement("myNamespace", "a", "foo:a");
                 saxSerializer.endDocument();
                 System.out.println("Serializing output to sax_output.xml...");
-                */
+                */         
 
             }
 
