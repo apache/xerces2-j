@@ -926,7 +926,10 @@ public class DOMParser
                 Class docClass = Class.forName(documentClassName);
                 Class defaultDocClass = Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
                 if (isDocumentImpl) {
-                    fDocument = new DocumentImpl(fGrammarAccess);
+                    fDocumentImpl = new DocumentImpl(fGrammarAccess);
+                    fDocument = fDocumentImpl;
+                    // set DOM error checking off
+                    fDocumentImpl.setErrorChecking(false);
                 }
                 else {
                     try {
@@ -940,12 +943,6 @@ public class DOMParser
                         //          doesn't have a zero-arg constructor. -Ac
                     }
                 }
-                if (docClass.isAssignableFrom(defaultDocClass)) {
-                    // set DOM error checking off
-                    fDocumentImpl = (DocumentImpl)fDocument;
-                    fDocumentImpl.setErrorChecking(false);
-                }
-
                 fCurrentElementNode = fDocument;
             }
         }
@@ -1411,12 +1408,6 @@ public class DOMParser
 
             fCurrentElementNode.appendChild(er);
             fCurrentElementNode = er;
-            try {
-                EntityReferenceImpl xer = (EntityReferenceImpl) er;
-                xer.setReadOnly(false, false);
-            } catch (Exception e) {
-                // we aren't building against Xerces - do nothing
-            }
         }
 
     } // startEntityReference(int,int,int)
@@ -1494,10 +1485,8 @@ public class DOMParser
             Node erNode = fCurrentElementNode;//fCurrentElementNode.getParentNode();
             fCurrentElementNode = erNode.getParentNode();
 
-            try {
+            if (fDocumentImpl != null) {
                 EntityReferenceImpl xer = (EntityReferenceImpl) erNode;
-                xer.setReadOnly(false, false);
-
                 // if necessary populate the related entity now
                 if (fDocumentImpl != null) {
 
@@ -1512,7 +1501,6 @@ public class DOMParser
                     }
 
                     EntityImpl entity = (EntityImpl) entityNode;
-                    entity.setReadOnly(false, false);
                     for (Node child = erNode.getFirstChild();
                          child != null;
                          child = child.getNextSibling()) {
@@ -1521,8 +1509,7 @@ public class DOMParser
                     }
                     entity.setReadOnly(true, true);
                 }
-            } catch (Exception e) {
-                // we aren't building against Xerces - do nothing
+                xer.setReadOnly(true, true);
             }
         }
 
