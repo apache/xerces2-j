@@ -3154,10 +3154,46 @@ public final class XMLValidator
                                                   "unresolved type : "+uri+","+localpart 
                                                   +" found  in xsi:type handling");
                   } else
+
+                     //
+                     // The type must not be abstract
+                     //
+                     if (typeInfo.isAbstract) {
+                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                               XMLMessages.SCHEMA_GENERIC_ERROR, 
+                               "Abstract type " + xsiType + " should not be used in xsi:type"); 
+                     }
+
                      elementIndex = typeInfo.templateElementIndex;
                }
 
                fXsiTypeAttValue = -1;
+            }
+
+            else {
+               //
+               // xsi:type was not specified...
+               // If the corresponding type is abstract, detect an error
+               //
+               TraverseSchema.ComplexTypeInfo typeInfo =
+                 ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
+
+               if (typeInfo != null && typeInfo.isAbstract) {
+                  reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                   XMLMessages.SCHEMA_GENERIC_ERROR,
+                   "Element " + fStringPool.toString(element.rawname) + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type");
+               }
+            }
+               
+
+            //
+            // Check whether this element is abstract.  If so, an error
+            //
+            int miscFlags = ((SchemaGrammar) fGrammar).getElementDeclMiscFlags(elementIndex);
+            if ((miscFlags & SchemaSymbols.ABSTRACT) != 0) {
+              reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                XMLMessages.SCHEMA_GENERIC_ERROR,
+                "A member of abstract element " + fStringPool.toString(element.rawname) + "'s substitution group must be specified");
             }
 
             //Change the current scope to be the one defined by this element.
