@@ -105,7 +105,7 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
     protected short fValidationAttempted = AttributePSVI.VALIDATION_NONE;
 
     /** validity: valid, invalid, unknown */
-    protected short fValidity = AttributePSVI.VALIDITY_UNKNOWN;
+    protected short fValidity = AttributePSVI.VALIDITY_NOTKNOWN;
 
     /** error codes */
     protected StringList fErrorCodes = null;

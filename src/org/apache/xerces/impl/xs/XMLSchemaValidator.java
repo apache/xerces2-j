@@ -2261,7 +2261,7 @@ public class XMLSchemaValidator
             }
             else {
                 // PSVI: validity
-                fCurrentPSVI.fValidity = ElementPSVI.VALIDITY_UNKNOWN;
+                fCurrentPSVI.fValidity = ElementPSVI.VALIDITY_NOTKNOWN;
                 // Discard the current context: ignore any error happened within
                 // the sub-elements/attributes of this element, because those
                 // errors won't affect the validity of the parent elements.

@@ -113,7 +113,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     protected short fValidationAttempted = ElementPSVI.VALIDATION_NONE;
 
     /** validity: valid, invalid, unknown */
-    protected short fValidity = ElementPSVI.VALIDITY_UNKNOWN;
+    protected short fValidity = ElementPSVI.VALIDITY_NOTKNOWN;
 
     /** error codes */
     protected StringList fErrorCodes = null;

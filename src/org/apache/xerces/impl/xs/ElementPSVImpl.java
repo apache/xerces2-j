@@ -106,7 +106,7 @@ public class ElementPSVImpl implements ElementPSVI {
     protected short fValidationAttempted = ElementPSVI.VALIDATION_NONE;
 
     /** validity: valid, invalid, unknown */
-    protected short fValidity = ElementPSVI.VALIDITY_UNKNOWN;
+    protected short fValidity = ElementPSVI.VALIDITY_NOTKNOWN;
 
     /** error codes */
     protected String[] fErrorCodes = null;
@@ -261,7 +261,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fNotation = null;
         fMemberType = null;
         fValidationAttempted = ElementPSVI.VALIDATION_NONE;
-        fValidity = ElementPSVI.VALIDITY_UNKNOWN;
+        fValidity = ElementPSVI.VALIDITY_NOTKNOWN;
         fErrorCodes = null;
         fValidationContext = null;
         fNormalizedValue = null;

@@ -72,7 +72,7 @@ public interface ItemPSVI {
     been performed or that a strict assessment of validity could 
     not be performed  
     */
-    public static final short VALIDITY_UNKNOWN               = 0;
+    public static final short VALIDITY_NOTKNOWN               = 0;
 
     /** Validity value indicating that validation has been strictly
      assessed and the element in question is invalid according to the 

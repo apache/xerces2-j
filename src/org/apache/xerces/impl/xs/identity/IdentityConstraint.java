@@ -246,7 +246,7 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
     /**
      * Optional. Annotation.
      */
-    public XSAnnotation getAnnotation() {
+    public XSObjectList getAnnotations() {
         // REVISIT: SCAPI: to implement
         return null;
     }

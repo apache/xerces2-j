@@ -99,8 +99,8 @@ public interface XSIDCDefinition extends XSObject {
     public XSIDCDefinition getRefKey();
 
     /**
-     * Optional. An [annotation]. 
+     * A set of [annotations]. 
      */
-    public XSAnnotation getAnnotation();
+    public XSObjectList getAnnotations();
 
 }
