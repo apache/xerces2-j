@@ -152,7 +152,8 @@ public class XMLDTDScanner
 
     private String[] fPseudoAttributeValues = new String[3];
 
-    private int[] fOpStack;
+    private int[] fOpStack = new int[5];
+    private int fDepth;
 
     // symbols
 
@@ -676,29 +677,54 @@ public class XMLDTDScanner
      * scan children content model
      * This assumes it can simply append to fStringBuffer.
      * <pre>
-     * 
+     * [47]    children  ::=    (choice | seq) ('?' | '*' | '+')? 
+     * [48]    cp        ::=    (Name | choice | seq) ('?' | '*' | '+')? 
+     * [49]    choice    ::=    '(' S? cp ( S? '|' S? cp )+ S? ')'
+     * [50]    seq       ::=    '(' S? cp ( S? ',' S? cp )* S? ')' 
      * </pre>
      */
     protected void scanChildren() throws IOException, SAXException {
-        int depth = 1;
+        fDepth = 0;
+        int currentOp = 0;
         int c;
         do {
             c = fEntityScanner.peekChar();
             if (c == '(') {
                 fEntityScanner.scanChar();
                 fStringBuffer.append('(');
-                depth++;
+                // push current op on stack and reset it
+                pushOpStack(currentOp);
+                currentOp = 0;
+                fDepth++;
             }
             else if (c == ')') {
                 fEntityScanner.scanChar();
                 fStringBuffer.append(')');
-                depth--;
+                // restore previous op
+                currentOp = popOpStack();
+                fDepth--;
             }
             else if (c == ',') {
+                if (currentOp == 0) {
+                    currentOp = c;
+                }
+                else if (c != currentOp) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_UNTERMINATED_CHOICE",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
                 fEntityScanner.scanChar();
                 fStringBuffer.append(',');
             }
             else if (c == '|') {
+                if (currentOp == 0) {
+                    currentOp = c;
+                }
+                else if (c != currentOp) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_UNTERMINATED_SEQ",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
                 fEntityScanner.scanChar();
                 fStringBuffer.append('|');
             }
@@ -716,7 +742,7 @@ public class XMLDTDScanner
                 fStringBuffer.append(childName);
             }
             fEntityScanner.skipSpaces();
-        } while (depth != 0);
+        } while (fDepth >= 0);
 
         // occurence operator
         c = fEntityScanner.peekChar();
@@ -1018,5 +1044,17 @@ public class XMLDTDScanner
         return complete;
     }
 
+    protected final void pushOpStack(int c) {
+        if (fOpStack.length == fDepth) {
+            int[] newStack = new int[fDepth * 2];
+            System.arraycopy(fOpStack, 0, newStack, 0, fDepth);
+            fOpStack = newStack;
+        }
+        fOpStack[fDepth] = c;
+    }
+
+    protected final int popOpStack() {
+        return fOpStack[fDepth];
+    }
 
 } // class XMLDTDScanner
