@@ -57,6 +57,8 @@
 
 package org.apache.xerces.parsers;
 
+import java.io.IOException;
+
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -66,6 +68,7 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -108,6 +111,25 @@ public abstract class AbstractXMLDocumentParser
         config.setDTDHandler(this);
         config.setDTDContentModelHandler(this);
     } // <init>(XMLParserConfiguration)
+
+    //
+    // Public methods
+    //
+
+    /**
+     * parse
+     *
+     * @param inputSource
+     *
+     * @exception org.xml.sax.SAXException
+     * @exception java.io.IOException
+     */
+    public void parse(InputSource inputSource) 
+        throws SAXException, IOException {
+
+        reset();
+        super.parse(inputSource);
+    }
 
     //
     // XMLDocumentHandler methods
