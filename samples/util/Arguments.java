@@ -186,11 +186,12 @@ public class Arguments {
         if ( this.fDbug ){
             queueOfSwitches.print();
         }
-        int value = ((Integer ) queueOfSwitches.pop()).intValue();
-        if ( this.fDbug ) {
-            System.out.println("value = " + value );
-        }
-        return queueOfSwitches.empty() ? 0:value;
+
+        //int value = ((Integer ) queueOfSwitches.pop()).intValue();
+        //if ( this.fDbug ) {
+          //  System.out.println("value = " + value );
+        //}
+        return queueOfSwitches.empty() ? -1:((Integer ) queueOfSwitches.pop()).intValue();
     }
 
 
