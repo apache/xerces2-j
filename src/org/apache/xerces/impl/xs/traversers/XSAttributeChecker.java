@@ -1281,6 +1281,8 @@ public class XSAttributeChecker {
             break;
         case DT_NONNEGINT:
             try {
+                if (value.length() > 0 && value.charAt(0) == '+')
+                    value = value.substring(1);
                 retValue = fXIntPool.getXInt(Integer.parseInt(value));
             } catch (NumberFormatException e) {
                 throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "nonNegativeInteger"});
@@ -1290,6 +1292,8 @@ public class XSAttributeChecker {
             break;
         case DT_POSINT:
             try {
+                if (value.length() > 0 && value.charAt(0) == '+')
+                    value = value.substring(1);
                 retValue = fXIntPool.getXInt(Integer.parseInt(value));
             } catch (NumberFormatException e) {
                 throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "positiveInteger"});
