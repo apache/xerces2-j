@@ -3,7 +3,6 @@
 TARGETS=\
 	DelayedInput.class\
 	DocumentTracer.class\
-	DTDReader.class\
 	SAXCount.class\
 	SAX2Count.class\
 	SAXWriter.class\
