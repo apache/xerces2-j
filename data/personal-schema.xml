@@ -1,22 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<personnel xmlns="personal.xsd">
-  <person id="H.MARUYAMA" salary="10">
-    <name><family>MARUYAMA</family> <given>Hiroshi</given></name>
-    <email>8</email>
-    <link subordinates="  N.URAMOTO    K.TAMURA "/>
+<personnel xmlns='personal.xsd'>
+
+  <person id="Big.Boss" >
+    <name><family>Boss</family> <given>Big</given></name>
+    <email>chief@foo.com</email>
+    <link subordinates="one.worker two.worker three.worker four.worker five.worker"/>
   </person>
-  <person id="N.URAMOTO">
-    <name><family>URAMOTO</family> <given>Naohiko</given></name>
-    <email>uramoto@jp.ibm.com</email>
-    <link manager="		H.MARUYAMA"/>
+
+  <person id="one.worker">
+    <name><family>Worker</family> <given>One</given></name>
+    <email>one@foo.com</email>
+    <link manager="Big.Boss"/>
   </person>
-  <person id="K.TAMURA">
-    <name>
-      <family>TAMURA</family> <given>Kent</given>
-    </name>
-    <!-- This URL is mail address.-->
-    <url href="mailto:kent@trl.ibm.co.jp"/>
-    <url href="mailto:tkent@jp.ibm.com"/>
-    <link manager="H.MARUYAMA"/>
+
+  <person id="two.worker">
+    <name><family>Worker</family> <given>Two</given></name>
+    <email>two@foo.com</email>
+    <link manager="Big.Boss"/>
   </person>
+
+  <person id="three.worker">
+    <name><family>Worker</family> <given>Three</given></name>
+    <email>three@foo.com</email>
+    <link manager="Big.Boss"/>
+  </person>
+
+  <person id="four.worker">
+    <name><family>Worker</family> <given>Four</given></name>
+    <email>four@foo.com</email>
+    <link manager="Big.Boss"/>
+  </person>
+
+  <person id="five.worker">
+    <name><family>Worker</family> <given>Five</given></name>
+    <email>five@foo.com</email>
+    <link manager="Big.Boss"/>
+  </person>
+
 </personnel>
