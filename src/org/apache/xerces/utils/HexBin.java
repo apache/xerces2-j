@@ -88,8 +88,6 @@ public final class  HexBin {
         for ( int i = 'f'; i>= 'a'; i--) {
            hexNumberTable[i] = (byte) ( i-'a' + 10 );
         }
-        for(int i = 0; i<=25; i++ )
-           lookUpHexAlphabet[i] = (byte) ('A'+i );
 
         for(int i = 0; i<10; i++ )
             lookUpHexAlphabet[i] = (byte) ('0'+i );
