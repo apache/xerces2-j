@@ -151,7 +151,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
      *
      * @param  index
      */
-    private void traverseLocal(XSParticleDecl particle, Element elmDecl,
+    protected void traverseLocal(XSParticleDecl particle, Element elmDecl,
                                XSDocumentInfo schemaDoc,
                                SchemaGrammar grammar,
                                int allContextFlags) {
