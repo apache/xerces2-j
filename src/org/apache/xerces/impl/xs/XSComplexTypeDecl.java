@@ -251,7 +251,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
      * <code>XSObject</code> type.
      */
     public String getName() {
-        return fName;
+        return getIsAnonymous() ? null : fName;
     }
 
     /**
