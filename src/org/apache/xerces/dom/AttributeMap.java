@@ -122,9 +122,13 @@ public class AttributeMap extends NamedNodeMapImpl {
 
         AttrImpl argn = (AttrImpl)arg;
 
-    	if (argn.isOwned()) {
-            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
+    	if (argn.isOwned()){
+            if (argn.getOwnerElement() != ownerNode) {
+                throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
+            } 
+            // replacing an Attribute with itself does nothing
+            return arg;
         }
 
         // set owner
@@ -186,9 +190,14 @@ public class AttributeMap extends NamedNodeMapImpl {
                                    "DOM006 Hierarchy request error");
         }
         AttrImpl argn = (AttrImpl)arg;
-    	if (argn.isOwned()) {
-            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
+
+    	if (argn.isOwned()){
+            if (argn.getOwnerElement() != ownerNode) {
+                throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
+            } 
+            // replacing an Attribute with itself does nothing
+            return arg;
         }
 
         // set owner
