@@ -2,6 +2,7 @@
 ifneq ($(findstring WIN,$(shell uname)),)
 # DOS
 CLPATHSEP := ;
+MAKE = make --unix
 else 
 # UNIX
 CLPATHSEP := :
