@@ -199,7 +199,7 @@ public class CoreDocumentImpl
     
 
     /** Table for quick check of child insertion. */
-    protected static int[] kidOK;
+    private final static int[] kidOK;
 
     /**
      * Number of alterations made to this document since its creation.
