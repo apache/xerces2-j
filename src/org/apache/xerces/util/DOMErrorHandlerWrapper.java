@@ -161,7 +161,8 @@ implements XMLErrorHandler, DOMErrorHandler {
                         XMLParseException exception) throws XNIException {
         fDOMError.fSeverity = DOMError.SEVERITY_WARNING;
         fDOMError.fException = exception;
-        fDOMError.fMessage = exception.getMessage();
+        fDOMError.fType = key;         
+        fDOMError.fRelatedData = fDOMError.fMessage = exception.getMessage();
         DOMLocatorImpl locator = fDOMError.fLocator;
         if (locator != null) {
             locator.fColumnNumber = exception.getColumnNumber();
@@ -192,7 +193,8 @@ implements XMLErrorHandler, DOMErrorHandler {
                       XMLParseException exception) throws XNIException {
         fDOMError.fSeverity = DOMError.SEVERITY_ERROR;
         fDOMError.fException = exception;
-        fDOMError.fMessage = exception.getMessage();
+        fDOMError.fType = key;         
+        fDOMError.fRelatedData = fDOMError.fMessage = exception.getMessage();
         DOMLocatorImpl locator = fDOMError.fLocator;
         if (locator != null) {
             locator.fColumnNumber = exception.getColumnNumber();
@@ -231,7 +233,8 @@ implements XMLErrorHandler, DOMErrorHandler {
                            XMLParseException exception) throws XNIException {
         fDOMError.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
         fDOMError.fException = exception;
-        fDOMError.fMessage = exception.getMessage();
+        fDOMError.fType = key;         
+        fDOMError.fRelatedData = fDOMError.fMessage = exception.getMessage();
         DOMLocatorImpl locator = fDOMError.fLocator;
         if (locator != null) {
             locator.fColumnNumber = exception.getColumnNumber();

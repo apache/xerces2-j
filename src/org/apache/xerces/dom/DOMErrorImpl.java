@@ -92,6 +92,9 @@ public class DOMErrorImpl implements DOMError {
     public String fMessage = null;
     public DOMLocatorImpl fLocator = new DOMLocatorImpl();
     public Exception fException = null;
+    public String fType;
+    public Object fRelatedData;
+   
 
 
     //
@@ -156,6 +159,14 @@ public class DOMErrorImpl implements DOMError {
     public void reset(){
         fSeverity = DOMError.SEVERITY_WARNING; 
         fException = null;
+    }
+    
+    public String getType(){
+        return fType;
+    }
+    
+    public Object getRelatedData(){
+        return fRelatedData;
     }
 
 

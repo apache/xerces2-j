@@ -141,7 +141,6 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 
     protected final static boolean DEBUG = false;
 
-    protected DOMErrorHandlerWrapper fErrorHandler = null;
     //
     // Constructors
     //

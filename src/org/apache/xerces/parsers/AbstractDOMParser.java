@@ -62,6 +62,7 @@ import java.util.Stack;
 
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.CoreDocumentImpl;
+import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DocumentTypeImpl;
@@ -79,6 +80,7 @@ import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -200,7 +202,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     //
     // Data
     //
-
+    
+    /** DOM L3 error handler */
+    protected DOMErrorHandlerWrapper fErrorHandler = null;
 
     /** True if inside DTD. */
     protected boolean fInDTD;
@@ -1597,7 +1601,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
      * 
      * @param node
      */
-    protected void handleBaseURI (Node node){
+    protected final void handleBaseURI (Node node){
         if (fDocumentImpl != null) {
             // REVISIT: remove dependency on our implementation when
             //          DOM L3 becomes REC
@@ -1608,8 +1612,10 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             if (nodeType == Node.ELEMENT_NODE) {
                 // if an element already has xml:base attribute
                 // do nothing
-                if (fNamespaceAware && (((Element)node).getAttributeNodeNS("http://www.w3.org/XML/1998/namespace","base")!=null)) { 
-                    return;
+                if (fNamespaceAware) {
+                    if (((Element)node).getAttributeNodeNS("http://www.w3.org/XML/1998/namespace","base")!=null) { 
+                        return;
+                    }
                 } else if (((Element)node).getAttributeNode("xml:base") != null) {
                     return;
                 }
@@ -1623,10 +1629,17 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     }
                 }
             }
-            else if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
+			else if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
+                            
                 baseURI = ((EntityReferenceImpl)fCurrentNode).getBaseURI();
-                ((ProcessingInstructionImpl)node).setBaseURI(baseURI);
-            }
+				if (baseURI !=null && fErrorHandler != null) {
+					DOMErrorImpl error = new DOMErrorImpl();
+                    error.fType = "infoset-baseURI";
+                    error.fRelatedData = baseURI;
+					error.fSeverity = error.SEVERITY_WARNING;
+					fErrorHandler.getErrorHandler().handleError(error);
+				}
+			}
         }
     }
 
@@ -1638,8 +1651,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
      * 
      * @param node
      */
-    protected void handleBaseURI (int node){
+    protected final void handleBaseURI (int node){
         short nodeType = fDeferredDocumentImpl.getNodeType(node, false);
+
         if (nodeType == Node.ELEMENT_NODE) {
             String baseURI = fDeferredDocumentImpl.getNodeValueString(fCurrentNodeIndex, false);
             if (baseURI == null) {
@@ -1653,17 +1667,25 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                                                            true);
             }
         }
-        else if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
+		else if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
 
-            // retrieve baseURI from the entity reference
-            String baseURI = fDeferredDocumentImpl.getNodeValueString(fCurrentNodeIndex, false);
 
-            if (baseURI == null) {
-                // try baseURI of the entity declaration
-                baseURI = fDeferredDocumentImpl.getDeferredEntityBaseURI(fDeferredEntityDecl);
-            }
-            fDeferredDocumentImpl.setDeferredPIBaseURI(node, baseURI);
-        }
+			// retrieve baseURI from the entity reference
+			String baseURI = fDeferredDocumentImpl.getNodeValueString(fCurrentNodeIndex, false);
+
+			if (baseURI == null) {
+				// try baseURI of the entity declaration
+				baseURI = fDeferredDocumentImpl.getDeferredEntityBaseURI(fDeferredEntityDecl);
+			}
+
+			if (baseURI != null && fErrorHandler != null) {
+				DOMErrorImpl error = new DOMErrorImpl();
+				error.fType = "infoset-baseURI";
+				error.fRelatedData = baseURI; 
+                error.fSeverity = error.SEVERITY_WARNING;
+				fErrorHandler.getErrorHandler().handleError(error);
+			}
+		}
     }
 
                        

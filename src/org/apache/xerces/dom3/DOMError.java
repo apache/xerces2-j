@@ -60,5 +60,26 @@ public interface DOMError {
      * The location of the error.
      */
     public DOMLocator getLocation();
+    
+        /**
+     *  The related <code>Error.type</code> dependent data if any. 
+     */
+
+    public Object getRelatedData();
+        /**
+     *  A <code>DOMString</code> indicating which related data is expected in 
+     * <code>relatedData</code>. Users should refer to the specification of 
+     * the error in order to find its <code>DOMString</code> type and 
+     * <code>relatedData</code> definitions if any.  As an example, [<a href='http://www.w3.org/TR/DOM-Level-3-LS'>DOM Level 3 Load and Save</a>] does 
+     * not keep the [baseURI] property defined on a Processing Instruction 
+     * information item. Therefore, the <code>DOMBuilder</code> generates a 
+     * <code>SEVERITY_WARNING</code> with <code>type</code> 
+     * <code>"infoset-baseURI"</code> and the lost [baseURI] property 
+     * represented as a <code>DOMString</code> in the 
+     * <code>relatedData</code> attribute. 
+     */
+
+    public String getType();
+
 
 }

@@ -582,26 +582,12 @@ public class DeferredDocumentImpl
     /** Creates a processing instruction node in the table. */
     public int createDeferredProcessingInstruction(String target,
                                                    String data) {
-
         // create node
         int nodeIndex = createNode(Node.PROCESSING_INSTRUCTION_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
         setChunkValue(fNodeName, target, chunk, index);
         setChunkValue(fNodeValue, data, chunk, index);
-        // return node index
-        return nodeIndex;
-
-    } // createDeferredProcessingInstruction(String,String):int
-
-
-    /** Set a baseURI for a processing instruction node in the table. */
-    public int setDeferredPIBaseURI(int nodeIndex, String baseURI) {
-
-        // create node
-        int chunk = nodeIndex >> CHUNK_SHIFT;
-        int index = nodeIndex & CHUNK_MASK;
-        setChunkValue(fNodeURI, baseURI, chunk, index);
         // return node index
         return nodeIndex;
 
