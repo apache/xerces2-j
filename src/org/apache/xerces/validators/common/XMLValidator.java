@@ -1406,6 +1406,8 @@ public final class XMLValidator
          //
          if (fValidating ) {
             try {
+                    this.fValIDRef.validate( null, this.fStoreIDRef ); //Store the ID list
+                    this.fValIDRefs.validate( null, this.fStoreIDRef );
                     this.fValIDRef.validate( null, this.fValidateIDRef ); //Do final IDREF validation round  
                     this.fValIDRefs.validate( null, this.fValidateIDRef );
                     this.fValID.validate( null, this.fResetID );//Reset ID, IDREF, IDREFS validators here
@@ -2088,9 +2090,9 @@ public final class XMLValidator
                }
                if (validationEnabled) {
                    if (attType == fIDREFSymbol) {
-                       this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                       this.fValIDRef.validate( fStringPool.toString(attValue), null );
                    } else if (attType == fIDREFSSymbol) {
-                       this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                       this.fValIDRefs.validate( fStringPool.toString(attValue), null );
                    }
                }
                if (attrIndex == -1) {
@@ -2238,10 +2240,10 @@ public final class XMLValidator
                }
                if (validationEnabled) {
                     if (attType == fIDREFSymbol) {
-                        this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                        this.fValIDRef.validate( fStringPool.toString(attValue), null );
                     }
                     else if (attType == fIDREFSSymbol) {
-                        this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                        this.fValIDRefs.validate( fStringPool.toString(attValue), null );
                     }
                }
                if (attrIndex == -1) {
@@ -3444,11 +3446,11 @@ public final class XMLValidator
                                                    try {
                                                       String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
                                                       String  value       = unTrimValue.trim();
-                                                      if (attDecl.type == XMLAttributeDecl.TYPE_ID ) {
-                                                         this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                                                      if (attDV instanceof IDDatatypeValidator) {
+                                                         this.fStoreIDRef.setDatatypeObject( attDV.validate( value, null ) );
                                                       }
-                                                      if (attDecl.type == XMLAttributeDecl.TYPE_IDREF ) {
-                                                         attDV.validate(value, this.fStoreIDRef );
+                                                      if (attDV instanceof IDREFDatatypeValidator) {
+                                                         attDV.validate(value, null );
                                                       }
                                                        else {
                                                               fWhiteSpace = attDV.getWSFacet();
@@ -3513,24 +3515,25 @@ public final class XMLValidator
                                  try {
                                     String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
                                     String  value       = unTrimValue.trim();
-                                    if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ) {
-                                       this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
-                                    } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ) {
-                                       fTempAttDecl.datatypeValidator.validate(value, this.fStoreIDRef );
+                                    DatatypeValidator tempDV = fTempAttDecl.datatypeValidator;
+                                    if (tempDV instanceof IDDatatypeValidator) {
+                                       this.fStoreIDRef.setDatatypeObject( tempDV.validate( value, null ) );
+                                    } else if (tempDV instanceof IDREFDatatypeValidator) {
+                                       tempDV.validate(value, null );
                                     }
                                     else {
-                                        fWhiteSpace = fTempAttDecl.datatypeValidator.getWSFacet();
+                                        fWhiteSpace = tempDV.getWSFacet();
                                         if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
-                                            fTempAttDecl.datatypeValidator.validate(unTrimValue, null );
+                                            tempDV.validate(unTrimValue, null );
                                         }
                                         else { // normalize 
                                             int normalizedValue = fStringPool.addString(value);
                                             attrList.setAttValue(index,normalizedValue );
-                                            if (fTempAttDecl.datatypeValidator instanceof NOTATIONDatatypeValidator 
+                                            if (tempDV instanceof NOTATIONDatatypeValidator
                                                 && value !=null) {
                                                 value=bindNotationURI(value);
                                             }
-                                            fTempAttDecl.datatypeValidator.validate(value, null );
+                                            tempDV.validate(value, null );
                                         }
                                     }
                                  } catch (InvalidDatatypeValueException idve) {
@@ -3668,7 +3671,7 @@ public final class XMLValidator
             }
             try {
                this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
-               fValIDRef.validate( value, this.fStoreIDRef ); //just in case we called id after IDREF
+               fValIDRef.validate( value, null ); //just in case we called id after IDREF
             } catch ( InvalidDatatypeValueException ex ) {
                reportRecoverableXMLError(ex.getMajorCode(),
                                          ex.getMinorCode(),
@@ -3702,9 +3705,9 @@ public final class XMLValidator
             }
             try {
                if ( isAlistAttribute ) {
-                  fValIDRefs.validate( value, this.fStoreIDRef );
+                  fValIDRefs.validate( value, null );
                } else {
-                  fValIDRef.validate( value, this.fStoreIDRef );
+                  fValIDRef.validate( value, null );
                }
             } catch ( InvalidDatatypeValueException ex ) {
                if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {

@@ -142,14 +142,15 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
                     fTableIDRefs.clear();
                     fTableIDRefs = null;
                 }
-                return null;
             } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
                 // Validate that all keyRef is a keyIds
                 this.checkIdRefs();
+            } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
+                this.fTableOfId = (Hashtable) message.getDatatypeObject();
+            }
                 return null;
             }
-             else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
-                this.fTableOfId = (Hashtable) message.getDatatypeObject();
+
         // use StringDatatypeValidator to validate content against facets
         super.validate(content, state);
         // check if content is a valid NCName
@@ -163,8 +164,6 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
         }
 
         addIdRef( content, state);// We are storing IDs
-            }
-        }
 
         return null;
     }
