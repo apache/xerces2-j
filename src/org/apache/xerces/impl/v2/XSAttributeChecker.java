@@ -62,6 +62,7 @@ import org.w3c.dom.*;
 import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.XMLManipulator;
+import org.apache.xerces.xni.QName;
 /*import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.GrammarResolver;
 import org.apache.xerces.validators.common.Grammar;
@@ -72,6 +73,38 @@ import org.apache.xerces.validators.common.Grammar;
  */
 
 public class XSAttributeChecker {
+
+    // store the value of an attribute in a compiled form
+    public class AttrVal {
+        // value
+        Object val;
+        // if this attribute is not specified, and the value is provided
+        // by the default value, then fromDefault == true
+        boolean fromDefault;
+        // constructor
+        protected AttrVal(Object val, boolean fromDefault) {
+            this.val = val;
+            this.fromDefault = fromDefault;
+        }
+    }
+
+    private static Boolean FORM_QUALIFIED     = Boolean.TRUE;
+    private static Boolean FORM_UNQUALIFIED   = Boolean.FALSE;
+    private static Integer INT_ZERO           = new Integer(0);
+    private static Integer INT_EMPTY_SET      = INT_ZERO;
+    private static Integer INT_ANY_STRICT     = INT_ZERO;
+    private static Integer INT_USE_OPTIONAL   = INT_ZERO;
+    private static Integer INT_WS_PRESERVE    = INT_ZERO;
+    private static Integer INT_ONE            = new Integer(1);
+    private static Integer INT_ANY_LAX        = INT_ONE;
+    private static Integer INT_USE_REQUIRED   = INT_ONE;
+    private static Integer INT_WS_REPLACE     = INT_ONE;
+    private static Integer INT_TWO            = new Integer(2);
+    private static Integer INT_ANY_SKIP       = INT_TWO;
+    private static Integer INT_USE_PROHIBITED = INT_TWO;
+    private static Integer INT_WS_COLLAPSE    = INT_TWO;
+
+    private static Integer INT_UNBOUNDED = new Integer(SchemaSymbols.OCCURRENCE_UNBOUNDED);
 
     // used to specify whether the attribute is optional,
     // and whether it has a default value
@@ -87,25 +120,25 @@ public class XSAttributeChecker {
     // used to store the map from element name to attribute list
     protected static Hashtable fEleAttrsMap = new Hashtable();
 
-    // used to store extra datatype validators
-    protected static DatatypeValidator[] fExtraDVs = null;
-
     // used to initialize fEleAttrsMap
     // step 1: all possible data types
     // DT_??? >= 0 : validate using a validator, which is initialized staticly
     // DT_??? <  0 : validate directly, which is done in "validate()"
-    protected static int       dtCount             = 0;
 
-    protected static final int DT_ANYURI           = dtCount++;
-    protected static final int DT_BOOLEAN          = dtCount++;
-    protected static final int DT_ID               = dtCount++;
-    protected static final int DT_NONNEGINT        = dtCount++;
-    protected static final int DT_QNAME            = dtCount++;
-    protected static final int DT_STRING           = dtCount++;
-    protected static final int DT_TOKEN            = dtCount++;
-    protected static final int DT_NCNAME           = dtCount++;
-    protected static final int DT_XPATH            = dtCount++;
-    protected static final int DT_XPATH1           = dtCount++;
+    protected static final int DT_ANYURI           = 0;
+    protected static final int DT_BOOLEAN          = 1;
+    protected static final int DT_ID               = 2;
+    protected static final int DT_NONNEGINT        = 3;
+    protected static final int DT_QNAME            = 4;
+    protected static final int DT_STRING           = 5;
+    protected static final int DT_TOKEN            = 6;
+    protected static final int DT_NCNAME           = 7;
+    protected static final int DT_XPATH            = 8;
+    protected static final int DT_XPATH1           = 9;
+
+    // used to store extra datatype validators
+    protected static final int DT_COUNT            = DT_XPATH1 + 1;
+    protected static DatatypeValidator[] fExtraDVs = new DatatypeValidator[DT_COUNT];
 
     protected static final int DT_BLOCK            = -1;
     protected static final int DT_BLOCK1           = -2;
@@ -123,8 +156,6 @@ public class XSAttributeChecker {
     protected static final int DT_WHITESPACE       = -14;
 
     static {
-        fExtraDVs = new DatatypeValidator[dtCount];
-
         // step 2: all possible attributes for all elements
         int attCount = 0;
         int ATT_ABSTRACT_D          = attCount++;
@@ -179,11 +210,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_ABSTRACT_D]        =   new OneAttr(SchemaSymbols.ATT_ABSTRACT,
                                                         DT_BOOLEAN,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_ATTRIBUTE_FD_D]    =   new OneAttr(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT,
                                                         DT_FORM,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_UNQUALIFIED);
+                                                        FORM_UNQUALIFIED);
         allAttrs[ATT_BASE_R]            =   new OneAttr(SchemaSymbols.ATT_BASE,
                                                         DT_QNAME,
                                                         ATT_REQUIRED,
@@ -203,7 +234,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_BLOCK_D_D]         =   new OneAttr(SchemaSymbols.ATT_BLOCKDEFAULT,
                                                         DT_BLOCK,
                                                         ATT_OPT_DFLT,
-                                                        "");
+                                                        INT_EMPTY_SET);
         allAttrs[ATT_DEFAULT_N]         =   new OneAttr(SchemaSymbols.ATT_DEFAULT,
                                                         DT_STRING,
                                                         ATT_OPT_NODFLT,
@@ -211,7 +242,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_ELEMENT_FD_D]      =   new OneAttr(SchemaSymbols.ATT_ELEMENTFORMDEFAULT,
                                                         DT_FORM,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_UNQUALIFIED);
+                                                        FORM_UNQUALIFIED);
         allAttrs[ATT_FINAL_N]           =   new OneAttr(SchemaSymbols.ATT_FINAL,
                                                         DT_FINAL,
                                                         ATT_OPT_NODFLT,
@@ -223,7 +254,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_FINAL_D_D]         =   new OneAttr(SchemaSymbols.ATT_FINALDEFAULT,
                                                         DT_FINAL,
                                                         ATT_OPT_DFLT,
-                                                        "");
+                                                        INT_EMPTY_SET);
         allAttrs[ATT_FIXED_N]           =   new OneAttr(SchemaSymbols.ATT_FIXED,
                                                         DT_STRING,
                                                         ATT_OPT_NODFLT,
@@ -231,7 +262,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_FIXED_D]           =   new OneAttr(SchemaSymbols.ATT_FIXED,
                                                         DT_BOOLEAN,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_FORM_N]            =   new OneAttr(SchemaSymbols.ATT_FORM,
                                                         DT_FORM,
                                                         ATT_OPT_NODFLT,
@@ -247,11 +278,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_MAXOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS,
                                                         ATT_OPT_DFLT,
-                                                        "1");
+                                                        INT_ONE);
         allAttrs[ATT_MAXOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS1,
                                                         ATT_OPT_DFLT,
-                                                        "1");
+                                                        INT_ONE);
         allAttrs[ATT_MEMBER_T_N]        =   new OneAttr(SchemaSymbols.ATT_MEMBERTYPES,
                                                         DT_MEMBERTYPES,
                                                         ATT_OPT_NODFLT,
@@ -259,15 +290,15 @@ public class XSAttributeChecker {
         allAttrs[ATT_MINOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_NONNEGINT,
                                                         ATT_OPT_DFLT,
-                                                        "1");
+                                                        INT_ONE);
         allAttrs[ATT_MINOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_MINOCCURS1,
                                                         ATT_OPT_DFLT,
-                                                        "1");
+                                                        INT_ONE);
         allAttrs[ATT_MIXED_D]           =   new OneAttr(SchemaSymbols.ATT_MIXED,
                                                         DT_BOOLEAN,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_MIXED_N]           =   new OneAttr(SchemaSymbols.ATT_MIXED,
                                                         DT_BOOLEAN,
                                                         ATT_OPT_NODFLT,
@@ -287,11 +318,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_NILLABLE_D]        =   new OneAttr(SchemaSymbols.ATT_NILLABLE,
                                                         DT_BOOLEAN,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_PROCESS_C_D]       =   new OneAttr(SchemaSymbols.ATT_PROCESSCONTENTS,
                                                         DT_PROCESSCONTENTS,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_STRICT);
+                                                        INT_ANY_STRICT);
         allAttrs[ATT_PUBLIC_R]          =   new OneAttr(SchemaSymbols.ATT_PUBLIC,
                                                         DT_PUBLIC,
                                                         ATT_REQUIRED,
@@ -335,7 +366,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_USE_D]             =   new OneAttr(SchemaSymbols.ATT_USE,
                                                         DT_USE,
                                                         ATT_OPT_DFLT,
-                                                        SchemaSymbols.ATTVAL_OPTIONAL);
+                                                        INT_USE_OPTIONAL);
         allAttrs[ATT_VALUE_NNI_N]       =   new OneAttr(SchemaSymbols.ATT_VALUE,
                                                         DT_NONNEGINT,
                                                         ATT_OPT_NODFLT,
@@ -819,7 +850,7 @@ public class XSAttributeChecker {
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        // value = anySimpleType ???
+        // value = anySimpleType
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_STR_N]);
         oneEle = new OneElement (attrList);
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_ENUMERATION, oneEle);
@@ -839,7 +870,7 @@ public class XSAttributeChecker {
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        // value = anySimpleType ???
+        // value = anySimpleType
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_STR_N]);
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
@@ -909,11 +940,30 @@ public class XSAttributeChecker {
         if (element == null)
             return null;
 
+        // if the parent is xs:appInfo or xs:documentation,
+        // then skip the validation, and return am empty list
+        Element parent = XMLManipulator.getParent(element);
+        if (parent != null) {
+            String pUri = XMLManipulator.getNamespaceURI(parent);
+            String pName = XMLManipulator.getLocalName(parent);
+            if (pUri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+                (pName.equals(SchemaSymbols.ELT_APPINFO) ||
+                 pName.equals(SchemaSymbols.ELT_DOCUMENTATION))) {
+                return new Hashtable();
+            }
+        }
+
+        String uri = XMLManipulator.getNamespaceURI(element);
+        String elName = XMLManipulator.getLocalName(element), name;
+
+        if (uri == null || !uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+            reportSchemaError("Con3X3ElementSchemaURI", new Object[] {elName});
+        }
+
         // Get the proper name:
         // G_ for global;
         // LN_ for local + name;
         // LR_ for local + ref;
-        String elName = XMLManipulator.getLocalName(element), name;
         if (isGlobal) {
             name = PRE_GLOBAL + elName;
         }
@@ -944,10 +994,10 @@ public class XSAttributeChecker {
             String attrName = XMLManipulator.getLocalName(sattr);
             String attrVal = XMLManipulator.getValue(sattr);
 
-            // skip anything starts with x/X m/M l/L ???
+            // skip anything starts with x/X m/M l/L
             // simply put their values in the return hashtable
             if (attrName.toLowerCase().startsWith("xml")) {
-                attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
+                attrValues.put(attrName, new AttrVal(attrVal, false));
                 continue;
             }
 
@@ -966,8 +1016,7 @@ public class XSAttributeChecker {
                     // for attributes from other namespace
                     // store them in a list, and TRY to validate them after
                     // schema traversal (because it's "lax")
-                    attrValues.put(attrName,
-                                   new Object[] {attrVal, Boolean.FALSE});
+                    attrValues.put(attrName, new AttrVal(attrVal, false));
                     String attrRName = attrURI + "," + attrName;
                     Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
                     if (values == null) {
@@ -995,6 +1044,8 @@ public class XSAttributeChecker {
 
             // check the value against the datatype
             try {
+                Object retValue = null;
+
                 // no checking on string needs to be done here.
                 // no checking on xpath needs to be done here.
                 // xpath values are validated in xpath parser
@@ -1004,17 +1055,37 @@ public class XSAttributeChecker {
                         oneAttr.dvIndex != DT_XPATH1) {
                         DatatypeValidator dv = fExtraDVs[oneAttr.dvIndex];
                         if (dv instanceof IDDatatypeValidator) {
-                            dv.validate( attrVal, fIdDefs );
+                            retValue = dv.validate( attrVal, fIdDefs );
                         }
                         else {
-                            dv.validate( attrVal, null);
+                            retValue = dv.validate( attrVal, null);
                         }
                     }
-                    attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
+                    // REVISIT: should have the datatype validators return
+                    // the object representation of the value.
+                    switch (oneAttr.dvIndex) {
+                    case DT_BOOLEAN:
+                        retValue = attrVal.equals(SchemaSymbols.ATTVAL_TRUE) ||
+                                   attrVal.equals(SchemaSymbols.ATTVAL_TRUE_1) ?
+                                   Boolean.TRUE : Boolean.FALSE;
+                        break;
+                    case DT_NONNEGINT:
+                        retValue = new Integer(attrVal);
+                        break;
+                    case DT_QNAME:
+                        //REVISIT: return QName
+                        //retValue = new QName();
+                        retValue = attrVal;
+                        break;
+                    default:
+                        retValue = attrVal;
+                        break;
+                    }
+                    attrValues.put(attrName, new AttrVal(retValue, false));
                 }
                 else {
-                    attrVal = validate(attrName, attrVal, oneAttr.dvIndex);
-                    attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
+                    retValue = validate(attrName, attrVal, oneAttr.dvIndex);
+                    attrValues.put(attrName, new AttrVal(retValue, false));
                 }
             }
             catch (InvalidDatatypeValueException ide) {
@@ -1039,19 +1110,20 @@ public class XSAttributeChecker {
             }
             // if the attribute is optional with default value, apply it
             else if (oneAttr.optdflt == ATT_OPT_DFLT) {
-                attrValues.put(oneAttr.name, new Object[] {oneAttr.dfltValue, Boolean.TRUE});
+                attrValues.put(oneAttr.name, new AttrVal(oneAttr.dfltValue, true));
             }
         }
 
         return attrValues;
     }
 
-    private String validate(String attr, String value, int dvIndex) throws InvalidDatatypeValueException {
-        Vector unionBase, enum;
-        int choice;
-
+    private Object validate(String attr, String value, int dvIndex) throws InvalidDatatypeValueException {
         if (value == null)
             return null;
+
+        Object retValue = value;
+        Vector memberType;
+        int choice;
 
         switch (dvIndex) {
         case DT_BLOCK:
@@ -1087,7 +1159,7 @@ public class XSAttributeChecker {
                     }
                 }
             }
-//???            value = Integer.toString(choice);
+            retValue = new Integer(choice);
             break;
         case DT_BLOCK1:
         case DT_FINAL:
@@ -1113,7 +1185,7 @@ public class XSAttributeChecker {
                     }
                 }
             }
-//???            value = Integer.toString(choice);
+            retValue = new Integer(choice);
             break;
         case DT_FINAL1:
             // final = (#all | (list | union | restriction))
@@ -1134,20 +1206,27 @@ public class XSAttributeChecker {
             else {
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | (list | union | restriction))");
             }
-//???            value = Integer.toString(choice);
+            retValue = new Integer(choice);
             break;
         case DT_FORM:
             // form = (qualified | unqualified)
-            if (!value.equals (SchemaSymbols.ATTVAL_QUALIFIED) &&
-                !value.equals (SchemaSymbols.ATTVAL_UNQUALIFIED)) {
+            if (value.equals (SchemaSymbols.ATTVAL_QUALIFIED))
+                retValue = FORM_QUALIFIED;
+            else if (value.equals (SchemaSymbols.ATTVAL_UNQUALIFIED))
+                retValue = FORM_UNQUALIFIED;
+            else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (qualified | unqualified)");
-            }
             break;
         case DT_MAXOCCURS:
             // maxOccurs = (nonNegativeInteger | unbounded)
-            if (!value.equals(SchemaSymbols.ATTVAL_UNBOUNDED)) {
+            if (value.equals(SchemaSymbols.ATTVAL_UNBOUNDED)) {
+                retValue = INT_UNBOUNDED;
+            } else {
                 try {
-                    fExtraDVs[DT_NONNEGINT].validate(value, null);
+                    retValue = fExtraDVs[DT_NONNEGINT].validate(value, null);
+                    // REVISIT: should have the datatype validators return
+                    // the object representation of the value.
+                    retValue = new Integer(value);
                 }
                 catch (InvalidDatatypeValueException ide) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
@@ -1156,17 +1235,27 @@ public class XSAttributeChecker {
             break;
         case DT_MAXOCCURS1:
             // maxOccurs = 1
-            if (!value.equals("1"))
+            if (value.equals("1"))
+                retValue = INT_ONE;
+            else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must be '1'");
             break;
         case DT_MEMBERTYPES:
             // memberTypes = List of QName
+            memberType = new Vector();
             try {
                 StringTokenizer t = new StringTokenizer (value, " ");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
-                    fExtraDVs[DT_QNAME].validate(token, null);
+                    retValue = fExtraDVs[DT_QNAME].validate(token, null);
+                    // REVISIT: should have the datatype validators return
+                    // the object representation of the value.
+                    // REVISIT: return QName
+                    // retValue = new QName();
+                    retValue = token;
+                    memberType.addElement(retValue);
                 }
+                retValue = memberType;
             }
             catch (InvalidDatatypeValueException ide) {
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (List of QName)");
@@ -1174,7 +1263,11 @@ public class XSAttributeChecker {
             break;
         case DT_MINOCCURS1:
             // minOccurs = (0 | 1)
-            if (!value.equals("0") && !value.equals("1"))
+            if (value.equals("0"))
+                retValue = INT_ZERO;
+            else if (value.equals("1"))
+                retValue = INT_ONE;
+            else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must be '0' or '1'");
             break;
         case DT_NAMESPACE:
@@ -1190,6 +1283,7 @@ public class XSAttributeChecker {
                             fExtraDVs[DT_ANYURI].validate(token, null);
                         }
                     }
+                    //REVISIT: what to return? a vector?
                 }
                 catch (InvalidDatatypeValueException ide) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )");
@@ -1198,35 +1292,45 @@ public class XSAttributeChecker {
             break;
         case DT_PROCESSCONTENTS:
             // processContents = (lax | skip | strict)
-            if (!value.equals (SchemaSymbols.ATTVAL_SKIP) &&
-                !value.equals (SchemaSymbols.ATTVAL_LAX) &&
-                !value.equals (SchemaSymbols.ATTVAL_STRICT)) {
+            if (value.equals (SchemaSymbols.ATTVAL_STRICT))
+                retValue = INT_ANY_STRICT;
+            else if (value.equals (SchemaSymbols.ATTVAL_LAX))
+                retValue = INT_ANY_LAX;
+            else if (value.equals (SchemaSymbols.ATTVAL_SKIP))
+                retValue = INT_ANY_SKIP;
+            else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (lax | skip | strict)");
-            }
             break;
         case DT_PUBLIC:
-            // public = A public identifier, per ISO 8879 ???
+            // public = A public identifier, per ISO 8879
+            // REVISIT: how to validate "public"???
             fExtraDVs[DT_TOKEN].validate(value, null);
             break;
         case DT_USE:
             // use = (optional | prohibited | required)
-            if (!value.equals (SchemaSymbols.ATTVAL_OPTIONAL) &&
-                !value.equals (SchemaSymbols.ATTVAL_PROHIBITED) &&
-                !value.equals (SchemaSymbols.ATTVAL_REQUIRED)) {
+            if (value.equals (SchemaSymbols.ATTVAL_OPTIONAL))
+                retValue = INT_USE_OPTIONAL;
+            else if (value.equals (SchemaSymbols.ATTVAL_REQUIRED))
+                retValue = INT_USE_REQUIRED;
+            else if (value.equals (SchemaSymbols.ATTVAL_PROHIBITED))
+                retValue = INT_USE_PROHIBITED;
+            else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (optional | prohibited | required)");
-            }
             break;
         case DT_WHITESPACE:
             // value = preserve | replace | collapse
-            if (!value.equals (SchemaSymbols.ATTVAL_PRESERVE) &&
-                !value.equals (SchemaSymbols.ATTVAL_REPLACE) &&
-                !value.equals (SchemaSymbols.ATTVAL_COLLAPSE)) {
+            if (value.equals (SchemaSymbols.ATTVAL_PRESERVE))
+                retValue = INT_WS_PRESERVE;
+            else if (value.equals (SchemaSymbols.ATTVAL_REPLACE))
+                retValue = INT_WS_REPLACE;
+            else if (value.equals (SchemaSymbols.ATTVAL_COLLAPSE))
+                retValue = INT_WS_COLLAPSE;
+            else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (preserve | replace | collapse)");
-            }
             break;
         }
 
-        return value;
+        return retValue;
     }
 
     // report an error. copied from TraverseSchema
@@ -1345,9 +1449,9 @@ class OneAttr {
     // whether it's optional, and has default value
     public int optdflt;
     // the default value of this attribute
-    public String dfltValue;
+    public Object dfltValue;
 
-    public OneAttr(String name, int dvIndex, int optdflt, String dfltValue) {
+    public OneAttr(String name, int dvIndex, int optdflt, Object dfltValue) {
         this.name = name;
         this.dvIndex = dvIndex;
         this.optdflt = optdflt;

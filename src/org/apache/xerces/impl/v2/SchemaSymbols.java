@@ -201,6 +201,21 @@ public final  class SchemaSymbols {
     public static final int ENUMERATION  = 16;
     public static final int SUBSTITUTION = 32;
 
+    // any: processContents
+    public static final int ANY_STRICT = 0;
+    public static final int ANY_LAX    = 1;
+    public static final int ANY_SKIP   = 2;
+
+    // attribute use
+    public static final int USE_OPTIONAL   = 0;
+    public static final int USE_REQUIRED   = 1;
+    public static final int USE_PROHIBITED = 2;
+
+    // whiteSpace
+    public static final int WS_PRESERVE = 0;
+    public static final int WS_REPLACE  = 1;
+    public static final int WS_COLLAPSE = 2;
+
     // maxOccurs = "unbounded"
     public static final int OCCURRENCE_UNBOUNDED = -1;
 }
