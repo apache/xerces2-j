@@ -145,6 +145,7 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_ELEMENTONLY =  "elementOnly";
     public static final String ATTVAL_EMPTY =  "empty";
     public static final String ATTVAL_EXTENSION =  "extension";
+    public static final String ATTVAL_FALSE =  "false";
     public static final String ATTVAL_FIXED =  "fixed";
     public static final String ATTVAL_HEX =  "hex";
     public static final String ATTVAL_ID =  "ID";
@@ -164,6 +165,7 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_STRING =  "string";
     public static final String ATTVAL_TEXTONLY =  "textOnly";
     public static final String ATTVAL_TIMEDURATION =  "timeDuration";
+    public static final String ATTVAL_TRUE =  "true";
     public static final String ATTVAL_UNQUALIFIED =  "unqualified";
     public static final String ATTVAL_URI =  "uri";
     public static final String ATTVAL_URIREFERENCE =  "uriReference";
@@ -184,5 +186,7 @@ public final  class SchemaSymbols {
 
     public static final int                     INFINITY = -1;          // used for maxOccurs
 
+    public static final int NULLABLE = 1;
+    public static final int ABSTRACT = 2;
 
 }

@@ -431,9 +431,12 @@ public class TraverseSchema implements
         
         public DatatypeValidator baseDataTypeValidator;
         public ComplexTypeInfo baseComplexTypeInfo;
-        public int derivedBy;
-        public int blockSet;
-        public int finalSet;
+
+        public int derivedBy = 0;
+        public int blockSet = 0;
+        public int finalSet = 0;
+
+        public boolean isAbstract = false;
 
         public int scopeDefined = -1;
 
@@ -1664,6 +1667,7 @@ public class TraverseSchema implements
         typeInfo.datatypeValidator = simpleTypeValidator;
         typeInfo.blockSet = parseBlockSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_BLOCK));
         typeInfo.finalSet = parseFinalSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL));
+        typeInfo.isAbstract = isAbstract.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false ;
 
         //add a template element to the grammar element decl pool.
         int typeNameIndex = fStringPool.addSymbol(typeName);
@@ -1687,7 +1691,11 @@ public class TraverseSchema implements
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
                     // REVISIT: Localize
-                    reportGenericSchemaError("In complexType "+typeName+", base type has simpleType content and derivation method is 'restriction', can't have any attribute children at all");
+                    reportGenericSchemaError("In complexType "+typeName+
+                                             ", base type has simpleType "+
+                                             "content and derivation method is"+
+                                             " 'restriction', can't have any "+
+                                             "attribute children at all");
                     break;
                 }
                 traverseAttributeDecl(child, typeInfo);
@@ -1695,7 +1703,10 @@ public class TraverseSchema implements
             else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
                 if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
                     // REVISIT: Localize
-                    reportGenericSchemaError("In complexType "+typeName+", base type has simpleType content and derivation method is 'restriction', can't have any attribute children at all");
+                    reportGenericSchemaError("In complexType "+typeName+", base "+
+                                             "type has simpleType content and "+
+                                             "derivation method is 'restriction',"+
+                                             " can't have any attribute children at all");
                     break;
                 }
                 traverseAttributeGroupDecl(child,typeInfo);
@@ -2410,7 +2421,23 @@ public class TraverseSchema implements
                 return new QName(-1,nameIndex,nameIndex,fTargetNSURI);
             }
         }
+        
+        // parse out 'block', 'final', 'nullable', 'abstract'
+        int blockSet = parseBlockSet(elementDecl.getAttribute(SchemaSymbols.ATT_BLOCK));
+        int finalSet = parseFinalSet(elementDecl.getAttribute(SchemaSymbols.ATT_FINAL));
+        boolean isNullable = elementDecl.getAttribute
+            (SchemaSymbols.ATT_NULLABLE).equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
+        boolean isAbstract = elementDecl.getAttribute
+            (SchemaSymbols.ATT_ABSTRACT).equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
+        int elementMiscFlags = 0;
+        if (isNullable) {
+            elementMiscFlags += SchemaSymbols.NULLABLE;
+        }
+        if (isAbstract) {
+            elementMiscFlags += SchemaSymbols.ABSTRACT;
+        }
 
+        //if this is a reference to a global element
         int attrCount = 0;
         if (!ref.equals("")) attrCount++;
         if (!type.equals("")) attrCount++;
@@ -2727,7 +2754,11 @@ public class TraverseSchema implements
         // mark element if its type belongs to different Schema.
         fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
 
-        
+        // set BlockSet, FinalSet, Nullable and Abstract for this element decl
+        fSchemaGrammar.setElementDeclBlockSet(elementIndex, blockSet);
+        fSchemaGrammar.setElementDeclFinalSet(elementIndex, finalSet);
+        fSchemaGrammar.setElementDeclMiscFlags(elementIndex, elementMiscFlags);
+
         return eltQName;
 
     }// end of method traverseElementDecl(Element)

@@ -109,6 +109,9 @@ public class SchemaGrammar extends Grammar{
         new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
     private int fElementDeclDefaultType[][] = new int[INITIAL_CHUNK_COUNT][];
     private String fElementDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclBlockSet[][] = new int[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclFinalSet[][] = new int[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclMiscFlags[][] = new int[INITIAL_CHUNK_COUNT][];
 
     //ComplexType and SimpleTypeRegistries
     private Hashtable fComplexTypeRegistry = null;
@@ -156,6 +159,7 @@ public class SchemaGrammar extends Grammar{
         return fScopeDefinedByElement[chunk][index];
 
     }
+    
     public int getElementDefaultTYpe(int elementDeclIndex) {
         
         if (elementDeclIndex < -1) {
@@ -165,6 +169,36 @@ public class SchemaGrammar extends Grammar{
         int index = elementDeclIndex & CHUNK_MASK;
         return fElementDeclDefaultType[chunk][index];
 
+    }
+
+    public int getElementDeclBlockSet(int elementDeclIndex) {
+
+        if (elementDeclIndex < -1) {
+            return -1;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fElementDeclBlockSet[chunk][index];
+    }
+
+    public int getElementDeclFinalSet(int elementDeclIndex) {
+
+        if (elementDeclIndex < -1) {
+            return -1;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fElementDeclFinalSet[chunk][index];
+    }
+
+    public int getElementDeclMiscFlags(int elementDeclIndex) {
+
+        if (elementDeclIndex < -1) {
+            return -1;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fElementDeclMiscFlags[chunk][index];
     }
 
     public String getElementFromAnotherSchemaURI(int elementDeclIndex) {
@@ -256,46 +290,65 @@ public class SchemaGrammar extends Grammar{
     protected void setElementDefinedScope(int elementDeclIndex, int scopeDefined) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
         ensureElementDeclCapacity(chunk);
-            if (elementDeclIndex > -1 ) {
-                fScopeDefinedByElement[chunk][index] = scopeDefined;
-            }
-        //}
+        if (elementDeclIndex > -1 ) {
+            fScopeDefinedByElement[chunk][index] = scopeDefined;
+        }
     }
 
     protected  void setElementFromAnotherSchemaURI(int elementDeclIndex, String anotherSchemaURI) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
         ensureElementDeclCapacity(chunk);
-            if (elementDeclIndex > -1 ) {
-                fFromAnotherSchemaURI[chunk][index] = anotherSchemaURI;
-            }
-        //}
+        if (elementDeclIndex > -1 ) {
+            fFromAnotherSchemaURI[chunk][index] = anotherSchemaURI;
+        }
     }
 
     protected void setElementComplexTypeInfo(int elementDeclIndex, TraverseSchema.ComplexTypeInfo typeInfo){
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
-            ensureElementDeclCapacity(chunk);
-            if (elementDeclIndex > -1 ) {
-                fComplexTypeInfo[chunk][index] = typeInfo;
-            }
-        //}
+        ensureElementDeclCapacity(chunk);
+        if (elementDeclIndex > -1 ) {
+            fComplexTypeInfo[chunk][index] = typeInfo;
+        }
     }
 
     protected void setElementDefault(int elementDeclIndex, int defaultType, String defaultValue) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
-            ensureElementDeclCapacity(chunk);
-            if (elementDeclIndex > -1 ) {
-                fElementDeclDefaultType[chunk][index] = defaultType;
-                fElementDeclDefaultValue[chunk][index] = defaultValue;
-            }
-        //}
+        ensureElementDeclCapacity(chunk);
+        if (elementDeclIndex > -1 ) {
+            fElementDeclDefaultType[chunk][index] = defaultType;
+            fElementDeclDefaultValue[chunk][index] = defaultValue;
+        }
+    }
+    
+    protected void setElementDeclBlockSet(int elementDeclIndex, int blockSet) {
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        ensureElementDeclCapacity(chunk);
+        if (elementDeclIndex > -1 ) {
+            fElementDeclBlockSet[chunk][index] = blockSet;
+        }
+    }
+
+    protected void setElementDeclFinalSet(int elementDeclIndex, int finalSet) {
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        ensureElementDeclCapacity(chunk);
+        if (elementDeclIndex > -1 ) {
+            fElementDeclFinalSet[chunk][index] = finalSet;
+        }
+    }
+
+    protected void setElementDeclMiscFlags(int elementDeclIndex, int miscFlags) {
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        ensureElementDeclCapacity(chunk);
+        if (elementDeclIndex > -1 ) {
+            fElementDeclMiscFlags[chunk][index] = miscFlags;
+        }
     }
 
     //add methods for TraverseSchema
@@ -404,16 +457,24 @@ public class SchemaGrammar extends Grammar{
              fComplexTypeInfo =      resize(fComplexTypeInfo, fComplexTypeInfo.length *2);
              fElementDeclDefaultType = resize(fElementDeclDefaultType,fElementDeclDefaultType.length*2);
              fElementDeclDefaultValue = resize(fElementDeclDefaultValue,fElementDeclDefaultValue.length*2);
+             fElementDeclBlockSet = resize(fElementDeclBlockSet,fElementDeclBlockSet.length*2);
+             fElementDeclFinalSet = resize(fElementDeclFinalSet,fElementDeclFinalSet.length*2);
+             fElementDeclMiscFlags = resize(fElementDeclMiscFlags,fElementDeclMiscFlags.length*2);
         }
         catch (NullPointerException ex) {
             // ignore
         }
         fScopeDefinedByElement[chunk] = new int[CHUNK_SIZE];
         for (int i=0; i<CHUNK_SIZE; i++) {
-            fScopeDefinedByElement[chunk][i] = -2;
+            fScopeDefinedByElement[chunk][i] = -2;  //-1, 0 are all valid scope value.
         }
         fFromAnotherSchemaURI[chunk] = new String[CHUNK_SIZE];
         fComplexTypeInfo[chunk] = new TraverseSchema.ComplexTypeInfo[CHUNK_SIZE];
+        fElementDeclDefaultType[chunk] = new int[CHUNK_SIZE];
+        fElementDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
+        fElementDeclBlockSet[chunk] = new int[CHUNK_SIZE]; // initialized to 0
+        fElementDeclFinalSet[chunk] = new int[CHUNK_SIZE]; // initialized to 0
+        fElementDeclMiscFlags[chunk] = new int[CHUNK_SIZE]; // initialized to 0
         return true;
     }
 
