@@ -154,6 +154,7 @@ public class TestSerializeDOMOut
             doc           = tstIn.deserializeDOM( nameOfSerializedFile );
 
             Writer prettyWriter = new Writer( false );
+            prettyWriter.setOutput(System.out, "UTF8");
             System.out.println( "Here is the whole Document" );
             prettyWriter.write(  doc.getDocumentElement() );
         } catch ( Exception ex ){

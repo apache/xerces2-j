@@ -89,6 +89,7 @@ public class TestNS {
             boolean schemaValidation = false;
             boolean deferred = true;
             boolean modify = true;
+            boolean stdout = false;
             for (int i = 0; i < argv.length; i++) {
                 String arg = argv[i];
                 if (arg.startsWith("-")) {
@@ -125,9 +126,12 @@ public class TestNS {
                         schemaValidation = option.equals("s");
                         continue;
                     }
-
                     if (option.equalsIgnoreCase("m")) {
                         modify = option.equals("m");
+                        continue;
+                    }
+                    if (option.equalsIgnoreCase("o")) {
+                        stdout = option.equals("o");
                         continue;
                     }
                 }
@@ -275,14 +279,41 @@ public class TestNS {
                 format.setIndenting(true);
                 format.setLineWidth(0);             
                 format.setPreserveSpace(true);
-                /* XMLSerializer serializer = new XMLSerializer(System.out, format);
-                serializer.asDOMSerializer();
-                serializer.serialize((Document)core);
-                */
+                if (stdout) {
+                
+                  XMLSerializer serializer = new XMLSerializer(System.out, format);
+                  serializer.asDOMSerializer();
+                  serializer.serialize((Document)core);
+                } else {
+                
                 System.out.println("Serializing output to output.xml...");
                 XMLSerializer toFile = new XMLSerializer (new FileWriter("output.xml"), format);
                 toFile.asDOMSerializer();
                 toFile.serialize((Document)core);
+                }
+                /** Test SAX Serializer */
+                /* System.out.println("Testing SAX Serializer");
+                XMLSerializer saxSerializer;
+                if (stdout) {                
+                    saxSerializer = new XMLSerializer (System.out, format);
+                } else {
+                    saxSerializer = new XMLSerializer (new FileWriter("sax_output.xml"), format);
+                }
+
+                saxSerializer.startDocument();
+                //saxSerializer.processingInstruction("foo", "bar");
+                saxSerializer.startDTD("foo", "bar", "baz");
+                saxSerializer.startElement("myNamespace", "a", "foo:a", null);
+                saxSerializer.startElement("myNamespace", "b", "foo:b", null);
+                
+                saxSerializer.startElement("myNamespace", "c", "foo:c", null);
+                saxSerializer.endElement("myNamespace", "c", "foo:c");
+                saxSerializer.endElement("myNamespace", "b", "foo:b");
+
+                saxSerializer.endElement("myNamespace", "a", "foo:a");
+                saxSerializer.endDocument();
+                System.out.println("Serializing output to sax_output.xml...");
+                */
 
             }
 
@@ -302,10 +333,11 @@ public class TestNS {
         System.err.println("options:");
         System.err.println("  -x number   Select number of repetitions.");
         System.err.println("              NOTE: Requires use of -n.");
-        System.err.println("  -n  | -N    Turn on/off namespace processing.");
+        System.err.println("  -o  | -O    Turn on/off serialization to standard output.");
         System.err.println("  -m  | -M    Turn on/off document modification.");
+        System.err.println("  -n  | -N    Turn on/off namespace processing.");
         System.err.println("  -v  | -V    Turn on/off validation.");
-        System.err.println("  -s  | -S    Turn on/off Schema validation support.");
+        System.err.println("  -s  | -S    Turn on/off Schema validation support.");        
         System.err.println();
 
 
