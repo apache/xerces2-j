@@ -93,7 +93,7 @@ public class DeferredDocumentImpl
     // debugging
 
     /** To include code for printing the ref count tables. */
-    private static final boolean DEBUG_PRINT_REF_COUNTS = true;
+    private static final boolean DEBUG_PRINT_REF_COUNTS = false;
 
     /** To include code for printing the internal tables. */
     private static final boolean DEBUG_PRINT_TABLES = false;
