@@ -1034,8 +1034,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
         // special cases
         if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+            final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();
+
             //
             // http://xml.org/sax/properties/xml-string
             // Value type: String
@@ -1046,7 +1046,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             //   null (this is a good way to check for availability before the
             //   parse begins).
             //
-            if (property.equals(Constants.XML_STRING_PROPERTY)) {
+            if (propertyId.regionMatches(prefixLength, Constants.XML_STRING_PROPERTY,
+                0, Constants.XML_STRING_PROPERTY.length())) {
                 // REVISIT - we should probably ask xml-dev for a precise
                 // definition of what this is actually supposed to return, and
                 // in exactly which circumstances.

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,6 @@ import org.apache.xerces.impl.XMLDocumentScannerImpl;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLNSDocumentScannerImpl;
-import org.apache.xerces.impl.XMLNamespaceBinder;
 import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
@@ -675,20 +674,23 @@ public class NonValidatingConfiguration
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+        	
             //
             // http://apache.org/xml/features/validation/dynamic
             //   Allows the parser to validate a document only when it
             //   contains a grammar. Validation is turned on/off based
             //   on each document instance, automatically.
             //
-            if (feature.equals(Constants.DYNAMIC_VALIDATION_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.DYNAMIC_VALIDATION_FEATURE,
+                0, Constants.DYNAMIC_VALIDATION_FEATURE.length())) {
                 return;
             }
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE,
+                0, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE.length())) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -696,7 +698,8 @@ public class NonValidatingConfiguration
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_CONTENT_MODELS_FEATURE,
+                0, Constants.VALIDATE_CONTENT_MODELS_FEATURE.length())) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -704,20 +707,23 @@ public class NonValidatingConfiguration
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
             //
-            if (feature.equals(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.LOAD_DTD_GRAMMAR_FEATURE,
+                0, Constants.LOAD_DTD_GRAMMAR_FEATURE.length())) {
                 return;
             }
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-external-dtd
             //
-            if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.LOAD_EXTERNAL_DTD_FEATURE,
+                0, Constants.LOAD_EXTERNAL_DTD_FEATURE.length())) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.VALIDATE_DATATYPES_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_DATATYPES_FEATURE,
+                0, Constants.VALIDATE_DATATYPES_FEATURE.length())) {
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
             }
@@ -752,16 +758,19 @@ public class NonValidatingConfiguration
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
+            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            
+            if (propertyId.regionMatches(prefixLength, Constants.DTD_SCANNER_PROPERTY,
+                0, Constants.DTD_SCANNER_PROPERTY.length())) {
                 return;
             }
         }
 
         if (propertyId.startsWith(Constants.JAXP_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.JAXP_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.SCHEMA_SOURCE)) {
+            final int prefixLength = Constants.JAXP_PROPERTY_PREFIX.length();
+
+            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_SOURCE,
+                0, Constants.SCHEMA_SOURCE.length())) {
                 return;
             }
         }

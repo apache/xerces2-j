@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1209,21 +1209,24 @@ public class XML11Configuration extends ParserConfigurationSettings
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            
             //
             // http://apache.org/xml/features/validation/dynamic
             //   Allows the parser to validate a document only when it
             //   contains a grammar. Validation is turned on/off based
             //   on each document instance, automatically.
             //
-            if (feature.equals(Constants.DYNAMIC_VALIDATION_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.DYNAMIC_VALIDATION_FEATURE, 
+                0, Constants.DYNAMIC_VALIDATION_FEATURE.length())) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE,
+                0, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE.length())) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -1231,7 +1234,8 @@ public class XML11Configuration extends ParserConfigurationSettings
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_CONTENT_MODELS_FEATURE,
+                0, Constants.VALIDATE_CONTENT_MODELS_FEATURE.length())) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -1239,20 +1243,23 @@ public class XML11Configuration extends ParserConfigurationSettings
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
             //
-            if (feature.equals(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.LOAD_DTD_GRAMMAR_FEATURE,
+                0, Constants.LOAD_DTD_GRAMMAR_FEATURE.length())) {
                 return;
             }
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-external-dtd
             //
-            if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.LOAD_EXTERNAL_DTD_FEATURE,
+                0, Constants.LOAD_EXTERNAL_DTD_FEATURE.length())) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.VALIDATE_DATATYPES_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_DATATYPES_FEATURE,
+                0, Constants.VALIDATE_DATATYPES_FEATURE.length())) {
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
             }
@@ -1261,29 +1268,34 @@ public class XML11Configuration extends ParserConfigurationSettings
 			 // http://apache.org/xml/features/validation/schema
 			 //   Lets the user turn Schema validation support on/off.
 			 //
-			 if (feature.equals(Constants.SCHEMA_VALIDATION_FEATURE)) {
+			 if (featureId.regionMatches(prefixLength, Constants.SCHEMA_VALIDATION_FEATURE,
+			     0, Constants.SCHEMA_VALIDATION_FEATURE.length())) {
 				 return;
 			 }
 			 // activate full schema checking
-			 if (feature.equals(Constants.SCHEMA_FULL_CHECKING)) {
+			 if (featureId.regionMatches(prefixLength, Constants.SCHEMA_FULL_CHECKING,
+			     0, Constants.SCHEMA_FULL_CHECKING.length())) {
 				 return;
 			 }
 			 // Feature identifier: expose schema normalized value 
 			 //  http://apache.org/xml/features/validation/schema/normalized-value
-			 if(feature.equals(Constants.SCHEMA_NORMALIZED_VALUE)) {
-				 return;
-			 } 
-			 // Feature identifier: send element default value via characters() 
-			 // http://apache.org/xml/features/validation/schema/element-default
-			 if(feature.equals(Constants.SCHEMA_ELEMENT_DEFAULT)) {
-				 return;
-			 }
+			 if (featureId.regionMatches(prefixLength, Constants.SCHEMA_NORMALIZED_VALUE,
+			     0, Constants.SCHEMA_NORMALIZED_VALUE.length())) {
+                 return;
+             } 
+             // Feature identifier: send element default value via characters() 
+             // http://apache.org/xml/features/validation/schema/element-default
+             if (featureId.regionMatches(prefixLength, Constants.SCHEMA_ELEMENT_DEFAULT, 
+                 0, Constants.SCHEMA_ELEMENT_DEFAULT.length())) {
+                 return;
+             }
 			 
-			 // special performance feature: only component manager is allowed to set it.			 
-			 if (feature.equals(Constants.PARSER_SETTINGS)) {
-				short type = XMLConfigurationException.NOT_SUPPORTED;
-				throw new XMLConfigurationException(type, featureId);
-			 }
+             // special performance feature: only component manager is allowed to set it.			 
+             if (featureId.regionMatches(prefixLength, Constants.PARSER_SETTINGS,
+                 0, Constants.PARSER_SETTINGS.length())) {
+                 short type = XMLConfigurationException.NOT_SUPPORTED;
+                 throw new XMLConfigurationException(type, featureId);
+             }
 
         }
 
@@ -1315,30 +1327,35 @@ public class XML11Configuration extends ParserConfigurationSettings
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
+            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+
+            if (propertyId.regionMatches(prefixLength, Constants.DTD_SCANNER_PROPERTY,
+                0, Constants.DTD_SCANNER_PROPERTY.length())) {
                 return;
             }
-			if (property.equals(Constants.SCHEMA_LOCATION)) {
-				return;
-			}
-			if (property.equals(Constants.SCHEMA_NONS_LOCATION)) {
-				return;
-			}
+            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_LOCATION,
+                0, Constants.SCHEMA_LOCATION.length())) {
+                return;
+            }
+            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_NONS_LOCATION,
+                0, Constants.SCHEMA_NONS_LOCATION.length())) {
+                return;
+            }
         }
         
 		if (propertyId.startsWith(Constants.JAXP_PROPERTY_PREFIX)) {
-			String property =
-				propertyId.substring(Constants.JAXP_PROPERTY_PREFIX.length());
-			if (property.equals(Constants.SCHEMA_SOURCE)) {
+            final int prefixLength = Constants.JAXP_PROPERTY_PREFIX.length();
+
+			if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_SOURCE,
+                0, Constants.SCHEMA_SOURCE.length())) {
 				return;
 			}
 		}
 		
 		// special cases
 		if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-			String property =
-				propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+            final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();
+			
 			//
 			// http://xml.org/sax/properties/xml-string
 			// Value type: String
@@ -1349,7 +1366,8 @@ public class XML11Configuration extends ParserConfigurationSettings
 			//   null (this is a good way to check for availability before the
 			//   parse begins).
 			//
-			if (property.equals(Constants.XML_STRING_PROPERTY)) {
+			if (propertyId.regionMatches(prefixLength, Constants.XML_STRING_PROPERTY,
+                0, Constants.XML_STRING_PROPERTY.length())) {
 				// REVISIT - we should probably ask xml-dev for a precise
 				// definition of what this is actually supposed to return, and
 				// in exactly which circumstances.

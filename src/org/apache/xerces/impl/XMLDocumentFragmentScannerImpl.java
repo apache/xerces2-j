@@ -428,8 +428,9 @@ public class XMLDocumentFragmentScannerImpl
             
         // Xerces properties
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
-            if (feature.equals(Constants.NOTIFY_BUILTIN_REFS_FEATURE)) {
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            if (featureId.regionMatches(prefixLength, Constants.NOTIFY_BUILTIN_REFS_FEATURE,
+                0, Constants.NOTIFY_BUILTIN_REFS_FEATURE.length())) {
                 fNotifyBuiltInRefs = state;
             }
         }
@@ -467,8 +468,9 @@ public class XMLDocumentFragmentScannerImpl
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
+            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            if (propertyId.regionMatches(prefixLength, Constants.ENTITY_MANAGER_PROPERTY,
+                0, Constants.ENTITY_MANAGER_PROPERTY.length())) {
                 fEntityManager = (XMLEntityManager)value;
             }
             return;

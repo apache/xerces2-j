@@ -389,12 +389,15 @@ public class XMLDocumentScannerImpl
 
         // Xerces properties
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
-            if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+        	
+            if (featureId.regionMatches(prefixLength, Constants.LOAD_EXTERNAL_DTD_FEATURE,
+                0, Constants.LOAD_EXTERNAL_DTD_FEATURE.length())) {
                 fLoadExternalDTD = state;
                 return;
             }
-            else if (feature.equals(Constants.DISALLOW_DOCTYPE_DECL_FEATURE)) {
+            else if (featureId.regionMatches(prefixLength, Constants.DISALLOW_DOCTYPE_DECL_FEATURE,
+                0, Constants.DISALLOW_DOCTYPE_DECL_FEATURE.length())) {
                 fDisallowDoctype = state;
                 return;
             }
@@ -440,11 +443,14 @@ public class XMLDocumentScannerImpl
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
+            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            
+            if (propertyId.regionMatches(prefixLength, Constants.DTD_SCANNER_PROPERTY,
+                0, Constants.DTD_SCANNER_PROPERTY.length())) {
                 fDTDScanner = (XMLDTDScanner)value;
             }
-            if (property.equals(Constants.NAMESPACE_CONTEXT_PROPERTY)) {
+            if (propertyId.regionMatches(prefixLength, Constants.NAMESPACE_CONTEXT_PROPERTY,
+                0, Constants.NAMESPACE_CONTEXT_PROPERTY.length())) {
                 if (value != null) {
                     fNamespaceContext = (NamespaceContext)value;
                 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.
+ * Copyright (c) 2001-2004 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1442,10 +1442,11 @@ public abstract class AbstractSAXParser
             //
 
             if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
-                String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
+                final int prefixLength = Constants.SAX_FEATURE_PREFIX.length();
 
                 // http://xml.org/sax/features/namespaces
-                if (feature.equals(Constants.NAMESPACES_FEATURE)) {
+                if (featureId.regionMatches(prefixLength, Constants.NAMESPACES_FEATURE,
+                    0, Constants.NAMESPACES_FEATURE.length())) {
                     fConfiguration.setFeature(featureId, state);
                     fNamespaces = state;
                     return;
@@ -1456,7 +1457,8 @@ public abstract class AbstractSAXParser
                 //   (the default), raw prefixed names may optionally be reported,
                 //   and xmlns* attributes must not be reported.
                 //
-                if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
+                if (featureId.regionMatches(prefixLength, Constants.NAMESPACE_PREFIXES_FEATURE,
+                    0, Constants.NAMESPACE_PREFIXES_FEATURE.length())) {
                     fConfiguration.setFeature(featureId, state);
                     fNamespacePrefixes = state;
                     return;
@@ -1465,7 +1467,8 @@ public abstract class AbstractSAXParser
                 //   controls the use of java.lang.String#intern() for strings
                 //   passed to SAX handlers.
                 //
-                if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
+                if (featureId.regionMatches(prefixLength, Constants.STRING_INTERNING_FEATURE,
+                    0, Constants.STRING_INTERNING_FEATURE.length())) {
                     if (!state) {
                         // REVISIT: Localize this error message. -Ac
                         throw new SAXNotSupportedException(
@@ -1534,8 +1537,7 @@ public abstract class AbstractSAXParser
             //
 
             if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
-                String feature =
-                    featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
+                final int prefixLength = Constants.SAX_FEATURE_PREFIX.length();
 
                 // http://xml.org/sax/features/namespace-prefixes
                 //   controls the reporting of raw prefixed names and Namespace
@@ -1543,7 +1545,8 @@ public abstract class AbstractSAXParser
                 //   (the default), raw prefixed names may optionally be reported,
                 //   and xmlns* attributes must not be reported.
                 //
-                if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
+                if (featureId.regionMatches(prefixLength, Constants.NAMESPACE_PREFIXES_FEATURE,
+                    0, Constants.NAMESPACE_PREFIXES_FEATURE.length())) {
                     boolean state = fConfiguration.getFeature(featureId);
                     return state;
                 }
@@ -1551,7 +1554,8 @@ public abstract class AbstractSAXParser
                 //   controls the use of java.lang.String#intern() for strings
                 //   passed to SAX handlers.
                 //
-                if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
+                if (featureId.regionMatches(prefixLength, Constants.STRING_INTERNING_FEATURE,
+                    0, Constants.STRING_INTERNING_FEATURE.length())) {
                     return true;
                 }
 
@@ -1610,15 +1614,16 @@ public abstract class AbstractSAXParser
             //
 
             if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-                String property =
-                    propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+                final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();
+
                 //
                 // http://xml.org/sax/properties/lexical-handler
                 // Value type: org.xml.sax.ext.LexicalHandler
                 // Access: read/write, pre-parse only
                 //   Set the lexical event handler.
                 //
-                if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
+                if (propertyId.regionMatches(prefixLength, Constants.LEXICAL_HANDLER_PROPERTY,
+                    0, Constants.LEXICAL_HANDLER_PROPERTY.length())) {
                     try {
                         setLexicalHandler((LexicalHandler)value);
                     }
@@ -1638,7 +1643,8 @@ public abstract class AbstractSAXParser
                 // Access: read/write, pre-parse only
                 //   Set the DTD declaration event handler.
                 //
-                if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
+                if (propertyId.regionMatches(prefixLength, Constants.DECLARATION_HANDLER_PROPERTY,
+                    0, Constants.DECLARATION_HANDLER_PROPERTY.length())) {
                     try {
                         setDeclHandler((DeclHandler)value);
                     }
@@ -1663,7 +1669,8 @@ public abstract class AbstractSAXParser
                 //   node, it should return null (this is a good way to check for
                 //   availability before the parse begins).
                 //
-                if (property.equals(Constants.DOM_NODE_PROPERTY)) {
+                if (propertyId.regionMatches(prefixLength, Constants.DOM_NODE_PROPERTY,
+                    0, Constants.DOM_NODE_PROPERTY.length())) {
                     // REVISIT: Localize this error message. -ac
                     throw new SAXNotSupportedException(
                         "PAR013 Property \""+propertyId+"\" is read only."
@@ -1728,15 +1735,16 @@ public abstract class AbstractSAXParser
             //
 
             if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-                String property =
-                    propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+                final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();
+
                 //
                 // http://xml.org/sax/properties/lexical-handler
                 // Value type: org.xml.sax.ext.LexicalHandler
                 // Access: read/write, pre-parse only
                 //   Set the lexical event handler.
                 //
-                if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
+                if (propertyId.regionMatches(prefixLength, Constants.LEXICAL_HANDLER_PROPERTY,
+                    0, Constants.LEXICAL_HANDLER_PROPERTY.length())) {
                     return getLexicalHandler();
                 }
                 //
@@ -1745,7 +1753,8 @@ public abstract class AbstractSAXParser
                 // Access: read/write, pre-parse only
                 //   Set the DTD declaration event handler.
                 //
-                if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
+                if (propertyId.regionMatches(prefixLength, Constants.DECLARATION_HANDLER_PROPERTY,
+                    0, Constants.DECLARATION_HANDLER_PROPERTY.length())) {
                     return getDeclHandler();
                 }
                 //
@@ -1758,7 +1767,8 @@ public abstract class AbstractSAXParser
                 //   node, it should return null (this is a good way to check for
                 //   availability before the parse begins).
                 //
-                if (property.equals(Constants.DOM_NODE_PROPERTY)) {
+                if (propertyId.regionMatches(prefixLength, Constants.DOM_NODE_PROPERTY,
+                    0, Constants.DOM_NODE_PROPERTY.length())) {
                     // REVISIT: Localize this error message. -Ac
                     throw new SAXNotSupportedException(
                     "PAR014 Cannot getProperty(\""+propertyId

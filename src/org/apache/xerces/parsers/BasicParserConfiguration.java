@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -560,8 +560,8 @@ public abstract class BasicParserConfiguration
 
         // special cases
         if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+            final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();	
+        	
             //
             // http://xml.org/sax/properties/xml-string
             // Value type: String
@@ -572,7 +572,8 @@ public abstract class BasicParserConfiguration
             //   null (this is a good way to check for availability before the
             //   parse begins).
             //
-            if (property.equals(Constants.XML_STRING_PROPERTY)) {
+            if (propertyId.regionMatches(prefixLength, Constants.XML_STRING_PROPERTY,
+                0, Constants.XML_STRING_PROPERTY.length())) {
                 // REVISIT - we should probably ask xml-dev for a precise
                 // definition of what this is actually supposed to return, and
                 // in exactly which circumstances.
@@ -587,39 +588,40 @@ public abstract class BasicParserConfiguration
     } // checkProperty(String)
     
     
-	/**
-	 * Check a feature. If feature is know and supported, this method simply
-	 * returns. Otherwise, the appropriate exception is thrown.
-	 *
-	 * @param featureId The unique identifier (URI) of the feature.
-	 *
-	 * @throws XMLConfigurationException Thrown for configuration error.
-	 *                                   In general, components should
-	 *                                   only throw this exception if
-	 *                                   it is <strong>really</strong>
-	 *                                   a critical error.
-	 */
-	protected void checkFeature(String featureId)
-		throws XMLConfigurationException {
+    /**
+     * Check a feature. If feature is know and supported, this method simply
+     * returns. Otherwise, the appropriate exception is thrown.
+     *
+     * @param featureId The unique identifier (URI) of the feature.
+     *
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
+     */
+    protected void checkFeature(String featureId)
+        throws XMLConfigurationException {
 
-		//
-		// Xerces Features
-		//
-		if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-			String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+        //
+        // Xerces Features
+        //
+        if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
 
-			//
-			// special performance feature: no one by component manager is allowed to set it
-			//
-			if (feature.equals(Constants.PARSER_SETTINGS)) {
-				short type = XMLConfigurationException.NOT_SUPPORTED;
-				throw new XMLConfigurationException(type, featureId);
-			}
-		}
+            //
+            // special performance feature: no one by component manager is allowed to set it
+            //
+            if (featureId.regionMatches(prefixLength, Constants.PARSER_SETTINGS,
+                0, Constants.PARSER_SETTINGS.length())) {
+                short type = XMLConfigurationException.NOT_SUPPORTED;
+                throw new XMLConfigurationException(type, featureId);
+            }
+        }
 
-		super.checkFeature(featureId);
+        super.checkFeature(featureId);
 
-	} // checkFeature(String)
+     } // checkFeature(String)
 
 
-} // class XMLParser
+} // class BasicParserConfiguration

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -170,13 +170,16 @@ public class CMNodeFactory {
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.SECURITY_MANAGER_PROPERTY)) {
+        	final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+        	
+            if (propertyId.regionMatches(prefixLength, Constants.SECURITY_MANAGER_PROPERTY,
+                0, Constants.SECURITY_MANAGER_PROPERTY.length())) {
                 fSecurityManager = (SecurityManager)value;                
                 maxNodeLimit = (fSecurityManager != null) ? fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY : 0 ;
                 return;
             }
-            if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {
+            if (propertyId.regionMatches(prefixLength, Constants.ERROR_REPORTER_PROPERTY,
+                0, Constants.ERROR_REPORTER_PROPERTY.length())) {
                 fErrorReporter = (XMLErrorReporter)value;
                 return;
             }

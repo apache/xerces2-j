@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -457,13 +457,15 @@ public class XMLErrorReporter
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            
             //
             // http://apache.org/xml/features/continue-after-fatal-error
             //   Allows the parser to continue after a fatal error.
             //   Normally, a fatal error would stop the parse.
             //
-            if (feature.equals(Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE,
+                0, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE.length())) {
                 fContinueAfterFatalError = state;
             }
         }
@@ -479,13 +481,15 @@ public class XMLErrorReporter
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+        	final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+        	
             //
             // http://apache.org/xml/features/continue-after-fatal-error
             //   Allows the parser to continue after a fatal error.
             //   Normally, a fatal error would stop the parse.
             //
-            if (feature.equals(Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE,
+                0, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE.length())) {
                 return fContinueAfterFatalError ;
             }
         }
@@ -525,9 +529,10 @@ public class XMLErrorReporter
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
+            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
 
-            if (property.equals(Constants.ERROR_HANDLER_PROPERTY)) {
+            if (propertyId.regionMatches(prefixLength, Constants.ERROR_HANDLER_PROPERTY,
+                0, Constants.ERROR_HANDLER_PROPERTY.length())) {
                 fErrorHandler = (XMLErrorHandler)value;
             }
         }

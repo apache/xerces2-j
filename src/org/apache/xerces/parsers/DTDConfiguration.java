@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -740,21 +740,24 @@ public class DTDConfiguration
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+        	
             //
             // http://apache.org/xml/features/validation/dynamic
             //   Allows the parser to validate a document only when it
             //   contains a grammar. Validation is turned on/off based
             //   on each document instance, automatically.
             //
-            if (feature.equals(Constants.DYNAMIC_VALIDATION_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.DYNAMIC_VALIDATION_FEATURE,
+                0, Constants.DYNAMIC_VALIDATION_FEATURE.length())) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE,
+                0, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE.length())) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -762,7 +765,8 @@ public class DTDConfiguration
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_CONTENT_MODELS_FEATURE,
+                0, Constants.VALIDATE_CONTENT_MODELS_FEATURE.length())) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -770,20 +774,23 @@ public class DTDConfiguration
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
             //
-            if (feature.equals(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.LOAD_DTD_GRAMMAR_FEATURE,
+                0, Constants.LOAD_DTD_GRAMMAR_FEATURE.length())) {
                 return;
             }
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-external-dtd
             //
-            if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.LOAD_EXTERNAL_DTD_FEATURE,
+                0, Constants.LOAD_EXTERNAL_DTD_FEATURE.length())) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals(Constants.VALIDATE_DATATYPES_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_DATATYPES_FEATURE,
+                0, Constants.VALIDATE_DATATYPES_FEATURE.length())) {
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
             }
@@ -818,8 +825,10 @@ public class DTDConfiguration
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
+            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+
+            if (propertyId.regionMatches(prefixLength, Constants.DTD_SCANNER_PROPERTY,
+                0, Constants.DTD_SCANNER_PROPERTY.length())) {
                 return;
             }
         }

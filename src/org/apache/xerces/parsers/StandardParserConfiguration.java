@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -294,26 +294,31 @@ public class StandardParserConfiguration
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+        	
             //
             // http://apache.org/xml/features/validation/schema
             //   Lets the user turn Schema validation support on/off.
             //
-            if (feature.equals(Constants.SCHEMA_VALIDATION_FEATURE)) {
+            if (featureId.regionMatches(prefixLength, Constants.SCHEMA_VALIDATION_FEATURE,
+                0, Constants.SCHEMA_VALIDATION_FEATURE.length())) {
                 return;
             }
             // activate full schema checking
-            if (feature.equals(Constants.SCHEMA_FULL_CHECKING)) {
+            if (featureId.regionMatches(prefixLength, Constants.SCHEMA_FULL_CHECKING,
+                0, Constants.SCHEMA_FULL_CHECKING.length())) {
                 return;
             }
             // Feature identifier: expose schema normalized value 
             //  http://apache.org/xml/features/validation/schema/normalized-value
-            if(feature.equals(Constants.SCHEMA_NORMALIZED_VALUE)) {
+            if (featureId.regionMatches(prefixLength, Constants.SCHEMA_NORMALIZED_VALUE,
+                0, Constants.SCHEMA_NORMALIZED_VALUE.length())) {
                 return;
             } 
             // Feature identifier: send element default value via characters() 
             // http://apache.org/xml/features/validation/schema/element-default
-            if(feature.equals(Constants.SCHEMA_ELEMENT_DEFAULT)) {
+            if (featureId.regionMatches(prefixLength, Constants.SCHEMA_ELEMENT_DEFAULT,
+                0, Constants.SCHEMA_ELEMENT_DEFAULT.length())) {
                 return;
             }
         }
@@ -347,19 +352,23 @@ public class StandardParserConfiguration
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.SCHEMA_LOCATION)) {
+            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            
+            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_LOCATION,
+                0, Constants.SCHEMA_LOCATION.length())) {
                 return;
             }
-            if (property.equals(Constants.SCHEMA_NONS_LOCATION)) {
+            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_NONS_LOCATION,
+                0, Constants.SCHEMA_NONS_LOCATION.length())) {
                 return;
             }
         }
 
         if (propertyId.startsWith(Constants.JAXP_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.JAXP_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.SCHEMA_SOURCE)) {
+            final int prefixLength = Constants.JAXP_PROPERTY_PREFIX.length();
+        	
+            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_SOURCE,
+                0, Constants.SCHEMA_SOURCE.length())) {
                 return;
             }
         }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -298,12 +298,14 @@ public class XMLNamespaceBinder
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property =
-               propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
+        	final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+        	
+            if (propertyId.regionMatches(prefixLength, Constants.SYMBOL_TABLE_PROPERTY,
+                0, Constants.SYMBOL_TABLE_PROPERTY.length())) {
                 fSymbolTable = (SymbolTable)value;
             }
-            else if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {
+            else if (propertyId.regionMatches(prefixLength, Constants.ERROR_REPORTER_PROPERTY,
+                0, Constants.ERROR_REPORTER_PROPERTY.length())) {
                 fErrorReporter = (XMLErrorReporter)value;
             }
             return;
