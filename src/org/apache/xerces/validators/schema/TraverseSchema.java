@@ -2978,13 +2978,20 @@ public class TraverseSchema implements
                 // check for duplicate declarations
                 if (!forwardRef)  {
                    if (temp.declSeen()) 
-                      reportGenericSchemaError("Duplicate declaration for complexType " +
+                      reportGenericSchemaError("sch-props-correct: Duplicate declaration for complexType " +
                                                 typeName);
                    else 
                       temp.setDeclSeen();
                    
                 }
                 return fStringPool.addSymbol(fullName);
+            }
+            else {
+              // check if the type is the name of a simple type                
+              if (getDatatypeValidator(fTargetNSURIString,typeName)!=null)
+                reportGenericSchemaError("sch-props-correct: Duplicate type declaration - type is " +
+                                                typeName);
+                  
             }
         }
 
