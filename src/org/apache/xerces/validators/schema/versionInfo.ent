@@ -2,36 +2,39 @@
 <!-- $Id$ -->
 <!ENTITY draft.year "2000">
 <!ENTITY draft.YY "2000">
-<!ENTITY draft.month "February">
-<!ENTITY draft.MM "02">
-<!ENTITY draft.day "25">
-<!ENTITY draft.DD "25">
-<!ENTITY draft.base "http://www.w3.org/TR/2000/WD-xmlschema">
-<!ENTITY % WD-XSP1 'structures'>
+<!ENTITY draft.month "April">
+<!ENTITY draft.MM "04">
+<!ENTITY draft.base "http://www.w3.org/XML/Group/xmlschema-current">
+<!-- "file:///d:/henry/xmlschema"> -->
+<!ENTITY % WD-XSP1 "structures">
+<!ENTITY draft.day "2">
+<!ENTITY draft.DD "02">
 <!ENTITY % WD-XSP1d '"%WD-XSP1;"'>
 <!ENTITY WD-XSP1 %WD-XSP1d;>
-<!ENTITY XSP0.base "&draft.base;-0-&draft.YY;&draft.MM;&draft.DD;">
-<!ENTITY XSP1.base "&draft.base;-1-&draft.YY;&draft.MM;&draft.DD;">
+<!ENTITY XSP0.base "&draft.base;/structures">
+<!ENTITY XSP1.base "&draft.base;/structures">
 <!ENTITY XSP1.URI "&XSP1.base;/structures">
 <!ENTITY WD-XSP2 "datatypes">
-<!ENTITY XSP2.base "&draft.base;-2-&draft.YY;&draft.MM;&draft.DD;">
+<!ENTITY XSP2.base "&draft.base;/datatypes">
 <!ENTITY XSP2.URI "&XSP2.base;/datatypes">
 <!ENTITY XMLSchemaNS "http://www.w3.org/1999/XMLSchema">
 <!ENTITY XMLSchemaInstanceNS "http://www.w3.org/1999/XMLSchema/instance">
-<!ENTITY % reldatadtd "'../WD-xmlschema-2-20000225/datatypes.dtd'">
+<!ENTITY % reldatadtd "'../datatypes/datatypes.dtd'">
 
-<!ENTITY % schemaProper '"structures.xsd"'>
-<!ENTITY schemaProper SYSTEM "structures.xsd" NDATA xmlschema>
+<!ENTITY % schemaProper '"structures/structures.xsd"'>
+<!ENTITY schemaProper SYSTEM %schemaProper; NDATA xmlschema>
 
 <!ENTITY % datatypeSchemaProper '"datatypes.xsd"'>
-<!ENTITY datatypeSchemaProper SYSTEM "datatypes.xsd" NDATA xmlschema>
+<!ENTITY datatypeSchemaProper SYSTEM %datatypeSchemaProper; NDATA xmlschema>
 <!ENTITY % datatypeSchemaDump '"datatypes.xsd,dmp"'>
-<!ENTITY datatypeSchemaDump SYSTEM "datatypes.xsd,dmp" NDATA xmlschema>
+<!ENTITY datatypeSchemaDump SYSTEM %datatypeSchemaDump; NDATA xmlschema>
 <!ENTITY % builtinsSchemaProper '"builtins.xsd"'>
-<!ENTITY builtinsSchemaProper SYSTEM "builtins.xsd" NDATA xmlschema>
-<!ENTITY % schemaDump '"structures.xsd,dmp"'>
-<!ENTITY schemaDump SYSTEM "structures.xsd,dmp" NDATA xmlschema>
-<!ENTITY % schemaExample '"example.xsd,dmp"'>
-<!ENTITY schemaExample SYSTEM "example.xsd,dmp" NDATA xmlschema>
+<!ENTITY builtinsSchemaProper SYSTEM %builtinsSchemaProper; NDATA xmlschema>
+<!ENTITY % schemaDump '"structures/structures.xsd,dmp"'>
+<!ENTITY schemaDump SYSTEM %schemaDump; NDATA xmlschema>
+<!ENTITY % schemaExample '"structures/example.xsd,dmp"'>
+<!ENTITY schemaExample SYSTEM %schemaExample; NDATA xmlschema>
 <!NOTATION xmlschema PUBLIC 'structures' '&XSP1.URI;.xsd' >
 <!ENTITY expo '<bibref ref="bib-expo"/>'>
+
+
