@@ -155,6 +155,11 @@ class XSDHandler {
     // the primary XSDocumentInfo we were called to parse
     private XSDocumentInfo fRoot = null;
 
+    // This hashtable's job is to act as a link between the document
+    // node at the root of the parsed schema's tree and its
+    // XSDocumentInfo object.  
+    private Hashtable fDoc2XSDocumentMap = new Hashtable();
+
     // map between <redefine> elements and the XSDocumentInfo
     // objects that correspond to the documents being redefined.
     private Hashtable fRedefine2XSDMap = new Hashtable();
@@ -227,6 +232,7 @@ class XSDHandler {
         // first phase:  construct trees.
         Document schemaRoot = getSchema(schemaNamespace, schemaHint);
         fRoot = constructTrees(schemaRoot);
+        fDoc2XSDocumentMap.put(schemaRoot, fRoot);
 
         // second phase:  fill global registries.
         buildGlobalNameRegistries();
@@ -297,6 +303,7 @@ class XSDHandler {
                 fRedefine2XSDMap.put(child, newSchemaInfo);
             }
             dependencies.addElement(newSchemaInfo);
+            fDoc2XSDocumentMap.put(newSchemaRoot, newSchemaInfo);
             newSchemaRoot = null;
         }
         fDependencyMap.put(currSchemaInfo, dependencies);
@@ -445,7 +452,8 @@ class XSDHandler {
     } // end traverseSchemas
 
     // since it is forbidden for traversers to talk to each other
-    // directly, this provides a generic means for a traverser to call
+    // directly (except wen a traverser encounters a local declaration), 
+    // this provides a generic means for a traverser to call
     // for the traversal of some declaration.  An XSDocumentInfo is
     // required because the XSDocumentInfo that the traverser is traversing
     // may bear no relation to the one the handler is operating on.
@@ -458,13 +466,77 @@ class XSDHandler {
     // well), call the appropriate traverser with the appropriate
     // XSDocumentInfo object.
     // This method returns whatever the traverser it called returned;
-    // since this will depend on the type of the traverser in
-    // question, this needs to be an Object.
-    protected Object callTraverser(XSDocumentInfo currSchema,
+    // this will be an index into an array of Objects of some kind 
+    // that lives in the Grammar.
+    protected int getComponentDecl(XSDocumentInfo currSchema,
                                    int declType,
                                    QName declToTraverse) {
-        return null;
-    } // end callTraverser
+        String declKey = null;
+        if (declToTraverse.uri != null) {
+            declKey = declToTraverse.uri+","+declToTraverse.localpart;
+        } else {
+            declKey = ","+declToTraverse.localpart; 
+        }
+        Element decl = null;
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            decl = (Element)fUnparsedAttributeRegistry.get(declKey); 
+            break;
+        case ATTRIBUTEGROUP_TYPE :
+            decl = (Element)fUnparsedAttributeGroupRegistry.get(declKey); 
+            break;
+        case COMPLEXTYPE_TYPE :
+            decl = (Element)fUnparsedTypeRegistry.get(declKey); 
+            break;
+        case ELEMENT_TYPE :
+            decl = (Element)fUnparsedElementRegistry.get(declKey); 
+            break;
+        case GROUP_TYPE :
+            decl = (Element)fUnparsedGroupRegistry.get(declKey); 
+            break;
+        case IDENTITYCONSTRAINT_TYPE :
+            decl = (Element)fUnparsedIdentityConstraintRegistry.get(declKey);
+            break;
+        case NOTATION_TYPE :
+            decl = (Element)fUnparsedNotationRegistry.get(declKey); 
+            break;
+        case SIMPLETYPE_TYPE :
+            decl = (Element)fUnparsedTypeRegistry.get(declKey); 
+            break;
+        default:
+            // this would indicate some sort of internal error...
+            return -1;
+        }
+        XSDocumentInfo schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
+        if(schemaWithDecl == null) {
+            // cannot get to this schema from the one containing the requesting decl
+            return -1;
+        }
+        // REVISIT:  pass real Grammar instead of null
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            return fAttributeTraverser.traverse(decl, schemaWithDecl, null);
+        case ATTRIBUTEGROUP_TYPE :
+            return fAttributeGroupTraverser.traverse(decl, schemaWithDecl, null);
+        case COMPLEXTYPE_TYPE :
+            return fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, null, null);
+        case ELEMENT_TYPE :
+            return fElementTraverser.traverseGlobal(decl, schemaWithDecl, null);
+        case GROUP_TYPE :
+            return fGroupTraverser.traverse(decl, schemaWithDecl);
+        case IDENTITYCONSTRAINT_TYPE :
+            return -1;
+        case NOTATION_TYPE :
+            return fNotationTraverser.traverse(decl, schemaWithDecl, null);
+        case SIMPLETYPE_TYPE :
+            fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl,
+                null);
+            // right now this returns String; REVISIT!
+            return -1;
+        }
+        // if we get here there's *really* something up...
+        return -1;
+    } // getComponentDecl(XSDocumentInfo, int, QName):  int
 
     // Since ID constraints can occur in local elements, unless we
     // wish to completely traverse all our DOM trees looking for ID
@@ -845,4 +917,28 @@ class XSDHandler {
 		return result;
 	} // changeRedefineGroup
 
+    // this method returns the XSDocumentInfo object that contains the
+    // component corresponding to decl.  If components from this
+    // document cannot be referred to from those of currSchema, this
+    // method returns null; it's up to the caller to throw an error.
+    // @param:  currSchema:  the XSDocumentInfo object containing the
+    // decl ref'ing us.
+    // @param:  decl:  the declaration being ref'd.
+    private XSDocumentInfo findXSDocumentForDecl(XSDocumentInfo currSchema, 
+               Element decl) {
+        Document declDoc = DOMUtil.getDocument(decl);
+        Object temp = fDoc2XSDocumentMap.get(declDoc);
+        if(temp == null) {
+            // something went badly wrong; we don't know this doc?
+            return null;
+        } 
+        XSDocumentInfo declDocInfo = (XSDocumentInfo)temp;
+        // now look in fDependencyMap to see if this is reachable
+        if(((Vector)fDependencyMap.get(currSchema)).contains(declDocInfo)) {
+            return declDocInfo;
+        }
+        // obviously the requesting doc didn't include, redefine or 
+        // import the one containing decl...
+        return null;
+    } // findXSDocumentForDecl(XSDocumentInfo, Element):  XSDocumentInfo
 } // XSDHandler

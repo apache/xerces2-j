@@ -83,11 +83,12 @@ class  XSDNotationTraverser extends XSDAbstractTraverser{
         super(handler, errorReporter, gAttrCheck);
     }
 
-    //REVISIT: what should be the return type?
-    String traverse(Element elmNode,
+    //REVISIT: return type should be int; thus need to 
+    // establish an array of these objects in the grammar.
+    int traverse(Element elmNode,
                     XSDocumentInfo schemaDoc,
                     SchemaGrammar grammar) {
-        return null;
+        return -1;
     }
 
 

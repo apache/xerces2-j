@@ -85,7 +85,7 @@ class  XSDAttributeGroupTraverser extends XSDAbstractTraverser{
     // should we store attribute group in the grammar?
     int traverse(Element elmNode,
                  XSDocumentInfo schemaDoc,
-                 SchemaGrammar grammar) throws Exception {
+                 SchemaGrammar grammar) {
 
         return -1;
     }
