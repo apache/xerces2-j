@@ -222,6 +222,7 @@ public class XMLValidator
 
     /** Validation. */
     protected boolean fValidation;
+    private boolean fSkipValidation;
 
     /** 
      * Dynamic validation. This state of this feature is only useful when
@@ -537,6 +538,7 @@ public class XMLValidator
         fInElementContent = false;
         fCurrentElementIndex = -1;
         fCurrentContentSpecType = -1;
+        fSkipValidation=false;
 
         fRootElement.clear();
 
@@ -2511,11 +2513,21 @@ public class XMLValidator
         if (fNamespaces && fCurrentGrammarIsSchema) {
             fNamespaceBinder.startElement(element, attributes);
         }
-
-        if (fCurrentGrammar == null && !fValidation) {
+        
+        if (fCurrentGrammar == null && !fSkipValidation){
+        
+            if  (!fValidation) {
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
             fInElementContent = false;
+            }
+            if (fValidation ) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                           "MSG_GRAMMAR_NOT_FOUND",
+                                           new Object[]{ element.rawname},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+                fSkipValidation = true;
+            }
         } 
         else if (fCurrentGrammarIsDTD) {
             //  resolve the element
