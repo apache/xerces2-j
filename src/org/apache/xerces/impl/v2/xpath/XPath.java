@@ -271,11 +271,11 @@ public class XPath {
 
                     token = xtokens.getToken(++i);
                     String prefix = xtokens.getTokenString(token);
-                    String uri = emptySymbol;
-                    if (context != null && prefix != null) {
+                    String uri = null;
+                    if (context != null && prefix != emptySymbol) {
                         uri = context.getURI(prefix);
                     }
-                    if (prefix != null && context != null && uri == emptySymbol) {
+                    if (prefix != emptySymbol && context != null && uri == null) {
                         throw new XPathException("prefix "+prefix+" not bound to namespace URI");
                     }
 
@@ -291,7 +291,7 @@ public class XPath {
 
                     token = xtokens.getToken(++i);
                     String localpart = xtokens.getTokenString(token);
-                    String rawname = prefix != null
+                    String rawname = prefix != emptySymbol
                                    ? fSymbolTable.addSymbol(prefix+':'+localpart)
                                    : localpart;
 
@@ -347,11 +347,11 @@ public class XPath {
                     // consume QName token
                     token = xtokens.getToken(++i);
                     String prefix = xtokens.getTokenString(token);
-                    String uri = emptySymbol;
-                    if (context != null && prefix != null) {
+                    String uri = null;
+                    if (context != null && prefix != emptySymbol) {
                         uri = context.getURI(prefix);
                     }
-                    if (prefix != null && context != null && uri == emptySymbol) {
+                    if (prefix != emptySymbol && context != null && uri == null) {
                         throw new XPathException("prefix "+prefix+" not bound to namespace URI");
                     }
 
@@ -367,7 +367,7 @@ public class XPath {
 
                     token = xtokens.getToken(++i);
                     String localpart = xtokens.getTokenString(token);
-                    String rawname = prefix != null
+                    String rawname = prefix != emptySymbol
                                    ? fSymbolTable.addSymbol(prefix+':'+localpart)
                                    : localpart;
 
@@ -733,8 +733,8 @@ public class XPath {
 
             switch (type) {
                 case QNAME: {
-                    if (name.prefix != null) {
-                        if (name.uri.length() == 0) {
+                    if (name.prefix.length() !=0) {
+                        if (name.uri != null) {
                             return name.prefix+':'+name.localpart;
                         }
                         return "{"+name.uri+'}'+name.prefix+':'+name.localpart;
@@ -742,8 +742,8 @@ public class XPath {
                     return name.localpart;
                 }
                 case NAMESPACE: {
-                    if (name.prefix != null) {
-                        if (name.uri.length() == 0) {
+                    if (name.prefix.length() !=0) {
+                        if (name.uri != null) {
                             return name.prefix+":*";
                         }
                         return "{"+name.uri+'}'+name.prefix+":*";
@@ -1453,6 +1453,7 @@ public class XPath {
             String nameHandle, prefixHandle;
             boolean starIsMultiplyOperator = false;
             int ch;
+            final String emptySymbol = fSymbolTable.addSymbol("");
 
             /***
             if (XPath.Tokens.DUMP_TOKENS) {
@@ -1730,7 +1731,7 @@ public class XPath {
                     }
                     nameHandle = symbolTable.addSymbol(data.substring(nameOffset, currentOffset));
                     if (ch != ':') {
-                        prefixHandle = null;
+                        prefixHandle = emptySymbol;
                     } else {
                         prefixHandle = nameHandle;
                         if (++currentOffset == endOffset) {
@@ -1828,7 +1829,7 @@ public class XPath {
                     nameHandle = symbolTable.addSymbol(data.substring(nameOffset, currentOffset));
                     boolean isNameTestNCName = false;
                     boolean isAxisName = false;
-                    prefixHandle = "";
+                    prefixHandle = emptySymbol;
                     if (ch == ':') {
                         if (++currentOffset == endOffset) {
                 // System.out.println("abort 5");
