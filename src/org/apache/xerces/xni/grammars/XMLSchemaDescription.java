@@ -1,5 +1,5 @@
 /*
- * Copyright 2002,2004 The Apache Software Foundation.
+ * Copyright 2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ public interface XMLSchemaDescription extends XMLGrammarDescription {
     public QName getTriggeringComponent();
 
     /**
-     * If a call is triggered by an attribute or xsi:type, then this mehtod
+     * If a call is triggered by an attribute or xsi:type, then this method
      * returns the enclosing element of such element.
      * 
      * @return  the name of the enclosing element
