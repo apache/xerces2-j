@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs; 
+package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
@@ -68,6 +68,7 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * This class is to hold all schema component declaration that are declared
@@ -168,10 +169,21 @@ public class SchemaGrammar implements Grammar {
     public XMLGrammarDescription getGrammarDescription() {
         return fGrammarDescription;
     } // getGrammarDescription():  XMLGrammarDescription
+
     // DTDGrammar methods
     public boolean isNamespaceAware () {
         return true;
     } // isNamespaceAware():boolean
+
+    Vector fImported = null;
+
+    public void setImportedGrammars(Vector importedGrammars) {
+        fImported = importedGrammars;
+    }
+
+    public Vector getImportedGrammars() {
+        return fImported;
+    }
 
     /**
      * Returns this grammar's target namespace.
@@ -297,7 +309,7 @@ public class SchemaGrammar implements Grammar {
 
     // an array to store groups being redefined by restriction
     // even-numbered elements are the derived groups, odd-numbered ones their bases
-    private static final int REDEFINED_GROUP_INIT_SIZE = 2; 
+    private static final int REDEFINED_GROUP_INIT_SIZE = 2;
     private int fRGCount = 0;
     private XSGroupDecl[] fRedefinedGroupDecls = new XSGroupDecl[REDEFINED_GROUP_INIT_SIZE];
     private SimpleLocator[] fRGLocators = new SimpleLocator[REDEFINED_GROUP_INIT_SIZE/2];
@@ -353,7 +365,7 @@ public class SchemaGrammar implements Grammar {
         }
         return fCTLocators;
     }
-    
+
     /**
      * get all redefined groups: for later constraint checking
      */
@@ -375,7 +387,7 @@ public class SchemaGrammar implements Grammar {
         }
         return fRGLocators;
     }
-    
+
     /**
      * after the first-round checking, some types don't need to be checked
      * against UPA again. here we trim the array to the proper size.

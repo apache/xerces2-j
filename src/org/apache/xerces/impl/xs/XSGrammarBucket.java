@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Vector;
 
 /**
  * A class used to hold the internal schema grammar set for the current instance
@@ -88,7 +89,9 @@ public class XSGrammarBucket {
     }
 
     /**
-     * put a schema grammar into the registry
+     * Put a schema grammar into the registry
+     * This method is for internal use only: it assumes that a grammar with
+     * the same target namespace is not already in the bucket.
      *
      * @param grammar   the grammar to put in the registry
      */
@@ -100,19 +103,64 @@ public class XSGrammarBucket {
     }
 
     /**
-     * put a schema grammar into the registry
-     * this method is for the grammar of schema namespace:
-     * the namespace in the grammar is not added into the current symbol table,
-     * so we provide the namespace, which is from the current symbol table.
+     * put a schema grammar and any grammars imported by it (directly or
+     * inderectly) into the registry. when a grammar with the same target
+     * namespace is already in the bucket, and different from the one being
+     * added, it's an error, and no grammar will be added into the bucket.
      *
-     * @param namespace the namespace of this grammar
      * @param grammar   the grammar to put in the registry
+     * @param deep      whether to add imported grammars
+     * @return          whether the process succeeded
      */
-    public void putGrammar(String namespace, SchemaGrammar grammar) {
-        if (namespace == null)
-            fNoNSGrammar = grammar;
-        else
-            fGrammarRegistry.put(namespace, grammar);
+    public boolean putGrammar(SchemaGrammar grammar, boolean deep) {
+        // whether there is one with the same tns
+        SchemaGrammar sg = getGrammar(grammar.fTargetNamespace);
+        if (sg != null) {
+            // if the one we have is different from the one passed, it's an error
+            return sg == grammar;
+        }
+        // not deep import, then just add this one grammar
+        if (!deep) {
+            putGrammar(grammar);
+            return true;
+        }
+
+        // get all imported grammars, and make a copy of the Vector, so that
+        // we can recursively process the grammars, and add distinct ones
+        // to the same vector
+        Vector grammars = (Vector)grammar.getImportedGrammars().clone();
+        SchemaGrammar sg1, sg2;
+        Vector gs;
+        // for all (recursively) imported grammars
+        for (int i = 0; i < grammars.size(); i++) {
+            // get the grammar
+            sg1 = (SchemaGrammar)grammars.elementAt(i);
+            // check whether the bucket has one with the same tns
+            sg2 = getGrammar(sg1.fTargetNamespace);
+            if (sg2 == null) {
+                // we need to add grammars imported by sg2 too
+                gs = sg2.getImportedGrammars();
+                // for all grammars imported by sg2, but not in the vector
+                // we add them to the vector
+                for (int j = gs.size() - 1; j >= 0; j--) {
+                    sg2 = (SchemaGrammar)gs.elementAt(j);
+                    if (!grammars.contains(sg2))
+                        grammars.addElement(sg2);
+                }
+            }
+            // we found one with the same target namespace
+            // if the two grammars are not the same object, then it's an error
+            else if (sg2 != sg1) {
+                return false;
+            }
+        }
+
+        // now we have all imported grammars stored in the vector. add them
+        putGrammar(grammar);
+        for (int i = grammars.size() - 1; i >= 0; i--)
+            putGrammar((SchemaGrammar)grammars.elementAt(i));
+
+        return true;
     }
 
     /**

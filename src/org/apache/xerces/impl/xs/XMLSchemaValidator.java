@@ -1195,7 +1195,15 @@ public class XMLSchemaValidator
 
             Grammar [] initialGrammars = fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
             for (int i = 0; i < initialGrammars.length; i++) {
-                fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]));
+                // put this grammar into the bucket, along with grammars
+                // imported by it (directly or indirectly)
+                if (!fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]), true)) {
+                    // REVISIT: a conflict between new grammar(s) and grammars
+                    // in the bucket. What to do? A warning? An exception?
+                    fXSIErrorReporter.fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                                 "GrammarConflict", null,
+                                                                 XMLErrorReporter.SEVERITY_WARNING);
+                }
             }
         }
 
@@ -2159,7 +2167,7 @@ public class XMLSchemaValidator
             fXSDDescription.fEnclosedElementName = enclosingElement ;
             fXSDDescription.fTriggeringComponent = triggeringComponet ;
             fXSDDescription.fAttributes = attributes ;
-            
+
             Object locationArray = null ;
             if( namespace != null){
                 locationArray = fLocationPairs.get(namespace) ;
@@ -2180,7 +2188,16 @@ public class XMLSchemaValidator
             if (fGrammarPool != null){
                 grammar = (SchemaGrammar)fGrammarPool.retrieveGrammar(fXSDDescription);
                 if (grammar != null) {
-                    fGrammarBucket.putGrammar(grammar);
+                    // put this grammar into the bucket, along with grammars
+                    // imported by it (directly or indirectly)
+                    if (!fGrammarBucket.putGrammar(grammar, true)) {
+                        // REVISIT: a conflict between new grammar(s) and grammars
+                        // in the bucket. What to do? A warning? An exception?
+                        fXSIErrorReporter.fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                                     "GrammarConflict", null,
+                                                                     XMLErrorReporter.SEVERITY_WARNING);
+                        grammar = null;
+                    }
                 }
             }
             if (grammar == null) {
@@ -2188,7 +2205,7 @@ public class XMLSchemaValidator
                 grammar = fSchemaHandler.parseSchema(fXSDDescription);
             }
         }
-        
+
         return grammar ;
 
     }//findSchemaGrammar

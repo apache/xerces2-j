@@ -190,6 +190,23 @@ public class XSDHandler {
     // <import>ed or <redefine>d by the key XSDocumentInfo.
     private Hashtable fDependencyMap = new Hashtable();
 
+    // this hashtable is keyed on by a target namespace.  Its values
+    // are Vectors containing namespaces imported by schema documents
+    // with the key target namespace.
+    // if an imprted schema has absent namespace, the value "null" is stored.
+    private Hashtable fImportMap = new Hashtable();
+    // all namespaces that imports other namespaces
+    // if the importing schema has absent namespace, empty string is stored.
+    // (because the key of a hashtable can't be null.)
+    private Vector fAllTNSs = new Vector();
+    // convinence methods
+    private String null2EmptyString(String ns) {
+        return ns == null ? EMPTY_STRING : ns;
+    }
+    private String emptyString2Null(String ns) {
+        return ns == EMPTY_STRING ? null : ns;
+    }
+
     // This vector stores strings which are combinations of the
     // publicId and systemId of the inputSource corresponding to a
     // schema document.  This combination is used so that the user's
@@ -433,6 +450,31 @@ public class XSDHandler {
         // REVISIT: skip this for now. we really don't want to do it.
         //fAttributeChecker.checkNonSchemaAttributes(fGrammarBucket);
 
+        // for all grammars with <import>s
+        for (int i = fAllTNSs.size() - 1; i >= 0; i--) {
+            // get its target namespace
+            String tns = (String)fAllTNSs.elementAt(i);
+            // get all namespaces it imports
+            Vector ins = (Vector)fImportMap.get(tns);
+            // get the grammar
+            SchemaGrammar sg = fGrammarBucket.getGrammar(emptyString2Null(tns));
+            if (sg == null)
+                continue;
+            SchemaGrammar isg;
+            // for imported namespace
+            int count = 0;
+            for (int j = 0; j < ins.size(); j++) {
+                // get imported grammar
+                isg = fGrammarBucket.getGrammar((String)ins.elementAt(j));
+                // reuse the same vector
+                if (isg != null)
+                    ins.setElementAt(isg, count++);
+            }
+            ins.setSize(count);
+            // set the imported grammars
+            sg.setImportedGrammars(ins);
+        }
+
         // and return.
         return fGrammarBucket.getGrammar(schemaNamespace);
     } // end parseSchema
@@ -549,7 +591,14 @@ public class XSDHandler {
             if (fGrammarPool != null) {
                 sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(desc);
                 if (sg != null) {
-                    fGrammarBucket.putGrammar(sg);
+                    // put this grammar into the bucket, along with grammars
+                    // imported by it (directly or indirectly)
+                    if (!fGrammarBucket.putGrammar(sg, true)) {
+                        // REVISIT: a conflict between new grammar(s) and grammars
+                        // in the bucket. What to do? A warning? An exception?
+                        reportSchemaWarning("GrammarConflict", null, null);
+                        sg = null;
+                    }
                 }
             }
         }
@@ -596,6 +645,23 @@ public class XSDHandler {
                 // a schema document can access it's imported namespaces
                 currSchemaInfo.addAllowedNS(schemaNamespace);
                 
+                // also record the fact that one namespace imports another one
+                // convert null to ""
+                String tns = null2EmptyString(currSchemaInfo.fTargetNamespace);
+                // get all namespaces imported by this one
+                Vector ins = (Vector)fImportMap.get(tns);
+                // if no namespace was imported, create new Vector
+                if (ins == null) {
+                    // record that this one imports other(s)
+                    fAllTNSs.addElement(tns);
+                    ins = new Vector();
+                    fImportMap.put(tns, ins);
+                    ins.addElement(schemaNamespace);
+                }
+                else if (!ins.contains(schemaNamespace)){
+                    ins.addElement(schemaNamespace);
+                }
+
                 fSchemaGrammarDescription.reset();
                 fSchemaGrammarDescription.setContextType(XSDDescription.CONTEXT_IMPORT);
                 fSchemaGrammarDescription.setBaseSystemId((String)fDoc2SystemId.get(schemaRoot));
@@ -1342,6 +1408,9 @@ public class XSDHandler {
         fRoot = null;
         fLastSchemaWasDuplicate = false;
 
+        fAllTNSs.removeAllElements();
+        fImportMap.clear();
+        
         // clear local element stack
         for (int i = 0; i < fLocalElemStackPos; i++) {
             fParticle[i] = null;
