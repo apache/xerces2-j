@@ -112,7 +112,7 @@ import java.util.StringTokenizer;
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  * </ul>
- * 
+ *
  * @author Sandy Gao IBM
  * @author Elena Litani IBM
  * @author Eric Ye IBM
@@ -169,7 +169,7 @@ public class XMLSchemaValidator
     // recognized features and properties
 
     /** Recognized features. */
-    protected static final String[] RECOGNIZED_FEATURES = {        
+    protected static final String[] RECOGNIZED_FEATURES = {
         VALIDATION,
         NAMESPACES,
         SCHEMA_VALIDATION,
@@ -312,12 +312,11 @@ public class XMLSchemaValidator
     public void startDocument(XMLLocator locator, String encoding)
     throws XNIException {
 
+        handleStartDocument(locator, encoding);
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startDocument(locator, encoding);
         }
-        if (fValidation)
-            fValueStoreCache.startDocument();
 
     } // startDocument(XMLLocator,String)
 
@@ -377,7 +376,6 @@ public class XMLSchemaValidator
     throws XNIException {
 
         handleStartPrefix(prefix, uri);
-
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startPrefixMapping(prefix, uri);
@@ -397,6 +395,7 @@ public class XMLSchemaValidator
     throws XNIException {
 
         handleStartElement(element, attributes);
+        // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes);
         }
@@ -415,9 +414,19 @@ public class XMLSchemaValidator
     throws XNIException {
 
         handleStartElement(element, attributes);
-        handleEndElement(element);
+        // in the case where there is a {value constraint}, and the element
+        // doesn't have any text content, change emptyElement call to
+        // start + characters + end
+        XMLString defaultValue = handleEndElement(element);
+        // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.emptyElement(element, attributes);
+            if (defaultValue == null) {
+                fDocumentHandler.emptyElement(element, attributes);
+            } else {
+                fDocumentHandler.startElement(element, attributes);
+                fDocumentHandler.characters(defaultValue);
+                fDocumentHandler.endElement(element);
+            }
         }
 
     } // emptyElement(QName,XMLAttributes)
@@ -431,33 +440,12 @@ public class XMLSchemaValidator
      */
     public void characters(XMLString text) throws XNIException {
 
-        boolean allWhiteSpace = true;
-        for (int i=text.offset; i< text.offset+text.length; i++) {
-            if (!XMLChar.isSpace(text.ch[i])) {
-                allWhiteSpace = false;
-                break;
-            }
-        }
-
-        fBuffer.append(text.toString());
-        if (!allWhiteSpace) {
-            fSawCharacters = true;
-        }
-
+        handleCharacters(text);
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.characters(text);
         }
 
-        if (fSkipValidationDepth >= 0)
-            return;
-
-        // call all active identity constraints
-        int count = fMatcherStack.getMatcherCount();
-        for (int i = 0; i < count; i++) {
-            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.characters(text);
-        }
     } // characters(XMLString)
 
     /**
@@ -474,20 +462,12 @@ public class XMLSchemaValidator
      */
     public void ignorableWhitespace(XMLString text) throws XNIException {
 
+        handleIgnorableWhitespace(text);
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.ignorableWhitespace(text);
         }
 
-        if (fSkipValidationDepth >= 0)
-            return;
-
-        // call all active identity constraints
-        int count = fMatcherStack.getMatcherCount();
-        for (int i = 0; i < count; i++) {
-            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.characters(text);
-        }
     } // ignorableWhitespace(XMLString)
 
     /**
@@ -499,8 +479,13 @@ public class XMLSchemaValidator
      */
     public void endElement(QName element) throws XNIException {
 
-        handleEndElement(element);
+        // in the case where there is a {value constraint}, and the element
+        // doesn't have any text content, add a characters call.
+        XMLString defaultValue = handleEndElement(element);
+        // call handlers
         if (fDocumentHandler != null) {
+            if (defaultValue != null)
+                fDocumentHandler.characters(defaultValue);
             fDocumentHandler.endElement(element);
         }
 
@@ -558,12 +543,11 @@ public class XMLSchemaValidator
      */
     public void endDocument() throws XNIException {
 
+        handleEndDocument();
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endDocument();
         }
-        if (fValidation)
-            fValueStoreCache.endDocument();
 
     } // endDocument()
 
@@ -603,6 +587,7 @@ public class XMLSchemaValidator
                             String baseSystemId,
                             String encoding) throws XNIException {
 
+        // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startEntity(name, publicId, systemId,
                                          baseSystemId, encoding);
@@ -628,6 +613,7 @@ public class XMLSchemaValidator
      */
     public void textDecl(String version, String encoding) throws XNIException {
 
+        // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.textDecl(version, encoding);
         }
@@ -643,6 +629,7 @@ public class XMLSchemaValidator
      */
     public void comment(XMLString text) throws XNIException {
 
+        // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.comment(text);
         }
@@ -668,6 +655,7 @@ public class XMLSchemaValidator
     public void processingInstruction(String target, XMLString data)
     throws XNIException {
 
+        // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.processingInstruction(target, data);
         }
@@ -693,6 +681,7 @@ public class XMLSchemaValidator
      */
     public void endEntity(String name) throws XNIException {
 
+        // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endEntity(name);
         }
@@ -947,42 +936,6 @@ public class XMLSchemaValidator
         fValueStoreCache = new ValueStoreCache();
     } // reset(XMLComponentManager)
 
-    /** ensure element stack capacity */
-    void ensureStackCapacity() {
-
-        if (fElementDepth == fElemDeclStack.length) {
-            int newSize = fElementDepth + INC_STACK_SIZE;
-            int[] newArrayI = new int[newSize];
-            System.arraycopy(fChildCountStack, 0, newArrayI, 0, fElementDepth);
-            fChildCountStack = newArrayI;
-
-            XSElementDecl[] newArrayE = new XSElementDecl[newSize];
-            System.arraycopy(fElemDeclStack, 0, newArrayE, 0, fElementDepth);
-            fElemDeclStack = newArrayE;
-
-            boolean[] newArrayB = new boolean[newSize];
-            System.arraycopy(fNilStack, 0, newArrayB, 0, fElementDepth);
-            fNilStack = newArrayB;
-
-            XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
-            System.arraycopy(fTypeStack, 0, newArrayT, 0, fElementDepth);
-            fTypeStack = newArrayT;
-
-            XSCMValidator[] newArrayC = new XSCMValidator[newSize];
-            System.arraycopy(fCMStack, 0, newArrayC, 0, fElementDepth);
-            fCMStack = newArrayC;
-
-            boolean[] newArrayD = new boolean[newSize];
-            System.arraycopy(fStringContent, 0, newArrayD, 0, fElementDepth);
-            fStringContent = newArrayD;
-
-            int[][] newArrayIA = new int[newSize][];
-            System.arraycopy(fCMStateStack, 0, newArrayIA, 0, fElementDepth);
-            fCMStateStack = newArrayIA;
-        }
-
-    } // ensureStackCapacity
-
     //
     // FieldActivator methods
     //
@@ -1048,6 +1001,99 @@ public class XMLSchemaValidator
     // Protected methods
     //
 
+    /** ensure element stack capacity */
+    void ensureStackCapacity() {
+
+        if (fElementDepth == fElemDeclStack.length) {
+            int newSize = fElementDepth + INC_STACK_SIZE;
+            int[] newArrayI = new int[newSize];
+            System.arraycopy(fChildCountStack, 0, newArrayI, 0, fElementDepth);
+            fChildCountStack = newArrayI;
+
+            XSElementDecl[] newArrayE = new XSElementDecl[newSize];
+            System.arraycopy(fElemDeclStack, 0, newArrayE, 0, fElementDepth);
+            fElemDeclStack = newArrayE;
+
+            boolean[] newArrayB = new boolean[newSize];
+            System.arraycopy(fNilStack, 0, newArrayB, 0, fElementDepth);
+            fNilStack = newArrayB;
+
+            XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
+            System.arraycopy(fTypeStack, 0, newArrayT, 0, fElementDepth);
+            fTypeStack = newArrayT;
+
+            XSCMValidator[] newArrayC = new XSCMValidator[newSize];
+            System.arraycopy(fCMStack, 0, newArrayC, 0, fElementDepth);
+            fCMStack = newArrayC;
+
+            boolean[] newArrayD = new boolean[newSize];
+            System.arraycopy(fStringContent, 0, newArrayD, 0, fElementDepth);
+            fStringContent = newArrayD;
+
+            int[][] newArrayIA = new int[newSize][];
+            System.arraycopy(fCMStateStack, 0, newArrayIA, 0, fElementDepth);
+            fCMStateStack = newArrayIA;
+        }
+
+    } // ensureStackCapacity
+
+    // handle start document
+    void handleStartDocument(XMLLocator locator, String encoding) {
+
+        if (fValidation)
+            fValueStoreCache.startDocument();
+
+    } // handleStartDocument(XMLLocator,String)
+
+    void handleEndDocument() {
+
+        if (fValidation)
+            fValueStoreCache.endDocument();
+
+    } // handleEndDocument()
+
+    // handle character contents
+    void handleCharacters(XMLString text) {
+
+        if (fSkipValidationDepth >= 0)
+            return;
+
+        boolean allWhiteSpace = true;
+        for (int i=text.offset; i< text.offset+text.length; i++) {
+            if (!XMLChar.isSpace(text.ch[i])) {
+                allWhiteSpace = false;
+                break;
+            }
+        }
+
+        fBuffer.append(text.toString());
+        if (!allWhiteSpace) {
+            fSawCharacters = true;
+        }
+
+        // call all active identity constraints
+        int count = fMatcherStack.getMatcherCount();
+        for (int i = 0; i < count; i++) {
+            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+            matcher.characters(text);
+        }
+    } // handleCharacters(XMLString)
+
+    // handle ignorable whitespace
+    void handleIgnorableWhitespace(XMLString text) {
+
+        if (fSkipValidationDepth >= 0)
+            return;
+
+        // call all active identity constraints
+        int count = fMatcherStack.getMatcherCount();
+        for (int i = 0; i < count; i++) {
+            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+            matcher.characters(text);
+        }
+
+    } // handleIgnorableWhitespace(XMLString)
+
     /** Handle element. */
     void handleStartElement(QName element, XMLAttributes attributes) {
         if (DEBUG) {
@@ -1102,9 +1148,9 @@ public class XMLSchemaValidator
             if (fGrammarResolver.getGrammar(null) == null)
                 fSchemaHandler.parseSchema(null, nsLocation);
         }
-        // REVISIT: we should not rely on presence of 
+        // REVISIT: we should not rely on presence of
         //          schemaLocation or noNamespaceSchemaLocation
-        //          attributes 
+        //          attributes
         if (sLocation !=null || nsLocation !=null) {
             // if we found grammar we should attempt to validate
             // based on values of validation & schema features
@@ -1112,6 +1158,7 @@ public class XMLSchemaValidator
 
             fDoValidation = fValidation;
         }
+
         // if we are in the content of "skip", then just skip this element
         // REVISIT:  is this the correct behaviour for ID constraints?  -NG
         if (fSkipValidationDepth >= 0) {
@@ -1130,8 +1177,6 @@ public class XMLSchemaValidator
             fCMStack[fElementDepth] = fCurrentCM;
             fStringContent[fElementDepth] = fSawCharacters;
         }
-
-
 
         // get the element decl for this element
         fCurrentElemDecl = null;
@@ -1293,8 +1338,12 @@ public class XMLSchemaValidator
 
     } // handleStartElement(QName,XMLAttributes,boolean)
 
-    /** Handle end element. */
-    void handleEndElement(QName element) {
+    /**
+     *  Handle end element. If there is not text content, and there is a
+     *  {value constraint} on the corresponding element decl, then return
+     *  an XMLString representing the default value.
+     */
+    XMLString handleEndElement(QName element) {
 
         // need to pop context so that the bindings for this element is
         // discarded.
@@ -1319,11 +1368,11 @@ public class XMLSchemaValidator
             else {
                 fElementDepth--;
             }
-            return;
+            return null;
         }
 
         // now validate the content of the element
-        processElementContent(element);
+        XMLString defaultValue = processElementContent(element);
 
         // Element Locally Valid (Element)
         // 6 The element information item must be ·valid· with respect to each of the {identity-constraint definitions} as per Identity-constraint Satisfied (§3.11.4).
@@ -1332,7 +1381,7 @@ public class XMLSchemaValidator
         int oldCount = fMatcherStack.getMatcherCount();
         for (int i = oldCount - 1; i >= 0; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.endElement(element, fCurrentElemDecl); 
+            matcher.endElement(element, fCurrentElemDecl);
         }
         if (fMatcherStack.size() > 0) {
             fMatcherStack.popContext();
@@ -1383,6 +1432,7 @@ public class XMLSchemaValidator
             fSawCharacters = fStringContent[fElementDepth];
         }
 
+        return defaultValue;
     } // handleEndElement(QName,boolean)*/
 
 
@@ -1604,7 +1654,7 @@ public class XMLSchemaValidator
 
             // get the value constraint from use or decl
             // 4 The item's ·actual value· must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
-            if (currDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
+            if (currDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string
                 //          do it in the new datatype design
                 //if (attDV.compare((String)actualValue, (String)currDecl.fDefault) != 0)
@@ -1654,7 +1704,7 @@ public class XMLSchemaValidator
             constType = currUse.fConstraintType;
             defaultValue = currUse.fDefault;
             if (constType == XSAttributeDecl.NO_CONSTRAINT) {
-                constType = currDecl.fConstraintType;
+                constType = currDecl.getConstraintType();
                 defaultValue = currDecl.fDefault;
             }
             // whether this attribute is specified
@@ -1677,23 +1727,26 @@ public class XMLSchemaValidator
         } // for
     } // addDefaultAttributes
 
-    void processElementContent(QName element) {
+    /**
+     *  If there is not text content, and there is a
+     *  {value constraint} on the corresponding element decl, then return
+     *  an XMLString representing the default value.
+     */
+    XMLString processElementContent(QName element) {
         // fCurrentElemDecl: default value; ...
+        XMLString defaultValue = null;
         if (fCurrentElemDecl != null) {
             if (fCurrentElemDecl.fDefault != null) {
                 if (fBuffer.toString().trim().length() == 0) {
                     int bufLen = fCurrentElemDecl.fDefault.toString().length();
                     char [] chars = new char[bufLen];
                     fCurrentElemDecl.fDefault.toString().getChars(0, bufLen, chars, 0);
-                    XMLString text = new XMLString(chars, 0, bufLen);
-                    if (fDocumentHandler != null) {
-                        fDocumentHandler.characters(text);
-                    }
+                    defaultValue = new XMLString(chars, 0, bufLen);
                     // call all active identity constraints
                     int count = fMatcherStack.getMatcherCount();
                     for (int i = 0; i < count; i++) {
                         XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-                        matcher.characters(text);
+                        matcher.characters(defaultValue);
                     }
                 }
             }
@@ -1769,6 +1822,8 @@ public class XMLSchemaValidator
                 }
             }
         } // if fDoValidation
+
+        return defaultValue;
     } // processElementContent
 
     Object elementLocallyValidType(QName element, String textContent) {
