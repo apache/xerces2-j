@@ -42,6 +42,7 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -856,7 +857,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             // Consume this exception if the user
             // issued an interrupt or an abort.
             if (e != abort) {
-                if (fErrorHandler != null) {
+                if (!(e instanceof XMLParseException) && fErrorHandler != null) {
                     DOMErrorImpl error = new DOMErrorImpl ();
                     error.fException = e;
                     error.fMessage = e.getMessage ();
@@ -897,7 +898,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             // Consume this exception if the user
             // issued an interrupt or an abort.
             if (e != abort) {
-                if (fErrorHandler != null) {
+                if (!(e instanceof XMLParseException) && fErrorHandler != null) {
                    DOMErrorImpl error = new DOMErrorImpl ();
                    error.fException = e;
                    error.fMessage = e.getMessage ();
