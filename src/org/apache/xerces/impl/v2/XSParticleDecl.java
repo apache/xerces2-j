@@ -103,6 +103,10 @@ public class XSParticleDecl {
         return fBuffer.toString();
     }
 
+    public boolean emptiable() {
+        return false;
+    }
+
     void appendParticle(StringBuffer fBuffer) {
         switch (fType) {
         case PARTICLE_EMPTY:
