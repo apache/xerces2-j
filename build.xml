@@ -782,6 +782,7 @@ Copyright:
                         org/apache/xerces/dom/ASModelImpl.java
                         org/apache/xerces/dom/ASDOMImplementationImpl.java
                         org/apache/xerces/impl/XML11*.java
+                        org/apache/xerces/util/DOMUtil.java
                         org/apache/html/**
                         org/apache/wml/**
            ">
