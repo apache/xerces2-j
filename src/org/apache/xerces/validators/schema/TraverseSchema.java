@@ -545,6 +545,7 @@ public class TraverseSchema implements
      * @param comment
      */
     private void traverseAnnotationDecl(Element comment) {
+        //TO DO
         return ;
     }
 
@@ -770,15 +771,20 @@ public class TraverseSchema implements
                 String typeURI = resolvePrefixToURI(prefix);
                 if (!typeURI.equals(fTargetNSURIString)) {
                     baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
+                    //TO DO 
                     // REVISIT: baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
                 }
                 else {
                 
                     fullBaseName = typeURI+","+localpart;
-                        // try to locate the base type first
+                    
+                    // assume the base is a complexType and try to locate the base type first
                     baseTypeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(fullBaseName);
+
+                    // if not found, 2 possibilities: 1: ComplexType in question has not been compiled yet;
+                    //                                2: base is SimpleTYpe;
                     if (baseTypeInfo == null) {
-                        baseTypeValidator = fDatatypeRegistry.getValidatorFor(fullBaseName);
+                        baseTypeValidator = fDatatypeRegistry.getValidatorFor(localpart);
                         if (baseTypeValidator == null) {
                             baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                             if (baseTypeNode != null) {
@@ -790,7 +796,11 @@ public class TraverseSchema implements
                                 baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                                 if (baseTypeNode != null) {
                                     baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
-                                    baseTypeValidator = fDatatypeRegistry.getValidatorFor(fullBaseName);
+                                    simpleTypeValidator = baseTypeValidator = fDatatypeRegistry.getValidatorFor(localpart);
+                                    if (simpleTypeValidator == null) {
+                                        //TO DO: signal error here.
+                                    }
+
                                     baseIsSimpleSimple = true;
                                 }
                                 else {
@@ -799,6 +809,7 @@ public class TraverseSchema implements
                             }
                         }
                         else {
+                            simpleTypeValidator = baseTypeValidator;
                             baseIsSimpleSimple = true;
                         }
 
@@ -845,32 +856,69 @@ public class TraverseSchema implements
 
         // skip refinement and annotations
         child = null;
-        for (child = XUtil.getFirstChildElement(complexTypeDecl);
-             child != null && (child.getNodeName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_PRECISION) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_SCALE) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_LENGTH) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_MINLENGTH) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_ENCODING) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_PERIOD) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_DURATION) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_PATTERN) ||
-                               child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION));
-             child = XUtil.getNextSiblingElement(child)) 
-        {
-            //REVISIT: SimpleType restriction handling
-            //if (child.getNodeName().equals(SchemaSymbols.ELT_RESTRICTIONS))
-                reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-                                  new Object [] { "Restrictions" });
+
+        if (baseIsComplexSimple) {
+            
+            int numEnumerationLiterals = 0;
+            int numFacets = 0;
+            Hashtable facetData        = new Hashtable();
+            Vector enumData            = new Vector();
+
+            for (child = XUtil.getFirstChildElement(complexTypeDecl);
+                 child != null && (child.getNodeName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_PRECISION) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_SCALE) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_LENGTH) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_MINLENGTH) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_ENCODING) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_PERIOD) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_DURATION) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_PATTERN) ||
+                                   child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION));
+                 child = XUtil.getNextSiblingElement(child)) 
+            {
+
+                if ( child.getNodeType() == Node.ELEMENT_NODE ) {
+                    Element facetElt = (Element) child;
+                    numFacets++;
+                    if (facetElt.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                        numEnumerationLiterals++;
+                        enumData.addElement(facetElt.getAttribute(SchemaSymbols.ATT_VALUE));
+                        //Enumerations can have annotations ? ( 0 | 1 )
+                        Element enumContent =  XUtil.getFirstChildElement( facetElt );
+                        if( enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                            traverseAnnotationDecl( child );   
+                        }
+                        // TO DO: if Jeff check in new changes to TraverseSimpleType, copy them over
+                    } else {
+                        facetData.put(facetElt.getNodeName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
+                    }
+                }
+            }
+            if (numEnumerationLiterals > 0) {
+                facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
+            }
+
+            // overide the facets of the baseTypeValidator
+            if (numFacets > 0)
+                baseTypeValidator.setFacets(facetData);
+
+            // now we are ready with our own simpleTypeValidator
+            simpleTypeValidator = baseTypeValidator;
+
+            if (child != null) {
+                reportGenericSchemaError("Invalid Schema Document");
+            }
         }
 
             // if content = textonly, base is a datatype
         if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
+            //TO DO
             if (fDatatypeRegistry.getValidatorFor(base) == null) // must be datatype
                         reportSchemaError(SchemaMessageProvider.NotADatatype,
                                           new Object [] { base }); //REVISIT check forward refs
@@ -926,7 +974,6 @@ public class TraverseSchema implements
 
                 if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                     if (mixedContent || elementContent) {
-                            //REVISIT: unfinished
                             QName eltQName = traverseElementDecl(child);
                             index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
                                                                    eltQName.localpart,
@@ -1013,8 +1060,6 @@ public class TraverseSchema implements
                                                  left,
                                                  false);
         }
-        // REVISIT: keep it here for now, stick in ElementDeclPool as a hack
-        //int typeIndex = fSchemaGrammar.addElementDecl(typeNameIndex, contentSpecType, left, false);
 
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
         typeInfo.base = base;
@@ -1038,19 +1083,12 @@ public class TraverseSchema implements
 
 
 
-        if (!typeName.startsWith("#")) {
-            typeName = fTargetNSURIString + "," + typeName;
-        }
-        fComplexTypeRegistry.put(typeName,typeInfo);
 
 
-        //for (int x = 0; x < uses.size(); x++)
-            //addUse(typeNameIndex, (Integer)uses.elementAt(x));
         
         //int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
 
 
-        // REVISIT: this part is definitely broken!!!
         // (attribute | attrGroupRef)*
         for (;
              child != null;
@@ -1066,6 +1104,7 @@ public class TraverseSchema implements
                 traverseAttributeGroupDecl(child,typeInfo);
             }
         }
+        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeIndex(typeInfo.templateElementIndex);
 
         if (baseTypeInfo != null)
             if ( !derivedByRestriction) {
@@ -1074,7 +1113,13 @@ public class TraverseSchema implements
             else{
                 //TO DO, add base attributes that is not duplicates
             }
+            
+        if (!typeName.startsWith("#")) {
+            typeName = fTargetNSURIString + "," + typeName;
+        }
+        fComplexTypeRegistry.put(typeName,typeInfo);
 
+        // before exit the complex type definition, restore the scope, mainly for nested Anonymous Types
         fCurrentScope = previousScope;
 
         return typeNameIndex;
@@ -1257,7 +1302,8 @@ public class TraverseSchema implements
                 localpart = ref.substring(colonptr+1);
             }
             if (!resolvePrefixToURI(prefix).equals(fTargetNSURIString)) {
-                // REVISIST: different NS, not supported yet.
+                // TO DO
+                // REVISIT: different NS, not supported yet.
                 reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
             Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
@@ -1351,7 +1397,8 @@ public class TraverseSchema implements
                 attDefaultType = fStringPool.addSymbol("#IMPLIED");
             }       // check default value is valid for the datatype.
             if (attType == fStringPool.addSymbol("DATATYPE") && attDefaultValue != -1) {
-                try { // REVISIT - integrate w/ error handling
+                try { 
+                    // REVISIT - integrate w/ error handling
                     String type = fStringPool.toString(enumeration);
                     dv = fDatatypeRegistry.getValidatorFor(type);
                     if (dv != null)
@@ -1377,7 +1424,7 @@ public class TraverseSchema implements
 
         QName attQName = new QName(-1,attName,attName,uriIndex);
 
-        // add attribute to attr decl pool in fValidator, and get back the head
+        // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
                                   enumeration, attDefaultType, 
@@ -1445,107 +1492,6 @@ public class TraverseSchema implements
         return -1;
     } // end of method traverseAttributeGroup
     
-    /*
-    // REVISIT addAttDef a hack for TraverseSchema 
-    public int addAttDef(int attlistHeadIndex, QName attributeDecl, 
-                         int attType, int enumeration, 
-                         int attDefaultType, int attDefaultValue, 
-                         boolean whenRestriction) throws Exception {
-
-        int attlistIndex = attlistHeadIndex;
-
-        int dupID = -1;
-        int dupNotation = -1;
-        while (attlistIndex != -1) {
-            int attrChunk = attlistIndex >> CHUNK_SHIFT;
-            int attrIndex = attlistIndex & CHUNK_MASK;
-            // REVISIT: Validation. Attributes are also tuples.
-            if (fStringPool.equalNames(fAttName[attrChunk][attrIndex], attributeDecl.rawname)) {
-                // REVISIT
-                if ( ! whenRestriction) {
-                    reportGenericSchemaError("Duplicate attributes in "+typeInfo.name);
-                }
-                return -1;
-            }
-            if (fValidating) {
-                if (attType == fIDSymbol && fAttType[attrChunk][attrIndex] == fIDSymbol) {
-                    dupID = fAttName[attrChunk][attrIndex];
-                }
-                if (attType == fNOTATIONSymbol && fAttType[attrChunk][attrIndex] == fNOTATIONSymbol) {
-                    dupNotation = fAttName[attrChunk][attrIndex];
-                }
-            }
-            attlistIndex = fNextAttDef[attrChunk][attrIndex];
-        }
-        if (fValidating) {
-            //REVISIT
-            if (dupID != -1) {
-                Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
-                                  fStringPool.toString(dupID),
-                                  fStringPool.toString(attributeDecl.rawname) };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_MORE_THAN_ONE_ID_ATTRIBUTE,
-                                           XMLMessages.VC_ONE_ID_PER_ELEMENT_TYPE,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                return -1;
-            }
-            if (dupNotation != -1) {
-                Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
-                                  fStringPool.toString(dupNotation),
-                                  fStringPool.toString(attributeDecl.rawname) };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE,
-                                           XMLMessages.VC_ONE_NOTATION_PER_ELEMENT_TYPE,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                return -1;
-            }
-        }
-        //
-        // save the fields
-        //
-        int chunk = fAttDefCount >> CHUNK_SHIFT;
-        int index = fAttDefCount & CHUNK_MASK;
-        ensureAttrCapacity(chunk);
-        fAttName[chunk][index] = attributeDecl.rawname;
-        fAttType[chunk][index] = attType;
-        fAttValidator[chunk][index] = getValidatorForAttType(attType);
-        fEnumeration[chunk][index] = enumeration;
-        fAttDefaultType[chunk][index] = attDefaultType;
-        fAttDefIsExternal[chunk][index] = (byte)(isExternal ? 1 : 0);
-        fAttValue[chunk][index] = attDefaultValue;
-        //
-        // add to the attr list for this element
-        //
-        int nextIndex = -1;
-        if (attDefaultValue != -1) {
-            nextIndex = fAttlistHead[elemChunk][elemIndex];
-            fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
-            if (nextIndex == -1) {
-                fAttlistTail[elemChunk][elemIndex] = fAttDefCount;
-            }
-        } else {
-            nextIndex = fAttlistTail[elemChunk][elemIndex];
-            fAttlistTail[elemChunk][elemIndex] = fAttDefCount;
-            if (nextIndex == -1) {
-                fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
-            }
-            else {
-                fNextAttDef[nextIndex >> CHUNK_SHIFT][nextIndex & CHUNK_MASK] = fAttDefCount;
-                nextIndex = -1;
-            }
-        }
-        nextIndex = attlistHeadIndex;
-        fNextAttDef[chunk][index] = nextIndex;
-        
-        //return fAttDefCount++;
-        return fAttDefCount++;
-
-    } // addAttDef(QName,QName,int,int,int,int,boolean):int
-*/
 
     /**
      * Traverse element declaration:
@@ -1736,14 +1682,11 @@ public class TraverseSchema implements
 
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                //REVISIT: TO-DO, contenttype and simpletypevalidator.
                 //   TO DO:  the Default and fixed attribute handling should be here.                
-                traverseSimpleTypeDecl(child);
+                typeNameIndex = traverseSimpleTypeDecl(child);
+                dv = fDatatypeRegistry.getValidatorFor(fStringPool.toString(typeNameIndex));
+
                 haveAnonType = true;
-                reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-                                  new Object [] { "Nesting datatype declarations" });
-                // contentSpecNodeIndex = traverseDatatypeDecl(content);
-                // contentSpecType = fStringPool.addSymbol("DATATYPE");
             } else if (type.equals("")) { // "ur-typed" leaf
                 contentSpecType = fStringPool.addSymbol("UR_TYPE");
                 // set occurrence count
@@ -1754,8 +1697,7 @@ public class TraverseSchema implements
         } 
 
         if (haveAnonType && (type.length()>0)) {
-            reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-                              new Object [] { "can have type when have a annoymous type" });
+            reportGenericSchemaError( "can have type when have a annoymous type" );
         }
         // type specified as an attribute and no child is type decl.
         else if (!type.equals("")) { 
@@ -1775,7 +1717,7 @@ public class TraverseSchema implements
             }
             typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
             if (typeInfo == null) {
-                dv = fDatatypeRegistry.getValidatorFor(typeURI+","+localpart);
+                dv = fDatatypeRegistry.getValidatorFor(localpart);
                 if (dv == null) {
                     Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                     if (topleveltype != null) {
@@ -1787,8 +1729,7 @@ public class TraverseSchema implements
                         topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                         if (topleveltype != null) {
                             typeNameIndex = traverseSimpleTypeDecl( topleveltype );
-                            dv = fDatatypeRegistry.getValidatorFor(typeURI+","+localpart);
-                            // REVISIT ??do somthing for Simple type here:
+                            dv = fDatatypeRegistry.getValidatorFor(localpart);
                             //   TO DO:  the Default and fixed attribute handling should be here.
                         }
                         else {
@@ -1860,7 +1801,6 @@ public class TraverseSchema implements
         // copy up attribute decls from type object
         if (typeInfo != null) {
             fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
-
         }
         else {
             // REVISIT: should we report error from here?
@@ -1869,6 +1809,7 @@ public class TraverseSchema implements
         return eltQName;
 
     }// end of method traverseElementDecl
+
     int getLocalPartIndex(String fullName){
         int colonAt = fullName.indexOf(":"); 
         String localpart = fullName;
@@ -1902,6 +1843,7 @@ public class TraverseSchema implements
     }
 
     private boolean isTopLevel(Element component) {
+        //REVISIT, is this the right way to check ?
         if (component.getParentNode() == fSchemaRootElement ) {
             return true;
         }
