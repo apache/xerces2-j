@@ -90,7 +90,7 @@ public final class  Base64 {
     }
 
     protected static boolean isData(char octect) {
-        return (base64Alphabet[octect] != -1);
+        return (octect < BASELENGTH && base64Alphabet[octect] != -1);
     }
 
     protected static boolean isBase64(char octect) {
