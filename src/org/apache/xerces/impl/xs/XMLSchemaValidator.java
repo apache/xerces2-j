@@ -1774,11 +1774,14 @@ public class XMLSchemaValidator
             if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                 //REVISIT: is it the only case we will have particle = null?
-                if (ctype.fParticle != null) {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
+                Vector next;
+                if (ctype.fParticle != null &&
+                    (next = fCurrentCM.whatCanGoHere(fCurrCMState)).size() > 0) {
+                    String expected = expectedStr(next);
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, expected});
                 }
                 else {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
+                    reportSchemaError("cvc-complex-type.2.4.d", new Object[]{element.rawname});
                 }
             }
         }
@@ -2981,7 +2984,8 @@ public class XMLSchemaValidator
                 }
                 if (fCurrCMState[0] >= 0 &&
                     !fCurrentCM.endContentModel(fCurrCMState)) {
-                    reportSchemaError("cvc-complex-type.2.4.b", new Object[]{element.rawname, ((XSParticleDecl)ctype.getParticle()).toString()});
+                    String expected = expectedStr(fCurrentCM.whatCanGoHere(fCurrCMState));
+                    reportSchemaError("cvc-complex-type.2.4.b", new Object[]{element.rawname, expected});
                 }
             }
         }
@@ -2993,6 +2997,18 @@ public class XMLSchemaValidator
             fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                     key, arguments,
                     XMLErrorReporter.SEVERITY_ERROR);
+    }
+
+    private String expectedStr(Vector expected) {
+        StringBuffer ret = new StringBuffer("{");
+        int size = expected.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                ret.append(", ");
+            ret.append(expected.elementAt(i).toString());
+        }
+        ret.append('}');
+        return ret.toString();
     }
 
     /**********************************/
