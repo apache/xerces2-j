@@ -39,6 +39,7 @@ import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLEntityDescriptionImpl;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLResourceIdentifier;
@@ -489,7 +490,8 @@ public class XMLEntityManager
                 }
             }
             Entity entity = new ExternalEntity(name,
-                    new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId, false)), null, fInExternalSubset);
+                new XMLEntityDescriptionImpl(name, publicId, literalSystemId, baseSystemId, 
+                expandSystemId(literalSystemId, baseSystemId, false)), null, fInExternalSubset);
             fEntities.put(name, entity);
         }
         else{
@@ -556,7 +558,9 @@ public class XMLEntityManager
                                   String publicId, String systemId,
                                   String baseSystemId, String notation) {
         if (!fEntities.containsKey(name)) {
-            Entity entity = new ExternalEntity(name, new XMLResourceIdentifierImpl(publicId, systemId, baseSystemId, null), notation, fInExternalSubset);
+            Entity entity = new ExternalEntity(name, 
+                new XMLEntityDescriptionImpl(name, publicId, systemId, baseSystemId, null), 
+                notation, fInExternalSubset);
             fEntities.put(name, entity);
         }
         else{

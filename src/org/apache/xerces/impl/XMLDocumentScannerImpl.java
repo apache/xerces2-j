@@ -24,7 +24,7 @@ import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import org.apache.xerces.util.XMLEntityDescriptionImpl;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -894,7 +894,7 @@ public class XMLDocumentScannerImpl
             fEntityManager.setEntityHandler(null);
             try {
                 boolean again;
-		        XMLResourceIdentifierImpl resourceIdentifier = new XMLResourceIdentifierImpl();
+                XMLEntityDescriptionImpl entityDescription = new XMLEntityDescriptionImpl();
                 do {
                     again = false;
                     switch (fScannerState) {
@@ -933,9 +933,9 @@ public class XMLDocumentScannerImpl
                             break;
                         }
                         case SCANNER_STATE_DTD_EXTERNAL: {
-			                resourceIdentifier.setValues(fDoctypePublicId, fDoctypeSystemId, null, null);
+                            entityDescription.setDescription("[dtd]", fDoctypePublicId, fDoctypeSystemId, null, null);
                             XMLInputSource xmlInputSource =
-                                fEntityManager.resolveEntity(resourceIdentifier);
+                                fEntityManager.resolveEntity(entityDescription);
                             fDTDScanner.setInputSource(xmlInputSource);
                             setScannerState(SCANNER_STATE_DTD_EXTERNAL_DECLS);
                             again = true;
