@@ -72,6 +72,17 @@
     </a>
   </faq>
   
+  <faq title="Language Fixup">
+    <q>Does the XInclude processor perform language fixup?</q>
+    <a>
+     <p>
+      Yes. The XInclude processor will preserve language information on a top-level included element
+      by adding an <code>xml:lang</code> attribute if its include parent has a different [language]
+      property. Support for language fixup was added to the XInclude implementation in Xerces 2.7.0.
+     </p>
+    </a>
+  </faq>
+  
   <faq title="Document Fragments">
     <q>Why doesn't including document fragments work?</q>
     <a>
@@ -102,7 +113,7 @@
     <a>
      <p>
       No. The namespace for XInclude was changed back to <code>http://www.w3.org/2001/XInclude</code>
-      in the <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/">Candidate Recommendation (April, 2004)</jump>.
+      in the <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/">Candidate Recommendation (April 2004)</jump>.
       The <code>http://www.w3.org/2003/XInclude</code> is no longer recognized.
      </p>
     </a>
