@@ -208,6 +208,9 @@ public class XMLValidator
     private String fDTDElementDeclName = null;
     private Vector fMixedElementTypes = new Vector();
 
+    /** elementDecls in DTD */
+    private Vector fDTDElementDecls = new Vector();
+
     // symbols
 
     private String fEMPTYSymbol ;
@@ -1051,10 +1054,10 @@ public class XMLValidator
         // initialize state
         fInDTD = true;
         fNDataDeclNotations.clear();
+        fDTDElementDecls.removeAllElements();
 
         // create DTD grammar
         fDTDGrammar = new DTDGrammar();
-        fDTDGrammar.setErrorReporter(fErrorReporter);
 
         // REVESIT: if schema validation is turned on, we shouldn't be doing this.
         fCurrentGrammarIsDTD = true;
@@ -1078,6 +1081,19 @@ public class XMLValidator
      */
     public void elementDecl(String name, String contentModel)
         throws SAXException {
+
+        //check VC: Unique Element Declaration
+        if (fValidation) {
+            if ( fDTDElementDecls.contains(name)){
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "MSG_ELEMENT_ALREADY_DECLARED",
+                                           new Object[]{ name },
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
+            else {
+                fDTDElementDecls.addElement(name);
+            }
+        }
 
         // call handlers
         fDTDGrammar.elementDecl(name, contentModel);

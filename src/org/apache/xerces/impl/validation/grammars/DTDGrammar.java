@@ -164,10 +164,6 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
 
     private int fDepth               = 0;
 
-
-    /** fErrorReporter */
-    private XMLErrorReporter fErrorReporter = null; 
-
     // additional fields(columns) for the element Decl pool in the Grammar
 
     /** flag if the elementDecl is External. */
@@ -204,11 +200,6 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
       setTargetNameSpace( targetNamespace );
    }
 
-
-   /** set up the ErrorReporter */
-   public void setErrorReporter(XMLErrorReporter errorReporter) {
-       fErrorReporter = errorReporter;
-   }
    //
    // XMLDTDHandler methods
    //
@@ -344,10 +335,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
               fCurrentElementIndex = getElementDeclIndex(name, -1);
           }
           else {
-              fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                         "MSG_ELEMENT_ALREADY_DECLARED",
-                                         new Object[]{ name },
-                                         XMLErrorReporter.SEVERITY_ERROR);
+              // duplicate element, ignored.
               return;
           }
       }
