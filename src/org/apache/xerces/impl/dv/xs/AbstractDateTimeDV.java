@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -133,6 +133,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             tempDate[utc]='+';
             normalize(tempDate, timeZone);
             c1 = compareOrder(date1, tempDate);
+            if (c1 == LESS_THAN)
+                return c1;
 
             //compare date1>=(date2 with time zone +14)
             //
@@ -142,13 +144,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             tempDate[utc]='-';
             normalize(tempDate, timeZone);
             c2 = compareOrder(date1, tempDate);
+            if (c2 == GREATER_THAN)
+                return c2;
 
-            if ( (c1 < 0 && c2 > 0) ||
-                 (c1 == 0 && c2 == 0) ) {
-                return INDETERMINATE;
-            }
-            //REVISIT: wait for clarification on this case from schema
-            return(c1!=INDETERMINATE)?c1:c2;
+            return INDETERMINATE;
         }
         else if ( date2[utc]=='Z' ) {
 
@@ -157,7 +156,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             cloneDate(date1, tempDate); //clones date1 value to global temporary storage: tempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
-
             tempDate[utc]='-';
             if (DEBUG) {
                System.out.println("tempDate=" + dateToString(tempDate));
@@ -168,6 +166,9 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
                 System.out.println("date=" + dateToString(date2));
                 System.out.println("tempDate=" + dateToString(tempDate));
             }
+            if (c1 == LESS_THAN)
+                return c1;
+
             //compare (date1 with time zone +14)<=date2
             //
             cloneDate(date1, tempDate); //clones date1 value to global temporary storage: tempDate
@@ -179,12 +180,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             if (DEBUG) {
                System.out.println("tempDate=" + dateToString(tempDate));
             }
-            if ( (c1 < 0 && c2 > 0) ||
-                 (c1 == 0 && c2 == 0) ) {
-                return INDETERMINATE;
-            }
-            //REVISIT: wait for clarification on this case from schema
-            return(c1!=INDETERMINATE)?c1:c2;
+            if (c2 == GREATER_THAN)
+                return c2;
+
+            return INDETERMINATE;
         }
         return INDETERMINATE;
 
