@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x xmlns="http://www.schemaTest.org/xinclude-test" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.schemaTest.org/xinclude-test tests.xsd">
+   <!-- include not well formed XML -->
+   <!-- EXPECT FAILURE -->
+   [Fatal Error] not-well-formed.xml:1:10: Attribute name "is" associated with an element type "this" must be followed by the ' = ' character.
+[Fatal Error] test22.xml:9:56: Error attempting to parse XML file (href='../included/not-well-formed.xml').

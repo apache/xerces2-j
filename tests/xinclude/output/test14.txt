@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x xmlns="http://www.schemaTest.org/xinclude-test" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.schemaTest.org/xinclude-test tests.xsd">
+   <!-- tests that other elements from xi namespace are not allowed when include is not successful -->
+   <!-- EXPECT FAILURE -->
+   [Warning] test14.xml:9:47: Include operation failed, reverting to fallback. Resource error reading file as XML (href='../included/invalid.xml'). Reason: tests\xinclude\included\invalid.xml (The system cannot find the file specified)
+[Fatal Error] test14.xml:10:19: Elements from namespace 'http://www.w3.org/2001/XInclude', other than 'fallback', are not allowed to be children of 'include' elements.  However, 'xi:other' was found.
