@@ -86,11 +86,21 @@
 		<p>In this release, schema validation has been integrated with the 
 		regular SAXParser and DOMParser classes. No special classes are 
 		required to parse documents that use a schema.</p>
-		<p>Documents that use XML Schema grammars specify the location of the
-		grammar using an xsi:schemaLocation attribute if they use
+        <p>Schema grammars can be associated with instance
+        documents in two ways.  An application developer may use
+        the
+        <code>http://apache.org/xml/properties/schema/external-schemaLocation</code>
+        and the
+        <code>http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation</code>
+        properties to associate schemas with namespaces appearing in
+        instance documents; see the &quot;properties&quot;
+        section of this documentation for details.  If this
+        property is not set, then each
+		document that uses XML Schema grammars must specify the location of the
+	    grammars it uses by using an xsi:schemaLocation attribute if they use
         	namespaces, and an xsi:noNamespaceSchemaLocation attribute
-	        otherwise.  These should be attached to the root / top-level element 
-		in the document (for more details see XML Schema Part 1 section 4.3.2). 
+	        otherwise.  These are usually placed on the root / top-level element 
+		in the document, though they may occur on any element; for more details see XML Schema Part 1 section 4.3.2. 
 		Here is an example with no target namespace: </p>
 <source>&lt;document
   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
