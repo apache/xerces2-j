@@ -59,11 +59,10 @@
 
 package util;
 
-import java.util.Stack;
-import java.util.EmptyStackException;
 import java.lang.Integer;
-import java.util.Vector;
-
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 
 
@@ -90,11 +89,13 @@ import java.util.Vector;
 
 public class Arguments {
     private  boolean      fDbug          = false;
-    private  Stack        stackOfOptions = new Stack();
-    private  Stack        argumentList   = new Stack();
-    private  Stack        listOfFiles    = new Stack();
+    private  Queue        stackOfOptions = new Queue();
+
+    private  Queue        argumentList   = new Queue();
+    private  Queue        listOfFiles    = new Queue();
     private  String[]     messageArray   = null; 
     private  int          lastPopArgument = 0;
+
 
     public Arguments() {
         stackOfOptions.push( new Integer( -1 ) );// First Element to push in Stack
@@ -142,15 +143,9 @@ public class Arguments {
 
 
         if ( this.fDbug ) {
-            for (  int i = 0; i<stackOfOptions.size(); i++ ){
-                System.out.println( "stc = " + stackOfOptions.elementAt( i ) );
-            }
-            for (  int i = 0; i<argumentList.size(); i++ ){
-                System.out.println( "argLst = " + argumentList.elementAt( i ) );
-            }
-            for (  int i = 0; i<listOfFiles.size(); i++ ){
-                System.out.println( "lst = " + listOfFiles.elementAt( i ) );
-            }
+            stackOfOptions.print();
+            argumentList.print();
+            listOfFiles.print();
         }
     }
 
@@ -173,17 +168,11 @@ public class Arguments {
      */
     public  int getArguments(){
         Integer i;
-        try {
-            if ( stackOfOptions.empty() )
-            {
-                i = (Integer ) stackOfOptions.pop();
-                lastPopArgument = i.intValue();
-            }
-            else
-              lastPopArgument = -1;
-        } catch ( EmptyStackException ex ) {
-            return -1;
-        }
+        if ( stackOfOptions.empty() ){
+            i = (Integer ) stackOfOptions.pop();
+            lastPopArgument = i.intValue();
+        } else
+            lastPopArgument = -1;
         return lastPopArgument;
     }
 
@@ -194,25 +183,20 @@ public class Arguments {
      * @return 
      */
     public String getStringParameter(){
-        String s = null;
-        try {
-            s = (String) argumentList.pop();
-            if( this.fDbug )  {
-            System.out.println( "string par = " + s );
+        String    s = (String) argumentList.pop();
+        if ( this.fDbug )  {
+                System.out.println( "string par = " + s );
             }
-        } catch ( EmptyStackException ex ) {
-            // System.out.println("missing parameter for argument -" +  (char )lastPopArgument );
-        }
         return s;
     }
 
 
     public String getlistFiles(){
-        String s = null;
+        String    s = null;
         try {
-            s = (String) listOfFiles.pop();
-        } catch ( EmptyStackException ex ) {
-            //   System.out.println("missing parameter for argument -" +  (char )lastPopArgument );
+          s = (String) listOfFiles.pop(); 
+        } catch( NoSuchElementException ex ){
+            ;
         }
         return s;
     }
@@ -234,7 +218,7 @@ public class Arguments {
         }
     }
 
-
+/*
 
 
     public static void main( String[] argv){
@@ -293,7 +277,45 @@ public class Arguments {
             }
         }
     }
+*/
+    // Private methods
+
+    // Private inner classes
+
+    public  class Queue   {
+        private LinkedList queue;
+        public Queue() {
+            queue = new LinkedList();
+        }
+        public void push( Object token ) {
+            queue.addLast( token );
+        }
+        public Object pop() {
+            Object token = queue.removeFirst(); 
+            return token; 
+        }
+        public boolean empty(){
+            return queue.isEmpty();
+        }
+
+        public int size(){
+            return queue.size();
+        }
+
+        public void clear(){
+            queue.clear();
+        }
 
 
+        public void print(){
+            System.out.println("we are here " );
+            ListIterator it          =  queue.listIterator();
+            int      tokenNumber = 0;
+            while ( it.hasNext()  ){
+                System.out.println( "token[ " +  tokenNumber++
+                                    + "] = " +   ( it.next().toString()));
+            }
+        }
 
+    }
 }
