@@ -57,24 +57,27 @@
 package org.apache.xerces.impl.v2;
 
 import  org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.xni.QName;
 import  org.w3c.dom.Element;
 import  java.util.Stack;
 import  java.util.Hashtable;
 
 /**
  * The model group schema component traverser.
- *
+ * 
  * <group
  *   name = NCName>
  *   Content: (annotation?, (all | choice | sequence))
  * </group>
+ * 
+ * @author Rahul Srivastava, Sun Microsystems Inc.
+ * @author Elena Litani, IBM
  * @version $Id$
  */
-class  XSDGroupTraverser extends XSDAbstractParticleTraverser{
+class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
-    private Stack fCurrentGroupNameStack;
-    private Hashtable fGroupNameRegistry;
-
+    private XSParticleDecl fParticle = new XSParticleDecl();
     XSDGroupTraverser (XSDHandler handler,
                        XMLErrorReporter errorReporter,
                        XSAttributeChecker gAttrCheck) {
@@ -86,14 +89,172 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser{
                       XSDocumentInfo schemaDoc,
                       SchemaGrammar grammar) {
 
-        return -1;
+        // General Attribute Checking for elmNode declared locally
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+        int elemIdx = traverseGroupDecl(elmNode, attrValues, schemaDoc, grammar, true);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+
+        return elemIdx;
     }
 
     int traverseGlobal(Element elmNode,
-                 XSDocumentInfo schemaDoc,
-                 SchemaGrammar grammar) {
+                       XSDocumentInfo schemaDoc,
+                       SchemaGrammar grammar) {
 
-        return -1;
+        // General Attribute Checking for elmNode declared globally
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc.fNamespaceSupport);
+        int groupIdx = traverseGroupDecl(elmNode, attrValues, schemaDoc, grammar, true);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+
+        return groupIdx;
     }
+
+    /**
+     * Traverse the group element.
+     *
+     * @param  elmNode
+     * @param  attrValues
+     * @param  schemaDoc
+     * @param  grammar
+     * @param  isGlobal
+     * @return the element declaration index
+     */
+    int traverseGroupDecl(Element elmNode,
+                          Object[] attrValues,
+                          XSDocumentInfo schemaDoc,
+                          SchemaGrammar grammar,
+                          boolean isGlobal) {
+
+        String  l_strNameAttr   = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
+        QName   refAttr     = (QName)  attrValues[XSAttributeChecker.ATTIDX_REF];
+        Integer l_nMinAttr  = (Integer) attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+        Integer l_nMaxAttr  = (Integer) attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+
+        int index = -1;
+
+        // get targetNamespace
+        String l_strNamespace = XSDHandler.EMPTY_STRING;
+        if (isGlobal) {
+            l_strNamespace = schemaDoc.fTargetNamespace;
+        }
+        else if (schemaDoc.fAreLocalElementsQualified) {
+            l_strNamespace = schemaDoc.fTargetNamespace;
+        }
+
+        // check for the constraints on the group element.
+        // REVISIT: when parent of group is <redifine>
+        if (isGlobal) {
+            // must have a name
+            if (l_strNameAttr.length() == 0) {
+                reportGenericSchemaError("Global group declaration must have a name.");
+            }
+            if (refAttr != null) {
+                reportGenericSchemaError ( "A group with \"ref\" present must not have <schema> or <redefine> as its parent");
+            }
+            // must have at least one child
+            Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
+            if (l_elmChild == null) {
+                reportGenericSchemaError("Global group declaration must have a child.");
+            }
+            else {
+
+                String childName = l_elmChild.getLocalName();
+                if (l_elmChild.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    traverseAnnotationDecl(l_elmChild, attrValues, isGlobal, schemaDoc);
+                    l_elmChild = DOMUtil.getNextSiblingElement(l_elmChild);
+                }
+
+                if (l_elmChild == null) {
+                    reportGenericSchemaError("Global group element must have a child <all>, <choice> or <sequence>.");
+                }
+                else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+                    index = traverseAll(l_elmChild, schemaDoc, grammar);
+                    index = handleOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                }
+                else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                    index = traverseChoice(l_elmChild, schemaDoc, grammar);
+                    index = handleOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                }
+                else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                    index = traverseSequence(l_elmChild, schemaDoc, grammar);
+                    index = handleOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                }
+                else {
+                    Object[] args = new Object [] { "group", childName};
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "GroupContentRestricted",
+                                               args,
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+
+                if (DOMUtil.getNextSiblingElement(l_elmChild) != null) {
+                    Object[] args = new Object [] { "group", childName};
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "GroupContentRestricted",
+                                               args,
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+
+                // add global group declaration to the grammar
+                grammar.fGlobalGroupDecls.put(l_strNameAttr, index);
+
+            } //if
+        }
+        else {
+            // local declaration. Corresponds to a Particle component.
+
+            // ref should be here.
+            if (refAttr == null) {
+                reportGenericSchemaError("Local group declaration should have ref.");
+                return index;
+            }
+            // can't have name attribute in the local group decl
+            if (l_strNameAttr.length() !=0) {
+                reportGenericSchemaError ( "group " + l_strNameAttr + " cannot refer to another group, but it refers to " + refAttr.localpart);
+            }
+
+            // get global decl
+            // index is a particle index.
+            index = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE, refAttr);
+
+            // no children are allowed
+            if (DOMUtil.getFirstChildElement(elmNode) != null) {
+                reportGenericSchemaError("Local group declaration cannot have a child.");
+            }
+
+            // either circular definition (detected by schema handler) or non existing 
+            // group decl
+            //
+            if (index < 0) {
+                if (index == XSDHandler.I_NOT_FOUND) {
+                    reportGenericSchemaError("Reference made to non-existent group element");
+                }
+                return index;
+            }
+
+            int minOccurs = l_nMinAttr.intValue();
+            int maxOccurs = l_nMaxAttr.intValue();
+
+            // empty particle
+            if (minOccurs == 0 && maxOccurs == 0) {
+                return XSDHandler.I_EMPTY_PARTICLE;
+            }
+
+            if (!( minOccurs == 1 && maxOccurs == 1)) {
+                // if minOccurs==maxOccurs==1 we don't need to create new particle
+                // create new particle in the grammar if minOccurs<maxOccurs
+                short type = grammar.getParticleType(index);               
+                fParticle.clear();
+                fParticle.type = type;
+                fParticle.uri = schemaDoc.fTargetNamespace;
+                fParticle.value = index;
+                index = grammar.addParticleDecl(fParticle);
+                grammar.setParticleMinMax(index, minOccurs, maxOccurs);
+            }
+        } // if
+
+        return index;
+
+    } // traverseGroupDecl()
 
 }

@@ -113,6 +113,14 @@ class XSDHandler {
     public final static int NOTATION_TYPE = 32;
     public final static int TYPEDECL_TYPE = 64;
 
+    // component not found 
+    public final static short I_NOT_FOUND = -1;
+    // empty particle (minOccurs==maxOccurs==0)
+    public final static short I_EMPTY_PARTICLE = -2;
+    // for circular definitions we report errors here, however,
+    // traversers still need to report errors for component not found
+    public final static short I_IGNORE_ERROR = -3;
+
     // this string gets appended to redefined names; it's purpose is to be
     // as unlikely as possible to cause collisions.
     public final static String REDEF_IDENTIFIER = "_fn3dktizrknc9pi";

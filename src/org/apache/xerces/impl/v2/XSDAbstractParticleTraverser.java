@@ -72,11 +72,11 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     //    CHILD_OF_GROUP     - processing a child of a model group definition
     //    PROCESSING_ALL_GP  - processing an <all> group itself
 
-    private static final int NOT_ALL_CONTEXT    = 0;
-    private static final int PROCESSING_ALL_EL  = 1;
-    private static final int GROUP_REF_WITH_ALL = 2;
-    private static final int CHILD_OF_GROUP     = 3;
-    private static final int PROCESSING_ALL_GP  = 4;
+    protected static final int NOT_ALL_CONTEXT    = 0;
+    protected static final int PROCESSING_ALL_EL  = 1;
+    protected static final int GROUP_REF_WITH_ALL = 2;
+    protected static final int CHILD_OF_GROUP     = 3;
+    protected static final int PROCESSING_ALL_GP  = 4;
 
     private XSParticleDecl fParticle = new XSParticleDecl();
 
@@ -138,13 +138,13 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 right = particleIndex;
             }
             else {
-                left = grammar.addParticle(XSParticleDecl.PARTICLE_ALL, left, right);
+                left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ALL, left, right);
                 right = particleIndex;
             }
         }
 
         if (right != -2) //|| fSchemaGrammar.getDeferContentSpecExpansion())
-            left = grammar.addParticle(XSParticleDecl.PARTICLE_ALL, left, right);
+            left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ALL, left, right);
 
 
         return left;
@@ -297,10 +297,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
             else {
                 if (choice) {
-                    left = grammar.addParticle(XSParticleDecl.PARTICLE_CHOICE ,left,right);
+                    left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_CHOICE ,left,right);
                 }
                 else {
-                    left = grammar.addParticle(XSParticleDecl.PARTICLE_SEQUENCE ,left,right);
+                    left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE ,left,right);
                 }
                 right = particleIndex;
             }
@@ -308,10 +308,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         if (right != -2) //|| fSchemaGrammar.getDeferContentSpecExpansion())
             if (choice) {
-                left = grammar.addParticle(XSParticleDecl.PARTICLE_CHOICE, left, right);
+                left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_CHOICE, left, right);
             }
             else {
-                left = grammar.addParticle(XSParticleDecl.PARTICLE_SEQUENCE, left, right);
+                left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE, left, right);
             }
 
         return left;    

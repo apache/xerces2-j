@@ -66,7 +66,12 @@ import org.apache.xerces.impl.validation.ContentModelValidator;
 import java.lang.Integer;
 import java.util.Vector;
 import java.util.Hashtable;
+
 /**
+ * 
+ * 
+ * @author Sandy Gao, IBM
+ * @author Elena Litani, IBM
  * @version $Id$
  */
 
@@ -419,6 +424,11 @@ public class SchemaGrammar {
         return fTargetNamespace;
     } // getTargetNamespace():String
     
+
+    // ***********************************************
+    // Methods to create and get element declarations
+    // ***********************************************
+
     /**
      * addElementDecl
      * 
@@ -450,29 +460,6 @@ public class SchemaGrammar {
         return elementIndex;
     }
 
-    /**
-     * 
-     * @param type       particle type
-     * @param value      particle left child
-     * @param otherValue particle right child
-     * @return 
-     */
-    public int addParticle (short type, int value, int otherValue){
-        fParticleCount++;
-        int chunk = fParticleCount >> CHUNK_SHIFT;
-        int index = fParticleCount & CHUNK_MASK;
-        //
-        //Implement
-        //ensureParticleCapacity(chunk);
-        fParticleType[chunk][index] = type;
-        fParticleUri[chunk][index] = null;
-        fParticleValue[chunk][index] = value;
-        fParticleOtherUri[chunk][index] = null;
-        fParticleOtherValue[chunk][index] = otherValue;
-        fParticleMinOccurs[chunk][index] = 1;
-        fParticleMaxOccurs[chunk][index] = 1;
-        return fParticleCount;
-    }
 
     /**
      * getElementIndex
@@ -535,6 +522,11 @@ public class SchemaGrammar {
         int elementIndex = getElementIndex(elementName);
         return getElementDecl(elementIndex, elementDecl);
     } // getElementDecl(int,XSElementDecl):XSElementDecl
+
+
+    // ***********************************************
+    // Methods to create and get attribute declarations
+    // ***********************************************
 
 
     /**
@@ -672,6 +664,50 @@ public class SchemaGrammar {
     // getNotationDecl
 
 
+    // ***********************************************
+    // Methods to create and get particle declarations
+    // ***********************************************
+    
+    /**
+     * 
+     * @param type       particle type
+     * @param value      particle left child
+     * @param otherValue particle right child
+     * @return 
+     */
+    public int addParticleDecl (short type, int value, int otherValue){
+        fParticleCount++;
+        int chunk = fParticleCount >> CHUNK_SHIFT;
+        int index = fParticleCount & CHUNK_MASK;
+        //
+        //Implement
+        //ensureParticleCapacity(chunk);
+        fParticleType[chunk][index] = type;
+        fParticleUri[chunk][index] = null;
+        fParticleValue[chunk][index] = value;
+        fParticleOtherUri[chunk][index] = null;
+        fParticleOtherValue[chunk][index] = otherValue;
+        fParticleMinOccurs[chunk][index] = 1;
+        fParticleMaxOccurs[chunk][index] = 1;
+        return fParticleCount;
+    }
+
+    public int addParticleDecl (XSParticleDecl particle){
+        fParticleCount++;
+        int chunk = fParticleCount >> CHUNK_SHIFT;
+        int index = fParticleCount & CHUNK_MASK;
+        //
+        //Implement
+        //ensureParticleCapacity(chunk);
+        fParticleType[chunk][index] = particle.type;
+        fParticleUri[chunk][index] = particle.uri;
+        fParticleValue[chunk][index] = particle.value;
+        fParticleOtherUri[chunk][index] = particle.otherUri;
+        fParticleOtherValue[chunk][index] = particle.otherValue;
+        fParticleMinOccurs[chunk][index] = 1;
+        fParticleMaxOccurs[chunk][index] = 1;
+        return fParticleCount;
+    }
     /**
      * getParticleDecl
      * 
@@ -688,12 +724,27 @@ public class SchemaGrammar {
         int index = particleIndex & CHUNK_MASK;
 
         particle.type = fParticleType[chunk][index];
-
-        // REVISIT: 
-        // add code
-        
+        particle.value = fParticleValue[chunk][index];
+        particle.uri =   fParticleUri[chunk][index];
+        particle.otherUri = fParticleOtherUri[chunk][index];
+        particle.otherValue = fParticleOtherValue[chunk][index];
+        particle.minOccurs = fParticleMinOccurs[chunk][index];
+        particle.maxOccurs = fParticleMaxOccurs[chunk][index];        
         return particle;
     }
+
+    
+    // REVISIT: temporary function to be deleted if implementation
+    // uses objects
+    public short getParticleType (int particleIndex){
+        
+        int chunk = particleIndex >> CHUNK_SHIFT;
+        int index = particleIndex & CHUNK_MASK;
+
+        return fParticleType[chunk][index];
+
+    }
+
 
     /**
      * Set min/max values
@@ -710,6 +761,13 @@ public class SchemaGrammar {
         fParticleMinOccurs[chunk][index] = min;
         fParticleMaxOccurs[chunk][index] = max;
     }
+    
+    // ***********************************************
+    // Methods to create and get type (simpleType
+    // complexType) declarations
+    // ***********************************************
+
+    
     /**
      * addTypeDecl
      * 
