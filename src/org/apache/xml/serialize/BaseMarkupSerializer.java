@@ -58,7 +58,7 @@
 
 // Sep 14, 2000:
 //  Fixed comments to preserve whitespaces and add a line break
-//  when indenting. Reported by Gervase Markham <GRM@dataconnection.com>
+//  when indenting. Reported by Gervase Markham <gerv@gerv.net>
 // Sep 14, 2000:
 //  Fixed serializer to report IO exception directly, instead at
 //  the end of document processing.
