@@ -88,6 +88,7 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 
 import java.util.Enumeration;
@@ -261,6 +262,7 @@ public class XMLDTDValidator
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
 
+    protected XMLDocumentSource fDocumentSource;
     // grammars
 
     /** DTD Grammar. */
@@ -559,18 +561,30 @@ public class XMLDTDValidator
     // XMLDocumentSource methods
     //
 
-    /**
-     * Sets the document handler to receive information about the document.
-     * 
-     * @param documentHandler The document handler.
-     */
+    /** Sets the document handler to receive information about the document. */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
     } // setDocumentHandler(XMLDocumentHandler)
 
+    /** Returns the document handler */
+    public XMLDocumentHandler getDocumentHandler() {
+        return fDocumentHandler;
+    } // setDocumentHandler(XMLDocumentHandler)
+
+
     //
     // XMLDocumentHandler methods
     //
+
+    /** Sets the document source */
+    public void setDocumentSource(XMLDocumentSource source){
+        fDocumentSource = source;
+    } // setDocumentSource
+
+    /** Returns the document source */
+    public XMLDocumentSource getDocumentSource (){
+        return fDocumentSource;
+    } // getDocumentSource
 
     /**
      * The start of the document.
@@ -708,7 +722,6 @@ public class XMLDTDValidator
     throws XNIException {
 
         handleStartElement(element, attributes);
-
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes, augs);
@@ -1800,6 +1813,11 @@ public class XMLDTDValidator
                                            "MSG_GRAMMAR_NOT_FOUND",
                                            new Object[]{ element.rawname},
                                            XMLErrorReporter.SEVERITY_ERROR);
+            }
+            // modify pipeline
+            if (fDocumentSource !=null ) {
+                fDocumentSource.setDocumentHandler(fDocumentHandler);
+                return;
             }
         }
         else {

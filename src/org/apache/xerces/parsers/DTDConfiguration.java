@@ -80,6 +80,7 @@ import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentScanner;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLDTDScanner;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
@@ -638,12 +639,16 @@ public class DTDConfiguration
         // setup document pipeline
         if (fDTDValidator != null) {
             fScanner.setDocumentHandler(fDTDValidator);
+            // filters
             fDTDValidator.setDocumentHandler(fNamespaceBinder);
+            fDTDValidator.setDocumentSource(fScanner);
             fNamespaceBinder.setDocumentHandler(fDocumentHandler);
+            fNamespaceBinder.setDocumentSource(fDTDValidator);
         }
         else {
             fScanner.setDocumentHandler(fNamespaceBinder);
             fNamespaceBinder.setDocumentHandler(fDocumentHandler);
+            fNamespaceBinder.setDocumentSource(fDTDValidator);
         }
 
         fLastComponent = fNamespaceBinder;

@@ -69,6 +69,7 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
@@ -235,7 +236,9 @@ public class StandardParserConfiguration
             }
             fLastComponent = fSchemaValidator;
             fNamespaceBinder.setDocumentHandler(fSchemaValidator);
-            fSchemaValidator.setDocumentHandler(fDocumentHandler);            
+            
+            fSchemaValidator.setDocumentHandler(fDocumentHandler);
+            fSchemaValidator.setDocumentSource(fNamespaceBinder);
         } 
 
 

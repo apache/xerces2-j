@@ -78,6 +78,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 
 /**
@@ -155,6 +156,8 @@ public class XMLNamespaceBinder
 
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
+
+    protected XMLDocumentSource fDocumentSource;
 
     // namespaces
 
@@ -346,18 +349,31 @@ public class XMLNamespaceBinder
     // XMLDocumentSource methods
     //
 
-    /**
-     * Sets the document handler to receive information about the document.
-     *
-     * @param documentHandler The document handler.
-     */
+    /** Sets the document handler to receive information about the document. */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
     } // setDocumentHandler(XMLDocumentHandler)
 
+    /** Returns the document handler */
+    public XMLDocumentHandler getDocumentHandler() {
+        return fDocumentHandler;
+    } // setDocumentHandler(XMLDocumentHandler)
+
+
     //
     // XMLDocumentHandler methods
     //
+
+    /** Sets the document source */
+    public void setDocumentSource(XMLDocumentSource source){
+        fDocumentSource = source;
+    } // setDocumentSource
+
+    /** Returns the document source */
+    public XMLDocumentSource getDocumentSource (){
+        return fDocumentSource;
+    } // getDocumentSource
+
 
     /**
      * This method notifies the start of a general entity.

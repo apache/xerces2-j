@@ -57,6 +57,8 @@
 
 package org.apache.xerces.xni;
 
+import org.apache.xerces.xni.parser.XMLDocumentSource;
+
 /**
  * The document handler interface defines callback methods to report
  * information items in XML documents. Parser components interested in 
@@ -335,5 +337,13 @@ public interface XMLDocumentHandler {
      *                   Thrown by handler to signal an error.
      */
     public void endDocument(Augmentations augs) throws XNIException;
+
+
+    /** Sets the document source. */
+    public void setDocumentSource(XMLDocumentSource source);
+
+
+    /** Returns the document source. */
+    public XMLDocumentSource getDocumentSource();
 
 } // interface XMLDocumentHandler

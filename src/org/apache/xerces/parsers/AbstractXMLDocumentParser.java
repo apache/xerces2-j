@@ -70,6 +70,7 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -98,6 +99,9 @@ public abstract class AbstractXMLDocumentParser
 
     /** True if inside DTD. */
     protected boolean fInDTD;
+
+    /** Document source*/
+    protected XMLDocumentSource fDocumentSource;
 
     //
     // Constructors
@@ -391,6 +395,16 @@ public abstract class AbstractXMLDocumentParser
         throws XNIException {
     } // processingInstruction(String, XMLString, Augmentations)
 
+    
+    /** Sets the document source */
+    public void setDocumentSource(XMLDocumentSource source){
+        fDocumentSource = source;
+    } // setDocumentSource
+
+    /** Returns the document source */
+    public XMLDocumentSource getDocumentSource (){
+        return fDocumentSource;
+    } // getDocumentSource
     //
     // XMLDTDHandler methods
     //
