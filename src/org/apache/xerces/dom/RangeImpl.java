@@ -1282,36 +1282,34 @@ public class RangeImpl  implements Range {
     void checkIndex(Node refNode, int offset) throws DOMException
     {
         if (offset < 0) {
-    		throw new DOMException(
-    			DOMException.INDEX_SIZE_ERR, 
-			"DOM004 Index out of bounds");
+            throw new DOMException(
+                                   DOMException.INDEX_SIZE_ERR, 
+                                   "DOM004 Index out of bounds");
     	}
 
         int type = refNode.getNodeType();
         
-        if((type == Node.TEXT_NODE
-        || type == Node.CDATA_SECTION_NODE
-        || type == Node.COMMENT_NODE
-        || type == Node.PROCESSING_INSTRUCTION_NODE)
-        && offset > refNode.getNodeValue().length()){
-    		throw new DOMException(
-    			DOMException.INDEX_SIZE_ERR, 
-			"DOM004 Index out of bounds");
+        // If the node contains text, ensure that the
+        // offset of the range is <= to the length of the text
+        if (type == Node.TEXT_NODE
+            || type == Node.CDATA_SECTION_NODE
+            || type == Node.COMMENT_NODE
+            || type == Node.PROCESSING_INSTRUCTION_NODE) {
+            if (offset > refNode.getNodeValue().length()) {
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, 
+                                       "DOM004 Index out of bounds");
+            }
         }
-        
-        Node child = refNode.getFirstChild();
-        int i = 1;
-        for (; child != null; i++) {
-            child = child.getNextSibling();
+        else {
+            // Since the node is not text, ensure that the offset
+            // is valid with respect to the number of child nodes
+            if (offset > refNode.getChildNodes().getLength()) {
+    		throw new DOMException(DOMException.INDEX_SIZE_ERR, 
+                                       "DOM004 Index out of bounds");
+            }
         }
-        if (i > offset) {
-    		throw new DOMException(
-    			DOMException.INDEX_SIZE_ERR, 
-			"DOM004 Index out of bounds");
-        }
-            
     }
-                                        
+
     boolean isAncestorTypeValid(Node node) {
         for (Node n = node; n!=null; n = n.getParentNode()) {
             int type = n.getNodeType();
