@@ -109,7 +109,6 @@ public class StringValidator implements DatatypeValidator {
         if ( _facetsDefined == 0 )// No Facets to validate against
             return;
 
-        StringTokenizer parsedList = null;
         if( _derivedBy == DatatypeValidator.DERIVED_BY_RESTRICTION  ){ 
             checkContent( content );
 
@@ -354,7 +353,6 @@ public class StringValidator implements DatatypeValidator {
         Collator  collator  = Collator.getInstance( loc );
         return collator.compare( content, facetValue );
     }
-
 
 }
 
