@@ -65,6 +65,7 @@ import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
+import org.apache.xerces.validators.common.XMLElementDecl;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.AttributeList;
@@ -940,9 +941,18 @@ public class SAXParser
 
             // strings
             String name = fStringPool.toString(elementDecl.rawname);
-            String contentModel = XMLContentSpec.toString(contentSpecProvider, 
-                                                          fStringPool, 
-                                                          contentSpecIndex);
+            String contentModel;
+            if (contentSpecType == XMLElementDecl.TYPE_ANY) {
+                contentModel = "ANY";
+            }
+            else if (contentSpecType == XMLElementDecl.TYPE_EMPTY) {
+                contentModel = "EMPTY";
+            }
+            else {
+                contentModel = XMLContentSpec.toString(contentSpecProvider, 
+                                                       fStringPool, 
+                                                       contentSpecIndex);
+            }
 
             // perform callback
             if (DEBUG_CALLBACKS) {
