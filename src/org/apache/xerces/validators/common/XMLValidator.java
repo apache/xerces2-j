@@ -326,9 +326,11 @@ public final class XMLValidator
     private DatatypeValidatorFactoryImpl fDataTypeReg = 
                                          DatatypeValidatorFactoryImpl.getDatatypeRegistry();
 
-    private DatatypeValidator     fValID = this.fDataTypeReg.getDatatypeValidator("ID" );
-    private DatatypeValidator fValIDRef  = this.fDataTypeReg.getDatatypeValidator("IDREF" );
-    private DatatypeValidator fValIDRefs = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
+    private DatatypeValidator     fValID   = this.fDataTypeReg.getDatatypeValidator("ID" );
+    private DatatypeValidator fValIDRef    = this.fDataTypeReg.getDatatypeValidator("IDREF" );
+    private DatatypeValidator fValIDRefs   = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
+    private DatatypeValidator fValENTITY   = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
+    private DatatypeValidator fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
 
 
 
@@ -2821,7 +2823,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                     }
                                     else{
                                         try {
-                                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                            if(fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ){
+                                                String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
+                                                String  value       = unTrimValue.trim();
+                                                fTempAttDecl.datatypeValidator.validate(value, this.fValidateIDRef );
+                                            } else{
+                                                fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                            }
+
                                         }
                                         catch (InvalidDatatypeValueException idve) {
                                             fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -2887,11 +2896,34 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         AttributeValidator av = null;
         switch (attributeDecl.type) {
         case XMLAttributeDecl.TYPE_ENTITY:
+            {
+           /* WIP
+            boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
+            String  unTrimValue = fStringPool.toString(attValue);
+            String  value       = unTrimValue.trim();
+            try{
+                if ( isAlistAttribute ){
+                    fValENTITIES.validate( value, null );
+                } else {
+                    fValENTITY.validate( value, null );
+                }
+            } catch ( InvalidDatatypeValueException ex ){
+                if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
+                    reportRecoverableXMLError(ex.getMajorCode(),
+                                              ex.getMinorCode(),
+                                              fStringPool.toString( attributeDecl.name.rawname), value );
+                } else {
+                    System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+                }
+            }
+
+            */
             if (attributeDecl.list) {
                 av = fAttValidatorENTITIES;
             }
             else {
                 av = fAttValidatorENTITY;
+            }
             }
             break;
         case XMLAttributeDecl.TYPE_ENUMERATION:
@@ -2927,6 +2959,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 String  unTrimValue = fStringPool.toString(attValue);
                 String  value       = unTrimValue.trim();
                 boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
+                                                              //changes fTempAttDef
                 if (fValidationEnabled){
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
