@@ -87,7 +87,7 @@ public interface XMLDTDScanner
     /** 
      * Sets the input source. 
      *
-     * @param inputSource The input source.
+     * @param inputSource The input source or null.
      *
      * @throws IOException Thrown on i/o error.
      */
