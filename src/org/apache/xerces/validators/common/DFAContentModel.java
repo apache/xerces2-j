@@ -871,13 +871,6 @@ public class DFAContentModel
 
             // Get the current leaf's element index
             final QName element = fLeafList[outIndex].getElement();
-            // HACK: Make sure that the empty namespace string really
-            //       means NO target namespace. This is a problem
-            //       throughout the code so it's easier to solve it
-            //       at the DFA compile-time. -Ac
-            if (element.uri == 0) {
-                element.uri = -1;
-            }
 
             // See if the current leaf node's element index is in the list
             int inIndex = 0;
