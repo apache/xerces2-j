@@ -59,6 +59,7 @@ package org.apache.xerces.impl.v2.identity;
 
 import org.apache.xerces.impl.v2.XSAttributeDecl;
 import org.apache.xerces.impl.v2.XSElementDecl;
+import org.apache.xerces.impl.v2.XSElementDecl;
 import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
 import org.apache.xerces.impl.v2.SchemaGrammar;
 import org.apache.xerces.impl.v2.SchemaSymbols;
@@ -413,10 +414,8 @@ public class XPathMatcher {
                                     fMatchedString = avalue;
                                     // now, we have to go on the hunt for 
                                     // datatype validator; not an easy or pleasant task...
-                                    int attIndex = grammar.getAttributeIndex(aname.localpart);
-                                    XSAttributeDecl tempAttDecl = new XSAttributeDecl();
-                                    grammar.getAttributeDecl(attIndex, tempAttDecl);
-                                    DatatypeValidator aValidator = (DatatypeValidator)grammar.getTypeDecl(tempAttDecl.fTypeIdx);
+                                    XSAttributeDecl tempAttDecl = grammar.getGlobalAttributeDecl(aname.localpart);
+                                    DatatypeValidator aValidator = tempAttDecl.fType;
                                     matched(fMatchedString, aValidator, false);
                                 }
                             }
@@ -476,7 +475,7 @@ public class XPathMatcher {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element, int eIndex, SchemaGrammar grammar) throws Exception {
+    public void endElement(QName element, XSElementDecl eDecl, SchemaGrammar grammar) throws Exception {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
@@ -499,13 +498,11 @@ public class XPathMatcher {
                     fBufferContent = false;
                     fMatchedString = fMatchedBuffer.toString();
                     // REVISIT: cache this.
-                    XSElementDecl temp = new XSElementDecl();
-                    grammar.getElementDecl(eIndex, temp);
                     // REVISIT:  make sure type's from same schema!
                     // REVISIT:  make sure type is simple!
-                    DatatypeValidator val = (DatatypeValidator)grammar.getTypeDecl(temp.fTypeIdx);
-                    if(temp != null) {
-                        matched(fMatchedString, val, (temp.fElementMiscFlags & XSElementDecl.NILLABLE) != 0);
+                    DatatypeValidator val = (DatatypeValidator)(eDecl.fType);
+                    if(eDecl != null) {
+                        matched(fMatchedString, val, (eDecl.isNillable()));
                     } else 
                         matched(fMatchedString, null, false);
                 }
