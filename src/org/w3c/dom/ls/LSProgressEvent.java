@@ -15,11 +15,11 @@ package org.w3c.dom.ls;
 import org.w3c.dom.events.Event;
 
 /** 
- * DOM Level 3 WD Experimental:
+ * <strong>DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
+ * or obsoleted by other documents at any time.</strong> <p>
  *  This interface represents a progress event object that notifies the 
  * application about progress as a document is parsed. It extends the 
  * <code>Event</code> interface defined in .

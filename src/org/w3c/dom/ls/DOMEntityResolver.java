@@ -13,11 +13,11 @@
 package org.w3c.dom.ls;
 
 /**
-  * DOM Level 3 WD Experimental:
+ * <strong>DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
+ * or obsoleted by other documents at any time.</strong> <p>
  * <code>DOMEntityResolver</code> Provides a way for applications to redirect 
  * references to external entities.
  * <p>Applications needing to implement customized handling for external 

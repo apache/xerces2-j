@@ -17,11 +17,11 @@ import org.w3c.dom.DOMException;
 import org.apache.xerces.dom3.DOMErrorHandler;
 
 /**
-  * DOM Level 3 WD Experimental:
+ * <strong>DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
+ * or obsoleted by other documents at any time.</strong> <p>
  *  <code>DOMWriter</code> provides an API for serializing (writing) a DOM 
  * document out in an XML document. The XML data is written to an output 
  * stream, the type of which depends on the specific language bindings in 

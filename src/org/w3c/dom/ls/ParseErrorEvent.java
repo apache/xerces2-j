@@ -16,12 +16,11 @@ import org.w3c.dom.events.Event;
 import org.apache.xerces.dom3.DOMError;
 
 /**
- * DOM Level 3 WD Experimental:
+ * <strong>DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
- * <p>
+ * or obsoleted by other documents at any time.</strong> <p>
  * ParseErrorEvent is the event that is fired if there's an error in the XML 
  * document being parsed.
  * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409'>Document Object Model (DOM) Level 3 Abstract Schemas and Load

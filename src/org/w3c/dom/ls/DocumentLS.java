@@ -16,11 +16,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
 
 /**
-  * DOM Level 3 WD Experimental:
+ * <strong>DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
+ * or obsoleted by other documents at any time.</strong> <p>
  * The <code>DocumentLS</code> interface provides a mechanism by which the 
  * content of a document can be replaced with the DOM tree produced when 
  * loading a URI, or parsing a string. The expectation is that an instance 

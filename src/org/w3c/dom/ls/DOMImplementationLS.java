@@ -15,11 +15,11 @@ package org.w3c.dom.ls;
 import org.w3c.dom.DOMException;
 
 /**
-  * DOM Level 3 WD Experimental:
+ * <strong>DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
+ * or obsoleted by other documents at any time.</strong> <p>
  *  <code>DOMImplementationLS</code> contains the factory methods for creating 
  * objects that implement the <code>DOMBuilder</code> (parser) and 
  * <code>DOMWriter</code> (serializer) interfaces. 

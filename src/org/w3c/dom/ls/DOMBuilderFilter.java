@@ -16,11 +16,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;         
 
 /**
-  * DOM Level 3 WD Experimental:
+ * <strong>DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
+ * or obsoleted by other documents at any time.</strong> <p>
  * <code>DOMBuilderFilter</code>s provide applications the ability to examine 
  * nodes as they are being constructed during a parse. As each node is 
  * examined, it may be modified or removed, or the entire parse may be 
