@@ -124,6 +124,7 @@ public abstract class XMLParser
         "http://xml.org/sax/features/namespaces",
         // Xerces
         "http://apache.org/xml/features/validation/schema",
+        "http://apache.org/xml/features/validation/schema-full-checking",
         "http://apache.org/xml/features/validation/dynamic",
         "http://apache.org/xml/features/validation/default-attribute-values",
         "http://apache.org/xml/features/validation/validate-content-models",
@@ -603,6 +604,41 @@ public abstract class XMLParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getSchemaValidationEnabled();
     }
+
+    /**
+     * Allows the user to turn full Schema constraint checking on/off.  
+     * Only takes effect if Schema validation is enabled.                  
+     * If this feature is off, partial constraint checking is done.
+     * <p>
+     * This method is equivalent to the feature:
+     * <pre>
+     * http://apache.org/xml/features/validation/schema-full-checking
+     * </pre>
+     *
+     * @param schemaFullChecking True to turn on full schema constraint checking.
+     *
+     * @see #getValidationSchemaFullChecking
+     * @see #setFeature
+     */
+    protected void setValidationSchemaFullChecking(boolean schemaFullChecking) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            // REVISIT: Localize message
+            throw new SAXNotSupportedException("http://apache.org/xml/features/validation/schema-full-checking:  parse is in progress");
+        }
+        fValidator.setSchemaFullCheckingEnabled(schemaFullChecking);
+    }
+
+    /**
+     * Returns true if Schema support is turned on.
+     *
+     * @see #setValidationSchemaFullChecking
+     */
+    protected boolean getValidationSchemaFullChecking()
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        return fValidator.getSchemaFullCheckingEnabled();
+    }
+
 
     /**
      * Allows the parser to validate a document only when it contains a
@@ -1235,6 +1271,15 @@ public abstract class XMLParser
                 setValidationSchema(state);
                 return;
             }
+            //
+            // http://apache.org/xml/features/validation/schema-full-checking
+            //   Lets the user turn Schema full constraint checking on/off.
+            //
+            if (feature.equals("validation/schema-full-checking")) {
+                setValidationSchemaFullChecking(state);
+                return;
+            }
+
             //
             // http://apache.org/xml/features/validation/dynamic
             //   Allows the parser to validate a document only when it
