@@ -1240,7 +1240,7 @@ public class DocumentTracer
         System.err.println();
 
         System.err.println("defaults:");
-        System.out.print("  Config:     "+DEFAULT_PARSER_CONFIG);
+        System.out.println("  Config:     "+DEFAULT_PARSER_CONFIG);
         System.out.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
         System.out.print("  Validation: ");
