@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2004 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,6 +158,9 @@ public class AttrImpl
 
     /** Serialization version. */
     static final long serialVersionUID = 7277707688218972102L;
+    
+    /** DTD namespace. **/
+    static final String DTD_URI = "http://www.w3.org/TR/REC-xml";
 
     //
     // Data
@@ -325,6 +328,9 @@ public class AttrImpl
      * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
      */
     public String getTypeNamespace() {
+        if (type != null) {
+            return DTD_URI;
+        }
         return null;
     }
     

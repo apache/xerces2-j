@@ -82,6 +82,7 @@ public class AttrNSImpl
 
     /** Serialization version. */
     static final long serialVersionUID = -781906615369795414L;
+    
     static final String xmlnsURI = "http://www.w3.org/2000/xmlns/";
     static final String xmlURI = "http://www.w3.org/XML/1998/namespace";
 
@@ -362,10 +363,11 @@ public class AttrNSImpl
      * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
      */
     public String getTypeNamespace() {
-        if (type !=null){
+        if (type !=null) {
             if (type instanceof XSSimpleTypeDecl){
                 return ((XSSimpleTypeDecl)type).getNamespace();
             }
+            return DTD_URI;
         }
         return null;
     }
