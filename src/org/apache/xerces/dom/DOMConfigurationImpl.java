@@ -188,7 +188,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected final static short COMMENTS            = 0x1<<5;
     protected final static short VALIDATE            = 0x1<<6;
     protected final static short PSVI                = 0x1<<7;
-
+    protected final static short WELLFORMED          = 0x1<<8;
     // components
 
     /** Symbol table. */
@@ -290,6 +290,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         features |= COMMENTS;
         features |= CDATA;
         features |= SPLITCDATA;
+        features |=  WELLFORMED;
 
         if (symbolTable == null) {
             symbolTable = new SymbolTable();
@@ -569,23 +570,22 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             }
             else if (name.equals(Constants.DOM_ENTITIES)) {
                 features = (short) (state ? features | ENTITIES : features & ~ENTITIES);
-
             }
             else if (name.equals(Constants.DOM_SPLIT_CDATA)) {
                 features = (short) (state ? features | SPLITCDATA : features & ~SPLITCDATA);
-
             }
             else if (name.equals(Constants.DOM_VALIDATE)) {
                 features = (short) (state ? features | VALIDATE : features & ~VALIDATE);
-
             }
+            else if (name.equals(Constants.DOM_WELLFORMED)) {
+                features = (short) (state ? features | WELLFORMED : features & ~WELLFORMED );
+            }            
             else if (name.equals(Constants.DOM_INFOSET)
                     || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
                     || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
-                    //REVISIT: we need to support true value
-                    || name.equals(Constants.DOM_WELLFORMED)) {
+                    ) {
                 if (state) { // true is not supported
                     String msg =
                         DOMMessageFormatter.formatMessage(
@@ -809,13 +809,14 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (name.equals(Constants.DOM_VALIDATE)) {
 			return (features & VALIDATE) != 0 ? Boolean.TRUE : Boolean.FALSE;
 		}
-		else if (name.equals(Constants.DOM_INFOSET)
+		else if (name.equals(Constants.DOM_WELLFORMED)) {
+			return (features & WELLFORMED) != 0 ? Boolean.TRUE : Boolean.FALSE;
+		}        
+		else if (  name.equals(Constants.DOM_INFOSET)
 				|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
 				|| name.equals(Constants.DOM_CANONICAL_FORM)
 				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-				|| name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)				
-                //REVISIT: currently its set to false
-                || name.equals(Constants.DOM_WELLFORMED)
+				|| name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
                 ) {
 			return Boolean.FALSE;
 		}
@@ -898,7 +899,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 || name.equals(Constants.DOM_ENTITIES)
                 || name.equals(Constants.DOM_SPLIT_CDATA)
                 || name.equals(Constants.DOM_NAMESPACES)
-                || name.equals(Constants.DOM_VALIDATE)) {
+                || name.equals(Constants.DOM_VALIDATE)
+                || name.equals(Constants.DOM_WELLFORMED)
+                ) {
                 return true ;
             }//features whose parameter value can not be set to 'true'
             else if (
@@ -906,9 +909,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-                    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
-                    //REVISIT: we need to support true value
-                    || name.equals(Constants.DOM_WELLFORMED)
+                    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)                                     
                     ) {
                     return (value.equals(Boolean.TRUE)) ? false : true;
             }//features whose parameter value can not be set to 'false'
