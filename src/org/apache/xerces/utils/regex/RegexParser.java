@@ -142,6 +142,7 @@ class RegexParser {
     }
 
     synchronized Token parse(String regex, int options) throws ParseException {
+
         this.options = options;
         this.offset = 0;
         this.setContext(S_NORMAL);
@@ -330,6 +331,7 @@ class RegexParser {
             }
             tok.addChild(this.parseTerm());
         }
+
         return tok;
     }
 
@@ -610,7 +612,7 @@ class RegexParser {
      * min ::= [0-9]+
      * max ::= [0-9]+
      */
-    Token parseFactor() throws ParseException {        
+    Token parseFactor() throws ParseException {  
         int ch = this.read();
         Token tok;
         switch (ch) {
@@ -650,25 +652,22 @@ class RegexParser {
                 int min = 0, max = -1;
                 if (off >= this.regexlen)  break;
                 ch = this.regex.charAt(off++);
-                if (ch != ',' && (ch < '0' || ch > '9'))  break;
-                if (ch != ',') {                // 0-9
-                    min = ch-'0';
-                    while (off < this.regexlen
-                           && (ch = this.regex.charAt(off++)) >= '0' && ch <= '9') {
-                        min = min*10 +ch-'0';
-                        ch = -1;
-                    }
-                    if (ch < 0)  break;
+                if (ch < '0' || ch > '9')  {
+                    throw new RuntimeException("Invalid quantifier '"+(char)ch+"' in " + regex);
                 }
-                //if (off >= this.regexlen)  break;
+                min = ch-'0';
+                while (off < this.regexlen
+                        && (ch = this.regex.charAt(off++)) >= '0' && ch <= '9') {
+                      min = min*10 +ch-'0';
+                      ch = -1;
+                }
                 max = min;
-                if (ch == ',') {
-                    if (off >= this.regexlen
-                        || ((ch = this.regex.charAt(off++)) < '0' || ch > '9')
-                        && ch != '}')
-                        break;
+                if (ch!='}' && ch !=',' && (ch < '0' || ch > '9'))  {
+                    throw new RuntimeException("Invalid quantifier '"+(char)ch+"' in " + regex);
+                }
+                else if (ch == ',') {
                     if (ch == '}') {
-                        max = -1;           // {min,}
+                          max = -1;           // {min,}
                     } else {
                         max = ch-'0';       // {min,max}
                         while (off < this.regexlen
@@ -677,12 +676,14 @@ class RegexParser {
                             max = max*10 +ch-'0';
                             ch = -1;
                         }
-                        if (ch < 0)  break;
                         //if (min > max)
                         //    throw new ParseException("parseFactor(): min > max: "+min+", "+max);
+                    
+                        if (ch !='}' && (ch < '0' || ch > '9'))  {
+                            throw new RuntimeException( "Invalid quantifier '"+(char)ch+"' in" + regex);
+                        }
                     }
                 }
-                if (ch != '}')  break;
                                                 // off -> next of '}'
                 if (this.checkQuestion(off)) {
                     tok = Token.createNGClosure(tok);

@@ -273,6 +273,7 @@ class ParserForXMLSchema extends RegexParser {
                     throw this.ex("parser.cc.5", this.offset);
                 break;                          // Exit this loop
             }
+            
             this.next();
             if (!end) {                         // if not shorthands...
                 if (type == T_CHAR) {
@@ -299,10 +300,15 @@ class ParserForXMLSchema extends RegexParser {
                         if (type == T_CHAR) {
                             if (rangeend == '[')  throw this.ex("parser.cc.6", this.offset-1);
                             if (rangeend == ']')  throw this.ex("parser.cc.7", this.offset-1);
+                            if (rangeend == '-')  throw new RuntimeException("Invalid character '-' in the middle of positive character range");
                         }
                         if (type == T_BACKSOLIDUS)
                             rangeend = this.decodeEscaped();
                         this.next();
+                        if (c > rangeend) {
+                           throw new RuntimeException("The range end code point '"+(char) rangeend
+                                                      + "' is less than the start code point '" +(char)c +"'");
+                        }
                         tok.addRange(c, rangeend);
                     }
                 }
@@ -350,6 +356,7 @@ class ParserForXMLSchema extends RegexParser {
             throw new RuntimeException("Internal Error: shorthands: \\u"+Integer.toString(ch, 16));
         }
     }
+    
     int decodeEscaped() throws ParseException {
         if (this.read() != T_BACKSOLIDUS)  throw ex("parser.next.1", this.offset-1);
         int c = this.chardata;
@@ -357,18 +364,25 @@ class ParserForXMLSchema extends RegexParser {
           case 'n':  c = '\n';  break; // LINE FEED U+000A
           case 'r':  c = '\r';  break; // CRRIAGE RETURN U+000D
           case 't':  c = '\t';  break; // HORIZONTAL TABULATION U+0009
-
-          case 'e':
-          case 'f':
-          case 'x':
-          case 'u':
-          case 'v':
-            throw ex("parser.process.1", this.offset-2);
-          case 'A':
-          case 'Z':
-          case 'z':
-            throw ex("parser.descape.5", this.offset-2);
-          default:
+                        
+          // XML Schema REC: Single Character Escape 
+          case '\\':
+          case '|':
+          case '.':
+          case '^':
+          case '-':
+          case '?':
+          case '*':
+          case '+':
+          case '{':
+          case '}':
+          case '(':
+          case ')':
+          case '[':
+          case ']':
+                break;
+         default:
+            throw new RuntimeException("Regular expression: unrecognized character '\\"+(char)c+"' in charRange");
         }
         return c;
     }
