@@ -173,6 +173,20 @@ public class Field {
                     xpath:"./"+xpath), 
                   symbolTable, context);
             
+            // verify that only one attribute is selected per branch
+            for (int i=0;i<fLocationPaths.length;i++) {
+                int numAttrs = 0;
+                for(int j=0; j<fLocationPaths[i].steps.length; j++) {
+                    org.apache.xerces.impl.xpath.XPath.Axis axis =
+                        fLocationPaths[i].steps[j].axis;
+                    if (axis.type == axis.ATTRIBUTE) {
+                        numAttrs++;
+                    }
+                    if(numAttrs > 1) {
+                        throw new XPathException("c-fields-xpaths");
+                    }
+                }
+            }
         } // <init>(String,SymbolTable,NamespacesContext)
 
     } // class XPath
