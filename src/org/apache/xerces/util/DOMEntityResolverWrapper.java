@@ -63,8 +63,8 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import org.w3c.dom.ls.DOMResourceResolver;
-import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.LSResourceResolver;
+import org.w3c.dom.ls.LSInput;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -74,10 +74,11 @@ import java.io.Reader;
 /**
  * This class wraps DOM entity resolver to XNI entity resolver.
  *
- * @see DOMResourceResolver
+ * @see LSResourceResolver
  *
  * @author Gopal Sharma, SUN MicroSystems Inc.
  * @author Elena Litani, IBM 
+ * @author Ramesh Mandava, Sun Microsystems
  * @version $Id$
  */
 public class DOMEntityResolverWrapper
@@ -87,8 +88,11 @@ public class DOMEntityResolverWrapper
     // Data
     //
 
+    /** XML 1.0 type constant according to DOM L3 LS CR spec "http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107" */
+    private static final String XML_TYPE="http://www.w3.org/TR/REC-xml";
+
     /** The DOM entity resolver. */
-    protected DOMResourceResolver fEntityResolver;
+    protected LSResourceResolver fEntityResolver;
 
     //
     // Constructors
@@ -98,23 +102,23 @@ public class DOMEntityResolverWrapper
     public DOMEntityResolverWrapper() {}
 
     /** Wraps the specified DOM entity resolver. */
-    public DOMEntityResolverWrapper(DOMResourceResolver entityResolver) {
+    public DOMEntityResolverWrapper(LSResourceResolver entityResolver) {
         setEntityResolver(entityResolver);
-    } // DOMResourceResolver
+    } // LSResourceResolver
 
     //
     // Public methods
     //
 
     /** Sets the DOM entity resolver. */
-    public void setEntityResolver(DOMResourceResolver entityResolver) {
+    public void setEntityResolver(LSResourceResolver entityResolver) {
         fEntityResolver = entityResolver;
-    } // setEntityResolver(DOMResourceResolver)
+    } // setEntityResolver(LSResourceResolver)
 
     /** Returns the DOM entity resolver. */
-    public DOMResourceResolver getEntityResolver() {
+    public LSResourceResolver getEntityResolver() {
         return fEntityResolver;
-    } // getEntityResolver():DOMResourceResolver
+    } // getEntityResolver():LSResourceResolver
 
     //
     // XMLEntityResolver methods
@@ -131,14 +135,15 @@ public class DOMEntityResolverWrapper
      */
     public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier)
         throws XNIException, IOException {
-
         // resolve entity using DOM entity resolver
         if (fEntityResolver != null) {
             try {
-                DOMInput inputSource =
+                // For entity resolution the type of the resource would be  XML TYPE
+                // DOM L3 LS spec mention only the XML 1.0 recommendation right now
+                LSInput inputSource =
 		    resourceIdentifier == null ?
-                    fEntityResolver.resolveResource(null, null, null) :
-                    fEntityResolver.resolveResource(resourceIdentifier.getPublicId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getBaseSystemId());
+                    fEntityResolver.resolveResource(null, null, null, null, null) :
+                    fEntityResolver.resolveResource( XML_TYPE, resourceIdentifier.getNamespace(), resourceIdentifier.getPublicId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getBaseSystemId());
                 if (inputSource != null) {
                     String publicId = inputSource.getPublicId();
                     String systemId = inputSource.getSystemId();

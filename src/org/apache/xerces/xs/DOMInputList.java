@@ -57,16 +57,16 @@
 
 package org.apache.xerces.xs;
 
-import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.LSInput;
 
 /**
  *  The <code>DOMInputList</code> interface provides the abstraction of an 
- * ordered collection of <code>DOMInput</code>s, without defining or 
+ * ordered collection of <code>LSInput</code>s, without defining or 
  * constraining how this collection is implemented. 
  */
 public interface DOMInputList {
     /**
-     *  The number of <code>DOMInput</code>s in the list. The range of valid 
+     *  The number of <code>LSInput</code>s in the list. The range of valid 
      * child object indices is 0 to <code>length-1</code> inclusive. 
      */
     public int getLength();
@@ -76,10 +76,10 @@ public interface DOMInputList {
      * <code>null</code> if <code>index</code> is greater than or equal to 
      * the number of objects in the list. The index starts at 0. 
      * @param index  index into the collection. 
-     * @return  The <code>DOMInput</code> at the <code>index</code>th 
+     * @return  The <code>LSInput</code> at the <code>index</code>th 
      *   position in the <code>DOMInputList</code>, or <code>null</code> if 
      *   the index specified is not valid. 
      */
-    public DOMInput item(int index);
+    public LSInput item(int index);
 
 }

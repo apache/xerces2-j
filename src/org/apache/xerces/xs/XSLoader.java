@@ -58,7 +58,7 @@
 package org.apache.xerces.xs;
 
 import org.apache.xerces.dom3.DOMConfiguration;
-import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.LSInput;
 
 /**
  * An interface that provides a method to load XML Schema documents. This 
@@ -102,8 +102,8 @@ public interface XSLoader {
 
     /**
      *  Parses the content of XML Schema documents specified as a list of 
-     * <code>DOMInput</code>s. 
-     * @param is  The list of <code>DOMInput</code>s from which the XML 
+     * <code>LSInput</code>s. 
+     * @param is  The list of <code>LSInput</code>s from which the XML 
      *   Schema documents are to be read. 
      * @return An XSModel representing schema documents.
      */
@@ -120,11 +120,11 @@ public interface XSLoader {
 
     /**
      *  Parse an XML Schema document from a resource identified by a 
-     * <code>DOMInput</code> . 
+     * <code>LSInput</code> . 
      * @param is  The <code>DOMInputSource</code> from which the source 
      *   document is to be read. 
      * @return An XSModel representing this schema.
      */
-    public XSModel load(DOMInput is);
+    public XSModel load(LSInput is);
 
 }

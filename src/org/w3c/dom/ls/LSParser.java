@@ -20,73 +20,98 @@ import org.w3c.dom.DOMException;
 /**
  *  An interface to an object that is able to build, or augment, a DOM tree 
  * from various input sources. 
- * <p> <code>DOMParser</code> provides an API for parsing XML and building the 
- * corresponding DOM document structure. A <code>DOMParser</code> instance 
+ * <p> <code>LSParser</code> provides an API for parsing XML and building the 
+ * corresponding DOM document structure. A <code>LSParser</code> instance 
  * can be obtained by invoking the 
- * <code>DOMImplementationLS.createDOMParser()</code> method. 
- * <p> As specified in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>DOM Level 3 Core</a>]
- * , when a document is first made available via the DOMParser: 
+ * <code>DOMImplementationLS.createLSParser()</code> method. 
+ * <p> As specified in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+ * , when a document is first made available via the LSParser: 
  * <ul>
- * <li> there is 
- * only one <code>Text</code> node for each block of text. The 
- * <code>Text</code> nodes are in "normal" form: only structure (e.g. 
- * elements, comments, processing instructions, CDATA sections, and entity 
- * references) separates <code>Text</code> nodes, i.e., there are neither 
- * adjacent nor empty <code>Text</code> nodes. 
+ * <li> there will 
+ * never be two adjacent nodes of type NODE_TEXT, and there will never be 
+ * empty text nodes. 
  * </li>
- * <li> it is expected that the 
- * <code>value</code> and <code>nodeValue</code> attributes of an 
- * <code>Attr</code> node initially return the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#AVNormalize'>XML 1.0 
- * normalized value</a>. However, if the parameters "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-validate-if-schema'>
- * validate-if-schema</a>" and "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-datatype-normalization'>
+ * <li> it is expected that the <code>value</code> and 
+ * <code>nodeValue</code> attributes of an <code>Attr</code> node initially 
+ * return the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#AVNormalize'>XML 1.0 
+ * normalized value</a>. However, if the parameters "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate-if-schema'>
+ * validate-if-schema</a>" and "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-datatype-normalization'>
  * datatype-normalization</a>" are set to <code>true</code>, depending on the attribute normalization 
  * used, the attribute values may differ from the ones obtained by the XML 
- * 1.0 attribute normalization. If the parameters 
- * <code>data-type-normalization</code> is set to <code>false</code>, the 
- * XML 1.0 attribute normalization is guaranteed to occur, and if the 
- * attributes list does not contain namespace declarations, the 
- * <code>attributes</code> attribute on <code>Element</code> node represents 
- * the property <b>[attributes]</b> defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+ * 1.0 attribute normalization. If the parameters "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-datatype-normalization'>
+ * datatype-normalization</a>" is set to <code>false</code>, the XML 1.0 attribute normalization is 
+ * guaranteed to occur, and if the attributes list does not contain 
+ * namespace declarations, the <code>attributes</code> attribute on 
+ * <code>Element</code> node represents the property <b>[attributes]</b> defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information Set</a>]
  * . 
  * </li>
  * </ul>
- * <p> Asynchronous <code>DOMParser</code> objects are expected to also 
+ * <p> Asynchronous <code>LSParser</code> objects are expected to also 
  * implement the <code>events::EventTarget</code> interface so that event 
- * listeners can be registered on asynchronous <code>DOMParser</code> 
+ * listeners can be registered on asynchronous <code>LSParser</code> 
  * objects. 
- * <p> Events supported by asynchronous <code>DOMParser</code> objects are: 
+ * <p> Events supported by asynchronous <code>LSParser</code> objects are: 
  * <dl>
- * <dt>
- * load</dt>
- * <dd> The <code>DOMParser</code> finishes to load the document. See also 
- * the definition of the <code>LSLoadEvent</code> interface. </dd>
+ * <dt>load</dt>
+ * <dd>
+ *  The <code>LSParser</code> finishes to load the document. See also the 
+ * definition of the <code>LSLoadEvent</code> interface. </dd>
  * <dt>progress</dt>
  * <dd> The 
- * <code>DOMParser</code> signals a progress as a document is parsed. See 
- * also the definition of the <code>LSProgressEvent</code> interface. </dd>
+ * <code>LSParser</code> signals progress as data is parsed.  This 
+ * specification does not attempt to define exactly when progress events 
+ * should be dispatched, that is intentionally left as implementation 
+ * depenedent, but here is one example of how an application might dispatch 
+ * progress events. Once the parser starts receiving data, a progress event 
+ * is dispatched to indicate that the parsing starts, then from there on, a 
+ * progress event is dispatched for every 4096 bytes of data that is 
+ * received and processed. This is only one example, though, and 
+ * implementations can choose to dispatch progress events at any time while 
+ * parsing, or not dispatch them at all.  See also the definition of the 
+ * <code>LSProgressEvent</code> interface. </dd>
  * </dl>
  * <p ><b>Note:</b>  All events defined in this specification use the 
  * namespace URI <code>"http://www.w3.org/2002/DOMLS"</code>. 
  * <p> While parsing an input source, errors are reported to the application 
- * through the error handler (<code>DOMParser.config</code>'s "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-error-handler'>
+ * through the error handler (<code>LSParser.config</code>'s "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
  * error-handler</a>" parameter). This specification does in no way try to define all possible 
  * errors that can occur while parsing XML, or any other markup, but some 
  * common error cases are defined. The types (<code>DOMError.type</code>) of 
  * errors and warnings defined by this specification are: 
  * <dl>
- * <dt>
- * <code>"unsupported-media-type" [fatal]</code></dt>
- * <dd> Raised if the configuration 
- * parameter "supported-media-types-only" is set to <code>true</code> and an 
- * unsupported media type is encountered. </dd>
- * <dt>
- * <code>"unsupported-encoding" [fatal]</code></dt>
- * <dd> Raised if an unsupported 
- * encoding is encountered. </dd>
+ * <dt> 
+ * <code>"check-character-normalization-failure" [error]</code> </dt>
+ * <dd> Raised if 
+ * the paramter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-check-character-normalization'>
+ * check-character-normalization</a>" is set to true and a string is encoutered that fails normalization 
+ * checking. </dd>
  * <dt><code>"doctype-not-allowed" [fatal]</code></dt>
- * <dd> 
- * Raised if the configuration parameter "disallow-doctype" is set to 
- * <code>true</code> and a doctype is encountered. </dd>
+ * <dd> Raised if the 
+ * configuration parameter "disallow-doctype" is set to <code>true</code> 
+ * and a doctype is encountered. </dd>
+ * <dt>
+ * <code>"pi-base-uri-not-preserved" [warning]</code></dt>
+ * <dd> Raised if a processing 
+ * instruction is encoutered in a location where the base URI of the 
+ * processing instruction can not be preserved.  One example of a case where 
+ * this warning will be raised is if the configuration parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
+ * entities</a>" is set to <code>false</code> and the following XML file is parsed: 
+ * <pre>
+ * &lt;!DOCTYPE root [ &lt;!ENTITY e SYSTEM 'subdir/myentity.ent' ]&gt; 
+ * &lt;root&gt; &amp;e; &lt;/root&gt;</pre>
+ *  And <code>subdir/myentity.ent</code> 
+ * contains: 
+ * <pre>&lt;one&gt; &lt;two/&gt; &lt;/one&gt; &lt;?pi 3.14159?&gt; 
+ * &lt;more/&gt;</pre>
+ * </dd>
+ * <dt><code>"unbound-prefix-in-entity" [warning]</code></dt>
+ * <dd> An 
+ * implementation dependent warning that may be raised if the configuration 
+ * parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-namespaces'>
+ * namespaces</a>" is set to <code>true</code> and an unbound namespace prefix is 
+ * encountered in an entity's replacement text. Raising this warning is not 
+ * enforced since some existing parsers may not recognize unbound namespace 
+ * prefixes in the replacement text of entities. </dd>
  * <dt>
  * <code>"unknown-character-denormalization" [fatal]</code></dt>
  * <dd> Raised if the 
@@ -94,35 +119,22 @@ import org.w3c.dom.DOMException;
  * set to <code>false</code> and a character is encountered for which the 
  * processor cannot determine the normalization properties. </dd>
  * <dt>
- * <code>"unbound-namespace-in-entity" [warning]</code></dt>
- * <dd> Raised if the 
- * configuration parameter "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-entities'>
- * entities</a>" is set to <code>true</code> and an unbound namespace prefix is 
- * encounterd in an entity declaration. </dd>
- * <dt>
- * <code>"pi-base-uri-not-preserved" [warning]</code></dt>
- * <dd> Raised if a processing 
- * instruction is encoutered in a location where the base URI of the 
- * processing instruction can not be preserved.  One example of a case where 
- * this warning will be raised is if the configuration parameter "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-entities'>
- * entities</a>" is set to <code>false</code> and the following XML file is parsed: 
- * <pre>
- * &lt;!DOCTYPE root [ &lt;!ENTITY e SYSTEM 'subdir/myentity.ent' ]&gt; 
- * &lt;root&gt; &amp;e; &lt;/root&gt;</pre>
- *  And <code>subdir/myentity.ent</code> 
- * looks like this: 
- * <pre>&lt;one&gt; &lt;two/&gt; &lt;/one&gt; &lt;?pi 
- * 3.14159?&gt; &lt;more/&gt;</pre>
- * </dd>
+ * <code>"unsupported-encoding" [fatal]</code></dt>
+ * <dd> Raised if an unsupported 
+ * encoding is encountered. </dd>
+ * <dt><code>"unsupported-media-type" [fatal]</code></dt>
+ * <dd> 
+ * Raised if the configuration parameter "supported-media-types-only" is set 
+ * to <code>true</code> and an unsupported media type is encountered. </dd>
  * </dl> 
  * <p> In addition to raising the defined errors and warnings, implementations 
  * are expected to raise implementation specific errors and warnings for any 
  * other error and warning cases such as IO errors (file not found, 
  * permission denied,...), XML well-formedness errors, and so on. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619'>Document Object Model (DOM) Level 3 Load
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
-public interface DOMParser {
+public interface LSParser {
     /**
      *  The <code>DOMConfiguration</code> object used when parsing an input 
      * source. This <code>DOMConfiguration</code> is specific to the parse 
@@ -134,9 +146,9 @@ public interface DOMParser {
      * <code>DOMConfiguration</code> object to the 
      * <code>DOMConfiguration</code> object referenced by the 
      * <code>Document</code> object. 
-     * <br> In addition to the parameters recognized in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>DOM Level 3 Core</a>]
-     * , the <code>DOMConfiguration</code> objects for <code>DOMParser</code>
-     *  adds or modifies the following parameters: 
+     * <br> In addition to the parameters recognized in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+     * , the <code>DOMConfiguration</code> objects for <code>LSParser</code> 
+     * add or modify the following parameters: 
      * <dl>
      * <dt>
      * <code>"charset-overrides-xml-encoding"</code></dt>
@@ -148,7 +160,7 @@ public interface DOMParser {
      * processed, that will override any encoding specified in the XML 
      * declaration or the Text declaration (see also section 4.3.3, 
      * "Character Encoding in Entities", in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]). 
-     * Explicitly setting an encoding in the <code>DOMInput</code> overrides 
+     * Explicitly setting an encoding in the <code>LSInput</code> overrides 
      * any encoding from the protocol. </dd>
      * <dt><code>false</code></dt>
      * <dd>[<em>required</em>] The parser ignores any character set encoding information from 
@@ -171,7 +183,7 @@ public interface DOMParser {
      * <dl>
      * <dt>
      * <code>true</code></dt>
-     * <dd>[<em>required</em>] (<em>default</em>) If, while verifying full normalization when [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>] is 
+     * <dd>[<em>required</em>] (<em>default</em>) If, while verifying full normalization when [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>] is 
      * supported, a processor encounters characters for which it cannot 
      * determine the normalization properties, then the processor will 
      * ignore any possible denormalizations caused by these characters.  
@@ -184,23 +196,32 @@ public interface DOMParser {
      * <dt><code>"infoset"</code></dt>
      * <dd> See 
      * the definition of <code>DOMConfiguration</code> for a description of 
-     * this parameter. Unlike in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>DOM Level 3 Core</a>]
+     * this parameter. Unlike in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
      * , this parameter will default to <code>true</code> for 
-     * <code>DOMParser</code>. </dd>
+     * <code>LSParser</code>. </dd>
      * <dt><code>"namespaces"</code></dt>
      * <dd>
      * <dl>
      * <dt><code>true</code></dt>
      * <dd>[<em>required</em>] (<em>default</em>) Perform the namespace processing as defined in [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     *  and [<a href='http://www.w3.org/TR/2003/PR-xml-names11-20031105/'>XML Namespaces 1.1</a>]
      * . </dd>
      * <dt><code>false</code></dt>
      * <dd>[<em>optional</em>] Do not perform the namespace processing. </dd>
      * </dl></dd>
      * <dt>
-     * <code>"supported-media-types-only"</code></dt>
+     * <code>"resource-resolver"</code></dt>
+     * <dd>[<em>required</em>] A reference to a <code>LSResourceResolver</code> object, or null. If 
+     * the value of this parameter is not null when an external resource 
+     * (such as an external XML entity or an XML schema location) is 
+     * encountered, the implementation will request that the 
+     * <code>LSResourceResolver</code> referenced in this parameter resolves 
+     * the resource. </dd>
+     * <dt><code>"supported-media-types-only"</code></dt>
      * <dd>
      * <dl>
-     * <dt><code>true</code></dt>
+     * <dt>
+     * <code>true</code></dt>
      * <dd>[<em>optional</em>] Check that the media type of the parsed resource is a supported media 
      * type. If an unsupported media type is encountered, a fatal error of 
      * type <b>"unsupported-media-type"</b> will be raised. The media types defined in [<a href='http://www.ietf.org/rfc/rfc3023.txt'>IETF RFC 3023</a>] must always 
@@ -209,7 +230,7 @@ public interface DOMParser {
      * <dd>[<em>required</em>] (<em>default</em>) Accept any media type. </dd>
      * </dl></dd>
      * </dl>
-     * <br> The parameter "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-well-formed'>
+     * <br> The parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-well-formed'>
      * well-formed</a>" cannot be set to <code>false</code>. 
      */
     public DOMConfiguration getConfig();
@@ -221,11 +242,11 @@ public interface DOMParser {
      * terminate the parsing early. 
      * <br> The filter is invoked after the operations requested by the 
      * <code>DOMConfiguration</code> parameters have been applied. For 
-     * example, if "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-validate'>
+     * example, if "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate'>
      * validate</a>" is set to <code>true</code>, the validation is done before invoking the 
      * filter. 
      */
-    public DOMParserFilter getFilter();
+    public LSParserFilter getFilter();
     /**
      *  When a filter is provided, the implementation will call out to the 
      * filter as it is constructing the DOM tree structure. The filter can 
@@ -233,39 +254,39 @@ public interface DOMParser {
      * terminate the parsing early. 
      * <br> The filter is invoked after the operations requested by the 
      * <code>DOMConfiguration</code> parameters have been applied. For 
-     * example, if "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-validate'>
+     * example, if "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate'>
      * validate</a>" is set to <code>true</code>, the validation is done before invoking the 
      * filter. 
      */
-    public void setFilter(DOMParserFilter filter);
+    public void setFilter(LSParserFilter filter);
 
     /**
-     *  <code>true</code> if the <code>DOMParser</code> is asynchronous, 
+     *  <code>true</code> if the <code>LSParser</code> is asynchronous, 
      * <code>false</code> if it is synchronous. 
      */
     public boolean getAsync();
 
     /**
-     *  <code>true</code> if the <code>DOMParser</code> is currently busy 
+     *  <code>true</code> if the <code>LSParser</code> is currently busy 
      * loading a document, otherwise <code>false</code>. 
      */
     public boolean getBusy();
 
     /**
      * Parse an XML document from a resource identified by a 
-     * <code>DOMInput</code>.
-     * @param is  The <code>DOMInput</code> from which the source of the 
+     * <code>LSInput</code>.
+     * @param input  The <code>LSInput</code> from which the source of the 
      *   document is to be read. 
-     * @return  If the <code>DOMParser</code> is a synchronous 
-     *   <code>DOMParser</code>, the newly created and populated 
-     *   <code>Document</code> is returned. If the <code>DOMParser</code> is 
+     * @return  If the <code>LSParser</code> is a synchronous 
+     *   <code>LSParser</code>, the newly created and populated 
+     *   <code>Document</code> is returned. If the <code>LSParser</code> is 
      *   asynchronous, <code>null</code> is returned since the document 
      *   object may not yet be constructed when this method returns. 
      * @exception DOMException
-     *    INVALID_STATE_ERR: Raised if the <code>DOMParser</code>'s 
-     *   <code>DOMParser.busy</code> attribute is <code>true</code>. 
+     *    INVALID_STATE_ERR: Raised if the <code>LSParser</code>'s 
+     *   <code>LSParser.busy</code> attribute is <code>true</code>. 
      */
-    public Document parse(DOMInput is)
+    public Document parse(LSInput input)
                           throws DOMException;
 
     /**
@@ -274,13 +295,13 @@ public interface DOMParser {
      * behavior is not defined by this specification, future versions of 
      * this specification may define the behavior. 
      * @param uri The location of the XML document to be read.
-     * @return  If the <code>DOMParser</code> is a synchronous 
-     *   <code>DOMParser</code>, the newly created and populated 
-     *   <code>Document</code> is returned. If the <code>DOMParser</code> is 
+     * @return  If the <code>LSParser</code> is a synchronous 
+     *   <code>LSParser</code>, the newly created and populated 
+     *   <code>Document</code> is returned. If the <code>LSParser</code> is 
      *   asynchronous, <code>null</code> is returned since the document 
      *   object may not yet be constructed when this method returns. 
      * @exception DOMException
-     *    INVALID_STATE_ERR: Raised if the <code>DOMParser.busy</code> 
+     *    INVALID_STATE_ERR: Raised if the <code>LSParser.busy</code> 
      *   attribute is <code>true</code>. 
      */
     public Document parseURI(String uri)
@@ -324,10 +345,11 @@ public interface DOMParser {
 
     /**
      *  Parse an XML fragment from a resource identified by a 
-     * <code>DOMInput</code> and insert the content into an existing 
-     * document at the position specified with the <code>context</code> and 
+     * <code>LSInput</code> and insert the content into an existing document 
+     * at the position specified with the <code>context</code> and 
      * <code>action</code> arguments. When parsing the input stream, the 
-     * context node is used for resolving unbound namespace prefixes. The 
+     * context node (or its parent, depending on where the result will be 
+     * inserted) is used for resolving unbound namespace prefixes. The 
      * context node's <code>ownerDocument</code> node (or the node itself if 
      * the node of type <code>DOCUMENT_NODE</code>) is used to resolve 
      * default attributes and entity references. 
@@ -336,37 +358,39 @@ public interface DOMParser {
      * context node. 
      * <br> If the context node is a <code>Document</code> node and the action 
      * is <code>ACTION_REPLACE_CHILDREN</code>, then the document that is 
-     * passed as the context node will be changed such that it's 
+     * passed as the context node will be changed such that its 
      * <code>xmlEncoding</code>, <code>documentURI</code>, 
      * <code>xmlVersion</code>, <code>actualEncoding</code>, 
      * <code>xmlStandalone</code>, and all other such attributes are set to 
      * what they would be set to if the input source was parsed using 
-     * <code>DOMParser.parse()</code>. 
-     * <br> If the <code>DOMParser</code> is asynchronous then the insertion 
-     * of the resulting DOM structure is atomic, e.g. the whole structure is 
+     * <code>LSParser.parse()</code>. 
+     * <br> If the <code>LSParser</code> is asynchronous then the insertion of 
+     * the resulting DOM structure is atomic, e.g. the whole structure is 
      * inserted only once the whole input stream is completely parsed 
      * without errors. 
      * <br> If an error occurs while parsing, the caller is notified through 
-     * the <code>ErrorHandler</code> instance associated with the "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-error-handler'>
+     * the <code>ErrorHandler</code> instance associated with the "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
      * error-handler</a>" parameter of the <code>DOMConfiguration</code>. 
      * <br> When calling <code>parseWithContext</code>, the values of the 
      * following configuration parameters will be ignored and their default 
-     * values will always be used instead: "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-validate'>
-     * validate</a>", "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-validate-if-schema'>
-     * validate-if-schema</a>", and "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-whitespace-in-element-content'>
-     * whitespace-in-element-content</a>". 
-     * @param input  The <code>DOMInput</code> from which the source document 
+     * values will always be used instead: "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate'>
+     * validate</a>", "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-validate-if-schema'>
+     * validate-if-schema</a>", and "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-element-content-whitespace'>
+     * element-content-whitespace</a>". Other parameters will be treated normally, and the parser is expected 
+     * to call the <code>LSParserFilter</code> just as if a whole document 
+     * was parsed. 
+     * @param input  The <code>LSInput</code> from which the source document 
      *   is to be read. The source document must be an XML fragment, i.e. 
      *   anything except a complete XML document (except in the case where 
      *   the context node of type <code>DOCUMENT_NODE</code>, and the action 
      *   is <code>ACTION_REPLACE_CHILDREN</code>), a DOCTYPE (internal 
      *   subset), entity declaration(s), notation declaration(s), or XML or 
      *   text declaration(s). 
-     * @param context  The node that is used as the context for the data that 
-     *   is being parsed. This node must be a <code>Document</code> node, a 
-     *   <code>DocumentFragment</code> node, or a node of a type that is 
-     *   allowed as a child of an <code>Element</code> node, e.g. it cannot 
-     *   be an <code>Attribute</code> node. 
+     * @param contextArg  The node that is used as the context for the data 
+     *   that is being parsed. This node must be a <code>Document</code> 
+     *   node, a <code>DocumentFragment</code> node, or a node of a type 
+     *   that is allowed as a child of an <code>Element</code> node, e.g. it 
+     *   cannot be an <code>Attribute</code> node. 
      * @param action  This parameter describes which action should be taken 
      *   between the new set of nodes being inserted and the existing 
      *   children of the context node. The set of possible actions is 
@@ -375,22 +399,22 @@ public interface DOMParser {
      *   the result is more than one top-level node, the first one is 
      *   returned. 
      * @exception DOMException
-     *    NOT_SUPPORTED_ERR: Raised if the <code>DOMParser</code> doesn't 
+     *    NOT_SUPPORTED_ERR: Raised if the <code>LSParser</code> doesn't 
      *   support this method. 
      *   <br> NO_MODIFICATION_ALLOWED_ERR: Raised if the context node is a 
      *   read only node.
-     *   <br> INVALID_STATE_ERR: Raised if the <code>DOMParser.busy</code> 
+     *   <br> INVALID_STATE_ERR: Raised if the <code>LSParser.busy</code> 
      *   attribute is <code>true</code>. 
      */
-    public Node parseWithContext(DOMInput input, 
-                                 Node context, 
+    public Node parseWithContext(LSInput input, 
+                                 Node contextArg, 
                                  short action)
                                  throws DOMException;
 
     /**
      *  Abort the loading of the document that is currently being loaded by 
-     * the <code>DOMParser</code>. If the <code>DOMParser</code> is 
-     * currently not busy, a call to this method does nothing. 
+     * the <code>LSParser</code>. If the <code>LSParser</code> is currently 
+     * not busy, a call to this method does nothing. 
      */
     public void abort();
 

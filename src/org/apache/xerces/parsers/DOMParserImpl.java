@@ -81,10 +81,10 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.ls.DOMParser;
-import org.w3c.dom.ls.DOMParserFilter;
-import org.w3c.dom.ls.DOMResourceResolver;
-import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.LSParser;
+import org.w3c.dom.ls.LSParserFilter;
+import org.w3c.dom.ls.LSResourceResolver;
+import org.w3c.dom.ls.LSInput;
 
 
 /**
@@ -100,7 +100,7 @@ import org.w3c.dom.ls.DOMInput;
 
 
 public class DOMParserImpl
-extends AbstractDOMParser implements DOMParser, DOMConfiguration {
+extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
 
 
@@ -140,7 +140,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 
 
     // REVISIT: this value should be null by default and should be set during creation of
-    //          DOMParser
+    //          LSParser
     protected String fSchemaType = null;
 
     protected boolean fBusy = false;
@@ -291,7 +291,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
      * the document is being validated when it's loaded the validation
      * happens before the filter is called.
      */
-    public DOMParserFilter getFilter() {
+    public LSParserFilter getFilter() {
         return fDOMFilter;
     }
 
@@ -304,7 +304,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
      * the document is being validated when it's loaded the validation
      * happens before the filter is called.
      */
-    public void setFilter(DOMParserFilter filter) {
+    public void setFilter(LSParserFilter filter) {
         fDOMFilter = filter;
         if (fSkippedElemStack == null) {
             fSkippedElemStack = new Stack();
@@ -420,9 +420,9 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 
 			}
 			else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
-				if (value instanceof DOMResourceResolver) {
+				if (value instanceof LSResourceResolver) {
 					try {
-                        fConfiguration.setProperty(ENTITY_RESOLVER, new DOMEntityResolverWrapper((DOMResourceResolver) value));
+                        fConfiguration.setProperty(ENTITY_RESOLVER, new DOMEntityResolverWrapper((LSResourceResolver) value));
 					}
 					catch (XMLConfigurationException e) {}
 				}
@@ -677,7 +677,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 				return false;
 			}
 			else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
-				if (value instanceof DOMResourceResolver) {
+				if (value instanceof LSResourceResolver) {
 					return true;
 				}
 				return false;
@@ -746,12 +746,12 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 
     /**
      * Parse an XML document from a resource identified by an
-     * <code>DOMInput</code>.
+     * <code>LSInput</code>.
      *
      */
-    public Document parse(DOMInput is) {
+    public Document parse(LSInput is) {
 
-        // need to wrap the DOMInput with an XMLInputSource
+        // need to wrap the LSInput with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource(is);
         fBusy = true;
 
@@ -777,12 +777,12 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 
     /**
      *  Parse an XML document or fragment from a resource identified by an
-     * <code>DOMInput</code> and insert the content into an existing
+     * <code>LSInput</code> and insert the content into an existing
      * document at the position epcified with the <code>contextNode</code>
      * and <code>action</code> arguments. When parsing the input stream the
      * context node is used for resolving unbound namespace prefixes.
      *
-     * @param is  The <code>DOMInput</code> from which the source
+     * @param is  The <code>LSInput</code> from which the source
      *   document is to be read.
      * @param cnode  The <code>Node</code> that is used as the context for
      *   the data that is being parsed.
@@ -794,7 +794,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
      *   HIERARCHY_REQUEST_ERR: Thrown if this action results in an invalid
      *   hierarchy (i.e. a Document with more than one document element).
      */
-    public Node parseWithContext(DOMInput is, Node cnode,
+    public Node parseWithContext(LSInput is, Node cnode,
                                  short action) throws DOMException {
         // REVISIT: need to implement.
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
@@ -802,13 +802,13 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 
 
     /**
-     * NON-DOM: convert DOMInput to XNIInputSource
+     * NON-DOM: convert LSInput to XNIInputSource
      *
      * @param is
      * @return
      */
-    XMLInputSource dom2xmlInputSource(DOMInput is) {
-        // need to wrap the DOMInput with an XMLInputSource
+    XMLInputSource dom2xmlInputSource(LSInput is) {
+        // need to wrap the LSInput with an XMLInputSource
         XMLInputSource xis = null;
         // if there is a string data, use a StringReader
         // according to DOM, we need to treat such data as "UTF-16".
@@ -840,14 +840,14 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
     }
 
 	/**
-	 * @see org.w3c.dom.ls.DOMParser#getAsync()
+	 * @see org.w3c.dom.ls.LSParser#getAsync()
 	 */
 	public boolean getAsync() {
 		return false;
 	}
 
 	/**
-	 * @see org.w3c.dom.ls.DOMParser#getBusy()
+	 * @see org.w3c.dom.ls.LSParser#getBusy()
 	 */
 	public boolean getBusy() {
 		return fBusy;

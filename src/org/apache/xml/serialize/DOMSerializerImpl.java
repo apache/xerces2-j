@@ -85,15 +85,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.ls.DOMSerializer;
-import org.w3c.dom.ls.DOMSerializerFilter;
-import org.w3c.dom.ls.DOMOutput;
+import org.w3c.dom.ls.LSSerializer;
+import org.w3c.dom.ls.LSSerializerFilter;
+import org.w3c.dom.ls.LSOutput;
 
 
 /**
- * Implemenatation of DOM Level 3 org.w3c.ls.DOMSerializer  by delegating serialization
+ * Implemenatation of DOM Level 3 org.w3c.ls.LSSerializer  by delegating serialization
  * calls to <CODE>XMLSerializer</CODE>.
- * DOMSerializer provides an API for serializing (writing) a DOM document out in an
+ * LSSerializer provides an API for serializing (writing) a DOM document out in an
  * XML document. The XML data is written to an output stream.
  * During serialization of XML data, namespace fixup is done when possible as
  * defined in DOM Level 3 Core, Appendix B.
@@ -103,7 +103,7 @@ import org.w3c.dom.ls.DOMOutput;
  * @author Arun Yadav, Sun Microsystems
  * @version $Id$
  */
-public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
+public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
     // data
     // serializer
@@ -113,7 +113,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
     private XML11Serializer xml11Serializer;
 
     /**
-     * Constructs a new DOMSerializer.
+     * Constructs a new LSSerializer.
      * The constructor turns on the namespace support in <code>XMLSerializer</code> and
      * initializes the following fields: fNSBinder, fLocalNSBinder, fSymbolTable,
      * fEmptySymbol, fXmlSymbol, fXmlnsSymbol, fNamespaceCounter, fFeatures.
@@ -126,7 +126,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 
 
     //
-    // DOMSerializer methods
+    // LSSerializer methods
     //
 
     public DOMConfiguration getConfig(){
@@ -329,7 +329,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
     /**
      * DOM L3 EXPERIMENTAL:
      *  Serialize the specified node as described above in the description of
-     * <code>DOMSerializer</code>. The result of serializing the node is
+     * <code>LSSerializer</code>. The result of serializing the node is
      * returned as a string. Writing a Document or Entity node produces a
      * serialized form that is well formed XML. Writing other node types
      * produces a fragment of text in a form that is not fully defined by
@@ -458,7 +458,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
      * passed to the filter. The filter implementation can choose to remove
      * the node from the stream or to terminate the serialization early.
      */
-    public DOMSerializerFilter getFilter(){
+    public LSSerializerFilter getFilter(){
         return null;
     }
     /**
@@ -467,7 +467,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
      * passed to the filter. The filter implementation can choose to remove
      * the node from the stream or to terminate the serialization early.
      */
-    public void setFilter(DOMSerializerFilter filter){
+    public void setFilter(LSSerializerFilter filter){
         serializer.fDOMFilter = filter;
     }
 
@@ -510,7 +510,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
     }
 
     // copies all settings that could have been modified
-    // by calls to DOMSerializer methods from one serializer to another.
+    // by calls to LSSerializer methods from one serializer to another.
     // IMPORTANT:  if new methods are implemented or more settings of
     // the serializer are made alterable, this must be
     // reflected in this method!
@@ -532,14 +532,14 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 
     /**
       *  Serialize the specified node as described above in the general
-      * description of the <code>DOMSerializer</code> interface. The output
-      * is written to the supplied <code>DOMOutput</code>.
-      * <br> When writing to a <code>DOMOutput</code>, the encoding is found by
+      * description of the <code>LSSerializer</code> interface. The output
+      * is written to the supplied <code>LSOutput</code>.
+      * <br> When writing to a <code>LSOutput</code>, the encoding is found by
       * looking at the encoding information that is reachable through the
-      * <code>DOMOutput</code> and the item to be written (or its owner
+      * <code>LSOutput</code> and the item to be written (or its owner
       * document) in this order:
       * <ol>
-      * <li> <code>DOMOutput.encoding</code>,
+      * <li> <code>LSOutput.encoding</code>,
       * </li>
       * <li>
       * <code>Document.actualEncoding</code>,
@@ -552,7 +552,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
       * default encoding of "UTF-8" will be used.
       * <br> If the specified encoding is not supported an
       * "unsupported-encoding" error is raised.
-      * <br> If no output is specified in the <code>DOMOutput</code>, a
+      * <br> If no output is specified in the <code>LSOutput</code>, a
       * "no-output-specified" error is raised.
       * @param node  The node to serialize.
       * @param destination The destination for the serialized DOM.
@@ -560,7 +560,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
       *   successfully serialized and <code>false</code> in case the node
       *   couldn't be serialized.
       */
-    public boolean write(Node node, DOMOutput destination) {
+    public boolean write(Node node, LSOutput destination) {
 
         if (node == null)
             return false;
@@ -679,7 +679,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 
     /**
       *  Serialize the specified node as described above in the general
-      * description of the <code>DOMSerializer</code> interface. The output
+      * description of the <code>LSSerializer</code> interface. The output
       * is written to the supplied URI.
       * <br> When writing to a URI, the encoding is found by looking at the
       * encoding information that is reachable through the item to be written
@@ -702,7 +702,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
       *   successfully serialized and <code>false</code> in case the node
       *   couldn't be serialized.
       */
-    public boolean writeURI(Node node, String URI) {
+    public boolean writeToURI(Node node, String URI) {
         if (node == null){
             return false;
         }

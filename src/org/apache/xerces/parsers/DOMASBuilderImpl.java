@@ -72,7 +72,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.LSInput;
 
 /**
  * This is Abstract Schema DOM Builder class. It extends the DOMParserImpl
@@ -233,9 +233,9 @@ public class DOMASBuilderImpl
 
     /**
      * Parse a Abstract Schema from a location identified by an
-     * <code>DOMInput</code>.
+     * <code>LSInput</code>.
      *
-     * @param is The <code>DOMInput</code> from which the source
+     * @param is The <code>LSInput</code> from which the source
      *   Abstract Schema is to be read.
      * @return The newly created <code>ASModel</code>.
      * @exception DOMASException
@@ -256,10 +256,10 @@ public class DOMASBuilderImpl
      *   system error occurs during the parse, but application defined error
      *   handlers are not required to do so.
      */
-    public ASModel parseASInputSource(DOMInput is)
+    public ASModel parseASInputSource(LSInput is)
                                       throws DOMASException, Exception {
                                       
-        // need to wrap the DOMInput with an XMLInputSource
+        // need to wrap the LSInput with an XMLInputSource
         XMLInputSource xis = this.dom2xmlInputSource(is);
         try {
             return parseASInputSource(xis);

@@ -13,40 +13,50 @@
 package org.w3c.dom.ls;
 
 /**
- *  <code>DOMResourceResolver</code> provides a way for applications to 
+ *  <code>LSResourceResolver</code> provides a way for applications to 
  * redirect references to external resources. 
  * <p> Applications needing to implement custom handling for external 
  * resources can implement this interface and register their implementation 
  * by setting the <code>resourceResolver</code> attribute of the 
- * <code>DOMParser</code>. 
- * <p> The <code>DOMParser</code> will then allow the application to intercept 
+ * <code>LSParser</code>. 
+ * <p> The <code>LSParser</code> will then allow the application to intercept 
  * any external entities (including the external DTD subset and external 
  * parameter entities) before including them. 
  * <p> Many DOM applications will not need to implement this interface, but it 
  * will be especially useful for applications that build XML documents from 
  * databases or other specialized input sources, or for applications that 
  * use URN's. 
- * <p ><b>Note:</b>  <code>DOMResourceResolver</code> is based on the SAX2 [<a href='http://www.saxproject.org/'>SAX</a>] <code>EntityResolver</code> 
+ * <p ><b>Note:</b>  <code>LSResourceResolver</code> is based on the SAX2 [<a href='http://www.saxproject.org/'>SAX</a>] <code>EntityResolver</code> 
  * interface. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619'>Document Object Model (DOM) Level 3 Load
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
-public interface DOMResourceResolver {
+public interface LSResourceResolver {
     /**
      *  Allow the application to resolve external resources. 
-     * <br> The <code>DOMParser</code> will call this method before opening 
-     * any external resource except the top-level document entity (including 
-     * the external DTD subset, external entities referenced within the DTD, 
-     * and external entities referenced within the document element); the 
-     * application may request that the <code>DOMParser</code> resolve the 
+     * <br> The <code>LSParser</code> will call this method before opening any 
+     * external resource except the top-level document entity (including the 
+     * external DTD subset, external entities referenced within the DTD, and 
+     * external entities referenced within the document element); the 
+     * application may request that the <code>LSParser</code> resolve the 
      * resource itself, that it use an alternative URI, or that it use an 
      * entirely different input source. 
      * <br> Application writers can use this method to redirect external 
      * system identifiers to secure and/or local URI's, to look up public 
      * identifiers in a catalogue, or to read an entity from a database or 
      * other input source (including, for example, a dialog box). 
-     * <br> If the system identifier is a URI, the <code>DOMParser</code> must 
+     * <br> If the system identifier is a URI, the <code>LSParser</code> must 
      * resolve it fully before calling this method. 
+     * @param type  The type of the resource being resolved. For XML [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] resources 
+     *   (i.e. entities), applications must use the value 
+     *   <code>"http://www.w3.org/TR/REC-xml"</code>, for XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     *   , applications must use the value 
+     *   <code>"http://www.w3.org/2001/XMLSchema"</code>. Other types of 
+     *   resources are outside the scope of this specification and therefore 
+     *   should recommend an absolute URI in order to use this method. 
+     * @param namespaceURI  The namespace of the resource being resolved, 
+     *   i.e. the namespace of the XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     *    when resolving XML Schema resources. 
      * @param publicId  The public identifier of the external entity being 
      *   referenced, or <code>null</code> if no public identifier was 
      *   supplied or if the resource is not an entity. 
@@ -54,12 +64,14 @@ public interface DOMResourceResolver {
      *   external resource being referenced. 
      * @param baseURI  The absolute base URI of the resource being parsed, or 
      *   <code>null</code> if there is no base URI. 
-     * @return  A <code>DOMInput</code> object describing the new input 
+     * @return  A <code>LSInput</code> object describing the new input 
      *   source, or <code>null</code> to request that the parser open a 
      *   regular URI connection to the system identifier. 
      */
-    public DOMInput resolveResource(String publicId, 
-                                    String systemId, 
-                                    String baseURI);
+    public LSInput resolveResource(String type, 
+                                   String namespaceURI, 
+                                   String publicId, 
+                                   String systemId, 
+                                   String baseURI);
 
 }

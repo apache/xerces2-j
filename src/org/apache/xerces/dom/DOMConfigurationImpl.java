@@ -90,7 +90,7 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.ls.DOMResourceResolver;
+import org.w3c.dom.ls.LSResourceResolver;
 
 
 
@@ -649,9 +649,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
             }
             else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
-                if (value instanceof DOMResourceResolver) {
+                if (value instanceof LSResourceResolver) {
                     try {
-                        setEntityResolver(new DOMEntityResolverWrapper((DOMResourceResolver) value));
+                        setEntityResolver(new DOMEntityResolverWrapper((LSResourceResolver) value));
                     }
                     catch (XMLConfigurationException e) {}
                 }
@@ -926,7 +926,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             return (value instanceof DOMErrorHandler) ? true : false ;
         }
         else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
-            return (value instanceof DOMResourceResolver) ? true : false ;
+            return (value instanceof LSResourceResolver) ? true : false ;
         }
         else if (name.equals(Constants.DOM_SCHEMA_LOCATION)) {
             return (value instanceof String) ? true : false ;

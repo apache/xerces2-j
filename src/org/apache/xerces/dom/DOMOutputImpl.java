@@ -57,7 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.ls.DOMOutput;
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.Writer;
 import java.io.OutputStream;
@@ -72,16 +72,16 @@ import java.io.OutputStream;
  * The application is expected to provide objects that implement this interface
  * whenever such objects are needed. The application can either provide its
  * own objects that implement this interface, or it can use the generic factory
- * method DOMImplementationLS.createDOMOutput() to create objects that
+ * method DOMImplementationLS.createLSOutput() to create objects that
  * implement this interface.
- * The DOMSerializer will use the DOMOutput object to determine where to
+ * The DOMSerializer will use the LSOutput object to determine where to
  * serialize the output to. The DOMSerializer will look at the different
- * outputs specified in the DOMOutput in the following order to know which one
+ * outputs specified in the LSOutput in the following order to know which one
  * to output to, the first one that data can be output to will be used:
- * 1.DOMOutput.characterStream
- * 2.DOMOutput.byteStream
- * 3.DOMOutput.systemId
- * DOMOutput objects belong to the application. The DOM implementation will
+ * 1.LSOutput.characterStream
+ * 2.LSOutput.byteStream
+ * 3.LSOutput.systemId
+ * LSOutput objects belong to the application. The DOM implementation will
  * never modify them (though it may make copies and modify the copies,
  * if necessary).
  *
@@ -90,7 +90,7 @@ import java.io.OutputStream;
  * @author Gopal Sharma, Sun Microsystems
  **/
 
-public class DOMOutputImpl implements DOMOutput {
+public class DOMOutputImpl implements LSOutput {
 
         protected Writer fCharStream = null;
         protected OutputStream fByteStream = null;

@@ -12,33 +12,34 @@
 
 package org.w3c.dom.ls;
 
-import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
- * <code>DOMParserFilter</code>s provide applications the ability to examine 
+ *  <code>LSParserFilter</code>s provide applications the ability to examine 
  * nodes as they are being constructed while parsing. As each node is 
  * examined, it may be modified or removed, or the entire parse may be 
  * terminated early. 
- * <p>At the time any of the filter methods are called by the parser, the 
+ * <p> At the time any of the filter methods are called by the parser, the 
  * owner Document and DOMImplementation objects exist and are accessible. 
- * The document element is never passed to the <code>DOMParserFilter</code> 
- * methods, i.e. it is not possible to filter out the document element. The 
+ * The document element is never passed to the <code>LSParserFilter</code> 
+ * methods, i.e. it is not possible to filter out the document element. 
  * <code>Document</code>, <code>DocumentType</code>, <code>Notation</code>, 
- * and <code>Entity</code> nodes are not passed to the 
- * <code>acceptNode</code> method on the filter.
- * <p>All validity checking while reading a document occurs on the source 
+ * <code>Entity</code>, and <code>Attr</code> nodes are never passed to the 
+ * <code>acceptNode</code> method on the filter. 
+ * <p> All validity checking while parsing a document occurs on the source 
  * document as it appears on the input stream, not on the DOM document as it 
  * is built in memory. With filters, the document in memory may be a subset 
  * of the document on the stream, and its validity may have been affected by 
- * the filtering.
- * <p> All default content, including default attributes, must be passed to 
- * the filter methods. 
- * <p> The <code>DOMParser</code> ignores any exception raised in the filter. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619'>Document Object Model (DOM) Level 3 Load
+ * the filtering. 
+ * <p> All default attributes must be present on elements when the elements 
+ * are passed to the filter methods. All other default content must be 
+ * passed to the filter methods. 
+ * <p> The <code>LSParser</code> ignores any exception raised in the filter. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
-public interface DOMParserFilter {
+public interface LSParserFilter {
     // Constants returned by startElement and acceptNode
     /**
      * Accept the node.
@@ -76,13 +77,13 @@ public interface DOMParserFilter {
      * the same one as is actually placed in the tree if the node is 
      * accepted. And the actual node (node object identity) may be reused 
      * during the process of reading in and filtering a document.
-     * @param element The newly encountered element. At the time this method 
-     *   is called, the element is incomplete - it will have its attributes, 
-     *   but no children. 
+     * @param elementArg The newly encountered element. At the time this 
+     *   method is called, the element is incomplete - it will have its 
+     *   attributes, but no children. 
      * @return 
      * <ul>
-     * <li> <code>FILTER_ACCEPT</code> if this <code>Element</code> 
-     *   should be included in the DOM document being built. 
+     * <li> <code>FILTER_ACCEPT</code> if the <code>Element</code> should 
+     *   be included in the DOM document being built. 
      * </li>
      * <li> 
      *   <code>FILTER_REJECT</code> if the <code>Element</code> and all of 
@@ -91,20 +92,21 @@ public interface DOMParserFilter {
      *   cannot be rejected. 
      * </li>
      * <li> <code>FILTER_SKIP</code> if the 
-     *   <code>Element</code> should be rejected. All of its children are 
-     *   inserted in place of the rejected <code>Element</code> node. This 
+     *   <code>Element</code> should be skipped. All of its children are 
+     *   inserted in place of the skipped <code>Element</code> node. This 
      *   return value will be ignored if <code>element</code> is the 
-     *   documentElement, the documentElement cannot be rejected nor 
-     *   skipped. 
+     *   documentElement, the documentElement cannot be skipped. 
      * </li>
-     * <li> <code>FILTER_INTERRUPT</code> if the filter wants to stop 
-     *   the processing of the document. Interrupting the processing of the 
-     *   document does no longer guarantee that the entire is XML well-formed
-     *   . 
+     * <li> 
+     *   <code>FILTER_INTERRUPT</code> if the filter wants to stop the 
+     *   processing of the document. Interrupting the processing of the 
+     *   document does no longer guarantee that the resulting DOM tree is 
+     *   XML well-formed. The <code>Element</code> is rejected. 
      * </li>
-     * </ul> Returning any other values will result in unspecified behavior. 
+     * </ul> Returning 
+     *   any other values will result in unspecified behavior. 
      */
-    public short startElement(Element element);
+    public short startElement(Element elementArg);
 
     /**
      * This method will be called by the parser at the completion of the 
@@ -121,11 +123,11 @@ public interface DOMParserFilter {
      * document, before any modification by the filter. No validity checks 
      * are made on any document modifications made by the filter.
      * <br>If this new node is rejected, the parser might reuse the new node 
-     * or any of its descendants.
-     * @param node The newly constructed element. At the time this method is 
-     *   called, the element is complete - it has all of its children (and 
-     *   their children, recursively) and attributes, and is attached as a 
-     *   child to its parent. 
+     * and any of its descendants.
+     * @param nodeArg The newly constructed element. At the time this method 
+     *   is called, the element is complete - it has all of its children 
+     *   (and their children, recursively) and attributes, and is attached 
+     *   as a child to its parent. 
      * @return 
      * <ul>
      * <li> <code>FILTER_ACCEPT</code> if this <code>Node</code> should 
@@ -142,21 +144,22 @@ public interface DOMParserFilter {
      * <li> 
      *   <code>FILTER_INTERRUPT</code> if the filter wants to stop the 
      *   processing of the document. Interrupting the processing of the 
-     *   document does no longer guarantee that the entire is XML well-formed
-     *   . 
+     *   document does no longer guarantee that the resulting DOM tree is 
+     *   XML well-formed. The <code>Node</code> is accepted and will be the 
+     *   last completely parsed node. 
      * </li>
      * </ul>
      */
-    public short acceptNode(Node node);
+    public short acceptNode(Node nodeArg);
 
     /**
-     *  Tells the <code>DOMParser</code> what types of nodes to show to the 
+     *  Tells the <code>LSParser</code> what types of nodes to show to the 
      * filter. See <code>NodeFilter</code> for definition of the constants. 
      * The constants <code>SHOW_ATTRIBUTE</code>, <code>SHOW_DOCUMENT</code>
      * , <code>SHOW_DOCUMENT_TYPE</code>, <code>SHOW_NOTATION</code>, 
      * <code>SHOW_ENTITY</code>, and <code>SHOW_DOCUMENT_FRAGMENT</code> are 
      * meaningless here, those nodes will never be passed to a 
-     * <code>DOMParserFilter</code>. 
+     * <code>LSParserFilter</code>. 
      * <br> The constants used here are defined in [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>DOM Level 2 Traversal and      Range</a>]
      * . 
      */

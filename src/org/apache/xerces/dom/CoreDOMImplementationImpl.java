@@ -65,11 +65,11 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMParser;
+import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.DOMInput;
-import org.w3c.dom.ls.DOMOutput;
-import org.w3c.dom.ls.DOMSerializer;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 /**
  * The DOMImplementation class is description of a particular
  * implementation of the Document Object Model. As such its data is
@@ -294,24 +294,24 @@ public class CoreDOMImplementationImpl
 	// DOM L3 LS
 
 	/**
-	 * DOM Level 3 WD - Experimental.
-     * Create a new <code>DOMParser</code>. The newly constructed parser may
+	 * DOM Level 3 LS CR - Experimental.
+     * Create a new <code>LSParser</code>. The newly constructed parser may
      * then be configured by means of its <code>DOMConfiguration</code>
      * object, and used to parse documents by means of its <code>parse</code>
      *  method.
      * @param mode  The <code>mode</code> argument is either
      *   <code>MODE_SYNCHRONOUS</code> or <code>MODE_ASYNCHRONOUS</code>, if
      *   <code>mode</code> is <code>MODE_SYNCHRONOUS</code> then the
-     *   <code>DOMParser</code> that is created will operate in synchronous
+     *   <code>LSParser</code> that is created will operate in synchronous
      *   mode, if it's <code>MODE_ASYNCHRONOUS</code> then the
-     *   <code>DOMParser</code> that is created will operate in asynchronous
+     *   <code>LSParser</code> that is created will operate in asynchronous
      *   mode.
      * @param schemaType  An absolute URI representing the type of the schema
      *   language used during the load of a <code>Document</code> using the
-     *   newly created <code>DOMParser</code>. Note that no lexical checking
+     *   newly created <code>LSParser</code>. Note that no lexical checking
      *   is done on the absolute URI. In order to create a
-     *   <code>DOMParser</code> for any kind of schema types (i.e. the
-     *   DOMParser will be free to use any schema found), use the value
+     *   <code>LSParser</code> for any kind of schema types (i.e. the
+     *   LSParser will be free to use any schema found), use the value
      *   <code>null</code>.
      * <p ><b>Note:</b>    For W3C XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
      *   , applications must use the value
@@ -320,22 +320,22 @@ public class CoreDOMImplementationImpl
      *   <code>"http://www.w3.org/TR/REC-xml"</code>. Other Schema languages
      *   are outside the scope of the W3C and therefore should recommend an
      *   absolute URI in order to use this method.
-     * @return  The newly created <code>DOMParser</code> object. This
-     *   <code>DOMParser</code> is either synchronous or asynchronous
+     * @return  The newly created <code>LSParser</code> object. This
+     *   <code>LSParser</code> is either synchronous or asynchronous
      *   depending on the value of the <code>mode</code> argument.
-     * <p ><b>Note:</b>    By default, the newly created <code>DOMParser</code>
+     * <p ><b>Note:</b>    By default, the newly created <code>LSParser</code>
      *    does not contain a <code>DOMErrorHandler</code>, i.e. the value of
      *   the "<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/core.html#parameter-error-handler'>
      *   error-handler</a>" configuration parameter is <code>null</code>. However, implementations
      *   may provide a default error handler at creation time. In that case,
      *   the initial value of the <code>"error-handler"</code> configuration
-     *   parameter on the new created <code>DOMParser</code> contains a
+     *   parameter on the new created <code>LSParser</code> contains a
      *   reference to the default error handler.
      * @exception DOMException
      *    NOT_SUPPORTED_ERR: Raised if the requested mode or schema type is
      *   not supported.
 	 */
-        public DOMParser createDOMParser(short mode, String schemaType)
+        public LSParser createLSParser(short mode, String schemaType)
 		throws DOMException {
 		if (mode == DOMImplementationLS.MODE_ASYNCHRONOUS) {
 			String msg =
@@ -359,27 +359,27 @@ public class CoreDOMImplementationImpl
 		}
 	}
 	/**
-	 * DOM Level 3 WD - Experimental.
-         * Create a new <code>DOMSerializer</code> object.
-         * @return The newly created <code>DOMSerializer</code> object.
+	 * DOM Level 3 LS CR - Experimental.
+         * Create a new <code>LSSerializer</code> object.
+         * @return The newly created <code>LSSerializer</code> object.
          * <p ><b>Note:</b>    By default, the newly created
-         * <code>DOMSerializer</code> has no <code>DOMErrorHandler</code>,
+         * <code>LSSerializer</code> has no <code>DOMErrorHandler</code>,
          * i.e. the value of the <code>"error-handler"</code> configuration
          * parameter is <code>null</code>. However, implementations may
          * provide a default error handler at creation time. In that case, the
          * initial value of the <code>"error-handler"</code> configuration
-         * parameter on the new created <code>DOMSerializer</code> contains a
+         * parameter on the new created <code>LSSerializer</code> contains a
          * reference to the default error handler.
 	 */
-	public DOMSerializer createDOMSerializer() {
+	public LSSerializer createLSSerializer() {
 		return new DOMSerializerImpl();
 	}
 	/**
-	 * DOM Level 3 WD - Experimental.
+	 * DOM Level 3 LS CR - Experimental.
          * Create a new empty input source.
          * @return  The newly created input object.
 	 */
-	public DOMInput createDOMInput() {
+	public LSInput createLSInput() {
 		return new DOMInputImpl();
 	}
         
@@ -430,14 +430,16 @@ public class CoreDOMImplementationImpl
             return ++docAndDoctypeCounter;
        }
 
-    /* DOM Level 3 WD - Experimental.
+    /* DOM Level 3 LS CR - Experimental.
      * 
-     * Create a new empty output source.
+     * Create a new empty output destination object where
+     * <code>LSOutput.characterStream</code>,
+     * <code>LSOutput.byteStream</code>, <code>LSOutput.systemId</code>,
+     * <code>LSOutput.encoding</code> are null.
+
      * @return  The newly created output object.
-     * - Gopal Sharma
-     * TODO: Real wording should be collected from W3C next LS
      */
-       public DOMOutput createDOMOutput() {
+       public LSOutput createLSOutput() {
            return new DOMOutputImpl();
        }       
     

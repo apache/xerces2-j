@@ -105,7 +105,7 @@ import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 
 /**
@@ -1011,9 +1011,9 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
     }
 
     /* (non-Javadoc)
-     * @see org.apache.xerces.xs.XSLoader#load(org.w3c.dom.ls.DOMInput)
+     * @see org.apache.xerces.xs.XSLoader#load(org.w3c.dom.ls.LSInput)
      */
-    public XSModel load(DOMInput is) {
+    public XSModel load(LSInput is) {
         try {
             Grammar g = loadGrammar(dom2xmlInputSource(is));
             return ((XSGrammar) g).toXSModel();
@@ -1240,8 +1240,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
 
     }
     
-	private XMLInputSource dom2xmlInputSource(DOMInput is) {
-		// need to wrap the DOMInput with an XMLInputSource
+	private XMLInputSource dom2xmlInputSource(LSInput is) {
+		// need to wrap the LSInput with an XMLInputSource
 		XMLInputSource xis = null;
 		// if there is a string data, use a StringReader
 		// according to DOM, we need to treat such data as "UTF-16".

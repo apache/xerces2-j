@@ -17,16 +17,16 @@ import org.w3c.dom.events.Event;
 /**
  *  This interface represents a progress event object that notifies the 
  * application about progress as a document is parsed. It extends the 
- * <code>Event</code> interface defined in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331'>DOM Level 3 Events</a>]
+ * <code>Event</code> interface defined in [<a href='http://www.w3.org/TR/2003/NOTE-DOM-Level-3-Events-20031107'>DOM Level 3 Events</a>]
  * .
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619'>Document Object Model (DOM) Level 3 Load
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface LSProgressEvent extends Event {
     /**
      * The input source that is being parsed.
      */
-    public DOMInput getInput();
+    public LSInput getInput();
 
     /**
      * The current position in the input source, including all external 

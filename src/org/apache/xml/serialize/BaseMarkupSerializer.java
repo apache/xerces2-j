@@ -106,7 +106,7 @@ import org.w3c.dom.Entity;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.Notation;
-import org.w3c.dom.ls.DOMSerializerFilter;
+import org.w3c.dom.ls.LSSerializerFilter;
 import org.w3c.dom.traversal.NodeFilter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -163,7 +163,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
  * @author Elena Litani, IBM 
  * @see Serializer
- * @see DOMSerializer
+ * @see LSSerializer
  */
 public abstract class BaseMarkupSerializer
     implements ContentHandler, DocumentHandler, LexicalHandler,
@@ -174,7 +174,7 @@ public abstract class BaseMarkupSerializer
     protected Hashtable fFeatures;
     protected DOMErrorHandler fDOMErrorHandler;
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
-    protected DOMSerializerFilter fDOMFilter;
+    protected LSSerializerFilter fDOMFilter;
 
     protected EncodingInfo _encodingInfo;
 

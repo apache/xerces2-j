@@ -87,8 +87,7 @@ import org.w3c.dom.Text;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.DOMSerializer;
-import org.w3c.dom.ls.DocumentLS;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  * The Document interface represents the entire HTML or XML document.
@@ -118,7 +117,7 @@ import org.w3c.dom.ls.DocumentLS;
 
 
 public class CoreDocumentImpl
-extends ParentNode implements Document, DocumentLS {
+extends ParentNode implements Document  {
     
 	/**TODO::
 	 * 1. Change XML11Char method names similar to XMLChar. That will prevent lot
@@ -1219,10 +1218,10 @@ extends ParentNode implements Document, DocumentLS {
      * DOM Level 3 WD - Experimental.
      * Save the document or the given node and all its descendants to a string
      * (i.e. serialize the document or node).
-     * <br>The parameters used in the <code>DOMSerializer</code> interface are
+     * <br>The parameters used in the <code>LSSerializer</code> interface are
      * assumed to have their default values when invoking this method.
      * <br> The result of a call to this method is the same the result of a
-     * call to <code>DOMSerializer.writeToString</code> with the document as
+     * call to <code>LSSerializer.writeToString</code> with the document as
      * the node to write.
      * @param node Specifies what to serialize, if this parameter is
      *   <code>null</code> the whole document is serialized, if it's
@@ -1241,7 +1240,7 @@ extends ParentNode implements Document, DocumentLS {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
         DOMImplementationLS domImplLS = (DOMImplementationLS)DOMImplementationImpl.getDOMImplementation();
-        DOMSerializer xmlWriter = domImplLS.createDOMSerializer();
+        LSSerializer xmlWriter = domImplLS.createLSSerializer();
         if (node == null) {
             node = this;
         }

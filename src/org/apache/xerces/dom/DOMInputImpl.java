@@ -57,7 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.LSInput;
 
 import java.io.Reader;
 import java.io.InputStream;
@@ -74,16 +74,16 @@ import java.io.InputStream;
  * source to the parser: as the argument to the <code>parse</code> method,
  * or as the return value of the <code>DOMResourceResolver.resolveEntity</code>
  *  method.
- * <p> The <code>DOMParser</code> will use the <code>DOMInput</code>
+ * <p> The <code>DOMParser</code> will use the <code>LSInput</code>
  * object to determine how to read XML input. If there is a character stream
  * available, the parser will read that stream directly; if not, the parser
  * will use a byte stream, if available; if neither a character stream nor a
  * byte stream is available, the parser will attempt to open a URI
  * connection to the resource identified by the system identifier.
- * <p> An <code>DOMInput</code> object belongs to the application: the
+ * <p> An <code>LSInput</code> object belongs to the application: the
  * parser shall never modify it in any way (it may modify a copy if
  * necessary).  Eventhough all attributes in this interface are writable the
- * DOM implementation is expected to never mutate a DOMInput.
+ * DOM implementation is expected to never mutate a LSInput.
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
 and Save Specification</a>.
  *
@@ -94,10 +94,10 @@ and Save Specification</a>.
 
 // REVISIT:
 // 1. it should be possible to do the following
-// DOMInputImpl extends XMLInputSource implements DOMInput
+// DOMInputImpl extends XMLInputSource implements LSInput
 // 2. we probably need only the default constructor.  -- el
 
-public class DOMInputImpl implements DOMInput {
+public class DOMInputImpl implements LSInput {
 
 	//
 	// Data
@@ -113,7 +113,7 @@ public class DOMInputImpl implements DOMInput {
 
 	protected String fEncoding = null;
 
-        protected boolean fCertified = false;
+        protected boolean fCertifiedText = false;
 
    /**
      * Default Constructor, constructs an input source
@@ -411,8 +411,8 @@ public class DOMInputImpl implements DOMInput {
       * in [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>]) when
       * parsing [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>].
       */
-    public boolean getCertified(){
-      return fCertified;
+    public boolean getCertifiedText(){
+      return fCertifiedText;
     }
 
     /**
@@ -421,8 +421,8 @@ public class DOMInputImpl implements DOMInput {
       * parsing [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>].
       */
 
-    public void setCertified(boolean certified){
-      fCertified = certified;
+    public void setCertifiedText(boolean certifiedText){
+      fCertifiedText = certifiedText;
     }
 
 }// class DOMInputImpl
