@@ -260,17 +260,27 @@ public class DeferredDocumentImpl
 
     /** Creates a notation in the table. */
     public int createDeferredNotation(String notationName,
-                                      String publicId, String systemId) {
+                                      String publicId, String systemId, String baseURI) {
 
         // create node
         int nodeIndex = createNode(Node.NOTATION_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
         int index     = nodeIndex & CHUNK_MASK;
 
+
+        // create extra data node
+        int extraDataIndex = createNode(Node.NOTATION_NODE); 
+        int echunk = extraDataIndex >> CHUNK_SHIFT;
+        int eindex = extraDataIndex & CHUNK_MASK;
+
         // save name, public id, system id, and notation name
         setChunkValue(fNodeName, notationName, chunk, index);
         setChunkValue(fNodeValue, publicId, chunk, index);
         setChunkValue(fNodeURI, systemId, chunk, index);
+
+        // in extra data node set baseURI value
+        setChunkIndex(fNodeExtra, extraDataIndex, chunk, index);
+        setChunkValue(fNodeName, baseURI, echunk, eindex);
 
         // return node index
         return nodeIndex;
@@ -279,14 +289,15 @@ public class DeferredDocumentImpl
 
     /** Creates an entity in the table. */
     public int createDeferredEntity(String entityName, String publicId,
-                                    String systemId, String notationName) {
+                                    String systemId, String notationName, 
+                                    String baseURI) {
         // create node
         int nodeIndex = createNode(Node.ENTITY_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
         int index     = nodeIndex & CHUNK_MASK;
 
         // create extra data node
-        int extraDataIndex = createNode((short)0); // node type unimportant
+        int extraDataIndex = createNode(Node.ENTITY_NODE); 
         int echunk = extraDataIndex >> CHUNK_SHIFT;
         int eindex = extraDataIndex & CHUNK_MASK;
 
@@ -295,18 +306,39 @@ public class DeferredDocumentImpl
         setChunkValue(fNodeValue, publicId, chunk, index);
         setChunkValue(fNodeURI, systemId, chunk, index);
         setChunkIndex(fNodeExtra, extraDataIndex, chunk, index);
-
+        // set other values in the extra chunk
+        // notation
         setChunkValue(fNodeName, notationName, echunk, eindex);
-
-        // initialize encoding and version for DOM Level 3 - el
+        // version  L3
         setChunkValue(fNodeValue, null, echunk, eindex);
+        // encoding L3
         setChunkValue(fNodeURI, null, echunk, eindex);
+
+
+        int extraDataIndex2 = createNode(Node.ENTITY_NODE);
+        int echunk2 = extraDataIndex2 >> CHUNK_SHIFT;
+        int eindex2 = extraDataIndex2 & CHUNK_MASK;
+
+        setChunkIndex(fNodeExtra, extraDataIndex2, echunk, eindex);
+
+        // baseURI
+        setChunkValue(fNodeName, baseURI, echunk2, eindex2);
+
         // return node index
         return nodeIndex;
 
     } // createDeferredEntity(String,String,String,String):int
 
-    // DOM Level 3 - el
+    public String getDeferredEntityBaseURI (int entityIndex){
+        if (entityIndex != -1) {
+            int extraDataIndex = getNodeExtra(entityIndex, false);
+            extraDataIndex = getNodeExtra(extraDataIndex, false);
+            return getNodeName (extraDataIndex, false);
+        }
+        return null;
+    }
+
+    // DOM Level 3
     // setting encoding and version
     public void setEntityInfo(int currentEntityDecl,
                               String version, String encoding){
@@ -319,14 +351,31 @@ public class DeferredDocumentImpl
         }
     }
 
+
+    // DOM Level 3
+    // setting actual encoding
+    public void setActualEncoding(int currentEntityDecl, String value){
+        // get first extra data chunk
+        int nodeIndex = getNodeExtra(currentEntityDecl, false);
+        // get second extra data chunk
+        int extraDataIndex = getNodeExtra(nodeIndex, false);
+
+        int echunk = extraDataIndex >> CHUNK_SHIFT;
+        int eindex = extraDataIndex & CHUNK_MASK;
+        
+        setChunkValue(fNodeValue, value, echunk, eindex);
+        
+    }
+
     /** Creates an entity reference node in the table. */
-    public int createDeferredEntityReference(String name) {
+    public int createDeferredEntityReference(String name, String baseURI) {
 
         // create node
         int nodeIndex = createNode(Node.ENTITY_REFERENCE_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
         int index     = nodeIndex & CHUNK_MASK;
         setChunkValue(fNodeName, name, chunk, index);
+        setChunkValue(fNodeValue, baseURI, chunk, index);
 
         // return node index
         return nodeIndex;
@@ -467,7 +516,19 @@ public class DeferredDocumentImpl
         int index = nodeIndex & CHUNK_MASK;
         setChunkValue(fNodeName, target, chunk, index);
         setChunkValue(fNodeValue, data, chunk, index);
+        // return node index
+        return nodeIndex;
 
+    } // createDeferredProcessingInstruction(String,String):int
+
+
+    /** Set a baseURI for a processing instruction node in the table. */
+    public int setDeferredPIBaseURI(int nodeIndex, String baseURI) {
+
+        // create node
+        int chunk = nodeIndex >> CHUNK_SHIFT;
+        int index = nodeIndex & CHUNK_MASK;
+        setChunkValue(fNodeURI, baseURI, chunk, index);
         // return node index
         return nodeIndex;
 

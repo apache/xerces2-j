@@ -121,8 +121,8 @@ import org.w3c.dom.DOMException;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityReferenceImpl 
-    extends ParentNode
-    implements EntityReference {
+extends ParentNode
+implements EntityReference {
 
     //
     // Constants
@@ -130,16 +130,18 @@ public class EntityReferenceImpl
 
     /** Serialization version. */
     static final long serialVersionUID = -7381452955687102062L;
-    
+
     //
     // Data
     //
 
     /** Name of Entity referenced */
     protected String name;
+    /** Base URI*/
+    protected String baseURI;
 
     /** Entity changes. */
-	//protected int entityChanges = -1;	
+    //protected int entityChanges = -1;	
 
     /** Enable synchronize. */
     //protected boolean fEnableSynchronize = false;
@@ -150,12 +152,12 @@ public class EntityReferenceImpl
 
     /** Factory constructor. */
     public EntityReferenceImpl(CoreDocumentImpl ownerDoc, String name) {
-    	super(ownerDoc);
+        super(ownerDoc);
         this.name = name;
         isReadOnly(true);
         needsSyncChildren(true);
     }
-    
+
     //
     // Node methods
     //
@@ -186,6 +188,39 @@ public class EntityReferenceImpl
     }
 
     /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve baseURI
+     */
+    public String getBaseURI() {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (baseURI == null) {
+            DocumentType doctype;
+            NamedNodeMap entities;
+            EntityImpl entDef;
+            if (null != (doctype = getOwnerDocument().getDoctype()) && 
+                null != (entities = doctype.getEntities())) {
+
+                entDef = (EntityImpl)entities.getNamedItem(getNodeName());
+                if (entDef !=null) {
+                    return entDef.getBaseURI();
+                }
+            }
+        }
+        return baseURI;    
+    }
+
+
+    /** NON-DOM: set base uri*/
+    public void setBaseURI(String uri){
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        baseURI = uri;
+    }
+
+    /**
      * EntityReference's children are a reflection of those defined in the
      * named Entity. This method creates them if they haven't been created yet.
      * This doesn't support editing the Entity though, since this only called
@@ -195,12 +230,12 @@ public class EntityReferenceImpl
         // no need to synchronize again
         needsSyncChildren(false);
 
-    	DocumentType doctype;
-    	NamedNodeMap entities;
-    	EntityImpl entDef;
-    	if (null != (doctype = getOwnerDocument().getDoctype()) && 
+        DocumentType doctype;
+        NamedNodeMap entities;
+        EntityImpl entDef;
+        if (null != (doctype = getOwnerDocument().getDoctype()) && 
             null != (entities = doctype.getEntities())) {
-            
+
             entDef = (EntityImpl)entities.getNamedItem(getNodeName());
 
             // No Entity by this name, stop here.
@@ -210,13 +245,13 @@ public class EntityReferenceImpl
             // If entity's definition exists, clone its kids
             isReadOnly(false);
             for (Node defkid = entDef.getFirstChild();
-                 defkid != null;
-                 defkid = defkid.getNextSibling()) {
+                defkid != null;
+                defkid = defkid.getNextSibling()) {
                 Node newkid = defkid.cloneNode(true);
                 insertBefore(newkid, null);
             }
             setReadOnly(true, true);
-    	}
+        }
     }
 
 
@@ -256,56 +291,56 @@ public class EntityReferenceImpl
      * @see DocumentTypeImpl
      * @see EntityImpl
      */
-     // The Xerces parser invokes callbacks for startEnityReference
-     // the parsed value of the entity EACH TIME, so it is actually 
-     // easier to create the nodes through the callbacks rather than
-     // clone the Entity.
+    // The Xerces parser invokes callbacks for startEnityReference
+    // the parsed value of the entity EACH TIME, so it is actually 
+    // easier to create the nodes through the callbacks rather than
+    // clone the Entity.
     /***
     // revisit: enable editing of Entity
     private void synchronize() {
         if (!fEnableSynchronize) {
             return;
         }
-    	DocumentType doctype;
-    	NamedNodeMap entities;
-    	EntityImpl entDef;
-    	if (null != (doctype = getOwnerDocument().getDoctype()) && 
-    		null != (entities = doctype.getEntities())) {
+        DocumentType doctype;
+        NamedNodeMap entities;
+        EntityImpl entDef;
+        if (null != (doctype = getOwnerDocument().getDoctype()) && 
+            null != (entities = doctype.getEntities())) {
             
-    		entDef = (EntityImpl)entities.getNamedItem(getNodeName());
+            entDef = (EntityImpl)entities.getNamedItem(getNodeName());
 
-    		// No Entity by this name. If we had a change count, reset it.
-    		if(null==entDef)
-    			entityChanges=-1;
+            // No Entity by this name. If we had a change count, reset it.
+            if(null==entDef)
+                entityChanges=-1;
 
-    		// If no kids availalble, wipe any pre-existing children.
-    		// (See discussion above.)
-    		// Note that we have to use the superclass to avoid recursion
-    		// through Synchronize.
-    		readOnly=false;
-    		if(null==entDef || !entDef.hasChildNodes())
-    			for(Node kid=super.getFirstChild();
-    				kid!=null;
-    				kid=super.getFirstChild())
-    				removeChild(kid);
+            // If no kids availalble, wipe any pre-existing children.
+            // (See discussion above.)
+            // Note that we have to use the superclass to avoid recursion
+            // through Synchronize.
+            readOnly=false;
+            if(null==entDef || !entDef.hasChildNodes())
+                for(Node kid=super.getFirstChild();
+                    kid!=null;
+                    kid=super.getFirstChild())
+                    removeChild(kid);
 
-    		// If entity's definition changed, clone its kids
-    		// (See discussion above.)
-    		if(null!=entDef && entDef.changes!=entityChanges) {
-    			for(Node defkid=entDef.getFirstChild();
-    				defkid!=null;
-    				defkid=defkid.getNextSibling()) {
+            // If entity's definition changed, clone its kids
+            // (See discussion above.)
+            if(null!=entDef && entDef.changes!=entityChanges) {
+                for(Node defkid=entDef.getFirstChild();
+                    defkid!=null;
+                    defkid=defkid.getNextSibling()) {
                     
-    				NodeImpl newkid=(NodeImpl) defkid.cloneNode(true);
-    				newkid.setReadOnly(true,true);
-    				insertBefore(newkid,null);
-    			}
-    			entityChanges=entDef.changes;
-    		}
-    		readOnly=true;
-    	}
+                    NodeImpl newkid=(NodeImpl) defkid.cloneNode(true);
+                    newkid.setReadOnly(true,true);
+                    insertBefore(newkid,null);
+                }
+                entityChanges=entDef.changes;
+            }
+            readOnly=true;
+        }
     }
      /***/
-     
-    
+
+
 } // class EntityReferenceImpl

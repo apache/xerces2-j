@@ -995,10 +995,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startExternalSubset(Augmentations augs) throws XNIException {
-        fDTDGrammar.startExternalSubset(augs);
+    public void startExternalSubset(XMLResourceIdentifier identifier, 
+                                    Augmentations augs) throws XNIException {
+        fDTDGrammar.startExternalSubset(identifier, augs);
         if(fDTDHandler != null){
-            fDTDHandler.startExternalSubset(augs);
+            fDTDHandler.startExternalSubset(identifier, augs);
         }
     }
 

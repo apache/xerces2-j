@@ -461,7 +461,7 @@ public class XMLDTDScannerImpl
             if (fDTDHandler != null && !fStartDTDCalled ) {
                 fDTDHandler.startDTD(fEntityScanner, null);
             }
-            fDTDHandler.startExternalSubset(null);
+            fDTDHandler.startExternalSubset(fEntityScanner,null);
             fExtEntityDepth++;
         }
         else if (name.charAt(0) == '%') {

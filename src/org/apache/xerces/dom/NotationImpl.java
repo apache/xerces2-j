@@ -106,6 +106,9 @@ public class NotationImpl
     /** System identifier. */
     protected String systemId;
 
+    /** Base URI*/
+    protected String baseURI;
+
     //
     // Constructors
     //
@@ -208,5 +211,24 @@ public class NotationImpl
 
     } // setSystemId(String)
     
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve baseURI
+     */
+    public String getBaseURI() {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        return baseURI;
+    }
+
+    /** NON-DOM: set base uri*/
+    public void setBaseURI(String uri){
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        baseURI = uri;
+    }
 
 } // class NotationImpl

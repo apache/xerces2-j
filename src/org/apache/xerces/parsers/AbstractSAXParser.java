@@ -755,7 +755,8 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startExternalSubset(Augmentations augs) throws XNIException {
+    public void startExternalSubset(XMLResourceIdentifier identifier, 
+                                    Augmentations augs) throws XNIException {
         startParameterEntity("[dtd]", null, null, augs);
     }
 

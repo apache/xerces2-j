@@ -143,6 +143,10 @@ public class DeferredNotationImpl
         // public and system ids
         publicId = ownerDocument.getNodeValue(fNodeIndex);
         systemId = ownerDocument.getNodeURI(fNodeIndex);
+        int extraDataIndex = ownerDocument.getNodeExtra(fNodeIndex);
+        ownerDocument.getNodeType(extraDataIndex);
+        baseURI = ownerDocument.getNodeName(extraDataIndex);
+
 
     } // synchronizeData()
 

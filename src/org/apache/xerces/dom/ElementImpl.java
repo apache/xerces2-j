@@ -184,6 +184,26 @@ public class ElementImpl
 
     } // cloneNode(boolean):Node
 
+   /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve baseURI
+     */
+    public String getBaseURI() {
+
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (attributes != null) {
+            Attr attrNode = (Attr)attributes.getNamedItem("xml:base");
+            if (attrNode != null) {
+                return attrNode.getNodeValue();
+            }
+        }
+        return this.ownerNode.getBaseURI();
+    }
+
+
+
     /**
      * NON-DOM
      * set the ownerDocument of this node, its children, and its attributes

@@ -159,12 +159,18 @@ public class DeferredEntityImpl
         systemId    = ownerDocument.getNodeURI(fNodeIndex);
         int extraDataIndex = ownerDocument.getNodeExtra(fNodeIndex);
         ownerDocument.getNodeType(extraDataIndex);
+
         notationName = ownerDocument.getNodeName(extraDataIndex);
 
-        // DOM Level 3 adding experimental features -el
+        // encoding and version DOM L3
         version     = ownerDocument.getNodeValue(extraDataIndex);
         encoding    = ownerDocument.getNodeURI(extraDataIndex);
-         
+
+        // baseURI, actualEncoding DOM L3
+        int extraIndex2 = ownerDocument.getNodeExtra(extraDataIndex);
+        baseURI = ownerDocument.getNodeName(extraIndex2);
+        actualEncoding = ownerDocument.getNodeValue(extraIndex2);
+
     } // synchronizeData()
 
     /** Synchronize the children. */

@@ -135,6 +135,7 @@ public abstract class AbstractXMLDocumentParser
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
+
     public void startDocument(XMLLocator locator, String encoding, Augmentations augs) 
         throws XNIException {
     } // startDocument(XMLLocator,String)
@@ -421,7 +422,7 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startExternalSubset(Augmentations augmentations) 
+    public void startExternalSubset(XMLResourceIdentifier identifier, Augmentations augmentations) 
         throws XNIException {
     } // startExternalSubset(Augmentations)
 

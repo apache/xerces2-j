@@ -59,12 +59,15 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.impl.dtd.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
+
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLDTDScanner;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 
 /**
  * @version $Id$
@@ -155,8 +158,9 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD(XMLLocator locator) throws XNIException {
-    } // startDTD(XMLLocator)
+    public void startDTD(XMLLocator locator, Augmentations augmentations) 
+                         throws XNIException {
+    } 
 
     /**
      * A comment.
@@ -165,7 +169,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException {
+    public void comment(XMLString text, Augmentations augmentations) throws XNIException {
     } // comment
 
     /**
@@ -184,7 +188,8 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data, 
+                                      Augmentations augmentations)
         throws XNIException {
     } // processingInstruction
 
@@ -193,7 +198,8 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startExternalSubset() throws XNIException {
+    public void startExternalSubset(XMLResourceIdentifier identifier, 
+                                    Augmentations augmentations)  throws XNIException {
     } // startExternalSubset
 
     /**
@@ -201,7 +207,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endExternalSubset() throws XNIException {
+    public void endExternalSubset(Augmentations augmentations) throws XNIException {
     } // endExternalSubset
 
     /**
@@ -212,7 +218,8 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel)
+    public void elementDecl(String name, String contentModel, 
+                            Augmentations augmentations)
         throws XNIException {
     } // elementDecl
 
@@ -224,7 +231,8 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws XNIException {
+    public void startAttlist(String elementName,
+                             Augmentations augmentations) throws XNIException {
     } // startAttlist
 
     /**
@@ -248,7 +256,10 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue)
+    public void attributeDecl(String elementName, String attributeName, 
+                              String type, String[] enumeration, 
+                              String defaultType, XMLString defaultValue,
+                              XMLString nonNormalizedDefaultValue, Augmentations augmentations)
         throws XNIException {
     } // attributeDecl
 
@@ -257,7 +268,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws XNIException {
+    public void endAttlist(Augmentations augmentations) throws XNIException {
     } // endAttlist
 
     /**
@@ -275,7 +286,8 @@ public abstract class DTDParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text,
-                                   XMLString nonNormalizedText)
+                                   XMLString nonNormalizedText,
+                                   Augmentations augmentations)
         throws XNIException {
     } // internalEntityDecl(String,XMLString,XMLString)
 
@@ -291,7 +303,9 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void externalEntityDecl(String name, String publicId, String systemId)
+    public void externalEntityDecl(String name, 
+                                   XMLResourceIdentifier identifier,
+                                   Augmentations augmentations)
         throws XNIException {
     } // externalEntityDecl
 
@@ -307,7 +321,9 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void unparsedEntityDecl(String name, String publicId, String systemId, String notation)
+    public void unparsedEntityDecl(String name, 
+                                   XMLResourceIdentifier identifier, 
+                                   String notation, Augmentations augmentations)
         throws XNIException {
     } // unparsedEntityDecl
 
@@ -322,7 +338,8 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId)
+    public void notationDecl(String name, XMLResourceIdentifier identifier,
+                             Augmentations augmentations)
         throws XNIException {
     } // notationDecl
 
@@ -337,7 +354,7 @@ public abstract class DTDParser
      * @see XMLDTDHandler#CONDITIONAL_INCLUDE
      * @see XMLDTDHandler#CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws XNIException {
+    public void startConditional(short type, Augmentations augmentations) throws XNIException {
     } // startConditional
 
     /**
@@ -345,7 +362,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws XNIException {
+    public void endConditional(Augmentations augmentations) throws XNIException {
     } // endConditional
 
     /**
@@ -353,7 +370,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws XNIException {
+    public void endDTD(Augmentations augmentations) throws XNIException {
     } // endDTD
 
     /**
@@ -369,7 +386,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augmentations) throws XNIException {
     }
 
     //

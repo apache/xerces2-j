@@ -174,6 +174,7 @@ public class DeferredEntityReferenceImpl
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl)this.ownerDocument;
         name = ownerDocument.getNodeName(fNodeIndex);
+        baseURI = ownerDocument.getNodeValue(fNodeIndex);
         
     } // synchronizeData()
 

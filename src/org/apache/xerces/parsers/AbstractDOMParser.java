@@ -69,6 +69,7 @@ import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.TextImpl;
+import org.apache.xerces.dom.ProcessingInstructionImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.AttributePSVImpl;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
@@ -77,6 +78,8 @@ import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
@@ -100,6 +103,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
+import java.util.Stack;
+
 /**
  * This is the base class of all DOM parsers. It implements the XNI
  * callback methods to create the DOM tree. After a successful parse of
@@ -113,8 +118,7 @@ import org.w3c.dom.Text;
  *
  * @version $Id$
  */
-public abstract class AbstractDOMParser                                          
-    extends AbstractXMLDocumentParser {
+public class AbstractDOMParser extends AbstractXMLDocumentParser{
 
     //
     // Constants
@@ -187,14 +191,16 @@ public abstract class AbstractDOMParser
 
     // debugging
 
-    /** Set to true and recompile to debug entity references. */
-    private static final boolean DEBUG_ENTITY_REF = false;
     private static final boolean DEBUG_EVENTS = false;
-
+    private static final boolean DEBUG_BASEURI = false;
 
     //
     // Data
     //
+
+
+    /** True if inside DTD. */
+    protected boolean fInDTD;
 
     // features
 
@@ -206,7 +212,7 @@ public abstract class AbstractDOMParser
 
     /** Include Comments. */
     protected boolean fIncludeComments;
-
+                          
     /** Create cdata nodes. */
     protected boolean fCreateCDATANodes;
 
@@ -230,6 +236,8 @@ public abstract class AbstractDOMParser
     /** Current node. */
     protected Node fCurrentNode;
     protected CDATASection fCurrentCDATASection;
+    protected EntityImpl fCurrentEntityDecl;
+    protected int fDeferredEntityDecl;
 
     /** Character buffer */
     protected final StringBuffer fStringBuffer = new StringBuffer(50);
@@ -263,6 +271,10 @@ public abstract class AbstractDOMParser
     /** True if saw the first chunk of characters*/
     protected boolean fFirstChunk = false;
 
+
+    /** Base uri stack*/
+    protected Stack fBaseURIStack = new Stack();
+
     // data
 
     /** Attribute QName. */
@@ -274,7 +286,9 @@ public abstract class AbstractDOMParser
 
     /** Default constructor. */
     protected AbstractDOMParser(XMLParserConfiguration config) {
+        
         super(config);
+
 
         // add recognized features
         fConfiguration.addRecognizedFeatures(RECOGNIZED_FEATURES);
@@ -447,24 +461,67 @@ public abstract class AbstractDOMParser
         throws XNIException {
         if (DEBUG_EVENTS) {        
             System.out.println("==>startGeneralEntity ("+name+")");
+            if (DEBUG_BASEURI) {            
+                System.out.println("   expandedSystemId( **baseURI): "+identifier.getExpandedSystemId());
+                System.out.println("   baseURI:"+ identifier.getBaseSystemId());
+            }
         }
         
         // Always create entity reference nodes to be able to recreate
         // entity as a part of doctype
          if (!fDeferNodeExpansion) {
             setCharacterData(true);
-            EntityReference er = fDocument.createEntityReference(name);
-            // we don't need synchronization now, because entity ref will be
-            // expanded anyway. Synch only needed when user creates entityRef node
-            ((EntityReferenceImpl)er).needsSyncChildren(false);
+            EntityReference er = fDocument.createEntityReference(name);            
+            
+            if (fDocumentImpl != null) {            
+                // REVISIT: baseURI/actualEncoding
+                //         remove dependency on our implementation when DOM L3 is REC
+                //
+
+                EntityReferenceImpl erImpl =(EntityReferenceImpl)er; 
+                // set base uri
+                erImpl.setBaseURI(identifier.getExpandedSystemId());
+
+                if (fDocumentType != null) {
+                    // set actual encoding
+                    NamedNodeMap entities = fDocumentType.getEntities();
+                    fCurrentEntityDecl = (EntityImpl) entities.getNamedItem(name);
+                    if (fCurrentEntityDecl != null) {
+                        fCurrentEntityDecl.setActualEncoding(encoding);
+                    }
+
+                }
+                // we don't need synchronization now, because entity ref will be
+                // expanded anyway. Synch only needed when user creates entityRef node
+                erImpl.needsSyncChildren(false);
+            }
+
             fCurrentNode.appendChild(er);
             fCurrentNode = er;
          }
          else {
+
             int er =
-               fDeferredDocumentImpl.createDeferredEntityReference(name);
-               fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, er);
-               fCurrentNodeIndex = er;
+               fDeferredDocumentImpl.createDeferredEntityReference(name, identifier.getExpandedSystemId());
+            if (fDocumentTypeIndex != -1) {
+                // find corresponding Entity decl
+                int node = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+                while (node != -1) {
+                    short nodeType = fDeferredDocumentImpl.getNodeType(node, false);
+                    if (nodeType == Node.ENTITY_NODE) {
+                        String nodeName =
+                            fDeferredDocumentImpl.getNodeName(node, false);
+                        if (nodeName.equals(name)) {
+                            fDeferredEntityDecl = node;
+                            fDeferredDocumentImpl.setActualEncoding(node, encoding);
+                            break;
+                        }
+                    }
+                    node = fDeferredDocumentImpl.getRealPrevSibling(node, false);
+                }
+            }
+            fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, er);
+            fCurrentNodeIndex = er;
          }
 
     } // startGeneralEntity(String,XMLResourceIdentifier, Augmentations)
@@ -488,39 +545,14 @@ public abstract class AbstractDOMParser
      */
     public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
         if (!fDeferNodeExpansion) {
-            // REVISIT: when DOM Level 3 is REC rely on Document.support
-            //          instead of specific class
-            if (fDocumentType != null) {
-                NamedNodeMap entities = fDocumentType.getEntities();
-                String name = fCurrentNode.getNodeName();
-                EntityImpl entity = (EntityImpl) entities.getNamedItem(name);
-                if (entity != null) {
-                    entity.setVersion(version);
-                    entity.setEncoding(encoding);
-                }
+            if (fCurrentEntityDecl != null) {
+                fCurrentEntityDecl.setEncoding(encoding);
+                fCurrentEntityDecl.setVersion(version);
             }
         }
         else {
-            String name = fDeferredDocumentImpl.getNodeName(fCurrentNodeIndex, false);
-            if (fDocumentTypeIndex != -1 && name != null) {
-                // find corresponding Entity decl
-                boolean found = false;
-                int node = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
-                while (node != -1) {
-                    short nodeType = fDeferredDocumentImpl.getNodeType(node, false);
-                    if (nodeType == Node.ENTITY_NODE) {
-                        String nodeName =
-                            fDeferredDocumentImpl.getNodeName(node, false);
-                        if (nodeName.equals(name)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    node = fDeferredDocumentImpl.getRealPrevSibling(node, false);
-                }
-                if (found) {
-                    fDeferredDocumentImpl.setEntityInfo(node, version, encoding);
-                }
+            if (fDeferredEntityDecl !=-1) {
+               fDeferredDocumentImpl.setEntityInfo(fDeferredEntityDecl, version, encoding);
             }
         }
     } // textDecl(String,String)
@@ -587,8 +619,12 @@ public abstract class AbstractDOMParser
                 fInternalSubset.append("?>");
 
             }
+            return;
         }
 
+        if (DEBUG_EVENTS) {        
+            System.out.println("==>processingInstruction ("+target+")");
+        }
         if (!fDeferNodeExpansion) {
             setCharacterData(false);
             ProcessingInstruction pi =
@@ -749,6 +785,33 @@ public abstract class AbstractDOMParser
     } // doctypeDecl(String,String,String)
 
     /**
+     * The start of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
+     * 
+     * @param prefix The namespace prefix.
+     * @param uri    The URI bound to the prefix.
+     * @param augs   Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
+        throws XNIException {
+    } // startPrefixMapping(String,String)
+
+
+    /**
+     * The end of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
+     *
+     * @param prefix The namespace prefix.
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
+    } // endPrefixMapping(String)
+
+    /**
      * The start of an element. If the document specifies the start element
      * by using an empty tag, then the startElement method will immediately
      * be followed by the endElement method, with no intervening methods.
@@ -857,6 +920,24 @@ public abstract class AbstractDOMParser
         }
     } // startElement(QName,XMLAttributes)
 
+
+    /**
+     * An empty element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     * @param augs   Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
+        throws XNIException {
+
+        startElement(element, attributes, augs);
+        endElement(element, augs);
+
+    } // emptyElement(QName,XMLAttributes)
+
     /**
      * Character content.
      *
@@ -905,8 +986,13 @@ public abstract class AbstractDOMParser
                 Node child = fCurrentNode.getLastChild();
                 if (child != null && child.getNodeType() == Node.TEXT_NODE) {
                     // collect all the data into the string buffer. 
-                    if (fFirstChunk) {                    
-                        fStringBuffer.append(((TextImpl)child).removeData());
+                    if (fFirstChunk) {
+                        if (fDocumentImpl != null) {
+                            fStringBuffer.append(((TextImpl)child).removeData());
+                        } else {
+                            fStringBuffer.append(((Text)child).getData());
+                            ((Text)child).setNodeValue(null);
+                        }
                         fFirstChunk = false;
                     }
                     fStringBuffer.append(value);
@@ -1032,17 +1118,6 @@ public abstract class AbstractDOMParser
 
     } // endElement(QName)
 
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
-    } // endPrefixMapping(String)
 
     /**
      * The start of a CDATA section.
@@ -1110,7 +1185,7 @@ public abstract class AbstractDOMParser
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      * 
-     * @param name   The name of the entity.
+     * @param name   The name of the entity.                        
      * @param augs   Additional information that may include infoset augmentations
      *               
      * @exception XNIException
@@ -1122,70 +1197,62 @@ public abstract class AbstractDOMParser
         }
         if (!fDeferNodeExpansion) {
             setCharacterData(true);                
-            if (fDocumentType != null) {
-                NamedNodeMap entities = fDocumentType.getEntities();
-                NodeImpl entity = (NodeImpl)entities.getNamedItem(name);
-                if (entity != null && entity.getFirstChild() == null) {
-                    entity.setReadOnly(false, true);
+            if (fCurrentEntityDecl != null) {            
+                if (fCurrentEntityDecl != null && fCurrentEntityDecl.getFirstChild() == null) {
+                    fCurrentEntityDecl.setReadOnly(false, true);
                     Node child = fCurrentNode.getFirstChild();
                     while (child != null) {
                         Node copy = child.cloneNode(true);
-                        entity.appendChild(copy);
+                        fCurrentEntityDecl.appendChild(copy);
                         child = child.getNextSibling();
                      }
-                    entity.setReadOnly(true, true);
-                    entities.setNamedItem(entity);
+                    fCurrentEntityDecl.setReadOnly(true, true);
+                    
+                    //entities.setNamedItem(fCurrentEntityDecl);
                 }
+                fCurrentEntityDecl = null;
             }
             if (fCreateEntityRefNodes) {
-                // Make entity ref node read only
-                ((NodeImpl)fCurrentNode).setReadOnly(true, true);
+                if (fDocumentImpl != null) {                
+                    // Make entity ref node read only
+                    ((NodeImpl)fCurrentNode).setReadOnly(true, true);
+                }
                 fCurrentNode = fCurrentNode.getParentNode();
-            } else {  //!fCreateEntityRefNodes
+            } else {  
                 // move entity reference children to the list of 
                 // siblings of its parent and remove entity reference
                 NodeList children = fCurrentNode.getChildNodes();
                 Node parent = fCurrentNode.getParentNode();
                 int length = children.getLength();
-                Node previous = fCurrentNode.getPreviousSibling();
+                // get previous sibling of the entity reference
+                Node node = fCurrentNode.getPreviousSibling();
                 // normalize text nodes
-                if (previous != null && previous.getNodeType() == Node.TEXT_NODE &&
-                    children.item(0).getNodeType() == Node.TEXT_NODE) {
-                    ((Text)previous).appendData(children.item(0).getNodeValue());
+                Node child = children.item(0);
+                if (node != null && node.getNodeType() == Node.TEXT_NODE &&
+                    child.getNodeType() == Node.TEXT_NODE) {
+                    ((Text)node).appendData(child.getNodeValue());
+                    fCurrentNode.removeChild(child);
 
                 } else {
-                    parent.insertBefore(children.item(0), fCurrentNode);
+                    node = parent.insertBefore(child, fCurrentNode);
+                    handleBaseURI(node);
                 }
 
                 for (int i=1;i <length;i++) {
-                    parent.insertBefore(children.item(0), fCurrentNode);
+                    node = parent.insertBefore(children.item(0), fCurrentNode);
+                    handleBaseURI(node);
                 }
                 parent.removeChild(fCurrentNode);
                 fCurrentNode = parent;
             }
         }
         else {
-            int entityIndex = -1;
-            int dtChildIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
-            while (dtChildIndex != -1) {
-                short nodeType = fDeferredDocumentImpl.getNodeType(dtChildIndex, false);
-                if (nodeType == Node.ENTITY_NODE) {
-                    String nodeName = fDeferredDocumentImpl.getNodeName(dtChildIndex, false);
-                    if (nodeName.equals(name)) {
-                        if (fDeferredDocumentImpl.getLastChild(dtChildIndex, false) == -1) {
-                            entityIndex = dtChildIndex;
-                        }
-                        break;
-                    }
-                }
-               dtChildIndex = fDeferredDocumentImpl.getRealPrevSibling(dtChildIndex, false);
-            }
-            if (entityIndex != -1) {
+            if (fDeferredEntityDecl != -1) {
                int prevIndex = -1;
                int childIndex = fDeferredDocumentImpl.getLastChild(fCurrentNodeIndex, false);
                while (childIndex != -1) {
                    int cloneIndex = fDeferredDocumentImpl.cloneNode(childIndex, true);
-                   fDeferredDocumentImpl.insertBefore(entityIndex, cloneIndex, prevIndex);
+                   fDeferredDocumentImpl.insertBefore(fDeferredEntityDecl, cloneIndex, prevIndex);
                    prevIndex = cloneIndex;
                    childIndex = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
                 }
@@ -1208,6 +1275,7 @@ public abstract class AbstractDOMParser
                  int lastChild = childIndex;
                  int sibling = -1;
                  while (childIndex != -1) {
+                     handleBaseURI(childIndex);
                      sibling = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
                      fDeferredDocumentImpl.insertBefore(parentIndex, childIndex, prevIndex);
                      prevIndex = childIndex;
@@ -1216,11 +1284,90 @@ public abstract class AbstractDOMParser
                  fDeferredDocumentImpl.setAsLastChild(parentIndex, lastChild);
                  fCurrentNodeIndex = parentIndex;
              }
+             fDeferredEntityDecl = -1;
         }
         
 
     } // endGeneralEntity(String, Augmentations)
 
+    
+    /**
+     * Record baseURI information for the Element (by adding xml:base attribute)
+     * or for the ProcessingInstruction (by setting a baseURI field)
+     * Non deferred DOM.
+     * 
+     * @param node
+     */
+    protected void handleBaseURI (Node node){
+        if (fDocumentImpl != null) {
+            // REVISIT: remove dependency on our implementation when
+            //          DOM L3 becomes REC
+        
+            String baseURI = null;
+            short nodeType = node.getNodeType();
+
+            if (nodeType == Node.ELEMENT_NODE) {
+                // if an element already has xml:base attribute
+                // do nothing
+                if (fNamespaceAware && (((Element)node).getAttributeNodeNS("http://www.w3.org/XML/1998/namespace","base")!=null)) { 
+                    return;
+                } else if (((Element)node).getAttributeNode("xml:base") != null) {
+                    return;
+                }
+                // retrive the baseURI from the entity reference
+                baseURI = ((EntityReferenceImpl)fCurrentNode).getBaseURI();
+                if (baseURI !=null && !baseURI.equals(fDocumentImpl.getDocumentURI())) {
+                    if (fNamespaceAware) {
+                        ((Element)node).setAttributeNS("http://www.w3.org/XML/1998/namespace","base", baseURI);
+                    } else {
+                        ((Element)node).setAttribute("xml:base", baseURI);
+                    }
+                }
+            }
+            else if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
+                baseURI = ((EntityReferenceImpl)fCurrentNode).getBaseURI();
+                ((ProcessingInstructionImpl)node).setBaseURI(baseURI);
+            }
+        }
+    }
+
+    /**
+     * 
+     * Record baseURI information for the Element (by adding xml:base attribute)
+     * or for the ProcessingInstruction (by setting a baseURI field)
+     * Deferred DOM.
+     * 
+     * @param node
+     */
+    protected void handleBaseURI (int node){
+        short nodeType = fDeferredDocumentImpl.getNodeType(node, false);
+        if (nodeType == Node.ELEMENT_NODE) {
+            String baseURI = fDeferredDocumentImpl.getNodeValueString(fCurrentNodeIndex, false);
+            if (baseURI == null) {
+                baseURI = fDeferredDocumentImpl.getDeferredEntityBaseURI(fDeferredEntityDecl);
+            }
+            if (baseURI !=null && !baseURI.equals(fDeferredDocumentImpl.getDocumentURI())) { 
+                fDeferredDocumentImpl.setDeferredAttribute(node, 
+                                                           "xml:base", 
+                                                           "http://www.w3.org/XML/1998/namespace", 
+                                                           baseURI, 
+                                                           true);
+            }
+        }
+        else if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
+
+            // retrieve baseURI from the entity reference
+            String baseURI = fDeferredDocumentImpl.getNodeValueString(fCurrentNodeIndex, false);
+
+            if (baseURI == null) {
+                // try baseURI of the entity declaration
+                baseURI = fDeferredDocumentImpl.getDeferredEntityBaseURI(fDeferredEntityDecl);
+            }
+            fDeferredDocumentImpl.setDeferredPIBaseURI(node, baseURI);
+        }
+    }
+
+                       
     //
     // XMLDTDHandler methods
     //
@@ -1240,11 +1387,21 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
-        super.startDTD(locator, augs);
+        if (DEBUG_EVENTS) {
+            System.out.println("==>startDTD");
+            if (DEBUG_BASEURI) {            
+                System.out.println("   expandedSystemId: "+locator.getExpandedSystemId());
+                System.out.println("   baseURI:"+ locator.getBaseSystemId());
+            }
+        }
+
+        fInDTD = true;
+        fBaseURIStack.push(locator.getBaseSystemId());
         if (fDeferNodeExpansion || fDocumentImpl != null) {
             fInternalSubset = new StringBuffer(1024);
         }
     } // startDTD(XMLLocator)
+
 
     /**
      * The end of the DTD.
@@ -1255,7 +1412,11 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endDTD(Augmentations augs) throws XNIException {
-        super.endDTD(augs);
+        if (DEBUG_EVENTS) {
+            System.out.println("==>endDTD()");
+        }
+        fInDTD = false;
+        fBaseURIStack.pop();
         String internalSubset = fInternalSubset != null && fInternalSubset.length() > 0
                               ? fInternalSubset.toString() : null;
         if (fDeferNodeExpansion) {
@@ -1271,6 +1432,34 @@ public abstract class AbstractDOMParser
     } // endDTD()
 
     /**
+     * The start of a conditional section.
+     * 
+     * @param type The type of the conditional section. This value will
+     *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #CONDITIONAL_INCLUDE
+     * @see #CONDITIONAL_IGNORE
+     */
+    public void startConditional(short type, Augmentations augs) throws XNIException  {
+    } // startConditional(short)
+
+    /**
+     * The end of a conditional section.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endConditional(Augmentations augs) throws XNIException {
+    } // endConditional()
+
+
+    /**
      * The start of the DTD external subset.
      *
      * @param augs Additional information that may include infoset
@@ -1278,7 +1467,16 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startExternalSubset(Augmentations augs) throws XNIException {
+    public void startExternalSubset(XMLResourceIdentifier identifier, 
+                                    Augmentations augs) throws XNIException {
+        if (DEBUG_EVENTS) {
+            System.out.println("==>startExternalSubset");
+            if (DEBUG_BASEURI) {            
+                System.out.println("   expandedSystemId: "+identifier.getExpandedSystemId());
+                System.out.println("   baseURI:"+ identifier.getBaseSystemId());
+            }
+        }
+        fBaseURIStack.push(identifier.getBaseSystemId());
         fInDTDExternalSubset = true;
     } // startExternalSubset(Augmentations)
 
@@ -1292,6 +1490,7 @@ public abstract class AbstractDOMParser
      */
     public void endExternalSubset(Augmentations augs) throws XNIException {
         fInDTDExternalSubset = false;
+        fBaseURIStack.pop();
     } // endExternalSubset(Augmentations)
 
     /**
@@ -1314,6 +1513,12 @@ public abstract class AbstractDOMParser
                                    XMLString nonNormalizedText,
                                    Augmentations augs) throws XNIException {
 
+        if (DEBUG_EVENTS) {
+            System.out.println("==>internalEntityDecl: "+name);
+            if (DEBUG_BASEURI) {            
+                System.out.println("   baseURI:"+ (String)fBaseURIStack.peek());
+            }
+        }  
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {
             fInternalSubset.append("<!ENTITY ");
@@ -1346,6 +1551,7 @@ public abstract class AbstractDOMParser
             EntityImpl entity = (EntityImpl)entities.getNamedItem(name);
             if (entity == null) {
                 entity = (EntityImpl)fDocumentImpl.createEntity(name);
+                entity.setBaseURI((String)fBaseURIStack.peek());
                 entities.setNamedItem(entity);
             }
         }
@@ -1367,7 +1573,7 @@ public abstract class AbstractDOMParser
             }
             if (!found) {
                 int entityIndex =
-                    fDeferredDocumentImpl.createDeferredEntity(name, null, null, null);
+                    fDeferredDocumentImpl.createDeferredEntity(name, null, null, null, (String)fBaseURIStack.peek());
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
             }
         }
@@ -1390,6 +1596,14 @@ public abstract class AbstractDOMParser
     public void externalEntityDecl(String name, XMLResourceIdentifier identifier,
                                    Augmentations augs) throws XNIException {
 
+
+        if (DEBUG_EVENTS) {
+            System.out.println("==>externalEntityDecl: "+name);
+            if (DEBUG_BASEURI) { 
+                System.out.println("   expandedSystemId:"+ identifier.getExpandedSystemId());
+                System.out.println("   baseURI:"+ identifier.getBaseSystemId());
+            }
+        }  
         // internal subset string
         String publicId = identifier.getPublicId();
         String literalSystemId = identifier.getLiteralSystemId();
@@ -1430,6 +1644,7 @@ public abstract class AbstractDOMParser
                 entity = (EntityImpl)fDocumentImpl.createEntity(name);
                 entity.setPublicId(publicId);
                 entity.setSystemId(literalSystemId);
+                entity.setBaseURI(identifier.getBaseSystemId());
                 entities.setNamedItem(entity);
             }
         }
@@ -1451,12 +1666,61 @@ public abstract class AbstractDOMParser
             }
             if (!found) {
                 int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
-                                    name, publicId, literalSystemId, null);
+                                    name, publicId, literalSystemId, null, identifier.getBaseSystemId());
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
             }
         }
     
     } // externalEntityDecl(String,XMLResourceIdentifier, Augmentations)
+
+
+    /**
+     * This method notifies of the start of a parameter entity. The parameter
+     * entity name start with a '%' character.
+     * 
+     * @param name     The name of the parameter entity.
+     * @param identifier The resource identifier.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal parameter entities).
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startParameterEntity(String name, 
+                                     XMLResourceIdentifier identifier,
+                                     String encoding,
+                                     Augmentations augs) throws XNIException {
+        if (DEBUG_EVENTS) {
+            System.out.println("==>startParameterEntity: "+name);
+            if (DEBUG_BASEURI) {            
+                System.out.println("   expandedSystemId: "+identifier.getExpandedSystemId());
+                System.out.println("   baseURI:"+ identifier.getBaseSystemId());
+            }
+        }  
+        fBaseURIStack.push(identifier.getExpandedSystemId());
+    }
+
+
+    /**
+     * This method notifies the end of a parameter entity. Parameter entity
+     * names begin with a '%' character.
+     * 
+     * @param name The name of the parameter entity.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endParameterEntity(String name, Augmentations augs) throws XNIException {
+        
+        if (DEBUG_EVENTS) {
+            System.out.println("==>endParameterEntity: "+name);
+        } 
+        fBaseURIStack.pop(); 
+    }
 
     /**
      * An unparsed entity declaration.
@@ -1474,6 +1738,13 @@ public abstract class AbstractDOMParser
                                    String notation, Augmentations augs) 
         throws XNIException {
 
+        if (DEBUG_EVENTS) {
+            System.out.println("==>unparsedEntityDecl: "+name);
+            if (DEBUG_BASEURI) { 
+                System.out.println("   expandedSystemId:"+ identifier.getExpandedSystemId());
+                System.out.println("   baseURI:"+ identifier.getBaseSystemId());
+            }
+        }  
         // internal subset string
         String publicId = identifier.getPublicId();
         String literalSystemId = identifier.getLiteralSystemId();
@@ -1511,6 +1782,7 @@ public abstract class AbstractDOMParser
                 entity.setPublicId(publicId);
                 entity.setSystemId(literalSystemId);
                 entity.setNotationName(notation);
+                entity.setBaseURI(identifier.getBaseSystemId());
                 entities.setNamedItem(entity);
             }
         }
@@ -1532,7 +1804,7 @@ public abstract class AbstractDOMParser
             }
             if (!found) {
                 int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
-                                    name, publicId, literalSystemId, notation);
+                                    name, publicId, literalSystemId, notation, identifier.getBaseSystemId());
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
             }
         }
@@ -1579,12 +1851,13 @@ public abstract class AbstractDOMParser
         //       that functionality. -Ac
 
         // create full node
-        if (fDocumentType != null) {
+        if (fDocumentImpl !=null && fDocumentType != null) {
             NamedNodeMap notations = fDocumentType.getNotations();
             if (notations.getNamedItem(name) == null) {
                 NotationImpl notation = (NotationImpl)fDocumentImpl.createNotation(name);
                 notation.setPublicId(publicId);
                 notation.setSystemId(literalSystemId);
+                notation.setBaseURI(identifier.getBaseSystemId());
                 notations.setNamedItem(notation);
             }
         }
@@ -1606,12 +1879,25 @@ public abstract class AbstractDOMParser
             }
             if (!found) {
                 int notationIndex = fDeferredDocumentImpl.createDeferredNotation(
-                                        name, publicId, literalSystemId);
+                                        name, publicId, literalSystemId, identifier.getBaseSystemId());
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, notationIndex);
             }
         }
 
     } // notationDecl(String,XMLResourceIdentifier, Augmentations)
+
+    /**
+     * Characters within an IGNORE conditional section.
+     *
+     * @param text The ignored text.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+     public void ignoredCharacters(XMLString text, Augmentations augs) throws XNIException {
+     } // ignoredCharacters(XMLString, Augmentations)
+
 
     /**
      * An element declaration.
@@ -1782,6 +2068,33 @@ public abstract class AbstractDOMParser
 
     } // attributeDecl(String,String,String,String[],String,XMLString, XMLString, Augmentations)
 
+
+    /**
+     * The start of an attribute list.
+     * 
+     * @param elementName The name of the element that this attribute
+     *                    list is associated with.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startAttlist(String elementName, Augmentations augs) throws XNIException {
+    } // startAttlist(String)
+
+
+    /**
+     * The end of an attribute list.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endAttlist(Augmentations augs) throws XNIException {
+    } // endAttlist()
+
+
     // method to create an element node.
     // subclasses can override this method to create element nodes in other ways.
     protected Element createElementNode(QName element) {
@@ -1843,7 +2156,12 @@ public abstract class AbstractDOMParser
             Node child = fCurrentNode.getLastChild();
             // REVISIT: should this check be performed?
             if (child != null && child.getNodeType() == Node.TEXT_NODE) {
-                ((TextImpl)child).replaceData(fStringBuffer.toString());
+                if (fDocumentImpl != null) {
+                    ((TextImpl)child).replaceData(fStringBuffer.toString());
+                }
+                else {
+                    ((Text)child).setData(fStringBuffer.toString());
+                }
             }
             // reset string buffer
             fStringBuffer.setLength(0);

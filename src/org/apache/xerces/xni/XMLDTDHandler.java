@@ -162,13 +162,16 @@ public interface XMLDTDHandler {
 
     /**
      * The start of the DTD external subset.
-     *
-     * @param augmentations Additional information that may include infoset
-     *                      augmentations.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * 
+     * @param identifier The resource identifier.
+     * @param augmentations
+     *                   Additional information that may include infoset
+     *                   augmentations.
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void startExternalSubset(Augmentations augmentations) 
+    public void startExternalSubset(XMLResourceIdentifier identifier, 
+                                    Augmentations augmentations) 
         throws XNIException;
 
     /**

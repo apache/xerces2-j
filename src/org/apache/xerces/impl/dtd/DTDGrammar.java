@@ -346,7 +346,8 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startExternalSubset(Augmentations augs) throws XNIException {
+    public void startExternalSubset(XMLResourceIdentifier identifier,
+                                    Augmentations augs) throws XNIException {
         fReadingExternalDTD = true;
     } // startExternalSubset(Augmentations)
 

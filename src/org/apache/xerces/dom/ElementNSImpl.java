@@ -59,6 +59,7 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Attr;
 
 
 /**
@@ -289,5 +290,24 @@ public class ElementNSImpl
             synchronizeData();
         }
         return localName;
+    }
+
+
+   /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve baseURI
+     */
+    public String getBaseURI() {
+
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (attributes != null) {
+            Attr attrNode = (Attr)attributes.getNamedItemNS("http://www.w3.org/XML/1998/namespace", "base");
+            if (attrNode != null) {
+                return attrNode.getNodeValue();
+            }
+        }
+        return this.ownerNode.getBaseURI();
     }
 }

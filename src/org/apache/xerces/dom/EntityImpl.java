@@ -57,8 +57,9 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.Entity;
+import org.apache.xerces.dom3.Entity3;
 import org.w3c.dom.Node;
+
 
 import org.w3c.dom.DOMException;
 
@@ -82,7 +83,7 @@ import org.w3c.dom.DOMException;
  * "The DOM Level 1 does not support editing Entity nodes; if a user
  * wants to make changes to the contents of an Entity, every related
  * EntityReference node has to be replaced in the structure model by
- * a clone of the Entity's contents, and then the desired changes 
+ * a clone of the Entity's contents, and then the desired changes
  * must be made to each of those clones instead. All the
  * descendants of an Entity node are readonly."
  * </BLOCKQUOTE>
@@ -91,14 +92,14 @@ import org.w3c.dom.DOMException;
  * the Entity. Since the DOM explicitly decided not to deal with this,
  * _any_ answer will involve a non-DOM operation, and this is the
  * simplest solution.
- *
- *
+ * 
+ * @author Elena Litani, IBM
  * @version $Id$
- * @since  PR-DOM-Level-1-19980818.
+ * @since PR-DOM-Level-1-19980818.
  */
 public class EntityImpl 
     extends ParentNode
-    implements Entity {
+    implements Entity3 {
 
     //
     // Constants
@@ -123,12 +124,19 @@ public class EntityImpl
     /** Encoding */
     protected String encoding;
 
+
+    /** Actual Encoding */
+    protected String actualEncoding;
+
     /** Version */
     protected String version;
 
 
     /** Notation name. */
     protected String notationName;
+
+    /** base uri*/
+    protected String baseURI;
 
     //
     // Constructors
@@ -278,14 +286,36 @@ public class EntityImpl
     } // setEncoding (String)
 
 
+    /**
+     * An attribute specifying the actual encoding of this entity, when it is 
+     * an external parsed entity. This is <code>null</code> otherwise.
+     * @since DOM Level 3
+     */
+    public String getActualEncoding(){
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        return actualEncoding;
+    }
+    /**
+     * An attribute specifying the actual encoding of this entity, when it is 
+     * an external parsed entity. This is <code>null</code> otherwise.
+     * @since DOM Level 3
+     */
+    public void setActualEncoding(String actualEncoding){
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        this.actualEncoding = actualEncoding;
+    }
+
     /** 
       * DOM Level 3 WD - experimental
       * version - An attribute specifying, as part of the text declaration, 
       * the version number of this entity, when it is an external parsed entity. 
       * This is null otherwise
       */
-    public void setVersion(String value) {
-        
+    public void setVersion(String value) {       
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -299,7 +329,6 @@ public class EntityImpl
      * specified, this will be null. 
      */
     public void setSystemId(String id) {
-
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -313,8 +342,7 @@ public class EntityImpl
      * Parsed entities, which <em>are</em> in XML format, don't need this and
      * set it to null.  
      */
-    public void setNotationName(String name) {
-        
+    public void setNotationName(String name) {        
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -322,5 +350,26 @@ public class EntityImpl
 
     } // setNotationName(String)
     
+
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve baseURI
+     */
+    public String getBaseURI() {
+
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        return (baseURI!=null)?baseURI:((CoreDocumentImpl)getOwnerDocument()).getBaseURI();
+    }
+
+    /** NON-DOM: set base uri*/
+    public void setBaseURI(String uri){
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        baseURI = uri;
+    }
 
 } // class EntityImpl

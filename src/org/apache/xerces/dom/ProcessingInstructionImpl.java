@@ -86,6 +86,7 @@ public class ProcessingInstructionImpl
     //
 
     protected String target;
+    protected String baseURI;
 
     //
     // Constructors
@@ -174,5 +175,29 @@ public class ProcessingInstructionImpl
         // events, readonly protection, synchronizing, etc.)
         setNodeValue(data);
     } // setData(String)
+
+
+
+   /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve baseURI
+     */
+    public String getBaseURI() {
+
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        return (baseURI!=null)?baseURI:ownerNode.getBaseURI();
+    }
+
+
+    /** NON-DOM: set base uri*/
+    public void setBaseURI(String uri){
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        // if was included in the tree using entity reference
+        baseURI = uri;
+    }
 
 } // class ProcessingInstructionImpl

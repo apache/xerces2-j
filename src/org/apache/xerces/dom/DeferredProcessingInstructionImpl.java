@@ -124,6 +124,7 @@ public class DeferredProcessingInstructionImpl
             (DeferredDocumentImpl) this.ownerDocument();
         target  = ownerDocument.getNodeName(fNodeIndex);
         data = ownerDocument.getNodeValueString(fNodeIndex);
+        baseURI = ownerDocument.getNodeURI(fNodeIndex);
 
     } // synchronizeData()
 

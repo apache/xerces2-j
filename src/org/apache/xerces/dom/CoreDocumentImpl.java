@@ -806,8 +806,15 @@ public class CoreDocumentImpl
     public String getDocumentURI(){
         return fDocumentURI;
     }
-
     
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve baseURI
+     */
+    public String getBaseURI() {
+        return fDocumentURI;            
+    }
+
     /**
      * DOM Level 3 WD - Experimental.
      */
