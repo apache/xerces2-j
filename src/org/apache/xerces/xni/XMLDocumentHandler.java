@@ -176,7 +176,7 @@ public interface XMLDocumentHandler {
     /**
      * The start of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
-     * 
+     * @deprecated Use <code>xni.NamespaceContext</code> in <code>startDocument()</code>.
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      * @param augs   Additional information that may include infoset augmentations
@@ -313,7 +313,7 @@ public interface XMLDocumentHandler {
      * 
      * @param prefix The namespace prefix.
      * @param augs   Additional information that may include infoset augmentations
-     *               
+     * @deprecated Use <code>xni.NamespaceContext</code> in <code>startDocument()</code>.             
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
