@@ -87,6 +87,9 @@ implements XMLContentSpec.Provider {
     public static final int CHILDRENCONTENT = -11;
     public static final int DATATYPECONTENT = -12;
 
+    private static final int LIST_FLAG = 0x8000;
+    private static final int LIST_MASK = ~LIST_FLAG;
+
     //
     // Data
     //
@@ -156,10 +159,10 @@ implements XMLContentSpec.Provider {
         elementDecl.name.clear();
         elementDecl.name.localpart          = fElementDeclNameIndex[chunk][index];               
         elementDecl.name.uri                = 0; // ""
-        elementDecl.type                    = fElementDeclType[chunk][index];                    
+        elementDecl.type                    = fElementDeclType[chunk][index] & LIST_MASK;
+        elementDecl.list = (fElementDeclType[chunk][index] & LIST_FLAG) != 0;
         elementDecl.datatypeValidator       = fElementDeclDatatypeValidator[chunk][index];       
         elementDecl.contentSpecIndex        = fElementDeclContentSpecIndex[chunk][index];        
-        elementDecl.contentModelValidator   = fElementDeclContentModelValidator[chunk][index];   
 
         return true;
     }
@@ -204,15 +207,13 @@ implements XMLContentSpec.Provider {
         return true;
     }
 
-
     public XMLContentModel getElementContentModel(int elementDeclIndex) throws CMException {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
             return null;
 
-
-        int chunk       = elementDeclIndex >> CHUNK_SHIFT;
-        int index       = elementDeclIndex & CHUNK_MASK;
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
 
         XMLContentModel contentModel    =  fElementDeclContentModelValidator[chunk][index];
 
@@ -285,7 +286,8 @@ implements XMLContentSpec.Provider {
         int chunk = attributeDeclIndex >> CHUNK_SHIFT;
         int index = attributeDeclIndex & CHUNK_MASK;
         attributeDecl.name.setValues(fAttributeDeclName[chunk][index]);
-        attributeDecl.type = fAttributeDeclType[chunk][index];
+        attributeDecl.type = fAttributeDeclType[chunk][index] & LIST_MASK;
+        attributeDecl.list = (fAttributeDeclType[chunk][index] & LIST_FLAG) != 0;
         attributeDecl.datatypeValidator = fAttributeDeclDatatypeValidator[chunk][index];
         attributeDecl.defaultType = fAttributeDeclDefaultType[chunk][index];
         attributeDecl.defaultValue = fAttributeDeclDefaultValue[chunk][index];
@@ -325,9 +327,11 @@ implements XMLContentSpec.Provider {
 
         fElementDeclNameIndex[chunk][index]               = elementDecl.name.localpart;
         fElementDeclType[chunk][index]                    = elementDecl.type;
+        if (elementDecl.list) {
+            fElementDeclType[chunk][index] |= LIST_FLAG;
+        }
         fElementDeclDatatypeValidator[chunk][index]       = elementDecl.datatypeValidator;
         fElementDeclContentSpecIndex[chunk][index]        = elementDecl.contentSpecIndex;
-        fElementDeclContentModelValidator[chunk][index]   = elementDecl.contentModelValidator;
 
         // add the mapping information to the 
         fElementNameAndScopeToElementDeclIndexMapping.put(elementDecl.name.localpart, elementDecl.enclosingScope, 
@@ -378,6 +382,9 @@ implements XMLContentSpec.Provider {
 
         fAttributeDeclName[attrChunk][attrIndex].setValues(attributeDecl.name);
         fAttributeDeclType[attrChunk][attrIndex]  =  attributeDecl.type;
+        if (attributeDecl.list) {
+            fAttributeDeclType[attrChunk][attrIndex] |= LIST_FLAG;
+        }
         fAttributeDeclDefaultType[attrChunk][attrIndex]  =  attributeDecl.defaultType;
         fAttributeDeclDatatypeValidator[attrChunk][attrIndex] =  attributeDecl.datatypeValidator;
         fAttributeDeclDefaultValue[attrChunk][attrIndex]      =  attributeDecl.defaultValue;

@@ -85,7 +85,7 @@ public interface DatatypeValidator {
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
      */
-    public void validate(String content) throws InvalidDatatypeValueException;
+    public void validate(String content, boolean list) throws InvalidDatatypeValueException;
 
     /**
      * set the facets for this datatype
@@ -118,7 +118,7 @@ public interface DatatypeValidator {
     */
     public void setLocale(Locale locale);
 
-
+    // REVISIT
 
     public int compare( DatatypeValidator o1, DatatypeValidator o2);
 

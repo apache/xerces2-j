@@ -66,6 +66,27 @@ import org.apache.xerces.validators.datatype.DatatypeValidator;
 public class XMLAttributeDecl {
 
     //
+    // Constants
+    //
+
+    // dtd
+
+    public static final int TYPE_CDATA = 0;
+    public static final int TYPE_ENTITY = 1;
+    //public static final int TYPE_ENTITIES = 2;
+    public static final int TYPE_ENUMERATION = 3;
+    public static final int TYPE_ID = 4;
+    public static final int TYPE_IDREF = 5;
+    //public static final int TYPE_IDREFS = 6;
+    public static final int TYPE_NMTOKEN = 7;
+    //public static final int TYPE_NMTOKENS = 8;
+
+    // schema
+
+    public static final int TYPE_SIMPLE = 9;
+    //public static final int TYPE_LIST = 10;
+
+    //
     // Data
     //
 
@@ -80,6 +101,8 @@ public class XMLAttributeDecl {
     // Att types, e.g. ID, IDREF, NOTATION, NMTOKEN, 
 
     public int type;
+
+    public boolean list;
 
     // values
 

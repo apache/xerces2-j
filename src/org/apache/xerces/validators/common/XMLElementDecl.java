@@ -66,16 +66,28 @@ import org.apache.xerces.validators.datatype.DatatypeValidator;
 public class XMLElementDecl {
 
     //
+    // Constants
+    //
+
+    public static final int TYPE_EMPTY = 0;
+    public static final int TYPE_ANY = 1;
+    public static final int TYPE_MIXED = 2;
+    public static final int TYPE_CHILDREN = 3;
+    public static final int TYPE_SIMPLE = 4;
+
+    //
     // Data
     //
 
     // basic information
 
-    public QName name = new QName();
+    public final QName name = new QName();
 
     public int type;
 
     // simple types
+
+    public boolean list;
 
     public DatatypeValidator datatypeValidator;
 
@@ -83,14 +95,8 @@ public class XMLElementDecl {
 
     public int contentSpecIndex;
 
-    public XMLContentModel contentModelValidator;
-
     // enclosingScope where this element is declared, should always be -1 with DTD Validation.
     public int enclosingScope;
-
-    // Attribute List Head and Tail Index
-    public int firstAttributeDeclIndex;
-    public int lastAttributeDeclIndex;
 
     //
     // Constructors
@@ -113,10 +119,7 @@ public class XMLElementDecl {
         type = - 1;
         datatypeValidator = null;
         contentSpecIndex = -1;
-        contentModelValidator = null;
-	enclosingScope = -1;
-        firstAttributeDeclIndex = -1;
-        lastAttributeDeclIndex = -1;
+        enclosingScope = -1;
     }
 
     public void setValues(XMLElementDecl elementDecl) {
@@ -124,10 +127,7 @@ public class XMLElementDecl {
         type = elementDecl.type;
         datatypeValidator = elementDecl.datatypeValidator;
         contentSpecIndex = elementDecl.contentSpecIndex;
-        contentModelValidator = elementDecl.contentModelValidator;
-	enclosingScope = elementDecl.enclosingScope;
-	firstAttributeDeclIndex = elementDecl.firstAttributeDeclIndex;
-	lastAttributeDeclIndex = elementDecl.lastAttributeDeclIndex;
+        enclosingScope = elementDecl.enclosingScope;
     }
 
     //
