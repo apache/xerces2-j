@@ -469,6 +469,12 @@ public class TraverseSchema implements
             // REVISIT: Localize
             reportGenericSchemaError("prefix : [" + prefix +"] can not be resolved to a URI");
         }
+
+        //REVISIT, !!!! a hack: needs to be updated later, cause now we only use localpart to key build-in datatype.
+        if (prefix.length()==0 && uriStr.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+            uriStr = "";
+        }
+
         return uriStr;
     }
 
@@ -778,11 +784,14 @@ public class TraverseSchema implements
                 boolean saveDefaultQualified = fDefaultQualified;
                 int saveScope = fCurrentScope;
                 String savedSchemaURL = fCurrentSchemaURL;
+                Element saveRoot = fSchemaRootElement;
+                fSchemaRootElement = root;
                 fCurrentSchemaURL = location;
                 traverseIncludedSchema(root);
                 fCurrentSchemaURL = savedSchemaURL;
                 fCurrentScope = saveScope;
                 fDefaultQualified = saveDefaultQualified;
+                fSchemaRootElement = saveRoot;
             }
 
         }
@@ -1171,7 +1180,10 @@ public class TraverseSchema implements
                 String typeURI = resolvePrefixToURI(prefix);
                 
                 // check if the base type is from the same Schema;
-                if (!typeURI.equals(fTargetNSURIString) && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
+                if ( ! typeURI.equals(fTargetNSURIString) 
+                     && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+                     && ! (typeURI.length() == 0)
+                     )  /*REVISIT, !!!! a hack: for schema that has no target namespace, e.g. personal-schema.xml*/{
                     baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
                     if (baseTypeInfo == null) {
                         baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
@@ -2493,7 +2505,9 @@ public class TraverseSchema implements
             String typeURI = resolvePrefixToURI(prefix);
             
             // check if the type is from the same Schema
-            if (!typeURI.equals(fTargetNSURIString) && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+            if ( !typeURI.equals(fTargetNSURIString) 
+                 && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
+                 && !(typeURI.length() == 0) ) {
                 fromAnotherSchema = typeURI;
                 typeInfo = getTypeInfoFromNS(typeURI, localpart);
                 if (typeInfo == null) {
@@ -2501,7 +2515,7 @@ public class TraverseSchema implements
                     if (dv == null) {
                         //TO DO: report error here;
                         noErrorSoFar = false;
-                        System.out.println("Could not find base type " +localpart 
+                        reportGenericSchemaError("Could not find type " +localpart 
                                            + " in schema " + typeURI);
                     }
                 }
