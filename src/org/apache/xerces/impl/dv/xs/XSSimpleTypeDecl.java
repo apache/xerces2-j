@@ -418,7 +418,18 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public boolean isIDType(){
-        return (fValidationDV == DV_ID);
+        switch (fVariety) {
+        case VARIETY_ATOMIC:
+            return fValidationDV == DV_ID;
+        case VARIETY_LIST:
+            return fItemType.isIDType();
+        case VARIETY_UNION:
+            for (int i = 0; i < fMemberTypes.length; i++) {
+                if (fMemberTypes[i].isIDType())
+                    return true;
+            }
+        }
+        return false;
     }
 
     public short getWhitespace() throws DatatypeException{
