@@ -581,7 +581,8 @@ public class XSConstraints {
 
        // Check for empty particles.   If either base or derived particle is empty,
        // (and the other isn't) it's an error.
-       if (! (dParticle.isEmpty() == bParticle.isEmpty())) {
+       if ((dParticle.isEmpty() && !bParticle.emptiable()) ||
+          (!dParticle.isEmpty() && bParticle.isEmpty())) {
          throw new XMLSchemaException("cos-particle-restrict", null);
        }
 
