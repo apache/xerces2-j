@@ -59,7 +59,6 @@ package org.apache.xerces.dom;
 
 import java.io.Serializable;
 import java.util.Vector;
-import java.util.Enumeration;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
@@ -387,15 +386,12 @@ public class NamedNodeMapImpl
      * to design it in now, while I'm thinking about it.
      */
     void setReadOnly(boolean readOnly, boolean deep) {
-
         isReadOnly(readOnly);
-    	if(deep && nodes != null) {
-    		Enumeration e=nodes.elements();
-    		while(e.hasMoreElements()) {
-    			((NodeImpl)e.nextElement()).setReadOnly(readOnly,deep);
+    	if (deep && nodes != null) {
+            for (int i = nodes.size() - 1; i >= 0; i--) {
+                ((NodeImpl) nodes.elementAt(i)).setReadOnly(readOnly,deep);
             }
     	}
-
     } // setReadOnly(boolean,boolean)
     
     /**
