@@ -449,7 +449,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
            if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
-                reportSchemaError ("e-props-correct.3", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart}, elmDecl);
+                reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart}, elmDecl);
            }
         }
 
@@ -459,7 +459,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                  ((XSSimpleType)elementType).isIDType()) ||
                 (elementType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&
                  ((XSComplexTypeDecl)elementType).containsTypeID())) {
-                reportSchemaError ("e-props-correct.4", new Object[]{element.fName}, elmDecl);
+                reportSchemaError ("e-props-correct.5", new Object[]{element.fName}, elmDecl);
             }
         }
 
