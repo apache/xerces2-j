@@ -269,8 +269,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     /** True if inside DTD external subset. */
     protected boolean fInDTDExternalSubset;
     
-    /** True if inside document. */
-    protected boolean fInDocument;
+    /** Root element name */
+    protected QName fRoot = new QName();
     
     /** True if inside CDATA section. */
     protected boolean fInCDATASection;
@@ -294,6 +294,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     
     /** LSParserFilter: store qnames of skipped elements*/
     protected Stack fSkippedElemStack = null;
+    
+    /** LSParserFilter: true if inside entity reference */
+    protected boolean fInEntityRef = false;
     
     /** Attribute QName. */
     private QName fAttrQName = new QName ();
@@ -443,7 +446,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         fStringBuffer.setLength (0);
         
         // reset state information
-        fInDocument = false;
+        fRoot.clear();
         fInDTD = false;
         fInDTDExternalSubset = false;
         fInCDATASection = false;
@@ -530,7 +533,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 // expanded anyway. Synch only needed when user creates entityRef node
                 erImpl.needsSyncChildren (false);
             }
-            
+            fInEntityRef = true;
             fCurrentNode.appendChild (er);
             fCurrentNode = er;
         }
@@ -621,7 +624,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             
             setCharacterData (false);
             fCurrentNode.appendChild (comment);
-            if (fDOMFilter !=null &&
+            if (fDOMFilter !=null && !fInEntityRef &&
             (fDOMFilter.getWhatToShow () & NodeFilter.SHOW_COMMENT)!= 0) {
                 short code = fDOMFilter.acceptNode (comment);
                 switch (code) {
@@ -703,7 +706,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             
             setCharacterData (false);
             fCurrentNode.appendChild (pi);
-            if (fDOMFilter !=null &&
+            if (fDOMFilter !=null && !fInEntityRef &&
             (fDOMFilter.getWhatToShow () & NodeFilter.SHOW_PROCESSING_INSTRUCTION)!= 0) {
                 short code = fDOMFilter.acceptNode (pi);
                 switch (code) {
@@ -760,7 +763,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     NamespaceContext namespaceContext, Augmentations augs)
     throws XNIException {
         
-        fInDocument = true;
         if (!fDeferNodeExpansion) {
             if (fDocumentClassName.equals (DEFAULT_DOCUMENT_CLASS_NAME)) {
                 fDocument = new DocumentImpl ();
@@ -1001,26 +1003,32 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             
             
             // filter nodes
-            if (fDOMFilter != null) {
-                short code = fDOMFilter.startElement (el);
-                switch (code) {
-                    case LSParserFilter.FILTER_INTERRUPT:{
-                        throw new RuntimeException ("The normal processing of the document was interrupted.");
-                    }
-                    case LSParserFilter.FILTER_REJECT:{
-                        fFilterReject = true;
-                        fRejectedElement.setValues (element);
-                        return;
-                    }
-                    case LSParserFilter.FILTER_SKIP: {
-                        fSkippedElemStack.push (element);
-                        return;
-                    }
-                    default: {
+            if (fDOMFilter != null && !fInEntityRef) {
+                if (fRoot.rawname == null) {
+                    // fill value of the root element
+                    fRoot.setValues(element);
+                } else {
+                    short code = fDOMFilter.startElement(el);
+                    switch (code) {
+                        case LSParserFilter.FILTER_INTERRUPT :
+                            {
+                                throw new RuntimeException("The normal processing of the document was interrupted.");
+                            }
+                        case LSParserFilter.FILTER_REJECT :
+                            {
+                                fFilterReject = true;
+                                fRejectedElement.setValues(element);
+                                return;
+                            }
+                        case LSParserFilter.FILTER_SKIP :
+                            {
+                                fSkippedElemStack.push(element);
+                                return;
+                            }
+                        default : {}
                     }
                 }
-            }
-            
+            }            
             fCurrentNode.appendChild (el);
             fCurrentNode = el;
         }
@@ -1283,7 +1291,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     }
                 }
                 setCharacterData (false);
-                if ((fDOMFilter.getWhatToShow () & NodeFilter.SHOW_ELEMENT)!=0) {
+                if (!fRoot.equals(element) && !fInEntityRef && (fDOMFilter.getWhatToShow () & NodeFilter.SHOW_ELEMENT)!=0) {
                     short code = fDOMFilter.acceptNode (fCurrentNode);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
@@ -1372,7 +1380,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             
             if (fCurrentCDATASection !=null) {
                 
-                if (fDOMFilter !=null &&
+                if (fDOMFilter !=null && !fInEntityRef &&
                 (fDOMFilter.getWhatToShow () & NodeFilter.SHOW_CDATA_SECTION)!= 0) {
                     short code = fDOMFilter.acceptNode (fCurrentCDATASection);
                     switch (code) {
@@ -1417,7 +1425,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
      */
     public void endDocument (Augmentations augs) throws XNIException {
         
-        fInDocument = false;
         if (!fDeferNodeExpansion) {
             // REVISIT: when DOM Level 3 is REC rely on Document.support
             //          instead of specific class
@@ -1477,7 +1484,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 }
                 
             }
-            
+            fInEntityRef = false;
             boolean removeEntityRef = false;
             if (fCreateEntityRefNodes) {
                 if (fDocumentImpl != null) {
@@ -2533,7 +2540,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 fStringBuffer.setLength (0);
             }
             
-            if (fDOMFilter !=null) {
+            if (fDOMFilter !=null && !fInEntityRef) {
                 if ( (child.getNodeType () == Node.TEXT_NODE ) &&
                 ((fDOMFilter.getWhatToShow () & NodeFilter.SHOW_TEXT)!= 0) ) {
                     short code = fDOMFilter.acceptNode (child);
