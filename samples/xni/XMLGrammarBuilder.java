@@ -179,40 +179,42 @@ public class XMLGrammarBuilder {
         }
 
         // process -f/F
-        arg = argv[i];
-        boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
-        if (arg.equals("-f")) {
-            schemaFullChecking = true;
-            i++;
-            arg = argv[i];
-        } else if (arg.equals("-F")) {
-            schemaFullChecking = false;
-            i++;
-            arg = argv[i];
-        } 
         Vector schemas = null;
-        if (arg.equals("-a")) {
-            if(externalDTDs != null) {
-                printUsage();
-                System.exit(1);
-            }
-
-            // process -a: schema files
-
-            schemas= new Vector();
-            i++;
-            while (i < argv.length && !(arg = argv[i]).startsWith("-")) {
-                schemas.addElement(arg);
+        boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        if(i < argv.length) {
+            arg = argv[i];
+            if (arg.equals("-f")) {
+                schemaFullChecking = true;
                 i++;
+                arg = argv[i];
+            } else if (arg.equals("-F")) {
+                schemaFullChecking = false;
+                i++;
+                arg = argv[i];
+            } 
+            if (arg.equals("-a")) {
+                if(externalDTDs != null) {
+                    printUsage();
+                    System.exit(1);
+                }
+
+                // process -a: schema files
+
+                schemas= new Vector();
+                i++;
+                while (i < argv.length && !(arg = argv[i]).startsWith("-")) {
+                    schemas.addElement(arg);
+                    i++;
+                }
+
+                // has to be at least one dTD or schema , and there has to be other parameters
+                if (schemas.size() == 0) {
+                    printUsage();
+                    System.exit(1);
+                }
             }
 
-            // has to be at least one dTD or schema , and there has to be other parameters
-            if (schemas.size() == 0) {
-                printUsage();
-                System.exit(1);
-            }
         }
-
         // process -i: instance files, if any
         Vector ifiles = null;
         if (i < argv.length) {
