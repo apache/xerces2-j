@@ -68,18 +68,46 @@ import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 import org.apache.xerces.util.XMLChar;
 import java.util.NoSuchElementException;
-//import org.apache.xerces.utils.XMLMessages;
-
-
-
-
 /**
- * IDREFValidator defines the interface that data type validators must obey.
- * These validators can be supplied by the application writer and may be useful as
- * standalone code as well as plugins to the validator architecture.
+ * <P>IDREFDatatypeValidator - represents the IDREFS
+ * attribute type from XML 1.0 recommendation. The
+ * Value Space of IDREF is the set of all strings
+ * that match the NCName production and have been
+ * used in an XML Document as the value of an element 
+ * or attribute of Type ID. The Lexical space of
+ * IDREF is the set of strings that match the NCName
+ * production.</P>
+ * <P>The Value space of IDREF is scoped to a specific
+ * instance document</P>
+ * <P>This datatatype checks the following constraint:
+ * An IDREF must match the value of an ID in the XML
+ * document in which it occurs.
+ * </P>
+ * The following snippet shows typical use of the
+ * the IDDatatype:</P>
+ * <CODE>
+ * <PRE>
+ *       DatatypeValidator idRefData = tstRegistry.getDatatypeValidator("IDREF" );
+ *       if( idRefData != null ){
+ *          IDREFDatatypeValidator refData = (IDREFDatatypeValidator) idRefData;
+ *          refData.initialize( ((IDDatatypeValidator) idData).getTableIds());
+ *          try {
+ *             refData.validate( "a1", null );
+ *             refData.validate( "a2", null );
+ *             //refData.validate( "a3", null );//Should throw exception at validate()
+ *             refData.validate();
+ *          } catch( Exception ex ){
+ *             ex.printStackTrace();
+ *          }
+ *       }
+ *       </PRE>
+ * </CODE>
  * 
  * @author Jeffrey Rodriguez-
  * @version $Id$
+ * @see org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator
+ * @see org.apache.xerces.impl.validation.datatypes.AbstractDatatypeValidator
+ * @see org.apache.xerces.impl.validation.DatatypeValidator
  */
 public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
    private DatatypeValidator fBaseValidator    = null;
@@ -88,11 +116,6 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
    private Object                   fNullValue = null;
    private Locale            fLocale           = null;
    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-
-   public static final  int       IDREF_STORE    = 0;
-   public static final  int       IDREF_CLEAR    = 1;
-   public static final  int       IDREF_VALIDATE = 2; 
-
 
 
    public IDREFDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -133,11 +156,42 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
       addIdRef( content, state);// We are storing IDs 
    }
 
+   /**
+    * <P>This method is unique to IDREFDatatypeValidator</P>
+    * <P>Validator should call this method at the EndDocument
+    * call to start IDREF constraint validation. This validation
+    * rule checks IDREF values accumulated in internal
+    * table against read table passed to IDREF validator
+    * at instantiation time.</P>
+    * <P>Caveats -
+    * <LI>
+    * Do not call this validator method until
+    * you are sure that all ID values have been found since
+    * this method contains a live reference to an internal
+    * ID table which the ID validator could still be
+    * updating.</LI>
+    * <LI>Do not call this method before the initialize method
+    * since the initialize method will set the reference
+    * to ID table used by this method to validate the
+    * IDREFs.</LI></P>
+    * 
+    * @exception InvalidDatatypeValueException
+    */
    public void validate() throws InvalidDatatypeValueException{
       checkIdRefs();
    }
 
 
+   /**
+    * <P>This method is unique to IDREFDatatypeValidator</P>
+    * <P>This method initializes the internal reference
+    * to the ID table of ID's and IDREF internal table
+    * of IDREFs.</P>
+    * <P>This method should be called before the valid()
+    * method</P>
+    * 
+    * @param tableOfIDs
+    */
    public void initialize( Object tableOfIDs ){
       if ( this.fTableIDRefs != null) {
          this.fTableIDRefs.clear();
@@ -205,6 +259,12 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
    } // addId(int):boolean
 
 
+   /**
+    * <P>Private method used to check the IDREF valid
+    * ID constraint</P>
+    * 
+    * @exception InvalidDatatypeValueException
+    */
    private void checkIdRefs() throws InvalidDatatypeValueException {
 
       if ( fTableIDRefs == null)
