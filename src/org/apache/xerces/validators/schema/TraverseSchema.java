@@ -105,8 +105,11 @@ import  org.xml.sax.EntityResolver;
 import  org.xml.sax.ErrorHandler;
 import  org.xml.sax.SAXException;
 import  org.w3c.dom.Document;
+/** Don't check the following code in because it creates a dependency on
+    the serializer, preventing to package the parser without the serializer.
 import  org.apache.xml.serialize.OutputFormat;
 import  org.apache.xml.serialize.XMLSerializer;
+**/
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
@@ -5243,6 +5246,8 @@ public class TraverseSchema implements
         }
     }
 
+    /** Don't check the following code in because it creates a dependency on
+        the serializer, preventing to package the parser without the serializer
     //Unit Test here
     public static void main(String args[] ) {
 
@@ -5292,6 +5297,7 @@ public class TraverseSchema implements
             
             parser.getDocument();
     }
+    **/
 
     static class Resolver implements EntityResolver {
         private static final String SYSTEM[] = {
