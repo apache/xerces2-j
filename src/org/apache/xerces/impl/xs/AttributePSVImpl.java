@@ -82,8 +82,8 @@ public class AttributePSVImpl implements AttributePSVI {
     protected XSTypeDefinition fTypeDecl = null;
 
     /** If this attribute was explicitly given a 
-     * value in the original document, this is true; otherwise, it is false  */
-    protected boolean fSpecified = true;
+     * value in the original document, this is false; otherwise, it is true */
+    protected boolean fSpecified = false;
 
     /** schema normalized value property */
     protected String fNormalizedValue = null;
@@ -98,7 +98,7 @@ public class AttributePSVImpl implements AttributePSVI {
     protected short fValidity = AttributePSVI.VALIDITY_UNKNOWN;
 
     /** error codes */
-    protected Vector fErrorCodes = new Vector(10);
+    protected String[] fErrorCodes = null;
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
@@ -134,7 +134,7 @@ public class AttributePSVImpl implements AttributePSVI {
     /**
      * [schema specified] 
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified">XML Schema Part 1: Structures [schema specified]</a>
-     * @return false value was specified in schema, true value comes from the infoset
+     * @return true - value was specified in schema, false - value comes from the infoset
      */
     public boolean getIsSchemaSpecified() {
         return fSpecified;
@@ -169,8 +169,9 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return list of error codes
      */
     public StringList getErrorCodes() {
-        // REVISIT: fErrorCodes should be of type StringList
-        return new StringListImpl(fErrorCodes);
+        if (fErrorCodes == null)
+            return null;
+        return new StringListImpl(fErrorCodes, fErrorCodes.length);
     }
 
     // This is the only information we can provide in a pipeline.
@@ -218,15 +219,11 @@ public class AttributePSVImpl implements AttributePSVI {
         fDeclaration = null;
         fSchemaDefault = null;
         fTypeDecl = null;
-        fSpecified = true;
+        fSpecified = false;
         fMemberType = null;
         fValidationAttempted = AttributePSVI.VALIDATION_NONE;
         fValidity = AttributePSVI.VALIDITY_UNKNOWN;
-        fErrorCodes.setSize(0);
+        fErrorCodes = null;
         fValidationContext = null;
-    }
-
-    public void addErrorCode(String key){
-        fErrorCodes.addElement(key);
     }
 }

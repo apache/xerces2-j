@@ -89,9 +89,9 @@ public class ElementPSVImpl implements ElementPSVI {
       */
     protected boolean fNil = false;
 
-    /** false if the element value was provided by the schema; true otherwise. 
+    /** true if the element value was provided by the schema; false otherwise. 
      */
-    protected boolean fSpecified = true;
+    protected boolean fSpecified = false;
 
     /** schema normalized value property */
     protected String fNormalizedValue = null;
@@ -145,7 +145,7 @@ public class ElementPSVImpl implements ElementPSVI {
     /**
      * [schema specified] 
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified">XML Schema Part 1: Structures [schema specified]</a>
-     * @return false value was specified in schema, true value comes from the infoset
+     * @return true - value was specified in schema, false - value comes from the infoset
      */
     public boolean getIsSchemaSpecified() {
         return fSpecified;
@@ -257,7 +257,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fDeclaration = null;
         fTypeDecl = null;
         fNil = false;
-        fSpecified = true;
+        fSpecified = false;
         fNotation = null;
         fMemberType = null;
         fValidationAttempted = ElementPSVI.VALIDATION_NONE;
