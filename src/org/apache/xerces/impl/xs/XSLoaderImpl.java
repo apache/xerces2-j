@@ -41,6 +41,8 @@ import org.w3c.dom.ls.LSInput;
  * @xerces.internal
  * 
  * @author Michael Glavassevich, IBM
+ * 
+ * @version $Id$
  */
 public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
     
