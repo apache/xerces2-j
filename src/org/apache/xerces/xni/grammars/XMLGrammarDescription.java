@@ -59,7 +59,7 @@ package org.apache.xerces.xni.grammars;
 
 import org.apache.xerces.xni.XMLResourceIdentifier;
 
-/*
+/**
  * <p> This interface describes basic attributes of XML grammars--their
  * physical location and their type. </p>
  *

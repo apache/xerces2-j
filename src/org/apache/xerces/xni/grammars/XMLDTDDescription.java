@@ -57,7 +57,7 @@
 
 package org.apache.xerces.xni.grammars;
 
-/*
+/**
  * All information specific to DTD grammars.  
  * 
  * @author Sandy Gao, IBM

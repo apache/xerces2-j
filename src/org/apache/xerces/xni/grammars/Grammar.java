@@ -85,8 +85,10 @@ package org.apache.xerces.xni.grammars;
 
 public interface Grammar {
 
-    // get the <code>XMLGrammarDescription</code> associated with this
-    // object
+    /**
+     * get the <code>XMLGrammarDescription</code> associated with this
+     * object
+     */
     public XMLGrammarDescription getGrammarDescription ();
 } // interface Grammar
 

@@ -57,7 +57,7 @@
 
 package org.apache.xerces.xni;
 
-/*
+/**
  * <p> This represents the basic physical description of the location of any
  * XML resource (a Schema grammar, a DTD, a general entity etc.) </p>
  *
