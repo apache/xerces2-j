@@ -126,4 +126,25 @@ and xni.parser.PSVIConfiguration.
    <note>UCS-4 is not yet supported, but it is hoped that support will be available soon.</note>
   </a>
  </faq>
+ 
+ <faq title='Accessing Document on the Internet'>
+  <q>Parser is not able to access schema documents or external entities available
+	on the Internet</q>
+  <a>
+   <p>
+   Parser is not able to access various external entities or schema documents 
+   (imported, included etc..) available on Internet, Say, 
+   "http://www.w3.org/2001/XMLSchema.xsd"  Schema for Schemas
+   or "http://www.w3.org/2001/xml.xsd" schema defining xml:base, xml:lang attributes
+   etc.. or any other external entity available on the Internet.
+   <br/>
+   				One of the reason could be your proxy settings 
+   that does not allow parser to make URL connections through proxy server. To solve 
+   this problem application has to set two System properties "http.proxyHost" and 
+   "http.prxoyPort" before the parsing begins. Other reasons could be the strict firewall
+    settings which doesn't allow any URL connection to be made to outside web or the 
+    server on which documents are kept is currently not running etc..
+   </p>
+  </a>
+ </faq>  
 </faqs>
