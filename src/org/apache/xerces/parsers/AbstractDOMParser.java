@@ -111,7 +111,7 @@ import org.w3c.dom.Text;
  *
  * @version $Id$
  */
-public abstract class AbstractDOMParser
+public abstract class AbstractDOMParser                                          
     extends AbstractXMLDocumentParser {
 
     //
@@ -439,6 +439,7 @@ public abstract class AbstractDOMParser
         if (DEBUG_EVENTS) {        
             System.out.println("==>startGeneralEntity ("+name+")");
         }
+        
         // Always create entity reference nodes to be able to recreate
         // entity as a part of doctype
          if (!fDeferNodeExpansion) {
@@ -621,6 +622,8 @@ public abstract class AbstractDOMParser
                 fDocumentImpl.setStrictErrorChecking(false);
                 // set actual encoding
                 fDocumentImpl.setActualEncoding(encoding);
+                // set documentURI
+                fDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
             }
             else {
                 // use specified document class
@@ -637,6 +640,10 @@ public abstract class AbstractDOMParser
                         //          Document.support instead of specific class
                         // set DOM error checking off
                         fDocumentImpl.setStrictErrorChecking(false);
+                        // set actual encoding
+                        fDocumentImpl.setActualEncoding(encoding);
+                        // set documentURI
+                        fDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
                     }
                 }
                 catch (ClassNotFoundException e) {
@@ -655,7 +662,15 @@ public abstract class AbstractDOMParser
             fDeferredDocumentImpl = new DeferredDocumentImpl(fNamespaceAware);
             fDocument = fDeferredDocumentImpl;
             fDocumentIndex = fDeferredDocumentImpl.createDeferredDocument();
+            // REVISIT: when DOM Level 3 is REC rely on
+            //          Document.support instead of specific class
+            fDeferredDocumentImpl.setStrictErrorChecking(false);
+            // set actual encoding
+            fDeferredDocumentImpl.setActualEncoding(encoding);
+            // set documentURI
+            fDeferredDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
             fCurrentNodeIndex = fDocumentIndex;
+
         }
 
     } // startDocument(String,String)
@@ -764,6 +779,7 @@ public abstract class AbstractDOMParser
                     }
 
                 }
+                
                 attr.setValue(attrValue);
                 el.setAttributeNode(attr);
                 // NOTE: The specified value MUST be set after you set
