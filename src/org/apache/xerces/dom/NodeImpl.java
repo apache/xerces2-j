@@ -190,8 +190,10 @@ public abstract class NodeImpl
     
     /**
      * Returns the node value.
+     * @throws DOMException(DOMSTRING_SIZE_ERR)
      */
-    public String getNodeValue() {
+    public String getNodeValue()
+        throws DOMException {
         return null;            // overridden in some subclasses
     }
 

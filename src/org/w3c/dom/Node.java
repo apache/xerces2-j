@@ -28,7 +28,114 @@ package org.w3c.dom;
  * <code>Element</code> or <code>attributes</code> for a <code>Comment</code>
  * ), this returns <code>null</code>. Note that the specialized interfaces 
  * may contain additional and more convenient mechanisms to get and set the 
- * relevant information.
+ * relevant information.<br><br>
+ *
+ * The values of <code>nodeName, nodeValue,</code> and <code>attributes</code> 
+ * vary according to the node type as follows:<br>
+ * 
+ *  <table border='1'
+ * summary='Layout table: the first cell contains the name of the interface, 
+ * the second contains the value of the nodeName attribute for this interface, 
+ * the third contains the value of the nodeValue attribute for this interface and 
+ * the fourth contains the value of the attributes attribute for this interface'>
+ * <tr>
+ * <th>Interface</th>
+ * <th>nodeName</th>
+ * <th>nodeValue</th>
+ * <th>attributes</th>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>Attr</td>
+ * <td valign='top' rowspan='1' colspan='1'>name of attribute</td>
+ * <td valign='top' rowspan='1' colspan='1'>value of attribute</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>CDATASection</td>
+ * <td valign='top' rowspan='1' colspan='1'>#cdata-section</td>
+ * <td valign='top' rowspan='1' colspan='1'>content of the CDATA
+ * Section</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>Comment</td>
+ * <td valign='top' rowspan='1' colspan='1'>#comment</td>
+ * <td valign='top' rowspan='1' colspan='1'>content of the
+ * comment</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>Document</td>
+ * <td valign='top' rowspan='1' colspan='1'>#document</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>DocumentFragment</td>
+ * <td valign='top' rowspan='1' colspan='1'>#document-fragment</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>DocumentType</td>
+ * <td valign='top' rowspan='1' colspan='1'>document type name</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>Element</td>
+ * <td valign='top' rowspan='1' colspan='1'>tag name</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>NamedNodeMap</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>Entity</td>
+ * <td valign='top' rowspan='1' colspan='1'>entity name</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>EntityReference</td>
+ * <td valign='top' rowspan='1' colspan='1'>name of entity
+ * referenced</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>Notation</td>
+ * <td valign='top' rowspan='1' colspan='1'>notation name</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>ProcessingInstruction</td>
+ * <td valign='top' rowspan='1' colspan='1'>target</td>
+ * <td valign='top' rowspan='1' colspan='1'>entire content excluding
+ * the target</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * 
+ * <tr>
+ * <td valign='top' rowspan='1' colspan='1'>Text</td>
+ * <td valign='top' rowspan='1' colspan='1'>#text</td>
+ * <td valign='top' rowspan='1' colspan='1'>content of the text
+ * node</td>
+ * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * </tr>
+ * </table>
+ * 
+ * 
  * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113'>Document Object Model (DOM) Level 2 Core Specification</a>.
  */
 public interface Node {
@@ -88,10 +195,9 @@ public interface Node {
     public String getNodeName();
 
     /**
-     * The value of this node, depending on its type; see the table above. 
+     * Returns the value of this node, depending on its type; see the table above. 
      * When it is defined to be <code>null</code>, setting it has no effect.
-     * @exception DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     *
      * @exception DOMException
      *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
      *   fit in a <code>DOMString</code> variable on the implementation 
@@ -99,6 +205,14 @@ public interface Node {
      */
     public String getNodeValue()
                                  throws DOMException;
+
+    /**
+     * Sets the value of this node, depending on its type; see the table above. 
+     * When it is defined to be <code>null</code>, setting it has no effect.
+     *
+     * @exception DOMException
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     */
     public void setNodeValue(String nodeValue)
                                  throws DOMException;
 
