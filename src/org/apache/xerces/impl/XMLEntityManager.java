@@ -63,8 +63,6 @@ import java.io.FilterReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.PushbackInputStream;
-import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
@@ -718,20 +716,29 @@ public class XMLEntityManager
                 }
                 stream = new URL(expandedSystemId).openStream();
             }
+            // wrap this stream in RewindableInputStream
+            stream = new RewindableInputStream(stream);
 
             // perform auto-detect of encoding
             if (encoding == null) {
                 // read first four bytes and determine encoding
                 final byte[] b4 = new byte[4];
-                int count = stream.read(b4, 0, 4);
-                if (count != -1) {
+                int count = 0;
+                for (; count<4; count++ ) {
+                    b4[count] = (byte)stream.read();
+                }
+                if (count == 4) {
                     encoding = getEncodingName(b4, count);
 
+                    // removed use of pushback inputstream--neilg
+                    /*****
                     // push back the characters we read
                     if (DEBUG_ENCODINGS) {
                         System.out.println("$$$ wrapping input stream in PushbackInputStream");
                     }
                     PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
+                    *****/
+                    stream.reset();
                     int offset = 0;
                     // Special case UTF-8 files with BOM created by Microsoft
                     // tools. It's more efficient to consume the BOM than make
@@ -741,10 +748,15 @@ public class XMLEntityManager
                         int b1 = b4[1] & 0xFF;
                         int b2 = b4[2] & 0xFF;
                         if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
+                            // ignore first three bytes...
+                            stream.skip(3);
+                            /********
                             offset = 3;
                             count -= offset;
+                            ***/
                         }
                     }
+                    /******
                     pbstream.unread(b4, offset, count);
 
                     // REVISIT: Should save the original input stream instead of
@@ -753,7 +765,9 @@ public class XMLEntityManager
                     //          indirection to get at the underlying bytes. -Ac
 
                     // create reader from input stream
-                    reader = createReader(pbstream, encoding);
+                    reader = createReader(new RewindableInputStream(pbstream), encoding);
+                    ******/
+                    reader = createReader(stream, encoding);
                 }
                 else {
                     reader = createReader(stream, encoding);
@@ -769,9 +783,9 @@ public class XMLEntityManager
             // ahead, converting characters from the byte stream in
             // the wrong encoding
             if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ wrapping reader in OneCharReader");
+                System.out.println("$$$ no longer wrapping reader in OneCharReader");
             }
-            reader = new OneCharReader(reader);
+            //reader = new OneCharReader(reader);
         }
 
         // push entity on stack
@@ -783,7 +797,7 @@ public class XMLEntityManager
         String expandedSystemId = expandSystemId(systemId, baseSystemId);
         fCurrentEntity = new ScannedEntity(name, publicId, systemId,
                                            expandedSystemId, stream, reader,
-                                           encoding, literal);
+                                           encoding, literal, false);
 
         // call handler
         if (fEntityHandler != null) {
@@ -1173,7 +1187,7 @@ public class XMLEntityManager
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, little endian (4321)
             // REVISIT: What should this be?
-            return "UnicodeLittle";
+            return "UnicodeLittleUnmarked";
         }
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x3C && b3 == 0x00) {
             // UCS-4, unusual octet order (2143)
@@ -1188,11 +1202,11 @@ public class XMLEntityManager
         if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
             // UTF-16, big-endian, no BOM
             // REVISIT: What should this be?
-            return "UTF-16";
+            return "UnicodeBig";
         }
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
             // UTF-16, little-endian, no BOM
-            return "UTF-16";
+            return "UnicodeLittle";
         }
         if (b0 == 0x4C && b1 == 0x6F && b2 == 0xA7 && b3 == 0x94) {
             // EBCDIC
@@ -1640,6 +1654,9 @@ public class XMLEntityManager
         /** Count of characters in buffer. */
         public int count;
 
+        // to allow the reader/nputStream to behave efficiently:
+        public boolean mayReadChunks;
+
         //
         // Constructors
         //
@@ -1649,7 +1666,7 @@ public class XMLEntityManager
                              String publicId, String systemId,
                              String baseSystemId,
                              InputStream stream, Reader reader,
-                             String encoding, boolean literal) {
+                             String encoding, boolean literal, boolean mayReadChunks) {
             super(name);
             this.publicId = publicId;
             this.systemId = systemId;
@@ -1658,6 +1675,7 @@ public class XMLEntityManager
             this.reader = reader;
             this.encoding = encoding;
             this.literal = literal;
+            this.mayReadChunks = mayReadChunks;
         } // <init>(String,String,String,InputStream,Reader,String,boolean)
 
         //
@@ -1752,22 +1770,20 @@ public class XMLEntityManager
                 //       distribution (up to and including 1.3). The UTF-16
                 //       decoder buffers 8K blocks even when only asked to read
                 //       a single char! -Ac
-                if (fCurrentEntity.encoding != null &&
-                    fCurrentEntity.encoding.equals(encoding)) {
-                    if (DEBUG_ENCODINGS) {
-                        System.out.println("$$$ using original reader");
-                    }
-                    fCurrentEntity.reader = ((OneCharReader)fCurrentEntity.reader).getReader();
-                }
-
-                // wrap a new reader around the input stream, changing
-                // the encoding
-                else {
+                fCurrentEntity.mayReadChunks = true;
+                if (fCurrentEntity.encoding == null ||
+                    !fCurrentEntity.encoding.equals(encoding)) {
+                    // wrap a new reader around the input stream, changing
+                    // the encoding
                     if (DEBUG_ENCODINGS) {
                         System.out.println("$$$ creating new reader from stream: "+
                                            fCurrentEntity.stream);
                     }
+                    //fCurrentEntity.stream.reset();
                     fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding);
+                } else {
+                    if (DEBUG_ENCODINGS) 
+                        System.out.println("$$$ reusing old reader on stream");
                 }
             }
 
@@ -3082,106 +3098,165 @@ public class XMLEntityManager
 
     } // class EntityScanner
 
-    /**
-     * A reader that reads only one character at a time. This is
-     * needed for those times when we've auto-detected the encoding
-     * from an input stream and need to swap out the reader once
-     * the xmlDecl/textDecl has been read and processed. If we
-     * read too far, then we could erroneously convert bytes from
-     * the input stream to the wrong character code point.
-     *
-     * @author Andy Clark, IBM
-     */
-    protected class OneCharReader
-        extends FilterReader {
 
-        //
-        // Constants
-        //
+    // This class wraps the byte inputstreams we're presented with.
+    // We need it because java.io.InputStreams don't provide
+    // functionality to reread processed bytes, and they have a habit
+    // of reading more than one character when you call their read()
+    // methods.  This means that, once we discover the true (declared)
+    // encoding of a document, we can neither backtrack to read the
+    // whole doc again nor start reading where we are with a new
+    // reader.  
+    //
+    // This class allows rewinding an inputStream by allowing a mark
+    // to be set, and the stream reset to that position.  <strong>The
+    // class assumes that it needs to read one character per
+    // invocation when it's read() method is inovked, but uses the
+    // underlying InputStream's read(char[], offset length) method--it
+    // won't buffer data read this way!</strong>
+    //
+    // @author Neil Graham, IBM
+    // @author Glenn Marcy, IBM
 
-        /** XMLDecl or TextDecl characters. */
-        private final char[] TEXTDECL = { '<','?','x','m','l' };
+    protected final class RewindableInputStream extends InputStream {
 
-        //
-        // Data
-        //
-
-        /** Offset. */
+        private InputStream fInputStream;
+        private byte[] fData;
+        private int fStartOffset;
+        private int fEndOffset;
         private int fOffset;
+        private int fLength;
+        private int fMark;
+    
+        public RewindableInputStream(InputStream is) {
+            fData = new byte[DEFAULT_BUFFER_SIZE];
+            fInputStream = is;
+            fStartOffset = 0;
+            fEndOffset = -1;
+            fOffset = 0;
+            fLength = 0;
+            fMark = 0;
+        }
 
-        /** True if we've seen the first character. */
-        private boolean fSeenFirstChar;
-
-        /** True if we've seen the end of the first markup. */
-        private boolean fSeenEndOfMarkup;
-
-        //
-        // Constructors
-        //
-
-        /** Constructs this reader from another reader. */
-        public OneCharReader(Reader reader) {
-            super(reader);
-        } // <init>(Reader)
-
-        //
-        // Public methods
-        //
-
-        /** Returns the original reader. */
-        public Reader getReader() {
-            return super.in;
-        } // getReader():Reader
-
-        //
-        // Reader methods
-        //
-
-        /** Returns a single character. */
+        public void setStartOffset(int offset) {
+            fStartOffset = offset;
+        }
+        
+        public void rewind() {
+            fOffset = fStartOffset;
+        }
+    
         public int read() throws IOException {
-
-            // swap out this inefficient reader because we've
-            // already passed the first piece of markup and
-            // the encoding was not set
-            if (fSeenEndOfMarkup) {
-                if (DEBUG_ENCODINGS) {
-                    System.out.println("$$$ seen end of markup in OneCharReader");
-                }
-                fCurrentEntity.reader = super.in;
-                return fCurrentEntity.reader.read();
+            int b;
+            if (fOffset < fLength) {
+                return fData[fOffset++] & 0xFF;
             }
-
-            // read character and look for end of markup
-            int c = in.read();
-            fSeenEndOfMarkup = fOffset < TEXTDECL.length
-                             ? c != TEXTDECL[fOffset++] : c == '>';
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ read() -> '"+(char)c+"' (end of markup: "+fSeenEndOfMarkup+')');
-                System.out.flush();
-            }
-            return c;
-
-        } // read():int
-
-        /**
-         * Reads as many characters as possible which, in this case,
-         * is only a single character.
-         */
-        public int read(char[] ch, int offset, int length)
-            throws IOException {
-
-            // handle end of file
-            int c = read();
-            if (c == -1) {
+            if (fOffset == fEndOffset) {
                 return -1;
             }
+            if (fOffset == fData.length) {
+                byte[] newData = new byte[fOffset << 1];
+                System.arraycopy(fData, 0, newData, 0, fOffset);
+                fData = newData;
+            }
+            b = fInputStream.read();
+            if (b == -1) {
+                fEndOffset = fOffset;
+                return -1;
+            }
+            fData[fLength++] = (byte)b;
+            fOffset++;
+            return b;
+        }
 
-            // return the 1 character
-            ch[offset] = (char)c;
-            return 1;
+        public int read(byte[] b, int off, int len) throws IOException {
+            int bytesLeft = fLength - fOffset;
+            if (bytesLeft == 0) {
+                // better get some more for the voracious reader...
+                if(fCurrentEntity.mayReadChunks) {
+                    return fInputStream.read(b, off, len);
+                }
+                if (fOffset == fEndOffset) {
+                    return -1;
+                }
+                b[off] = (byte)read();
+                byte [] c = new byte[off];
+                System.arraycopy(b,0,c,0,off);
+                return 1;
+            }
+            if (len < bytesLeft) {
+                if (len <= 0) {
+                    return 0;
+                }
+            }
+            else {
+                len = bytesLeft;
+            }
+            if (b != null) {
+                System.arraycopy(fData, fOffset, b, off, len);
+            }
+            fOffset += len;
+            return len;
+        }
+        
+        public long skip(long n)
+            throws IOException
+        {
+            int bytesLeft;
+            if (n <= 0) {
+                return 0;
+            }
+            bytesLeft = fLength - fOffset;
+            if (bytesLeft == 0) {
+                if (fOffset == fEndOffset) {
+                    return 0;
+                }
+                return fInputStream.skip(n);
+            }
+            if (n <= bytesLeft) {
+                fOffset += n;
+                return n;
+            }
+            fOffset += bytesLeft;
+            if (fOffset == fEndOffset) {
+                return bytesLeft;
+            }
+            n -= bytesLeft;
+            return fInputStream.skip(n) + bytesLeft;
+        }
+        
+        public int available() throws IOException {
+            int bytesLeft = fLength - fOffset;
+            if (bytesLeft == 0) {
+                if (fOffset == fEndOffset) {
+                    return -1;
+                }
+                return fInputStream.available();
+            }
+            if (fLength == fEndOffset) {
+                return bytesLeft;
+            }
+            return fInputStream.available() + bytesLeft;
+        }
 
-        } // read(char[],int,int):int
+        public void mark(int howMuch) {
+            fMark = fOffset;
+        }
 
-    } // class OneCharReader
+        public void reset() {
+            fOffset = fMark;
+        }
+
+        public boolean markSupported() {
+            return true;
+        }
+
+        public void close() throws IOException {
+            if (fInputStream != null) {
+                fInputStream.close(); 
+                fInputStream = null;
+            }
+        }
+    } // end of RewindableInputStream class
 
 } // class XMLEntityManager
