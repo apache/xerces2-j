@@ -1189,7 +1189,7 @@ public abstract class NodeImpl
      * 
      * @param namespaceURI
      * @param useDefault
-     * @return 
+     * @return the prefix for the namespace
      */
     public String lookupNamespacePrefix(String namespaceURI, 
                                         boolean useDefault){
@@ -1241,7 +1241,7 @@ public abstract class NodeImpl
      * Use lookupNamespaceURI(null) to lookup the default namespace
      * 
      * @param namespaceURI
-     * @return 
+     * @return th URI for the namespace
      * @since DOM Level 3
      */
     public String lookupNamespaceURI(String specifiedPrefix) {

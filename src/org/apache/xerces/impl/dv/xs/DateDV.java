@@ -64,7 +64,7 @@ import org.apache.xerces.impl.dv.ValidationContext;
  * Validator for <date> datatype (W3C Schema datatypes)
  *
  * @author Elena Litani
- * @Gopal Sharma, SUN Microsystems Inc.
+ * @author Gopal Sharma, SUN Microsystems Inc.
  *
  * @version $Id$
  */

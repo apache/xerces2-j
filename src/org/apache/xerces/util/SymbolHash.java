@@ -139,7 +139,7 @@ public class SymbolHash {
      * Get the value associated with the given key.
      * 
      * @param key
-     * @return
+     * @return the value associated with the given key.
      */
     public Object get(Object key) {
         int bucket = (key.hashCode() & 0x7FFFFFFF) % fTableSize;
@@ -153,7 +153,7 @@ public class SymbolHash {
     /**
      * Get the number of key/value pairs stored in this table.
      * 
-     * @return
+     * @return the number of key/value pairs stored in this table.
      */
     public int getLength() {
         return fNum;

@@ -110,7 +110,7 @@ public class DocumentImpl extends org.apache.xerces.dom.CoreDocumentImpl {
      * Create a text node. If node pool is available use text node from the pool.
      * 
      * @param data
-     * @return 
+     * @return a usable TextNode
      */
     public Text createTextNode(String data) {
         if (fNodePool != null) {
@@ -129,7 +129,7 @@ public class DocumentImpl extends org.apache.xerces.dom.CoreDocumentImpl {
      * @param namespaceURI
      * @param qualifiedName
      * @param localName
-     * @return 
+     * @return a new attribute node
      * @exception DOMException
      */
     public Attr createAttributeNS(String namespaceURI, String qualifiedName,

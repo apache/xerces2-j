@@ -1496,7 +1496,7 @@ public class DTDGrammar
      *
      * @param elementDeclIndex
      *
-     * @ return String
+     * @return String
      */
     public String getContentSpecAsString(int elementDeclIndex){
 

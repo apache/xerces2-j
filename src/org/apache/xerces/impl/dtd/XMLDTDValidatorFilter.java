@@ -73,14 +73,14 @@ public interface XMLDTDValidatorFilter
     /**
      * Returns true if the validator has a DTD grammar
      * 
-     * @return 
+     * @return true if the validator has a DTD grammar
      */
     public boolean hasGrammar();
 
     /**
      * Return true if validator must validate the document
      * 
-     * @return 
+     * @return true if validator must validate the document
      */
     public boolean validate();
 

@@ -286,7 +286,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
      * 
      * @param node   Modified node or null. If node is returned, we need
      *               to normalize again starting on the node returned.
-     * @return 
+     * @return  the normalized Node
      */
     protected Node normalizeNode (Node node){
 

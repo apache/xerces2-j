@@ -104,7 +104,7 @@ public final class DOMNodePool {
      * This method creates a new element node or provides a 
      * free element node if such exists in the pool.
      * 
-     * @return 
+     * @return usable element node
      */
     public final  ElementNSImpl getElementNode(){
         int     chunk       = fElementIndex >> CHUNK_SHIFT;
@@ -139,7 +139,7 @@ public final class DOMNodePool {
      * This methods creates text node or provides a free
      * text node if such exists in the pool.
      * 
-     * @return 
+     * @return a usable TextNode
      */
     public final  TextImpl getTextNode(){
         int     chunk       = fTextNodeIndex >> CHUNK_SHIFT;
@@ -174,7 +174,7 @@ public final class DOMNodePool {
      * This methods creates attribute node or provides a free
      * attribute node if such exists in the pool.
      * 
-     * @return 
+     * @return a usable attribute node
      */
     public final  AttrNSImpl getAttrNode(){
         int     chunk       = fAttrNodeIndex >> CHUNK_SHIFT;

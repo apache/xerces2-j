@@ -266,7 +266,7 @@ public class XSDFACM
      * @param stateStack  stack to store the previous state
      * @param curPos      the current position of the stack
      *
-     * @return:  null if transition is invalid; otherwise the Object corresponding to the
+     * @return  null if transition is invalid; otherwise the Object corresponding to the
      *      XSElementDecl or XSWildcardDecl identified.  Also, the
      *      state array will be modified to include the new state; this so that the validator can
      *      store it away.

@@ -196,7 +196,7 @@ public interface XSSimpleType extends XSTypeDecl, XSSimpleTypeDefinition {
      * Check whether two actual values are equal.
      *
      * @param value1  the first value
-     * @prarm value2  the second value
+     * @param value2  the second value
      * @return        true if the two value are equal
      */
     public boolean isEqual(Object value1, Object value2);
