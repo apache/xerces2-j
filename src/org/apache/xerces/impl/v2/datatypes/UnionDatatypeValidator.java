@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -77,11 +77,11 @@ import org.apache.xerces.impl.validation.ValidationContext;
  * Implements the September 22 XML Schema datatype Union Datatype type
  */
 public class UnionDatatypeValidator extends AbstractDatatypeValidator {
-    
+
     private Vector  fBaseValidators   = null; // union collection of validators
     private int fValidatorsSize = 0;
     private Vector     fEnumeration      = null;
-    private StringBuffer errorMsg = null;   
+    private StringBuffer errorMsg = null;
 
 
     public  UnionDatatypeValidator ()  {
@@ -90,13 +90,13 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     }
 
 
-    public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+    public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                     boolean derivedBy, XMLErrorReporter reporter )   {
         fErrorReporter = reporter;
-        fBaseValidator = base;  
+        fBaseValidator = base;
         //facets allowed are: pattern & enumeration
         try{
-        
+
         if ( facets != null ) {
             for ( Enumeration e = facets.keys(); e.hasMoreElements(); ) {
                 String key = (String) e.nextElement();
@@ -134,7 +134,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         } catch (Exception e){
                                  fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                                    "DatatypeFacetError", new Object [] { ((Exception)e).getMessage()},
-                                                    XMLErrorReporter.SEVERITY_ERROR);                    
+                                                    XMLErrorReporter.SEVERITY_ERROR);
         }
 
     }
@@ -154,7 +154,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
     /**
      * validate that a string is a W3C string type
-     * 
+     *
      * @param content A string containing the content to be validated
      * @param list
      * @exception throws InvalidDatatypeException if the content is
@@ -175,7 +175,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
 
     /**
-     * 
+     *
      * @return A Hashtable containing the facets
      *         for this datatype.
      */
@@ -190,7 +190,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         //union datatype
         int index=-1;
         DatatypeValidator currentDV;
-        while ( ++index < fValidatorsSize ) {  
+        while ( ++index < fValidatorsSize ) {
             currentDV =  (DatatypeValidator)this.fBaseValidators.elementAt(index);
             if (currentDV.compare(value1, value2) == 0) {
                 return  0;
@@ -208,11 +208,11 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
             newObj = new UnionDatatypeValidator();
             newObj.fLocale           =  this.fLocale;
             newObj.fBaseValidator    =  this.fBaseValidator;
-            newObj.fBaseValidators   =  (Vector)this.fBaseValidators.clone();  
+            newObj.fBaseValidators   =  (Vector)this.fBaseValidators.clone();
             newObj.fPattern          =  this.fPattern;
             newObj.fEnumeration      =  this.fEnumeration;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-       
+
         return(newObj);
 
     }
@@ -237,7 +237,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         if ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0) {
             for (Enumeration e = enum.elements() ; e.hasMoreElements() ;) {
                 if (fEnumeration.contains(e.nextElement()) == false) {
-                    return false;                             
+                    return false;
                 }
             }
         }
@@ -245,21 +245,21 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     /**
-     * validate if the content is valid against base datatype and facets (if any) 
-     * 
+     * validate if the content is valid against base datatype and facets (if any)
+     *
      * @param content A string containing the content to be validated
      * @param pattern: true if pattern facet was applied, false otherwise
      * @param enumeration enumeration facet
      * @exception throws InvalidDatatypeException if the content is not valid
      */
-    private void checkContentEnum( String content,  ValidationContext state, boolean pattern, Vector enumeration ) throws InvalidDatatypeValueException
+    protected void checkContentEnum( String content,  ValidationContext state, boolean pattern, Vector enumeration ) throws InvalidDatatypeValueException
     {
         // for UnionDatatype we have to wait till the union baseValidators are known, thus
         // if the content is valid "against" ListDatatype, but pattern was applied - report an error. To do so we pass @param pattern;
         // pass @param enumeration so that when base Datatype is known, we would validate enumeration/content
         // against value space as well
         int index = -1; //number of validators
-        boolean valid=false; 
+        boolean valid=false;
         DatatypeValidator currentDV = null;
         if (fBaseValidator !=null) {  //restriction  of union datatype
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
@@ -282,7 +282,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
             return;
         }
         // native union type
-        while ( ++index < fValidatorsSize) {  
+        while ( ++index < fValidatorsSize) {
             // check content against each base validator in Union
             // report an error only in case content is not valid against all base datatypes.
             currentDV =  (DatatypeValidator)this.fBaseValidators.elementAt(index);
@@ -290,7 +290,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
             try {
                 if ( currentDV instanceof ListDatatypeValidator ) {
                     if ( pattern ) {
-                        throw new InvalidDatatypeValueException("Facet \"Pattern\" can not be applied to a list datatype" );  
+                        throw new InvalidDatatypeValueException("Facet \"Pattern\" can not be applied to a list datatype" );
                     }
                     ((ListDatatypeValidator)currentDV).checkContentEnum( content, state, enumeration );
                 }
@@ -308,7 +308,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
                                 throw new InvalidDatatypeValueException("Value '"+content+ "' must be one of "+ enumeration);
                             }
                             ((DatatypeValidator)currentDV).validate( content, state );
-                        }   
+                        }
                     }
                     else {
                         ((DatatypeValidator)currentDV).validate( content, state );
@@ -321,7 +321,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
             }
         }
         if ( !valid ) {
-            throw new InvalidDatatypeValueException( "Content '"+content+"' does not match any union types" );  
+            throw new InvalidDatatypeValueException( "Content '"+content+"' does not match any union types" );
         }
     }
 

@@ -114,7 +114,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                     }
                     fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                                "DatatypeFacetError", new Object [] { msg},
-                                               XMLErrorReporter.SEVERITY_ERROR);                    
+                                               XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
         }// End of facet setting
@@ -177,7 +177,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
      * @param content
      * @exception InvalidDatatypeValueException
      */
-    private void checkContent( String content, boolean asBase )
+    protected void checkContent( String content, boolean asBase )
     throws InvalidDatatypeValueException {
         // validate against parent type if any
         // REVISIT: fast fix to avoid class cast exception

@@ -219,7 +219,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         :dateToString((int[])fMinExclusive);
     }
 
-    protected void checkContent( String content, Object State, Vector enum, boolean asBase)
+    protected void checkContent( String content, ValidationContext State, Vector enum, boolean asBase)
                                     throws InvalidDatatypeValueException{
     }
 

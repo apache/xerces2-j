@@ -89,7 +89,7 @@ public class FloatDatatypeValidator extends AbstractNumericValidator {
         // Set base type
         super (base, facets, derivedByList, reporter);
     }
-    
+
    public int compare( String value1, String value2) {
         try {
             float f1 = fValueOf(value1).floatValue();
@@ -102,7 +102,7 @@ public class FloatDatatypeValidator extends AbstractNumericValidator {
         }
     }
 
-    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
+    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{
         String msg = "float datatype, facet "+key+" with value "+(String)facets.get(key);
         throw new InvalidDatatypeFacetException(msg);
     }
@@ -113,7 +113,7 @@ public class FloatDatatypeValidator extends AbstractNumericValidator {
         float f2 = ((Float)value2).floatValue();
         return compareFloats(f1, f2);
     }
-    
+
     protected void setMaxInclusive (String value) {
         fMaxInclusive = fValueOf(value);
     }
@@ -169,7 +169,7 @@ public class FloatDatatypeValidator extends AbstractNumericValidator {
     * @exception throws InvalidDatatypeFacetException if enumeration is not float
     */
 
-    protected void checkContent(String content, Object state, Vector enumeration, boolean asBase)
+    protected void checkContent(String content, ValidationContext state, Vector enumeration, boolean asBase)
     throws InvalidDatatypeValueException {
         // validate against parent type if any
         if ( this.fBaseValidator != null && !(fBaseValidator instanceof AnySimpleType)) {
@@ -229,7 +229,7 @@ public class FloatDatatypeValidator extends AbstractNumericValidator {
 
     protected int getInvalidFacetMsg (){
         return DatatypeMessageProvider.ILLEGAL_FLOAT_FACET;
-    }  
+    }
 
     private void enumCheck(float v, Float[] enumFloats) throws InvalidDatatypeValueException {
         for ( int i = 0; i < enumFloats.length; i++ ) {

@@ -127,48 +127,23 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException{
+        Object retVal = super.validate(content, state);
 
-        return checkContent (content, state, false);
-
-    }
-
-
-    private Object checkContent( String content, ValidationContext state, boolean asBase )
-    throws InvalidDatatypeValueException {
-        // validate against parent type if any
-        if (fBaseValidator instanceof IDREFDatatypeValidator) {
-            // validate content as a base type
-            ((IDREFDatatypeValidator)fBaseValidator).checkContent(content, state, true);
-        }
-
-        // we check pattern first
-        if ((fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0) {
-            if (fRegex == null || fRegex.matches( content) == false)
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' does not match regular expression facet '" + fPattern + "'." );
-        }
-
-
-        // if this is a base validator, we only need to check pattern facet
-        // all other facet were inherited by the derived type
-        if (asBase)
-            return content;
-
-        // state could be null when we validate schema (facet enumeration)
         if (state != null) {
             state.addIdRef(content);
             if (!state.isIdDeclared(content)) {
                 InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );
             }
         }
-        return content;
+
+        return retVal;
     }
+
     /**
        * Returns a copy of this object.
        */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
-
 
 }

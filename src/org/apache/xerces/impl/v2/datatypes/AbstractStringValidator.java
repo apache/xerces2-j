@@ -344,7 +344,7 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
             }
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "DatatypeFacetError", new Object [] { ((Exception)e).getMessage()},
-                                       XMLErrorReporter.SEVERITY_ERROR);                    
+                                       XMLErrorReporter.SEVERITY_ERROR);
         }
     }
 
@@ -387,7 +387,7 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
     }
 
 
-    private void checkContent( String content, Object state, boolean asBase )
+    protected void checkContent( String content, ValidationContext state, boolean asBase )
     throws InvalidDatatypeValueException {
         // validate against parent type if any
         if (fBaseValidator instanceof AbstractStringValidator) {

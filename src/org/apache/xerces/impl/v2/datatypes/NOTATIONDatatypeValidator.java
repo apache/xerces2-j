@@ -75,7 +75,7 @@ import org.apache.xerces.impl.validation.ValidationContext;
  * @version $Id$
  */
 public class NOTATIONDatatypeValidator extends AbstractStringValidator {
-    
+
 
     // for the QName validator
     /*
@@ -103,7 +103,7 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
             fgURIValidator = new AnyURIDatatypeValidator (null, null, false);
         }
         */
-        
+
     }
 
     protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{
@@ -119,7 +119,7 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
         return null;
     }
 
-    private void checkContent( String content, ValidationContext state, boolean asBase )
+    protected void checkContent( String content, ValidationContext state, boolean asBase )
     throws InvalidDatatypeValueException {
         // validate against parent type if any
         if (fBaseValidator instanceof NOTATIONDatatypeValidator) {
@@ -147,7 +147,7 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
         // REVISIT: see comments in checkValueSpace
         // checkValueSpace (content);
         int length = getLength(content);
-        // REVISIT: XML Schema group does not clearly specify how QNames should be 
+        // REVISIT: XML Schema group does not clearly specify how QNames should be
         // compared against length, minLength, maxLength we don't do any comparison
         //
         if (state !=null && (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
@@ -161,15 +161,15 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
 
             }
             String uriStr = state.getURI(state.getSymbol(prefix));
-            String fullName =  (uriStr!=null)?(uriStr+","+localpart):localpart;                      
+            String fullName =  (uriStr!=null)?(uriStr+","+localpart):localpart;
             if (fEnumeration.contains( fullName ) == false)
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
         }
     }
 
     protected void checkValueSpace (String content) throws InvalidDatatypeValueException {
-        
-        // REVISIT: do we need to check 3.2.19: "anyURI:NCName"?        
+
+        // REVISIT: do we need to check 3.2.19: "anyURI:NCName"?
         /*
         try {
             int posColon = content.lastIndexOf(':');
@@ -180,8 +180,8 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
             throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid NOTATION");
         }
         */
-    
-    }    
+
+    }
 
     public int compare( String  content1, String content2){
         return content1.equals(content2)?0:-1;

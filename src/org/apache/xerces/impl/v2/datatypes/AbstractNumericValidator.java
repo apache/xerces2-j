@@ -70,9 +70,9 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationContext;
 /**
- * AbstractNumericValidator is a base class of decimal, double, and float 
+ * AbstractNumericValidator is a base class of decimal, double, and float
  * schema datatypes
- * 
+ *
  * @author Elena Litani
  * @version $Id$
  */
@@ -83,8 +83,8 @@ public abstract class AbstractNumericValidator extends AbstractNumericFacetValid
         super( null, null, false , null); // Native, No Facets defined, Restriction
     }
 
-    public AbstractNumericValidator ( DatatypeValidator base, 
-                                      Hashtable facets, 
+    public AbstractNumericValidator ( DatatypeValidator base,
+                                      Hashtable facets,
                                       boolean derivedByList, XMLErrorReporter reporter) {
         super (base, facets, derivedByList, reporter);
     }
@@ -92,10 +92,10 @@ public abstract class AbstractNumericValidator extends AbstractNumericFacetValid
 
     /**
      * Validate string against lexical space of datatype
-     * 
+     *
      * @param content A string containing the content to be validated
      * @param state
-     * @return 
+     * @return
      * @exception throws InvalidDatatypeException if the content is
      *                   is not a W3C decimal type
      * @exception InvalidDatatypeValueException
@@ -120,7 +120,7 @@ public abstract class AbstractNumericValidator extends AbstractNumericFacetValid
     *  is not a W3C decimal type;
     * @exception throws InvalidDatatypeFacetException if enumeration is not BigDecimal
     */
-    protected void checkContentEnum(String content, Object state, Vector enumeration)
+    protected void checkContentEnum(String content, ValidationContext state, Vector enumeration)
     throws InvalidDatatypeValueException {
         checkContent(content, state, enumeration, false);
     }
@@ -129,7 +129,7 @@ public abstract class AbstractNumericValidator extends AbstractNumericFacetValid
     //
     // content - string value to be evaluated
     //
-    abstract protected void checkContent( String content, Object State, Vector enum, boolean asBase)
+    abstract protected void checkContent( String content, ValidationContext State, Vector enum, boolean asBase)
                               throws InvalidDatatypeValueException;
 
 
@@ -193,7 +193,7 @@ public abstract class AbstractNumericValidator extends AbstractNumericFacetValid
         }
 
         if ( !(minOk && maxOk) ){
-        
+
             String msg = getErrorString(
                 DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.OUT_OF_BOUNDS],
                 new Object [] { d.toString(), lowerBound, upperBound, lowerBoundIndicator, upperBoundIndicator});

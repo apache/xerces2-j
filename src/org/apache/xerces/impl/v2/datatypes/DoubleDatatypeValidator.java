@@ -98,13 +98,13 @@ public class DoubleDatatypeValidator extends AbstractNumericValidator {
 
     }
 
-    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
+    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{
         String msg = "double datatype, facet "+key+" with value "+(String)facets.get(key);
         throw new InvalidDatatypeFacetException(msg);
     }
     /**
      * Compares 2 double values.
-     * 
+     *
      * @param value1 - Double
      * @param value2 - Double
      * @return value1<value2 return -1
@@ -179,12 +179,12 @@ public class DoubleDatatypeValidator extends AbstractNumericValidator {
     * @exception throws InvalidDatatypeFacetException if enumeration is not double
     */
 
-    protected void checkContentEnum(String content, Object state, Vector enumeration)
+    protected void checkContentEnum(String content, ValidationContext state, Vector enumeration)
     throws InvalidDatatypeValueException {
         checkContent (content, state, enumeration, false);
     }
 
-    protected void checkContent(String content, Object state, Vector enumeration, boolean asBase)
+    protected void checkContent(String content, ValidationContext state, Vector enumeration, boolean asBase)
     throws InvalidDatatypeValueException {
         // validate against parent type if any
         if ( this.fBaseValidator != null && !(fBaseValidator instanceof AnySimpleType)) {
