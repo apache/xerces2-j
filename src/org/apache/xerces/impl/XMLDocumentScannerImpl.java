@@ -1164,8 +1164,13 @@ public class XMLDocumentScannerImpl
                     fDocumentHandler.doctypeDecl(fDoctypeName, fDoctypePublicId, fDoctypeSystemId, null);
                 }
                 try {
-                    fDTDScanner.setInputSource(src);
-                    while (fDTDScanner.scanDTDExternalSubset(true));
+                    if (fValidationManager == null || !fValidationManager.isCachedDTD()) {
+                        fDTDScanner.setInputSource(src);
+                        while (fDTDScanner.scanDTDExternalSubset(true));
+                    }
+                    else {
+                        fDTDScanner.setInputSource(null);
+                    }
                 }
                 finally {
                     fEntityManager.setEntityHandler(XMLDocumentScannerImpl.this);
