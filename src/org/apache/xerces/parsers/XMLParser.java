@@ -178,6 +178,8 @@ public abstract class XMLParser
         fFeatures.put(ALLOW_JAVA_ENCODINGS, Boolean.FALSE);
         final String CONTINUE_AFTER_FATAL_ERROR = Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
         fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
+        final String LOAD_EXTERNAL_DTD = Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+        fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
 
         // create and register components
         fSymbolTable = symbolTable;

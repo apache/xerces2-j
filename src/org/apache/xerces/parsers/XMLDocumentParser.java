@@ -932,6 +932,12 @@ public abstract class XMLDocumentParser
             if (feature.equals(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
                 return;
             }
+            //
+            // http://apache.org/xml/features/validation/nonvalidating/load-external-dtd
+            //
+            if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
+                return;
+            }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values

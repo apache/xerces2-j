@@ -139,6 +139,9 @@ public final class Constants {
     /** Load dtd grammar when nonvalidating feature ("nonvalidating/load-dtd-grammar"). */
     public static final String LOAD_DTD_GRAMMAR_FEATURE = "nonvalidating/load-dtd-grammar";
 
+    /** Load external dtd when nonvalidating feature ("nonvalidating/load-external-dtd"). */
+    public static final String LOAD_EXTERNAL_DTD_FEATURE = "nonvalidating/load-external-dtd";
+
     /** Defer node expansion feature ("dom/defer-node-expansion"). */
     //public static final String DEFER_NODE_EXPANSION_FEATURE = "dom/defer-node-expansion";
 
@@ -230,6 +233,7 @@ public final class Constants {
         ALLOW_JAVA_ENCODINGS_FEATURE,
         CONTINUE_AFTER_FATAL_ERROR_FEATURE,
         LOAD_DTD_GRAMMAR_FEATURE,
+        LOAD_EXTERNAL_DTD_FEATURE,
         //DEFER_NODE_EXPANSION_FEATURE,
         CREATE_ENTITY_REF_NODES_FEATURE,
         INCLUDE_IGNORABLE_WHITESPACE,

@@ -238,6 +238,8 @@ public class XMLDocumentScanner
     /** Namespaces. */
     protected boolean fNamespaces;
 
+    protected boolean fLoadExternalDTD = true;
+
     // dispatchers
 
     /** Active dispatcher. */
@@ -349,6 +351,9 @@ public class XMLDocumentScanner
             Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
         fGrammarPool = (GrammarPool)componentManager.getProperty(GRAMMAR_POOL);
 
+        final String LOAD_EXTERNAL_DTD = Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+        fLoadExternalDTD = componentManager.getFeature(LOAD_EXTERNAL_DTD);
+
         // initialize vars
         fMarkupDepth = 0;
         fCurrentElement = null;
@@ -376,6 +381,15 @@ public class XMLDocumentScanner
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        // Xerces properties
+        if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
+            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
+                fLoadExternalDTD = state;
+            }
+            return;
+        }
     } // setFeature(String,boolean)
 
     /**
@@ -658,7 +672,7 @@ public class XMLDocumentScanner
         }
 
         // external subset
-        if (systemId != null) {
+        if (systemId != null && (fValidation || fLoadExternalDTD)) {
             XMLInputSource xmlInputSource = 
                 fEntityManager.resolveEntity(publicId, systemId, null);
             fEntityManager.setEntityHandler(fDTDScanner);
