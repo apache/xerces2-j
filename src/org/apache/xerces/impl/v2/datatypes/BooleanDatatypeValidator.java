@@ -62,6 +62,9 @@ import java.util.Enumeration;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 import org.apache.xerces.impl.v2.SchemaSymbols;
+
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 /**
  *
  * BooleanValidator validates that content satisfies the W3C XML Datatype for Boolean
@@ -73,36 +76,44 @@ import org.apache.xerces.impl.v2.SchemaSymbols;
  */
 
 public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
-    
+
     private static  final String    fValueSpace[]    = { "false", "true", "0", "1"};
 
-    public BooleanDatatypeValidator () throws InvalidDatatypeFacetException {
-       this( null, null, false ); // Native, No Facets defined, Restriction
+    public BooleanDatatypeValidator () {
+        this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public BooleanDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                 boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                      boolean derivedByList, XMLErrorReporter reporter) {
+        fErrorReporter = reporter;
         fBaseValidator = base; // Set base type
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
-        if ( derivedByList )
+        if (derivedByList)
             return;
 
         // Set Facets if any defined
-        if ( facets != null  ) {
+        if (facets != null) {
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                 String key = (String) e.nextElement();
 
                 if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                     fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
-                    if( fPattern != null )
-                       fRegex = new RegularExpression(fPattern, "X" );
-                } else {
+                    if (fPattern != null)
+                        fRegex = new RegularExpression(fPattern, "X" );
+                }
+                else {
                     String msg = getErrorString(
-                        DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_BOOLEAN_FACET],
-                        new Object[] { key });
-                    throw new InvalidDatatypeFacetException(msg);
+                                               DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_BOOLEAN_FACET],
+                                               new Object[] { key});
+
+                    if (fErrorReporter == null) {
+                        throw new RuntimeException("InternalDatatype error BDV.");
+                    }
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "DatatypeFacetError", new Object [] { msg},
+                                               XMLErrorReporter.SEVERITY_ERROR);                    
                 }
             }
         }// End of facet setting
@@ -129,14 +140,14 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
      * @param content2
      * @return  0 if equal, 1 if not equal
      */
-    public int compare( String content1, String content2){
+    public int compare( String content1, String content2) {
         if (content1.equals(content2)) {
             return 0;
         }
         Boolean b1 = Boolean.valueOf(content1);
         Boolean b2 = Boolean.valueOf(content2);
 
-        return (b1.equals(b2))?0:1;
+        return(b1.equals(b2))?0:1;
     }
 
     /**
@@ -145,15 +156,15 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
      * @return Hashtable
      */
 
-    public Hashtable getFacets(){
+    public Hashtable getFacets() {
         return null;
     }
 
     //Begin private method definitions
 
-   /**
-     * Returns a copy of this object.
-     */
+    /**
+      * Returns a copy of this object.
+      */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
@@ -169,14 +180,14 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     throws InvalidDatatypeValueException {
         // validate against parent type if any
         // REVISIT: fast fix to avoid class cast exception
-        if ( this.fBaseValidator != null && !(fBaseValidator instanceof AnySimpleType)) {
+        if (this.fBaseValidator != null && !(fBaseValidator instanceof AnySimpleType)) {
             // validate content as a base type
-                ((BooleanDatatypeValidator)fBaseValidator).checkContent(content, true);
+            ((BooleanDatatypeValidator)fBaseValidator).checkContent(content, true);
         }
 
         // we check pattern first
-        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            if ( fRegex == null || fRegex.matches( content) == false )
+        if ((fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0) {
+            if (fRegex == null || fRegex.matches( content) == false)
                 throw new InvalidDatatypeValueException("Value'"+content+
                                                         "does not match regular expression facet" + fPattern );
         }
@@ -187,14 +198,14 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
             return;
 
         boolean  isContentInDomain = false;
-        for ( int i = 0;i<fValueSpace.length;i++ ) {
-            if ( content.equals(fValueSpace[i] ) )
+        for (int i = 0;i<fValueSpace.length;i++) {
+            if (content.equals(fValueSpace[i] ))
                 isContentInDomain = true;
         }
         if (isContentInDomain == false) {
             String msg = getErrorString(
-                DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_BOOLEAN],
-                new Object[] { content });
+                                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_BOOLEAN],
+                                       new Object[] { content});
             throw new InvalidDatatypeValueException(msg);
         }
     }

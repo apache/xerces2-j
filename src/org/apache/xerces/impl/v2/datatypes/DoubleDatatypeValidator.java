@@ -62,6 +62,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * @author Elena Litani
@@ -73,13 +75,13 @@ import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 public class DoubleDatatypeValidator extends AbstractNumericValidator {
 
-    public DoubleDatatypeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
+    public DoubleDatatypeValidator ()   {
+        this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public DoubleDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                     boolean derivedByList ) throws InvalidDatatypeFacetException  {
-        super(base, facets, derivedByList);
+                                     boolean derivedByList, XMLErrorReporter reporter)  {
+        super(base, facets, derivedByList, reporter);
     }
 
     public int compare( String value1, String value2) {

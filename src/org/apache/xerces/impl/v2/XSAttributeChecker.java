@@ -1124,6 +1124,9 @@ public class XSAttributeChecker {
         for (int i = 0; i < reqAttrs.length; i++) {
             OneAttr oneAttr = reqAttrs[i];
 
+            // REVISIT: throw an error on required attribute that does not
+            // appear test case schema_invalid/S3_14/ibm3_14si12.xml
+
             // if the attribute didn't apprear, and
             // if the attribute is optional with default value, apply it
             if (oneAttr.dfltValue != null &&

@@ -58,6 +58,8 @@
 package org.apache.xerces.impl.v2.datatypes;
 
 import java.util.Hashtable;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * Validator for <duration> datatype (W3C Schema Datatypes)
@@ -83,13 +85,13 @@ public class DurationDatatypeValidator extends DateTimeValidator {
     private int[][] fDuration = null;
 
 
-    public  DurationDatatypeValidator() throws InvalidDatatypeFacetException{
+    public  DurationDatatypeValidator()  {
         super();
     }
     public  DurationDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                        boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                        boolean derivedByList, XMLErrorReporter reporter) {
 
-        super(base, facets, derivedByList);
+        super(base, facets, derivedByList, reporter);
     }
 
 

@@ -66,6 +66,8 @@ import java.io.IOException;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 /**
  * AbstractNumericValidator is a base class of decimal, double, and float 
  * schema datatypes
@@ -76,14 +78,14 @@ import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 public abstract class AbstractNumericValidator extends AbstractNumericFacetValidator {
 
-    public  AbstractNumericValidator () throws InvalidDatatypeFacetException {
-        super( null, null, false ); // Native, No Facets defined, Restriction
+    public  AbstractNumericValidator ()   {
+        super( null, null, false , null); // Native, No Facets defined, Restriction
     }
 
     public AbstractNumericValidator ( DatatypeValidator base, 
                                       Hashtable facets, 
-                                      boolean derivedByList) throws InvalidDatatypeFacetException {
-        super (base, facets, derivedByList);
+                                      boolean derivedByList, XMLErrorReporter reporter) {
+        super (base, facets, derivedByList, reporter);
     }
 
 

@@ -59,6 +59,8 @@
 package org.apache.xerces.impl.v2.datatypes;
 
 import java.util.Hashtable;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * Validator for <gDay> datatype (W3C Schema datatypes)
@@ -72,13 +74,13 @@ public class DayDatatypeValidator extends DateTimeValidator {
     //size without time zone: ---09
     private final static int DAY_SIZE=5;
 
-    public  DayDatatypeValidator() throws InvalidDatatypeFacetException{
+    public  DayDatatypeValidator() {
         super();
     }
 
     public  DayDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                   boolean derivedByList ) throws InvalidDatatypeFacetException {
-        super(base, facets, derivedByList);
+                                   boolean derivedByList, XMLErrorReporter reporter) {
+        super(base, facets, derivedByList, reporter);
     }
 
     /**

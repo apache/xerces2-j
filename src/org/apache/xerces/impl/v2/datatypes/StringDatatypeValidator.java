@@ -64,6 +64,9 @@ import java.util.Locale;
 import java.text.Collator;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
+
 
 /**
  * StringValidator validates that XML content is a W3C string type.
@@ -77,14 +80,14 @@ public class StringDatatypeValidator extends AbstractStringValidator {
 
     private short      fWhiteSpace;
 
-    public  StringDatatypeValidator () throws InvalidDatatypeFacetException{
-        this ( null, null, false ); // Native, No Facets defined, Restriction
+    public  StringDatatypeValidator ()  {
+        this ( null, null, false, null ); // Native, No Facets defined, Restriction
 
     }
     public StringDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                     boolean derivedByList, XMLErrorReporter reporter) {
 
-        super (base, facets, derivedByList); 
+        super (base, facets, derivedByList, reporter); 
        
     }
 
@@ -181,7 +184,6 @@ public class StringDatatypeValidator extends AbstractStringValidator {
    */
     public Object clone() throws CloneNotSupportedException  {
         StringDatatypeValidator newObj = null;
-        try {
             newObj = new StringDatatypeValidator();
 
             newObj.fLocale           =  this.fLocale;
@@ -193,10 +195,7 @@ public class StringDatatypeValidator extends AbstractStringValidator {
             newObj.fWhiteSpace       =  this.fWhiteSpace;
             newObj.fEnumeration      =  this.fEnumeration;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-        }
-        catch ( InvalidDatatypeFacetException ex ) {
-            ex.printStackTrace();
-        }
+        
         return newObj;
     }
 

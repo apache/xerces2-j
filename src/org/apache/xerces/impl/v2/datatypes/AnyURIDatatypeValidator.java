@@ -60,6 +60,8 @@ package org.apache.xerces.impl.v2.datatypes;
 import java.util.Hashtable;
 import org.apache.xerces.util.URI;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * URIValidator validates that XML content is a W3C uri type,
@@ -75,13 +77,13 @@ import org.apache.xerces.util.URI;
 public class AnyURIDatatypeValidator extends AbstractStringValidator {
     
     private URI fTempURI = null;
-    public AnyURIDatatypeValidator () throws InvalidDatatypeFacetException{
-        super ( null, null, false ); // Native, No Facets defined, Restriction
+    public AnyURIDatatypeValidator ()  {
+        super ( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public AnyURIDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
-        super (base, facets, derivedByList); 
+                                     boolean derivedByList, XMLErrorReporter reporter) {
+        super (base, facets, derivedByList, reporter); 
     }
 
     protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{

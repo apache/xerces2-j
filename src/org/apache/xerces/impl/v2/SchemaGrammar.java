@@ -136,147 +136,147 @@ public class SchemaGrammar {
      * @param symbolTable
      * @param fullSet
      */
-    private SchemaGrammar(SymbolTable symbolTable, boolean fullSet) {
+    protected SchemaGrammar(SymbolTable symbolTable, boolean fullSet) {
         fSymbolTable = symbolTable;
         fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+
+        // REVISIT: for default datatype creation an error reporter is null.
+        // In case we ever see an error, Runtime exception will be thrown
+        // since this is an implementation failure.
 
         // set the size of type SymbolHash to double the number of types need
         // to be created. which should be the most effecient number.
         fGlobalTypeDecls = new SymbolHash((fullSet?FULLSET_COUNT:BASICSET_COUNT)*2);
 
-        try {
-            // REVISIT: use XSSimpleTypeDecl instead
-            XSComplexTypeDecl anyType = new XSComplexTypeDecl();
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYTYPE, anyType);
-            //REVISIT: make anyType the base of anySimpleType
-            //DatatypeValidator anySimpleType = new AnySimpleType(anyType, null, false);
-            DatatypeValidator anySimpleType = new AnySimpleType(null, null, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE, anySimpleType);
-            DatatypeValidator stringDV = new StringDatatypeValidator(anySimpleType, null, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING, stringDV);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_BOOLEAN, new BooleanDatatypeValidator(anySimpleType, null, false));
-            DatatypeValidator decimalDV = new DecimalDatatypeValidator(anySimpleType, null, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_DECIMAL, decimalDV);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYURI, new AnyURIDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_BASE64BINARY, new Base64BinaryDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_DURATION, new DurationDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_DATETIME, new DateTimeDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_TIME, new TimeDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_DATE, new DateDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_YEARMONTH, new YearMonthDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_YEAR, new YearDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_MONTHDAY, new MonthDayDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_DAY, new DayDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_MONTH, new MonthDatatypeValidator(anySimpleType, null, false));
+        // REVISIT: use XSSimpleTypeDecl instead
+        XSComplexTypeDecl anyType = new XSComplexTypeDecl();
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYTYPE, anyType);
+        //REVISIT: make anyType the base of anySimpleType
+        //DatatypeValidator anySimpleType = new AnySimpleType(anyType, null, false);
+        DatatypeValidator anySimpleType = new AnySimpleType(null, null, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE, anySimpleType);
+        DatatypeValidator stringDV = new StringDatatypeValidator(anySimpleType, null, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING, stringDV);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_BOOLEAN, new BooleanDatatypeValidator(anySimpleType, null, false, null));
+        DatatypeValidator decimalDV = new DecimalDatatypeValidator(anySimpleType, null, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_DECIMAL, decimalDV);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYURI, new AnyURIDatatypeValidator(anySimpleType, null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_BASE64BINARY, new Base64BinaryDatatypeValidator(anySimpleType, null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_DURATION, new DurationDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_DATETIME, new DateTimeDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_TIME, new TimeDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_DATE, new DateDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_YEARMONTH, new YearMonthDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_YEAR, new YearDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_MONTHDAY, new MonthDayDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_DAY, new DayDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_MONTH, new MonthDatatypeValidator(anySimpleType,  null, false, null));
 
-            Hashtable facets = new Hashtable(2);
-            facets.put(SchemaSymbols.ELT_FRACTIONDIGITS, "0");
-            DatatypeValidator integerDV = new DecimalDatatypeValidator(decimalDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_INTEGER, integerDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "0" );
-            DatatypeValidator nonPositiveDV = new DecimalDatatypeValidator(integerDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NONPOSITIVEINTEGER, nonPositiveDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "-1" );
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NEGATIVEINTEGER, new DecimalDatatypeValidator(nonPositiveDV, facets, false));
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "9223372036854775807");
-            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-9223372036854775808");
-            DatatypeValidator longDV = new DecimalDatatypeValidator(integerDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_LONG, longDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "2147483647");
-            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-2147483648");
-            DatatypeValidator intDV = new DecimalDatatypeValidator(longDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_INT, intDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "32767");
-            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-32768");
-            DatatypeValidator shortDV = new DecimalDatatypeValidator(intDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_SHORT, shortDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "127");
-            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-128");
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_BYTE, new DecimalDatatypeValidator(shortDV, facets, false));
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
-            DatatypeValidator nonNegativeDV = new DecimalDatatypeValidator(integerDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NONNEGATIVEINTEGER, nonNegativeDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "18446744073709551615" );
-            DatatypeValidator unsignedLongDV = new DecimalDatatypeValidator(nonNegativeDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDLONG, unsignedLongDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "4294967295" );
-            DatatypeValidator unsignedIntDV = new DecimalDatatypeValidator(unsignedLongDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDINT, unsignedIntDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "65535" );
-            DatatypeValidator unsignedShortDV = new DecimalDatatypeValidator(unsignedIntDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDSHORT, unsignedShortDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDBYTE, new DecimalDatatypeValidator(unsignedShortDV, facets, false));
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_MININCLUSIVE, "1" );
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_POSITIVEINTEGER, new DecimalDatatypeValidator(nonNegativeDV, facets, false));
+        Hashtable facets = new Hashtable(2);
+        facets.put(SchemaSymbols.ELT_FRACTIONDIGITS, "0");
+        DatatypeValidator integerDV = new DecimalDatatypeValidator(decimalDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_INTEGER, integerDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "0" );
+        DatatypeValidator nonPositiveDV = new DecimalDatatypeValidator(integerDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NONPOSITIVEINTEGER, nonPositiveDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "-1" );
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NEGATIVEINTEGER, new DecimalDatatypeValidator(nonPositiveDV, facets, false, null));
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "9223372036854775807");
+        facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-9223372036854775808");
+        DatatypeValidator longDV = new DecimalDatatypeValidator(integerDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_LONG, longDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "2147483647");
+        facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-2147483648");
+        DatatypeValidator intDV = new DecimalDatatypeValidator(longDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_INT, intDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "32767");
+        facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-32768");
+        DatatypeValidator shortDV = new DecimalDatatypeValidator(intDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_SHORT, shortDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "127");
+        facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-128");
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_BYTE, new DecimalDatatypeValidator(shortDV, facets, false, null));
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
+        DatatypeValidator nonNegativeDV = new DecimalDatatypeValidator(integerDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NONNEGATIVEINTEGER, nonNegativeDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "18446744073709551615" );
+        DatatypeValidator unsignedLongDV = new DecimalDatatypeValidator(nonNegativeDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDLONG, unsignedLongDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "4294967295" );
+        DatatypeValidator unsignedIntDV = new DecimalDatatypeValidator(unsignedLongDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDINT, unsignedIntDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "65535" );
+        DatatypeValidator unsignedShortDV = new DecimalDatatypeValidator(unsignedIntDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDSHORT, unsignedShortDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_UNSIGNEDBYTE, new DecimalDatatypeValidator(unsignedShortDV, facets, false, null));
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_MININCLUSIVE, "1" );
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_POSITIVEINTEGER, new DecimalDatatypeValidator(nonNegativeDV, facets, false, null));
 
-            if (!fullSet)
-                return;
+        if (!fullSet)
+            return;
 
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_FLOAT, new FloatDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_DOUBLE, new DoubleDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_HEXBINARY, new HexBinaryDatatypeValidator(anySimpleType, null, false));
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NOTATION, new NOTATIONDatatypeValidator(anySimpleType, null, false));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_FLOAT, new FloatDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_DOUBLE, new DoubleDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_HEXBINARY, new HexBinaryDatatypeValidator(anySimpleType,  null, false, null));
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NOTATION, new NOTATIONDatatypeValidator(anySimpleType,  null, false, null));
 
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_REPLACE);
-            DatatypeValidator normalizedDV = new StringDatatypeValidator(stringDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NORMALIZEDSTRING, normalizedDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
-            DatatypeValidator tokenDV = new StringDatatypeValidator(normalizedDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_TOKEN, tokenDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
-            //REVISIT: won't run: regexparser, locale, resource bundle
-            //facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*");
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_LANGUAGE, new StringDatatypeValidator(tokenDV, facets, false));
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
-            facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NAME);
-            DatatypeValidator nameDV = new StringDatatypeValidator(tokenDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NAME, nameDV);
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
-            facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NCNAME);
-            DatatypeValidator ncnameDV = new StringDatatypeValidator(nameDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NCNAME, ncnameDV);
-            DatatypeValidator qnameDV = new QNameDatatypeValidator(anySimpleType, null, false);
-            ((QNameDatatypeValidator)qnameDV).setNCNameValidator(ncnameDV);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME, qnameDV);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_ID, new IDDatatypeValidator(ncnameDV, null, false));
-            DatatypeValidator idrefDV = new IDREFDatatypeValidator(ncnameDV, null, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_IDREF, idrefDV);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_IDREFS, new ListDatatypeValidator(idrefDV, null, true));
-            //REVISIT: entity validators
-            //DatatypeValidator entityDV = new ENTITYDatatypeValidator(ncnameDV, null, false);
-            DatatypeValidator entityDV = new StringDatatypeValidator(ncnameDV, null, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_ENTITY, entityDV);
-            //REVISIT: entity validators
-            //fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(entityDV, null, true);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_ENTITIES, new ListDatatypeValidator(entityDV, null, true));
-            facets.clear();
-            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
-            facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NMTOKEN);
-            DatatypeValidator nmtokenDV = new StringDatatypeValidator(tokenDV, facets, false);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NMTOKEN, nmtokenDV);
-            addGlobalTypeDecl(SchemaSymbols.ATTVAL_NMTOKENS, new ListDatatypeValidator(nmtokenDV, null, true));
-        } catch (InvalidDatatypeFacetException idf) {
-            // should never reach here
-            // REVISIT: report internal error
-        }
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_REPLACE);
+        DatatypeValidator normalizedDV = new StringDatatypeValidator(stringDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NORMALIZEDSTRING, normalizedDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+        DatatypeValidator tokenDV = new StringDatatypeValidator(normalizedDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_TOKEN, tokenDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+        //REVISIT: won't run: regexparser, locale, resource bundle
+        //facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*");
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_LANGUAGE, new StringDatatypeValidator(tokenDV, facets, false, null));
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+        facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NAME);
+        DatatypeValidator nameDV = new StringDatatypeValidator(tokenDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NAME, nameDV);
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+        facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NCNAME);
+        DatatypeValidator ncnameDV = new StringDatatypeValidator(nameDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NCNAME, ncnameDV);
+        DatatypeValidator qnameDV = new QNameDatatypeValidator(anySimpleType,  null, false, null);
+        ((QNameDatatypeValidator)qnameDV).setNCNameValidator(ncnameDV);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME, qnameDV);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_ID, new IDDatatypeValidator(ncnameDV,  null, false, null));
+        DatatypeValidator idrefDV = new IDREFDatatypeValidator(ncnameDV,  null, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_IDREF, idrefDV);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_IDREFS, new ListDatatypeValidator(idrefDV, null, true, null));
+        //REVISIT: entity validators
+        //DatatypeValidator entityDV = new ENTITYDatatypeValidator(ncnameDV,  null, false, null);
+        DatatypeValidator entityDV = new StringDatatypeValidator(ncnameDV,  null, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_ENTITY, entityDV);
+        //REVISIT: entity validators
+        //fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(entityDV, null, true);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_ENTITIES, new ListDatatypeValidator(entityDV, null, true, null));
+        facets.clear();
+        facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+        facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NMTOKEN);
+        DatatypeValidator nmtokenDV = new StringDatatypeValidator(tokenDV, facets, false, null);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NMTOKEN, nmtokenDV);
+        addGlobalTypeDecl(SchemaSymbols.ATTVAL_NMTOKENS, new ListDatatypeValidator(nmtokenDV, null, true, null));
+
     } // <init>(SymbolTable, boolean)
 
     /**
@@ -325,13 +325,14 @@ public class SchemaGrammar {
      * register one global type
      */
     public final void addGlobalTypeDecl(XSTypeDecl decl) {
-        if(decl == null) {
+        if (decl == null) {
             System.err.println("decl");
             System.exit(0);
-        } else if (decl.getXSTypeName() == null) {
+        }
+        else if (decl.getXSTypeName() == null) {
             System.err.println("decl.whatever");
             System.exit(0);
-            }
+        }
 
         fGlobalTypeDecls.put(decl.getXSTypeName(), decl);
     }
@@ -348,49 +349,49 @@ public class SchemaGrammar {
      * get one global attribute
      */
     public final XSAttributeDecl getGlobalAttributeDecl(String declName) {
-        return (XSAttributeDecl)fGlobalAttrDecls.get(declName);
+        return(XSAttributeDecl)fGlobalAttrDecls.get(declName);
     }
 
     /**
      * get one global attribute group
      */
     public final XSAttributeGroupDecl getGlobalAttributeGroupDecl(String declName) {
-        return (XSAttributeGroupDecl)fGlobalAttrGrpDecls.get(declName);
+        return(XSAttributeGroupDecl)fGlobalAttrGrpDecls.get(declName);
     }
 
     /**
      * get one global element
      */
     public final XSElementDecl getGlobalElementDecl(String declName) {
-        return (XSElementDecl)fGlobalElemDecls.get(declName);
+        return(XSElementDecl)fGlobalElemDecls.get(declName);
     }
 
     /**
      * get one global group
      */
     public final XSGroupDecl getGlobalGroupDecl(String declName) {
-        return (XSGroupDecl)fGlobalGroupDecls.get(declName);
+        return(XSGroupDecl)fGlobalGroupDecls.get(declName);
     }
 
     /**
      * get one global notation
      */
     public final XSNotationDecl getNotationDecl(String declName) {
-        return (XSNotationDecl)fGlobalNotationDecls.get(declName);
+        return(XSNotationDecl)fGlobalNotationDecls.get(declName);
     }
 
     /**
      * get one global type
      */
     public final XSTypeDecl getGlobalTypeDecl(String declName) {
-        return (XSTypeDecl)fGlobalTypeDecls.get(declName);
+        return(XSTypeDecl)fGlobalTypeDecls.get(declName);
     }
 
     /**
      * get one identity constraint
      */
     public final IdentityConstraint getIDConstraintDecl(String declName) {
-        return (IdentityConstraint)fGlobalIDConstraintDecls.get(declName);
+        return(IdentityConstraint)fGlobalIDConstraintDecls.get(declName);
     }
 
     // array to store complex type decls
@@ -419,6 +420,7 @@ public class SchemaGrammar {
     // the grammars to hold built-in types
     final static SchemaGrammar SG_SchemaNS = new SchemaGrammar(null, true);
     final static SchemaGrammar SG_SchemaBasicSet = new SchemaGrammar(null, false);
+
 
     static final XSComplexTypeDecl[] resize(XSComplexTypeDecl[] oldArray, int newSize) {
         XSComplexTypeDecl[] newArray = new XSComplexTypeDecl[newSize];

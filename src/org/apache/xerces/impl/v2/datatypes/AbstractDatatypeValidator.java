@@ -69,6 +69,7 @@ package org.apache.xerces.impl.v2.datatypes;
 import java.util.Hashtable;
 import java.util.Locale;
 import org.apache.xerces.impl.v2.XSTypeDecl;
+import org.apache.xerces.impl.XMLErrorReporter;
 
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
@@ -81,8 +82,9 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
     protected DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     protected Locale            fLocale  = null;
     protected short             fFlags = 0; //flags fixed facets
-
-     /**
+    protected XMLErrorReporter fErrorReporter = null;    
+        
+    /**
      * Checks that "content" string is valid
      * datatype.
      * If invalid a Datatype validation exception is thrown.

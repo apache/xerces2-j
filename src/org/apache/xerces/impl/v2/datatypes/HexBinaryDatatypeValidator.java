@@ -64,6 +64,8 @@ import java.util.Enumeration;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 import org.apache.xerces.impl.v2.util.HexBin;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * HexBinaryValidator validates that XML content is a W3C string type.
@@ -76,15 +78,15 @@ import org.apache.xerces.impl.v2.util.HexBin;
 public class HexBinaryDatatypeValidator extends AbstractStringValidator{
     
 
-    public  HexBinaryDatatypeValidator () throws InvalidDatatypeFacetException{
-        super ( null, null, false ); // Native, No Facets defined, Restriction
+    public  HexBinaryDatatypeValidator ()  {
+        super ( null, null, false, null ); // Native, No Facets defined, Restriction
 
     }
 
     public HexBinaryDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                        boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                        boolean derivedByList, XMLErrorReporter reporter) {
 
-        super (base, facets, derivedByList); 
+        super (base, facets, derivedByList, reporter); 
     }
 
     protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{
@@ -116,7 +118,6 @@ public class HexBinaryDatatypeValidator extends AbstractStringValidator{
 
     public Object clone() throws CloneNotSupportedException  {
         HexBinaryDatatypeValidator newObj = null;
-        try {
             newObj = new HexBinaryDatatypeValidator();
 
             newObj.fLocale           =  fLocale;
@@ -128,9 +129,6 @@ public class HexBinaryDatatypeValidator extends AbstractStringValidator{
             newObj.fRegex            =  fRegex;
             newObj.fEnumeration      =  fEnumeration;
             newObj.fFacetsDefined    =  fFacetsDefined;
-        } catch ( InvalidDatatypeFacetException ex) {
-            ex.printStackTrace();
-        }
         return newObj;
     }
 

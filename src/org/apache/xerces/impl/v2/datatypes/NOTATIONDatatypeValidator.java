@@ -59,6 +59,9 @@ package org.apache.xerces.impl.v2.datatypes;
 
 
 import java.util.Hashtable;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
+
 
 /**
  * NOTATIONValidator defines the interface that data type validators must obey.
@@ -79,14 +82,14 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
     private static AnyURIDatatypeValidator fgURIValidator  = null;
     */
 
-    public NOTATIONDatatypeValidator () throws InvalidDatatypeFacetException {
-        this ( null, null, false ); // Native, No Facets defined, Restriction
+    public NOTATIONDatatypeValidator ()   {
+        this ( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public NOTATIONDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-         boolean derivedByList ) throws InvalidDatatypeFacetException {
+         boolean derivedByList, XMLErrorReporter reporter) {
 
-        super (base, facets, derivedByList);
+        super (base, facets, derivedByList, reporter);
         // make a string validator for NCName and anyURI
 
         // REVISIT: do we really need to validate against value space..?

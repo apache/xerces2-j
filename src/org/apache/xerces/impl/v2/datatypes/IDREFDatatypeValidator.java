@@ -63,6 +63,8 @@ import java.util.Vector;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.impl.v2.msg.XMLMessages;
 import org.apache.xerces.impl.v2.SchemaSymbols;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * IDREFValidator defines the interface that data type validators must obey.
@@ -79,15 +81,15 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
     public static final  int                IDREF_VALIDATE  = 0;
     public static final  int                IDREF_CHECKID   = 1;
 
-    public IDREFDatatypeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
+    public IDREFDatatypeValidator ()   {
+        this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                    boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                    boolean derivedByList, XMLErrorReporter reporter) {
 
         // all facets are handled in StringDatatypeValidator
-        super (base, facets, derivedByList);
+        super (base, facets, derivedByList, reporter);
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )

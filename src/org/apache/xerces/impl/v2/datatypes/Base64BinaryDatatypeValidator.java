@@ -65,6 +65,8 @@ import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 import org.apache.xerces.impl.v2.util.Base64;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 /**
  * Base64BinaryValidator validates that XML content is a W3C string type.
  * @author Ted Leung
@@ -77,15 +79,15 @@ public class Base64BinaryDatatypeValidator extends AbstractStringValidator{
     
 
 
-    public  Base64BinaryDatatypeValidator () throws InvalidDatatypeFacetException{
-        super( null, null, false ); // Native, No Facets defined, Restriction
+    public  Base64BinaryDatatypeValidator ()  {
+        super( null, null, false , null); // Native, No Facets defined, Restriction
 
     }
 
     public Base64BinaryDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                           boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                           boolean derivedByList, XMLErrorReporter reporter) {
 
-        super (base, facets, derivedByList);         
+        super (base, facets, derivedByList, reporter);         
     }
 
     protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{

@@ -375,7 +375,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           }
 
 
-          typeInfo.fDatatypeValidator = createRestrictedValidator(baseValidator, fFacetData); 
+          typeInfo.fDatatypeValidator = createRestrictedValidator(baseValidator, fFacetData, fErrorReporter); 
           if (typeInfo.fDatatypeValidator == null) {
             // REVISIT error msg
             reportGenericSchemaError("Internal error - could not create a new validator");

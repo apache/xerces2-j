@@ -126,7 +126,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         //Register Primitive Datatypes
 
         if ( fRegistryExpanded == 0 ) { //Core datatypes shared by DTD attributes and Schema
-            try {
                 fDTDDatatypeRegistry.put("string",            new StringDatatypeValidator() );
                 fDTDDatatypeRegistry.put("ID",                new IDDatatypeValidator());
                 fDTDDatatypeRegistry.put("IDREF",             new IDREFDatatypeValidator());
@@ -148,12 +147,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 createDTDDatatypeValidator("NMTOKENS",  getDatatypeValidator( "NMTOKEN" ), null, true );
                 fRegistryExpanded = 1;
-            }
-            catch ( InvalidDatatypeFacetException ex ) {
-                ex.printStackTrace();
-            }
         }
     }
+    
 
 
     /**
@@ -166,7 +162,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         //Register Primitive Datatypes
         if ( fRegistryExpanded != 2 ) {
             DatatypeValidator v;
-            try {
                 //REVISIT: we want to create datatypes lazily
                 //         esspecially for the types that are not often used
                 //
@@ -297,11 +292,8 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 fRegistryExpanded = 2;
             }
-            catch ( InvalidDatatypeFacetException ex ) {
-                ex.printStackTrace();
-            }
-        }
     }
+    
 
     /**
      * An optimization option that we should write in the future is to separate the static list
@@ -316,7 +308,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     }
 
     public DatatypeValidator createDatatypeValidator(String typeName,
-                                                     DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
+                                                     DatatypeValidator base, Hashtable facets, boolean list )   {
         if ( base == null ) {
             return null;
         }
@@ -364,25 +356,26 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
     private DatatypeValidator createSchemaDatatypeValidator(String typeName,
-                                                            DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
+                                                            DatatypeValidator base, Hashtable facets, boolean list )   {
         DatatypeValidator primitive = createSchemaValidator(typeName, base, facets, list);
         registerSchemaValidator(typeName, primitive);
         return primitive;
     }
 
     private DatatypeValidator createDTDDatatypeValidator(String typeName,
-                                                         DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
+                                                         DatatypeValidator base, Hashtable facets, boolean list )   {
         DatatypeValidator primitive = createSchemaValidator(typeName, base, facets, list);
         registerDTDValidator(typeName, primitive);
         return primitive;
     }
 
     private DatatypeValidator createSchemaValidator (String typeName,
-                                                     DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException{
+                                                     DatatypeValidator base, Hashtable facets, boolean list )  {
 
         DatatypeValidator simpleType = null;
         if ( list ) {
-            simpleType = new ListDatatypeValidator(base, facets, list);
+            // REVISIT: set error handler
+            simpleType = new ListDatatypeValidator(base, facets, list, null);
         }
         else {
             try {
@@ -392,8 +385,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 if ( value != null && !(base instanceof StringDatatypeValidator) ) {
                     if ( !value.equals(SchemaSymbols.ATTVAL_COLLAPSE) )
-                        throw new InvalidDatatypeFacetException( "whiteSpace value '" + value +
-                                                                 "' for this type must be 'collapse'.");
+                        // REVISIT report error
+                        // "DatatypeFacetError", new Object [] { "whiteSpace value '" + value +
+                        //                                         "' for this type must be 'collapse'."},
                     facets.remove(SchemaSymbols.ELT_WHITESPACE);
                 }
 
@@ -435,7 +429,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
     private static Object createDatatypeValidator(Constructor validatorConstructor,
-                                                  Object[] arguments) throws InvalidDatatypeFacetException {
+                                                  Object[] arguments)  {
         Object validator = null;
         try {
             validator = validatorConstructor.newInstance(arguments);
@@ -461,7 +455,8 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 e.getTargetException().printStackTrace();
             }
             else {
-                throw new InvalidDatatypeFacetException( e.getTargetException().getMessage() );
+                // report errro
+                //throw new InvalidDatatypeFacetException( e.getTargetException().getMessage() );
             }
         }
 

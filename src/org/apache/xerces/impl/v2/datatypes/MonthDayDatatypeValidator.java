@@ -59,6 +59,8 @@
 package org.apache.xerces.impl.v2.datatypes;
 
 import java.util.Hashtable;
+ import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * Validator for <gMonthDay> datatype (W3C Schema Datatypes)
@@ -72,13 +74,13 @@ public class MonthDayDatatypeValidator extends DateTimeValidator {
     //size without time zone: --MM-DD    
     private final static int MONTHDAY_SIZE = 7;
 
-    public  MonthDayDatatypeValidator() throws InvalidDatatypeFacetException{
+    public  MonthDayDatatypeValidator()  {
         super();
     }
 
     public  MonthDayDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                        boolean derivedByList ) throws InvalidDatatypeFacetException {
-        super(base, facets, derivedByList);
+                                        boolean derivedByList, XMLErrorReporter reporter) {
+        super(base, facets, derivedByList, reporter);
     }
 
     /** 

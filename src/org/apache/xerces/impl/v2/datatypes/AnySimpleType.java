@@ -59,31 +59,41 @@ package org.apache.xerces.impl.v2.datatypes;
 
 import java.util.Hashtable;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
+
 /**
  * AnySimpleType is the base of all simple types.
  * @author Sandy Gao
  * @version $Id$
  */
 public class AnySimpleType extends AbstractDatatypeValidator {
-    public  AnySimpleType() throws InvalidDatatypeFacetException{
+    public  AnySimpleType() {
     }
 
-    public AnySimpleType(DatatypeValidator base, Hashtable facets, boolean derivedByList)
-           throws InvalidDatatypeFacetException {
+    public AnySimpleType(DatatypeValidator base, Hashtable facets, boolean derivedByList, 
+                         XMLErrorReporter reporter) {
 
         fBaseValidator = base;
+        fErrorReporter = reporter;
 
         if (facets != null && facets.size() != 0) {
             String msg = getErrorString(
-            DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_ANYSIMPLETYPE_FACET],
-            new Object[] { facets.toString() });
-        throw new InvalidDatatypeFacetException(msg);
-            
+                                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_ANYSIMPLETYPE_FACET],
+                                       new Object[] { facets.toString()});
+
+            if (fErrorReporter == null) {
+                throw new RuntimeException("InternalDatatype error AST.");
+            }
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "DatatypeFacetError", new Object[]{msg},
+                                       XMLErrorReporter.SEVERITY_ERROR);                    
+
         }
     }
 
     public Object validate(String content, Object state )
-           throws InvalidDatatypeValueException {
+    throws InvalidDatatypeValueException {
         return null;
     }
 
@@ -96,7 +106,7 @@ public class AnySimpleType extends AbstractDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-    public short getWSFacet (){
+    public short getWSFacet () {
         return DatatypeValidator.PRESERVE;
     }
 }

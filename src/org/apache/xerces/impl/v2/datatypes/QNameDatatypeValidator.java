@@ -61,6 +61,8 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.text.Collator;
 import org.apache.xerces.impl.v2.SchemaSymbols;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * QName Validator validates a QName type.
@@ -83,14 +85,14 @@ public class QNameDatatypeValidator extends  AbstractStringValidator {
     // REVISIT: synch issues?
     private static DatatypeValidator  fgStrValidator  = null;
 
-    public QNameDatatypeValidator () throws InvalidDatatypeFacetException {
-        this ( null, null, false ); // Native, No Facets defined, Restriction
+    public QNameDatatypeValidator ()   {
+        this ( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public QNameDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                    boolean derivedByList ) throws InvalidDatatypeFacetException  {
+                                    boolean derivedByList, XMLErrorReporter reporter)  {
 
-        super (base, facets, derivedByList);
+        super (base, facets, derivedByList, reporter);
     }
 
     protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{

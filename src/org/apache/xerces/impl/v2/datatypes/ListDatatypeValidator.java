@@ -65,6 +65,8 @@ import java.util.NoSuchElementException;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 /**
  * StringValidator validates that XML content is a W3C string type.
  * @author  Elena Litani
@@ -72,109 +74,125 @@ import org.apache.xerces.impl.v2.util.regex.RegularExpression;
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
-public class ListDatatypeValidator extends AbstractDatatypeValidator{
-    
+public class ListDatatypeValidator extends AbstractDatatypeValidator {
+
     private int        fLength           = 0;
     private int        fMaxLength        = Integer.MAX_VALUE;
     private int        fMinLength        = 0;
     private Vector     fEnumeration      = null;
 
-    public  ListDatatypeValidator () throws InvalidDatatypeFacetException{
-        this( null, null, false ); // Native, No Facets defined, Restriction
+    public  ListDatatypeValidator () {
+        this( null, null, false, null ); // Native, No Facets defined, Restriction
 
     }
 
     public ListDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-    boolean derivedByList ) throws InvalidDatatypeFacetException {
-
+                                   boolean derivedByList, XMLErrorReporter reporter) {
+        fErrorReporter = reporter;
         fBaseValidator = base; // Set base type 
+        try {
 
-        if ( facets != null  ){
-            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                String key = (String) e.nextElement();
-                if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
-                    String lengthValue = (String)facets.get(key);
+            if (facets != null) {
+                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                    String key = (String) e.nextElement();
+                    if (key.equals(SchemaSymbols.ELT_LENGTH)) {
+                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
+                        String lengthValue = (String)facets.get(key);
+                        try {
+                            fLength     = Integer.parseInt( lengthValue );
+                        }
+                        catch (NumberFormatException nfe) {
+                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
+                        }
+                        if (fLength < 0)
+                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
+
+                    }
+                    else if (key.equals(SchemaSymbols.ELT_MINLENGTH)) {
+                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
+                        String minLengthValue = (String)facets.get(key);
+                        try {
+                            fMinLength     = Integer.parseInt( minLengthValue );
+                        }
+                        catch (NumberFormatException nfe) {
+                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
+                        }
+                    }
+                    else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
+                        String maxLengthValue = (String)facets.get(key);
+                        try {
+                            fMaxLength     = Integer.parseInt( maxLengthValue );
+                        }
+                        catch (NumberFormatException nfe) {
+                            throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
+                        }
+                    }
+                    else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                        fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
+                        fEnumeration    = (Vector)facets.get(key);
+                    }
+                    else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                        fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
+                        fPattern = (String)facets.get(key);
+                        if (fPattern != null)
+                            fRegex = new RegularExpression(fPattern, "X");
+                    }
+                    else {
+                        String msg = getErrorString(
+                                                   DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_LIST_FACET],
+                                                   new Object[] { key});
+                        throw new InvalidDatatypeFacetException();
+                    }
+                }
+                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 )) {
+                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 )) {
+                        throw new InvalidDatatypeFacetException(
+                                                               "It is an error for both length and maxLength to be members of facets." );  
+                    }
+                    else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 )) {
+                        throw new InvalidDatatypeFacetException(
+                                                               "It is an error for both length and minLength to be members of facets." );
+                    }
+                }
+
+                if (( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
+                                          DatatypeValidator.FACET_MAXLENGTH) ) != 0 )) {
+                    if (fMinLength > fMaxLength) {
+                        throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
+                                                                 "must be greater that the value of maxLength" + fMaxLength );
+                    }
+                }
+
+                // check 4.3.5.c0 must: enumeration values from the value space of base
+                //REVISIT: we should try either to delay it till validate() or
+                //         store enumeration values in _value_space 
+                //         otherwise we end up creating and throwing objects  
+                if (base != null &&
+                    (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
+                    (fEnumeration != null)) {
+                    int i = 0;
                     try {
-                        fLength     = Integer.parseInt( lengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
+                        for (; i < fEnumeration.size(); i++) {
+                            base.validate ((String)fEnumeration.elementAt(i), null);
+                        }
                     }
-                    if ( fLength < 0 )
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
+                    catch (Exception idve) {
+                        throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
+                                                                 "' must be from the value space of base.");
+                    }
+                }
+            }// End of Facets Setting
+        }
+        catch (Exception e) {
 
-                } 
-                else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
-                    String minLengthValue = (String)facets.get(key);
-                    try {
-                        fMinLength     = Integer.parseInt( minLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
-                    }
-                } 
-                else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
-                    String maxLengthValue = (String)facets.get(key);
-                    try {
-                        fMaxLength     = Integer.parseInt( maxLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                    }
-                } 
-                else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                    fEnumeration    = (Vector)facets.get(key);
-                }
-                else if ( key.equals(SchemaSymbols.ELT_PATTERN) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
-                    fPattern = (String)facets.get(key);
-                    if ( fPattern != null )
-                        fRegex = new RegularExpression(fPattern, "X");
-                }            
-               else {
-                   String msg = getErrorString(
-                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_LIST_FACET],
-                       new Object[] { key });
-                   throw new InvalidDatatypeFacetException();
-               }
+            if (fErrorReporter == null) {
+                throw new RuntimeException("InternalDatatype error LDV.");
             }
-            if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException(
-                    "It is an error for both length and maxLength to be members of facets." );  
-                } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException(
-                    "It is an error for both length and minLength to be members of facets." );
-                }
-            }
-
-            if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                if ( fMinLength > fMaxLength ) {
-                    throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                    "must be greater that the value of maxLength" + fMaxLength );
-                }
-            }
-
-            // check 4.3.5.c0 must: enumeration values from the value space of base
-            //REVISIT: we should try either to delay it till validate() or
-            //         store enumeration values in _value_space 
-            //         otherwise we end up creating and throwing objects  
-            if ( base != null &&
-                (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
-                (fEnumeration != null) ) {
-                int i = 0;
-                try {
-                    for (; i < fEnumeration.size(); i++) {
-                        base.validate ((String)fEnumeration.elementAt(i), null);
-                    }
-                } catch ( Exception idve ){
-                    throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
-                                                             "' must be from the value space of base.");
-                }
-            }
-        }// End of Facets Setting
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "DatatypeFacetError", new Object [] { ((Exception)e).getMessage()},
+                                       XMLErrorReporter.SEVERITY_ERROR);                    
+        }
     }
 
 
@@ -191,10 +209,11 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
      */
     public Object validate(String content, Object state)  throws InvalidDatatypeValueException
     {
-        if ( content == null && state != null ) {
+        if (content == null && state != null) {
             this.fBaseValidator.validate( content, state );//Passthrough setup information
-                                                          //for state validators
-        } else {
+            //for state validators
+        }
+        else {
             checkContentEnum( content, state , null); 
         }
         return null;
@@ -206,13 +225,13 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
      * @return                          A Hashtable containing the facets
      *         for this datatype.
      */
-    public Hashtable getFacets(){
+    public Hashtable getFacets() {
         return null;
     }
 
-    public int compare( String value1, String value2 ){
+    public int compare( String value1, String value2 ) {
         if (fBaseValidator instanceof ListDatatypeValidator) { //derived by restriction
-          return ((ListDatatypeValidator)this.fBaseValidator).compare( value1, value2 );
+            return((ListDatatypeValidator)this.fBaseValidator).compare( value1, value2 );
         }
         // <list> datatype
         StringTokenizer pList1 = new StringTokenizer( value1 );
@@ -226,14 +245,14 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
         }
         else { //compare each token
             int i=0;
-            while(i++<numberOfTokens) {
-                if ( this.fBaseValidator != null ) {
+            while (i++<numberOfTokens) {
+                if (this.fBaseValidator != null) {
                     int returnValue = this.fBaseValidator.compare( pList1.nextToken(), pList2.nextToken());
                     if (returnValue!=0) {
                         return returnValue; //REVISIT: does it make sense to return -1 or +1..?
                     }
                 }
-                
+
             }
             return 0;
         }
@@ -244,20 +263,16 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
    */
     public Object clone() throws CloneNotSupportedException  {
         ListDatatypeValidator newObj = null;
-        try {
-            newObj = new ListDatatypeValidator();
+        newObj = new ListDatatypeValidator();
 
-            newObj.fLocale           =  this.fLocale;
-            newObj.fBaseValidator    =  this.fBaseValidator;
-            newObj.fLength           =  this.fLength;
-            newObj.fMaxLength        =  this.fMaxLength;
-            newObj.fMinLength        =  this.fMinLength;
-            newObj.fPattern          =  this.fPattern;
-            newObj.fEnumeration      =  this.fEnumeration;
-            newObj.fFacetsDefined    =  this.fFacetsDefined;
-        } catch ( InvalidDatatypeFacetException ex) {
-            ex.printStackTrace();
-        }
+        newObj.fLocale           =  this.fLocale;
+        newObj.fBaseValidator    =  this.fBaseValidator;
+        newObj.fLength           =  this.fLength;
+        newObj.fMaxLength        =  this.fMaxLength;
+        newObj.fMinLength        =  this.fMinLength;
+        newObj.fPattern          =  this.fPattern;
+        newObj.fEnumeration      =  this.fEnumeration;
+        newObj.fFacetsDefined    =  this.fFacetsDefined;
         return newObj;
     }
 
@@ -270,61 +285,63 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
      * @exception throws InvalidDatatypeException if the content is not valid
      * @exception InvalidDatatypeValueException
      */
-     protected void checkContentEnum( String content,  Object state, Vector enumeration )
-                                throws InvalidDatatypeValueException {
-            
-            //REVISIT: attemt to make enumeration to be validated against value space.
-            //a redesign of Datatypes might help to reduce complexity of this validation
-        
-         StringTokenizer parsedList = new StringTokenizer( content );
-         int numberOfTokens = parsedList.countTokens();         
-         if (fBaseValidator instanceof ListDatatypeValidator) { 
+    protected void checkContentEnum( String content,  Object state, Vector enumeration )
+    throws InvalidDatatypeValueException {
+
+        //REVISIT: attemt to make enumeration to be validated against value space.
+        //a redesign of Datatypes might help to reduce complexity of this validation
+
+        StringTokenizer parsedList = new StringTokenizer( content );
+        int numberOfTokens = parsedList.countTokens();         
+        if (fBaseValidator instanceof ListDatatypeValidator) {
             //<simpleType name="fRestriction"><restriction base="fList">...</restriction></simpleType>
             try {
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( numberOfTokens > fMaxLength ) {
+                if ((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0) {
+                    if (numberOfTokens > fMaxLength) {
                         throw new InvalidDatatypeValueException("Value '"+content+
-                        "' with length ='"+  numberOfTokens + "' tokens"+
-                        "' exceeds maximum length facet of '"+fMaxLength+"' tokens.");
+                                                                "' with length ='"+  numberOfTokens + "' tokens"+
+                                                                "' exceeds maximum length facet of '"+fMaxLength+"' tokens.");
                     }
                 }
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( numberOfTokens < fMinLength ) {
+                if ((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0) {
+                    if (numberOfTokens < fMinLength) {
                         throw new InvalidDatatypeValueException("Value '"+content+
-                        "' with length ='"+ numberOfTokens+ "' tokens" +
-                        "' is less than minimum length facet of '"+fMinLength+"' tokens." );
+                                                                "' with length ='"+ numberOfTokens+ "' tokens" +
+                                                                "' is less than minimum length facet of '"+fMinLength+"' tokens." );
                     }
                 }
 
-                if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( numberOfTokens != fLength ) {
+                if ((fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0) {
+                    if (numberOfTokens != fLength) {
                         throw new InvalidDatatypeValueException("Value '"+content+
-                        "' with length ='"+ numberOfTokens+ "' tokens" +
-                        "' is not equal to length facet of '"+fLength+"' tokens.");
+                                                                "' with length ='"+ numberOfTokens+ "' tokens" +
+                                                                "' is not equal to length facet of '"+fLength+"' tokens.");
                     }
                 }
                 if (enumeration!=null) {
                     if (!verifyEnum(enumeration)) {
                         String msg = getErrorString(
-                            DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_ENUM_VALUE],
-                            new Object [] { enumeration });
+                                                   DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_ENUM_VALUE],
+                                                   new Object [] { enumeration});
                         throw new InvalidDatatypeValueException(msg);
                     }
-                }else {
+                }
+                else {
                     enumeration = (fEnumeration!=null) ? fEnumeration : null;
                 }
-                                      
+
                 // enumeration must be passed till we know what "itemType" is
                 // to be able to validate against value space
                 ((ListDatatypeValidator)this.fBaseValidator).checkContentEnum( content, state, enumeration );
-            } catch ( NoSuchElementException e ) {
+            }
+            catch (NoSuchElementException e) {
                 e.printStackTrace();
             }
-        } 
-        else { 
+        }
+        else {
             //the case:
             //<simpleType name="fList"><list itemType="float"/></simpleType>
-            
+
             if (enumeration !=null) {
                 StringTokenizer eTokens = null; //temporary list of enumeration tokens 
                 StringTokenizer cTokens = null; //list of content tokens
@@ -336,24 +353,25 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                 Vector enumTemp = new Vector(); //temporary vector to store enumeration token
                 enumTemp.setSize(1);
                 String currentEnumeration = null; //enum value: <enumeration value="1 2 3"/>
-                
+
                 for (int i=0;i<eSize;i++) { //loop through each enumeration
                     currentEnumeration = (String)enumeration.elementAt(i);
                     eTokens = new StringTokenizer (currentEnumeration);
                     valid = true;
 
                     cTokens = (i==0)?parsedList:new StringTokenizer( content );
-                    
+
                     if (numberOfTokens == eTokens.countTokens()) {
                         try {
                             //try string comparison first
                             if (currentEnumeration.equals(content)) {
                                 for (int k=0; k<numberOfTokens;k++) { //validate against base type each token
-                                    if ( this.fBaseValidator != null ) {
+                                    if (this.fBaseValidator != null) {
                                         this.fBaseValidator.validate( cTokens.nextToken(), state );
                                     }
                                 }
-                            } else  { //content="1.0 2" ; enumeration = "1 2"
+                            }
+                            else { //content="1.0 2" ; enumeration = "1 2"
                                 for (int j=0;j<numberOfTokens;j++) {
                                     token = cTokens.nextToken();
                                     eToken = eTokens.nextToken();
@@ -361,7 +379,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                                     //REVISIT: date/time enumeration support
                                     if (fBaseValidator instanceof AbstractNumericValidator) {
                                         ((AbstractNumericValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
-                                    } else { 
+                                    }
+                                    else {
                                         if (!token.equals(eToken)) { //validate enumeration for all other types
                                             throw new InvalidDatatypeValueException("Value '"+content+ "' must be one of "+enumeration);
                                         }
@@ -369,10 +388,12 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                                     }
                                 }
                             }
-                        } catch (InvalidDatatypeValueException e) {
+                        }
+                        catch (InvalidDatatypeValueException e) {
                             valid = false;
                         }
-                    } else //numOfTokens in enumeration != numOfTokens in content
+                    }
+                    else //numOfTokens in enumeration != numOfTokens in content
                         valid = false;
                     if (valid) break;
                 } //end for loop
@@ -382,7 +403,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             }//enumeration != null
             else {   //no enumeration
                 for (int k=0; k<numberOfTokens;k++) {
-                    if ( this.fBaseValidator != null ) {//validate against parent type if any
+                    if (this.fBaseValidator != null) {//validate against parent type if any
                         this.fBaseValidator.validate( parsedList.nextToken(), state );
                     }
                 }
@@ -404,7 +425,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
     *
     * @returns true if enumeration is subset of fEnumeration, false otherwise
     */    
-    private boolean verifyEnum (Vector enum){
+    private boolean verifyEnum (Vector enum) {
 
         /* REVISIT: won't work for list datatypes in some cases: */
         if ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0) {

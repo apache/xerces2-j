@@ -63,6 +63,8 @@ import java.util.Vector;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.impl.v2.msg.XMLMessages;
 import org.apache.xerces.impl.v2.SchemaSymbols;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
  * DataTypeValidator defines the interface that data type validators must obey.
@@ -75,15 +77,15 @@ import org.apache.xerces.impl.v2.SchemaSymbols;
 public class IDDatatypeValidator extends StringDatatypeValidator {
     private static Object                   fNullValue      = new Object();
 
-    public IDDatatypeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
+    public IDDatatypeValidator ()   {
+        this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                 boolean derivedByList ) throws InvalidDatatypeFacetException  {
+                                 boolean derivedByList, XMLErrorReporter reporter)  {
 
         // all facets are handled in StringDatatypeValidator
-        super (base, facets, derivedByList);
+        super (base, facets, derivedByList, reporter);
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )

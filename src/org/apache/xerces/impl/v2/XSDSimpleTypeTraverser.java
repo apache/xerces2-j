@@ -160,7 +160,6 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         String nameProperty  = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
         String qualifiedName = nameProperty;
         Hashtable fFacetData = null;
-
         //---------------------------------------------------
         // set qualified name
         //---------------------------------------------------
@@ -251,7 +250,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
         if (DOMUtil.getNextSiblingElement(content) != null) {
             // REVISIT: Localize
-            reportGenericSchemaError("error in content of simpleType");
+
+            Object[] args = { qualifiedName};
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "InvalidSTContent",
+                                       args, XMLErrorReporter.SEVERITY_ERROR);
+            
         }
 
         DatatypeValidator baseValidator = null;
@@ -390,25 +394,20 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 fListName = fSchemaHandler.EMPTY_STRING;
             }
         }
-
         if (restriction && content != null) {
             fFacetInfo fi = traverseFacets(content, contentAttrs,nameProperty, baseValidator, schemaDoc, fGrammar);
             fFacetData = fi.facetdata;
         }
-
         DatatypeValidator newDV = null;
+
         if (list) {
-            try {
-                newDV = new ListDatatypeValidator(baseValidator, fFacetData, true);
-            } catch (InvalidDatatypeFacetException e) {
-                reportGenericSchemaError(e.getMessage());
-            }
+                newDV = new ListDatatypeValidator(baseValidator, fFacetData, true, fErrorReporter);
         }
-        else if (restriction) {
-            newDV = createRestrictedValidator(baseValidator, fFacetData); 
+        else if (restriction) {            
+            newDV = createRestrictedValidator(baseValidator, fFacetData, fErrorReporter);
         }
         else { //union
-            newDV = new UnionDatatypeValidator(dTValidators);
+            newDV = new UnionDatatypeValidator(dTValidators, fErrorReporter);
         }
 
         if (newDV != null && isGlobal) {

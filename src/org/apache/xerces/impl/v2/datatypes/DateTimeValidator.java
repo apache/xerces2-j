@@ -62,6 +62,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 import org.apache.xerces.impl.v2.SchemaSymbols;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 
 /**
@@ -134,14 +136,14 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     //default constractor
 
-    public  DateTimeValidator () throws InvalidDatatypeFacetException {
-        super( null, null, false ); // Native, No Facets defined, Restriction
+    public  DateTimeValidator ()   {
+        super( null, null, false , null); // Native, No Facets defined, Restriction
 
     }
 
-    public DateTimeValidator (DatatypeValidator base, Hashtable facets, boolean derivedByList ) 
-    throws InvalidDatatypeFacetException {
-        super (base, facets, derivedByList);
+    public DateTimeValidator (DatatypeValidator base, Hashtable facets, boolean derivedByList, XMLErrorReporter reporter ) 
+      {
+        super (base, facets, derivedByList, reporter);
     }
 
     protected void initializeValues(){
@@ -683,7 +685,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
 
         //validate days
-        if ( data[D]>maxDayInMonthFor(data[CY], data[M]) ) {
+        if ( data[D]>maxDayInMonthFor(data[CY], data[M]) ||  data[D]==0) {
             throw new RuntimeException("The day must have values 1 to 31");
         }
 

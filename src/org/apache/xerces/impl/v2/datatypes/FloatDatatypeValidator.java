@@ -65,6 +65,9 @@ import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
+
 /**
  *
  * @author  Elena Litani
@@ -76,14 +79,14 @@ import java.util.NoSuchElementException;
 
 public class FloatDatatypeValidator extends AbstractNumericValidator {
 
-    public FloatDatatypeValidator () throws InvalidDatatypeFacetException{
-        this( null, null, false ); // Native, No Facets defined, Restriction
+    public FloatDatatypeValidator ()  {
+        this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public FloatDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                    boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                    boolean derivedByList, XMLErrorReporter reporter) {
         // Set base type
-        super (base, facets, derivedByList);
+        super (base, facets, derivedByList, reporter);
     }
     
    public int compare( String value1, String value2) {

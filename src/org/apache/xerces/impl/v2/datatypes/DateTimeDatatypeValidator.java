@@ -58,6 +58,8 @@
 package org.apache.xerces.impl.v2.datatypes;
 
 import java.util.Hashtable;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 
 /**
@@ -68,14 +70,14 @@ import java.util.Hashtable;
  */
 public class DateTimeDatatypeValidator extends DateTimeValidator {
 
-    public  DateTimeDatatypeValidator() throws InvalidDatatypeFacetException{
+    public  DateTimeDatatypeValidator()  {
         super();
     }
 
 
     public  DateTimeDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                        boolean derivedByList ) throws InvalidDatatypeFacetException {
-        super (base, facets, derivedByList);
+                                        boolean derivedByList, XMLErrorReporter reporter) {
+        super (base, facets, derivedByList, reporter);
     }
 
     /**

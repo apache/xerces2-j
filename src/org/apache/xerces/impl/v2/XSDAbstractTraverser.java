@@ -138,15 +138,15 @@ abstract class XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
-        for(Element child = DOMUtil.getFirstChildElement(annotationDecl);
+        for (Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
             child = DOMUtil.getNextSiblingElement(child)) {
             String name = child.getLocalName();
 
             // the only valid children of "annotation" are
             // "appinfo" and "documentation"
-            if(!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
-                 (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
+            if (!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
+                  (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
                 reportGenericSchemaError("an <annotation> can only contain <appinfo> and <documentation> elements");
             }
 
@@ -161,25 +161,43 @@ abstract class XSDAbstractTraverser {
     }
 
     DatatypeValidator createRestrictedValidator(DatatypeValidator baseValidator, 
-                                                Hashtable fFacetData) { 
+                                                Hashtable facetData, XMLErrorReporter reporter) {
 
         DatatypeValidator newDV=null;
         Class validatorDef = baseValidator.getClass();
         Class [] validatorArgsClass = new Class[] {
             org.apache.xerces.impl.v2.datatypes.DatatypeValidator.class,
             java.util.Hashtable.class,
-            boolean.class};
+            boolean.class, 
+            org.apache.xerces.impl.XMLErrorReporter.class};
+        if (facetData != null) {
 
-        Object [] validatorArgs = new Object[] {baseValidator, fFacetData, Boolean.FALSE};
+            String value = (String)facetData.get(SchemaSymbols.ELT_WHITESPACE);
+            //for all datatypes other than string, we don't pass WHITESPACE Facet
+            //its value is always 'collapse' and cannot be reset by user
+            if (value != null && !(baseValidator instanceof StringDatatypeValidator)) {
+                if (!value.equals(SchemaSymbols.ATTVAL_COLLAPSE))
+                    reporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                         "WhitespaceFacetError",
+                                         new Object [] { value},
+                                         XMLErrorReporter.SEVERITY_ERROR);
+                facetData.remove(SchemaSymbols.ELT_WHITESPACE);
+            }
+        }
+        Object [] validatorArgs = new Object[] {baseValidator, facetData, Boolean.FALSE, fErrorReporter};
+
         try {
             Constructor validatorConstructor = validatorDef.getConstructor( validatorArgsClass );
+
             newDV = (DatatypeValidator) validatorConstructor.newInstance(validatorArgs);
-        } catch (NoSuchMethodException e) {
-        } catch ( InstantiationException e ) {
-        } catch ( IllegalAccessException e ) {
-        } catch ( IllegalArgumentException e ) {
-        } catch ( InvocationTargetException e ) {
+
+        }catch (NoSuchMethodException e) {
+        }catch (InstantiationException e) {
+        }catch (IllegalAccessException e) {
+        }catch (IllegalArgumentException e) {
             reportGenericSchemaError(e.getMessage());
+        }catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
         return newDV;
 
@@ -192,13 +210,13 @@ abstract class XSDAbstractTraverser {
     private final QName fQName = new QName();
 
     class fFacetInfo {
-      Hashtable facetdata;
-      Element nodeAfterFacets;
+        Hashtable facetdata;
+        Element nodeAfterFacets;
     }
 
     fFacetInfo traverseFacets(Element content, Object[] contentAttrs, String simpleTypeName, 
-               DatatypeValidator baseValidator, XSDocumentInfo schemaDoc, 
-               SchemaGrammar grammar) {
+                              DatatypeValidator baseValidator, XSDocumentInfo schemaDoc, 
+                              SchemaGrammar grammar) {
 
         fFacetInfo fi = new fFacetInfo();
         Hashtable fFacetData = new Hashtable(10); 
@@ -231,11 +249,11 @@ abstract class XSDAbstractTraverser {
                     String uriStr = schemaDoc.fNamespaceSupport.getURI(prefix);
                     fQName.setValues(prefix, localpart, null, uriStr );
                     XSNotationDecl notation = (XSNotationDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE , fQName);
-    
+
                     if (notation == null) {
-                            reportGenericSchemaError("Notation '" + localpart +
-                                                     "' not found in the grammar "+ uriStr);
-    
+                        reportGenericSchemaError("Notation '" + localpart +
+                                                 "' not found in the grammar "+ uriStr);
+
                     }
                     enumVal=simpleTypeName;
                 }
@@ -249,7 +267,7 @@ abstract class XSDAbstractTraverser {
                                            "ListUnionRestrictionError",
                                            args,
                                            XMLErrorReporter.SEVERITY_ERROR);
-    
+
             }
             else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
                 if (fPattern == null) {
@@ -299,11 +317,11 @@ abstract class XSDAbstractTraverser {
                     facetType = DatatypeValidator.FACET_FRACTIONDIGITS; 
                 }
                 else if (facet.equals(SchemaSymbols.ELT_WHITESPACE)) {
-                     
-                      if (baseValidator instanceof StringDatatypeValidator) 
-                         facetType= DatatypeValidator.FACET_WHITESPACE;
+
+                    if (baseValidator instanceof StringDatatypeValidator)
+                        facetType= DatatypeValidator.FACET_WHITESPACE;
                 }
-                else if (facet.equals(SchemaSymbols.ELT_LENGTH)) { 
+                else if (facet.equals(SchemaSymbols.ELT_LENGTH)) {
                 }
                 else {
                     break;   // a non-facet
@@ -333,7 +351,7 @@ abstract class XSDAbstractTraverser {
         fi.facetdata = fFacetData;
         fi.nodeAfterFacets = content;
         return fi;
-    
+
     }
 
     //
@@ -352,43 +370,43 @@ abstract class XSDAbstractTraverser {
             childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
-                              schemaDoc, grammar);
-             	if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.fTargetNamespace,
+                                                                               schemaDoc, grammar);
+                if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.fTargetNamespace,
                                             tempAttrUse.fAttrDecl.fName)==null) {
-                   attrGrp.addAttributeUse(tempAttrUse);
+                    attrGrp.addAttributeUse(tempAttrUse);
                 }
                 else {
-		    reportGenericSchemaError("Duplicate attribute " + 
-                                tempAttrUse.fAttrDecl.fName + " found ");
+                    reportGenericSchemaError("Duplicate attribute " + 
+                                             tempAttrUse.fAttrDecl.fName + " found ");
                 }
             }
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //REVISIT: do we need to save some state at this point??
                 tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
-                              child, schemaDoc, grammar);
+                                                                                   child, schemaDoc, grammar);
                 XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
                 XSAttributeUse existingAttrUse = null;
                 for (int i=0; i<attrUseS.length; i++) {
-                	existingAttrUse = attrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
-                	                                          attrUseS[i].fAttrDecl.fName);
-                	if (existingAttrUse == null) {
-				attrGrp.addAttributeUse(attrUseS[i]);
-			}
-			else {
-				reportGenericSchemaError("Duplicate attribute " + 
-                                existingAttrUse.fAttrDecl.fName + " found ");
-			}
+                    existingAttrUse = attrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
+                                                              attrUseS[i].fAttrDecl.fName);
+                    if (existingAttrUse == null) {
+                        attrGrp.addAttributeUse(attrUseS[i]);
+                    }
+                    else {
+                        reportGenericSchemaError("Duplicate attribute " + 
+                                                 existingAttrUse.fAttrDecl.fName + " found ");
+                    }
                 }
-                
+
                 if (tempAttrGrp.fAttributeWC != null) {
-                	if (attrGrp.fAttributeWC == null) {
-                		attrGrp.fAttributeWC = tempAttrGrp.fAttributeWC;
-                	}
-                	// perform intersection of attribute wildcard
-                	else {
-                		attrGrp.fAttributeWC = attrGrp.fAttributeWC.
-                				       performIntersectionWith(tempAttrGrp.fAttributeWC);
-                	}
+                    if (attrGrp.fAttributeWC == null) {
+                        attrGrp.fAttributeWC = tempAttrGrp.fAttributeWC;
+                    }
+                    // perform intersection of attribute wildcard
+                    else {
+                        attrGrp.fAttributeWC = attrGrp.fAttributeWC.
+                                               performIntersectionWith(tempAttrGrp.fAttributeWC);
+                    }
                 }
             }
             else
@@ -399,14 +417,14 @@ abstract class XSDAbstractTraverser {
             childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
                 XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.
-                			    traverseAnyAttribute(child, schemaDoc, grammar);
+                                            traverseAnyAttribute(child, schemaDoc, grammar);
                 if (attrGrp.fAttributeWC == null) {
-                	attrGrp.fAttributeWC = tempAttrWC;
+                    attrGrp.fAttributeWC = tempAttrWC;
                 }
                 // perform intersection of attribute wildcard
                 else {
-                	attrGrp.fAttributeWC = attrGrp.fAttributeWC.
-                			       performIntersectionWith(tempAttrWC);
+                    attrGrp.fAttributeWC = attrGrp.fAttributeWC.
+                                           performIntersectionWith(tempAttrWC);
                 }
                 child = DOMUtil.getNextSiblingElement(child);
             }
@@ -453,16 +471,16 @@ abstract class XSDAbstractTraverser {
     Element checkContent( Element content, Object[] parentAttrs, XSDocumentInfo schemaDoc ) {
 
         if (content == null) {
-             return content;
+            return content;
         }
 
         if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
 
-             traverseAnnotationDecl(content, parentAttrs, false, schemaDoc);
+            traverseAnnotationDecl(content, parentAttrs, false, schemaDoc);
 
-             content = DOMUtil.getNextSiblingElement(content);
+            content = DOMUtil.getNextSiblingElement(content);
         }
-            
+
         return content;
     }
 
@@ -502,7 +520,7 @@ abstract class XSDAbstractTraverser {
         // for the child of a model group definition.
         if (isGroupChild && (!defaultMin || !defaultMax)) {
             Object[] args = new Object[]{parent.getAttribute(SchemaSymbols.ATT_NAME),
-                                         particleName};
+                particleName};
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "MinMaxOnGroupChild",
                                        args,

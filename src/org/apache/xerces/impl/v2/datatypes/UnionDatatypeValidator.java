@@ -64,6 +64,8 @@ import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 
 
@@ -81,15 +83,19 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     private StringBuffer errorMsg = null;   
 
 
-    public  UnionDatatypeValidator () throws InvalidDatatypeFacetException{
-        this( null, null, false ); // Native, No Facets defined, Restriction
+    public  UnionDatatypeValidator ()  {
+        this( null, null, false, null ); // Native, No Facets defined, Restriction
 
     }
 
 
-    public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets, boolean derivedBy ) throws InvalidDatatypeFacetException {
+    public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+                                    boolean derivedBy, XMLErrorReporter reporter )   {
+        fErrorReporter = reporter;
         fBaseValidator = base;  
         //facets allowed are: pattern & enumeration
+        try{
+        
         if ( facets != null ) {
             for ( Enumeration e = facets.keys(); e.hasMoreElements(); ) {
                 String key = (String) e.nextElement();
@@ -126,11 +132,16 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
                 }
             }
         }// End of Facets Setting
+        } catch (Exception e){
+                                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                   "DatatypeFacetError", new Object [] { ((Exception)e).getMessage()},
+                                                    XMLErrorReporter.SEVERITY_ERROR);                    
+        }
 
     }
 
-    public UnionDatatypeValidator ( Vector base)  {
-
+    public UnionDatatypeValidator ( Vector base, XMLErrorReporter reporter)  {
+        fErrorReporter = reporter;
         if ( base !=null ) {
             fValidatorsSize = base.size();
             fBaseValidators = new Vector(fValidatorsSize);
@@ -195,7 +206,6 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
    */
     public Object clone() throws CloneNotSupportedException  {
         UnionDatatypeValidator newObj = null;
-        try {
             newObj = new UnionDatatypeValidator();
             newObj.fLocale           =  this.fLocale;
             newObj.fBaseValidator    =  this.fBaseValidator;
@@ -203,10 +213,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
             newObj.fPattern          =  this.fPattern;
             newObj.fEnumeration      =  this.fEnumeration;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-        }
-        catch ( InvalidDatatypeFacetException ex ) {
-            ex.printStackTrace();
-        }
+       
         return(newObj);
 
     }
