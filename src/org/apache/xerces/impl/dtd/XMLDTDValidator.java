@@ -144,10 +144,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     protected static final String DYNAMIC_VALIDATION = 
     Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
-    /** Feature identifier: xml schema validation */
-    protected static final String SCHEMA_VALIDATION = 
-    Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_VALIDATION_FEATURE;
-
     /** Feature identifier: warn on duplicate attdef */
     protected static final String WARN_ON_DUPLICATE_ATTDEF = 
     Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE; 
@@ -181,8 +177,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     protected static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
         VALIDATION,
-        DYNAMIC_VALIDATION,
-        SCHEMA_VALIDATION
+        DYNAMIC_VALIDATION
     };
 
     /** Recognized properties. */
@@ -544,10 +539,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             fValidation = false;
         }
         try {
-            fDTDValidation = !(componentManager.getFeature(SCHEMA_VALIDATION));
+            fDTDValidation = !(componentManager.getFeature(Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE));
         }
         catch (XMLConfigurationException e) {
-            fValidation = false;
+            // must be in a schema-less configuration!
+            fDTDValidation = true;
         }
 
         // Xerces features
