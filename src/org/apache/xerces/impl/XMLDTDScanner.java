@@ -1218,7 +1218,7 @@ public class XMLDTDScanner
             while (true) {
                 String peName = fEntityScanner.scanName();
                 if (peName == null) {
-                    reportFatalError("NameRequiredInPERefrence",
+                    reportFatalError("NameRequiredInPEReference",
                                      null);
                 }
                 else if (!fEntityScanner.skipChar(';')) {
@@ -1639,7 +1639,7 @@ public class XMLDTDScanner
         while (true) {
             String name = fEntityScanner.scanName();
             if (name == null) {
-                reportFatalError("NameRequiredInPERefrence",
+                reportFatalError("NameRequiredInPEReference",
                                  null);
             }
             else if (!fEntityScanner.skipChar(';')) {
@@ -1683,7 +1683,7 @@ public class XMLDTDScanner
                     while (true) {
                         String peName = fEntityScanner.scanName();
                         if (peName == null) {
-                            reportFatalError("NameRequiredInPERefrence",
+                            reportFatalError("NameRequiredInPEReference",
                                              null);
                         }
                         else if (!fEntityScanner.skipChar(';')) {
