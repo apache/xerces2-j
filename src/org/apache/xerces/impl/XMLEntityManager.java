@@ -2818,8 +2818,10 @@ public class XMLEntityManager
             // reset count and position
             boolean entityChanged = false;
             if (count != -1) {
-                fCurrentEntity.count = count + offset;
-                fCurrentEntity.position = fCurrentEntity.count > 0 ? offset : -1;
+                if (count != 0) {
+                    fCurrentEntity.count = count + offset;
+                    fCurrentEntity.position = offset;
+                }
             }
 
             // end of this entity
