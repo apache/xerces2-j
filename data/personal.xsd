@@ -16,10 +16,12 @@
    <selector xpath="person"/>
    <field xpath="@id"/>
   </key>
+  <!--
   <keyref name="keyref1" refer='empid'>
    <selector xpath="person"/> 
    <field xpath="link/@manager"/>  
   </keyref>
+  -->
 
  </element>
 
