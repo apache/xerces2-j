@@ -290,7 +290,7 @@ public final class HTMLTableElementImpl
         HTMLTableRowElementImpl    newRow;
 
         newRow = new HTMLTableRowElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "TR" );
-        newRow.insertCell( 0 );
+        //newRow.insertCell( 0 );
         insertRowX( index, newRow );
         return newRow;
     }
