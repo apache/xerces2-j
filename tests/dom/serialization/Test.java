@@ -85,6 +85,7 @@ public class Test {
     public static void main(String args[]) {
 
         if (args.length != 2) {
+            System.out.println("Usage: serialize.Test input.xml output.xml");
             System.exit(1);
         }
 
@@ -104,9 +105,16 @@ public class Test {
 
         try {
             Document document = null;
+            parser.setFeature("http://xml.org/sax/features/validation", true);
+            parser.setFeature("http://apache.org/xml/features/validation/schema", true);
             document = parser.parse(args[0]);
+            document.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:foo", "boo");
             serialize(document, args[1]);
             Document newDocument = deserialize(args[1]);
+            Document emptyDoc = new org.apache.xerces.dom.DocumentImpl();
+            emptyDoc.importNode(newDocument.getDocumentElement(), true);
+
+            System.out.println("done.");
         } catch (Exception e) {
             System.err.println("error: Error occurred - " + e.getMessage());
             Exception se = e;
