@@ -54,7 +54,6 @@ PACKAGES = org.apache.xerces.parsers \
            org.apache.xerces.framework \
            org.apache.xerces.dom \
            org.apache.xerces.dom.events \
-           org.apache.xerces.domx \
            org.apache.xml.serialize \
            org.apache.html.dom \
            org.w3c.dom \

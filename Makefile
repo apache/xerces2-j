@@ -22,6 +22,7 @@ jars: compile
 
 docs: src/classfiles_updated
 	@echo Building Stylebook docs in docs directory
+	${MKDIR} docs/html
 	$(STYLEBOOK) "targetDirectory=docs/html" docs/docs-book.xml tools/style-apachexml.jar
 
 apidocs:
@@ -32,7 +33,7 @@ apidocs:
 package_bin: jars apidocs ${BINZIPFILE}
 ${BINZIPFILE}: ./src/classfiles_updated
 
-	@echo Building a jar file for binary release.
+	@echo Building the binary release package
 	${MKDIR} bin
 	${CP} -r docs bin
 	${RM} -r bin/docs/CVS
@@ -40,8 +41,6 @@ ${BINZIPFILE}: ./src/classfiles_updated
 	${CP} -r data bin
 	${RM} -r bin/data/CVS
 	${CP} LICENSE bin
-	${RM} bin/build.xml
-	${RM} bin/README
 	$(MV) bin xerces-${PRODUCTVERSION}
 	$(JAR) cvfM ${BINZIPFILE} xerces-${PRODUCTVERSION} 
 	$(MV) xerces-${PRODUCTVERSION} bin
@@ -49,7 +48,7 @@ ${BINZIPFILE}: ./src/classfiles_updated
 package_src: ./source/src/Makefile
 ./source/src/Makefile: ./src/classfiles_updated
 
-	@echo Building a jar file for source release.
+	@echo Building the source release package
 	${MAKE} -C src package_src
 	${CP} -r data source
 	${RM} -r source/data/CVS
@@ -57,8 +56,6 @@ package_src: ./source/src/Makefile
 	${CP} docs/*.xml source/docs
 	${CP} docs/*.ent source/docs
 	${CP} LICENSE source
-	${RM} source/build.xml
-	${RM} source/Readme.html
 	$(MV) source xerces-${PRODUCTVERSION}
 	$(JAR) cvfM ${SRCZIPFILE} xerces-${PRODUCTVERSION} 
 	$(MV) xerces-${PRODUCTVERSION} source

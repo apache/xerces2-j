@@ -94,7 +94,7 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/xerces/validators/dtd
 	${CP}  ../src/org/apache/xerces/validators/dtd/*.class           ../class/org/apache/xerces/validators/dtd
 
-#-src/org/apache/xerces/validaters/schema
+#-src/org/apache/xerces/validators/schema
 	${MKDIR} ../class/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.class        ../class/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../class/org/apache/xerces/validators/schema
@@ -185,13 +185,17 @@ samples: ../bin/${SAMPLESJARFILE}
 	cd ../class;$(JAR) c0vf ../bin/${SAMPLESJARFILE} Xerces_Ver_${PRODUCTVERSION}.info dom sax ui;cd ../src
 
 # copy the license, ANT build file, Status file, and READMEs
-	${CP}  ../build.xml ../README ../Readme.html ../STATUS ../bin
+	${CP}  ../Readme.html ../bin
 
 
 package_src:
 
 ##################################################
 #copy the .java .dtd files under src
+
+#-src/org/apache/html/dom
+	${MKDIR} ../source/src/org/apache/html/dom
+	${CP}  ../src/org/apache/html/dom/*.java  			../source/src/org/apache/html/dom
 
 #-src/org/apache/xerces/dom
 	${MKDIR} ../source/src/org/apache/xerces/dom
@@ -248,9 +252,8 @@ package_src:
 #-src/org/apache/xerces/validaters/schema
 	${MKDIR} ../source/src/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.java        ../source/src/org/apache/xerces/validators/schema
-
-#-src/org/apache/xerces/validaters/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../source/src/org/apache/xerces/validators/schema
+	${CP}  ../src/org/apache/xerces/validators/schema/*.ent          ../source/src/org/apache/xerces/validators/schema
 
 #-src/org/apache/xml/serialize
 	${MKDIR} ../source/src/org/apache/xml/serialize
@@ -405,6 +408,12 @@ package_src:
 #-src/org/apache
 	${CP}  ../src/org/apache/Makefile    ../source/src/org/apache
 
+#-src/org/apache/html
+	${CP}  ../src/org/apache/html/Makefile    ../source/src/org/apache/html
+
+#-src/org/apache/html/dom
+	${CP}  ../src/org/apache/html/dom/Makefile    ../source/src/org/apache/html/dom
+
 #-src/org/apache/xerces
 	${CP}  ../src/org/apache/xerces/Makefile    ../source/src/org/apache/xerces
 
@@ -464,19 +473,4 @@ package_src:
 	${CP}  ../samples/Makefile  ../source/samples
 
 # copy the license, ANT build file, Status file, and READMEs
-	${CP}  ../build.xml ../README ../Readme.html ../STATUS ../source
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	${CP}  ../README ../Readme.html ../STATUS ../source
