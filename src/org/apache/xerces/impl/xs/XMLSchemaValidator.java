@@ -1573,12 +1573,12 @@ public class XMLSchemaValidator
             // we should expose it to the user
             // otherwise error does not make much sense
             fCurrentPSVI.fNormalizedValue = null;
-            fBuffer.append(text.toString());
+            fBuffer.append(text.ch, text.offset, text.length);
         }
         if (normalizedStr != null) {
             fBuffer.append(normalizedStr);
         } else {
-            fBuffer.append(text.toString());
+            fBuffer.append(text.ch, text.offset, text.length);
         }
 
 
@@ -2253,16 +2253,15 @@ public class XMLSchemaValidator
                 fXSDDescription.setBaseSystemId(fBaseURI);
             }
 
-            Object locationArray = null ;
+            String[] temp = null ;
             if( namespace != null){
-                locationArray = fLocationPairs.get(namespace) ;
-                if(locationArray != null){
-                    String [] temp = ((XMLSchemaLoader.LocationArray)locationArray).getLocationArray() ;
-                    fXSDDescription.fLocationHints = new String [temp.length] ;
-                    System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );
-                }
+                Object locationArray = fLocationPairs.get(namespace) ;
+                if(locationArray != null)
+                    temp = ((XMLSchemaLoader.LocationArray)locationArray).getLocationArray() ;
             }else{
-                String [] temp = fNoNamespaceLocationArray.getLocationArray() ;
+                temp = fNoNamespaceLocationArray.getLocationArray() ;
+            }
+            if (temp != null && temp.length != 0) {
                 fXSDDescription.fLocationHints = new String [temp.length] ;
                 System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );
             }
