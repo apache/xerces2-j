@@ -1006,7 +1006,7 @@ public class DeferredDocumentImpl
         if (nodeIndex == -1) {
             return null;
         }
-
+        
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
         String value = free ? clearChunkValue(fNodeValue, chunk, index)
@@ -1014,7 +1014,7 @@ public class DeferredDocumentImpl
         if (value == null) {
             return null;
         }
-
+        
         int type  = getChunkIndex(fNodeType, chunk, index);
         if (type == Node.TEXT_NODE) {
             int prevSib = getRealPrevSibling(nodeIndex);
@@ -1051,11 +1051,11 @@ public class DeferredDocumentImpl
             }
         }
         else if (type == Node.CDATA_SECTION_NODE) {
-            // append data that is stored in fNodeValue
-            fBufferStr.append(value);
             // find if any other data stored in children
             int child = getLastChild(nodeIndex, false);
             if (child !=-1) {
+                // append data that is stored in fNodeValue
+                fBufferStr.append(value);
                 while (child !=-1) {
                     // go in reverse order: find last child, then
                     // its previous sibling, etc
