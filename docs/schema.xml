@@ -13,7 +13,7 @@
 	</s2>
 	<s2 title="Introduction">
 		<p>This package contains an implementation of a subset of the 
-		W3C XML Schema Language as specified in the 17 December 1999
+		W3C XML Schema Language as specified in the 7 April 2000
         Working Drafts for <jump
         href="http://www.w3.org/TR/xmlschema-1/">Structures</jump> and
         <jump
@@ -33,9 +33,52 @@
 	</s2>
 	<s2 title="Limitations">
 		<p>The XML Schema implementation in this package is a 
-		subset of the features defined in the 17 December 1999 
+		subset of the features defined in the 7 April 2000 
 		XML Schema Working Drafts.</p>
 	</s2>
+    <s2 title='Components Supported'>
+        <ul>
+            <li>Element declarations</li>
+            <li>Model group definitions: group</li>
+            <li>Model groups: all, choice, sequence</li>
+            <li>Attribute declarations</li>
+            <li>Attribute group definitions</li>
+            <li>Simple type definitions</li>
+            <li>Complex type definitions</li>
+        </ul>
+    </s2>
+    <s2 title='Components NOT Supported'>
+        <ul>
+            <li>Wildcards</li>
+            <li>Identity constraints: unique, key, keyref</li>
+            <li>Notation declaration</li>
+            <li>Annotation (ignored)</li>
+        </ul>
+    </s2>
+    <s2 title='Features Supported'>
+        <ul>
+            <li>Type derivation</li>
+            <li>Anonymous types</li>
+            <li>Nested element declaration</li>
+            <li>Separate symbol spaces for elements, types, groups, and
+                attribute groups</li>
+            <li>Equivalency classes (partial)</li>
+            <li>Target namespace</li>
+            <li>"xsi:schemaLocation" and "xsl:noNamespacesSchemaLocation"</li>
+        </ul>
+    </s2>
+    <s2 title='Features NOT Supported'>
+        <ul>
+            <li>Constraints in Chapter 5</li>
+            <li>Nullable</li>
+            <li>Block</li>
+            <li>Abstract</li>
+            <li>"xsi:type"</li>
+            <li>Include</li>
+            <li>Import</li>
+        </ul>
+    </s2>
+<!--
 	<s2 title="Structure Limitations">
 		<ul>
 			<li>elements, types, groups and attributeGroups
@@ -76,28 +119,35 @@
 			<li>Datatype qualifiers on attributes are not supported.</li>
 	    </ul>
 	</s2>
+-->
 	<s2 title="Other Limitations">
-		<p>The schema is specified by the first xmlns attribute on the root 
-		element of the document. There must be an attribute declaration for 
-		this xmlns attribute. </p>
+		<p>The schema is specified by the xsi:schemaLocation attribute on the root 
+		element of the document. The xsi prefix must be bound to the 
+		Schema document instance namespace, as specified by the
+		working draft specification. See the sample provided in the
+		Usage section.</p>
 	</s2>
 	<s2 title="Usage">
 		<p>In this release, schema validation has been integrated with the 
 		regular SAXParser and DOMParser classes. No special classes are 
 		required to parse documents that use a schema.</p>
 		<p>Documents that use XML Schema grammars specify the location of the
-		grammar using an xmlns attribute attached to the root / top-level element 
+		grammar using an xsi:schemaLocation attribute attached to the root / top-level element 
 		in the document. Here is an example: </p>
-<source>&lt;document xmlns="document.xsd"&gt;
+<source>&lt;document xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance' xsi:schemaLocation='document.xsd'&gt;
 ...
 &lt;/document&gt;</source>
+
+<!--
 		<p>Another requirement is that the XML Schema document's grammar must 
 		have a &lt;!DOCTYPE ...&gt; line specifying the DTD for XML Schema grammar. 
 		The DOCTYPE must specify the following system identifier:<br/></p>
 <source>http://www.w3.org/TR/1999/WD-xmlschema-1-19991217/structures.dtd</source>
 		<p>Also, there must be an attribute declaration for the xmlns attribute 
 		used to find the schema (document in the example above).</p>
-		<p>Review the sample file, "data/personal.xsd" for an example of an XML 
+-->
+		
+		<p>Review the sample file, 'data/personal.xsd' for an example of an XML 
 		Schema grammar.</p>
 	</s2>
 </s1>
