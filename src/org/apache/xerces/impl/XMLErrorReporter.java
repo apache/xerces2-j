@@ -160,9 +160,19 @@ public class XMLErrorReporter
         CONTINUE_AFTER_FATAL_ERROR,
     };
 
+    /** Feature defaults. */
+    private static final Boolean[] FEATURE_DEFAULTS = {
+        null,
+    };
+
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
         ERROR_HANDLER,
+    };
+
+    /** Property defaults. */
+    private static final Object[] PROPERTY_DEFAULTS = {
+        null,
     };
 
     //
@@ -525,6 +535,42 @@ public class XMLErrorReporter
 
     } // setProperty(String,Object)
     
+    /** 
+     * Returns the default state for a feature, or null if this
+     * component does not want to report a default value for this
+     * feature.
+     *
+     * @param featureId The feature identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Boolean getFeatureDefault(String featureId) {
+        for (int i = 0; i < RECOGNIZED_FEATURES.length; i++) {
+            if (RECOGNIZED_FEATURES[i].equals(featureId)) {
+                return FEATURE_DEFAULTS[i];
+            }
+        }
+        return null;
+    } // getFeatureDefault(String):Boolean
+
+    /** 
+     * Returns the default state for a property, or null if this
+     * component does not want to report a default value for this
+     * property. 
+     *
+     * @param propertyId The property identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Object getPropertyDefault(String propertyId) {
+        for (int i = 0; i < RECOGNIZED_PROPERTIES.length; i++) {
+            if (RECOGNIZED_PROPERTIES[i].equals(propertyId)) {
+                return PROPERTY_DEFAULTS[i];
+            }
+        }
+        return null;
+    } // getPropertyDefault(String):Object
+
     /**
      * Get the internal XMLErrrorHandler.
      */

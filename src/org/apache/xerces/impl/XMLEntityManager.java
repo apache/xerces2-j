@@ -191,6 +191,15 @@ public class XMLEntityManager
         WARN_ON_DUPLICATE_ENTITYDEF
     };
 
+    /** Feature defaults. */
+    private static final Boolean[] FEATURE_DEFAULTS = {
+        null,
+        Boolean.TRUE,
+        Boolean.TRUE,
+        Boolean.FALSE,
+        Boolean.FALSE,
+    };
+
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,
@@ -198,6 +207,15 @@ public class XMLEntityManager
         ENTITY_RESOLVER,
         VALIDATION_MANAGER,
         BUFFER_SIZE
+    };
+
+    /** Property defaults. */
+    private static final Object[] PROPERTY_DEFAULTS = {
+        null,
+        null,
+        null,
+        null,
+        new Integer(DEFAULT_BUFFER_SIZE),
     };
 
     private static final String XMLEntity = "[xml]".intern();
@@ -1144,6 +1162,42 @@ public class XMLEntityManager
         }
 
     } // setProperty(String,Object)
+
+    /** 
+     * Returns the default state for a feature, or null if this
+     * component does not want to report a default value for this
+     * feature.
+     *
+     * @param featureId The feature identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Boolean getFeatureDefault(String featureId) {
+        for (int i = 0; i < RECOGNIZED_FEATURES.length; i++) {
+            if (RECOGNIZED_FEATURES[i].equals(featureId)) {
+                return FEATURE_DEFAULTS[i];
+            }
+        }
+        return null;
+    } // getFeatureDefault(String):Boolean
+
+    /** 
+     * Returns the default state for a property, or null if this
+     * component does not want to report a default value for this
+     * property. 
+     *
+     * @param propertyId The property identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Object getPropertyDefault(String propertyId) {
+        for (int i = 0; i < RECOGNIZED_PROPERTIES.length; i++) {
+            if (RECOGNIZED_PROPERTIES[i].equals(propertyId)) {
+                return PROPERTY_DEFAULTS[i];
+            }
+        }
+        return null;
+    } // getPropertyDefault(String):Object
 
     //
     // Public static methods

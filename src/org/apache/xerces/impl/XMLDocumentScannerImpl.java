@@ -163,21 +163,26 @@ public class XMLDocumentScannerImpl
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        NAMESPACES,
-        VALIDATION,
         LOAD_EXTERNAL_DTD,
-        NOTIFY_BUILTIN_REFS,
-        NOTIFY_CHAR_REFS,
+    };
+
+    /** Feature defaults. */
+    private static final Boolean[] FEATURE_DEFAULTS = {
+        Boolean.TRUE,
     };
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
-        SYMBOL_TABLE,
-        ERROR_REPORTER,
-        ENTITY_MANAGER,
         DTD_SCANNER,
         VALIDATION_MANAGER,
         NAMESPACE_CONTEXT_PROPERTY
+    };
+
+    /** Property defaults. */
+    private static final Object[] PROPERTY_DEFAULTS = {
+        null,
+        null,
+        null,
     };
 
     //
@@ -327,7 +332,14 @@ public class XMLDocumentScannerImpl
      * are recognized by this component.
      */
     public String[] getRecognizedFeatures() {
-        return (String[])(RECOGNIZED_FEATURES.clone());
+        String[] featureIds = super.getRecognizedFeatures();
+        int length = featureIds != null ? featureIds.length : 0;
+        String[] combinedFeatureIds = new String[length + RECOGNIZED_FEATURES.length];
+        if (featureIds == null) {
+            System.arraycopy(featureIds, 0, combinedFeatureIds, 0, featureIds.length);
+        }
+        System.arraycopy(RECOGNIZED_FEATURES, 0, combinedFeatureIds, length, RECOGNIZED_FEATURES.length);
+        return combinedFeatureIds;
     } // getRecognizedFeatures():String[]
 
     /**
@@ -367,7 +379,14 @@ public class XMLDocumentScannerImpl
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return (String[])(RECOGNIZED_PROPERTIES.clone());
+        String[] propertyIds = super.getRecognizedProperties();
+        int length = propertyIds != null ? propertyIds.length : 0;
+        String[] combinedPropertyIds = new String[length + RECOGNIZED_PROPERTIES.length];
+        if (propertyIds == null) {
+            System.arraycopy(propertyIds, 0, combinedPropertyIds, 0, propertyIds.length);
+        }
+        System.arraycopy(RECOGNIZED_PROPERTIES, 0, combinedPropertyIds, length, RECOGNIZED_PROPERTIES.length);
+        return combinedPropertyIds;
     } // getRecognizedProperties():String[]
 
     /**
@@ -400,6 +419,42 @@ public class XMLDocumentScannerImpl
         }
 
     } // setProperty(String,Object)
+
+    /** 
+     * Returns the default state for a feature, or null if this
+     * component does not want to report a default value for this
+     * feature.
+     *
+     * @param featureId The feature identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Boolean getFeatureDefault(String featureId) {
+        for (int i = 0; i < RECOGNIZED_FEATURES.length; i++) {
+            if (RECOGNIZED_FEATURES[i].equals(featureId)) {
+                return FEATURE_DEFAULTS[i];
+            }
+        }
+        return super.getFeatureDefault(featureId);
+    } // getFeatureDefault(String):Boolean
+
+    /** 
+     * Returns the default state for a property, or null if this
+     * component does not want to report a default value for this
+     * property. 
+     *
+     * @param propertyId The property identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Object getPropertyDefault(String propertyId) {
+        for (int i = 0; i < RECOGNIZED_PROPERTIES.length; i++) {
+            if (RECOGNIZED_PROPERTIES[i].equals(propertyId)) {
+                return PROPERTY_DEFAULTS[i];
+            }
+        }
+        return super.getPropertyDefault(propertyId);
+    } // getPropertyDefault(String):Object
 
     //
     // XMLEntityHandler methods

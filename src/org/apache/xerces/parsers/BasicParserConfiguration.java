@@ -310,10 +310,30 @@ public abstract class BasicParserConfiguration
         // register component's recognized features
         String[] recognizedFeatures = component.getRecognizedFeatures();
         addRecognizedFeatures(recognizedFeatures);
-
+        
         // register component's recognized properties
         String[] recognizedProperties = component.getRecognizedProperties();
         addRecognizedProperties(recognizedProperties);
+
+        // set default values
+        if (recognizedFeatures != null) {
+            for (int i = 0; i < recognizedFeatures.length; i++) {
+                String featureId = recognizedFeatures[i];
+                Boolean state = component.getFeatureDefault(featureId);
+                if (state != null) {
+                    setFeature(featureId, state.booleanValue());
+                }
+            }
+        }
+        if (recognizedProperties != null) {
+            for (int i = 0; i < recognizedProperties.length; i++) {
+                String propertyId = recognizedProperties[i];
+                Object value = component.getPropertyDefault(propertyId);
+                if (value != null) {
+                    setProperty(propertyId, value);
+                }
+            }
+        }
 
     } // addComponent(XMLComponent)
 

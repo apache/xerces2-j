@@ -136,14 +136,27 @@ implements XMLComponent, XMLDocumentFilter {
     protected boolean fIncludeIgnorableWhitespace;
 
     /** Recognized features. */
-    protected static final String[] RECOGNIZED_FEATURES = {
+    private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACE_BINDER,
         INCLUDE_IGNORABLE_WHITESPACE,
         //  PSVINFOSET,
     };
+
+    /** Feature defaults. */
+    private static final Boolean[] FEATURE_DEFAULTS = {
+        Boolean.TRUE, // ???
+        Boolean.TRUE, // ???
+        // ???
+    };
+
     /** Recognized properties. */
-    protected static final String[] RECOGNIZED_PROPERTIES={
+    private static final String[] RECOGNIZED_PROPERTIES={
         SYMBOL_TABLE,
+    };
+
+    /** Property defaults. */
+    private static final Object[] PROPERTY_DEFAULTS = {
+        null,
     };
 
     /** PSVInfoset */
@@ -305,6 +318,42 @@ implements XMLComponent, XMLDocumentFilter {
     throws XMLConfigurationException {
 
     } // setProperty(String,Object)
+
+    /** 
+     * Returns the default state for a feature, or null if this
+     * component does not want to report a default value for this
+     * feature.
+     *
+     * @param featureId The feature identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Boolean getFeatureDefault(String featureId) {
+        for (int i = 0; i < RECOGNIZED_FEATURES.length; i++) {
+            if (RECOGNIZED_FEATURES[i].equals(featureId)) {
+                return FEATURE_DEFAULTS[i];
+            }
+        }
+        return null;
+    } // getFeatureDefault(String):Boolean
+
+    /** 
+     * Returns the default state for a property, or null if this
+     * component does not want to report a default value for this
+     * property. 
+     *
+     * @param propertyId The property identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Object getPropertyDefault(String propertyId) {
+        for (int i = 0; i < RECOGNIZED_PROPERTIES.length; i++) {
+            if (RECOGNIZED_PROPERTIES[i].equals(propertyId)) {
+                return PROPERTY_DEFAULTS[i];
+            }
+        }
+        return null;
+    } // getPropertyDefault(String):Object
 
     //
     // XMLDocumentSource methods

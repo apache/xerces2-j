@@ -1,8 +1,23 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
-  <release version="2.1">
+  <release version="&ParserName; 2.2.0">
+    <desc>
+    </desc>
+    <changes>
+       <update>
+           <note>
+              Modified XMLComponent interface so that components used
+              in a parser configuration can specify preferred default
+              values for settings. Also updated all classes that 
+              implement the XMLComponent interface.
+           </note>
+           <submitter name='Andy Clark'/>
+       </update>
+    </changes>
+  </release>
+  <release version="&ParserName; 2.1.0">
     <desc>
         As well as some relatively minor changes to XNI, this release includes many 
         bugfixes and performance improvements.
@@ -120,7 +135,7 @@
         </fix>
     </changes>
   </release>
-  <release version="2.0.2">
+  <release version="&ParserName; 2.0.2">
     <desc>
       In this release, numerous bugs have been fixed.  Only one minor change in the Xerces
       Native Interface is included (documented below); considerable
@@ -362,7 +377,7 @@
 
     </changes>
   </release>
-  <release version='Xerces 2.0.1'>
+  <release version='&ParserName; 2.0.1'>
     <desc>
       This release fixes a number of bugs.
     </desc>
@@ -479,7 +494,7 @@
     </changes>
   </release>
 
-  <release version='Xerces 2.0.0'>
+  <release version='&ParserName; 2.0.0'>
     <desc>
       This is the first production-quality release of the Xerces2 Java
       XML parser.  We are confident that it also marks the stabilization
@@ -697,7 +712,7 @@
   </release>
   
 
-  <release version='Xerces 2.0.0 (beta4)'>
+  <release version='&ParserName; 2.0.0 (beta4)'>
     <desc>
       This release fixes a number of bugs, introduces more changes to the Xerces
       Native Interface, provides partial experimental DOM Level 3 implementation,
@@ -911,7 +926,7 @@
     </changes>
   </release>
 
-  <release version='Xerces 2.0.0 (beta3)'>
+  <release version='&ParserName; 2.0.0 (beta3)'>
     <desc>
       This release fixes a number of bugs, introduces some changes to
       the Xerces Native Interface, and is the first Xerces2 release to

@@ -139,4 +139,26 @@ public interface XMLComponent {
     public void setProperty(String propertyId, Object value)
        throws XMLConfigurationException;
 
+    /** 
+     * Returns the default state for a feature, or null if this
+     * component does not want to report a default value for this
+     * feature.
+     *
+     * @param featureId The feature identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Boolean getFeatureDefault(String featureId);
+
+    /** 
+     * Returns the default state for a property, or null if this
+     * component does not want to report a default value for this
+     * property. 
+     *
+     * @param propertyId The property identifier.
+     *
+     * @since Xerces 2.2.0
+     */
+    public Object getPropertyDefault(String propertyId);
+
 } // interface XMLComponent

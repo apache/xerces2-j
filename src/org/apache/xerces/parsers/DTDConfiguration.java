@@ -318,22 +318,26 @@ public class DTDConfiguration
 
         // add default recognized features
         final String[] recognizedFeatures = {
-            WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
-            ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
-            LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
-            NOTIFY_CHAR_REFS,		WARN_ON_DUPLICATE_ENTITYDEF
+            //WARN_ON_DUPLICATE_ATTDEF,     // from XMLDTDScannerImpl
+            //WARN_ON_UNDECLARED_ELEMDEF,   // from XMLDTDScannerImpl
+            //ALLOW_JAVA_ENCODINGS,         // from XMLEntityManager
+            CONTINUE_AFTER_FATAL_ERROR,
+            //LOAD_EXTERNAL_DTD,    // from XMLDTDScannerImpl
+            //NOTIFY_BUILTIN_REFS,  // from XMLDocumentFragmentScannerImpl
+            //NOTIFY_CHAR_REFS,		// from XMLDocumentFragmentScannerImpl
+            //WARN_ON_DUPLICATE_ENTITYDEF,  // from XMLEntityManager
         };
         addRecognizedFeatures(recognizedFeatures);
 
         // set state for default features
-        setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
-        setFeature(WARN_ON_DUPLICATE_ENTITYDEF, false);
-        setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);
-        setFeature(ALLOW_JAVA_ENCODINGS, false);
+        //setFeature(WARN_ON_DUPLICATE_ATTDEF, false);  // from XMLDTDScannerImpl
+        //setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);  // from XMLDTDScannerImpl
+        //setFeature(ALLOW_JAVA_ENCODINGS, false);      // from XMLEntityManager
         setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
-        setFeature(LOAD_EXTERNAL_DTD, true);
-        setFeature(NOTIFY_BUILTIN_REFS, false);
-        setFeature(NOTIFY_CHAR_REFS, false);
+        //setFeature(LOAD_EXTERNAL_DTD, true);      // from XMLDTDScannerImpl
+        //setFeature(NOTIFY_BUILTIN_REFS, false);   // from XMLDocumentFragmentScannerImpl
+        //setFeature(NOTIFY_CHAR_REFS, false);      // from XMLDocumentFragmentScannerImpl
+        //setFeature(WARN_ON_DUPLICATE_ENTITYDEF, false);   // from XMLEntityManager
 
         // add default recognized properties
         final String[] recognizedProperties = {

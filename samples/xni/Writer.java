@@ -304,7 +304,7 @@ public class Writer
     public void characters(XMLString text, Augmentations augs) throws XNIException {
 
         normalizeAndPrint(text);
-        fOut.println("one call...");
+        //fOut.println("one call...");
         fOut.flush();
 
     } // characters(XMLString,Augmentations)
