@@ -63,6 +63,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 
+
+// DOM L3 LS
+import org.apache.xerces.dom3.ls.DOMImplementationLS;
+import org.apache.xerces.dom3.ls.DOMBuilder;
+import org.apache.xerces.dom3.ls.DOMWriter;
+import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.apache.xerces.parsers.DOMBuilderImpl;
+import org.apache.xml.serialize.XMLSerializer;
+
 /**
  * The DOMImplementation class is description of a particular
  * implementation of the Document Object Model. As such its data is
@@ -72,15 +81,14 @@ import org.w3c.dom.Element;
  * methods. However, there's nothing that says it can't be a singleton,
  * so that's how I've implemented it.
  * <P>
- * This particular class, along with CoreDocumentImpl, only supports the DOM
- * Core. Optional modules are supported by the more complete DOMImplementation
- * class along with DocumentImpl.
- *
+ * This particular class, along with CoreDocumentImpl, supports the DOM
+ * Core and Load/Save (Experimental). Optional modules are supported by 
+ * the more complete DOMImplementation class along with DocumentImpl.
  * @version $Id$
- * @since  PR-DOM-Level-1-19980818.
+ * @since PR-DOM-Level-1-19980818.
  */
 public class CoreDOMImplementationImpl  
-    implements DOMImplementation {
+implements DOMImplementation, DOMImplementationLS {
 
     //
     // Data
@@ -90,7 +98,7 @@ public class CoreDOMImplementationImpl
 
     /** Dom implementation singleton. */
     static CoreDOMImplementationImpl singleton =
-        new CoreDOMImplementationImpl();
+    new CoreDOMImplementationImpl();
 
     //
     // DOMImplementation methods
@@ -116,15 +124,18 @@ public class CoreDOMImplementationImpl
         // Currently, we support only XML Level 1 version 1.0
         boolean anyVersion = version == null || version.length() == 0;
         return 
-            (feature.equalsIgnoreCase("Core") 
+        (feature.equalsIgnoreCase("Core") 
+         && (anyVersion
+             || version.equals("1.0")
+             || version.equals("2.0")))
+        || (feature.equalsIgnoreCase("XML") 
             && (anyVersion
-		|| version.equals("1.0")
-		|| version.equals("2.0")))
-         || (feature.equalsIgnoreCase("XML") 
-            && (anyVersion
-		|| version.equals("1.0")
-		|| version.equals("2.0")))
-            ;
+                || version.equals("1.0")
+                || version.equals("2.0")))
+        /* || (feature.equalsIgnoreCase("LS-Load")
+            && version.equals("3.0");
+            */
+        ;
 
     } // hasFeature(String,String):boolean
 
@@ -136,7 +147,7 @@ public class CoreDOMImplementationImpl
     public static DOMImplementation getDOMImplementation() {
         return singleton;
     }  
-    
+
     /**
      * Introduced in DOM Level 2. <p>
      * 
@@ -151,18 +162,18 @@ public class CoreDOMImplementationImpl
                                                  String publicID, 
                                                  String systemID)
     {
-    	if (!CoreDocumentImpl.isXMLName(qualifiedName)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+        if (!CoreDocumentImpl.isXMLName(qualifiedName)) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
         }
         int index = qualifiedName.indexOf(':');
         int lastIndex = qualifiedName.lastIndexOf(':');
         // it is an error for NCName to have more than one ':'
         if (index == 0 || index == qualifiedName.length() - 1 || lastIndex!=index) {
-	    throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
-	}
-    	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
+            throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                   "DOM003 Namespace error");
+        }
+        return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
     }
     /**
      * Introduced in DOM Level 2. <p>
@@ -187,9 +198,9 @@ public class CoreDOMImplementationImpl
     public Document           createDocument(String namespaceURI, 
                                              String qualifiedName, 
                                              DocumentType doctype)
-                                             throws DOMException
+    throws DOMException
     {
-    	if (doctype != null && doctype.getOwnerDocument() != null) {
+        if (doctype != null && doctype.getOwnerDocument() != null) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
                                    "DOM005 Wrong document");
         }
@@ -198,5 +209,31 @@ public class CoreDOMImplementationImpl
         doc.appendChild(e);
         return doc;
     }
+
+    // DOM L3 LS
+    /**
+     * DOM Level 3 WD - Experimental.
+     */
+    public DOMBuilder createDOMBuilder(short mode)
+    throws DOMException {
+        if (mode == DOMImplementationLS.MODE_ASYNCHRONOUS) {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
+                                   "Asynchronous mode is not supported");
+        }
+        return new DOMBuilderImpl();
+    }
+    /**
+     * DOM Level 3 WD - Experimental.
+     */                
+    public DOMWriter createDOMWriter() {
+        return new XMLSerializer();
+    }
+    /**
+     * DOM Level 3 WD - Experimental.
+     */
+    public DOMInputSource createDOMInputSource() {
+        return new DOMInputSourceImpl();
+    }
+
 
 } // class DOMImplementationImpl
