@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999,2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -377,12 +377,18 @@ import java.io.Serializable;
     int uriSpecLen = uriSpec.length();
     int index = 0;
 
-    // Check for scheme, which must be before `/'. Also handle names with
-    // DOS drive letters ('D:'), so 1-character schemes are not allowed.
-    int colonIdx = uriSpec.indexOf(':');
-    int slashIdx = uriSpec.indexOf('/');
-    if ((colonIdx < 2) || (colonIdx > slashIdx && slashIdx != -1)) {
-      int fragmentIdx = uriSpec.indexOf('#');
+    // Check for scheme, which must be before '/', '?' or '#'. Also handle
+    // names with DOS drive letters ('D:'), so 1-character schemes are not
+    // allowed.
+    int colonIdx    = uriSpec.indexOf(':');
+    int slashIdx    = uriSpec.indexOf('/');
+    int queryIdx    = uriSpec.indexOf('?');
+    int fragmentIdx = uriSpec.indexOf('#');
+
+    if ((colonIdx < 2) ||
+        (colonIdx > slashIdx && slashIdx != -1) ||
+        (colonIdx > queryIdx && queryIdx != -1) ||
+        (colonIdx > fragmentIdx && fragmentIdx != -1)) {
       // A standalone base is a valid URI according to spec
       if (p_base == null && fragmentIdx != 0 ) {
         throw new MalformedURIException("No scheme found in URI.");
