@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -175,14 +175,11 @@ public class Field {
             
             // verify that only one attribute is selected per branch
             for (int i=0;i<fLocationPaths.length;i++) {
-                int numAttrs = 0;
                 for(int j=0; j<fLocationPaths[i].steps.length; j++) {
                     org.apache.xerces.impl.xpath.XPath.Axis axis =
                         fLocationPaths[i].steps[j].axis;
-                    if (axis.type == axis.ATTRIBUTE) {
-                        numAttrs++;
-                    }
-                    if(numAttrs > 1) {
+                    if (axis.type == axis.ATTRIBUTE &&
+                            (j < fLocationPaths[i].steps.length-1)) {
                         throw new XPathException("c-fields-xpaths");
                     }
                 }
