@@ -365,6 +365,8 @@ public abstract class XMLScanner
         final int STATE_STANDALONE = 2;
         final int STATE_DONE = 3;
         int state = STATE_VERSION;
+
+        boolean versionMissingReported = false;
         boolean sawSpace = fEntityScanner.skipSpaces();
         while (fEntityScanner.peekChar() != '?') {
             String name = scanPseudoAttribute(scanningTextDecl, fString);
@@ -380,12 +382,15 @@ public abstract class XMLScanner
                         version = fString.toString();
                         state = STATE_ENCODING;
                         if (!version.equals("1.0")) {
+                            // REVISIT: XML REC says we should throw an error in such cases.
+                            // some may object the throwing of fatalError.
                             reportFatalError("VersionNotSupported", 
                                              new Object[]{version});
                         }
                     }
                     else if (name == fEncodingSymbol) {
                         if (!scanningTextDecl) {
+                            versionMissingReported = true;
                             reportFatalError("VersionInfoRequired", null);
                         }
                         if (!sawSpace) {
@@ -470,6 +475,14 @@ public abstract class XMLScanner
         if (!fEntityScanner.skipChar('>')) {
             reportFatalError("XMLDeclUnterminated", null);
 
+        }
+        
+        // If there is no data in the xml decl then we fail to report error 
+        // for version info above. But, if already the error is reported above 
+        // and we reach here, maybe continue-after-fatal-error is true, then 
+        // don't report the same error again.
+        if (version == null && !versionMissingReported) {
+            reportFatalError("VersionInfoRequired", null);
         }
 
         // fill in return array
