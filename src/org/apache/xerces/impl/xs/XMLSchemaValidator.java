@@ -1155,7 +1155,7 @@ public class XMLSchemaValidator
                 if (!t.hasMoreTokens()) {
                     // REVISIT: new error code
                     fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "general", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
+                                               "General", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
                                                XMLErrorReporter.SEVERITY_WARNING);
                     break;
                 }
@@ -1441,8 +1441,9 @@ public class XMLSchemaValidator
                     reportSchemaError("ValidationRoot",null);
                 }
                 // check extra schema constraints
-                if (fFullChecking)
+                if (fFullChecking) {
                     XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fErrorReporter);
+                }
             }
         }
         else {
