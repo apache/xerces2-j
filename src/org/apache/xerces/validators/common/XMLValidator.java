@@ -4303,15 +4303,6 @@ public final class XMLValidator
                 return;
             }
             
-            // is this value as a group duplicated?
-            if (contains(fValues)) {
-                duplicateValue(fValues);
-            }
-
-            // store values
-            OrderedHashtable values = (OrderedHashtable)fValues.clone();
-            fValueTuples.addElement(values);
-
         } // endValueScope()
 
         /** 
@@ -4353,17 +4344,23 @@ public final class XMLValidator
                 return;
             }    
 
-            // duplicate value?
-            String storedValue = fValues.valueAt(index);
-            if (!storedValue.equals(NOT_A_VALUE)) {
-                int code = SchemaMessageProvider.DuplicateField;
-                reportSchemaError(code, new Object[]{field.toString()});
-                return;
-            }
-
             // store value
-            fValuesCount++;
+            String storedValue = fValues.valueAt(index);
+            if (storedValue.equals(NOT_A_VALUE)) {
+                fValuesCount++;
+            }
             fValues.put(field, value);
+
+            if (fValuesCount == fValues.size()) {
+                // is this value as a group duplicated?
+                if (contains(fValues)) {
+                    duplicateValue(fValues);
+                }
+    
+                // store values
+                OrderedHashtable values = (OrderedHashtable)fValues.clone();
+                fValueTuples.addElement(values);
+            }
 
         } // addValue(String,Field)
 
@@ -4908,6 +4905,31 @@ public final class XMLValidator
             return hashtable;
 
         } // clone():Object
+
+        //
+        // Object methods
+        //
+
+        /** Returns a string representation of this object. */
+        public String toString() {
+            if (fSize == 0) {
+                return "[]";
+            }
+            StringBuffer str = new StringBuffer();
+            str.append('[');
+            for (int i = 0; i < fSize; i++) {
+                if (i > 0) {
+                    str.append(',');
+                }
+                str.append('{');
+                str.append(fEntries[i].key);
+                str.append(',');
+                str.append(fEntries[i].value);
+                str.append('}');
+            }
+            str.append(']');
+            return str.toString();
+        } // toString():String
 
         //
         // Classes
