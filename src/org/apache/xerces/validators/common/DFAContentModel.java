@@ -1145,8 +1145,11 @@ public class DFAContentModel
             System.out.print("   ");
 
         int type = nodeCur.type();
-        if ((type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
-        ||  (type == XMLContentSpec.CONTENTSPECNODE_SEQ))
+
+        switch(type & 0x0f) {
+
+        case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+        case XMLContentSpec.CONTENTSPECNODE_SEQ:
         {
             if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
                 System.out.print("Choice Node ");
@@ -1163,8 +1166,9 @@ public class DFAContentModel
 
             dumpTree(((CMBinOp)nodeCur).getLeft(), level+1);
             dumpTree(((CMBinOp)nodeCur).getRight(), level+1);
+            break;
         }
-         else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
+        case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE:
         {
             System.out.print("Rep Node ");
 
@@ -1177,8 +1181,9 @@ public class DFAContentModel
             System.out.println(nodeCur.lastPos().toString());
 
             dumpTree(((CMUniOp)nodeCur).getChild(), level+1);
+            break;
         }
-         else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_LEAF)
+        case XMLContentSpec.CONTENTSPECNODE_LEAF:
         {
             System.out.print
             (
@@ -1198,11 +1203,43 @@ public class DFAContentModel
             System.out.print(nodeCur.firstPos().toString());
             System.out.print(" lastPos=");
             System.out.println(nodeCur.lastPos().toString());
+            break;
         }
-         else
+        case XMLContentSpec.CONTENTSPECNODE_ANY:
+        case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
+        case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+        {
+            if (type == XMLContentSpec.CONTENTSPECNODE_ANY)
+              System.out.print("Any Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LAX)
+              System.out.print("Any lax Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_SKIP)
+              System.out.print("Any skip Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER)
+              System.out.print("Any other Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_LAX)
+              System.out.print("Any other lax Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP)
+              System.out.print("Any other skip Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL)
+              System.out.print("Any local Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX)
+              System.out.print("Any local lax Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP)
+              System.out.print("Any local skip Node: ");
+
+            System.out.print("firstPos=");
+            System.out.print(nodeCur.firstPos().toString());
+            System.out.print(" lastPos=");
+            System.out.println(nodeCur.lastPos().toString());
+            break;
+        }
+        default:
         {
             throw new CMException(ImplementationMessages.VAL_NIICM);
         }
+        }
+        
     }
 
 
