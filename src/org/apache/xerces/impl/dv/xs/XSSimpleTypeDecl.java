@@ -1071,44 +1071,35 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             // step 3: check facets against base
             // check 4.3.1.c1 error: length & (fBase.maxLength | fBase.minLength)
             if((fFacetsDefined & FACET_LENGTH) != 0 ){
-              if ((fBase.fFacetsDefined & FACET_MINLENGTH) != 0) {
-                if ((fBase.fFacetsDefined & FACET_MAXLENGTH) != 0) {
+                if ((fBase.fFacetsDefined & FACET_MINLENGTH) != 0 &&
+                    fLength < fBase.fMinLength) {
                     // length, fBase.minLength and fBase.maxLength defined
-                    reportError("length-minLength-maxLength.a", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fMinLength), Integer.toString(fMaxLength)});
+                    reportError("length-minLength-maxLength.d", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fBase.fMinLength)});
                 }
-                else {
-                    // length and fBase.minLength defined
-                    reportError("length-minLength-maxLength.b", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fMinLength)});
+                if ((fBase.fFacetsDefined & FACET_MAXLENGTH) != 0 &&
+                    fLength > fBase.fMaxLength) {
+                    // length and fBase.maxLength defined
+                    reportError("length-minLength-maxLength.e", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fBase.fMaxLength)});
                 }
-              }
-              else if ((fBase.fFacetsDefined & FACET_MAXLENGTH) != 0) {
-                // length and fBase.maxLength defined
-                reportError("length-minLength-maxLength.c", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fMaxLength)});
-              }
-              else if ( (fBase.fFacetsDefined & FACET_LENGTH) != 0 ) {
-                  // check 4.3.1.c2 error: length != fBase.length
-                  if ( fLength != fBase.fLength )
-                      reportError( "length-valid-restriction", new Object[]{Integer.toString(fLength), Integer.toString(fBase.fLength), fTypeName});
-              }
+                if ( (fBase.fFacetsDefined & FACET_LENGTH) != 0 ) {
+                    // check 4.3.1.c2 error: length != fBase.length
+                    if ( fLength != fBase.fLength )
+                        reportError( "length-valid-restriction", new Object[]{Integer.toString(fLength), Integer.toString(fBase.fLength), fTypeName});
+                }
             }
 
             // check 4.3.1.c1 error: fBase.length & (maxLength | minLength)
-            if((fBase.fFacetsDefined & FACET_LENGTH) != 0 ){
-              if ((fFacetsDefined & FACET_MINLENGTH) != 0) {
-                if ((fFacetsDefined & FACET_MAXLENGTH) != 0) {
+            else if((fBase.fFacetsDefined & FACET_LENGTH) != 0 ){
+                if ((fFacetsDefined & FACET_MINLENGTH) != 0 &&
+                    fBase.fLength < fMinLength) {
                     // fBase.length, minLength and maxLength defined
-                    reportError("length-minLength-maxLength.a", new Object[]{fTypeName, Integer.toString(fBase.fLength), Integer.toString(fMinLength), Integer.toString(fMaxLength)});
+                    reportError("length-minLength-maxLength.d", new Object[]{fTypeName, Integer.toString(fBase.fLength), Integer.toString(fMinLength)});
                 }
-                else {
-                    // fBase.length and minLength defined
-                    reportError("length-minLength-maxLength.b", new Object[]{fTypeName, Integer.toString(fBase.fLength), Integer.toString(fMinLength)});
-
+                if ((fFacetsDefined & FACET_MAXLENGTH) != 0 &&
+                         fBase.fLength > fMaxLength) {
+                    // fBase.length and maxLength defined
+                    reportError("length-minLength-maxLength.e", new Object[]{this, Integer.toString(fBase.fLength), Integer.toString(fMaxLength)});
                 }
-              }
-              else if ((fFacetsDefined & FACET_MAXLENGTH) != 0) {
-                // fBase.length and maxLength defined
-                reportError("length-minLength-maxLength.c", new Object[]{this, Integer.toString(fBase.fLength), Integer.toString(fMaxLength)});
-              }
             }
 
             // check 4.3.2.c1 must: minLength <= fBase.maxLength
