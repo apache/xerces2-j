@@ -664,7 +664,9 @@ public abstract class XMLScanner
                     fEntityScanner.scanChar();
                     XMLStringBuffer colonName = new XMLStringBuffer(target);
                     colonName.append(":");
-                    colonName.append(fEntityScanner.scanName());
+                    String str = fEntityScanner.scanName();
+                    if (str != null)
+                        colonName.append(str);
                     reportFatalError("ColonNotLegalWithNS", new Object[] {colonName.toString()});
                     fEntityScanner.skipSpaces();
                 } else {
