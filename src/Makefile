@@ -175,6 +175,16 @@ samples: ../bin/${SAMPLESJARFILE}
 	${MKDIR}  ../class/sax/helpers
 	${CP}  ../samples/sax/helpers/*.class                      ../class/sax/helpers
 
+#-samples/socket
+
+	${MKDIR} ../class/socket
+	${CP}  ../samples/socket/*.class  ../class/socket
+
+#-samples/socket/io
+
+	${MKDIR}  ../class/socket/io
+	${CP}  ../samples/socket/io/*.class                      ../class/socket/io
+
 #-samples/ui
 
 #	${MKDIR}  ../class/ui
@@ -350,6 +360,16 @@ package_src:
 	${MKDIR}  ../source/samples/sax/helpers
 	${CP}  ../samples/sax/helpers/*.java                      ../source/samples/sax/helpers
 
+#-samples/socket
+
+	${MKDIR} ../source/samples/socket
+	${CP}  ../samples/socket/*.java  ../source/samples/socket
+
+#-samples/socket/io
+
+	${MKDIR}  ../source/samples/socket/io
+	${CP}  ../samples/socket/io/*.java                      ../source/samples/socket/io
+
 #-samples/ui
 
 #	${MKDIR}  ../source/samples/ui
@@ -507,6 +527,14 @@ package_src:
 	${CP}  ../samples/dom/wrappers/Makefile                     ../source/samples/dom/wrappers
 
 #-samples/sax
+
+	${CP}  ../samples/socket/Makefile  ../source/samples/socket
+
+#-samples/socket/io
+
+	${CP}  ../samples/socket/io/Makefile                      ../source/samples/socket/io
+
+#-samples/socket
 
 	${CP}  ../samples/sax/Makefile  ../source/samples/sax
 

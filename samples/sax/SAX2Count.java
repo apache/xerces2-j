@@ -64,6 +64,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -133,8 +134,13 @@ public class SAX2Count
             parser.setFeature( "http://xml.org/sax/features/namespaces",
                                                setNameSpaces );
 
-            parser.setFeature( "http://apache.org/xml/features/validation/schema",
-                                               setSchemaSupport );
+            try {
+                parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                                                   setSchemaSupport );
+            }
+            catch (SAXNotRecognizedException e) {
+                // parser may not recognize this feature but that's ok
+            }
 
             if (warmup) {
                 parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);

@@ -226,7 +226,7 @@ Copyright:
   <target name="sampjar" depends="samples">
     <jar jarfile="${build.dir}/${name}Samples.jar"
          basedir="${build.dest}"
-         includes="dom/**,sax/**,ui/**,util/**"/>
+         includes="dom/**,sax/**,socket/**,ui/**,util/**"/>
   </target>
 
   <!-- =================================================================== -->
