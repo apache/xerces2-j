@@ -5,6 +5,13 @@
   <release version='&ParserName; TBD'>
    <desc>TBD</desc>
    <changes>
+    <fix>
+     <note>
+      Fixed several bugs regarding error reporting in the 
+      DOM Level 2 Range implementation.
+     </note>
+     <submitter name='Neil Delima'/>
+    </fix>
     <add>
      <note>
       Added support for XML Base to the XInclude implementation.
