@@ -122,6 +122,10 @@ public class SchemaValidator
     protected static final String VALIDATION =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
+    /** Feature identifier: dynamic validation. */
+    protected static final String DYNAMIC_VALIDATION =
+        Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
+
     // property identifiers
 
     /** Property identifier: symbol table. */
@@ -141,6 +145,7 @@ public class SchemaValidator
     /** Recognized features. */
     protected static final String[] RECOGNIZED_FEATURES = {
         VALIDATION,
+        DYNAMIC_VALIDATION,
     };
 
     /** Recognized properties. */
@@ -157,7 +162,9 @@ public class SchemaValidator
     // features
 
     /** Validation. */
-    protected boolean fValidation;
+    protected boolean fValidation = false;
+    protected boolean fDynamicValidation = false;
+    protected boolean fDoValidation = false;
 
     // properties
 
@@ -228,6 +235,8 @@ public class SchemaValidator
         throws XMLConfigurationException {
         if (featureId.equals(VALIDATION))
             fValidation = state;
+        else if (featureId.equals(DYNAMIC_VALIDATION))
+            fDynamicValidation = state;
     } // setFeature(String,boolean)
 
     /**
@@ -648,12 +657,7 @@ public class SchemaValidator
     static final int INITIAL_STACK_SIZE = 8;
     static final int INC_STACK_SIZE     = 8;
 
-    //
-    // Data
-    //
-
-    // some constants
-
+    // some constants that'll be added into the symbol table
     String URI_XSI;
     String XSI_SCHEMALOCACTION;
     String XSI_NONAMESPACESCHEMALOCACTION;
@@ -661,13 +665,17 @@ public class SchemaValidator
     String XSI_NIL;
     String URI_SCHEMAFORSCHEMA;
 
-    // state
+    //
+    // Data
+    //
 
     /** Schema grammar resolver. */
     final XSGrammarResolver fGrammarResolver;
 
     /** Schema handler */
     final XSDHandler fSchemaHandler;
+
+    // state
 
     /** Skip validation. */
     int fSkipValidationDepth;
@@ -700,10 +708,10 @@ public class SchemaValidator
     XSCMValidator[] fCMStack = new XSCMValidator[INITIAL_STACK_SIZE];
 
     /** the current state of the current content model */
-    Object fCurrCMState;
+    int[] fCurrCMState;
 
     /** stack to hold content model states */
-    Object[] fCMStateStack = new Object[INITIAL_STACK_SIZE];
+    int[][] fCMStateStack = new int[INITIAL_STACK_SIZE][];
 
     /** Temporary string buffers. */
     StringBuffer fBuffer;
@@ -714,11 +722,7 @@ public class SchemaValidator
     /**
      * This table has to be own by instance of XMLValidator and shared
      * among ID, IDREF and IDREFS.
-     * <p>
-     * <strong>Note:</strong> Only ID has read/write access.
-     * <p>
-     * <strong>Note:</strong> Should revisit and replace with a ligther
-     * structure.
+     * REVISIT: Should replace with a ligther structure.
      */
     Hashtable fTableOfIDs = new Hashtable();
     Hashtable fTableOfIDRefs = new Hashtable();
@@ -738,16 +742,10 @@ public class SchemaValidator
     void ownReset(XMLComponentManager componentManager)
         throws XMLConfigurationException {
 
-        try {
-            fValidation = componentManager.getFeature(VALIDATION);
-        }
-        catch (XMLConfigurationException e) {
-            fValidation = false;
-        }
-
-        // get needed components
+        // get error reporter
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
+        // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (symbolTable != fSymbolTable) {
             URI_XSI = symbolTable.addSymbol(SchemaSymbols.OURI_XSI);
@@ -759,6 +757,8 @@ public class SchemaValidator
         }
         fSymbolTable = symbolTable;
 
+        // get entity resolver. if there is no one, create a default
+        // REVISIT: why there is no default one already?
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
         if (fEntityResolver == null)
             fEntityResolver = new XMLEntityResolver() {
@@ -770,10 +770,11 @@ public class SchemaValidator
                 }
             };
 
-        // clear grammars
+        // clear grammars, and put the one for schema namespace there
         fGrammarResolver.reset();
         fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
 
+        // reset schema handler and all traversal objects
         fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable);
 
         // initialize state
@@ -785,6 +786,7 @@ public class SchemaValidator
         fElementDepth = -1;
         fChildCount = 0;
 
+        // clear values stored in id and idref table
         fTableOfIDs.clear();
         fTableOfIDRefs.clear();
 
@@ -810,9 +812,9 @@ public class SchemaValidator
             StringBuffer[] newArrayB = new StringBuffer[newSize];
             System.arraycopy(fBufferStack, 0, newArrayB, 0, newSize);
             fBufferStack = newArrayB;
-            Object[] newArrayO = new Object[newSize];
-            System.arraycopy(fCMStateStack, 0, newArrayO, 0, newSize);
-            fCMStateStack = newArrayO;
+            int[][] newArrayIA = new int[newSize][];
+            System.arraycopy(fCMStateStack, 0, newArrayIA, 0, newSize);
+            fCMStateStack = newArrayIA;
         }
 
     } // ensureStackCapacity
@@ -824,14 +826,19 @@ public class SchemaValidator
     /** Handle element. */
     void handleStartElement(QName element, XMLAttributes attributes) {
 
+        // whether to do validatoin
+        // REVISIT: consider DynamicValidation
+        if (fElementDepth == -1) {
+            fDoValidation = fValidation;
+        }
+
         // if we are in the content of "skip", then just skip this element
         if (fSkipValidationDepth >= 0) {
             fElementDepth++;
             return;
         }
 
-        // if it's not the root element, we store
-        // ElementDecl, ContentModel, ElementValue in the stacks
+        // if it's not the root element, we push the current states in the stacks
         if (fElementDepth != -1) {
             ensureStackCapacity();
             fChildCountStack[fElementDepth] = fChildCount+1;
@@ -874,14 +881,18 @@ public class SchemaValidator
         // if there is a content model, then get the decl from that
         if (fCurrentCM != null) {
             Object decl = fCurrentCM.oneTransition(element, fCurrCMState);
+            // it could be an element decl or a wildcard decl
+            // REVISIT: is there a more effecient way than 'instanceof'
             if (decl instanceof XSElementDecl) {
                 fCurrentElemDecl = (XSElementDecl)decl;
             } else if (decl instanceof XSWildcardDecl) {
                 wildcard = (XSWildcardDecl)decl;
-            } else if (fCurrCMState != null) {
+            } else if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
+                       fDoValidation) {
                 // REVISIT: report error: invalid content
-                reportGenericSchemaError("invlid content starting with element '"+element.rawname+"'");
-                fCurrCMState = null;
+                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                reportGenericSchemaError("invlid content starting with element '"+element.rawname+"', the content must match ("+ctype.fParticle.toString()+")");
+                fCurrCMState[0] = XSCMValidator.SUBSEQUENT_ERROR;
             }
         }
 
@@ -920,7 +931,7 @@ public class SchemaValidator
         }
 
         // if the element decl is not found
-        if (fCurrentType == null) {
+        if (fCurrentType == null && fDoValidation) {
             // if this is the root element, or wildcard = strict, report error
             if (fElementDepth == 0) {
                 // REVISIT: report error, because it's root element
@@ -954,7 +965,8 @@ public class SchemaValidator
 
         // REVISIT: get xsi:nil (was bind...)
 
-        // REVISIT: validate attributes (was validateEle...)
+        // now validate everything related with the attributes
+        validateOnAttributes(element, attributes);
 
     } // handleStartElement(QName,XMLAttributes,boolean)
 
@@ -979,7 +991,7 @@ public class SchemaValidator
             return;
         }
 
-        if (fValidation) {
+        if (fDoValidation) {
             // REVISIT: fCurrentElemDecl: fixed/default value; ...
             // REVISIT: fCurrentType: value content, element content
             if (fCurrentType != null) {
@@ -998,10 +1010,13 @@ public class SchemaValidator
                         reportGenericSchemaError("datatype error: " + e.getMessage());
                     }
                 } else {
-                    if (fCurrentCM != null && !fCurrentCM.endContentModel(fCurrCMState)) {
+                    // if the current state is a valid state, check whether
+                    // it's one of the final states.
+                    if (fCurrCMState != null && fCurrCMState[0] >= 0 &&
+                        !fCurrentCM.endContentModel(fCurrCMState)) {
                         XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                         // REVISIT: report error for not matching content
-                        reportGenericSchemaError("the content of '"+element.rawname+"' doesn't match ("+ctype.fParticle.toString()+")");
+                        reportGenericSchemaError("the content of '"+element.rawname+"' is not complete. it must match ("+ctype.fParticle.toString()+")");
                     }
                 }
             }
@@ -1010,7 +1025,7 @@ public class SchemaValidator
         // decrease element depth and restore states
         fElementDepth--;
         if (fElementDepth == -1) {
-            if (fValidation) {
+            if (fDoValidation) {
                 try {
                     //Do final validation of IDREFS against IDs
                     // REVISIT: how to do it? new simpletype design?
@@ -1040,18 +1055,24 @@ public class SchemaValidator
         fBuffer.append(text.toString());
     } // handleCharacters(XMLString)
 
+    void validateOnAttributes(QName element, XMLAttributes attributes) {
+
+        return;
+
+    } //validateOnAttributes
+
     void reportSchemaError(String key, Object[] arguments) {
-        if (fValidation)
+        if (fDoValidation)
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        key, arguments,
                                        XMLErrorReporter.SEVERITY_ERROR);
     }
 
     void reportGenericSchemaError(String msg) {
-        if (fValidation)
+        if (fDoValidation)
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "General", new Object[]{msg},
                                        XMLErrorReporter.SEVERITY_ERROR);
     }
 
-} // class XMLDTDValidator
+} // class SchemaValidator

@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.v2.identity;
 
-import org.apache.xerces.impl.v2.XSArrayResizer;
-
 /**
  * Base class of Schema identity constraint.
  *

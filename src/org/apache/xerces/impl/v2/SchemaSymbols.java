@@ -91,7 +91,7 @@ public final class SchemaSymbols {
     // these are used within schema traversers (including XSDHandler).
     // when a new DOM parser is created to parse schema document,
     // XSDHandler is responsible for passing this symbol table to that parser.
-    public static final SymbolTable fSymbolTable = new SynchronizedSymbolTable();
+    public static final SymbolTable fSymbolTable = new SymbolTable();
 
     // schema namespace is also added to the schema symbol table
     public static final String URI_SCHEMAFORSCHEMA      = fSymbolTable.addSymbol(OURI_SCHEMAFORSCHEMA);
@@ -283,12 +283,22 @@ public final class SchemaSymbols {
 
 
     /**
-     * Synchronized symbol table.
+     * Shadowed symbol table. For schema document use.
      *
      * @author Andy Clark, IBM
      */
-    public static final class SynchronizedSymbolTable
-        extends SymbolTable {
+    public static final class SchemaSymbolTable extends SymbolTable {
+
+        //
+        // Data
+        //
+
+        /** Main symbol table. */
+        protected SymbolTable fSymbolTable = SchemaSymbols.fSymbolTable;
+
+        //
+        // Constructors
+        //
 
         //
         // SymbolTable methods
@@ -304,9 +314,10 @@ public final class SchemaSymbols {
          */
         public String addSymbol(String symbol) {
 
-            synchronized (this) {
-                return super.addSymbol(symbol);
+            if (fSymbolTable.containsSymbol(symbol)) {
+                return fSymbolTable.addSymbol(symbol);
             }
+            return super.addSymbol(symbol);
 
         } // addSymbol(String)
 
@@ -322,42 +333,40 @@ public final class SchemaSymbols {
          */
         public String addSymbol(char[] buffer, int offset, int length) {
 
-            synchronized (this) {
-                return super.addSymbol(buffer, offset, length);
+            if (fSymbolTable.containsSymbol(buffer, offset, length)) {
+                return fSymbolTable.addSymbol(buffer, offset, length);
             }
+            return super.addSymbol(buffer, offset, length);
 
         } // addSymbol(char[],int,int):String
 
         /**
-         * Returns true if the symbol table already contains the specified
-         * symbol.
+         * Returns a hashcode value for the specified symbol. The value
+         * returned by this method must be identical to the value returned
+         * by the <code>hash(char[],int,int)</code> method when called
+         * with the character array that comprises the symbol string.
          *
-         * @param symbol The symbol to look for.
+         * @param symbol The symbol to hash.
          */
-        public boolean containsSymbol(String symbol) {
-
-            synchronized (this) {
-                return super.containsSymbol(symbol);
-            }
-
-        } // containsSymbol(String):boolean
+        public int hash(String symbol) {
+            return fSymbolTable.hash(symbol);
+        } // hash(String):int
 
         /**
-         * Returns true if the symbol table already contains the specified
-         * symbol.
+         * Returns a hashcode value for the specified symbol information.
+         * The value returned by this method must be identical to the value
+         * returned by the <code>hash(String)</code> method when called
+         * with the string object created from the symbol information.
          *
-         * @param buffer The buffer containing the symbol to look for.
-         * @param offset The offset into the buffer.
-         * @param length The length of the symbol in the buffer.
+         * @param buffer The character buffer containing the symbol.
+         * @param offset The offset into the character buffer of the start
+         *               of the symbol.
+         * @param length The length of the symbol.
          */
-        public boolean containsSymbol(char[] buffer, int offset, int length) {
+        public int hash(char[] buffer, int offset, int length) {
+            return fSymbolTable.hash(buffer, offset, length);
+        } // hash(char[],int,int):int
 
-            synchronized (this) {
-                return super.containsSymbol(buffer, offset, length);
-            }
-
-        } // containsSymbol(char[],int,int):boolean
-
-    } // class SynchronizedSymbolTable
+    } // class ShadowedSymbolTable
 
 }

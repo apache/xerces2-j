@@ -232,7 +232,7 @@ class XSDHandler {
 
         // REVISIT: do we use shadowed or synchronized symbol table of
         //          SchemaSymbols.fSymbolTable?
-        fSchemaParser = new DOMParser(SchemaSymbols.fSymbolTable);
+        fSchemaParser = new DOMParser(new SchemaSymbols.SchemaSymbolTable());
         // set ErrorHandler and EntityResolver (doesn't seem that
         // XMLErrorHandler or XMLEntityResolver will work with
         // standard DOMParser...
