@@ -752,6 +752,14 @@ public class DefaultEntityHandler
             fSource = new InputSource(fSystemId);
             if (fPublicId != null)
                 fSource.setPublicId(fPublicId);
+        } else {
+            if (fSource.getSystemId() != null) {
+                fSystemId =
+                    expandSystemId(fSource.getSystemId(), baseSystemId);
+            }
+            if (fSource.getPublicId() != null) {
+                fPublicId = fSource.getPublicId();
+            }
         }
 
         boolean textDecl = false; // xmlDecl if true, textDecl if false
