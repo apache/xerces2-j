@@ -14,6 +14,7 @@ TARGETS=\
 	StringHasher.class\
 	StringPool.class\
 	SymbolCache.class\
+	URI.class\
 	UTF8DataChunk.class\
 	XMLCharacterProperties.class\
 	XMLMessageProvider.class\

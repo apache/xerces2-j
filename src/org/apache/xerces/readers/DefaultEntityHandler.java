@@ -60,7 +60,6 @@ package org.apache.xerces.readers;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -68,6 +67,7 @@ import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.utils.URI;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
 
@@ -371,14 +371,14 @@ public class DefaultEntityHandler
     }
 
     /**
-     * Expands a system id and returns the system id as a URL, if
+     * Expands a system id and returns the system id as a URI, if
      * it can be expanded. A return value of null means that the
      * identifier is already expanded. An exception thrown
      * indicates a failure to expand the id.
      *
      * @param systemId The systemId to be expanded.
      *
-     * @return Returns the URL object representing the expanded system
+     * @return Returns the URI string representing the expanded system
      *         identifier. A null value indicates that the given
      *         system identifier is already expanded.
      *
@@ -396,12 +396,12 @@ public class DefaultEntityHandler
 
         // if id already expanded, return
         try {
-            URL url = new URL(id);
-            if (url != null) {
+            URI uri = new URI(id);
+            if (uri != null) {
                 return systemId;
             }
         }
-        catch (MalformedURLException e) {
+        catch (URI.MalformedURIException e) {
             // continue on...
         }
 
@@ -409,8 +409,8 @@ public class DefaultEntityHandler
         id = fixURI(id);
 
         // normalize base
-        URL base = null;
-        URL url = null;
+        URI base = null;
+        URI uri = null;
         try {
             if (currentSystemId == null) {
                 String dir;
@@ -423,22 +423,22 @@ public class DefaultEntityHandler
                 if (!dir.endsWith("/")) {
                     dir = dir + "/";
                 }
-                base = new URL("file", "", dir);
+                base = new URI("file", "", dir, null, null);
             }
             else {
-                base = new URL(currentSystemId);
+                base = new URI(currentSystemId);
             }
 
             // expand id
-            url = new URL(base, id);
+            uri = new URI(base, id);
         }
         catch (Exception e) {
             // let it go through
         }
-        if (url == null) {
+        if (uri == null) {
             return systemId;
         }
-        return url.toString();
+        return uri.toString();
     }
 
     //
