@@ -135,6 +135,9 @@ public class DOMImplementationImpl
          || (feature.equalsIgnoreCase("Traversal") 
 	     && (anyVersion
 		 || version.equals("2.0")))
+         || (feature.equalsIgnoreCase("Range") 
+	     && (anyVersion
+		 || version.equals("2.0")))
             ;
 
     } // hasFeature(String,String):boolean
