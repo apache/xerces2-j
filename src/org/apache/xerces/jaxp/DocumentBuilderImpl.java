@@ -59,7 +59,10 @@
 
 package org.apache.xerces.jaxp;
 
+import java.util.Hashtable;
+import java.util.Enumeration;
 import java.io.IOException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -72,6 +75,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.helpers.DefaultHandler;
@@ -82,6 +87,7 @@ import org.apache.xerces.dom.DOMImplementationImpl;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
+ * @version $Revision$
  */
 public class DocumentBuilderImpl extends DocumentBuilder {
     /** Xerces features */
@@ -92,8 +98,6 @@ public class DocumentBuilderImpl extends DocumentBuilder {
     static final String INCLUDE_IGNORABLE_WHITESPACE =
                                         "dom/include-ignorable-whitespace";
 
-    private DocumentBuilderFactory dbf;
-
     private EntityResolver er = null;
     private ErrorHandler eh = null;
     private DOMParser domParser = null;
@@ -101,56 +105,77 @@ public class DocumentBuilderImpl extends DocumentBuilder {
     private boolean namespaceAware = false;
     private boolean validating = false;
 
-    DocumentBuilderImpl(DocumentBuilderFactory dbf)
-        throws ParserConfigurationException
+    DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs)
+        throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        this.dbf = dbf;
-
         domParser = new DOMParser();
 
+        // Validation
+        validating = dbf.isValidating();
+        String validation = "http://xml.org/sax/features/validation";
+        domParser.setFeature(validation, validating);
+
+        // If validating, provide a default ErrorHandler that prints
+        // validation errors with a warning telling the user to set an
+        // ErrorHandler
+        if (validating) {
+            setErrorHandler(new DefaultValidationErrorHandler());
+        }
+
+        // "namespaceAware" ==  SAX Namespaces feature
+        namespaceAware = dbf.isNamespaceAware();
+        domParser.setFeature("http://xml.org/sax/features/namespaces",
+                             namespaceAware);
+
+        // Set various parameters obtained from DocumentBuilderFactory
+        //
+        // XXX Note: Ignore features that are not yet implemented in
+        // Xerces 2.  This code is different than in Xerces 1!
         try {
-            // Validation
-            validating = dbf.isValidating();
-            String validation = "http://xml.org/sax/features/validation";
-            domParser.setFeature(validation, validating);
-
-            // If validating, provide a default ErrorHandler that prints
-            // validation errors with a warning telling the user to set an
-            // ErrorHandler
-            if (validating) {
-                setErrorHandler(new DefaultValidationErrorHandler());
-            }
-
-            // "namespaceAware" ==  SAX Namespaces feature
-            namespaceAware = dbf.isNamespaceAware();
-            domParser.setFeature("http://xml.org/sax/features/namespaces",
-                                 namespaceAware);
-
-            // Set various parameters obtained from DocumentBuilderFactory
-            //
-            // XXX Note: Ignore features that are not yet implemented in
-            // Xerces 2.  This code is different than in Xerces 1!
-            try {
             domParser.setFeature(XERCES_FEATURE_PREFIX +
                                  INCLUDE_IGNORABLE_WHITESPACE,
                                  !dbf.isIgnoringElementContentWhitespace());
             domParser.setFeature(XERCES_FEATURE_PREFIX +
                                  CREATE_ENTITY_REF_NODES_FEATURE,
                                  !dbf.isExpandEntityReferences());
-            } catch (Exception e) {
-            }
+        } catch (Exception e) {
+        }
 
-            // XXX No way to control dbf.isIgnoringComments() or
-            // dbf.isCoalescing()
-        } catch (SAXException e) {
-            // Handles both SAXNotSupportedException, SAXNotRecognizedException
-            throw new ParserConfigurationException(e.getMessage());
+        // XXX No way to control dbf.isIgnoringComments() or
+        // dbf.isCoalescing()
+
+        setDocumentBuilderFactoryAttributes(dbfAttrs);
+    }
+
+    /**
+     * Set any DocumentBuilderFactory attributes of our underlying DOMParser
+     *
+     * Note: code does not handle possible conflicts between DOMParser
+     * attribute names and JAXP specific attribute names,
+     * eg. DocumentBuilderFactory.setValidating()
+     */
+    private void setDocumentBuilderFactoryAttributes(Hashtable dbfAttrs)
+        throws SAXNotSupportedException, SAXNotRecognizedException
+    {
+        if (dbfAttrs != null) {
+            for (Enumeration e = dbfAttrs.keys(); e.hasMoreElements();) {
+                String name = (String)e.nextElement();
+                Object val = dbfAttrs.get(name);
+                if (val instanceof Boolean) {
+                    // Assume feature
+                    domParser.setFeature(name, ((Boolean)val).booleanValue());
+                } else {
+                    // Assume property
+                    domParser.setProperty(name, val);
+                }
+            }
         }
     }
 
     /**
      * Non-preferred: use the getDOMImplementation() method instead of this
-     * one
+     * one to get a DOM Level 2 DOMImplementation object and then use DOM
+     * Level 2 methods to create a DOM Document object.
      */
     public Document newDocument() {
         return new org.apache.xerces.dom.DocumentImpl();
@@ -193,5 +218,10 @@ public class DocumentBuilderImpl extends DocumentBuilder {
         // If app passes in a ErrorHandler of null, then ignore all errors
         // and warnings
         this.eh = (eh == null) ? new DefaultHandler() : eh;
+    }
+
+    // package private
+    DOMParser getDOMParser() {
+        return domParser;
     }
 }

@@ -63,10 +63,20 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.xml.sax.SAXException;
+
+import java.util.Hashtable;
+
+import org.apache.xerces.parsers.DOMParser;
+
 /**
  * @author Rajiv Mordani
+ * @author Edwin Goei
+ * @version $Revision$
  */
 public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
+    /** These are DocumentBuilderFactory attributes not DOM attributes */
+    private Hashtable attributes;
 
     public DocumentBuilderFactoryImpl() {
    	 
@@ -78,8 +88,12 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     public DocumentBuilder newDocumentBuilder()
         throws ParserConfigurationException 
     {
-	DocumentBuilderImpl db = new DocumentBuilderImpl(this);
-        return db;
+        try {
+            return new DocumentBuilderImpl(this, attributes);
+        } catch (SAXException se) {
+            // Handles both SAXNotSupportedException, SAXNotRecognizedException
+            throw new ParserConfigurationException(se.getMessage());
+        }
     }
 
     /**
@@ -89,7 +103,20 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     public void setAttribute(String name, Object value)
         throws IllegalArgumentException
     {
-        throw new IllegalArgumentException("No attributes are implemented");
+        // XXX This is ugly.  We have to collect the attributes and then
+        // later create a DocumentBuilderImpl to verify the attributes.
+        if (attributes == null) {
+            attributes = new Hashtable();
+        }
+        attributes.put(name, value);
+
+        // Test the attribute name by possibly throwing an exception
+        try {
+            new DocumentBuilderImpl(this, attributes);
+        } catch (Exception e) {
+            attributes.remove(name);
+            throw new IllegalArgumentException(e.getMessage());
+        }
     }
 
     /**
@@ -99,6 +126,24 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     public Object getAttribute(String name)
         throws IllegalArgumentException
     {
-        throw new IllegalArgumentException("No attributes are implemented");
+        DOMParser domParser = null;
+
+        try {
+            // We create a dummy DocumentBuilderImpl in case the attribute
+            // name is not one that is in the attributes hashtable.
+            domParser =
+                new DocumentBuilderImpl(this, attributes).getDOMParser();
+            return domParser.getProperty(name);
+        } catch (SAXException se1) {
+            // assert(name is not recognized or not supported), try feature
+            try {
+                boolean result = domParser.getFeature(name);
+                // Must have been a feature
+                return new Boolean(result);
+            } catch (SAXException se2) {
+                // Not a property or a feature
+                throw new IllegalArgumentException(se1.getMessage());
+            }
+        }
     }
 }
