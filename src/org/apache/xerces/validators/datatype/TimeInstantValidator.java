@@ -440,4 +440,8 @@ public class TimeInstantValidator implements DatatypeValidator {
 		return -result;
    }
    
+
+        public int compare( DatatypeValidator o1, DatatypeValidator o2){
+            return 0;
+        }
 }

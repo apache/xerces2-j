@@ -117,4 +117,9 @@ public interface DatatypeValidator {
     * set the locate to be used for error messages
     */
     public void setLocale(Locale locale);
+
+
+
+    public int compare( DatatypeValidator o1, DatatypeValidator o2);
+
 }

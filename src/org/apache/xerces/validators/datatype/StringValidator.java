@@ -157,4 +157,8 @@ public class StringValidator implements DatatypeValidator {
     public void setLocale(Locale locale) {
         fLocale = locale;
     }
+
+    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+        return 0;
+    }
 }

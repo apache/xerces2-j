@@ -335,4 +335,8 @@ public class DecimalValidator implements DatatypeValidator {
         }
     }
     */
+
+    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+        return 0;
+    }
 }

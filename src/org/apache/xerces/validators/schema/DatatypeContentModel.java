@@ -64,10 +64,12 @@ import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.InsertableElementsInfo;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
+import org.apache.xerces.utils.QName;
 
 /**
  * DatatypeContentModel provides a content model that knows
  * how to check content against datatypes
+ * @version $Id:
  */
 public class DatatypeContentModel implements XMLContentModel
 {
@@ -121,7 +123,7 @@ public class DatatypeContentModel implements XMLContentModel
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(int childCount, int[] children) throws Exception
+    public int validateContent(int childCount, QName[] children) throws Exception
     {
         boolean DEBUG_DATATYPES = false;
 /*
@@ -160,7 +162,7 @@ public class DatatypeContentModel implements XMLContentModel
             String type = fStringPool.toString(csn.value);
             DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);
             if (v != null) 
-                v.validate(fStringPool.toString(children[0]));
+                v.validate(fStringPool.toString(children[0].localpart));
             else
                 System.out.println("No validator for datatype "+type);
         } catch (InvalidDatatypeValueException idve) {

@@ -119,4 +119,8 @@ public class BooleanValidator implements DatatypeValidator {
              return "Illegal Errorcode "+minor;
          }
     }
+    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+        return 0;
+    }
+
 }

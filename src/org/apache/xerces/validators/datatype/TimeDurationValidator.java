@@ -492,4 +492,8 @@ public class TimeDurationValidator implements DatatypeValidator {
 			throw new InvalidDatatypeValueException(e.toString());
 		}
    }
+
+        public int compare( DatatypeValidator o1, DatatypeValidator o2){
+            return 0;
+        }
 }
