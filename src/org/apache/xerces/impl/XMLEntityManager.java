@@ -1304,15 +1304,70 @@ public class XMLEntityManager
         } // scanAttContent(int,XMLString):int
     
         /**
-         * scanData
+         * scanData scans data up to the given delimiter (which is consumed).
+         * This assumes the internal buffer is at least bigger than the size
+         * of the delimiter, and that the delimiter contains at least one char.
          *
-         * @param delimiter
-         * @param data
+         * @param delimiter The end delimiter to look for.
+         * @param data The string to fill in with the scanned data.
          */
         public boolean scanData(String delimiter, XMLString data)
             throws IOException, SAXException {
-            // TODO
-            throw new RuntimeException("not implemented");
+
+            int delimLen = delimiter.length();
+            int limit = fCurrentEntity.count - delimLen + 1;
+
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+            else if (fCurrentEntity.position == limit) {
+                System.arraycopy(fCurrentEntity.ch, fCurrentEntity.position,
+                                 fCurrentEntity.ch, 0, delimLen - 1);
+                load(delimLen - 1);
+                fCurrentEntity.position = 0;
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("(scanData: ");
+                print();
+                System.out.println();
+            }
+
+            int offset = fCurrentEntity.position;
+            boolean done = false;
+            // iterate over buffer until there isn't enough chars left
+            // for the delimiter to be there
+            while (fCurrentEntity.position < limit) {
+                char c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (c == delimiter.charAt(0)) {
+                    // looks like we just hit the delimiter
+                    int i;
+                    for (i = 1; i < delimLen; i++) {
+                        c = fCurrentEntity.ch[fCurrentEntity.position++];
+                        if (c != delimiter.charAt(i)) {
+                            break;
+                        }
+                    }
+                    if (i == delimLen) {
+                        // that was it, we're all set
+                        done = true;
+                        break;
+                    }
+                }
+            }
+
+            int length = fCurrentEntity.position - offset;
+            if (done) {
+                length -= delimLen;
+            }
+            data.setValues(fCurrentEntity.ch, offset, length);
+
+            if (DEBUG_PRINT) {
+                System.out.print(")scanData: ");
+                print();
+                System.out.println(" -> " + done);
+            }
+            return !done;
+
         } // scanData(String,XMLString)
     
         /**
