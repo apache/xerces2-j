@@ -434,34 +434,24 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
     private static Object createDatatypeValidator(Constructor validatorConstructor,
-                                                  Object[] arguments)  throws  InvalidDatatypeFacetException {
+                                                  Object[] arguments) throws InvalidDatatypeFacetException {
         Object validator = null;
         try {
             validator = validatorConstructor.newInstance(arguments);
-            return validator;
         }
         catch ( InstantiationException e ) {
             if ( fDebug ) {
                 e.printStackTrace();
-            }
-            else {
-                return null;
             }
         }
         catch ( IllegalAccessException e ) {
             if ( fDebug ) {
                 e.printStackTrace();
             }
-            else {
-                return null;
-            }
         }
         catch ( IllegalArgumentException e ) {
             if ( fDebug ) {
                 e.printStackTrace();
-            }
-            else {
-                return null;
             }
         }
         catch ( InvocationTargetException e ) {
@@ -473,6 +463,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 throw new InvalidDatatypeFacetException( e.getTargetException().getMessage() );
             }
         }
+
         return validator;
     }
 
