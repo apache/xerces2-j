@@ -3625,8 +3625,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                              /****/   
                         }
                         else{
-                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)),
-                                                                    fTempAttDecl.list);
+                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)) );
                         }
                     }
                 }
@@ -3859,7 +3858,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                        "but no datatypevalidator was found, element "+fTempElementDecl.name);
                 }
                 else {
-                    dv.validate(fDatatypeBuffer.toString(), fTempElementDecl.list);
+                    dv.validate(fDatatypeBuffer.toString());
                 }
 
             } 
