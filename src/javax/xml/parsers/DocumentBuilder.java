@@ -268,8 +268,11 @@ public abstract class DocumentBuilder {
     public abstract void setErrorHandler(org.xml.sax.ErrorHandler eh);
 
     /**
-     * Obtain a new instance of a DOM Document object to build a DOM
-     * tree with.
+     * Obtain a new instance of a DOM Document object to build a DOM tree
+     * with.  Non-preferred: use the DocumentBuilder.getDOMImplementation()
+     * method instead of this one to get a DOM Level 2 DOMImplementation
+     * object and then use DOM Level 2 methods to create a DOM Document
+     * object.
      */
     
     public abstract Document newDocument();
