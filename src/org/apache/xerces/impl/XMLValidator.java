@@ -1967,8 +1967,34 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             }
 
             break;
+
+        case XMLSimpleType.TYPE_NOTATION:
         case XMLSimpleType.TYPE_ENUMERATION:
-            //av = fAttValidatorENUMERATION;
+            boolean found = false;
+            String [] enumVals = attributeDecl.simpleType.enumeration;
+            if (enumVals == null) {
+                found = false;
+            }
+            else
+                for (int i=0; i<enumVals.length; i++) {
+                    if (attValue == enumVals[i] || attValue.equals(enumVals[i])) {
+                        found = true;
+                        break;
+                    }
+                }
+
+            if (!found ) {
+                StringBuffer enumValueString = new StringBuffer();
+                if (enumVals != null)
+                    for (int i=0; i<enumVals.length; i++) {
+                        enumValueString.append(enumVals[i]+" ");
+                    }
+
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                           "MSG_ATTRIBUTE_VALUE_NOT_IN_LIST",
+                                           new Object[]{attributeDecl.name.rawname, attValue, enumValueString},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
             break;
         case XMLSimpleType.TYPE_ID:
             {
@@ -2048,8 +2074,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     }
                 } */
             }
-            break;
-        case XMLSimpleType.TYPE_NOTATION:
             break;
         case XMLSimpleType.TYPE_NMTOKEN:
             {
