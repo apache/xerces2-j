@@ -858,7 +858,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
                 if (DEBUG_ND) {
                     System.out.println("==>remove default attr: "+attribute.getNodeName());
                 }
-                attrMap.removeItem(attribute);
+                attrMap.removeItem(attribute, false);
             }
         }
     }

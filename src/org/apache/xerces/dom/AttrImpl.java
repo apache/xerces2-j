@@ -222,6 +222,15 @@ public class AttrImpl
         }
     }
 
+    /**
+     * NON-DOM: set the type of this attribute to be ID type.
+     * 
+     * @param id
+     */
+    public void setIdAttribute(boolean id){
+        this.isIdAttribute(id);
+    }
+
     //
     // Node methods
     //

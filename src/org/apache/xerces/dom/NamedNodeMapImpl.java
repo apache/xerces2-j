@@ -535,34 +535,6 @@ public class NamedNodeMapImpl
        }
     }
 
-    /**
-     * NON-DOM: Remove the node object
-     * 
-     * NOTE: Specifically removes THIS NODE -- not the node with this
-     * name, nor the node with these contents. If node does not belong to
-     * this named node map, we throw a DOMException.
-     * 
-     * @param item   The node to remove
-     * @return Removed node
-     * @exception DOMException
-     */
-    protected Node removeItem (Node item) throws DOMException{
-        int index = -1;
-        if (nodes != null) {
-            for (int i= 0;i<nodes.size();i++) {
-                if (nodes.elementAt(i) == item) {
-                    index = i;
-                    nodes.removeElementAt(index);
-                    break;
-                }
-            }
-        }
-        if (index < 0) {
-            throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                       "DOM008 Not found");
-        }
-        return item;
-    }
 
     protected Object getItem (int index){
         if (nodes !=null) {

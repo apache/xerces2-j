@@ -687,6 +687,17 @@ public class DeferredDocumentImpl
         putIdentifier(value, elemIndex);
     }
 
+
+    /** Sets type of attribute */
+    public void setIdAttribute(int attrIndex) {
+
+        int chunk = attrIndex >> CHUNK_SHIFT;
+        int index = attrIndex & CHUNK_MASK;
+        int extra = getChunkIndex(fNodeExtra, chunk, index);
+        extra = extra | IDATTRIBUTE;
+        setChunkIndex(fNodeExtra, extra, chunk, index);
+    }
+
     /** Inserts a child before the specified node in the table. */
     public int insertBefore(int parentIndex, int newChildIndex, int refChildIndex) {
 

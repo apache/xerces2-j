@@ -268,6 +268,37 @@ public class AttributeMap extends NamedNodeMapImpl {
         return internalRemoveNamedItem(name, false);
     }
 
+
+    /**
+     * NON-DOM: Remove the node object
+     * 
+     * NOTE: Specifically removes THIS NODE -- not the node with this
+     * name, nor the node with these contents. If node does not belong to
+     * this named node map, we throw a DOMException.
+     * 
+     * @param item       The node to remove
+     * @param addDefault true -- magically add default attribute
+     * @return Removed node
+     * @exception DOMException
+     */
+    protected Node removeItem (Node item, boolean addDefault) throws DOMException{
+        int index = -1;
+        if (nodes != null) {
+            for (int i= 0;i<nodes.size();i++) {
+                if (nodes.elementAt(i) == item) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (index < 0) {
+            throw new DOMException(DOMException.NOT_FOUND_ERR,
+                                       "DOM008 Not found");
+        }
+        
+        return remove((AttrImpl)item, index, addDefault);
+    }
+
     /**
      * Internal removeNamedItem method allowing to specify whether an exception
      * must be thrown if the specified name is not found.
@@ -288,48 +319,55 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
         }
 
-        AttrImpl n = (AttrImpl)nodes.elementAt(i);
-        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
+        return remove ((AttrImpl)nodes.elementAt(i), i, true);
 
-        // If there's a default, add it instead
-        if (hasDefaults()) {
-            NamedNodeMapImpl defaults =
-                ((ElementImpl) ownerNode).getDefaultAttributes();
+    } // internalRemoveNamedItem(String,boolean):Node
+
+    private final Node remove (AttrImpl attr, int index, boolean addDefault){
+
+        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
+        String name = attr.getNodeName();
+        if (attr.isIdAttribute()) {
+                ownerDocument.removeIdentifier(attr.getValue());
+        }
+
+        if (hasDefaults() && addDefault) {
+            // If there's a default, add it instead
+
+            NamedNodeMapImpl defaults = ((ElementImpl) ownerNode).getDefaultAttributes();
             Node d;
             if (defaults != null && (d = defaults.getNamedItem(name)) != null
-                && findNamePoint(name, i+1) < 0) {
-
+                && findNamePoint(name, index+1) < 0) {
                 NodeImpl clone = (NodeImpl)d.cloneNode(true);
                 clone.ownerNode = ownerNode;
+
                 clone.isOwned(true);
                 clone.isSpecified(false);
-                nodes.setElementAt(clone, i);
+                nodes.setElementAt(clone, index);
+                if (attr.isIdAttribute()) {
+                        ownerDocument.putIdentifier(clone.getNodeValue(), (ElementImpl)ownerNode);
+                }
             } else {
-                nodes.removeElementAt(i);
+                nodes.removeElementAt(index);
             }
         } else {
-            nodes.removeElementAt(i);
+            nodes.removeElementAt(index);
         }
 
         //        changed(true);
 
         // remove reference to owner
-        n.ownerNode = ownerDocument;
-        n.isOwned(false);
+        attr.ownerNode = ownerDocument;
+        attr.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
-        n.isSpecified(true);
-        // update id table if needed
-        if (n.isIdAttribute()) {
-            ownerDocument.removeIdentifier(n.getValue());
-            n.isIdAttribute(false);
-        }
+        attr.isSpecified(true);
+        attr.isIdAttribute(false);
 
         // notify document
-        ownerDocument.removedAttrNode(n, ownerNode, name);
+        ownerDocument.removedAttrNode(attr, ownerNode, name);
 
-        return n;
-
-    } // internalRemoveNamedItem(String,boolean):Node
+        return attr;
+    }
     
     /**
      * Introduced in DOM Level 2. <p>
@@ -386,11 +424,13 @@ public class AttributeMap extends NamedNodeMapImpl {
         AttrImpl n = (AttrImpl)nodes.elementAt(i);
         CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
 
+        if (n.isIdAttribute()) {
+                ownerDocument.removeIdentifier(n.getValue());
+        }
         // If there's a default, add it instead
         String nodeName = n.getNodeName();
         if (hasDefaults()) {
-            NamedNodeMapImpl defaults =
-                ((ElementImpl) ownerNode).getDefaultAttributes();
+            NamedNodeMapImpl defaults = ((ElementImpl) ownerNode).getDefaultAttributes();
             Node d;
             if (defaults != null
                 && (d = defaults.getNamedItem(nodeName)) != null)
@@ -411,6 +451,10 @@ public class AttributeMap extends NamedNodeMapImpl {
                         clone.isOwned(true);
                         clone.isSpecified(false);
                         nodes.setElementAt(clone, i);
+                        if (clone.isIdAttribute()) {
+                                ownerDocument.putIdentifier(clone.getNodeValue(), 
+                                                            (ElementImpl)ownerNode);
+                        }
                     } else {
                         nodes.removeElementAt(i);
                     }
@@ -429,10 +473,7 @@ public class AttributeMap extends NamedNodeMapImpl {
         // make sure it won't be mistaken with defaults in case it's reused
         n.isSpecified(true);
         // update id table if needed
-        if (n.isIdAttribute()) {
-            ownerDocument.removeIdentifier(n.getValue());
-            n.isIdAttribute(false);
-        }
+        n.isIdAttribute(false);
 
         // notify document
         ownerDocument.removedAttrNode(n, ownerNode, name);
@@ -486,7 +527,6 @@ public class AttributeMap extends NamedNodeMapImpl {
      * @param defaults The default attributes map to sync with.
      */
     protected void reconcileDefaults(NamedNodeMapImpl defaults) {
-        
         // remove any existing default
         int nsize = (nodes != null) ? nodes.size() : 0;
         for (int i = nsize - 1; i >= 0; i--) {

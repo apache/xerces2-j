@@ -430,7 +430,7 @@ public class ElementImpl
             throw new DOMException(DOMException.NOT_FOUND_ERR, 
                                        "DOM008 Not found");
         }
-        return (Attr) attributes.removeItem(oldAttr);
+        return (Attr) attributes.removeItem(oldAttr, true);
 
     } // removeAttributeNode(Attr):Attr
 
