@@ -83,7 +83,6 @@ import java.util.NoSuchElementException;
  */
 public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator fBaseValidator    = null;
-    private boolean           fDerivedByList    = false;
     private Hashtable              fTableOfId   = null; //This is pass to us through the state object
     private Hashtable              fTableIDRefs = null;
     private Object                   fNullValue = null;
@@ -103,7 +102,6 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                     boolean derivedByList ) throws InvalidDatatypeFacetException { 
 
-        fDerivedByList = derivedByList;
         setBasetype( base ); // Set base type 
 
     }
@@ -134,7 +132,6 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
           //  this.fBaseValidator.validate( content, state );
         //}
         StateMessageDatatype message;
-        if ( this.fDerivedByList == false ){
             //System.out.println("conten = " + content );
             if (state!= null){
                 message = (StateMessageDatatype) state;    

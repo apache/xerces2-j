@@ -97,7 +97,6 @@ public class TimeDurationDatatypeValidator extends AbstractDatatypeValidator {
 
    private int               fFacetsDefined        = 0;
 
-   private boolean           fDerivedByList        = false;
 
 
    private long[]            fEnumTimeDuration = null; // Time duration is represented internally as longs

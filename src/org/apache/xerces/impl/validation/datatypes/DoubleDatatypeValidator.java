@@ -76,7 +76,6 @@ import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
     private Locale            fLocale           = null;
     private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
-    private boolean           fDerivedByList    = false; //Derived by restriction is defaul
     private double[]          fEnumDoubles      = null;
     private String            fPattern          = null;
     private double            fMaxInclusive     = Double.POSITIVE_INFINITY;
@@ -105,10 +104,8 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
             setBasetype( base ); // Set base type 
 
 
-        fDerivedByList = derivedByList;
 
         if ( facets != null ) {   // Set Facet
-            if ( fDerivedByList == false ) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     if (key.equals(SchemaSymbols.ELT_PATTERN)) {
@@ -209,9 +206,6 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
                             }
                     }
                 }
-            } else {
-                //WORK TO DO -  Add derivation by list Double type
-            }
         }// End of facet setting
     }
 
@@ -227,7 +221,6 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
 
     public void validate(String content, Object state) 
     throws InvalidDatatypeValueException {
-        if ( fDerivedByList == false ) { //derived by restriction
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
                 if ( fRegex == null || fRegex.matches( content) == false )
                     throw new InvalidDatatypeValueException("Value'"+content+
@@ -248,10 +241,6 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
 
             if (((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) )
                 enumCheck(d);
-
-        } else {
-            ;// TODO Derived by list validation
-        }
     }
 
     // Private Methods start here

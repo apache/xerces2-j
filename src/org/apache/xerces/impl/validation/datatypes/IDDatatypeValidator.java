@@ -79,7 +79,6 @@ import java.util.NoSuchElementException;
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator         fBaseValidator = null;
-    private boolean                   fDerivedByList = false;
     private Object                        fNullValue = null;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     private Hashtable                     fTableOfId;
@@ -95,7 +94,6 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
     public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                  boolean derivedByList ) throws InvalidDatatypeFacetException  {
-        fDerivedByList = derivedByList;
     }
 
 
@@ -117,7 +115,6 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     public void validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
         /*
         StateMessageDatatype message;
-        if ( this.fDerivedByList == false ){
             if (IDStorage != null ){
                 //System.out.println("We received reset" );
                 message = (StateMessageDatatype) IDStorage;    
@@ -144,9 +141,6 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
                 error.setMajorCode(XMLMessages.VC_ID);
                 throw error;
             }
-        } else{ //Need to revisit case when derived by list
-
-        }
         */
         //System.out.println("IDStorage = " + IDStorage );
         //System.out.println("Bef return = " + fTableOfId );

@@ -118,7 +118,6 @@ import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
  */
 public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator        fBaseValidator    = null;
-    private boolean                  fDerivedByList = false;
     //private DefaultEntityHandler     fEntityHandler    = null;
     private SymbolTable              fSymbolTable       = null;
 
@@ -133,7 +132,6 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
                                      boolean derivedByList  ) throws InvalidDatatypeFacetException {
 
         setBasetype( base ); // Set base type
-        fDerivedByList = derivedByList;
     }
 
 
@@ -181,7 +179,6 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
             }
 
 
-            if ( this.fDerivedByList == false ){
 
                 attValueHandle = this.SymbolTable.addSymbol( content );
                 if (!this.fEntityHandler.isUnparsedEntity( attValueHandle ) ) {
@@ -191,36 +188,7 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
                     error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
                     throw error;
                 }
-            } else {
-                StringTokenizer listOfEntities = new StringTokenizer(content);
-                StringBuffer sb = new StringBuffer(content.length());
-                boolean ok = true;
-                if (listOfEntities.hasMoreTokens()) {
-                    while (true) {
-                        String nextEntity = listOfEntities.nextToken();
-
-                        // ENTITIES - check that each value is an unparsed entity name (V_TAGa)
-
-                        if ( this.fEntityHandler.isUnparsedEntity(this.fSymbolTable.addSymbol(nextEntity) ) == false ) {
-                            ok = false;
-                        }
-                        sb.append(nextEntity);
-                        if (!listOfEntities.hasMoreTokens()) {
-                            break;
-                        }
-                        sb.append(' ');
-                    }
-                }
-                String errorContent = sb.toString();
-                if (!ok || errorContent.length() == 0) {
-                    InvalidDatatypeValueException error = 
-                    new InvalidDatatypeValueException( errorContent );
-                    error.setMinorCode(XMLMessages.MSG_ENTITIES_INVALID );
-                    error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
-                    throw error;
-                }
-
-            }
+           
         }
         */
     }

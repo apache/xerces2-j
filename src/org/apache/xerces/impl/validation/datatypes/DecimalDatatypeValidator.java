@@ -83,7 +83,6 @@ import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
     private Locale            fLocale           = null;
     private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
-    private boolean           fDerivedByList    = false; //Derived by restriction is defaul
     private BigDecimal[]      fEnumDecimal      = null;
     private String            fPattern          = null;
     private BigDecimal        fMaxInclusive     = null;
@@ -114,17 +113,12 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         setBasetype( base ); // Set base type 
 
 
-        fDerivedByList = derivedByList;
 
         if ( facets != null ) {   // Set Facet
             //fFacets = facets;
             fFacets = checkForFacetConsistency( facets, base.getFacets() );// Check the current facets against base facets
 
             fFacets = facets;
-            if ( fDerivedByList == false ) { // Derivation by Constraint 
-                //if( base != null ) 
-                //  System.out.println("facets = " + base.getFacets() ); 
-
                 Vector enumeration = null;
                 String value       = null;
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
@@ -252,8 +246,6 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
                     }
                 }
-            } else { // Derivation by List
-            }
         }//End of Facet setup
 
     }
@@ -272,8 +264,6 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
      */
 
     public void validate(String content, Object state) throws InvalidDatatypeValueException {
-
-        if ( fDerivedByList == false ) { //derived by restriction
 
             if ( this.fBaseValidator != null ) {//validate against parent type if any
                 //System.out.println( "validator = " + this.fBaseValidator );
@@ -327,10 +317,6 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             if (  fEnumDecimal != null )
                 enumCheck(d);
 
-
-        } else { //derivation by list Revisit
-
-        }
     }
 
     /*

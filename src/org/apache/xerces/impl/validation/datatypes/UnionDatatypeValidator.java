@@ -55,103 +55,114 @@
  * <http://www.apache.org/>.
  */
 
-
 package org.apache.xerces.impl.validation.datatypes;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
+import java.util.Enumeration;
 import java.util.Locale;
+import java.text.Collator;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
-import org.apache.xerces.impl.validation.DatatypeValidator;
-import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
-import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
+import java.util.NoSuchElementException;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
-import org.apache.xerces.util.XMLChar;
-import java.util.NoSuchElementException;
+import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+import org.apache.xerces.impl.validation.DatatypeValidator;
+import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
+
 
 
 /**
- * NOTATIONValidator defines the interface that data type validators must obey.
- * These validators can be supplied by the application writer and may be useful as
- * standalone code as well as plugins to the validator architecture.
- * 
- * @author Jeffrey Rodriguez-
- * @version $Id$
+ * UnionValidator validates that XML content is a W3C string type.
+ * Implements the September 22 XML Schema datatype Union Datatype type
  */
-public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator = null;
+public class UnionDatatypeValidator extends AbstractDatatypeValidator{
+    private Locale     fLocale          = null;
+    DatatypeValidator  fBaseValidator   = null; // Native datatypes have null
 
-    public NOTATIONDatatypeValidator () throws InvalidDatatypeFacetException {
+    private int        fLength           = 0;
+    private int        fMaxLength        = Integer.MAX_VALUE;
+    private int        fMinLength        = 0;
+    private String     fPattern          = null;
+    private Vector     fEnumeration      = null;
+    private int        fFacetsDefined    = 0;
+    private boolean    fDerivedByList    = false;//default
+
+    private RegularExpression fRegex         = null;
+
+
+
+
+    public  UnionDatatypeValidator () throws InvalidDatatypeFacetException{
         this( null, null, false ); // Native, No Facets defined, Restriction
+
     }
 
-    public NOTATIONDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-         boolean derivedByList ) throws InvalidDatatypeFacetException {
-         setBasetype( base ); // Set base type 
+    public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
+        setBasetype( base ); // Set base type 
+
+    }
+
+
+
+
+    /**
+     * validate that a string is a W3C string type
+     * 
+     * @param content A string containing the content to be validated
+     * @param list
+     * @exception throws InvalidDatatypeException if the content is
+     *                   not a W3C string type
+     * @exception InvalidDatatypeValueException
+     */
+    public void validate(String content, Object state)  throws InvalidDatatypeValueException
+    {
     }
 
 
     /**
-     * Checks that "content" string is valid 
-     * datatype.
-     * If invalid a Datatype validation exception is thrown.
-     * 
-     * @param content A string containing the content to be validated
-     * @param derivedBylist
-     *                Flag which is true when type
-     *                is derived by list otherwise it
-     *                it is derived by extension.
-     *                
-     * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
-     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+     * set the locate to be used for error messages
      */
-    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
+    public void setLocale(Locale locale) {
+        fLocale = locale;
     }
 
+
+    /**
+     * 
+     * @return                          A Hashtable containing the facets
+     *         for this datatype.
+     */
     public Hashtable getFacets(){
         return null;
     }
 
-
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale){
+    public int compare( String content, String facetValue ){
+        // if derive by list then this should iterate through
+        // the tokens in each string and compare using the base type
+        // compare function.
+        // if not derived by list just pass the compare down to the
+        // base type.
+        return 0;
     }
 
     /**
-     * REVISIT
-     * Compares two Datatype for order
-     * 
-     * @param o1
-     * @param o2
-     * @return 
-     */
-    public int compare( String content1, String content2){
-        return -1;
-    }
-  /**
-     * Returns a copy of this object.
-     */
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+   * Returns a copy of this object.
+   */
+    public Object clone() throws CloneNotSupportedException  {
+        return null;
     }
 
-    /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
-     * @param base   the validator for this type's base type
-     */
+    // Private methods
+    private void checkContent( String content,  Object state )throws InvalidDatatypeValueException
+    {
+    }
 
-    private void setBasetype(DatatypeValidator base){
+    private void setBasetype( DatatypeValidator base) {
         fBaseValidator = base;
     }
 
-
 }
+

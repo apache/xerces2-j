@@ -83,7 +83,6 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     private int                     fFacetsDefined   = 0;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     private static  final String    fValueSpace[]    = { "false", "true", "0", "1"};
-    private boolean                 fDerivedByList   = false;
     private RegularExpression       fRegex           = null;
 
     public BooleanDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -94,11 +93,9 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                  boolean derivedByList ) throws InvalidDatatypeFacetException {
         setBasetype( base ); // Set base type 
 
-        fDerivedByList = derivedByList;
 
         // Set Facets if any defined
         if ( facets != null  ) { 
-            if ( derivedByList == false ) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -113,9 +110,6 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                                 "Only constraining facet in boolean datatype is PATTERN" );
                     }
                 }
-            } else { // By List
-
-            }
         }// End of facet setting
     }
 
@@ -129,12 +123,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
      */
 
     public void validate(String content, Object state) throws InvalidDatatypeValueException {
-
-        if ( fDerivedByList == true ) {
-            ;// What does it mean?
-        } else {
             checkContent( content );
-        }
     }
 
 

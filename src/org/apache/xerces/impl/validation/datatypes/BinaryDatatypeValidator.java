@@ -83,7 +83,6 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
     private Vector             fEnumeration     = null;
     private int                fFacetsDefined   = 0;
     private String             fEncoding        = SchemaSymbols.ATTVAL_BASE64;//default Base64 encoding
-    private boolean            fDerivedByList   = false; // Default is restriction 
 
     public BinaryDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -94,12 +93,10 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
         if ( base != null )
             setBasetype( base ); // Set base type 
 
-        fDerivedByList = derivedByList;
 
         // Set Facets if any defined
 
         if ( facets != null  ) {
-            if ( fDerivedByList == false ) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     if ( key.equals(SchemaSymbols.ELT_LENGTH ) ) {
@@ -161,8 +158,6 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
                                                                  "must be greater that the value of minLength" + fMinLength );
                     }
                 }
-            } else {  //Derivation by List 
-            }
         }// End of Facet setting
     }
 
@@ -181,7 +176,6 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
      */
     public void validate(String content, Object state ) throws InvalidDatatypeValueException {
 
-        if ( fDerivedByList == false) { //derived by restriction
             if ( this.fBaseValidator != null ) {//validate against parent type if any
                 this.fBaseValidator.validate( content, state );
             }
@@ -199,8 +193,6 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
                     }
                 }
             }
-        } else { //derived by list - What does it mean for binary types?
-        }
     }
 
     /**

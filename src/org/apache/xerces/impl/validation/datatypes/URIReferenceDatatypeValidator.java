@@ -85,7 +85,6 @@ import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
  */
 public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator fBaseValidator     = null;
-    private boolean fDerivedByList               = false;
 
     private int       fLength          = 0;
     private int       fMaxLength       = Integer.MAX_VALUE;
@@ -103,13 +102,11 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
 
     public URIReferenceDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                            boolean derivedByList ) throws InvalidDatatypeFacetException {
-        fDerivedByList = derivedByList;
 
         setBasetype( base ); // Set base type 
 
         // Set Facets if any defined
         if ( facets != null  ){
-            if ( fDerivedByList == false) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -171,61 +168,6 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                                                                  "must be greater that the value of minLength" + fMinLength );
                     }
                 }
-            } else { //derived by list
-                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                    String key = (String) e.nextElement();
-                    if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
-                        String lengthValue = (String)facets.get(key);
-                        try {
-                            fLength     = Integer.parseInt( lengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                        }
-                        if ( fLength < 0 )
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-
-                    } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
-                        String minLengthValue = (String)facets.get(key);
-                        try {
-                            fMinLength     = Integer.parseInt( minLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
-                        String maxLengthValue = (String)facets.get(key);
-                        try {
-                            fMaxLength     = Integer.parseInt( maxLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                        fEnumeration    = (Vector)facets.get(key);
-                    } else {
-                        throw new InvalidDatatypeFacetException();
-                    }
-                }
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and maxLength to be members of facets." );  
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                           DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMinLength +
-                                                                 "must be greater that the value of minLength" + fMaxLength );
-                    }
-                }
-            }
         }// End of Facets Setting
 
     }
@@ -245,22 +187,8 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
     public void validate(String content, Object state) 
     throws InvalidDatatypeValueException
     {
-        StringTokenizer parsedList = null;
         URI             uriContent = null;
 
-        if ( fDerivedByList == true  ) { //derived by list
-
-
-            parsedList = new StringTokenizer( content );
-            try {
-                while ( parsedList.hasMoreTokens() ) {
-                    //checkContentList( parsedList.nextToken() ); TODO
-                }
-            } catch ( NoSuchElementException e ) {
-                e.printStackTrace();
-            }
-        } else { //derived by constraint
-            // 
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
                 if ( fRegex == null || fRegex.matches( content) == false )
                     throw new InvalidDatatypeValueException("Value '"+content+
@@ -279,8 +207,6 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
 
             }
 
-            // checkContent( content ); TODO
-        }
     }
 
 

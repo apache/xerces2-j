@@ -15,8 +15,10 @@ TARGETS=\
 	IDDatatypeValidator.class \
 	IDREFDatatypeValidator.class \
 	NOTATIONDatatypeValidator.class \
+	ListDatatypeValidator.class \
 	QNameDatatypeValidator.class\
 	StringDatatypeValidator.class\
+	UnionDatatypeValidator.class \
 	URIReferenceDatatypeValidator.class \
 	RecurringDurationDatatypeValidator.class\
 	TimeDurationDatatypeValidator.class\

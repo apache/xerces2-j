@@ -99,7 +99,6 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
     boolean           isMinInclusiveDefined = false;
     boolean           isBaseTypeTimePeriod  = false;
     int               fFacetsDefined        = 0;
-    boolean           fDerivedByList        = false;
     Hashtable         fFacets        = null;
 
 

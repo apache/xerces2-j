@@ -90,7 +90,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     private String     fMinInclusive     = null;
     private String     fMinExclusive     = null;
     private int        fFacetsDefined    = 0;
-    private boolean    fDerivedByList    = false;//default
 
     private boolean    isMaxExclusiveDefined = false;
     private boolean    isMaxInclusiveDefined = false;
@@ -111,13 +110,10 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
         setBasetype( base ); // Set base type 
 
-        fDerivedByList = derivedByList;
 
         // Set Facets if any defined
         //fFacetsDefined = 0;
         if ( facets != null  ){
-            if ( fDerivedByList == false) {
-
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -207,61 +203,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                     throw new InvalidDatatypeFacetException(
                                                            "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
                 }
-            } else { //derived by list
-                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                    String key = (String) e.nextElement();
-                    if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
-                        String lengthValue = (String)facets.get(key);
-                        try {
-                            fLength     = Integer.parseInt( lengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                        }
-                        if ( fLength < 0 )
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
-                    } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
-                        String minLengthValue = (String)facets.get(key);
-                        try {
-                            fMinLength     = Integer.parseInt( minLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
-                        String maxLengthValue = (String)facets.get(key);
-                        try {
-                            fMaxLength     = Integer.parseInt( maxLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                        fEnumeration    = (Vector)facets.get(key);
-                    } else {
-                        throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
-                    }
-                }
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and maxLength to be members of facets." );  
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                           DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                                 "must be greater that the value of maxLength" + fMaxLength );
-                    }
-                }
-            }
         }// End of Facets Setting
     }
 
@@ -279,12 +221,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
      */
     public void validate(String content, Object state)  throws InvalidDatatypeValueException
     {
-        if ( fDerivedByList == false  ) {
-            if (fFacetsDefined != 0 )//Any facets to validate
-                checkContent( content, state );
-        } else { //derived by list 
-            checkContentList( content, state );
-        }
+        checkContent( content, state );
     }
 
 
@@ -414,7 +351,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             newObj.fMinInclusive     =  this.fMinInclusive;
             newObj.fMinExclusive     =  this.fMinExclusive;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-            newObj.fDerivedByList    =  this.fDerivedByList;
             newObj.isMaxExclusiveDefined = this.isMaxExclusiveDefined;
             newObj.isMaxInclusiveDefined = this.isMaxInclusiveDefined;
             newObj.isMinExclusiveDefined = this.isMinExclusiveDefined;
@@ -423,50 +359,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             ex.printStackTrace();
         }
         return newObj;
-    }
-
-    // Private methods
-    private void checkContentList( String content,  Object state )throws InvalidDatatypeValueException
-    {
-        StringTokenizer parsedList = new StringTokenizer( content );
-        try {
-            int numberOfTokens =  parsedList.countTokens();
-            if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                if ( numberOfTokens > fMaxLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+  numberOfTokens + "'tokens"+
-                                                            "' exceeds maximum length facet with  '"+fMaxLength+"' tokens.");
-                }
-            }
-            if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                if ( numberOfTokens < fMinLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+ numberOfTokens+ "'tokens" +
-                                                            "' is less than minimum length facet with '"+fMinLength+"' tokens." );
-                }
-            }
-
-            if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                if ( numberOfTokens != fLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+ numberOfTokens+ "'tokens" +
-                                                            "' is not equal to length facet with '"+fLength+"'. tokens");
-                }
-            }
-
-            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                if ( fEnumeration.contains( content ) == false )
-                    throw new InvalidDatatypeValueException("Value '"+
-                                                            content+"' must be one of "+fEnumeration);
-            }
-            while ( parsedList.hasMoreTokens() ) {       //Check actual list content
-                if ( this.fBaseValidator != null ) {//validate against parent type if any
-                    this.fBaseValidator.validate( parsedList.nextToken(), state );
-                }
-            }
-        } catch ( NoSuchElementException e ) {
-            e.printStackTrace();
-        }
     }
 
     private void setBasetype( DatatypeValidator base) {

@@ -83,7 +83,6 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator    fBaseValidator = null; // null means a native datatype
     private float[]   fEnumFloats           = null;
     private String    fPattern              = null;
-    private boolean   fDerivedByList     = false; // Default is restriction
     private float     fMaxInclusive         = Float.POSITIVE_INFINITY ;
     private float     fMaxExclusive         = Float.POSITIVE_INFINITY;
     private float     fMinInclusive         = Float.NEGATIVE_INFINITY;
@@ -108,11 +107,9 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
         if ( base != null )
             setBasetype( base ); // Set base type 
 
-        fDerivedByList = derivedByList; 
         // Set Facets if any defined
 
         if ( facets != null  )  {
-            if ( fDerivedByList == false ) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -215,10 +212,6 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                             }
                     }
                 }
-            } else { //derivation by list  - WORK TO DO
-                //System.out.println( "inside derive by list" );
-
-            }
         }// End facet setup
     }
 
@@ -241,19 +234,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
      */
     public void validate(String content, Object state) 
     throws InvalidDatatypeValueException {
-
-        if ( fDerivedByList == false  ) {
             checkContent(  content );
-        } else {
-           StringTokenizer parsedList = new StringTokenizer( content );
-           try {
-               while ( parsedList.hasMoreTokens() ) {
-                   checkContent( parsedList.nextToken() );
-               }
-           } catch ( NoSuchElementException e ) {
-               e.printStackTrace();
-           }
-        }
     }
 
     /*
