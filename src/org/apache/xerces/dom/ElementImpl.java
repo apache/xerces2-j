@@ -182,7 +182,6 @@ public class ElementImpl
 
     } // cloneNode(boolean):Node
 
-
     /**
      * NON-DOM
      * set the ownerDocument of this node, its children, and its attributes

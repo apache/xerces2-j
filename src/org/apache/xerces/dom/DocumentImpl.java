@@ -87,6 +87,7 @@ import org.w3c.dom.traversal.TreeWalker;
 
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
+import org.apache.xerces.dom3.UserDataHandler;
 
 // DOM L3 LS
 import org.apache.xerces.dom3.ls.DOMWriter;
@@ -147,9 +148,6 @@ public class DocumentImpl
     // REVISIT: Should this be transient? -Ac
     protected Vector ranges;
 
-    /** Table for user data attached to this document nodes. */
-    protected Hashtable userData;
-
     /** Table for event listeners registered to this document nodes. */
     protected Hashtable eventListeners;
 
@@ -203,6 +201,7 @@ public class DocumentImpl
     public Node cloneNode(boolean deep) {
 
         DocumentImpl newdoc = new DocumentImpl();
+        callUserDataHandlers(this, newdoc, UserDataHandler.NODE_CLONED);
         cloneNode(newdoc, deep);
 
         // experimental
@@ -222,33 +221,6 @@ public class DocumentImpl
         // Currently implemented as a singleton, since it's hardcoded
         // information anyway.
         return DOMImplementationImpl.getDOMImplementation();
-    }
-
-    /**
-     * Store user data related to a given node
-     * This is a place where we could use weak references! Indeed, the node
-     * here won't be GC'ed as long as some user data is attached to it, since
-     * the userData table will have a reference to the node.
-     */
-    protected void setUserData(NodeImpl n, Object data) {
-        if (userData == null) {
-            userData = new Hashtable();
-        }
-        if (data == null) {
-            userData.remove(n);
-        } else {
-            userData.put(n, data);
-        }
-    }
-
-    /**
-     * Retreive user data related to a given node
-     */
-    protected Object getUserData(NodeImpl n) {
-        if (userData == null) {
-            return null;
-        }
-        return userData.get(n);
     }
 
     //

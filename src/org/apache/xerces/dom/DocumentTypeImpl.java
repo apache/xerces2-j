@@ -57,6 +57,7 @@
 
 package org.apache.xerces.dom;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
@@ -238,6 +239,23 @@ public class DocumentTypeImpl
     	return newnode;
 
     } // cloneNode(boolean):Node
+
+    /* 
+     * Get Node text content
+     * @since DOM Level 3
+     */
+    public String getTextContent() throws DOMException {
+        return null;
+    }
+
+    /*
+     * Set Node text content
+     * @since DOM Level 3
+     */
+    public void setTextContent(String textContent)
+        throws DOMException {
+        // no-op
+    }
 
     /**
      * NON-DOM

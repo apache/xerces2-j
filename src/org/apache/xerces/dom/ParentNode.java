@@ -66,6 +66,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * ParentNode inherits from ChildNode and adds the capability of having child
@@ -641,6 +642,58 @@ public abstract class ParentNode
         ownerDocument.replacedNode(this);
 
         return oldChild;
+    }
+
+    /*
+     * Get Node text content
+     * @since DOM Level 3
+     */
+    public String getTextContent() throws DOMException {
+        Node child = getFirstChild();
+        if (child != null) {
+            Node next = child.getNextSibling();
+            if (next == null) {
+                return hasTextContent(child) ? child.getNodeValue() : "";
+            }
+            StringBuffer buf = new StringBuffer();
+            getTextContent(buf);
+            return buf.toString();
+        }
+        return "";
+    }
+
+    // internal method taking a StringBuffer in parameter
+    void getTextContent(StringBuffer buf) throws DOMException {
+        Node child = getFirstChild();
+        while (child != null) {
+            if (hasTextContent(child)) {
+                ((NodeImpl) child).getTextContent(buf);
+            }
+            child = child.getNextSibling();
+        }
+    }
+
+    // internal method returning whether to take the given node's text content
+    final boolean hasTextContent(Node child) {
+        return child.getNodeType() != Node.COMMENT_NODE &&
+            child.getNodeType() != Node.PROCESSING_INSTRUCTION_NODE &&
+            (child.getNodeType() != Node.TEXT_NODE ||
+             ((TextImpl) child).isIgnorableWhitespace() == false);
+    }
+
+    /*
+     * Set Node text content
+     * @since DOM Level 3
+     */
+    public void setTextContent(String textContent)
+        throws DOMException {
+        // get rid of any existing children
+        Node child;
+        while ((child = getFirstChild()) != null) {
+            removeChild(child);
+        }
+        // create a Text node to hold the given content
+        appendChild(ownerDocument().createTextNode(textContent));
     }
 
     //

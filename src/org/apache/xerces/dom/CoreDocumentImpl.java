@@ -83,6 +83,7 @@ import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.dom3.UserDataHandler;
 
 
 /**
@@ -138,12 +139,17 @@ public class CoreDocumentImpl
     /**Experimental DOM Level 3 feature: Document encoding */
     protected String encoding;
 
+    /**Experimental DOM Level 3 feature: Document encoding */
+    protected String actualEncoding;
+
     /**Experimental DOM Level 3 feature: Document version */
     protected String version;
 
     /**Experimental DOM Level 3 feature: Document standalone */
     protected boolean standalone;
 
+    /** Table for user data attached to this document nodes. */
+    protected Hashtable userData;
 
     /** Identifiers. */
     protected Hashtable identifiers;
@@ -305,6 +311,7 @@ public class CoreDocumentImpl
     public Node cloneNode(boolean deep) {
 
         CoreDocumentImpl newdoc = new CoreDocumentImpl();
+        callUserDataHandlers(this, newdoc, UserDataHandler.NODE_CLONED);
         cloneNode(newdoc, deep);
 
     	return newdoc;
@@ -436,6 +443,23 @@ public class CoreDocumentImpl
         }
         return oldChild;
     }   // replaceChild(Node,Node):Node
+
+    /* 
+     * Get Node text content
+     * @since DOM Level 3
+     */
+    public String getTextContent() throws DOMException {
+        return null;
+    }
+
+    /*
+     * Set Node text content
+     * @since DOM Level 3
+     */
+    public void setTextContent(String textContent)
+        throws DOMException {
+        // no-op
+    }
 
     //
     // Document methods
@@ -589,32 +613,6 @@ public class CoreDocumentImpl
     }
 
 
-   /**
-    * DOM Level 3 WD - Experimental.
-    * The encoding of this document (part of XML Declaration)
-    */
-    public String getEncoding() {
-	return encoding;
-    }
-
-    /**
-     * DOM Level 3 WD - Experimental.
-     * The version of this document (part of XML Declaration)
-     */
-    public String getVersion() {
-	return version;
-    }
-
-    /**
-     * DOM Level 3 WD - Experimental.
-     * standalone that specifies whether this document is standalone
-     * (part of XML Declaration)
-     */
-    public boolean getStandalone() {
-        return standalone;
-    }
-
-
     /**
      * Convenience method, allowing direct access to the child node
      * which is considered the root of the actual document content. For
@@ -692,35 +690,6 @@ public class CoreDocumentImpl
         errorChecking = check;
     }
 
-
-    /**
-      * DOM Level 3 WD - Experimental.
-      * An attribute specifying, as part of the XML declaration,
-      * the encoding of this document. This is null when unspecified.
-      */
-    public void setEncoding(String value) {
-        encoding = value;
-    }
-
-    /**
-      * DOM Level 3 WD - Experimental.
-      * version - An attribute specifying, as part of the XML declaration,
-      * the version number of this document. This is null when unspecified
-      */
-    public void setVersion(String value) {
-       version = value;
-    }
-
-    /**
-      * DOM Level 3 WD - Experimental.
-      * standalone - An attribute specifying, as part of the XML declaration,
-      * whether this document is standalone
-      */
-    public void setStandalone(boolean value) {
-        standalone = value;
-    }
-
-
     /**
      * Returns true if the DOM implementation performs error checking.
      */
@@ -734,6 +703,84 @@ public class CoreDocumentImpl
     public boolean getStrictErrorChecking() {
         return errorChecking;
     }
+
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * An attribute specifying the actual encoding of this document. This is
+     * <code>null</code> otherwise.
+     * <br> This attribute represents the property [character encoding scheme]
+     * defined in .
+     * @since DOM Level 3
+     */
+    public String getActualEncoding() {
+        return actualEncoding;
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * An attribute specifying the actual encoding of this document. This is
+     * <code>null</code> otherwise.
+     * <br> This attribute represents the property [character encoding scheme]
+     * defined in .
+     * @since DOM Level 3
+     */
+    public void setActualEncoding(String value) {
+        actualEncoding = value;
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * An attribute specifying, as part of the XML declaration,
+      * the encoding of this document. This is null when unspecified.
+      */
+    public void setEncoding(String value) {
+        encoding = value;
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * The encoding of this document (part of XML Declaration)
+     */
+    public String getEncoding() {
+	return encoding;
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * version - An attribute specifying, as part of the XML declaration,
+      * the version number of this document. This is null when unspecified
+      */
+    public void setVersion(String value) {
+       version = value;
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * The version of this document (part of XML Declaration)
+     */
+    public String getVersion() {
+	return version;
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * standalone - An attribute specifying, as part of the XML declaration,
+     * whether this document is standalone
+     */
+    public void setStandalone(boolean value) {
+        standalone = value;
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * standalone that specifies whether this document is standalone
+     * (part of XML Declaration)
+     */
+    public boolean getStandalone() {
+        return standalone;
+    }
+
 
     /**
      * Sets whether the DOM implementation generates mutation events
@@ -1083,6 +1130,8 @@ public class CoreDocumentImpl
                                   "Node type being imported is not supported");
             }
         }
+
+        callUserDataHandlers(source, newnode, UserDataHandler.NODE_IMPORTED);
 
     	// If deep, replicate and attach the kids.
     	if (deep) {
@@ -1435,7 +1484,6 @@ public class CoreDocumentImpl
         return changes;
     }
 
-
     //  NodeListCache pool
 
     /**
@@ -1469,23 +1517,174 @@ public class CoreDocumentImpl
     }
 
 
+    /*
+     * a class to store some user data along with its handler
+     */
+    class UserDataRecord {
+        Object fData;
+        UserDataHandler fHandler;
+        UserDataRecord(Object data, UserDataHandler handler) {
+            fData = data;
+            fHandler = handler;
+        }
+    }
+
     /**
+     * Associate an object to a key on this node. The object can later be 
+     * retrieved from this node by calling <code>getUserData</code> with the 
+     * same key.
+     * @param n The node to associate the object to.
+     * @param key The key to associate the object to.
+     * @param data The object to associate to the given key, or 
+     *   <code>null</code> to remove any existing association to that key.
+     * @param handler The handler to associate to that key, or 
+     *   <code>null</code>.
+     * @return Returns the <code>DOMObject</code> previously associated to 
+     *   the given key on this node, or <code>null</code> if there was none.
+     * @since DOM Level 3
+     *
+     * REVISIT: we could use a free list of UserDataRecord here
+     */
+    public Object setUserData(Node n, String key, 
+                              Object data, UserDataHandler handler) {
+        if (data == null) {
+            if (userData != null) {
+                Hashtable t = (Hashtable) userData.get(n);
+                if (t != null) {
+                    Object o = t.remove(key);
+                    if (o != null) {
+                        UserDataRecord r = (UserDataRecord) o;
+                        return r.fData;
+                    }
+                }
+            }
+            return null;
+        }
+        else {
+            Hashtable t;
+            if (userData == null) {
+                userData = new Hashtable();
+                t = new Hashtable();
+                userData.put(n, t);
+            }
+            else {
+                t = (Hashtable) userData.get(n);
+                if (t == null) {
+                    t = new Hashtable();
+                    userData.put(n, t);
+                }
+            }
+            Object o = t.put(key, new UserDataRecord(data, handler));
+            if (o != null) {
+                UserDataRecord r = (UserDataRecord) o;
+                return r.fData;
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves the object associated to a key on a this node. The object 
+     * must first have been set to this node by calling 
+     * <code>setUserData</code> with the same key.
+     * @param n The node the object is associated to.
+     * @param key The key the object is associated to.
+     * @return Returns the <code>DOMObject</code> associated to the given key 
+     *   on this node, or <code>null</code> if there was none.
+     * @since DOM Level 3
+     */
+    public Object getUserData(Node n, String key) {
+        if (userData == null) {
+            return null;
+        }
+        Hashtable t = (Hashtable) userData.get(n);
+        if (t == null) {
+            return null;
+        }
+        Object o = t.get(key);
+        if (o != null) {
+            UserDataRecord r = (UserDataRecord) o;
+            return r.fData;
+        }
+        return null;
+    }
+
+    /**
+     * Call user data handlers when a node is deleted (finalized)
+     * @param n The node this operation applies to.
+     * @param c The copy node or null.
+     * @param operation The operation - import, clone, or delete.
+     */
+    void callUserDataHandlers(Node n, Node c, short operation) {
+        if (userData == null) {
+            return;
+        }
+        Hashtable t = (Hashtable) userData.get(n);
+        if (t == null || t.isEmpty()) {
+            return;
+        }
+        Enumeration keys = t.keys();
+        while (keys.hasMoreElements()) {
+            String key = (String) keys.nextElement();
+            UserDataRecord r = (UserDataRecord) t.get(key);
+            if (r.fHandler != null) {
+                r.fHandler.handle(operation, key, r.fData, n, c);
+            }
+        }
+    }
+
+    /**
+     * Call user data handlers to let them know the nodes they are related to
+     * are being deleted. The alternative would be to do that on Node but
+     * because the nodes are used as the keys we have a reference to them that
+     * prevents them from being gc'ed until the document is. At the same time,
+     * doing it here has the advantage of avoiding a finalize() method on Node,
+     * which would affect all nodes and not just the ones that have a user
+     * data.
+     */
+    public void finalize() {
+        if (userData == null) {
+            return;
+        }
+        Enumeration nodes = userData.keys();
+        while (nodes.hasMoreElements()) {
+            Object node = nodes.nextElement();
+            Hashtable t = (Hashtable) userData.get(node);
+            if (t != null && !t.isEmpty()) {
+                Enumeration keys = t.keys();
+                while (keys.hasMoreElements()) {
+                    String key = (String) keys.nextElement();
+                    UserDataRecord r = (UserDataRecord) t.get(key);
+                    if (r.fHandler != null) {
+                        r.fHandler.handle(UserDataHandler.NODE_DELETED,
+                                          key, r.fData, null, null);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * NON-DOM: kept for backward compatibility
      * Store user data related to a given node
      * This is a place where we could use weak references! Indeed, the node
      * here won't be GC'ed as long as some user data is attached to it, since
      * the userData table will have a reference to the node.
      */
     protected void setUserData(NodeImpl n, Object data) {
-        // does nothing by default - overidden in subclass
+        setUserData(n, "XERCES1DOMUSERDATA", data, null);
     }
 
     /**
+     * NON-DOM: kept for backward compatibility
      * Retreive user data related to a given node
      */
     protected Object getUserData(NodeImpl n) {
-        // does nothing by default - overidden in subclass
-        return null;
+        return getUserData(n, "XERCES1DOMUSERDATA");
     }
+
+
+    // Event related methods overidden in subclass
 
     protected void addEventListener(NodeImpl node, String type,
                                     EventListener listener,
