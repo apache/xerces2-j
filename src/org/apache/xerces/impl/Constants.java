@@ -113,6 +113,19 @@ public final class Constants {
     /** XML string property ("xml-string"). */
     public static final String XML_STRING_PROPERTY = "xml-string";
 
+
+    //
+    // JAXP properties
+    //
+
+    /** JAXP property prefix ("http://xml.org/sax/properties/"). */
+    public static final String JAXP_PROPERTY_PREFIX =
+            "http://java.sun.com/xml/jaxp/properties/";
+
+    /** JAXP schemaSource property */
+    public static final String SCHEMA_SOURCE = "schemaSource";
+
+
     //
     // DOM features
     //

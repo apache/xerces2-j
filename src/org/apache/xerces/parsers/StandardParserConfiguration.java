@@ -804,6 +804,14 @@ public class StandardParserConfiguration
             }
         }
 
+        if (propertyId.startsWith(Constants.JAXP_PROPERTY_PREFIX)) {
+            String property =
+                propertyId.substring(Constants.JAXP_PROPERTY_PREFIX.length());
+            if (property.equals(Constants.SCHEMA_SOURCE)) {
+                return;
+            }
+        }
+
         //
         // Not recognized
         //

@@ -205,6 +205,10 @@ public class XMLSchemaValidator
     protected static final String SCHEMA_NONS_LOCATION =
     Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
 
+    /** Property identifier: JAXP schema source. */
+    protected static final String JAXP_SCHEMA_SOURCE =
+    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -223,7 +227,8 @@ public class XMLSchemaValidator
         ENTITY_RESOLVER,
         VALIDATION_MANAGER,
         SCHEMA_LOCATION,
-        SCHEMA_NONS_LOCATION
+        SCHEMA_NONS_LOCATION,
+        JAXP_SCHEMA_SOURCE
     };
 
     //
@@ -1150,6 +1155,10 @@ public class XMLSchemaValidator
         fExternalSchemas = (String)componentManager.getProperty(SCHEMA_LOCATION);
         fExternalNoNamespaceSchema = (String)componentManager.getProperty(SCHEMA_NONS_LOCATION);
 
+        // get JAXP schema source property
+        Object jaxpSchemaSource = componentManager.getProperty(
+                JAXP_SCHEMA_SOURCE);
+
         // clear grammars, and put the one for schema namespace there
         fGrammarBucket.reset();
         fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
@@ -1167,7 +1176,8 @@ public class XMLSchemaValidator
         // reset schema handler and all traversal objects
         fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter,
                              fEntityResolver, fSymbolTable,
-                             fExternalSchemas, fExternalNoNamespaceSchema);
+                             fExternalSchemas, fExternalNoNamespaceSchema,
+                             jaxpSchemaSource);
 
         // initialize state
         fCurrentElemDecl = null;
