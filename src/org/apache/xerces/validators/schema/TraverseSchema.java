@@ -4900,6 +4900,7 @@ public class TraverseSchema implements
            Integer returnVal = (Integer)(tempVector.elementAt(0));
            return returnVal.intValue();
          }
+         return csIndex;
        }
 
        int type = tempContentSpec1.type;
