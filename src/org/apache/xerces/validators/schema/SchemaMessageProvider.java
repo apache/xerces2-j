@@ -158,6 +158,9 @@ public class SchemaMessageProvider implements XMLMessageProvider {
 		TypeAlreadySet = 22,
 		GenericError = 23,
 		UnclassifiedError = 24,
+        ContentError = 25,
+        AnnotationError = 26,
+        ListUnionRestrictionError = 27,
         // ...
         MSG_MAX_CODE = 31;
     //
@@ -192,5 +195,8 @@ public class SchemaMessageProvider implements XMLMessageProvider {
 		"TypeAlreadySet",				//	22,	"The type of the element has already been declared."
 		"GenericError",					//	23, "Schema error: {0}."
 		"UnclassifiedError",			//	24,	"Unclassified error."
+        "ContentError",                 //  25, "Content (annotation?,..) is incorrect for type {0}"
+        "AnnotationError",                //  26, "Annotation can only appear once: type {0}"
+        "ListUnionRestrictionError"       //  27, "List | Union | Restriction content is invalid for type {0}"
     };
 }

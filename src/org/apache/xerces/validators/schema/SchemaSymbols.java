@@ -87,6 +87,7 @@ public final  class SchemaSymbols {
     public static final String ELT_ELEMENT =  "element";
     public static final String ELT_ENCODING =  "encoding";
     public static final String ELT_ENUMERATION =  "enumeration";
+    public static final String ELT_WHITESPACE =  "whiteSpace";
     public static final String ELT_GROUP =  "group";
     public static final String ELT_IMPORT =  "import";
     public static final String ELT_INCLUDE =  "include";
@@ -112,6 +113,8 @@ public final  class SchemaSymbols {
     public static final String ATT_ABSTRACT =  "abstract";
     public static final String ATT_ATTRIBUTEFORMDEFAULT =  "attributeFormDefault";
     public static final String ATT_BASE =  "base";
+    public static final String ATT_ITEMTYPE =  "itemType";
+    public static final String ATT_MEMBERTYPES =  "memberTypes";
     public static final String ATT_BLOCK =  "block";
     public static final String ATT_BLOCKDEFAULT =  "blockDefault";
     public static final String ATT_CONTENT  = "content";
@@ -152,6 +155,7 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_HEX =  "hex";
     public static final String ATTVAL_ID =  "ID";
     public static final String ATTVAL_LAX =  "lax";
+    public static final String ATTVAL_UNION =  "union";
     public static final String ATTVAL_LIST =  "list";
     public static final String ATTVAL_MAXLENGTH =  "maxLength";
     public static final String ATTVAL_MINLENGTH =  "minLength";

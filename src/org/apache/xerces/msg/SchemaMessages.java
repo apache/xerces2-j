@@ -93,6 +93,10 @@ public class SchemaMessages extends ListResourceBundle {
 		{ "TypeAlreadySet", "The type of the element has already been declared." },
 		{ "GenericError", "Schema error: {0}." },
 		{ "UnexpectedError", "UnexpectedError" },
+                {"ContentError", "Content (annotation?,..) is incorrect for type {0}"},
+                {"AnnotationError", "Annotation can only appear once: type {0}"},
+                {"ListUnionRestrictionError","List | Union | Restriction content is invalid for type {0}"}
+                
    };
     
     /** Returns the list resource bundle contents. */

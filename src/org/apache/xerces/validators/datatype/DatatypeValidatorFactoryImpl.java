@@ -62,6 +62,7 @@ import org.apache.xerces.validators.datatype.*;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.datatype.DatatypeValidatorFactory;
 import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
+import java.util.Vector;
 
 
 /**
@@ -343,6 +344,20 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             //initializeDTDRegistry();
         }
     }
+
+    public DatatypeValidator createDatatypeValidator(String typeName, Vector validators) {
+        DatatypeValidator simpleType = null;
+        if (validators!=null) {
+            simpleType = new UnionDatatypeValidator(validators);
+        }
+        if (simpleType !=null) {
+            addValidator(typeName, simpleType);
+        }
+        return simpleType;
+    }
+
+
+ 
 
     public DatatypeValidator createDatatypeValidator(String typeName, 
                                                      DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {

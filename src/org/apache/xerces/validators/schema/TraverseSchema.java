@@ -67,6 +67,7 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
+import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;  //CR implementation
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
@@ -387,7 +388,11 @@ public class TraverseSchema implements
     //debuggin
     private static boolean DEBUGGING = false;
 
-    //private data members
+    
+	//CR Implementation
+	private static boolean DEBUG_UNION = false;
+	private static boolean CR_IMPL = false;
+	//private data members
 
 
     private XMLErrorReporter    fErrorReporter = null;
@@ -1055,6 +1060,9 @@ public class TraverseSchema implements
      */
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
         
+		if ( CR_IMPL ) {
+			return traverseSimpleType(simpleTypeDecl);
+		}
         String varietyProperty       =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
         if (varietyProperty.length() == 0) {
             varietyProperty = SchemaSymbols.ATTVAL_RESTRICTION;
@@ -1200,6 +1208,317 @@ public class TraverseSchema implements
            }
         return fStringPool.addSymbol(nameOfType);
     }
+
+    //@param: elm - top element
+    //@param: content - content must be annotation? or some other simple content
+    //@param: isEmpty: -- true if (annotation?, smth_else), false if (annotation?) 
+    //check for Annotation if it is present
+    
+	//REVISIT: this function should be used in all traverse* methods!
+   private Element checkContent( Element elm, Element content, boolean isEmpty ) throws Exception {
+       //isEmpty = true-> means content can be null!
+       if ( content == null) {
+           if (!isEmpty) {
+               reportSchemaError(SchemaMessageProvider.ContentError,
+                                 new Object [] { elm.getAttribute( SchemaSymbols.ATT_NAME )});
+           }
+           return null;
+	   }
+	   if (content.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+		   traverseAnnotationDecl( content );   
+		   content = XUtil.getNextSiblingElement(content);
+		   if (content == null ) {   //must be followed by <simpleType?>
+			   if (!isEmpty) {
+				   reportSchemaError(SchemaMessageProvider.ContentError,
+									 new Object [] { elm.getAttribute( SchemaSymbols.ATT_NAME )});
+			   }
+			   return null;
+		   }
+		   if (content.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+			   reportSchemaError(SchemaMessageProvider.AnnotationError,
+								 new Object [] { elm.getAttribute( SchemaSymbols.ATT_NAME )});
+			   return null;
+		   }
+		   //return null if expected only annotation?, else returns updated content
+	   }
+	   return content;  
+   }
+
+   
+   //@param: elm - top element
+   //@param: baseTypeStr - type (base/itemType/memberTypes)
+   //return DatatypeValidator available for the baseTypeStr.
+   //REVISIT: this function should be used in some|all traverse* methods!
+   private DatatypeValidator findDTValidator (Element elm, String baseTypeStr )  throws Exception{
+            int baseType      = fStringPool.addSymbol( baseTypeStr );
+            String prefix = "";
+            DatatypeValidator baseValidator = null;
+            String localpart = baseTypeStr;
+            int colonptr = baseTypeStr.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = baseTypeStr.substring(0,colonptr);
+                localpart = baseTypeStr.substring(colonptr+1);
+            }
+            String uri = resolvePrefixToURI(prefix);
+            baseValidator = getDatatypeValidator(uri, localpart);
+            if (baseValidator == null) {
+                Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                if (baseTypeNode != null) {
+                    traverseSimpleTypeDecl( baseTypeNode ); 
+                    
+                    baseValidator = getDatatypeValidator(uri, localpart);
+                }
+            }
+            if ( baseValidator == null ) {
+                reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                                  new Object [] { elm.getAttribute( SchemaSymbols.ATT_BASE ),
+                                      elm.getAttribute(SchemaSymbols.ATT_NAME)});
+            }
+       return baseValidator;
+    }
+
+   //REVISIT: update comments. CR Implementation
+    private int traverseSimpleType( Element simpleTypeDecl ) throws Exception {
+        
+        //REVISIT: remove all DEBUG_UNION.
+        if (DEBUG_UNION) {
+            System.out.println("----------->CR traverseSimpleType()");
+        }
+
+        //REVISIT: are we checking for attributes and other definitions that should not be there?
+        String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
+        boolean list = false;
+        boolean union = false;
+        boolean restriction = false;
+        int     newSimpleTypeName    = -1;
+        if ( nameProperty.equals("")) { // anonymous simpleType
+            newSimpleTypeName = fStringPool.addSymbol(
+                "#S#"+fSimpleTypeAnonCount++ );   
+        }
+        else 
+            newSimpleTypeName       = fStringPool.addSymbol( nameProperty );
+
+        //annotation?,(list|restriction|union)
+        Element content = XUtil.getFirstChildElement(simpleTypeDecl);
+        content = checkContent(simpleTypeDecl, content, false);
+        if (content == null) {
+            return (-1);
+        }
+        String varietyProperty = content.getNodeName();
+        String baseTypeQNameProperty = null;
+        Vector dTValidators = null;
+        int size = 0;  
+        StringTokenizer unionMembers = null;
+        int numOfTypes = 0; //list/restriction = 1, union = "+"
+        
+        if (DEBUG_UNION) {
+            System.out.println("[varietyProperty]:"+   varietyProperty );
+        }
+
+        if (varietyProperty.equals(SchemaSymbols.ATTVAL_LIST)) { //traverse List
+           baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_ITEMTYPE );
+           list = true;
+        }
+        else if (varietyProperty.equals(SchemaSymbols.ATTVAL_RESTRICTION)) { //traverse Restriction
+            baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_BASE );
+            restriction= true;
+        }
+        else if (varietyProperty.equals(SchemaSymbols.ATTVAL_UNION)) { //traverse union
+            union = true;
+            baseTypeQNameProperty = content.getAttribute( SchemaSymbols.ATT_MEMBERTYPES);
+            if (baseTypeQNameProperty != "" ) {
+                unionMembers = new StringTokenizer( baseTypeQNameProperty );
+                size = unionMembers.countTokens();
+            }
+            else {
+                size = 1; //at least one must be seen as <simpleType> decl
+            }
+            dTValidators = new Vector (size, 2); 
+        }
+        else {
+             reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
+                       new Object [] { varietyProperty });
+                       return -1;
+        }
+
+        int typeNameIndex;
+        DatatypeValidator baseValidator = null;
+        
+        if (DEBUG_UNION) {
+            System.out.println("[nameProperty]= " +nameProperty);
+            System.out.println("[base]= " +baseTypeQNameProperty+";");
+            System.out.println("[size]= " +size);
+            if (unionMembers!=null) {
+                System.out.println("[unionMembers]= " +unionMembers.toString());
+            }
+        }
+        if ( baseTypeQNameProperty == "" ) { //must 'see' <simpleType>
+            //content = {annotation?,simpleType?...}
+            content = XUtil.getFirstChildElement(content);
+            //check content (annotation?, ...)
+            content = checkContent(simpleTypeDecl, content, false);
+            if (content == null) {
+                return (-1);
+            }
+            if (content.getNodeName().equals( SchemaSymbols.ELT_SIMPLETYPE )) {  //Test...
+              typeNameIndex = traverseSimpleTypeDecl(content); 
+              if (DEBUG_UNION) { 
+				  System.out.println("[After traverseSimpleTypeDecl]: " +fStringPool.toString(typeNameIndex));
+				  System.out.println("[traverseSimpleTypeDecl]: " +  nameProperty);  
+				}
+              if (typeNameIndex!=-1) {
+                  baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
+                  if (baseValidator !=null && union) {  
+                      dTValidators.addElement((DatatypeValidator)baseValidator);
+                  }
+              }
+              if ( typeNameIndex == -1 || baseValidator == null) {
+                  reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                                        new Object [] { content.getAttribute( SchemaSymbols.ATT_BASE ),
+                                            content.getAttribute(SchemaSymbols.ATT_NAME) });
+                      return -1;
+              }
+            }
+        } //end - must see simpleType?
+        else { //base was provided - get proper validator. 
+            numOfTypes = 1;
+            if (union) {
+                numOfTypes= size;
+            }
+            for (int i=0; i<numOfTypes; i++) {  //find all validators
+                if (union) {
+                    baseTypeQNameProperty = unionMembers.nextToken();
+                }
+                baseValidator = findDTValidator ( simpleTypeDecl, baseTypeQNameProperty);
+                if ( baseValidator == null) {
+                    return (-1);
+                }
+                if (union) {
+                    dTValidators.addElement((DatatypeValidator)baseValidator); //add validator to structure
+                }
+                //REVISIT: Should we raise exception here?
+                // if baseValidator.isInstanceOf(LIST) and UNION
+                if ( list && (baseValidator instanceof UnionDatatypeValidator)) {
+                    reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                                      new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
+                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
+                    return -1;
+                }
+            }
+        } //end - base is available
+        
+        // move to next child 
+        // restriction ->[simpleType]->[facets]  OR
+        // restriction ->[facets]
+        if (baseTypeQNameProperty == "") {  //we already got the first kid of union/list/restriction
+            content = XUtil.getNextSiblingElement( content );
+        }
+        else { //we need to look at first kid of union/list/restriction
+            content = XUtil.getFirstChildElement(content);
+        }
+        
+        //get more types for union if any
+        if (union) {
+            int index=size; 
+            while (content!=null) {
+                if (DEBUG_UNION) {
+                    System.out.println("[start Union types traversal] + " + content.getNodeName());
+                    System.out.println(index+"-Getting all other simpletypes");
+                    System.out.println("content: " + content.getNodeName());
+                }
+                typeNameIndex = traverseSimpleTypeDecl(content);   
+                if (typeNameIndex!=-1) {
+                    baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
+                    if (baseValidator != null) {
+                        if (DEBUG_UNION) {
+							System.out.println("validator to add: " + baseValidator.toString());
+						}
+                        dTValidators.addElement((DatatypeValidator)baseValidator);
+					}
+				}
+				if ( baseValidator == null || typeNameIndex == -1) {
+                     reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                                      new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
+                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
+                    return (-1);
+				}
+				content   = XUtil.getNextSiblingElement( content );
+			}
+        } // end - traverse Union
+        
+        
+        Hashtable facetData =null; 
+        int numFacets=0;
+
+        if (restriction && content != null) {
+        
+            int numEnumerationLiterals = 0;
+            facetData        = new Hashtable();
+            Vector enumData  = new Vector();
+            while (content != null) { 
+                if (content.getNodeType() == Node.ELEMENT_NODE) {
+                    numFacets++;
+                    if (content.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                            numEnumerationLiterals++;
+                            String enumVal = content.getAttribute(SchemaSymbols.ATT_VALUE);
+                            enumData.addElement(enumVal);
+                            //Enumerations can have annotations ? ( 0 | 1 )
+                            checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
+                        } 
+                        else {
+                         facetData.put(content.getNodeName(),content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                        }
+                }
+                    content = XUtil.getNextSiblingElement(content);
+            }
+            if (numEnumerationLiterals > 0) {
+                  facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
+            }
+        }
+
+        
+        else if (list && content!=null) { // report error - must not have any children!
+            reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+                        new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+            //REVISIT: should we return?
+                       
+        }
+        else if (union && content!=null) { //report error - must not have any children!
+             reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+                        new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+             //REVISIT: should we return?
+        }
+
+        // create & register validator for "generated" type if it doesn't exist        
+        String nameOfType = fStringPool.toString( newSimpleTypeName);
+        if (fTargetNSURIString.length () != 0) {
+            nameOfType = fTargetNSURIString+","+nameOfType;
+        }
+        try { 
+           DatatypeValidator newValidator =
+                 fDatatypeRegistry.getDatatypeValidator( nameOfType );
+
+           if( newValidator == null ) { // not previously registered
+               if (list) {
+                    fDatatypeRegistry.createDatatypeValidator( nameOfType, baseValidator, 
+                                                               facetData,true);
+               }
+               else if (restriction) {
+                   fDatatypeRegistry.createDatatypeValidator( nameOfType, baseValidator,
+                                                               facetData,false);
+               }
+               else { //union
+                   fDatatypeRegistry.createDatatypeValidator( nameOfType, dTValidators);
+               }
+                           
+           }
+            
+           } catch (Exception e) {
+               reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
+           }
+        return fStringPool.addSymbol(nameOfType);
+     }
+
 
     /*
     * <any 
