@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -178,9 +178,7 @@ public class SubstitutionGroupHandler {
         // HEAD's actual substitution group is then the set consisting of each member of PSG such that all of the following must be true:
         // 1 Its {abstract} is false.
         // 2 It is validly substitutable for HEAD subject to an empty blocking constraint, as defined in Substitution Group OK (Transitive) (3.3.6).
-        // REVISIT: should use exemplar.fBlock
-        return substitutionGroupOK(element, exemplar, (short)0);
-        //return substitutionGroupOK(element, exemplar, exemplar.fBlock);
+        return substitutionGroupOK(element, exemplar, exemplar.fBlock);
     }
 
     // to store substitution group information
@@ -299,7 +297,7 @@ public class SubstitutionGroupHandler {
                 // Ignore it if it's blocked
                 if ((dSubMethod & bSubMethod) != 0)
                     continue;
-                group.addElement(new OneSubGroup(group1[j].sub, dSubMethod, bSubMethod));
+                newGroup.addElement(new OneSubGroup(group1[j].sub, dSubMethod, bSubMethod));
             }
         }
         // Convert to an array
