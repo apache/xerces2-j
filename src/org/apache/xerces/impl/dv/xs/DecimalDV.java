@@ -16,8 +16,12 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.xs.datatypes.XSDecimal;
 
 /**
  * Represent the schema type "decimal"
@@ -56,7 +60,7 @@ public class DecimalDV extends TypeValidator {
     }
     
     // Avoid using the heavy-weight java.math.BigDecimal
-    static class XDecimal {
+    static class XDecimal implements XSDecimal {
         // sign: 0 for vlaue 0; 1 for positive values; -1 for negative values
         int sign = 1;
         // total digits. >= 1
@@ -279,6 +283,78 @@ public class DecimalDV extends TypeValidator {
                 }
             }
             canonical = buffer.toString();
+        }
+        
+        public BigDecimal getBigDecimal() {
+            if (sign == 0) {
+                return new BigDecimal(BigInteger.ZERO);
+            }
+            return new BigDecimal(toString());
+        }
+        
+        public BigInteger getBigInteger() throws NumberFormatException {
+            if (fracDigits != 0) {
+                throw new NumberFormatException();
+            }
+            if (sign == 0) {
+                return BigInteger.ZERO;
+            }
+            if (sign == 1) {
+                return new BigInteger(ivalue);
+            }
+            return new BigInteger("-" + ivalue);
+        }
+        
+        public long getLong() throws NumberFormatException {
+            if (fracDigits != 0) {
+                throw new NumberFormatException();
+            }
+            if (sign == 0) {
+                return 0L;
+            }
+            if (sign == 1) {
+                return Long.parseLong(ivalue);
+            }
+            return Long.parseLong("-" + ivalue);
+        }
+        
+        public int getInt() throws NumberFormatException {
+            if (fracDigits != 0) {
+                throw new NumberFormatException();
+            }
+            if (sign == 0) {
+                return 0;
+            }
+            if (sign == 1) {
+                return Integer.parseInt(ivalue);
+            }
+            return Integer.parseInt("-" + ivalue);
+        }
+        
+        public short getShort() throws NumberFormatException {
+            if (fracDigits != 0) {
+                throw new NumberFormatException();
+            }
+            if (sign == 0) {
+                return 0;
+            }
+            if (sign == 1) {
+                return Short.parseShort(ivalue);
+            }
+            return Short.parseShort("-" + ivalue);
+        }
+        
+        public byte getByte() throws NumberFormatException {
+            if (fracDigits != 0) {
+                throw new NumberFormatException();
+            }
+            if (sign == 0) {
+                return 0;
+            }
+            if (sign == 1) {
+                return Byte.parseByte(ivalue);
+            }
+            return Byte.parseByte("-" + ivalue);
         }
     }
 } // class DecimalDV
