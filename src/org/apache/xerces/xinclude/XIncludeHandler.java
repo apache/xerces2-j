@@ -146,6 +146,7 @@ public class XIncludeHandler
     public final static String HTTP_ACCEPT = "Accept";
     public final static String HTTP_ACCEPT_LANGUAGE = "Accept-Language";
     public final static String HTTP_ACCEPT_CHARSET = "Accept-Charset";
+    public final static String XPOINTER = "xpointer";
 
     public final static String XINCLUDE_NS_URI =
         "http://www.w3.org/2003/XInclude".intern();
@@ -1122,8 +1123,9 @@ public class XIncludeHandler
         //       this ties in with the above IURI section, but I suspect Java already does it
         String href = attributes.getValue(XINCLUDE_ATTR_HREF);
         String parse = attributes.getValue(XINCLUDE_ATTR_PARSE);
-        if (href == null) {
-            reportFatalError("HrefMissing");
+        String xpointer =  attributes.getValue(XPOINTER);
+        if (href == null && xpointer == null) {
+            reportFatalError("XpointerMissing");
         }
         if (parse == null) {
             parse = XINCLUDE_PARSE_XML;
