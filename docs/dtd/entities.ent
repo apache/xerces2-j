@@ -11,3 +11,7 @@
 <!-- packaging names -->
 <!ENTITY parserdir 'xerces-@@_version_@@'>
 <!ENTITY parserdistname 'Xerces-J-bin'>
+
+<!-- default parser configuration -->
+<!ENTITY DefaultConfigLong '@@DEFAULT_CONFIG_LONG@@'>
+<!ENTITY DefaultConfig '@@DEFAULT_CONFIG@@'>
