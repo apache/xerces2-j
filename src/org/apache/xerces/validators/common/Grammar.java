@@ -69,6 +69,6 @@ public abstract class Grammar  {
     public String whatGrammarAmI(){
         return fGrammarID;
     }
-    public void     populateGrammar( Node node );
-    public Document getGrammarDocument();
+    abstract public void     populateGrammar( Node node );
+    abstract public Document getGrammarDocument();
 }

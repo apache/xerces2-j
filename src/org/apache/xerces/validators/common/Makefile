@@ -11,6 +11,7 @@ TARGETS=\
 	SimpleContentModel.class\
 	XMLContentModel.class\
 	GrammarPool.class \
+	Grammar.class \
 	XMLValidator.class
 
 
