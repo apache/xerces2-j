@@ -705,8 +705,6 @@ public abstract class BaseMarkupSerializer
     {
 	// Only works if we're going out of DTD mode.
 	if ( _writer == _dtdWriter ) {
-System.out.println( "Writer " + _writer );
-System.out.println( "DocWriter " + _docWriter );
 	    _line.append( _text );
 	    _text = new StringBuffer( 20 );
 	    flushLine( false );
@@ -750,13 +748,18 @@ System.out.println( "DocWriter " + _docWriter );
 	    comment( node.getNodeValue() );
 	    break;
 
-	case Node.ENTITY_REFERENCE_NODE :
-	    // Entity reference printed directly in text, do not break or pause.
+	case Node.ENTITY_REFERENCE_NODE : {
+	    Node         child;
+
 	    endCDATA();
 	    content();
-	    printText( '&' + node.getNodeName() + ';' );
+	    child = node.getFirstChild();
+	    while ( child != null ) {
+		serializeNode( child );
+		child = child.getNextSibling();
+	    }
 	    break;
-
+	}
 	case Node.PROCESSING_INSTRUCTION_NODE :
 	    processingInstruction( node.getNodeName(), node.getNodeValue() );
 	    break;
@@ -776,13 +779,26 @@ System.out.println( "DocWriter " + _docWriter );
 	    // serialize it.
 	    docType = ( (Document) node ).getDoctype();
 	    if ( docType != null ) {
-		startDTD( docType.getName(), null, null );
+		startDTD( docType.getName(), docType.getPublicId(), docType.getSystemId() );
+		/* This is only required for internal subset
 		map = docType.getEntities();
 		if ( map != null ) {
 		    for ( i = 0 ; i < map.getLength() ; ++i ) {
 			entity = (Entity) map.item( i );
-			unparsedEntityDecl( entity.getNodeName(), entity.getPublicId(),
-					    entity.getSystemId(), entity.getNotationName() );
+			if ( entity.getSystemId() == null && entity.getPublicId() == null ) {
+			    Node child;
+
+			    printText( "<!ENTITY " + entity.getNodeName() + " \"" );
+			    child = entity.getFirstChild();
+			    while ( child != null ) {
+				serializeNode( child );
+				child = child.getNextSibling();
+			    }
+			    printText( "\">" );
+			} else {
+			    unparsedEntityDecl( entity.getNodeName(), entity.getPublicId(),
+						entity.getSystemId(), entity.getNotationName() );
+			}
 		    }
 		}
 		map = docType.getNotations();
@@ -792,6 +808,7 @@ System.out.println( "DocWriter " + _docWriter );
 			notationDecl( notation.getNodeName(), notation.getPublicId(), notation.getSystemId() );
 		    }
 		}
+		*/
 		endDTD();
 	    }
 	    // !! Fall through

@@ -375,6 +375,17 @@ public final class XMLSerializer
 
 		printText( ">" );
 		breakLine();
+	    } else if ( dtd != null && dtd.length() > 0 ) {
+		printText( "<!DOCTYPE " );
+		printText( rootTagName );
+		printText( " [" );
+		indent();
+		if ( _format.getIndenting() )
+		    breakLine();
+		printText( dtd, true );
+		unindent();
+		printText( "]>" );
+		breakLine();
 	    }
 	}
 	_started = true;
