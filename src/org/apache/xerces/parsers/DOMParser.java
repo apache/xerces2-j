@@ -58,6 +58,7 @@
 package org.apache.xerces.parsers;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
@@ -69,6 +70,8 @@ import org.apache.xerces.framework.XMLParser;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.validators.common.XMLAttributeDecl;
+import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.schema.XUtil;
 
 import org.apache.xerces.dom.DeferredDocumentImpl;
@@ -147,9 +150,6 @@ public class DOMParser
         "http://apache.org/xml/properties/dom/current-element-node",
     };
 
-    /** For experimental grammar access. */
-    private static final Hashtable TYPES = new Hashtable();
-
     //
     // Data
     //
@@ -201,24 +201,6 @@ public class DOMParser
     private XMLAttrList fAttrList;
 
     //
-    // Static initializer
-    //
-
-    static {
-        String types[][] = {
-            { "CDATA",       "minOccurs", "maxOccurs" },
-            { "ENUMERATION", "collection", "order", "export" },
-            { "NMTOKEN",     "name", "ref" },
-        };
-        for (int i = 0; i < types.length; i++) {
-            String typeName = types[i][0];
-            for (int j = 1; j < types[i].length; j++) {
-                TYPES.put(types[i][j], typeName);
-            }
-        }
-    }
-
-    //
     // Constructors
     //
 
@@ -226,6 +208,7 @@ public class DOMParser
     public DOMParser() {
 
         initHandlers(false, this, this);
+        fScanner.setDTDHandler(this);
 
         // setup parser state
         init();
@@ -998,20 +981,23 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
-                /*REVISIT - Grammar Access revisit
                 if (fGrammarAccess) {
-                    Document schemaDocument = fValidator.getSchemaDocument();
-                    if (schemaDocument != null) {
-                        if (fDocumentTypeIndex == -1) {
-                            fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
-                            fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
-                        }
+                    // REVISIT: How do we know which grammar is in use?
+                    //Document schemaDocument = fValidator.getSchemaDocument();
+                    if (fGrammarResolver.size() > 0) {
+                        Enumeration schemas = fGrammarResolver.nameSpaceKeys();
+                        Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
+                        if (schemaDocument != null) {
+                            if (fDocumentTypeIndex == -1) {
+                                fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
+                                fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
+                            }
 
-                        Element schema = schemaDocument.getDocumentElement();
-                        copyInto(schema, fDocumentTypeIndex);
+                            Element schema = schemaDocument.getDocumentElement();
+                            copyInto(schema, fDocumentTypeIndex);
+                        }
                     }
                 }
-              */
             }
         }
 
@@ -1091,23 +1077,25 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
-                /* REVISIT Grammar Access
                 if (fDocumentImpl != null && fGrammarAccess)  {
-                    Document schemaDocument = fValidator.getSchemaDocument();
-                    if (schemaDocument != null) {
-                        if (fDocumentType == null) {
-                            String rootName = elementName;
-                            String systemId = ""; // REVISIT: How do we get this value? -Ac
-                            String publicId = ""; // REVISIT: How do we get this value? -Ac
-                            fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
-                            fDocument.appendChild(fDocumentType);
-                        }
+                    //Document schemaDocument = fValidator.getSchemaDocument();
+                    if (fGrammarResolver.size() > 0) {
+                        Enumeration schemas = fGrammarResolver.nameSpaceKeys();
+                        Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
+                        if (schemaDocument != null) {
+                            if (fDocumentType == null) {
+                                String rootName = elementName;
+                                String systemId = ""; // REVISIT: How do we get this value? -Ac
+                                String publicId = ""; // REVISIT: How do we get this value? -Ac
+                                fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
+                                fDocument.appendChild(fDocumentType);
+                            }
 
-                        Element schema = schemaDocument.getDocumentElement();
-                        XUtil.copyInto(schema, fDocumentType);
+                            Element schema = schemaDocument.getDocumentElement();
+                            XUtil.copyInto(schema, fDocumentType);
+                        }
                     }
-                }
-               */
+                    }
             }
         }
 
@@ -1466,8 +1454,6 @@ public class DOMParser
                 createDocumentType(rootElementName, publicString, systemString);
             fDocumentImpl.appendChild(fDocumentType);
 
-            /*  TODO - Grammar Access revisit
-
             if (fGrammarAccess) {
                 Element schema = fDocument.createElement("schema");
                 // REVISIT: What should the namespace be? -Ac
@@ -1478,8 +1464,7 @@ public class DOMParser
                 schema.setAttribute("exactDefault", "");
                 ((AttrImpl)schema.getAttributeNode("exactDefault")).setSpecified(false);
                 fDocumentType.appendChild(schema);
-            } */
-
+            }
         }
 
         // deferred expansion
@@ -1489,7 +1474,6 @@ public class DOMParser
                     createDocumentType(rootElement.rawname, publicId, systemId);
             fDeferredDocumentImpl.appendChild(fDocumentIndex, fDocumentTypeIndex);
 
-            /*REVISIT - Grammar Access
             if (fGrammarAccess) {
                 int handle = fAttrList.startAttrList();
                 fAttrList.addAttr(
@@ -1515,7 +1499,6 @@ public class DOMParser
                 // REVISIT: What should the namespace be? -Ac
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, schemaIndex);
             }
-            */
         }
 
     } // startDTD(int,int,int)
@@ -1549,11 +1532,13 @@ public class DOMParser
     /**
      * &lt;!ELEMENT Name contentspec&gt;
      */
-    public void elementDecl(QName elementDecl, XMLContentSpec contentSpec)
-        throws Exception {
+    public void elementDecl(QName elementDecl, 
+                            int contentSpecType, 
+                            int contentSpecIndex,
+                            XMLContentSpec.Provider contentSpecProvider) throws Exception {
 
         if (DEBUG_ATTLIST_DECL) {
-            String contentModel = contentSpec.toString();
+            String contentModel = XMLContentSpec.toString(contentSpecProvider, fStringPool, contentSpecIndex);
             System.out.println("elementDecl(" + fStringPool.toString(elementDecl.rawname) + ", " +
                                                 contentModel + ")");
         }
@@ -1561,7 +1546,6 @@ public class DOMParser
         //
         // Create element declaration
         //
-        /*REVISIT  Grammar Access
         if (fGrammarAccess) {
 
             if (fDeferredDocumentImpl != null) {
@@ -1615,89 +1599,101 @@ public class DOMParser
                 // Build content model
                 //
 
-                // <!ELEMENT name (#PCDATA)>
-                int contentType = contentSpec.getType();
-                String contentTypeName = fStringPool.toString(contentType);
-                XMLContentSpec.Node node = new XMLContentSpec.Node();
-                int contentSpecHandle = contentSpec.getHandle();
-                if (contentSpecHandle != -1) {
-                    contentSpec.getNode(contentSpecHandle, node);
+                // get type element; create if necessary
+                int typeIndex = getLastChildElement(elementIndex, "complexType");
+                if (typeIndex == -1 && contentSpecType != XMLElementDecl.TYPE_MIXED) {
+                    typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("complexType"), null, -1);
+                    // REVISIT: Check for type redeclaration? -Ac
+                    fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getFirstChildElement(elementIndex));
                 }
 
-                // (#PCDATA)
-                if (contentTypeName.equals("MIXED") && node.type == 0) {
-                    int attrNameIndex = fStringPool.addSymbol("type");
-                    int attrValueIndex = fStringPool.addString("string");
-                    boolean attrSpecified = true;
-                    int attrIndex = fDeferredDocumentImpl.createAttribute(attrNameIndex, attrValueIndex, attrSpecified);
-                    fDeferredDocumentImpl.setAttributeNode(elementIndex, attrIndex);
-                }
-
-                // other content models
-                else {
-                    // get type element; create if necessary
-                    int typeIndex = getLastChildElement(elementIndex, "type");
-                    if (typeIndex == -1) {
-                        typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("type"), null, -1);
-                        // REVISIT: Check for type redeclaration? -Ac
-                        fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getLastChildElement(elementIndex));
-                    }
-
-                    // <!ELEMENT name EMPTY>
-                    if (contentTypeName.equals("EMPTY")) {
+                // create models
+                switch (contentSpecType) {
+                    case XMLElementDecl.TYPE_EMPTY: {
                         int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("empty"), true);
                         fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
+                        break;
                     }
-
-                    // <!ELEMENT name ANY>
-                    else if (contentTypeName.equals("ANY")) {
+                    case XMLElementDecl.TYPE_ANY: {
                         int anyIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("any"), null, -1);
-                        fDeferredDocumentImpl.insertBefore(typeIndex, anyIndex, getLastChildElement(typeIndex));
+                        fDeferredDocumentImpl.insertBefore(typeIndex, anyIndex, getFirstChildElement(typeIndex));
+                        break;
                     }
-
-                    // <!ELEMENT name (a,b,...)> or <!ELEMENT name (a|b|...)>
-                    else if (contentTypeName.equals("CHILDREN")) {
-                        int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("elementOnly"), true);
-                        fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
-                        //attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("order"), fStringPool.addString("seq"), false);
-                        //fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
-
-                        int contentSpecIndex = contentSpec.getHandle();
-                        contentSpec.getNode(contentSpecIndex, node);
-                        Element model = createContentModel(contentSpec, node);
-
-                        int modelIndex = createDeferredContentModel(model);
-                        int firstChildIndex = getLastChildElement(typeIndex);
-                        fDeferredDocumentImpl.insertBefore(typeIndex, modelIndex, firstChildIndex);
-                    }
-
-                    // <!ELEMENT name (#PCDATA|a|...)*>
-                    else {
-                        // REVISIT: Any chance of getting other than MIXED? -Ac
-                        // set content type
-                        int attrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("mixed"), true);
-                        fDeferredDocumentImpl.setAttributeNode(typeIndex, attrIndex);
-
-                        // skip '*' node
-                        contentSpec.getNode(node.value, node);
-
-                        // add leaves (on descent)
-                        do {
-                            int index = node.value;
+                    case XMLElementDecl.TYPE_MIXED: {
+                        XMLContentSpec contentSpec = new XMLContentSpec();
+                        contentSpecProvider.getContentSpec(contentSpecIndex, contentSpec);
+                        contentSpecIndex = contentSpec.value;
+                        if (contentSpecIndex == -1) {
+                            int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("type"), fStringPool.addString("string"), true);
+                            fDeferredDocumentImpl.setAttributeNode(elementIndex, attributeIndex);
+                        }
+                        else {
+                            if (typeIndex == -1) {
+                                typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("complexType"), null, -1);
+                                // REVISIT: Check for type redeclaration? -Ac
+                                fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getFirstChildElement(elementIndex));
+                            }
+                            int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("mixed"), true);
+                            fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
                             int handle = fAttrList.startAttrList();
-                            contentSpec.getNode(node.otherValue, node);
-                            String elementRefName = fStringPool.toString(node.value);
                             fAttrList.addAttr(
-                                fStringPool.addSymbol("ref"),
-                                fStringPool.addString(elementRefName),
+                                fStringPool.addSymbol("minOccurs"),
+                                fStringPool.addString("0"),
                                 fStringPool.addSymbol("NMTOKEN"),
                                 true,
                                 false); // search
+                            fAttrList.addAttr(
+                                fStringPool.addSymbol("maxOccurs"),
+                                fStringPool.addString("unbounded"),
+                                fStringPool.addSymbol("CDATA"),
+                                true,
+                                false); // search
                             fAttrList.endAttrList();
-                            int elementRefIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
-                            fDeferredDocumentImpl.insertBefore(typeIndex, elementRefIndex, getLastChildElement(typeIndex, "element"));
-                            contentSpec.getNode(index, node);
-                        } while (node.type != XMLContentSpec.CONTENTSPECNODE_LEAF);
+                            int choiceIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("choice"), fAttrList, handle);
+                            fDeferredDocumentImpl.appendChild(typeIndex, choiceIndex);
+                            while (contentSpecIndex != -1) {
+
+                                // get node
+                                contentSpecProvider.getContentSpec(contentSpecIndex, contentSpec);
+                                int type  = contentSpec.type;
+                                int left  = contentSpec.value;
+                                int right = contentSpec.otherValue;
+
+                                // if leaf, skip "#PCDATA" and stop
+                                if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                                    break;
+                                }
+
+                                // add right hand leaf
+                                contentSpecProvider.getContentSpec(right, contentSpec);
+                                handle = fAttrList.startAttrList();
+                                fAttrList.addAttr(
+                                    fStringPool.addSymbol("ref"),
+                                    fStringPool.addString(fStringPool.toString(contentSpec.value)),
+                                    fStringPool.addSymbol("NMTOKEN"),
+                                    true,
+                                    false); //search
+                                fAttrList.endAttrList();
+                                int rightIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
+                                int refIndex = getFirstChildElement(choiceIndex);
+                                fDeferredDocumentImpl.insertBefore(choiceIndex, rightIndex, refIndex);
+
+                                // go to next node
+                                contentSpecIndex = left;
+                            }
+                        }
+                        break;
+                    }
+                    case XMLElementDecl.TYPE_CHILDREN: {
+                        int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("elementOnly"), true);
+                        fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
+                        int children = createChildren(contentSpecProvider,
+                                                      contentSpecIndex,
+                                                      new XMLContentSpec(),
+                                                      fDeferredDocumentImpl,
+                                                      -1);
+                        fDeferredDocumentImpl.insertBefore(typeIndex, children, getFirstChildElement(typeIndex));
+                        break;
                     }
                 }
 
@@ -1710,11 +1706,11 @@ public class DOMParser
                 //
 
                 // get element declaration; create if necessary
-                Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
+                Element schema = XUtil.getLastChildElement(fDocumentType, "schema");
                 String elementName = fStringPool.toString(elementDecl.rawname);
-                Element element = XUtil.getFirstChildElement(schema, "element", "name", elementName);
+                Element element = XUtil.getLastChildElement(schema, "element", "name", elementName);
                 if (element == null) {
-                    element = fDocument.createElement("element");
+                    element = fDocumentImpl.createElement("element");
                     element.setAttribute("name", elementName);
                     element.setAttribute("minOccurs", "1");
                     ((AttrImpl)element.getAttributeNode("minOccurs")).setSpecified(false);
@@ -1731,84 +1727,84 @@ public class DOMParser
                 // Build content model
                 //
 
-                // <!ELEMENT name (#PCDATA)>
-                int contentType = contentSpec.getType();
-                String contentTypeName = fStringPool.toString(contentType);
-                XMLContentSpec.Node node = new XMLContentSpec.Node();
-                int contentSpecHandle = contentSpec.getHandle();
-                if (contentSpecHandle != -1) {
-                    contentSpec.getNode(contentSpecHandle, node);
+                // get type element; create if necessary
+                Element type = XUtil.getLastChildElement(element, "complexType");
+                if (type == null && contentSpecType != XMLElementDecl.TYPE_MIXED) {
+                    type = fDocumentImpl.createElement("complexType");
+                    // REVISIT: Check for type redeclaration? -Ac
+                    element.insertBefore(type, XUtil.getFirstChildElement(element));
                 }
 
-                // (#PCDATA)
-                if (contentTypeName.equals("MIXED") && node.type == 0) {
-                    element.setAttribute("type", "string");
-                }
-
-                // other content models
-                else {
-                    // get type element; create if necessary
-                    Element type = XUtil.getFirstChildElement(element, "type");
-                    if (type == null) {
-                        type = fDocumentImpl.createElement("type");
-                        // REVISIT: Check for type redeclaration? -Ac
-                        element.insertBefore(type, XUtil.getFirstChildElement(element));
-                    }
-
-                    // <!ELEMENT name EMPTY>
-                    if (contentTypeName.equals("EMPTY")) {
+                // create models
+                switch (contentSpecType) {
+                    case XMLElementDecl.TYPE_EMPTY: {
                         type.setAttribute("content", "empty");
+                        break;
                     }
-
-                    // <!ELEMENT name ANY>
-                    else if (contentTypeName.equals("ANY")) {
+                    case XMLElementDecl.TYPE_ANY: {
                         Element any = fDocumentImpl.createElement("any");
                         type.insertBefore(any, XUtil.getFirstChildElement(type));
+                        break;
                     }
+                    case XMLElementDecl.TYPE_MIXED: {
+                        XMLContentSpec contentSpec = new XMLContentSpec();
+                        contentSpecProvider.getContentSpec(contentSpecIndex, contentSpec);
+                        contentSpecIndex = contentSpec.value;
+                        if (contentSpecIndex == -1) {
+                            element.setAttribute("type", "string");
+                        }
+                        else {
+                            if (type == null) {
+                                type = fDocumentImpl.createElement("complexType");
+                                // REVISIT: Check for type redeclaration? -Ac
+                                element.insertBefore(type, XUtil.getFirstChildElement(element));
+                            }
+                            type.setAttribute("content", "mixed");
+                            Element choice = fDocumentImpl.createElement("choice");
+                            choice.setAttribute("minOccurs", "0");
+                            choice.setAttribute("maxOccurs", "unbounded");
+                            type.appendChild(choice);
+                            while (contentSpecIndex != -1) {
 
-                    // <!ELEMENT name (a,b,...)> or <!ELEMENT name (a|b|...)>
-                    else if (contentTypeName.equals("CHILDREN")) {
+                                // get node
+                                contentSpecProvider.getContentSpec(contentSpecIndex, contentSpec);
+                                int cstype  = contentSpec.type;
+                                int csleft  = contentSpec.value;
+                                int csright = contentSpec.otherValue;
+
+                                // if leaf, skip "#PCDATA" and stop
+                                if (cstype == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                                    break;
+                                }
+
+                                // add right hand leaf
+                                contentSpecProvider.getContentSpec(csright, contentSpec);
+                                Element right = fDocumentImpl.createElement("element");
+                                right.setAttribute("ref", fStringPool.toString(contentSpec.value));
+                                Element ref = XUtil.getFirstChildElement(choice);
+                                choice.insertBefore(right, ref);
+
+                                // go to next node
+                                contentSpecIndex = csleft;
+                            }
+                        }
+                        break;
+                    }
+                    case XMLElementDecl.TYPE_CHILDREN: {
                         type.setAttribute("content", "elementOnly");
-                        //((AttrImpl)type.getAttributeNode("content")).setSpecified(false);
-                        //type.setAttribute("order", "seq");
-                        //((AttrImpl)type.getAttributeNode("order")).setSpecified(false);
-
-                        int contentSpecIndex = contentSpec.getHandle();
-                        contentSpec.getNode(contentSpecIndex, node);
-                        Element model = createContentModel(contentSpec, node);
-                        Node fragment = fDocument.createDocumentFragment();
-                        XUtil.copyInto(model, fragment);
-                        Element firstChild = XUtil.getFirstChildElement(type);
-                        type.insertBefore(fragment, firstChild);
-                    }
-
-                    // <!ELEMENT name (#PCDATA|a|...)*>
-                    else {
-                        // REVISIT: Any chance of getting other than MIXED? -Ac
-                        // set content type
-                        type.setAttribute("content", "mixed");
-
-                        // skip '*' node
-                        contentSpec.getNode(node.value, node);
-
-                        // add leaves (on descent)
-                        do {
-                            int index = node.value;
-                            int handle = fAttrList.startAttrList();
-                            contentSpec.getNode(node.otherValue, node);
-                            String elementRefName = fStringPool.toString(node.value);
-                            Element elementRef = fDocumentImpl.createElement("element");
-                            elementRef.setAttribute("ref", elementRefName);
-                            type.insertBefore(elementRef, XUtil.getFirstChildElement(type, "element"));
-                            contentSpec.getNode(index, node);
-                        } while (node.type != XMLContentSpec.CONTENTSPECNODE_LEAF);
+                        Element children = createChildren(contentSpecProvider,
+                                                          contentSpecIndex,
+                                                          new XMLContentSpec(),
+                                                          fDocumentImpl,
+                                                          null);
+                        type.insertBefore(children, XUtil.getFirstChildElement(type));
+                        break;
                     }
                 }
 
             } // if NOT defer-node-expansion
 
         } // if grammar-access
-       */
 
     } // elementDecl(int,String)
 
@@ -1816,7 +1812,7 @@ public class DOMParser
      * &lt;!ATTLIST Name AttDef&gt;
      */
     public void attlistDecl(QName elementDecl, QName attributeDecl, 
-                            int attType, String enumString,
+                            int attType, boolean attList, String enumString,
                             int attDefaultType, int attDefaultValue)
         throws Exception {
 
@@ -1861,7 +1857,6 @@ public class DOMParser
             //
             // Create attribute declaration
             //
-            /*REVISIT- Grammar Access
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
@@ -1876,21 +1871,15 @@ public class DOMParser
                         fStringPool.addSymbol("NMTOKEN"),
                         true,
                         false); //search
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("export"),
-                        fStringPool.addString("true"),
-                        fStringPool.addSymbol("ENUMERATION"),
-                        false,
-                        false); // search
                     fAttrList.endAttrList();
                     elementIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
                     fDeferredDocumentImpl.appendChild(schemaIndex, elementIndex);
                 }
 
                 // get type element; create it if necessary
-                int typeIndex = getLastChildElement(elementIndex, "type");
+                int typeIndex = getLastChildElement(elementIndex, "complexType");
                 if (typeIndex == -1) {
-                    typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("type"), null, -1);
+                    typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("complexType"), null, -1);
                     fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getLastChildElement(elementIndex));
                 }
 
@@ -1905,15 +1894,6 @@ public class DOMParser
                         fStringPool.addSymbol("NMTOKEN"),
                         true,
                         false); // search
-                    /***
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("type"),
-                        fStringPool.addString("string"),
-                        fStringPool.addSymbol("CDATA"),
-                        true,
-                        false); // search
-                    /***/
-            /*
                     fAttrList.addAttr(
                         fStringPool.addSymbol("minOccurs"),
                         fStringPool.addString("0"),
@@ -1931,23 +1911,17 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(typeIndex, attributeIndex);
 
                     // attribute type: CDATA, ENTITY, ... , NMTOKENS; ENUMERATION
-                    String attributeTypeName = fStringPool.toString(attType);
-                    if (attributeTypeName.equals("CDATA")) {
-                        int typeAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("type"), fStringPool.addString("string"), false);
-                        fDeferredDocumentImpl.setAttributeNode(attributeIndex, typeAttrIndex);
-                    }
-                    else if (attributeTypeName.equals("ENUMERATION")) {
+                    if (attType == XMLAttributeDecl.TYPE_ENUMERATION) {
                         handle = fAttrList.startAttrList();
                         fAttrList.addAttr(
-                            fStringPool.addSymbol("source"),
+                            fStringPool.addSymbol("base"),
                             fStringPool.addString("NMTOKEN"),
-                            fStringPool.addSymbol("CDATA"),
+                            fStringPool.addSymbol("NMTOKEN"),
                             true,
                             false); // search
                         fAttrList.endAttrList();
-                        int datatypeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("datatype"), fAttrList, handle);
-                        fDeferredDocumentImpl.appendChild(attributeIndex, datatypeIndex);
-
+                        int simpleTypeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("simpleType"), fAttrList, handle);
+                        fDeferredDocumentImpl.appendChild(attributeIndex, simpleTypeIndex);
                         String tokenizerString = enumString.substring(1, enumString.length() - 1);
                         StringTokenizer tokenizer = new StringTokenizer(tokenizerString, "|");
                         while (tokenizer.hasMoreTokens()) {
@@ -1960,28 +1934,56 @@ public class DOMParser
                                 false); // search
                             fAttrList.endAttrList();
                             int enumerationIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("enumeration"), fAttrList, handle);
-                            fDeferredDocumentImpl.appendChild(datatypeIndex, enumerationIndex);
+                            fDeferredDocumentImpl.appendChild(simpleTypeIndex, enumerationIndex);
                         }
                     }
                     else {
-                        // REVISIT: Could we ever get an unknown data type? -Ac
-                        int typeAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("type"), fStringPool.addString(attributeTypeName), true);
-                        fDeferredDocumentImpl.setAttributeNode(attributeIndex, typeAttrIndex);
+                        int typeNameIndex = -1;
+                        switch (attType) {
+                            case XMLAttributeDecl.TYPE_ENTITY: {
+                                typeNameIndex = fStringPool.addString(attList?"ENTITIES":"ENTITY");
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_ID: {
+                                typeNameIndex = fStringPool.addString("ID");
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_IDREF: {
+                                typeNameIndex = fStringPool.addString(attList?"IDREFS":"IDREF");
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_NMTOKEN: {
+                                typeNameIndex = fStringPool.addString(attList?"NMTOKENS":"NMTOKEN");
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_NOTATION: {
+                                typeNameIndex = fStringPool.addString("NOTATION");
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_CDATA: 
+                            default: {
+                                typeNameIndex = fStringPool.addString("string");
+                                break;
+                            }
+                        }
+                        int attrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("type"), typeNameIndex, true);
+                        fDeferredDocumentImpl.setAttributeNode(attributeIndex, attrIndex);
                     }
 
                     // attribute default type: #IMPLIED, #REQUIRED, #FIXED
                     boolean fixed = false;
-                    if (attDefaultType != -1) {
-                        String attributeDefaultTypeName = fStringPool.toString(attDefaultType);
-                        if (attributeDefaultTypeName.equals("#REQUIRED")) {
+                    switch (attDefaultType) {
+                        case XMLAttributeDecl.DEFAULT_TYPE_REQUIRED: {
                             int minOccursAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("minOccurs"), fStringPool.addString("1"), true);
                             int oldMinOccursAttrIndex = fDeferredDocumentImpl.setAttributeNode(attributeIndex, minOccursAttrIndex);
                             fStringPool.releaseString(fDeferredDocumentImpl.getNodeValue(oldMinOccursAttrIndex, false));
+                            break;
                         }
-                        else if (attributeDefaultTypeName.equals("#FIXED")) {
+                        case XMLAttributeDecl.DEFAULT_TYPE_FIXED: {
                             fixed = true;
                             int fixedAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("fixed"), attDefaultValue, true);
                             fDeferredDocumentImpl.setAttributeNode(attributeIndex, fixedAttrIndex);
+                            break;
                         }
                     }
 
@@ -1992,8 +1994,6 @@ public class DOMParser
                     }
                 }
             }
-            */
-
         }
 
         // full expansion
@@ -2036,34 +2036,30 @@ public class DOMParser
             //
             // Create attribute declaration
             //
-            /*REVISIT  Grammar Access
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
-                Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
+                Element schema = XUtil.getLastChildElement(fDocumentType, "schema");
                 String elementName = fStringPool.toString(elementDecl.rawname);
-                Element element = XUtil.getFirstChildElement(schema, "element", "name", elementName);
+                Element element = XUtil.getLastChildElement(schema, "element", "name", elementName);
                 if (element == null) {
-                    element = fDocument.createElement("element");
+                    element = fDocumentImpl.createElement("element");
                     element.setAttribute("name", elementName);
-                    //element.setAttribute("export", "true");
-                    //((AttrImpl)element.getAttributeNode("export")).setSpecified(false);
                     schema.appendChild(element);
                 }
 
                 // get type element; create it if necessary
-                Element type = XUtil.getFirstChildElement(element, "type");
+                Element type = XUtil.getLastChildElement(element, "complexType");
                 if (type == null) {
-                    type = fDocument.createElement("type");
-                    // REVISIT: Check for archetype redeclaration? -Ac
-                    element.insertBefore(type, XUtil.getFirstChildElement(element));
+                    type = fDocumentImpl.createElement("complexType");
+                    element.insertBefore(type, XUtil.getLastChildElement(element));
                 }
 
                 // create attribute and set its attributes
                 String attributeName = fStringPool.toString(attributeDecl.rawname);
-                Element attribute = XUtil.getFirstChildElement(element, "attribute", "name", attributeName);
+                Element attribute = XUtil.getLastChildElement(element, "attribute", "name", attributeName);
                 if (attribute == null) {
-                    attribute = fDocument.createElement("attribute");
+                    attribute = fDocumentImpl.createElement("attribute");
                     attribute.setAttribute("name", attributeName);
                     attribute.setAttribute("minOccurs", "0");
                     ((AttrImpl)attribute.getAttributeNode("minOccurs")).setSpecified(false);
@@ -2072,51 +2068,70 @@ public class DOMParser
                     type.appendChild(attribute);
 
                     // attribute type: CDATA, ENTITY, ... , NMTOKENS; ENUMERATION
-                    String attributeTypeName = fStringPool.toString(attType);
-                    if (attributeTypeName.equals("CDATA")) {
-                        attribute.setAttribute("type", "string");
-                        ((AttrImpl)attribute.getAttributeNode("type")).setSpecified(false);
-                    }
-                    else if (attributeTypeName.equals("ENUMERATION")) {
-                        Element datatype = fDocumentImpl.createElement("datatype");
-                        datatype.setAttribute("source", "NMTOKEN");
-                        attribute.appendChild(datatype);
+                    if (attType == XMLAttributeDecl.TYPE_ENUMERATION) {
+                        Element simpleType = fDocumentImpl.createElement("simpleType");
+                        simpleType.setAttribute("base", "NMTOKEN");
+                        attribute.appendChild(simpleType);
                         String tokenizerString = enumString.substring(1, enumString.length() - 1);
                         StringTokenizer tokenizer = new StringTokenizer(tokenizerString, "|");
                         while (tokenizer.hasMoreTokens()) {
-                            Element enumeration = fDocument.createElement("enumeration");
+                            Element enumeration = fDocumentImpl.createElement("enumeration");
                             enumeration.setAttribute("value", tokenizer.nextToken());
-                            datatype.appendChild(enumeration);
+                            simpleType.appendChild(enumeration);
                         }
                     }
                     else {
-                        // REVISIT: Could we ever get an unknown data type? -Ac
-                        attribute.setAttribute("type", attributeTypeName);
+                        String typeName = null;
+                        switch (attType) {
+                            case XMLAttributeDecl.TYPE_ENTITY: {
+                                typeName = attList ? "ENTITIES" : "ENTITY";
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_ID: {
+                                typeName = "ID";
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_IDREF: {
+                                typeName = attList ? "IDREFS" : "IDREF";
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_NMTOKEN: {
+                                typeName = attList ? "NMTOKENS" : "NMTOKEN";
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_NOTATION: {
+                                typeName = "NOTATION";
+                                break;
+                            }
+                            case XMLAttributeDecl.TYPE_CDATA: 
+                            default: {
+                                typeName = "string";
+                                break;
+                            }
+                        }
+                        attribute.setAttribute("type", typeName);
                     }
 
                     // attribute default type: #IMPLIED, #REQUIRED, #FIXED
                     boolean fixed = false;
-                    if (attDefaultType != -1) {
-                        String attributeDefaultTypeName = fStringPool.toString(attDefaultType);
-                        if (attributeDefaultTypeName.equals("#REQUIRED")) {
+                    switch (attDefaultType) {
+                        case XMLAttributeDecl.DEFAULT_TYPE_REQUIRED: {
                             attribute.setAttribute("minOccurs", "1");
-                            ((AttrImpl)attribute.getAttributeNode("minOccurs")).setSpecified(true);
+                            break;
                         }
-                        else if (attributeDefaultTypeName.equals("#FIXED")) {
+                        case XMLAttributeDecl.DEFAULT_TYPE_FIXED: {
+                            attribute.setAttribute("fixed", fStringPool.toString(attDefaultValue));
                             fixed = true;
-                            String fixedValue = fStringPool.toString(attDefaultValue);
-                            attribute.setAttribute("fixed", fixedValue);
+                            break;
                         }
                     }
 
                     // attribute default value
                     if (!fixed && attDefaultValue != -1) {
-                        String defaultValue = fStringPool.toString(attDefaultValue);
-                        attribute.setAttribute("default", defaultValue);
+                        attribute.setAttribute("default", fStringPool.toString(attDefaultValue));
                     }
                 }
             }
-           */
 
         } // if NOT defer-node-expansion
 
@@ -2125,12 +2140,99 @@ public class DOMParser
     /**
      * &lt;!ENTITY % Name EntityValue&gt; (internal)
      */
-    public void internalPEDecl(int entityName, int entityValue) throws Exception {}
+    public void internalPEDecl(int entityNameIndex, int entityValueIndex) throws Exception {
+        if (fDeferredDocumentImpl != null) {
+            if (fGrammarAccess) {
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY % ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(" \"");
+                str.append(fStringPool.toString(entityValueIndex));
+                str.append("\">");
+                int commentIndex = fStringPool.addString(str.toString());
+                int internalPEEntityIndex = fDeferredDocumentImpl.createComment(commentIndex);
+                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
+                fDeferredDocumentImpl.appendChild(schemaIndex, internalPEEntityIndex);
+            }
+        }
+        else if (fDocumentImpl != null) {
+            if (fGrammarAccess) {
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY % ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(" \"");
+                str.append(fStringPool.orphanString(entityValueIndex));
+                str.append("\">");
+                Node internalPEEntity = fDocumentImpl.createComment(str.toString());
+                Node schema = XUtil.getFirstChildElement(fDocumentType, "schema");
+                schema.appendChild(internalPEEntity);
+            }
+        }
+        else {
+            fStringPool.orphanString(entityValueIndex);
+        }
+    }
 
     /**
      * &lt;!ENTITY % Name ExternalID>                (external)
      */
-    public void externalPEDecl(int entityName, int publicId, int systemId) throws Exception {}
+    public void externalPEDecl(int entityNameIndex, int publicIdIndex, int systemIdIndex) throws Exception {
+        if (fDeferredDocumentImpl != null) {
+            if (fGrammarAccess) {
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(' ');
+                if (publicIdIndex != -1) {
+                    str.append("PUBLIC \"");
+                    str.append(fStringPool.toString(publicIdIndex));
+                    str.append('"');
+                    if (systemIdIndex != -1) {
+                        str.append(" \"");
+                        str.append(fStringPool.toString(systemIdIndex));
+                        str.append('"');
+                    }
+                }
+                else if (systemIdIndex != -1) {
+                    str.append("SYSTEM \"");
+                    str.append(fStringPool.toString(systemIdIndex));
+                    str.append('"');
+                }
+                str.append('>');
+                int commentIndex = fStringPool.addString(str.toString());
+                int externalPEEntityIndex = fDeferredDocumentImpl.createComment(commentIndex);
+                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
+                fDeferredDocumentImpl.appendChild(schemaIndex, externalPEEntityIndex);
+            }
+        }
+        else if (fDocumentImpl != null) {
+            if (fGrammarAccess) {
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(' ');
+                if (publicIdIndex != -1) {
+                    str.append("PUBLIC \"");
+                    str.append(fStringPool.toString(publicIdIndex));
+                    str.append('"');
+                    if (systemIdIndex != -1) {
+                        str.append(" \"");
+                        str.append(fStringPool.toString(systemIdIndex));
+                        str.append('"');
+                    }
+                }
+                else if (systemIdIndex != -1) {
+                    str.append("SYSTEM \"");
+                    str.append(fStringPool.toString(systemIdIndex));
+                    str.append('"');
+                }
+                str.append('>');
+                Node externalPEEntity = fDocumentImpl.createComment(str.toString());
+                Node schema = XUtil.getFirstChildElement(fDocumentType, "schema");
+                schema.appendChild(externalPEEntity);
+            }
+        }
+    }
 
     /**
      * &lt;!ENTITY Name EntityValue&gt; (internal)
@@ -2149,37 +2251,20 @@ public class DOMParser
             int newEntityIndex = fDeferredDocumentImpl.createEntity(entityNameIndex, -1, -1, -1);
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newEntityIndex);
 
-            /***
             // REVISIT: Entities were removed from latest working draft. -Ac
             // create internal entity declaration
             if (fGrammarAccess) {
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(" \"");
+                str.append(fStringPool.toString(entityValueIndex));
+                str.append("\">");
+                int commentIndex = fStringPool.addString(str.toString());
+                int textEntityIndex = fDeferredDocumentImpl.createComment(commentIndex);
                 int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
-                String entityName = fStringPool.toString(entityNameIndex);
-                int textEntityIndex = getFirstChildElement(schemaIndex, "textEntity", "name", entityName);
-                if (textEntityIndex == -1) {
-                    int handle = fAttrList.startAttrList();
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("name"),
-                        fStringPool.addString(entityName),
-                        fStringPool.addSymbol("NMTOKEN"),
-                        true,
-                        false); // search
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("export"),
-                        fStringPool.addString("true"),
-                        fStringPool.addSymbol("ENUMERATION"),
-                        false,
-                        false); // search
-                    fAttrList.endAttrList();
-
-                    textEntityIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("textEntity"), fAttrList, handle);
-                    fDeferredDocumentImpl.appendChild(schemaIndex, textEntityIndex);
-
-                    int textIndex = fDeferredDocumentImpl.createTextNode(entityValueIndex, false);
-                    fDeferredDocumentImpl.appendChild(textEntityIndex, textIndex);
-                }
+                fDeferredDocumentImpl.appendChild(schemaIndex, textEntityIndex);
             }
-            /***/
         }
 
         // full expansion
@@ -2194,24 +2279,19 @@ public class DOMParser
             Entity entity = fDocumentImpl.createEntity(entityName);
             fDocumentType.getEntities().setNamedItem(entity);
 
-            /***
             // REVISIT: Entities were removed from latest working draft. -Ac
             // create internal entity declaration
             if (fGrammarAccess) {
-                Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
-                Element textEntity = XUtil.getFirstChildElement(schema, "textEntity", "name", entityName);
-                if (textEntity == null) {
-                    textEntity = fDocument.createElement("textEntity");
-                    textEntity.setAttribute("name", entityName);
-                    textEntity.setAttribute("export", "true");
-                    ((AttrImpl)textEntity.getAttributeNode("export")).setSpecified(false);
-                    String entityValue = fStringPool.toString(entityValueIndex);
-                    Text value = fDocument.createTextNode(entityValue);
-                    textEntity.appendChild(value);
-                    schema.appendChild(textEntity);
-                }
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(" \"");
+                str.append(fStringPool.toString(entityValueIndex));
+                str.append("\">");
+                Node textEntity = fDocumentImpl.createComment(str.toString());
+                Node schema = XUtil.getFirstChildElement(fDocumentType, "schema");
+                schema.appendChild(textEntity);
             }
-            /***/
         }
 
     } // internalEntityDecl(int,int)
@@ -2232,47 +2312,34 @@ public class DOMParser
 
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newEntityIndex);
 
-            /***
             // REVISIT: Entities were removed from latest working draft. -Ac
             // create external entity declaration
             if (fGrammarAccess) {
-                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
-                String entityName = fStringPool.toString(entityNameIndex);
-                int externalEntityIndex = getFirstChildElement(schemaIndex, "externalEntity", "name", entityName);
-                if (externalEntityIndex == -1) {
-                    int handle = fAttrList.startAttrList();
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("name"),
-                        fStringPool.addString(entityName),
-                        fStringPool.addSymbol("NMTOKEN"),
-                        true,
-                        false); // search
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("export"),
-                        fStringPool.addString("true"),
-                        fStringPool.addSymbol("ENUMERATION"),
-                        false,
-                        false); // search
-                    if (publicIdIndex != -1) {
-                        fAttrList.addAttr(
-                            fStringPool.addSymbol("public"),
-                            publicIdIndex,
-                            fStringPool.addSymbol("CDATA"),
-                            true,
-                            false); // search
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(' ');
+                if (publicIdIndex != -1) {
+                    str.append("PUBLIC \"");
+                    str.append(fStringPool.toString(publicIdIndex));
+                    str.append('"');
+                    if (systemIdIndex != -1) {
+                        str.append(" \"");
+                        str.append(fStringPool.toString(systemIdIndex));
+                        str.append('"');
                     }
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("system"),
-                        systemIdIndex,
-                        fStringPool.addSymbol("CDATA"),
-                        true,
-                        false); // search
-                    fAttrList.endAttrList();
-                    externalEntityIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("externalEntity"), fAttrList, handle);
-                    fDeferredDocumentImpl.appendChild(schemaIndex, externalEntityIndex);
                 }
+                else if (systemIdIndex != -1) {
+                    str.append("SYSTEM \"");
+                    str.append(fStringPool.toString(systemIdIndex));
+                    str.append('"');
+                }
+                str.append('>');
+                int commentIndex = fStringPool.addString(str.toString());
+                int externalEntityIndex = fDeferredDocumentImpl.createComment(commentIndex);
+                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
+                fDeferredDocumentImpl.appendChild(schemaIndex, externalEntityIndex);
             }
-            /***/
         }
 
         // full expansion
@@ -2292,25 +2359,33 @@ public class DOMParser
             entity.setSystemId(systemId);
             fDocumentType.getEntities().setNamedItem(entity);
 
-            /***
             // REVISIT: Entities were removed from latest working draft. -Ac
             // create external entity declaration
             if (fGrammarAccess) {
-                Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
-                Element externalEntity = XUtil.getFirstChildElement(schema, "externalEntity", "name", entityName);
-                if (externalEntity == null) {
-                    externalEntity = fDocument.createElement("externalEntity");
-                    externalEntity.setAttribute("name", entityName);
-                    externalEntity.setAttribute("export", "true");
-                    ((AttrImpl)externalEntity.getAttributeNode("export")).setSpecified(false);
-                    if (publicIdIndex != -1) {
-                        externalEntity.setAttribute("public", publicId);
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(' ');
+                if (publicIdIndex != -1) {
+                    str.append("PUBLIC \"");
+                    str.append(fStringPool.toString(publicIdIndex));
+                    str.append('"');
+                    if (systemIdIndex != -1) {
+                        str.append(" \"");
+                        str.append(fStringPool.toString(systemIdIndex));
+                        str.append('"');
                     }
-                    externalEntity.setAttribute("system", systemId);
-                    schema.appendChild(externalEntity);
                 }
+                else if (systemIdIndex != -1) {
+                    str.append("SYSTEM \"");
+                    str.append(fStringPool.toString(systemIdIndex));
+                    str.append('"');
+                }
+                str.append('>');
+                Node externalEntity = fDocumentImpl.createComment(str.toString());
+                Node schema = XUtil.getFirstChildElement(fDocumentType, "schema");
+                schema.appendChild(externalEntity);
             }
-            /***/
         }
 
     } // externalEntityDecl(int,int,int)
@@ -2332,53 +2407,36 @@ public class DOMParser
 
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newEntityIndex);
 
-            /***
             // REVISIT: Entities were removed from latest working draft. -Ac
             // add unparsed entity declaration
             if (fGrammarAccess) {
-                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
-                String entityName = fStringPool.toString(entityNameIndex);
-                int unparsedEntityIndex = getFirstChildElement(schemaIndex, "unparsedEntity", "name", entityName);
-                if (unparsedEntityIndex == -1) {
-                    int handle = fAttrList.startAttrList();
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("name"),
-                        fStringPool.addString(entityName),
-                        fStringPool.addSymbol("NMTOKEN"),
-                        true,
-                        false); // search
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("export"),
-                        fStringPool.addString("true"),
-                        fStringPool.addSymbol("ENUMERATION"),
-                        false,
-                        false); // search
-                    if (publicIdIndex != -1) {
-                        fAttrList.addAttr(
-                            fStringPool.addSymbol("public"),
-                            publicIdIndex,
-                            fStringPool.addSymbol("CDATA"),
-                            true,
-                            false); // search
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(' ');
+                if (publicIdIndex != -1) {
+                    str.append("PUBLIC \"");
+                    str.append(fStringPool.toString(publicIdIndex));
+                    str.append('"');
+                    if (systemIdIndex != -1) {
+                        str.append(" \"");
+                        str.append(fStringPool.toString(systemIdIndex));
+                        str.append('"');
                     }
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("system"),
-                        systemIdIndex,
-                        fStringPool.addSymbol("CDATA"),
-                        true,
-                        false); // search
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("notation"),
-                        fStringPool.addString(fStringPool.toString(notationNameIndex)),
-                        fStringPool.addSymbol("CDATA"),
-                        true,
-                        false); // search
-                    fAttrList.endAttrList();
-                    unparsedEntityIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("unparsedEntity"), fAttrList, handle);
-                    fDeferredDocumentImpl.appendChild(schemaIndex, unparsedEntityIndex);
                 }
+                else if (systemIdIndex != -1) {
+                    str.append("SYSTEM \"");
+                    str.append(fStringPool.toString(systemIdIndex));
+                    str.append('"');
+                }
+                str.append(" NDATA ");
+                str.append(fStringPool.toString(notationNameIndex));
+                str.append('>');
+                int commentIndex = fStringPool.addString(str.toString());
+                int unparsedEntityIndex = fDeferredDocumentImpl.createComment(commentIndex);
+                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
+                fDeferredDocumentImpl.appendChild(schemaIndex, unparsedEntityIndex);
             }
-            /***/
         }
 
         // full expansion
@@ -2400,26 +2458,35 @@ public class DOMParser
             entity.setNotationName(notationName);
             fDocumentType.getEntities().setNamedItem(entity);
 
-            /***
             // REVISIT: Entities were removed from latest working draft. -Ac
             // add unparsed entity declaration
             if (fGrammarAccess) {
-                Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
-                Element unparsedEntity = XUtil.getFirstChildElement(schema, "unparsedEntity", "name", entityName);
-                if (unparsedEntity == null) {
-                    unparsedEntity = fDocument.createElement("unparsedEntity");
-                    unparsedEntity.setAttribute("name", entityName);
-                    unparsedEntity.setAttribute("export", "true");
-                    ((AttrImpl)unparsedEntity.getAttributeNode("export")).setSpecified(false);
-                    if (publicIdIndex != -1) {
-                        unparsedEntity.setAttribute("public", publicId);
+                StringBuffer str = new StringBuffer();
+                str.append("<!ENTITY ");
+                str.append(fStringPool.toString(entityNameIndex));
+                str.append(' ');
+                if (publicIdIndex != -1) {
+                    str.append("PUBLIC \"");
+                    str.append(fStringPool.toString(publicIdIndex));
+                    str.append('"');
+                    if (systemIdIndex != -1) {
+                        str.append(" \"");
+                        str.append(fStringPool.toString(systemIdIndex));
+                        str.append('"');
                     }
-                    unparsedEntity.setAttribute("system", systemId);
-                    unparsedEntity.setAttribute("notation", notationName);
-                    schema.appendChild(unparsedEntity);
                 }
+                else if (systemIdIndex != -1) {
+                    str.append("SYSTEM \"");
+                    str.append(fStringPool.toString(systemIdIndex));
+                    str.append('"');
+                }
+                str.append(" NDATA ");
+                str.append(fStringPool.toString(notationNameIndex));
+                str.append('>');
+                Node unparsedEntity = fDocumentImpl.createComment(str.toString());
+                Node schema = XUtil.getFirstChildElement(fDocumentType, "schema");
+                schema.appendChild(unparsedEntity);
             }
-            /***/
         }
 
     } // unparsedEntityDecl(int,int,int,int)
@@ -2441,7 +2508,6 @@ public class DOMParser
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newNotationIndex);
 
             // create notation declaration
-            /*REVISIT  Grammar Access
             if (fGrammarAccess) {
                 int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
                 String notationName = fStringPool.toString(notationNameIndex);
@@ -2454,24 +2520,14 @@ public class DOMParser
                         fStringPool.addSymbol("NMTOKEN"),
                         true,
                         false); // search
-                    /***
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("export"),
-                        fStringPool.addString("true"),
-                        fStringPool.addSymbol("ENUMERATION"),
-                        false,
-                        false); // search
-                    /***/
-            /*
-                    if (publicIdIndex == -1) {
-                        publicIdIndex = 0; // empty string in string pool
+                    if (publicIdIndex != -1) {
+                        fAttrList.addAttr(
+                            fStringPool.addSymbol("public"),
+                            publicIdIndex,
+                            fStringPool.addSymbol("CDATA"),
+                            true,
+                            false); // search
                     }
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol("public"),
-                        publicIdIndex,
-                        fStringPool.addSymbol("CDATA"),
-                        true,
-                        false); // search
                     if (systemIdIndex != -1) {
                         fAttrList.addAttr(
                             fStringPool.addSymbol("system"),
@@ -2485,7 +2541,6 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(schemaIndex, notationIndex);
                 }
             }
-            */
         }
 
         // full expansion
@@ -2507,7 +2562,6 @@ public class DOMParser
             fDocumentType.getNotations().setNamedItem(notationImpl);
 
             // create notation declaration
-            /*REVISIT Grammar access
             if (fGrammarAccess) {
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
                 Element notation = XUtil.getFirstChildElement(schema, "notation", "name", notationName);
@@ -2516,17 +2570,15 @@ public class DOMParser
                     notation.setAttribute("name", notationName);
                     //notation.setAttribute("export", "true");
                     //((AttrImpl)notation.getAttributeNode("export")).setSpecified(false);
-                    if (publicId == null) {
-                        publicId = "";
+                    if (publicId != null) {
+                        notation.setAttribute("public", publicId);
                     }
-                    notation.setAttribute("public", publicId);
                     if (systemIdIndex != -1) {
                         notation.setAttribute("system", systemId);
                     }
                     schema.appendChild(notation);
                 }
             }
-            */
         }
 
     } // notationDecl(int,int,int)
@@ -2535,152 +2587,36 @@ public class DOMParser
     // Private methods
     //
 
-    /**
-     * Creates a content model from the specified content spec node.
-     * This method will always return a <em>group</em> element as the
-     * containing element, even when the content model contains a
-     * single element reference.
-     */
-    /*REVISIT Grammar access
-    private Element createContentModel(XMLContentSpec contentSpec, XMLContentSpec.Node node) {
-
-        Element model = createContentModel(contentSpec, node, 
-                                           new DocumentImpl(), null);
-        return model;
-
-    } // createContentModel(XMLContentSpec.Node):Element
-
-    */
-
-    /**
-     * This is the real <em>createContentModel</em> method. This is a
-     * recursive solution.
-     */
-    /*REVISIT Grammar Access
-    private Element createContentModel(XMLContentSpec contentSpec,
-                                       XMLContentSpec.Node node, 
-                                       Document factory, 
-                                       Element parent) {
-
-        // figure out occurrence count
-        int minOccur = 1;
-        int maxOccur = 1;
-        switch (node.type) {
-            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
-                minOccur = 1;
-                maxOccur = -1;
-                contentSpec.getNode(node.value, node);
+    /** Returns the first child element of the specified node. */
+    private int getFirstChildElement(int nodeIndex) {
+        int childIndex = getLastChildElement(nodeIndex);
+        while (childIndex != -1) {
+            int prevIndex = getPrevSiblingElement(childIndex);
+            if (prevIndex == -1) {
                 break;
             }
-            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
-                minOccur = 0;
-                maxOccur = -1;
-                contentSpec.getNode(node.value, node);
-                break;
-            }
-            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
-                minOccur = 0;
-                maxOccur = 1;
-                contentSpec.getNode(node.value, node);
-                break;
-            }
+            childIndex = prevIndex;
         }
-
-        // flatten model
-        int nodeType = node.type;
-        switch (nodeType) {
-
-            // CHOICE or SEQUENCE
-            case XMLContentSpec.CONTENTSPECNODE_CHOICE:
-            case XMLContentSpec.CONTENTSPECNODE_SEQ: {
-
-                // go down left side
-                int leftIndex  = node.value;
-                int rightIndex = node.otherValue;
-                contentSpec.getNode(leftIndex, node);
-                Element left = createContentModel(contentSpec, node, 
-                                                  factory, parent);
-
-                // go down right side
-                contentSpec.getNode(rightIndex, node);
-                Element right = createContentModel(contentSpec, node, 
-                                                   factory, null);
-
-                // append left children
-                String  type  = nodeType == XMLContentSpec.CONTENTSPECNODE_CHOICE
-                              ? "choice"
-                              : "seq";
-                Element model = left;
-                if (!left.getAttribute("order").equals(type)) {
-                    String minOccurs = left.getAttribute("minOccurs");
-                    String maxOccurs = left.getAttribute("maxOccurs");
-                    if (parent == null ||
-                        ((minOccurs.equals("1") || minOccurs.length() == 0) &&
-                        (maxOccurs.equals("1") || maxOccurs.length() == 0))) {
-                        model = factory.createElement("group");
-                        model.setAttribute("order", type);
-                        if (type.equals("seq")) {
-                            ((AttrImpl)model.getAttributeNode("order")).setSpecified(false);
-                        }
-                        model.appendChild(left);
-                    }
-                    else {
-                        model = parent;
-                    }
-                }
-
-                // set occurrence count
-                setOccurrenceCount(model, minOccur, maxOccur);
-
-                // append right children
-                model.appendChild(right);
-
-                // return model
-                return model;
-            }
-
-            // LEAF
-            case XMLContentSpec.CONTENTSPECNODE_LEAF: {
-                String  name = fStringPool.toString(node.value);
-                Element leaf = factory.createElement("element");
-                leaf.setAttribute("ref", name);
-
-                // set occurrence count and return
-                setOccurrenceCount(leaf, minOccur, maxOccur);
-                return leaf;
-            }
-
-        } // switch node type
-
-        // error
-        return null;
-
-    } // createContentModel(XMLContentSpec.Node,Element):Element
-
-      */
-    /**
-     * Sets the appropriate occurrence count attributes on the specified
-     * model element.
-     */
-    private void setOccurrenceCount(Element model, int minOccur, int maxOccur) {
-
-        // min
-        model.setAttribute("minOccurs", Integer.toString(minOccur));
-        if (minOccur == 1) {
-            ((AttrImpl)model.getAttributeNode("minOccurs")).setSpecified(false);
-        }
-
-        // max
-        if (maxOccur == -1) {
-            model.setAttribute("maxOccurs", "*");
-        }
-        else if (maxOccur != 1) {
-            model.setAttribute("maxOccurs", Integer.toString(maxOccur));
-        }
-
-    } // setOccurrenceCount(Element,int,int)
+        return childIndex;
+    }
 
     /** Returns the first child element of the specified node. */
+    private int getFirstChildElement(int nodeIndex, String name) {
+        int childIndex = getLastChildElement(nodeIndex);
+        if (childIndex != -1) {
+            int nameIndex = fStringPool.addSymbol(name);
+            while (childIndex != -1) {
+                if (fDeferredDocumentImpl.getNodeName(childIndex, false) == nameIndex) {
+                    break;
+                }
+                int prevIndex = getPrevSiblingElement(childIndex);
+                childIndex = prevIndex;
+            }
+        }
+        return childIndex;
+    }
+
+    /** Returns the last child element of the specified node. */
     private int getLastChildElement(int nodeIndex) {
         int childIndex = fDeferredDocumentImpl.getLastChild(nodeIndex, false);
         while (childIndex != -1) {
@@ -2692,7 +2628,7 @@ public class DOMParser
         return -1;
     }
 
-    /** Returns the next sibling element of the specified node. */
+    /** Returns the previous sibling element of the specified node. */
     private int getPrevSiblingElement(int nodeIndex) {
         int siblingIndex = fDeferredDocumentImpl.getPrevSibling(nodeIndex, false);
         while (siblingIndex != -1) {
@@ -2880,47 +2816,297 @@ public class DOMParser
 
     } // copyInto(Node,int)
 
-    /** Creates the content model elements for the deferred DOM tree. */
-    private int createDeferredContentModel(Node model) throws Exception {
+    /**
+     * Sets the appropriate occurrence count attributes on the specified
+     * model element.
+     */
+    private void setOccurrenceCount(Element model, int minOccur, int maxOccur) {
 
-        int nodeType = model.getNodeType();
-        switch (nodeType) {
-            case Node.ELEMENT_NODE: {
-                NamedNodeMap attrs = model.getAttributes();
-                int handle = fAttrList.startAttrList();
-                int length = attrs.getLength();
-                for (int i = 0; i < length; i++) {
-                    Attr attr = (Attr)attrs.item(i);
-                    String attrName = attr.getNodeName();
-                    String attrValue = attr.getNodeValue();
+        // min
+        model.setAttribute("minOccurs", Integer.toString(minOccur));
+        if (minOccur == 1) {
+            ((AttrImpl)model.getAttributeNode("minOccurs")).setSpecified(false);
+        }
 
-                    fAttrList.addAttr(
-                        fStringPool.addSymbol(attrName),
-                        fStringPool.addString(attrValue),
-                        fStringPool.addSymbol((String)TYPES.get(attrName)),
-                        attr.getSpecified(),
-                        false); // search
-                }
-                fAttrList.endAttrList();
+        // max
+        if (maxOccur == -1) {
+            model.setAttribute("maxOccurs", "*");
+        }
+        else if (maxOccur != 1) {
+            model.setAttribute("maxOccurs", Integer.toString(maxOccur));
+        }
 
-                int modelIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol(model.getNodeName()), fAttrList, handle);
+    } // setOccurrenceCount(Element,int,int)
 
-                Node child = model.getFirstChild();
-                while (child != null) {
-                    int childIndex = createDeferredContentModel(child);
-                    fDeferredDocumentImpl.appendChild(modelIndex, childIndex);
-                    child = child.getNextSibling();
-                }
+    /** Creates the children for the element decl. */
+    private Element createChildren(XMLContentSpec.Provider provider, 
+                                   int index, XMLContentSpec node,
+                                   DocumentImpl factory,
+                                   Element parent) throws Exception {
 
-                return modelIndex;
+        // get occurrence count
+        provider.getContentSpec(index, node);
+        int occurs = -1;
+        switch (node.type) {
+            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
+                occurs = '+';
+                provider.getContentSpec(node.value, node);
+                break;
             }
-            case Node.TEXT_NODE: {
-                return fDeferredDocumentImpl.createTextNode(fStringPool.addString(model.getNodeValue()), false);
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
+                occurs = '*';
+                provider.getContentSpec(node.value, node);
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
+                occurs = '?';
+                provider.getContentSpec(node.value, node);
+                break;
             }
         }
 
+        // flatten model
+        int nodeType = node.type;
+        switch (nodeType) {
+
+            // CHOICE or SEQUENCE
+            case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+            case XMLContentSpec.CONTENTSPECNODE_SEQ: {
+
+                // go down left side
+                int leftIndex  = node.value;
+                int rightIndex = node.otherValue;
+                Element left = createChildren(provider, leftIndex, node, 
+                                              factory, parent);
+
+                // go down right side
+                Element right = createChildren(provider, rightIndex, node, 
+                                               factory, null);
+
+                // append left children
+                boolean choice = nodeType == XMLContentSpec.CONTENTSPECNODE_CHOICE;
+                String type = choice ? "choice" : "sequence";
+                Element model = left;
+                if (!left.getNodeName().equals(type)) {
+                    String minOccurs = left.getAttribute("minOccurs");
+                    String maxOccurs = left.getAttribute("maxOccurs");
+                    boolean min1 = minOccurs.length() == 0 || minOccurs.equals("1");
+                    boolean max1 = maxOccurs.length() == 0 || maxOccurs.equals("1");
+                    if (parent == null || (min1 && max1)) {
+                        model = factory.createElement(type);
+                        model.appendChild(left);
+                    }
+                    else {
+                        model = parent;
+                    }
+                }
+
+                // set occurrence count
+                switch (occurs) {
+                    case '+': {
+                        model.setAttribute("maxOccurs", "unbounded");
+                        break;
+                    }
+                    case '*': {
+                        model.setAttribute("minOccurs", "0");
+                        model.setAttribute("maxOccurs", "unbounded");
+                        break;
+                    }
+                    case '?': {
+                        model.setAttribute("minOccurs", "0");
+                        break;
+                    }
+                }
+
+                // append right children
+                model.appendChild(right);
+
+                // return model
+                return model;
+            }
+
+            // LEAF
+            case XMLContentSpec.CONTENTSPECNODE_LEAF: {
+                Element leaf = factory.createElement("element");
+                leaf.setAttribute("ref", fStringPool.toString(node.value));
+                switch (occurs) {
+                    case '+': {
+                        leaf.setAttribute("maxOccurs", "unbounded");
+                        break;
+                    }
+                    case '*': {
+                        leaf.setAttribute("minOccurs", "0");
+                        leaf.setAttribute("maxOccurs", "unbounded");
+                        break;
+                    }
+                    case '?': {
+                        leaf.setAttribute("minOccurs", "0");
+                        break;
+                    }
+                }
+                return leaf;
+            }
+
+        } // switch node type
+
+        // error
+        return null;
+
+    } // createChildren(XMLContentSpec.Provider,int,XMLContentSpec,DocumentImpl,Element):Element
+
+    /** Creates the children for the deferred element decl. */
+    private int createChildren(XMLContentSpec.Provider provider, 
+                               int index, XMLContentSpec node,
+                               DeferredDocumentImpl factory,
+                               int parent) throws Exception {
+
+        // get occurrence count
+        provider.getContentSpec(index, node);
+        int occurs = -1;
+        switch (node.type) {
+            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
+                occurs = '+';
+                provider.getContentSpec(node.value, node);
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
+                occurs = '*';
+                provider.getContentSpec(node.value, node);
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
+                occurs = '?';
+                provider.getContentSpec(node.value, node);
+                break;
+            }
+        }
+
+        // flatten model
+        int nodeType = node.type;
+        switch (nodeType) {
+
+            // CHOICE or SEQUENCE
+            case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+            case XMLContentSpec.CONTENTSPECNODE_SEQ: {
+
+                // go down left side
+                int leftIndex  = node.value;
+                int rightIndex = node.otherValue;
+                int left = createChildren(provider, leftIndex, node, 
+                                          factory, parent);
+
+                // go down right side
+                int right = createChildren(provider, rightIndex, node, 
+                                           factory, -1);
+
+                // append left children
+                boolean choice = nodeType == XMLContentSpec.CONTENTSPECNODE_CHOICE;
+                int type = fStringPool.addSymbol(choice ? "choice" : "sequence");
+                int model = left;
+                if (factory.getNodeName(left, false) != type) {
+                    int minOccurs = factory.getAttribute(left, fStringPool.addSymbol("minOccurs"));
+                    int maxOccurs = factory.getAttribute(left, fStringPool.addSymbol("maxOccurs"));
+                    boolean min1 = minOccurs == -1 || fStringPool.toString(minOccurs).equals("1");
+                    boolean max1 = maxOccurs == -1 || fStringPool.toString(maxOccurs).equals("1");
+                    if (parent == -1 || (min1 && max1)) {
+                        model = factory.createElement(type, null, -1);
+                        factory.appendChild(model, left);
+                    }
+                    else {
+                        model = parent;
+                    }
+                }
+
+                // set occurrence count
+                switch (occurs) {
+                    case '+': {
+                        int maxOccurs = factory.createAttribute(fStringPool.addSymbol("maxOccurs"),
+                                                                fStringPool.addString("unbounded"),
+                                                                true);
+                        factory.setAttributeNode(model, maxOccurs);
+                        break;
+                    }
+                    case '*': {
+                        int minOccurs = factory.createAttribute(fStringPool.addSymbol("minOccurs"),
+                                                                fStringPool.addString("0"),
+                                                                true);
+                        factory.setAttributeNode(model, minOccurs);
+                        int maxOccurs = factory.createAttribute(fStringPool.addSymbol("maxOccurs"),
+                                                                fStringPool.addString("unbounded"),
+                                                                true);
+                        factory.setAttributeNode(model, maxOccurs);
+                        break;
+                    }
+                    case '?': {
+                        int minOccurs = factory.createAttribute(fStringPool.addSymbol("minOccurs"),
+                                                                fStringPool.addString("0"),
+                                                                true);
+                        factory.setAttributeNode(model, minOccurs);
+                        break;
+                    }
+                }
+
+                // append right children
+                factory.appendChild(model, right);
+
+                // return model
+                return model;
+            }
+
+            // LEAF
+            case XMLContentSpec.CONTENTSPECNODE_LEAF: {
+                int handle = fAttrList.startAttrList();
+                fAttrList.addAttr(
+                    fStringPool.addSymbol("ref"),
+                    fStringPool.addString(fStringPool.toString(node.value)),
+                    fStringPool.addSymbol("NMTOKEN"),
+                    true,
+                    false); // search
+                switch (occurs) {
+                    case '+': {
+                        fAttrList.addAttr(
+                            fStringPool.addSymbol("maxOccurs"),
+                            fStringPool.addString("unbounded"),
+                            fStringPool.addSymbol("CDATA"),
+                            true,
+                            false); // search
+                        break;
+                    }
+                    case '*': {
+                        fAttrList.addAttr(
+                            fStringPool.addSymbol("minOccurs"),
+                            fStringPool.addString("0"),
+                            fStringPool.addSymbol("NMTOKEN"),
+                            true,
+                            false); // search
+                        fAttrList.addAttr(
+                            fStringPool.addSymbol("maxOccurs"),
+                            fStringPool.addString("unbounded"),
+                            fStringPool.addSymbol("CDATA"),
+                            true,
+                            false); // search
+                        break;
+                    }
+                    case '?': {
+                        fAttrList.addAttr(
+                            fStringPool.addSymbol("minOccurs"),
+                            fStringPool.addString("0"),
+                            fStringPool.addSymbol("NMTOKEN"),
+                            true,
+                            false); // search
+                        break;
+                    }
+                }
+                fAttrList.endAttrList();
+                int leaf = factory.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
+                return leaf;
+            }
+
+        } // switch node type
+
+        // error
         return -1;
 
-    } // createDeferredContentModel(Node):int
+    } // createChildren(XMLContentSpec.Provider,int,XMLContentSpec,DeferredDocumentImpl,int):int
 
 } // class DOMParser

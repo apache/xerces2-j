@@ -269,17 +269,13 @@ public class XMLContentSpec {
                     provider.getContentSpec(contentSpec.value, contentSpec);
                     if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                         str.append('(');
-                        if (contentSpec.value == -1) {
-                            str.append("#PCDATA");
-                        }
-                        else {
-                            str.append(stringPool.toString(contentSpec.value));
-                        }
-                        str.append(")?");
+                        str.append(stringPool.toString(contentSpec.value));
+                        str.append(')');
                     }
                     else {
                         appendContentSpec(provider, stringPool, contentSpec, str, true);
                     }
+                    str.append('?');
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
@@ -292,11 +288,12 @@ public class XMLContentSpec {
                         else {
                             str.append(stringPool.toString(contentSpec.value));
                         }
-                        str.append(")*");
+                        str.append(')');
                     }
                     else {
                         appendContentSpec(provider, stringPool, contentSpec, str, true);
                     }
+                    str.append('*');
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
@@ -309,11 +306,12 @@ public class XMLContentSpec {
                         else {
                             str.append(stringPool.toString(contentSpec.value));
                         }
-                        str.append(")+");
+                        str.append(')');
                     }
                     else {
                         appendContentSpec(provider, stringPool, contentSpec, str, true);
                     }
+                    str.append('+');
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_CHOICE:

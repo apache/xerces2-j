@@ -284,7 +284,10 @@ public interface XMLDocumentHandler {
          * @see org.apache.xerces.framework.XMLContentSpec
          * @exception java.lang.Exception
          */
-        public void elementDecl(QName elementDecl, XMLContentSpec contentSpec) throws Exception;
+        public void elementDecl(QName elementDecl, 
+                                int contentSpecType, 
+                                int contentSpecIndex,
+                                XMLContentSpec.Provider contentSpecProvider) throws Exception;
 
         /**
          * callback for an attribute list declaration. 
@@ -300,7 +303,8 @@ public interface XMLDocumentHandler {
          * @exception java.lang.Exception
          */
         public void attlistDecl(QName elementDecl, QName attributeDecl,
-                                int attType, String enumString,
+                                int attType, boolean attList,
+                                String enumString,
                                 int attDefaultType,
                                 int attDefaultValue) throws Exception;
 

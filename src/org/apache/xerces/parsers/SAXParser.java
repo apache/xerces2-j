@@ -64,6 +64,7 @@ import org.apache.xerces.framework.XMLParser;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.validators.common.XMLAttributeDecl;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.AttributeList;
@@ -90,7 +91,8 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class SAXParser
     extends XMLParser
-    implements Parser, XMLReader, XMLDocumentHandler, XMLDocumentHandler.DTDHandler {
+    implements XMLDocumentHandler, XMLDocumentHandler.DTDHandler,
+               Parser, XMLReader {
 
     //
     // Constants
@@ -936,13 +938,18 @@ public class SAXParser
      * @param model The content model as a normalized string.
      * @exception SAXException The application may raise an exception.
      */
-    public void elementDecl(QName elementDecl, XMLContentSpec contentSpec) throws Exception {
+    public void elementDecl(QName elementDecl, 
+                            int contentSpecType, 
+                            int contentSpecIndex,
+                            XMLContentSpec.Provider contentSpecProvider) throws Exception {
 
         if (fDeclHandler != null || DEBUG_CALLBACKS) {
 
             // strings
             String name = fStringPool.toString(elementDecl.rawname);
-            String contentModel = contentSpec.toString();
+            String contentModel = XMLContentSpec.toString(contentSpecProvider, 
+                                                          fStringPool, 
+                                                          contentSpecIndex);
 
             // perform callback
             if (DEBUG_CALLBACKS) {
@@ -975,7 +982,7 @@ public class SAXParser
      * @exception SAXException The application may raise an exception.
      */
     public void attlistDecl(QName elementDecl, QName attributeDecl,
-                            int attType, String enumString,
+                            int attType, boolean attList, String enumString,
                             int attDefaultType,
                             int attDefaultValue) throws Exception
     {
@@ -984,16 +991,50 @@ public class SAXParser
             // strings
             String eName = fStringPool.toString(elementDecl.rawname);
             String aName = fStringPool.toString(attributeDecl.rawname);
-            String aType;
-            if (attType == fStringPool.addSymbol("ENUMERATION"))
-                aType = enumString;
-            else
-                aType = fStringPool.toString(attType);
-            String aDefaultType;
-            if (attDefaultType == StringPool.EMPTY_STRING)
-                aDefaultType = null;
-            else
-                aDefaultType = fStringPool.toString(attDefaultType);
+            String aType = enumString;
+            if (attType != XMLAttributeDecl.TYPE_ENUMERATION) {
+                switch (attType) {
+                    case XMLAttributeDecl.TYPE_CDATA: {
+                        aType = "CDATA";
+                        break;
+                    }
+                    case XMLAttributeDecl.TYPE_ENTITY: {
+                        aType = attList ? "ENTITIES" : "ENTITY";
+                        break;
+                    }
+                    case XMLAttributeDecl.TYPE_ID: {
+                        aType = "ID";
+                        break;
+                    }
+                    case XMLAttributeDecl.TYPE_IDREF: {
+                        aType = attList ? "IDREFS" : "IDREF";
+                        break;
+                    }
+                    case XMLAttributeDecl.TYPE_NMTOKEN: {
+                        aType = attList ? "NMTOKENS" : "NMTOKEN";
+                        break;
+                    }
+                    case XMLAttributeDecl.TYPE_NOTATION: {
+                        aType = "NOTATION";
+                        break;
+                    }
+                }
+            }
+            String aDefaultType = "";
+            switch (attDefaultType) {
+                case XMLAttributeDecl.DEFAULT_TYPE_FIXED: {
+                    aDefaultType = "#FIXED";
+                    break;
+                }
+                case XMLAttributeDecl.DEFAULT_TYPE_IMPLIED: {
+                    aDefaultType = "#IMPLIED";
+                    break;
+                }
+                case XMLAttributeDecl.DEFAULT_TYPE_REQUIRED: {
+                    aDefaultType = "#REQUIRED";
+                    break;
+                }
+            }
             String aDefaultValue = fStringPool.toString(attDefaultValue);
 
             // perform callback

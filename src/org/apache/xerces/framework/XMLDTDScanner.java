@@ -191,6 +191,7 @@ public final class XMLDTDScanner {
     private QName fAttributeQName = new QName();
     private QName fElementRefQName = new QName();
     private EventHandler fEventHandler = null;
+    private XMLDocumentHandler.DTDHandler fDTDHandler = null;
     private StringPool fStringPool = null;
     private XMLErrorReporter fErrorReporter = null;
     private XMLEntityHandler fEntityHandler = null;
@@ -239,6 +240,11 @@ public final class XMLDTDScanner {
      */
     public void setEventHandler(XMLDTDScanner.EventHandler eventHandler) {
         fEventHandler = eventHandler;
+    }
+
+    /** Set the DTD handler. */
+    public void setDTDHandler(XMLDocumentHandler.DTDHandler dtdHandler) {
+        fDTDHandler = dtdHandler;
     }
 
     /** Sets the grammar resolver. */
@@ -933,7 +939,11 @@ public final class XMLDTDScanner {
                             sawDashDash = true;
                         }
                         decreaseMarkupDepth();
-                        fDTDGrammar.callComment(fEntityReader.addString(commentOffset, endOffset - commentOffset));
+                        int comment = fEntityReader.addString(commentOffset, endOffset - commentOffset);
+                        fDTDGrammar.callComment(comment);
+                        if (fDTDHandler != null) {
+                            fDTDHandler.comment(comment);
+                        }
                         restoreScannerState(previousState);
                         return;
                     } else if (!sawDashDash) {
@@ -1022,6 +1032,9 @@ public final class XMLDTDScanner {
         int piData = piDataLength == 0 ?
                      StringPool.EMPTY_STRING : fEntityReader.addString(piDataOffset, piDataLength);
         fDTDGrammar.callProcessingInstruction(piTarget, piData);
+        if (fDTDHandler != null) {
+            fDTDHandler.processingInstruction(piTarget, piData);
+        }
     }
     //
     // From the standard:
@@ -1046,7 +1059,7 @@ public final class XMLDTDScanner {
     {
         //System.out.println("XMLDTDScanner#scanDoctypeDecl()");
 
-        fDTDGrammar = new DTDGrammar(fStringPool, fEventHandler);
+        fDTDGrammar = new DTDGrammar(fStringPool);
         fDTDGrammar.callStartDTD();
         increaseMarkupDepth();
         fEntityReader = fEntityHandler.getEntityReader();
@@ -1085,6 +1098,9 @@ public final class XMLDTDScanner {
         } else
             lbrkt = fEntityReader.lookingAtChar('[', true);
         fDTDGrammar.doctypeDecl(fElementQName, publicId, systemId);
+        if (fDTDHandler != null) {
+            fDTDHandler.startDTD(fElementQName, publicId, systemId);
+        }
         if (lbrkt) {
             scanDecls(false);
             fEntityReader.skipPastSpaces();
@@ -1356,7 +1372,11 @@ public final class XMLDTDScanner {
             boolean newParseTextDecl = false;
             if (!extSubset && fEntityReader.lookingAtChar(']', false)) {
                 int subsetLength = fEntityReader.currentOffset() - subsetOffset;
-                fDTDGrammar.internalSubset(fEntityReader.addString(subsetOffset, subsetLength));
+                int internalSubset = fEntityReader.addString(subsetOffset, subsetLength);
+                fDTDGrammar.internalSubset(internalSubset);
+                if (fDTDHandler != null) {
+                    fDTDHandler.internalSubset(internalSubset);
+                }
                 fEntityReader.lookingAtChar(']', true);
                 restoreScannerState(prevState);
                 return;
@@ -1486,6 +1506,9 @@ public final class XMLDTDScanner {
 
             fDTDGrammar.stopReadingFromExternalSubset();
             fDTDGrammar.callEndDTD();
+            if (fDTDHandler != null) {
+                fDTDHandler.endDTD();
+            }
             // REVISIT: What should the namspace URI of a DTD be?
             fGrammarResolver.putGrammar("", fDTDGrammar);
         }
@@ -1663,8 +1686,13 @@ public final class XMLDTDScanner {
         }
         decreaseMarkupDepth();
         fDTDGrammar.callTextDecl(version, encoding);
+        if (fDTDHandler != null) {
+            fDTDHandler.textDecl(version, encoding);
+        }
         restoreScannerState(prevState);
     }
+
+    private QName fElementDeclQName = new QName();
 
     /**
      * Scans an element declaration.
@@ -1684,6 +1712,9 @@ public final class XMLDTDScanner {
             abortMarkup(XMLMessages.MSG_ELEMENT_TYPE_REQUIRED_IN_ELEMENTDECL,
                         XMLMessages.P45_ELEMENT_TYPE_REQUIRED);
             return;
+        }
+        if (fDTDHandler != null) {
+            fElementDeclQName.setValues(fElementQName);
         }
         if (!checkForPEReference(true)) {
             abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_BEFORE_CONTENTSPEC_IN_ELEMENTDECL,
@@ -1770,6 +1801,10 @@ public final class XMLDTDScanner {
                         );
                 }
             }
+        }
+        if (fDTDHandler != null) {
+            fDTDGrammar.getElementDecl(elementIndex, fTempElementDecl);
+            fDTDHandler.elementDecl(fElementDeclQName, contentSpecType, contentSpec, fDTDGrammar);
         }
 
     } // scanElementDecl()
@@ -2183,6 +2218,13 @@ public final class XMLDTDScanner {
                           int attDefDefaultType, int attDefDefaultValue,
                           boolean isExternal ) throws Exception {
 
+        if (fDTDHandler != null) {
+            String enumString = attDefEnumeration != -1 ? fStringPool.stringListAsString(attDefEnumeration) : null;
+            fDTDHandler.attlistDecl(element, attribute, 
+                                    attDefType, attDefList,
+                                    enumString, 
+                                    attDefDefaultType, attDefDefaultValue);
+        }
         int elementIndex = fDTDGrammar.getElementDeclIndex(element.localpart, -1);
         if (elementIndex == -1) {
             // REPORT Internal error here
@@ -2510,6 +2552,9 @@ public final class XMLDTDScanner {
                                                                                      fSystemLiteral,
                                                                                      getReadingExternalEntity());
         fDTDGrammar.addNotationDecl(notationName, fPubidLiteral, fSystemLiteral);
+        if (fDTDHandler != null) {
+            fDTDHandler.notationDecl(notationName, fPubidLiteral, fSystemLiteral);
+        }
     }
     //
     // [70] EntityDecl ::= GEDecl | PEDecl
@@ -2629,6 +2674,9 @@ public final class XMLDTDScanner {
                 // a hack by Eric
                 //REVISIT
                 fDTDGrammar.addInternalPEDecl(entityName, value);
+                if (fDTDHandler != null) {
+                    fDTDHandler.internalPEDecl(entityName, value);
+                }
                 int entityIndex = ((DefaultEntityHandler) fEntityHandler).addInternalPEDecl(entityName, 
                                                                                             value, 
                                                                                             getReadingExternalEntity());
@@ -2653,6 +2701,9 @@ public final class XMLDTDScanner {
                 //a hack by Eric
                 //REVISIT
                 fDTDGrammar.addExternalPEDecl(entityName, fPubidLiteral, fSystemLiteral);
+                if (fDTDHandler != null) {
+                    fDTDHandler.externalPEDecl(entityName, fPubidLiteral, fSystemLiteral);
+                }
                 int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalPEDecl(entityName, 
                                                                                             fPubidLiteral, 
                                                                                             fSystemLiteral, getReadingExternalEntity());
@@ -2680,6 +2731,9 @@ public final class XMLDTDScanner {
                 //a hack by Eric
                 //REVISIT
                 fDTDGrammar.addInternalEntityDecl(entityName, value);
+                if (fDTDHandler != null) {
+                    fDTDHandler.internalEntityDecl(entityName, value);
+                }
                 int entityIndex = ((DefaultEntityHandler) fEntityHandler).addInternalEntityDecl(entityName, 
                                                                                                 value, 
                                                                                                 getReadingExternalEntity());
@@ -2709,6 +2763,9 @@ public final class XMLDTDScanner {
                     //a hack by Eric
                     //REVISIT
                     fDTDGrammar.addExternalEntityDecl(entityName, fPubidLiteral, fSystemLiteral);
+                    if (fDTDHandler != null) {
+                        fDTDHandler.externalEntityDecl(entityName, fPubidLiteral, fSystemLiteral);
+                    }
                     int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalEntityDecl(entityName, 
                                                                                                     fPubidLiteral, 
                                                                                                     fSystemLiteral, 
@@ -2748,6 +2805,9 @@ public final class XMLDTDScanner {
                     //a hack by Eric
                     //REVISIT
                     fDTDGrammar.addUnparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
+                    if (fDTDHandler != null) {
+                        fDTDHandler.unparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
+                    }
                     /****
                     System.out.println("----addUnparsedEntity--- "+ fStringPool.toString(entityName)+","
                                        +fStringPool.toString(notationName)+","

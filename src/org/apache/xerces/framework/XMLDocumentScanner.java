@@ -166,6 +166,7 @@ public final class XMLDocumentScanner {
     QName fCurrentElementQName = new QName();
     ScannerDispatcher fDispatcher = null;
     EventHandler fEventHandler = null;
+    XMLDocumentHandler.DTDHandler fDTDHandler = null;
     StringPool fStringPool = null;
     XMLErrorReporter fErrorReporter = null;
     XMLEntityHandler fEntityHandler = null;
@@ -316,6 +317,11 @@ public final class XMLDocumentScanner {
      */
     public void setEventHandler(XMLDocumentScanner.EventHandler eventHandler) {
         fEventHandler = eventHandler;
+    }
+
+    /** Set the DTD handler. */
+    public void setDTDHandler(XMLDocumentHandler.DTDHandler dtdHandler) {
+        fDTDHandler = dtdHandler;
     }
 
     /** Sets the grammar resolver. */
@@ -2164,6 +2170,7 @@ public final class XMLDocumentScanner {
         else {
             fDTDScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
         }
+        fDTDScanner.setDTDHandler(fDTDHandler);
         fDTDScanner.setGrammarResolver(fGrammarResolver);
         // REVISIT: What about standalone?
         if (fDTDScanner.scanDoctypeDecl()) {

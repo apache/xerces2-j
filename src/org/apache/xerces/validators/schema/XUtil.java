@@ -191,6 +191,23 @@ public class XUtil {
 
     } // getFirstChildElement(Node):Element
 
+    /** Finds and returns the last child element node. */
+    public static Element getLastChildElement(Node parent) {
+
+        // search for node
+        Node child = parent.getLastChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                return (Element)child;
+            }
+            child = child.getPreviousSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getLastChildElement(Node):Element
+
     /** Finds and returns the next sibling element node. */
     public static Element getNextSiblingElement(Node node) {
 
@@ -226,6 +243,25 @@ public class XUtil {
         return null;
 
     } // getFirstChildElement(Node,String):Element
+
+    /** Finds and returns the last child node with the given name. */
+    public static Element getLastChildElement(Node parent, String elemName) {
+
+        // search for node
+        Node child = parent.getLastChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                if (child.getNodeName().equals(elemName)) {
+                    return (Element)child;
+                }
+            }
+            child = child.getPreviousSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getLastChildElement(Node,String):Element
 
     /** Finds and returns the next sibling node with the given name. */
     public static Element getNextSiblingElement(Node node, String elemName) {
@@ -266,6 +302,27 @@ public class XUtil {
         return null;
 
     } // getFirstChildElement(Node,String[]):Element
+
+    /** Finds and returns the last child node with the given name. */
+    public static Element getLastChildElement(Node parent, String elemNames[]) {
+
+        // search for node
+        Node child = parent.getLastChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                for (int i = 0; i < elemNames.length; i++) {
+                    if (child.getNodeName().equals(elemNames[i])) {
+                        return (Element)child;
+                    }
+                }
+            }
+            child = child.getPreviousSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getLastChildElement(Node,String[]):Element
 
     /** Finds and returns the next sibling node with the given name. */
     public static Element getNextSiblingElement(Node node, String elemNames[]) {
@@ -314,6 +371,33 @@ public class XUtil {
         return null;
 
     } // getFirstChildElement(Node,String,String,String):Element
+
+    /**
+     * Finds and returns the last child node with the given name and
+     * attribute name, value pair.
+     */
+    public static Element getLastChildElement(Node   parent,
+                                               String elemName,
+                                               String attrName,
+                                               String attrValue) {
+
+        // search for node
+        Node child = parent.getLastChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element)child;
+                if (element.getNodeName().equals(elemName) &&
+                    element.getAttribute(attrName).equals(attrValue)) {
+                    return element;
+                }
+            }
+            child = child.getPreviousSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getLastChildElement(Node,String,String,String):Element
 
     /**
      * Finds and returns the next sibling node with the given name and

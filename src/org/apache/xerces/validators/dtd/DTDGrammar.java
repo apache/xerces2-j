@@ -147,9 +147,6 @@ public class DTDGrammar
 
     // pass-through
 
-    /** DTD event handler for pass-through processing. */
-    private XMLDTDScanner.EventHandler fDTDEventHandler;
-
     /** flag if the elementDecl is External. */
     private int fElementDeclIsExternal[][] = new int[INITIAL_CHUNK_COUNT][];
     /** Mapping for element declarations. */
@@ -169,31 +166,12 @@ public class DTDGrammar
 
     /** Default constructor. */
     public DTDGrammar(StringPool stringPool) {
-        this(stringPool, null);
-    }
-
-    /** 
-     * Constructs a DTD grammar that passes events through to the
-     * specified DTD event handler.
-     */
-    public DTDGrammar(StringPool stringPool, XMLDTDScanner.EventHandler handler) {
         reset(stringPool);
-        setDTDEventHandler(handler);
     }
 
     //
     // Public methods
     //
-
-    /** Sets the DTD event handler. */
-    public void setDTDEventHandler(XMLDTDScanner.EventHandler handler) {
-        fDTDEventHandler = handler;
-    }
-
-    /** Returns the DTD event handler. */
-    public XMLDTDScanner.EventHandler getDTDEventHandler() {
-        return fDTDEventHandler;
-    }
 
     /** Resets the DTD grammar. */
     public void reset(StringPool stringPool) {
@@ -213,11 +191,6 @@ public class DTDGrammar
         fRootElement = fGrammarDocument.createElement("dtd");
         fCurrentElement = fRootElement;
 
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.callStartDTD();
-        }
-
     } // callStartDTD()
 
     /** End of DTD. */
@@ -225,11 +198,6 @@ public class DTDGrammar
 
         // set grammar document
         setGrammarDocument(fGrammarDocument);
-
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.callEndDTD();
-        }
 
     } // callEndDTD()
 
@@ -247,11 +215,6 @@ public class DTDGrammar
         textDecl.setAttribute("version", fStringPool.toString(version));
         textDecl.setAttribute("encoding", fStringPool.toString(encoding));
         fCurrentElement.appendChild(textDecl);
-
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.callTextDecl(version, encoding);
-        }
 
     } // callTextDecl(int,int)
 
@@ -278,10 +241,6 @@ public class DTDGrammar
         fCurrentElement.appendChild(doctypeDecl);
 
         fRootElementQName.setValues(rootElement);
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.doctypeDecl(rootElement, publicId, systemId);
-        }
 
     } // doctypeDecl(QName,int,int);
 
@@ -302,11 +261,6 @@ public class DTDGrammar
         fCurrentElement.appendChild(externalSubset);
         fCurrentElement = externalSubset;
 
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.startReadingFromExternalSubset(publicId, systemId);
-        }
-
     } // startReadingFromExternalSubset(int,int)
 
     /**
@@ -318,11 +272,6 @@ public class DTDGrammar
 
         // get out of external subset
         fCurrentElement = (Element)fCurrentElement.getParentNode();
-
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.stopReadingFromExternalSubset();
-        }
 
     } // stopReadingFromExternalSubset()
 
@@ -351,15 +300,6 @@ public class DTDGrammar
         fElementDecl.clear();
         fElementDecl.name.setValues(elementDecl);
         setElementDecl(elementDeclIndex, fElementDecl);
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addElementDecl(elementDecl);
-            int chunk = elementDeclIndex >> CHUNK_SHIFT;
-            int index = elementDeclIndex & CHUNK_MASK;
-            ensureElementDeclCapacity(chunk);
-            fElementDeclMap[chunk][index] = mapping;
-        }
 
         // return index
         return elementDeclIndex;
@@ -406,14 +346,6 @@ public class DTDGrammar
         int index = elementDeclIndex & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
         fElementDeclIsExternal[chunk][index] = isExternal? 1 : 0;
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addElementDecl(elementDecl, 
-                                                          contentSpecType, 
-                                                          contentSpec, isExternal);
-            fElementDeclMap[chunk][index] = mapping;
-        }
 
         // return index
         return elementDeclIndex;
@@ -539,15 +471,6 @@ public class DTDGrammar
         int index = attributeDeclIndex & CHUNK_MASK;
         ensureAttributeDeclCapacity(chunk);
         fAttributeDeclIsExternal[chunk][index] = isExternal ?  1 : 0;
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addAttDef(elementDecl, 
-                                                     attributeDecl, 
-                                                     attType, attList, enumeration,
-                                                     attDefaultType, 
-                                                     attDefaultValue, isExternal);
-            fAttributeDeclMap[chunk][index] = mapping;
-        }
 
         // return index
         return attributeDeclIndex;
@@ -571,15 +494,6 @@ public class DTDGrammar
                                nameIndex, -1);
         setContentSpec(contentSpecIndex, fContentSpec);
 
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addUniqueLeafNode(nameIndex);
-            int chunk = contentSpecIndex >> CHUNK_SHIFT;
-            int index = contentSpecIndex & CHUNK_MASK;
-            ensureContentSpecCapacity(chunk);
-            fContentSpecMap[chunk][index] = mapping;
-        }
-
         // return index 
         return contentSpecIndex;
 
@@ -602,16 +516,6 @@ public class DTDGrammar
         // set content spec node values
         fContentSpec.setValues(nodeType, nodeValue, -1);
         setContentSpec(contentSpecIndex, fContentSpec);
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addContentSpecNode(nodeType, 
-                                                              nodeValue);
-            int chunk = contentSpecIndex >> CHUNK_SHIFT;
-            int index = contentSpecIndex & CHUNK_MASK;
-            ensureContentSpecCapacity(chunk);
-            fContentSpecMap[chunk][index] = mapping;
-        }
 
         // return index 
         return contentSpecIndex;
@@ -638,17 +542,6 @@ public class DTDGrammar
         fContentSpec.setValues(nodeType, 
                                leftNodeIndex, rightNodeIndex);
         setContentSpec(contentSpecIndex, fContentSpec);
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addContentSpecNode(nodeType,
-                                                              leftNodeIndex,
-                                                              rightNodeIndex);
-            int chunk = contentSpecIndex >> CHUNK_SHIFT;
-            int index = contentSpecIndex & CHUNK_MASK;
-            ensureContentSpecCapacity(chunk);
-            fContentSpecMap[chunk][index] = mapping;
-        }
 
         // return index 
         return contentSpecIndex;
@@ -683,11 +576,6 @@ public class DTDGrammar
         fCurrentElement.appendChild(entityDecl);
         fCurrentElement = entityDecl;
 
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.startEntityDecl(isPE, entityName);
-        }
-
         // success
         return true;
 
@@ -701,11 +589,6 @@ public class DTDGrammar
 
         // get out of entity decl
         fCurrentElement = (Element)fCurrentElement.getParentNode();
-
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.endEntityDecl();
-        }
 
     } // endEntityDecl()
 
@@ -727,12 +610,6 @@ public class DTDGrammar
 
         // REVISIT: What is my responsibility for creating a handle?
         int peDeclIndex = -1;
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addInternalPEDecl(name, value);
-            // REVISIT: Save mapping
-        }
 
         // return index
         return peDeclIndex;
@@ -762,14 +639,6 @@ public class DTDGrammar
         // REVISIT: What is my responsibility for creating a handle?
         int peDeclIndex = -1;
 
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addExternalPEDecl(name, 
-                                                             publicId,
-                                                             systemId);
-            // REVISIT: Save mapping
-        }
-
         // return index
         return peDeclIndex;
 
@@ -793,12 +662,6 @@ public class DTDGrammar
             
         // REVISIT: What is my responsibility for creating a handle?
         int internalEntityDeclIndex = -1;
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addInternalEntityDecl(name, value);
-            // REVISIT: Save mapping
-        }
 
         // return index
         return internalEntityDeclIndex;
@@ -827,14 +690,6 @@ public class DTDGrammar
             
         // REVISIT: What is my responsibility for creating a handle?
         int externalEntityDeclIndex = -1;
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addExternalEntityDecl(name,
-                                                                 publicId,
-                                                                 systemId);
-            // REVISIT: Save mapping
-        }
 
         // return index
         return externalEntityDeclIndex;
@@ -866,15 +721,6 @@ public class DTDGrammar
         // REVISIT: What is my responsibility for creating a handle?
         int unparsedEntityDeclIndex = -1;
 
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addUnparsedEntityDecl(name,
-                                                                 publicId,
-                                                                 systemId,
-                                                                 notationName);
-            // REVISIT: Save mapping
-        }
-
         // return index
         return unparsedEntityDeclIndex;
 
@@ -895,13 +741,6 @@ public class DTDGrammar
         // REVISIT: What is my responsibility for creating a handle?
         //int enumIndex = -1;    
         int enumIndex = fStringPool.startStringList();
-
-
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.startEnumeration();
-            // REVISIT: Save mapping
-        }
 
         // return index
         return enumIndex;
@@ -936,15 +775,6 @@ public class DTDGrammar
         //add the name to the stringList 
         fStringPool.addStringToList(enumIndex, nameIndex);
 
-        // pass-through
-        if (fDTDEventHandler != null) {
-            // REVISIT: Retrieve mapping
-            int enumMapping = enumIndex;
-            fDTDEventHandler.addNameToEnumeration(enumMapping, elementType,
-                                                  attrName, nameIndex,
-                                                  isNotationType);
-        }
-
     } // addNameToEnumeration(int,int,int,int,boolean)
 
     /**
@@ -960,13 +790,6 @@ public class DTDGrammar
         
         //finish the enumeration stringlist int the fStringPool
         fStringPool.finishStringList(enumIndex);
-
-        // pass-through
-        if (fDTDEventHandler != null) {
-            // REVISIT: Retrieve mapping
-            int enumMapping = enumIndex;
-            fDTDEventHandler.endEnumeration(enumMapping);
-        }
 
     } // endEnumeration(int)
 
@@ -992,14 +815,6 @@ public class DTDGrammar
         // REVISIT: What is my responsibility for creating a handle?
         int notationDeclIndex = -1;
 
-        // pass-through, saving mapping
-        if (fDTDEventHandler != null) {
-            int mapping = fDTDEventHandler.addNotationDecl(notationName,
-                                                           publicId,
-                                                           systemId);
-            // REVISIT: Save mapping
-        }
-
         // return index
         return notationDeclIndex;
 
@@ -1012,10 +827,6 @@ public class DTDGrammar
      * @exception java.lang.Exception
      */
     public void callComment(int data) throws Exception {
-        // TODO
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.callComment(data);
-        }
     }
 
     /**
@@ -1033,11 +844,6 @@ public class DTDGrammar
                                                          fStringPool.toString(piData));
         fCurrentElement.appendChild(pi);
 
-        // pass-through
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.callProcessingInstruction(piTarget, piData);
-        }
-
     } // callProcessingInstruction(int,int)
 
     // deprecated -- removed from DOM Level 2
@@ -1047,10 +853,6 @@ public class DTDGrammar
      * Called when the internal subset is completely scanned.
      */
     public void internalSubset(int internalSubset) throws Exception {
-        // TODO
-        if (fDTDEventHandler != null) {
-            fDTDEventHandler.internalSubset(internalSubset);
-        }
     }
 
     //
