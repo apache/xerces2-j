@@ -891,7 +891,6 @@ public final class XMLValidator
                                        new Object[] { fStringPool.toString(elementType) },
                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
         }
-        fDocumentHandler.endElement(fCurrentElement);
         if (fValidating) {
             int elementIndex = fCurrentElementIndex;
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
@@ -911,6 +910,7 @@ public final class XMLValidator
                 }
             }
         }
+        fDocumentHandler.endElement(fCurrentElement);
         if (fNamespacesEnabled) {
             fNamespacesScope.decreaseDepth();
         }
