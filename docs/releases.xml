@@ -36,6 +36,7 @@
       <submitter name='Elena Litani'/>
    </add>
 
+
    <add>
         <note>Implemented current-element-node property</note>
         <submitter name='Ted Leung'/>
@@ -45,6 +46,13 @@
    <add>
     <note>Added internal subset string to DOM.</note>
     <submitter name='Andy Clark'/>
+   </add>
+
+   <add>
+     <note>Added support for warn-on-duplicate-attdef xerces feature
+     http://apache.org/xml/features/validation/warn-on-duplicate-attdef
+     </note>
+      <submitter name='Neeraj Bajaj'/>
    </add>
 
    
@@ -87,6 +95,11 @@
       attributes once
     </note>
     <submitter name='Arnaud Le Hors'/>
+   </update>
+
+   <update>
+     <note>provided support for fundamental facets in DV implementation  </note>
+      <submitter name='Neeraj Bajaj, Sandy Gao'/>
    </update>
    
 
@@ -136,6 +149,52 @@
     </fix>
     
 
+    
+    <fix>
+        <note>Fixed external-schemaLocation and external-noNamespaceSchemalocation 
+        	properties related bug (bug id 5768)        
+        </note>
+        <submitter name="Gopal Sharma"/>
+    </fix>
+
+    
+    <fix>
+        <note>XNI related Javadoc fixes. 
+        </note>
+        <submitter name="Neeraj Bajaj, Rahul Srivastava"/>
+    </fix>
+
+    <fix>
+        <note>Fixed namespaces and namespace-prefixes related SAX bug.
+        </note>
+        <submitter name="Rahul Srivastava"/>
+    </fix>
+
+    <fix>
+        <note>Corrected features documentation for string-interning feature.
+        </note>
+        <submitter name="Rahul Srivastava"/>
+    </fix>
+    
+
+    <fix>
+        <note>Corrected features documentation for string-interning feature.
+        </note>
+        <submitter name="Rahul Srivastava"/>
+    </fix>
+
+    <fix>
+        <note>Fixed the bug in which duplicate attribute definitions were not ignored
+	  and error was reported for ID datatype and Notation.
+        </note>
+        <submitter name="Neeraj Bajaj"/>
+    </fix>
+
+    <fix>
+        <note>Fixed the bug where 'locale' value was not set for StandardParserConfiguration.
+        </note>
+        <submitter name="Takuki Kamiya, Neeraj Bajaj"/>
+    </fix>
 
   </changes>
  </release>
