@@ -67,7 +67,7 @@ import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSObject;
-import org.w3c.dom.ls.DOMParser;
+import org.w3c.dom.ls.LSParser;
 
 /**
  * This sample program illustrates how to use load XML Schemas and 
@@ -85,7 +85,7 @@ public class QueryXS implements DOMErrorHandler {
     /** Default Schema validation support (false). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = false;
 
-    static DOMParser builder;
+    static LSParser builder;
     public static void main(String[] argv) {
 
         if (argv.length == 0) {
