@@ -16,19 +16,19 @@
 
 package org.apache.xerces.impl;
 
-import java.lang.reflect.Method;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.xerces.impl.io.ASCIIReader;
@@ -93,8 +93,8 @@ public class XMLEntityManager
     /** Default buffer size before we've finished with the XMLDecl:  */
     public static final int DEFAULT_XMLDECL_BUFFER_SIZE = 64;
 
-    /** Default internal entity buffer size (1024). */
-    public static final int DEFAULT_INTERNAL_BUFFER_SIZE = 1024;
+    /** Default internal entity buffer size (512). */
+    public static final int DEFAULT_INTERNAL_BUFFER_SIZE = 512;
 
     // feature identifiers
 
@@ -349,6 +349,9 @@ public class XMLEntityManager
     
     /** Augmentations for entities. */
     private final Augmentations fEntityAugs = new AugmentationsImpl();
+    
+    /** Pool of character buffers. */
+    private CharacterBufferPool fBufferPool = new CharacterBufferPool(fBufferSize, DEFAULT_INTERNAL_BUFFER_SIZE);
 
     //
     // Constructors
@@ -1408,6 +1411,7 @@ public class XMLEntityManager
                     bufferSize.intValue() > DEFAULT_XMLDECL_BUFFER_SIZE) {
                     fBufferSize = bufferSize.intValue();
                     fEntityScanner.setBufferSize(fBufferSize);
+                    fBufferPool.setExternalBufferSize(fBufferSize);
                 }
             }
             if (suffixLength == Constants.SECURITY_MANAGER_PROPERTY.length() && 
@@ -1778,6 +1782,9 @@ public class XMLEntityManager
             fReaderStack.pop();
         } 
 
+        //Release the character buffer back to the pool for reuse
+        fBufferPool.returnToPool(fCurrentEntity.fBuffer);
+        
         // Pop entity stack.
         fCurrentEntity = fEntityStack.size() > 0
                        ? (ScannedEntity)fEntityStack.pop() : null;
@@ -2418,6 +2425,10 @@ public class XMLEntityManager
 
         // to allow the reader/inputStream to behave efficiently:
         public boolean mayReadChunks;
+        
+        /** Character buffer container. */
+        private CharacterBuffer fBuffer;
+        
 
         //
         // Constructors
@@ -2436,7 +2447,8 @@ public class XMLEntityManager
             this.literal = literal;
             this.mayReadChunks = mayReadChunks;
             this.isExternal = isExternal;
-            this.ch = new char[isExternal ? fBufferSize : DEFAULT_INTERNAL_BUFFER_SIZE];
+            this.fBuffer = fBufferPool.getBuffer(isExternal);
+            this.ch = fBuffer.ch;
         } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean, boolean)
 
         //
@@ -2591,6 +2603,109 @@ public class XMLEntityManager
         } // toString():String
 
     } // class ScannedEntity
+    
+    /**
+     * Buffer used in entity manager to reuse character arrays instead
+     * of creating new ones every time.
+     * 
+     * @xerces.internal
+     * 
+     * @author Ankit Pasricha, IBM
+     */
+    private static class CharacterBuffer {
+
+        /** character buffer */
+        private char[] ch;
+        
+        /** whether the buffer is for an external or internal scanned entity */
+        private boolean isExternal;
+        
+        public CharacterBuffer(boolean isExternal, int size) {
+            this.isExternal = isExternal;
+            ch = new char[size];
+        }
+    }
+    
+    /**
+     * Stores a number of character buffers and provides it to the entity
+     * manager to use when an entity is seen.
+     * 
+     * @xerces.internal 
+     * 
+     * @author Ankit Pasricha, IBM
+     */
+    private static class CharacterBufferPool {
+
+        private static final int DEFAULT_POOL_SIZE = 3;
+        
+        private CharacterBuffer[] fInternalBufferPool;
+        private CharacterBuffer[] fExternalBufferPool;
+
+        private int fExternalBufferSize;
+        private int fInternalBufferSize;
+        private int poolSize;
+        
+        private int fInternalTop;
+        private int fExternalTop;
+
+        public CharacterBufferPool(int externalBufferSize, int internalBufferSize) {
+            this(DEFAULT_POOL_SIZE, externalBufferSize, internalBufferSize);
+        }
+        
+        public CharacterBufferPool(int poolSize, int externalBufferSize, int internalBufferSize) {
+            fExternalBufferSize = externalBufferSize;
+            fInternalBufferSize = internalBufferSize;
+            this.poolSize = poolSize;
+            init();
+        }
+        
+        /** Initializes buffer pool. **/
+        private void init() {
+            fInternalBufferPool = new CharacterBuffer[poolSize];
+            fExternalBufferPool = new CharacterBuffer[poolSize];
+            fInternalTop = -1;
+            fExternalTop = -1;
+        }
+
+        /** Retrieves buffer from pool. **/
+        public CharacterBuffer getBuffer(boolean external) {
+            if (external) {
+                if (fExternalTop > -1) {
+                    return (CharacterBuffer)fExternalBufferPool[fExternalTop--];
+                }
+                else {
+                    return new CharacterBuffer(true, fExternalBufferSize);
+                }
+            }
+            else {
+                if (fInternalTop > -1) {
+                    return (CharacterBuffer)fInternalBufferPool[fInternalTop--];
+                }
+                else {
+                    return new CharacterBuffer(false, fInternalBufferSize);
+                }
+            }
+        }
+        
+        /** Returns buffer to pool. **/
+        public void returnToPool(CharacterBuffer buffer) {
+            if (buffer.isExternal) {
+                if (fExternalTop < fExternalBufferPool.length - 1) {
+                    fExternalBufferPool[++fExternalTop] = buffer;
+                }
+            }
+            else if (fInternalTop < fInternalBufferPool.length - 1) {
+                fInternalBufferPool[++fInternalTop] = buffer;
+            }
+        }
+
+        /** Sets the size of external buffers and dumps the old pool. **/
+        public void setExternalBufferSize(int bufferSize) {
+            fExternalBufferSize = bufferSize;
+            fExternalBufferPool = new CharacterBuffer[poolSize];
+            fExternalTop = -1;
+        }
+    }
 
     /**
      * This class wraps the byte inputstreams we're presented with.
