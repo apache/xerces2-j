@@ -697,7 +697,6 @@ public class Grammar {
          attributeType = (short) (fAttributeDeclType[chunk][index] & LIST_MASK);
          isList = (fAttributeDeclType[chunk][index] & LIST_FLAG) != 0;
       }
-
       attributeDecl.simpleType.setValues(attributeType,fAttributeDeclName[chunk][index].localpart,
                                          fAttributeDeclEnumeration[chunk][index],
                                          isList, fAttributeDeclDefaultType[chunk][index],

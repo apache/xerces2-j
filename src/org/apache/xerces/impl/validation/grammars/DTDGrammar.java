@@ -451,6 +451,8 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
           XMLElementDecl elementDecl       = new XMLElementDecl();
           elementDecl.name = new QName(null, elementName, elementName, null);
           
+          elementDecl.scope= -1;
+          
           //add(or set) this elementDecl to the local cache
           this.fElementDeclTab.put(elementName, elementDecl );
 
@@ -460,7 +462,6 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
 
       //Get Grammar index to grammar array
       int elementIndex       = getElementDeclIndex( elementName, -1 );
-
 
       fCurrentAttributeIndex = createAttributeDecl();// Create current Attribute Decl
 
@@ -522,7 +523,6 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
       fAttributeDecl.simpleType     = fSimpleType;
       fAttributeDecl.setValues( fQName, fSimpleType, false );
 
-      /* System.out.println( "elementIndex = " + elementIndex ); */
       setAttributeDecl( elementIndex, fCurrentAttributeIndex,
                            fAttributeDecl );
 

@@ -92,10 +92,10 @@ public class XMLElementDecl {
     public QName name = new QName();
 
     /** scope */
-    public int scope;
+    public int scope = -1;
 
     /** type */
-    public short type;
+    public short type = -1;
 
     /** contentModelValidator */
     public ContentModelValidator contentModelValidator;
@@ -131,9 +131,8 @@ public class XMLElementDecl {
         this.name.clear();
         this.type          = -1;
         this.scope         = -1;
-        this.type          = -1;
         this.contentModelValidator = null;
-        this.simpleType            = null;
+        this.simpleType.clear();
     } // clear
 
 } // class XMLElementDecl
