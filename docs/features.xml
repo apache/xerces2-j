@@ -132,7 +132,7 @@ catch (SAXException e) {
     Enable full schema grammar constraint checking, including checking 
     which may be time-consuming or memory intensive. Currently, particle 
     unique attribution constraint checking and particle derivation 
-    resriction checking are controlled by this option. 
+    restriction checking are controlled by this option. 
    </true>
    <false>Disable full constraint checking.</false>
    <default value='false'/>
