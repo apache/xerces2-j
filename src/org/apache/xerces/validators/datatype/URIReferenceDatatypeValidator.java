@@ -265,7 +265,9 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
 
            
             try {
-                uriContent = new URI( content );
+                if( content.trim().length() != 0 ) //Validate non null URI 
+                    uriContent = new URI( content );
+                //else it is valid anyway
                 
             } catch (  URI.MalformedURIException ex ) {
                 throw new InvalidDatatypeValueException("Value '"+content+
