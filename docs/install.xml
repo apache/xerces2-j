@@ -67,6 +67,9 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    download the source package and have the contents of the tools
    package (or equivalent) available.
   </note>
+  <note>
+    xerces.jar is no longer available in the main distribution. You can still download this jar from deprecated distribution. xerces.jar is a Jar file that contains all the parser class files. 
+   </note>
  </s2>
  <s2 title='Files in the Source Package'>
   <table>
@@ -151,17 +154,30 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
  was done so that, if your XSLT processor ships with API&apos;s at the
  same level as those supported by &ParserName;, you can avoid putting
  <code>xmlParserAPIs.jar</code> on your classpath.</p>
- <p>Should you wish to use the old form of the jarfiles, we have
+
+ <p>Should you wish to use the <code>xerces.jar</code> instead, we have
  included several ant targets for backward compatibility.  An
  &quot;ant target&quot; is an argument given to ant, our build tool,
  that tells it which portions of the <code>build.xml</code> file to
- apply.  If you are on a Windows system and you wish to get only the
- old xerces jar files, you would execute <code>build.bat
- oldjars</code>.  If you want to regenerate new versions of the xerces
+ apply. 
+</p>
+
+ <p> 
+ If you are on a Windows system and you wish to get only the
+ xerces.jar file, you would execute <code>build.bat
+ deprecatedjars</code>.  
+ </p>
+ <p>
+ If you want to regenerate new versions of the xerces
  binary, source and tools distributions with the old-style jarfiles,
- you would execute <code>build.bat oldall</code>.  The situation is
+ you would execute <code>build.bat deprecatedall</code>.  
+
+ The situation is
  analogous for Unix users, except that <code>build.sh</code> would be
- used instead of <code>build.bat</code>.  For further information and
+ used instead of <code>build.bat</code>.  
+ </p>
+ <p>
+ For further information and
  more options, please look inside build.xml itself; all possibilities
  are documented there.
  </p>

@@ -18,7 +18,7 @@
         </li>
         </ul>
         <p>For backwards compatibility, we have retained the ability
-        to generate old-style jarfiles.  For instructions, see <link
+        to generate xerces.jar.  For instructions, see <link
         idref="install">the installation documentation</link>.
         </p>
     </a>
