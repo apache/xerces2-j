@@ -230,22 +230,8 @@ public interface Node3 extends Node {
      */
     public boolean isSameNode(Node other);
 
-    /**
-     * Look up the prefix associated to the given namespace URI, starting from 
-     * this node.
-     * <br>See  for details on the algorithm used by this method.Should this 
-     * be optional?No.How does the lookup work? Is it based on the prefix of 
-     * the nodes, the namespace declaration attributes, or a combination of 
-     * both?See .
-     * @param namespaceURI The namespace URI to look for.
-     * @return Returns the associated namespace prefix or <code>null</code> 
-     *   if none is found. If more than one prefix are associated to the 
-     *   namespace prefix, the returned namespace prefix is implementation 
-     *   dependent.
-     * @since DOM Level 3
-     */
-    public String lookupNamespacePrefix(String namespaceURI);
-
+    public String lookupNamespacePrefix(String namespaceURI, 
+                                        boolean useDefault);
     /**
      * Look up the namespace URI associated to the given prefix, starting from 
      * this node.
