@@ -40,52 +40,77 @@ public final class SecurityManager {
     // Constants
     //
 
-    // default value for entity expansion limit
+    /** Default value for entity expansion limit. **/
     private final static int DEFAULT_ENTITY_EXPANSION_LIMIT = 100000;
     
-    //default value of number of nodes created 
+    /** Default value of number of nodes created. **/
     private final static int DEFAULT_MAX_OCCUR_NODE_LIMIT = 3000;
 
     //
     // Data
     //
 
-    /** entity expansion limit */
+    /** Entity expansion limit. **/
     private int entityExpansionLimit;
+    
+    /** W3C XML Schema maxOccurs limit. **/
     private int maxOccurLimit;
 
-    // default constructor.  Establishes default values for
-    // all known security holes.  
+    /**
+     * Default constructor.  Establishes default values 
+     * for known security vulnerabilities.
+     */  
     public SecurityManager() {
         entityExpansionLimit = DEFAULT_ENTITY_EXPANSION_LIMIT;
         maxOccurLimit = DEFAULT_MAX_OCCUR_NODE_LIMIT ;
     }
 
-    // set the number of entity expansions that the
-    // parser should permit in a document
+    /**
+     * <p>Sets the number of entity expansions that the
+     * parser should permit in a document.</p>
+     *
+     * @param limit the number of entity expansions
+     * permitted in a document
+     */
     public void setEntityExpansionLimit(int limit) {
         entityExpansionLimit = limit;
     }
 
-    // return the number of entity expansions that the
-    // parser permits in a document
+    /**
+     * <p>Returns the number of entity expansions 
+     * that the parser permits in a document.</p>
+     *
+     * @return the number of entity expansions
+     * permitted in a document
+     */
     public int getEntityExpansionLimit() {
         return entityExpansionLimit;
     }
     
-    //sets the limit of the number of content model nodes that may be created when building
-    // a grammar for a schema that contains maxOccurs attributes with values
-    // other than "unbounded"
+    /**
+     * <p>Sets the limit of the number of content model nodes 
+     * that may be created when building a grammar for a W3C 
+     * XML Schema that contains maxOccurs attributes with values
+     * other than "unbounded".</p>
+     *
+     * @param limit the maximum value for maxOccurs other
+     * than "unbounded"
+     */
     public void setMaxOccurNodeLimit(int limit){
-        maxOccurLimit = limit ;
+        maxOccurLimit = limit;
     }
     
-    
-    //sets the limit of the number of content model nodes that may be created when building
-    // a grammar for a schema that contains maxOccurs attributes with values
-    // other than "unbounded" 
+    /**
+     * <p>Returns the limit of the number of content model nodes 
+     * that may be created when building a grammar for a W3C 
+     * XML Schema that contains maxOccurs attributes with values
+     * other than "unbounded".</p>
+     *
+     * @return the maximum value for maxOccurs other
+     * than "unbounded"
+     */ 
     public int getMaxOccurNodeLimit(){
-        return maxOccurLimit ;    
+        return maxOccurLimit;    
     }
     
 } // class SecurityManager
