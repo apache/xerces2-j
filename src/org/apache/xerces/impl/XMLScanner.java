@@ -481,7 +481,7 @@ public abstract class XMLScanner
         // spaces
         if (!fEntityScanner.skipSpaces()) {
             if (fEntityScanner.skipString("?>")) {
-                // we found the end of, there is no data
+                // we found the end, there is no data
                 data.clear();
                 return;
             }
@@ -623,7 +623,7 @@ public abstract class XMLScanner
         }
 
         // character reference must be a valid XML character
-        if (!XMLChar.isValid((char)value)) {
+        if (!XMLChar.isValid(value)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "InvalidCharRef",
                                        new Object[]{ String.valueOf((char)value) },
