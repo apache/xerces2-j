@@ -256,7 +256,7 @@ public class XSDHandler {
 
     // the Grammar Pool
     private XMLGrammarPool fGrammarPool;
-
+    
     //************ Traversers **********
     XSDAttributeGroupTraverser fAttributeGroupTraverser;
     XSDAttributeTraverser fAttributeTraverser;
@@ -2106,7 +2106,7 @@ public class XSDHandler {
             // line/column numbers are stored in the element node
             int line = ele.getLineNumber();
             int column = ele.getColumnNumber();
-            l.setValues(sid, sid, line, column);
+            l.setValues(sid, sid, line, column, ele.getCharacterOffset());
             return true;
         }
         return false;

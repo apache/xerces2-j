@@ -181,6 +181,7 @@ public class XML11EntityScanner
                     }
                     offset = 0;
                     if (load(length, false)) {
+                        --fCurrentEntity.startPosition;
                         --fCurrentEntity.position;
                         break;
                     }
@@ -271,6 +272,7 @@ public class XML11EntityScanner
                 offset = 0;
                 if (load(1, false)) {
                     --fCurrentEntity.position;
+                    --fCurrentEntity.startPosition;
                     return null;
                 }
             }
@@ -334,6 +336,7 @@ public class XML11EntityScanner
                     offset = 0;
                     if (load(length, false)) {
                         --fCurrentEntity.position;
+                        --fCurrentEntity.startPosition;
                         break;
                     }
                 }
@@ -424,6 +427,7 @@ public class XML11EntityScanner
                 offset = 0;
                 if (load(1, false)) {
                     --fCurrentEntity.position;
+                    --fCurrentEntity.startPosition;
                     return null;
                 }
             }
@@ -486,6 +490,7 @@ public class XML11EntityScanner
                     }
                     offset = 0;
                     if (load(length, false)) {
+                        --fCurrentEntity.startPosition;
                         --fCurrentEntity.position;
                         break;
                     }
@@ -583,6 +588,7 @@ public class XML11EntityScanner
                 fCurrentEntity.ch[0] = ch;
                 offset = 0;
                 if (load(1, false)) {
+                    --fCurrentEntity.startPosition;
                     --fCurrentEntity.position;
                     return false;
                 }
@@ -662,6 +668,7 @@ public class XML11EntityScanner
                     offset = 0;
                     if (load(length, false)) {
                         sawIncompleteSurrogatePair = true;
+                        --fCurrentEntity.startPosition;
                         --fCurrentEntity.position;
                         break;
                     }
@@ -773,6 +780,7 @@ public class XML11EntityScanner
             fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
             load(1, false);
             fCurrentEntity.position = 0;
+            fCurrentEntity.startPosition = 0;
         }
 
         // normalize newlines
@@ -789,7 +797,9 @@ public class XML11EntityScanner
                     fCurrentEntity.columnNumber = 1;
                     if (fCurrentEntity.position == fCurrentEntity.count) {
                         offset = 0;
+                        fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
                         fCurrentEntity.position = newlines;
+                        fCurrentEntity.startPosition = newlines;
                         if (load(newlines, false)) {
                             break;
                         }
@@ -810,7 +820,9 @@ public class XML11EntityScanner
                     fCurrentEntity.columnNumber = 1;
                     if (fCurrentEntity.position == fCurrentEntity.count) {
                         offset = 0;
+                        fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
                         fCurrentEntity.position = newlines;
+                        fCurrentEntity.startPosition = newlines;
                         if (load(newlines, false)) {
                             break;
                         }
@@ -909,6 +921,7 @@ public class XML11EntityScanner
         else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
             fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
             load(1, false);
+            fCurrentEntity.startPosition = 0;
             fCurrentEntity.position = 0;
         }
 
@@ -926,7 +939,9 @@ public class XML11EntityScanner
                     fCurrentEntity.columnNumber = 1;
                     if (fCurrentEntity.position == fCurrentEntity.count) {
                         offset = 0;
+                        fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
                         fCurrentEntity.position = newlines;
+                        fCurrentEntity.startPosition = newlines;
                         if (load(newlines, false)) {
                             break;
                         }
@@ -947,7 +962,9 @@ public class XML11EntityScanner
                     fCurrentEntity.columnNumber = 1;
                     if (fCurrentEntity.position == fCurrentEntity.count) {
                         offset = 0;
+                        fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
                         fCurrentEntity.position = newlines;
+                        fCurrentEntity.startPosition = newlines;
                         if (load(newlines, false)) {
                             break;
                         }
@@ -1067,6 +1084,7 @@ public class XML11EntityScanner
 
               bNextEntity = load(fCurrentEntity.count - fCurrentEntity.position, false);
               fCurrentEntity.position = 0;
+              fCurrentEntity.startPosition = 0;
             }
 
             if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
@@ -1074,7 +1092,9 @@ public class XML11EntityScanner
                 int length = fCurrentEntity.count - fCurrentEntity.position;
                 buffer.append (fCurrentEntity.ch, fCurrentEntity.position, length); 
                 fCurrentEntity.columnNumber += fCurrentEntity.count;
+                fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
                 fCurrentEntity.position = fCurrentEntity.count;
+                fCurrentEntity.startPosition = fCurrentEntity.count;
                 load(0,true);
                 return false;
             }
@@ -1092,7 +1112,9 @@ public class XML11EntityScanner
                         fCurrentEntity.columnNumber = 1;
                         if (fCurrentEntity.position == fCurrentEntity.count) {
                             offset = 0;
+                            fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
                             fCurrentEntity.position = newlines;
+                            fCurrentEntity.startPosition = newlines;
                             if (load(newlines, false)) {
                                 break;
                             }
@@ -1113,7 +1135,9 @@ public class XML11EntityScanner
                         fCurrentEntity.columnNumber = 1;
                         if (fCurrentEntity.position == fCurrentEntity.count) {
                             offset = 0;
+                            fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
                             fCurrentEntity.position = newlines;
+                            fCurrentEntity.startPosition = newlines;
                             fCurrentEntity.count = newlines;
                             if (load(newlines, false)) {
                                 break;
@@ -1318,10 +1342,12 @@ public class XML11EntityScanner
                         if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                             fCurrentEntity.ch[0] = (char)c;
                             entityChanged = load(1, true);
-                            if (!entityChanged)
+                            if (!entityChanged) {
                                 // the load change the position to be 1,
                                 // need to restore it when entity not changed
+                                fCurrentEntity.startPosition = 0;
                                 fCurrentEntity.position = 0;
+                            }
                         }
                         if (c == '\r') {
                             // REVISIT: Does this need to be updated to fix the
@@ -1356,10 +1382,12 @@ public class XML11EntityScanner
                     if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                         fCurrentEntity.ch[0] = (char)c;
                         entityChanged = load(1, true);
-                        if (!entityChanged)
+                        if (!entityChanged) {
                             // the load change the position to be 1,
                             // need to restore it when entity not changed
+                            fCurrentEntity.startPosition = 0;
                             fCurrentEntity.position = 0;
+                        }
                     }
                 }
                 else {
@@ -1413,6 +1441,7 @@ public class XML11EntityScanner
                 // REVISIT: Can a string to be skipped cross an
                 //          entity boundary? -Ac
                 if (load(i + 1, false)) {
+                    fCurrentEntity.startPosition -= i + 1;
                     fCurrentEntity.position -= i + 1;
                     return false;
                 }

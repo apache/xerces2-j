@@ -220,6 +220,8 @@ public class XMLVersionDetector {
         // prepend contents...
         System.arraycopy(scannedChars, 0, currentEntity.ch, 0, length);
         currentEntity.position = 0;
+        currentEntity.baseCharOffset = 0;
+        currentEntity.startPosition = 0;
         currentEntity.columnNumber = currentEntity.lineNumber = 1;
     }
 

@@ -222,7 +222,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         }
         schemaDOM.startElement(element, attributes, 
                                fLocator.getLineNumber(),
-                               fLocator.getColumnNumber());
+                               fLocator.getColumnNumber(),
+                               fLocator.getCharacterOffset());
 
     }
 
@@ -262,7 +263,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         
         schemaDOM.emptyElement(element, attributes, 
                                fLocator.getLineNumber(),
-                               fLocator.getColumnNumber());
+                               fLocator.getColumnNumber(),
+                               fLocator.getCharacterOffset());
         
         if (fAnnotationDepth == -1) {
             // this is messed up, but a case to consider:

@@ -81,6 +81,13 @@ public class DOMLocatorImpl implements DOMLocator {
 	fColumnNumber = columnNumber ;
 	fUri = uri;
    } // DOMLocatorImpl (int lineNumber, int columnNumber, String uri )
+   
+   public DOMLocatorImpl (int lineNumber, int columnNumber, int utf16Offset, String uri ){
+	fLineNumber = lineNumber ;
+	fColumnNumber = columnNumber ;
+	fUri = uri;
+	fUtf16Offset = utf16Offset;
+   } // DOMLocatorImpl (int lineNumber, int columnNumber, int utf16Offset, String uri )
 
    public DOMLocatorImpl (int lineNumber, int columnNumber, int byteoffset, Node relatedData, String uri ){
 	fLineNumber = lineNumber ;
@@ -90,13 +97,13 @@ public class DOMLocatorImpl implements DOMLocator {
 	fUri = uri;
    } // DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri )
 
-   public DOMLocatorImpl (int lineNumber, int columnNumber, int byteoffset, Node relatedData, String uri, int utf16Offsert ){
+   public DOMLocatorImpl (int lineNumber, int columnNumber, int byteoffset, Node relatedData, String uri, int utf16Offset ){
 	fLineNumber = lineNumber ;
 	fColumnNumber = columnNumber ;
 	fByteOffset = byteoffset ;
 	fRelatedNode = relatedData ;
 	fUri = uri;
-	fUtf16Offset = utf16Offsert;
+	fUtf16Offset = utf16Offset;
    } // DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri )
 
 

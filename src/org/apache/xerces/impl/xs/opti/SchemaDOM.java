@@ -57,8 +57,8 @@ public class SchemaDOM extends DefaultDocument {
     
 
     public void startElement(QName element, XMLAttributes attributes,
-                             int line, int column) {
-        ElementImpl node = new ElementImpl(line, column);
+                             int line, int column, int offset) {
+        ElementImpl node = new ElementImpl(line, column, offset);
         processElement(element, attributes, node);
         // now the current node added, becomes the parent
         parent = node;
@@ -66,9 +66,20 @@ public class SchemaDOM extends DefaultDocument {
     
     
     public void emptyElement(QName element, XMLAttributes attributes,
-                             int line, int column) {
-        ElementImpl node = new ElementImpl(line, column);
+                             int line, int column, int offset) {
+        ElementImpl node = new ElementImpl(line, column, offset);
         processElement(element, attributes, node);
+    }
+    
+    public void startElement(QName element, XMLAttributes attributes,
+                             int line, int column) {
+        startElement(element, attributes, line, column, -1);
+    }
+    
+    
+    public void emptyElement(QName element, XMLAttributes attributes,
+                             int line, int column) {
+        emptyElement(element, attributes, line, column, -1);
     }
     
     
@@ -248,7 +259,7 @@ public class SchemaDOM extends DefaultDocument {
                 for(int j=0; j<relations[i].length; j++) 
                     relations[i][j] = null;
         relations = new NodeImpl[relationsRowResizeFactor][];
-        parent = new ElementImpl(0, 0);
+        parent = new ElementImpl(0, 0, 0);
         parent.rawname = "DOCUMENT_NODE";
         currLoc = 0;
         nextFreeLoc = 1;

@@ -25,24 +25,36 @@ import org.apache.xerces.xni.XMLLocator;
  * @version $Id$
  */
 public class SimpleLocator implements XMLLocator {
+
     String lsid, esid;
     int line, column;
+    int charOffset;
     
     public SimpleLocator() {
     }
     
     public SimpleLocator(String lsid, String esid, int line, int column) {
-        this.line = line;
-        this.column = column;
-        this.lsid = lsid;
-        this.esid = esid;
+        this(lsid, esid, line, column, -1);
     }
     
     public void setValues(String lsid, String esid, int line, int column) {
+        setValues(lsid, esid, line, column, -1);
+    }
+    
+    public SimpleLocator(String lsid, String esid, int line, int column, int offset) {
         this.line = line;
         this.column = column;
         this.lsid = lsid;
         this.esid = esid;
+        charOffset = offset;
+    }
+    
+    public void setValues(String lsid, String esid, int line, int column, int offset) {
+        this.line = line;
+        this.column = column;
+        this.lsid = lsid;
+        this.esid = esid;
+        charOffset = offset;
     }
     
     public int getLineNumber() {
@@ -54,62 +66,66 @@ public class SimpleLocator implements XMLLocator {
     }
     
     public int getCharacterOffset() {
-        return -1;
+        return charOffset;
     }
-
+    
     public String getPublicId() {
         return null;
     }
-
+    
     public String getExpandedSystemId() {
         return esid;
     }
-
+    
     public String getLiteralSystemId() {
         return lsid;
     }
-
+    
     public String getBaseSystemId() {
         return null;
     }
-	/**
-	 * @see org.apache.xerces.xni.XMLLocator#setColumnNumber(int)
-	 */
-	public void setColumnNumber(int col) {
+    /**
+     * @see org.apache.xerces.xni.XMLLocator#setColumnNumber(int)
+     */
+    public void setColumnNumber(int col) {
         this.column = col;
     }
-
-	/**
-	 * @see org.apache.xerces.xni.XMLLocator#setLineNumber(int)
-	 */
-	public void setLineNumber(int line) {
+    
+    /**
+     * @see org.apache.xerces.xni.XMLLocator#setLineNumber(int)
+     */
+    public void setLineNumber(int line) {
         this.line = line;
     }
-
-	/**
-	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setBaseSystemId(String)
-	 */
-	public void setBaseSystemId(String systemId) {}
-
-	/**
-	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setExpandedSystemId(String)
-	 */
-	public void setExpandedSystemId(String systemId) {
+    
+    public void setCharacterOffset(int offset) {
+        charOffset = offset;
+    }
+    
+    /**
+     * @see org.apache.xerces.xni.XMLResourceIdentifier#setBaseSystemId(String)
+     */
+    public void setBaseSystemId(String systemId) {}
+    
+    /**
+     * @see org.apache.xerces.xni.XMLResourceIdentifier#setExpandedSystemId(String)
+     */
+    public void setExpandedSystemId(String systemId) {
         esid = systemId;
     }
-
-	/**
-	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setLiteralSystemId(String)
-	 */
-	public void setLiteralSystemId(String systemId) {
+    
+    /**
+     * @see org.apache.xerces.xni.XMLResourceIdentifier#setLiteralSystemId(String)
+     */
+    public void setLiteralSystemId(String systemId) {
         lsid = systemId;
     }
-
-	/**
-	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setPublicId(String)
-	 */
-	public void setPublicId(String publicId) {}
-
+    
+    /**
+     * @see org.apache.xerces.xni.XMLResourceIdentifier#setPublicId(String)
+     */
+    public void setPublicId(String publicId) {}
+    
     /** Returns the encoding of the current entity.  
      * Since these locators are used in the construction of
      * XMLParseExceptions, which know nothing about encodings, there is
@@ -123,5 +139,4 @@ public class SimpleLocator implements XMLLocator {
     public String getXMLVersion() {
         return null;
     }
-
 }

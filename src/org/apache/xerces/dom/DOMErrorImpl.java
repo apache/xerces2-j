@@ -100,8 +100,8 @@ public class DOMErrorImpl implements DOMError {
         // assuming DOMLocator wants the *expanded*, not the literal, URI of the doc... - neilg
         return new DOMLocatorImpl(exception.getLineNumber(),
                                   exception.getColumnNumber(),
-                                  exception.getExpandedSystemId()
-                                 );
+                                  exception.getCharacterOffset(),
+                                  exception.getExpandedSystemId());
     } // createDOMLocator()
 
 

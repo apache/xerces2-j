@@ -37,8 +37,9 @@ public class ElementImpl extends DefaultElement {
     
     int line;
     int column;
+    int charOffset;
 
-    public ElementImpl(int line, int column) {
+    public ElementImpl(int line, int column, int offset) {
         row = -1;
         col = -1;
         parentRow = -1;
@@ -46,11 +47,16 @@ public class ElementImpl extends DefaultElement {
         
         this.line = line;
         this.column = column;
+        charOffset = offset;
+    }
+    
+    public ElementImpl(int line, int column) {
+       this(line, column, -1);
     }
     
     
     public ElementImpl(String prefix, String localpart, String rawname,
-                       String uri, int line, int column) {
+                       String uri, int line, int column, int offset) {
     	super(prefix, localpart, rawname, uri, Node.ELEMENT_NODE);
     	row = -1;
         col = -1;
@@ -58,7 +64,13 @@ public class ElementImpl extends DefaultElement {
 
         this.line = line;
         this.column = column;
+        charOffset = offset;
     }
+    
+    public ElementImpl(String prefix, String localpart, String rawname,
+        String uri, int line, int column) {
+		this(prefix, localpart, rawname, uri, line, column, -1);
+	}
 
 
     //
@@ -224,6 +236,11 @@ public class ElementImpl extends DefaultElement {
     /** Returns the column number. */
     public int getColumnNumber() {
         return column;
+    }
+    
+    /** Returns the character offset. */
+    public int getCharacterOffset() {
+    	return charOffset;
     }
 
 }

@@ -134,6 +134,7 @@ public class DOMErrorHandlerWrapper
         if (locator != null) {
             locator.fColumnNumber = exception.getColumnNumber();
             locator.fLineNumber = exception.getLineNumber();
+            locator.fUtf16Offset = exception.getCharacterOffset();
             locator.fUri = exception.getExpandedSystemId();
             locator.fRelatedNode = fCurrentNode;
         }
@@ -169,6 +170,7 @@ public class DOMErrorHandlerWrapper
         if (locator != null) {
             locator.fColumnNumber = exception.getColumnNumber();
             locator.fLineNumber = exception.getLineNumber();
+            locator.fUtf16Offset = exception.getCharacterOffset();
             locator.fUri = exception.getExpandedSystemId();
             locator.fRelatedNode= fCurrentNode;
         }
@@ -213,6 +215,7 @@ public class DOMErrorHandlerWrapper
         if (locator != null) {
             locator.fColumnNumber = exception.getColumnNumber();
             locator.fLineNumber = exception.getLineNumber();
+            locator.fUtf16Offset = exception.getCharacterOffset();
             locator.fUri = exception.getExpandedSystemId();
             locator.fRelatedNode = fCurrentNode;
         }

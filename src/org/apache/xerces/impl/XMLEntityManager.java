@@ -2307,7 +2307,7 @@ public class XMLEntityManager
         public int columnNumber = 1;
 
         // encoding
-
+        
         /** Auto-detected encoding. */
         public String encoding;
         
@@ -2331,10 +2331,16 @@ public class XMLEntityManager
 
         /** Character buffer. */
         public char[] ch = null;
-
+        
         /** Position in character buffer. */
         public int position;
-
+        
+        /** Base character offset for computing absolute character offset. */
+        public int baseCharOffset;
+        
+        /** Start position in character buffer. */
+        public int startPosition;
+        
         /** Count of characters in buffer. */
         public int count;
 
@@ -2414,41 +2420,55 @@ public class XMLEntityManager
             }
             return null;
         }
-
+        
         // return line number of position in most
         // recent external entity
         public int getLineNumber() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
             for (int i=size-1; i>0 ; i--) {
-               ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.lineNumber;
                 }
             }
             return -1;
         }
-
+        
         // return column number of position in most
         // recent external entity
         public int getColumnNumber() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
             for (int i=size-1; i>0 ; i--) {
-               ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.columnNumber;
                 }
             }
             return -1;
         }
-
+        
+        // return character offset of position in most
+        // recent external entity
+        public int getCharacterOffset() {
+            // search for the first external entity on the stack
+            int size = fEntityStack.size();
+            for (int i=size-1; i>0 ; i--) {
+                ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                if (firstExternalEntity.isExternal()) {
+                    return firstExternalEntity.baseCharOffset + (firstExternalEntity.position - firstExternalEntity.startPosition);
+                }
+            }
+            return -1;
+        }
+        
         // return encoding of most recent external entity
         public String getEncoding() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
             for (int i=size-1; i>0 ; i--) {
-               ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.encoding;
                 }
@@ -2461,29 +2481,31 @@ public class XMLEntityManager
             // search for the first external entity on the stack
             int size = fEntityStack.size();
             for (int i=size-1; i>0 ; i--) {
-               ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.xmlVersion;
                 }
             }
             return null;
         }
-
+        
         //
         // Object methods
         //
-
+        
         /** Returns a string representation of this object. */
         public String toString() {
-
+            
             StringBuffer str = new StringBuffer();
             str.append("name=\""+name+'"');
             str.append(",ch=");
             str.append(ch);
-            str.append(",position="+position);
-            str.append(",count="+count);
+            str.append(",position=" + position);
+            str.append(",count=" + count);
+            str.append(",baseCharOffset=" + baseCharOffset);
+            str.append(",startPosition=" + startPosition);
             return str.toString();
-
+            
         } // toString():String
 		
 		public boolean isDeclaredEncoding() {
