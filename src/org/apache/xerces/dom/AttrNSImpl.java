@@ -131,7 +131,7 @@ public class AttrNSImpl
 				if (qname.equals("xmlns")
 					&& (namespaceURI == null
 						|| !namespaceURI.equals(NamespaceContext.XMLNS_URI))
-					|| (namespaceURI.equals(NamespaceContext.XMLNS_URI)
+					|| (namespaceURI!=null && namespaceURI.equals(NamespaceContext.XMLNS_URI)
 						&& !qname.equals("xmlns"))) {
 					String msg =
 						DOMMessageFormatter.formatMessage(

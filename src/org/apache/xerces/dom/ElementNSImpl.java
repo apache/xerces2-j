@@ -119,7 +119,7 @@ public class ElementNSImpl
 		this.namespaceURI = namespaceURI;
 		if (namespaceURI != null) {
 			this.namespaceURI =
-				(namespaceURI.length() == 0) ? null : namespaceURI.intern();
+				(namespaceURI.length() == 0) ? null : namespaceURI;
 		}
 		int colon1 = qname.indexOf(':');
 		int colon2 = qname.lastIndexOf(':');
@@ -131,7 +131,7 @@ public class ElementNSImpl
 			if (qname.equals("xmlns")
 				&& (namespaceURI == null
 					|| !namespaceURI.equals(NamespaceContext.XMLNS_URI))
-				|| (namespaceURI.equals(NamespaceContext.XMLNS_URI)
+				|| (namespaceURI!=null && namespaceURI.equals(NamespaceContext.XMLNS_URI)
 					&& !qname.equals("xmlns"))) {
 				String msg =
 					DOMMessageFormatter.formatMessage(
