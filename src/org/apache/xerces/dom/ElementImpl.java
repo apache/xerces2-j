@@ -687,8 +687,21 @@ public class ElementImpl
 			attributes.setNamedItemNS(newAttr);
 		}
 		else {
-            // change prefix and value
-            ((AttrNSImpl)newAttr).name= (prefix!=null)?(prefix+":"+localName):localName;
+            if (newAttr instanceof AttrNSImpl){
+                // change prefix and value
+                ((AttrNSImpl)newAttr).name= (prefix!=null)?(prefix+":"+localName):localName;
+            }
+            else {
+                // This case may happen if user calls:
+                //      elem.setAttribute("name", "value");
+                //      elem.setAttributeNS(null, "name", "value");
+                // This case is not defined by the DOM spec, we choose
+                // to create a new attribute in this case and remove an old one from the tree
+                // note this might cause events to be propagated or user data to be lost 
+                newAttr = new AttrNSImpl((CoreDocumentImpl)getOwnerDocument(), namespaceURI, qualifiedName, localName);
+                attributes.setNamedItemNS(newAttr);
+            }
+
 			newAttr.setNodeValue(value);
 		}
 
