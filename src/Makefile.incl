@@ -2,7 +2,6 @@
 ifneq ($(findstring WIN,$(shell uname)),)
 # DOS
 CLPATHSEP := ;
-MAKE = make --unix
 else 
 # UNIX
 CLPATHSEP := :
@@ -15,25 +14,22 @@ XERCES_CLASSPATH = $(TOP)/src$(CLPATHSEP)$(TOP)/samples
 CLPATH = $(XERCES_CLASSPATH)$(CLPATHSEP)$(CLASSPATH)
 
 STYLEBOOK_CLPATH = $(XERCES_CLASSPATH)$(CLPATHSEP)$(TOP)/tools/stylebook-1.0-b2.jar$(CLPATHSEP)$(TOP)/tools/xalan-0.19.2.jar$(CLPATHSEP)$(TOP)/tools/xerces-1.0.1.jar
+
 SB_CLPATH = $(STYLEBOOK_CLPATH)$(CLPATHSEP)$(CLASSPATH)
 
 JAR = jar
-JAVAC = javac -classpath "$(CLPATH)"
-JAVA = java -classpath "$(CLPATH)"
-JAVADOC = javadoc -classpath "$(CLPATH)"
-
+JAVAC = javac
 ifeq ($(JDK12BIN),)
-JAVA12 = java -classpath "$(CLPATH)"
-JAVADOC12 = javadoc -classpath "$(CLPATH)"
-STYLEBOOK = java -classpath "$(SB_CLPATH)" org.apache.stylebook.StyleBook
+JAVA12 = java
+JAVADOC12 = javadoc
 else
-JAVA12 = $(JDK12BIN)/java -classpath "$(CLPATH)"
-JAVADOC12 = $(JDK12BIN)/javadoc -classpath "$(CLPATH)"
-STYLEBOOK = $(JDK12BIN)/java -classpath "$(SB_CLPATH)" org.apache.stylebook.StyleBook
+JAVA12 = $(JDK12BIN)/java
+JAVADOC12 = $(JDK12BIN)/javadoc
 endif
+STYLEBOOK = $(JAVA12) -classpath "$(SB_CLPATH)" org.apache.stylebook.StyleBook
 
 MKDIR = mkdir -p 
-RM = -rm 
+RM = -rm -f
 CP = cp
 MV = mv
 
@@ -74,3 +70,31 @@ SRCTARFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.tar
 
 BINJARFILE = ${PRODUCTNAME}-J-bin.${PRODUCTVERSION_DOT}.jar
 SRCJARFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.jar
+
+# Common rules
+
+.SUFFIXES: .class .java
+
+.java.class:
+	${JAVAC} -classpath "$(CLPATH)" $<
+
+all:: dirs compile 
+
+compile:: ${TARGETS}
+
+clean:: cleandirs
+	@$(RM) *.class
+
+dirs::
+	@if [ -n "$(DIRS)" ]; \
+	then for i in $(DIRS);do \
+		echo "$(MAKE) -C $$i"; $(MAKE) -C $$i; \
+	     done; \
+	fi
+
+cleandirs::
+	@if [ -n "$(DIRS)" ]; \
+	then for i in $(DIRS);do \
+		echo "$(MAKE) -C $$i clean"; $(MAKE) -C $$i clean; \
+	     done; \
+	fi

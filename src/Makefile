@@ -1,39 +1,16 @@
+# Makefile for directory .
+
+TARGETS =
+DIRS = org
+
 TOP = ..
 include $(TOP)/src/Makefile.incl
-# Makefile for directory .
-#
-# This makefile depends on the following environment variables
-# already being defined:
-#
-#   JAVAC   Java compiler (with options)
-#   RM      Host delete file command (with options)
-#
-# In addition, the CLASSPATH environment variable must
-# include the absolute path of the base source directory.
-
-TARGETS=
-
-all: dirs compile 
-
-dirs:
-	${MAKE} -C org
-
-compile: ${TARGETS}
-
-.SUFFIXES:
-
-.SUFFIXES: .class .java
-
-.java.class:
-	${JAVAC} $<
-
-clean:
-	${MAKE} -C org clean
 
 apidocs: ../docs/apiDocs/index.html
 ../docs/apiDocs/index.html: classfiles_updated
 
-	$(JAVADOC12) -windowtitle "Xerces ${PRODUCTVERSION_DOT} API" \
+	$(JAVADOC12) -classpath "$(CLPATH)" \
+		-windowtitle "Xerces ${PRODUCTVERSION_DOT} API" \
 		-splitindex -header "Xerces ${PRODUCTVERSION_DOT}" \
 		-version  \
 		-d ../docs/apiDocs ${PACKAGES}

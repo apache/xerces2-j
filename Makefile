@@ -1,9 +1,11 @@
+# Top Makefile
+
+all:: compile jars docs apidocs package
+
 TOP = .
 include $(TOP)/src/Makefile.incl
 
-all: compile jars docs apidocs package
-
-compile: compile_src compile_samples
+compile:: compile_src compile_samples
 package: package_bin package_src 
 
 compile_src:
@@ -60,7 +62,7 @@ package_src: ./source/src/Makefile
 	$(JAR) cvfM ${SRCZIPFILE} xerces-${PRODUCTVERSION} 
 	$(MV) xerces-${PRODUCTVERSION} source
 
-clean:
+clean::
 	${MAKE} -C src clean
 	${MAKE} -C samples clean
 	${RM} -rf bin class source docs/apiDocs docs/html

@@ -1,15 +1,4 @@
-TOP = ../../../..
-include $(TOP)/src/Makefile.incl
 # Makefile for directory ./org/w3c/dom
-#
-# This makefile depends on the following environment variables
-# already being defined:
-#
-#   JAVAC   Java compiler (with options)
-#   RM      Host delete file command (with options)
-#
-# In addition, the CLASSPATH environment variable must
-# include the absolute path of the base source directory.
 
 TARGETS=\
 	Attr.class\
@@ -31,28 +20,7 @@ TARGETS=\
 	ProcessingInstruction.class\
 	Text.class
 
-all: dirs compile
+DIRS = events html traversal range
 
-dirs:
-	${MAKE} -C events
-	${MAKE} -C html
-	${MAKE} -C traversal
-	${MAKE} -C range
-
-compile: ${TARGETS}
-
-.SUFFIXES:
-
-.SUFFIXES: .class .java
-
-.java.class:
-	${JAVAC} $<
-	touch ../../../../src/classfiles_updated
-
-clean:
-	${RM} *.class
-	${MAKE} -C events clean
-	${MAKE} -C html clean
-	${MAKE} -C traversal clean
-	${MAKE} -C range clean
-
+TOP = ../../../..
+include $(TOP)/src/Makefile.incl

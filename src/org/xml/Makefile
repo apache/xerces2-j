@@ -1,34 +1,9 @@
-TOP = ../../..
-include $(TOP)/src/Makefile.incl
 # Makefile for directory ./org/xml
-#
-# This makefile depends on the following environment variables
-# already being defined:
-#
-#   JAVAC   Java compiler (with options)
-#   RM      Host delete file command (with options)
-#
-# In addition, the CLASSPATH environment variable must
-# include the absolute path of the base source directory.
 
 TARGETS=
 
-all: dirs compile
 
-dirs:
-	${MAKE} -C sax
+DIRS = sax
 
-compile: ${TARGETS}
-
-.SUFFIXES:
-
-.SUFFIXES: .class .java
-
-.java.class:
-	${JAVAC} $<
-
-	touch ../../../src/classfiles_updated
-
-clean:
-	${MAKE} -C sax clean
-
+TOP = ../../..
+include $(TOP)/src/Makefile.incl
