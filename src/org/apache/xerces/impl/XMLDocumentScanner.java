@@ -176,9 +176,6 @@ public class XMLDocumentScanner
     /** Debug content dispatcher scanning. */
     private static final boolean DEBUG_CONTENT_SCANNING = false;
 
-    /** Debug attribute entities. */
-    private static final boolean DEBUG_ATTR_ENTITIES = false;
-
     //
     // Data
     //
@@ -196,9 +193,6 @@ public class XMLDocumentScanner
     /** Entity stack. */
     protected int[] fEntityStack = new int[4];
 
-    /** Entity depth. */
-    protected int fEntityDepth;
-
     /** True if we started some markup. */
     protected boolean fInMarkup;
 
@@ -210,9 +204,6 @@ public class XMLDocumentScanner
     
     /** Standalone. */
     protected boolean fStandalone;
-
-    /** Scanning attribute. */
-    protected boolean fScanningAttribute;
 
     /** Scanning DTD. */
     protected boolean fScanningDTD;
@@ -227,12 +218,6 @@ public class XMLDocumentScanner
 
     /** Element stack. */
     protected ElementStack fElementStack = new ElementStack();
-
-    /** Attribute entity stack. */
-    protected AttrEntityStack fAttributeEntityStack = new AttrEntityStack();
-
-    /** Attribute value offset. */
-    protected int fAttributeOffset;
 
     // features
 
@@ -270,31 +255,15 @@ public class XMLDocumentScanner
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
 
-    /** String buffer. */
-    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
-
     /** External entity. */
     private XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
 
     /** Pseudo-attribute values. */
     private String[] fPseudoAttributeValues = new String[3];
 
+    private XMLString fLiteral = new XMLString();
+
     // symbols
-
-    /** Symbol: "amp". */
-    private String fAmpSymbol;
-
-    /** Symbol: "lt". */
-    private String fLtSymbol;
-
-    /** Symbol: "gt". */
-    private String fGtSymbol;
-
-    /** Symbol: "quot". */
-    private String fQuotSymbol;
-
-    /** Symbol: "apos". */
-    private String fAposSymbol;
 
     /** Symbol: "CDATA". */
     private String fCDATASymbol;
@@ -365,7 +334,6 @@ public class XMLDocumentScanner
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
 
         // initialize vars
-        fEntityDepth = 0;
         fInMarkup = false;
         fElementDepth = 0;
         fCurrentElement = null;
@@ -375,11 +343,6 @@ public class XMLDocumentScanner
         fScanningDTD = false;
 
         // save built-in entity names
-        fAmpSymbol = fSymbolTable.addSymbol("amp");
-        fLtSymbol = fSymbolTable.addSymbol("lt");
-        fGtSymbol = fSymbolTable.addSymbol("gt");
-        fQuotSymbol = fSymbolTable.addSymbol("quot");
-        fAposSymbol = fSymbolTable.addSymbol("apos");
         fCDATASymbol = fSymbolTable.addSymbol("CDATA");
 
         // setup dispatcher
@@ -462,25 +425,19 @@ public class XMLDocumentScanner
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
 
+        super.startEntity(name, publicId, systemId, encoding);
+
         // keep track of this entity
-        if (fEntityDepth == fEntityStack.length) {
+        if (fEntityDepth > fEntityStack.length) {
             int[] entityarray = new int[fEntityStack.length * 2];
             System.arraycopy(fEntityStack, 0, entityarray, 0, fEntityStack.length);
             fEntityStack = entityarray;
         }
-        fEntityStack[fEntityDepth++] = fElementDepth;
+        fEntityStack[fEntityDepth] = fElementDepth;
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
             setScannerState(SCANNER_STATE_TEXT_DECL);
-        }
-
-        // keep track of entities appearing in attribute values
-        if (fScanningAttribute) {
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** pushAttrEntity("+name+','+fAttributeOffset+')');
-            }
-            fAttributeEntityStack.pushAttrEntity(name, fAttributeOffset);
         }
 
         // call handler
@@ -507,18 +464,12 @@ public class XMLDocumentScanner
      */
     public void endEntity(String name) throws SAXException {
 
+        super.endEntity(name);
+
         // make sure elements are balanced
-        if (fElementDepth != fEntityStack[--fEntityDepth]) {
+        if (fElementDepth != fEntityStack[fEntityDepth]) {
             reportFatalError("ElementEntityMismatch",
                              new Object[]{fCurrentElement.rawname});
-        }
-
-        // keep track of entities appearing in attribute values
-        if (fScanningAttribute) {
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** popAttrEntity("+fAttributeOffset+") \""+name+'"');
-            }
-            fAttributeEntityStack.popAttrEntity(fAttributeOffset);
         }
 
         // make sure markup is properly balanced
@@ -877,7 +828,6 @@ public class XMLDocumentScanner
      * <p>
      * <pre>
      * [41] Attribute ::= Name Eq AttValue
-     * [10] AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"
      * </pre> 
      * <p>
      * <strong>Note:</strong> This method assumes that the next 
@@ -908,151 +858,13 @@ public class XMLDocumentScanner
         }
         fEntityScanner.skipSpaces();
 
-        // quote
-        int quote = fEntityScanner.peekChar();
-        if (quote != '\'' && quote != '"') {
-            reportFatalError("OpenQuoteExpected",
-                             new Object[]{fAttributeQName.rawname});
-        }
-        fEntityScanner.scanChar();
-        int entityDepth = fEntityDepth;
-
         // content
         attributes.addAttribute(fAttributeQName, fCDATASymbol, null);
-        XMLString value = fString;
-        int c = fEntityScanner.scanLiteral(quote, fString);
-        if (c != quote) {
-            fScanningAttribute = true;
-            int attrIndex = attributes.getLength() - 1;
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** reset attribute entity stack");
-            }
-            fAttributeEntityStack.reset(attributes, attrIndex);
-            fAttributeOffset = 0;
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** set attribute offset: "+fAttributeOffset);
-            }
-            fStringBuffer2.clear();
-            do {
-                fStringBuffer2.append(fString);
-                fAttributeOffset += fString.length;
-                if (DEBUG_ATTR_ENTITIES) {
-                    System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                }
-                if (c == '&') {
-                    fEntityScanner.skipChar('&');
-                    if (fEntityScanner.skipChar('#')) {
-                        int ch = scanCharReferenceValue(fStringBuffer2);
-                        if (ch != -1) {
-                            fAttributeOffset++;
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
-                        }
-                    }
-                    else {
-                        String entityName = fEntityScanner.scanName();
-                        if (entityName == null) {
-                            reportFatalError("NameRequiredInReference", null);
-                        }
-                        if (!fEntityScanner.skipChar(';')) {
-                            reportFatalError("SemicolonRequiredInReference",
-                                             null);
-                        }
-                        if (entityName == fAmpSymbol) {
-                            fStringBuffer2.append('&');
-                            fAttributeOffset++;
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
-                        }
-                        else if (entityName == fAposSymbol) {
-                            fStringBuffer2.append('\'');
-                            fAttributeOffset++;
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
-                        }
-                        else if (entityName == fLtSymbol) {
-                            fStringBuffer2.append('<');
-                            fAttributeOffset++;
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
-                        }
-                        else if (entityName == fGtSymbol) {
-                            fStringBuffer2.append('>');
-                            fAttributeOffset++;
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
-                        }
-                        else if (entityName == fQuotSymbol) {
-                            fStringBuffer2.append('"');
-                            fAttributeOffset++;
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
-                        }
-                        else {
-                            if (fEntityManager.isExternalEntity(entityName)) {
-                                reportFatalError("ReferenceToExternalEntity",
-                                                 new Object[] { entityName });
-                            }
-                            else {
-                                fEntityManager.startEntity(entityName, false);
-                            }
-                        }
-                    }
-                }
-                else if (c == '<') {
-                    reportFatalError("LessthanInAttValue",
-                                     new Object[] { null,
-                                                    fAttributeQName.rawname });
-                }
-                else if (c == '%') {
-                    fStringBuffer2.append((char)fEntityScanner.scanChar());
-                }
-                else if (c != -1 && XMLChar.isHighSurrogate(c)) {
-                    scanSurrogates(fStringBuffer2);
-                }
-                else if (c != -1 && XMLChar.isInvalid(c)) {
-                    reportFatalError("InvalidCharInAttValue",
-                                     new Object[] {Integer.toString(c, 16)});
-                    fEntityScanner.scanChar();
-                }
-                while (true) {
-                    c = fEntityScanner.scanLiteral(quote, fString);
-                    if (c != quote || entityDepth == fEntityDepth) {
-                        break;
-                    }
-                    fStringBuffer2.append(fString);
-                    fStringBuffer2.append((char)fEntityScanner.scanChar());
-                }
-            } while (c != quote);
-            fAttributeOffset += fString.length;
-            fStringBuffer2.append(fString);
-            value = fStringBuffer2;
-            int attrEntityCount = fAttributeEntityStack.size();
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** add remaining attribute entities: "+attrEntityCount);
-            }
-            for (int i = 0; i < attrEntityCount; i++) {
-                if (DEBUG_ATTR_ENTITIES) {
-                    System.out.println("*** popAttrEntity("+fAttributeOffset+')');
-                }
-                fAttributeEntityStack.popAttrEntity(fAttributeOffset);
-            }
-            fScanningAttribute = false;
-        }
-        attributes.setValue(attributes.getLength() - 1, value.toString());
 
-        // quote
-        int cquote = fEntityScanner.scanChar();
-        if (cquote != cquote) {
-            reportFatalError("CloseQuoteExpected",
-                             new Object[]{fAttributeQName.rawname});
-        }
+        scanAttributeValue(fLiteral, fAttributeQName.rawname,
+                           attributes, attributes.getLength() - 1);
+
+        attributes.setValue(attributes.getLength() - 1, fLiteral.toString());
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
     } // scanAttribute(XMLAttributes)
@@ -1491,91 +1303,6 @@ public class XMLDocumentScanner
         } // clear()
 
     } // class ElementStack
-
-    /**
-     * A stack for keeping track of entity offsets and lengths in
-     * attribute values. This stack adds the attribute entities to
-     * a specified XMLAttribute object.
-     *
-     * @author Andy Clark, IBM
-     */
-    protected static class AttrEntityStack {
-
-        //
-        // Data
-        //
-
-        /** Attributes. */
-        protected XMLAttributes fAttributes;
-
-        /** The index of the attribute where to add entities. */
-        protected int fAttributeIndex;
-
-        // stack information
-
-        /** The size of the stack. */
-        protected int fSize;
-
-        /** The entity indexes on the stack. */
-        protected int[] fEntityIndexes = new int[4];
-
-        //
-        // Public methods
-        //
-
-        /** 
-         * Resets the attribute entity stack and sets the attributes
-         * object to add entities to.
-         *
-         * @param attributes The attributes object where new attribute
-         *                   entities are added.
-         * @param attrIndex  The index of the attribute where to add
-         *                   entities.
-         */
-        public void reset(XMLAttributes attributes, int attrIndex) {
-            fAttributes = attributes;
-            fAttributeIndex = attrIndex;
-            fSize = 0;
-        } // reset(XMLAttributes,int)
-
-        /** Returns the size of the stack. */
-        public int size() {
-            return fSize;
-        } // size():int
-
-        /** 
-         * Pushes a new entity onto the stack. 
-         *
-         * @param entityName   The entity name.
-         * @param entityOffset The entity offset.
-         */
-        public void pushAttrEntity(String entityName, int entityOffset) {
-            if (fSize == fEntityIndexes.length) {
-                int[] indexarray = new int[fEntityIndexes.length * 2];
-                System.arraycopy(fEntityIndexes, 0, indexarray, 0, fEntityIndexes.length);
-                fEntityIndexes = indexarray;
-            }
-            fEntityIndexes[fSize] = 
-                fAttributes.addAttributeEntity(fAttributeIndex, entityName, 
-                                               entityOffset, -1);
-            fSize++;
-        } // pushAttrEntity(String,int)
-
-        /**
-         * Pops the current entity off of the stack and adds it to the
-         * list of entities for the attribute in the XMLAttributes object.
-         *
-         * @param endOffset The entity's ending offset.
-         */
-        public void popAttrEntity(int endOffset) {
-            fSize--;
-            int entityIndex = fEntityIndexes[fSize];
-            int offset = fAttributes.getEntityOffset(fAttributeIndex, entityIndex);
-            int length = endOffset - offset;
-            fAttributes.setEntityLength(fAttributeIndex, entityIndex, length);
-        } // popAttrEntity(int)
-
-    } // class AttrEntityStack
 
     /** 
      * This interface defines an XML "event" dispatching model. Classes

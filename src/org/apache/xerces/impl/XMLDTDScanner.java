@@ -65,6 +65,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.GrammarPool;
 
+import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
@@ -143,6 +144,9 @@ public class XMLDTDScanner
 
     private String[] fPseudoAttributeValues = new String[3];
 
+    /** Default attribute */
+    private XMLAttributesImpl fAttributes = new XMLAttributesImpl();
+
     // stack of operators (either '|' or ',') in children content
     private int[] fContentStack = new int[5];
     private int fContentDepth;  // size of the stack
@@ -155,17 +159,9 @@ public class XMLDTDScanner
     private int fExtEntityDepth;// number of opened external entities
     private int fIncludeSectDepth; // number of opened include sections
 
-    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
     private XMLString fLiteral = new XMLString();
     private String[] fEnumeration = new String[5];
     private int fEnumerationCount;
-
-    // symbols
-
-    private String fXmlSymbol;
-    private String fXmlSpace;
-    private String fDefault;
-    private String fPreserve;
 
     //
     // Constructors
@@ -313,12 +309,6 @@ public class XMLDTDScanner
         fIncludeSectDepth = 0;
         fMarkUpDepth = 0;
         fPEDepth = 0;
-
-        // save built-in symbols
-        fXmlSymbol = fSymbolTable.addSymbol("xml");
-        fXmlSpace = fSymbolTable.addSymbol("xml:space");
-        fDefault = fSymbolTable.addSymbol("default");
-        fPreserve = fSymbolTable.addSymbol("preserve");
 
     } // reset
 
@@ -700,8 +690,7 @@ public class XMLDTDScanner
         skipSeparator(false, !scanningInternalSubset());
         // end
         if (!fEntityScanner.skipChar('>')) {
-            reportFatalError("ElementDeclUnterminated",
-                             new Object[]{name});
+            reportFatalError("ElementDeclUnterminated", new Object[]{name});
         }
         fMarkUpDepth--;
 
@@ -1164,7 +1153,7 @@ public class XMLDTDScanner
                 }
             }
             // AttValue 
-            scanLiteral(defaultVal, false);
+            scanAttributeValue(defaultVal, atName, fAttributes, 0);
         }
         return defaultType;
 
@@ -1231,8 +1220,7 @@ public class XMLDTDScanner
             while (true) {
                 String peName = fEntityScanner.scanName();
                 if (peName == null) {
-                    reportFatalError("NameRequiredInPEReference",
-                                     null);
+                    reportFatalError("NameRequiredInPEReference", null);
                 }
                 else if (!fEntityScanner.skipChar(';')) {
                     reportFatalError("SemicolonRequiredInPEReference",
@@ -1257,8 +1245,7 @@ public class XMLDTDScanner
         // name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            reportFatalError("MSG_ENTITY_NAME_REQUIRED_IN_ENTITYDECL",
-                             null);
+            reportFatalError("MSG_ENTITY_NAME_REQUIRED_IN_ENTITYDECL", null);
         }
 
         // spaces
@@ -1324,8 +1311,7 @@ public class XMLDTDScanner
 
         // end
         if (!fEntityScanner.skipChar('>')) {
-            reportFatalError("EntityDeclUnterminated",
-                             new Object[]{name});
+            reportFatalError("EntityDeclUnterminated", new Object[]{name});
         }
         fMarkUpDepth--;
 
@@ -1427,8 +1413,7 @@ public class XMLDTDScanner
 
         // end
         if (!fEntityScanner.skipChar('>')) {
-            reportFatalError("NotationDeclUnterminated",
-                             new Object[]{name});
+            reportFatalError("NotationDeclUnterminated", new Object[]{name});
         }
         fMarkUpDepth--;
 
@@ -1467,8 +1452,7 @@ public class XMLDTDScanner
             }
             skipSeparator(false, !scanningInternalSubset());
             if (!fEntityScanner.skipChar('[')) {
-                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
-                                 null);
+                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
             }
             fIncludeSectDepth++;
             // just stop there and go back to the main loop
@@ -1480,8 +1464,7 @@ public class XMLDTDScanner
             }
             skipSeparator(false, !scanningInternalSubset());
             if (!fEntityScanner.skipChar('[')) {
-                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
-                                 null);
+                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
             }
             int initialDepth = ++fIncludeSectDepth;
             while (true) {
@@ -1524,8 +1507,7 @@ public class XMLDTDScanner
             }
         }
         else {
-            reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
-                             null);
+            reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
         }
     } // scanConditionalSect()
 
@@ -1584,16 +1566,14 @@ public class XMLDTDScanner
                 }
                 else {
                     fMarkUpDepth--;
-                    reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
-                                     null);
+                    reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
                 }
             }
             else if (fIncludeSectDepth > 0 && fEntityScanner.skipChar(']')) {
                 // end of conditional section?
                 if (!fEntityScanner.skipChar(']')
                     || !fEntityScanner.skipChar('>')) {
-                    reportFatalError("IncludeSectUnterminated",
-                                     null);
+                    reportFatalError("IncludeSectUnterminated", null);
                 }
                 // call handler
                 if (fDTDHandler != null) {
@@ -1612,8 +1592,7 @@ public class XMLDTDScanner
                 // simply skip
             }
             else {
-                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
-                                 null);
+                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
             }
             skipSeparator(false, true);
         }
@@ -1647,8 +1626,7 @@ public class XMLDTDScanner
         while (true) {
             String name = fEntityScanner.scanName();
             if (name == null) {
-                reportFatalError("NameRequiredInPEReference",
-                                 null);
+                reportFatalError("NameRequiredInPEReference", null);
             }
             else if (!fEntityScanner.skipChar(';')) {
                 reportFatalError("SemicolonRequiredInPEReference",
@@ -1666,8 +1644,7 @@ public class XMLDTDScanner
     {
         int quote = fEntityScanner.scanChar();
         if (quote != '\'' && quote != '"') {
-            reportFatalError("OpenQuoteMissingInDecl", 
-                             null);
+            reportFatalError("OpenQuoteMissingInDecl", null);
         }
         XMLString value = fString;
         if (fEntityScanner.scanLiteral(quote, fString) != quote) {
@@ -1729,8 +1706,7 @@ public class XMLDTDScanner
         }
         literal.setValues(value);
         if (!fEntityScanner.skipChar(quote)) {
-            reportFatalError("REVISIT: CloseQuoteMissingInDecl", 
-                             null);
+            reportFatalError("CloseQuoteMissingInDecl", null);
         }
     }
 
