@@ -94,6 +94,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         fDepth = -1;
         fLocator = locator;
         fNamespaceContext = namespaceContext;
+        schemaDOM.setDocumentURI(locator.getExpandedSystemId());
     } // startDocument(XMLLocator,String,NamespaceContext, Augmentations)
 
     /**

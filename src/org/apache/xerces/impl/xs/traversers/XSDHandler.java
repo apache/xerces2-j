@@ -188,6 +188,16 @@ public class XSDHandler {
     private String emptyString2Null(String ns) {
         return ns == XMLSymbols.EMPTY_STRING ? null : ns;
     }
+    private String doc2SystemId(Document doc) {
+        String documentURI = null;
+        /**
+         * REVISIT: Casting until DOM Level 3 interfaces are available. -- mrglavas
+         */
+        if (doc instanceof org.apache.xerces.impl.xs.opti.SchemaDOM) {
+            documentURI = ((org.apache.xerces.impl.xs.opti.SchemaDOM) doc).getDocumentURI();
+        }
+        return documentURI != null ? documentURI : (String) fDoc2SystemId.get(doc);
+    }
 
     // This vector stores strings which are combinations of the
     // publicId and systemId of the inputSource corresponding to a
@@ -670,7 +680,7 @@ public class XSDHandler {
 
                 fSchemaGrammarDescription.reset();
                 fSchemaGrammarDescription.setContextType(XSDDescription.CONTEXT_IMPORT);
-                fSchemaGrammarDescription.setBaseSystemId((String)fDoc2SystemId.get(schemaRoot));
+                fSchemaGrammarDescription.setBaseSystemId(doc2SystemId(schemaRoot));
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
 
@@ -740,7 +750,7 @@ public class XSDHandler {
                 }
                 fSchemaGrammarDescription.reset();
                 fSchemaGrammarDescription.setContextType(refType);
-                fSchemaGrammarDescription.setBaseSystemId((String)fDoc2SystemId.get(schemaRoot));
+                fSchemaGrammarDescription.setBaseSystemId(doc2SystemId(schemaRoot));
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(callerTNS);
                 newSchemaRoot = resolveSchema(fSchemaGrammarDescription, mustResolve, child);

@@ -42,6 +42,8 @@ import org.w3c.dom.DOMException;
 public class DefaultDocument extends NodeImpl
                              implements Document {
 
+    private String fDocumentURI = null;
+    
     // default constructor
     public DefaultDocument() {
     }
@@ -235,9 +237,10 @@ public class DefaultDocument extends NodeImpl
      * over this attribute.
      * @since DOM Level 3
      */
-    public String getDocumentURI(){
-        return null;
+    public String getDocumentURI() {
+        return fDocumentURI;
     }
+    
     /**
      * The location of the document or <code>null</code> if undefined.
      * <br>Beware that when the <code>Document</code> supports the feature 
@@ -245,8 +248,8 @@ public class DefaultDocument extends NodeImpl
      * over this attribute.
      * @since DOM Level 3
      */
-    public void setDocumentURI(String documentURI){
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    public void setDocumentURI(String documentURI) {
+        fDocumentURI = documentURI;
     }
 
     /** DOM Level 3*/
