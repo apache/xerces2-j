@@ -50,10 +50,8 @@
     uncompressed files.  But if you still need a smaller jar, and
     don&apos;t need things like support for XML Schema or the WML/HTML
     DOM implementations that Xerces provides, then look at the
-    <code>dtdjars</code> and <code>tinyjars</code> targets in our
-    buildfile.  <code>tinyjars</code> will generate a
-    <code>xercesImpl.jar</code> fifty percent smaller than the one we
-    distribute.
+    <code>dtdjars</code> target in our
+    buildfile. 
     </p>
   </a>
  </faq>
