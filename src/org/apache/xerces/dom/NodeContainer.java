@@ -118,31 +118,31 @@ public abstract class NodeContainer
 
     static {
 
-		kidOK = new int[13];
-		
-		kidOK[DOCUMENT_NODE] =
-			1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
-			1 << COMMENT_NODE | 1 << DOCUMENT_TYPE_NODE;
+        kidOK = new int[13];
+
+        kidOK[DOCUMENT_NODE] =
+            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
+            1 << COMMENT_NODE | 1 << DOCUMENT_TYPE_NODE;
 			
-		kidOK[DOCUMENT_FRAGMENT_NODE] =
-		kidOK[ENTITY_NODE] =
-		kidOK[ENTITY_REFERENCE_NODE] =
-		kidOK[ELEMENT_NODE] =
-			1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
-			1 << COMMENT_NODE | 1 << TEXT_NODE |
-			1 << CDATA_SECTION_NODE | 1 << ENTITY_REFERENCE_NODE ;
+        kidOK[DOCUMENT_FRAGMENT_NODE] =
+        kidOK[ENTITY_NODE] =
+        kidOK[ENTITY_REFERENCE_NODE] =
+        kidOK[ELEMENT_NODE] =
+            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
+            1 << COMMENT_NODE | 1 << TEXT_NODE |
+            1 << CDATA_SECTION_NODE | 1 << ENTITY_REFERENCE_NODE ;
 			
 			
-		kidOK[ATTRIBUTE_NODE] =
-			1 << TEXT_NODE | 1 << ENTITY_REFERENCE_NODE;
+        kidOK[ATTRIBUTE_NODE] =
+            1 << TEXT_NODE | 1 << ENTITY_REFERENCE_NODE;
 			
         kidOK[DOCUMENT_TYPE_NODE] =
-		kidOK[PROCESSING_INSTRUCTION_NODE] =
-		kidOK[COMMENT_NODE] =
-		kidOK[TEXT_NODE] =
-		kidOK[CDATA_SECTION_NODE] =
-		kidOK[NOTATION_NODE] =
-			0;
+        kidOK[PROCESSING_INSTRUCTION_NODE] =
+        kidOK[COMMENT_NODE] =
+        kidOK[TEXT_NODE] =
+        kidOK[CDATA_SECTION_NODE] =
+        kidOK[NOTATION_NODE] =
+            0;
 
     } // static
 
@@ -227,10 +227,10 @@ public abstract class NodeContainer
     	
         // Then, if deep, clone the kids too.
     	if (deep) {
-    		for (NodeImpl child = (NodeImpl)getFirstChild();
-    			child != null;
-    			child = (NodeImpl)child.getNextSibling()) {
-    			newnode.appendChild(child.cloneNode(true));
+            for (NodeImpl child = (NodeImpl)getFirstChild();
+                 child != null;
+                 child = (NodeImpl)child.getNextSibling()) {
+                newnode.appendChild(child.cloneNode(true));
             }
         }
 
@@ -335,45 +335,45 @@ public abstract class NodeContainer
      * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR) if this node is
      * read-only.
      */
-	public Node insertBefore(Node newChild, Node refChild) 
-		throws DOMException {
-		  // Tail-call; optimizer should be able to do good things with.
-		  return internalInsertBefore(newChild,refChild,MUTATION_ALL);
+    public Node insertBefore(Node newChild, Node refChild) 
+        throws DOMException {
+        // Tail-call; optimizer should be able to do good things with.
+        return internalInsertBefore(newChild,refChild,MUTATION_ALL);
     } // insertBefore(Node,Node):Node
      
-	/** NON-DOM INTERNAL: Within DOM actions,we sometimes need to be able
-	 * to control which mutation events are spawned. This version of the
-	 * insertBefore operation allows us to do so. It is not intended
-	 * for use by application programs.
-	 */
+    /** NON-DOM INTERNAL: Within DOM actions,we sometimes need to be able
+     * to control which mutation events are spawned. This version of the
+     * insertBefore operation allows us to do so. It is not intended
+     * for use by application programs.
+     */
     Node internalInsertBefore(Node newChild, Node refChild,int mutationMask) 
         throws DOMException {
 
     	if (readOnly)
-    		throw new DOMExceptionImpl(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
-     	
+            throw new DOMExceptionImpl(
+                        DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                        "DOM001 Modification not allowed");
+
         boolean errorChecking = ownerDocument.errorChecking;
     	if(errorChecking && !(newChild instanceof NodeImpl)
-    		||
-    		!(
-    		  newChild.getOwnerDocument() == ownerDocument
-    		  ||
-    	 	 // SPECIAL-CASE: Document has no owner, but may be the owner.
-    		  ( getNodeType() == Node.DOCUMENT_NODE &&
-    		    newChild.getOwnerDocument() == (Document)this )
-    		) ) {
-    		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "DOM005 Wrong document");
+           ||
+           !(
+             newChild.getOwnerDocument() == ownerDocument
+             ||
+             // SPECIAL-CASE: Document has no owner, but may be the owner.
+             (getNodeType() == Node.DOCUMENT_NODE &&
+               newChild.getOwnerDocument() == (Document)this ))
+           ) {
+            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+                                       "DOM005 Wrong document");
         }
 
         if (syncChildren) {
             synchronizeChildren();
         }
 
-    	// Convert to internal type, to avoid repeated casting
-    	NodeImpl newInternal = (NodeImpl)newChild;
+        // Convert to internal type, to avoid repeated casting
+        NodeImpl newInternal = (NodeImpl)newChild;
 
         if (errorChecking) {
             // Prevent cycles in the tree
@@ -394,119 +394,122 @@ public abstract class NodeContainer
                                            "DOM008 Not found");
             }
         }
-    	
-    	if (newInternal.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
-    		// SLOW BUT SAFE: We could insert the whole subtree without
-    		// juggling so many next/previous pointers. (Wipe out the
-    		// parent's child-list, patch the parent pointers, set the
-    		// ends of the list.) But we know some subclasses have special-
-    		// case behavior they add to insertBefore(), so we don't risk it.
-    		// This approch also takes fewer bytecodes.
+        
+        if (newInternal.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
+            // SLOW BUT SAFE: We could insert the whole subtree without
+            // juggling so many next/previous pointers. (Wipe out the
+            // parent's child-list, patch the parent pointers, set the
+            // ends of the list.) But we know some subclasses have special-
+            // case behavior they add to insertBefore(), so we don't risk it.
+            // This approch also takes fewer bytecodes.
 
-    		// NOTE: If one of the children is not a legal child of this
-    		// node, throw HIERARCHY_REQUEST_ERR before _any_ of the children
-    		// have been transferred. (Alternative behaviors would be to
-    		// reparent up to the first failure point or reparent all those
-    		// which are acceptable to the target node, neither of which is
-    		// as robust. PR-DOM-0818 isn't entirely clear on which it
-    		// recommends?????
+            // NOTE: If one of the children is not a legal child of this
+            // node, throw HIERARCHY_REQUEST_ERR before _any_ of the children
+            // have been transferred. (Alternative behaviors would be to
+            // reparent up to the first failure point or reparent all those
+            // which are acceptable to the target node, neither of which is
+            // as robust. PR-DOM-0818 isn't entirely clear on which it
+            // recommends?????
 
-    		// No need to check kids for right-document; if they weren't,
-    		// they wouldn't be kids of that DocFrag.
-    		for (Node kid = newInternal.getFirstChild(); // Prescan
-    			kid != null;
-    			kid = kid.getNextSibling()) {
+            // No need to check kids for right-document; if they weren't,
+            // they wouldn't be kids of that DocFrag.
+            for (Node kid = newInternal.getFirstChild(); // Prescan
+                 kid != null;
+                 kid = kid.getNextSibling()) {
 
-    		    if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
-        		  	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-        		  	                           "DOM006 Hierarchy request error");
+                if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
+                    throw new DOMExceptionImpl(
+                                           DOMException.HIERARCHY_REQUEST_ERR, 
+                                           "DOM006 Hierarchy request error");
                 }
-    		}		  	
-
-    		while (newInternal.hasChildNodes())	{
-    		    insertBefore(newInternal.getFirstChild(), refChild);
             }
-    	}
-    	
-    	else if (errorChecking && !ownerDocument.isKidOK(this, newInternal)) {
-    		throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-    		                           "DOM006 Hierarchy request error");
+
+            while (newInternal.hasChildNodes()) {
+                insertBefore(newInternal.getFirstChild(), refChild);
+            }
         }
-    	else {
-		    EnclosingAttr enclosingAttr=null;
-		    if(MUTATIONEVENTS && (mutationMask&MUTATION_AGGREGATE)!=0)
-			{
-			    // MUTATION PREPROCESSING
-			    // No direct pre-events, but if we're within the scope 
-			    // of an Attr and DOMAttrModified was requested,
-        	    // we need to preserve its previous value.
-		        LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+        else if (errorChecking && !ownerDocument.isKidOK(this, newInternal)) {
+            throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+                                       "DOM006 Hierarchy request error");
+        }
+        else {
+            EnclosingAttr enclosingAttr=null;
+            if(MUTATIONEVENTS && (mutationMask&MUTATION_AGGREGATE)!=0)
+            {
+                // MUTATION PREPROCESSING
+                // No direct pre-events, but if we're within the scope 
+    	        // of an Attr and DOMAttrModified was requested,
+                // we need to preserve its previous value.
+                LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
                 if(lc.captures+lc.bubbles+lc.defaults>0)
                 {
                     enclosingAttr=getEnclosingAttr();
                 }
-			}
-    	    
-    		Node oldparent = newInternal.getParentNode();
-    		if (oldparent != null) {
-    			oldparent.removeChild(newInternal);
             }
 
-    		NodeImpl prev;
-    		// Find the node we're inserting after, if any (null if
-    		// inserting to head of list)
-    		prev = (refChild == null)
+            Node oldparent = newInternal.getParentNode();
+            if (oldparent != null) {
+                oldparent.removeChild(newInternal);
+            }
+
+            NodeImpl prev;
+            // Find the node we're inserting after, if any (null if
+            // inserting to head of list)
+            prev = (refChild == null)
                    ? lastChild : ((NodeImpl)refChild).previousSibling;
 
-    		// Attach up
-    		newInternal.ownerNode = this;
+            // Attach up
+            newInternal.ownerNode = this;
 
-    		// Attach after
-    		newInternal.previousSibling = prev;
-    		if (prev == null) {
-    		    firstChild = newInternal;
+            // Attach after
+            newInternal.previousSibling = prev;
+            if (prev == null) {
+                firstChild = newInternal;
             }
             else {
-    		    prev.nextSibling = newInternal;
+                prev.nextSibling = newInternal;
             }
 
-    		// Attach before
-    		newInternal.nextSibling = (NodeImpl)refChild;
-    		if (refChild == null) {
-    		    lastChild=newInternal;
+            // Attach before
+            newInternal.nextSibling = (NodeImpl)refChild;
+            if (refChild == null) {
+                lastChild=newInternal;
             }
             else {
-    		    ((NodeImpl)refChild).previousSibling = newInternal;
+                ((NodeImpl)refChild).previousSibling = newInternal;
             }
 
-    	    changed();
-    	
-			if(MUTATIONEVENTS)
-			{
-			    // MUTATION POST-EVENTS:
-			    // "Local" events (non-aggregated)
-			    if( (mutationMask&MUTATION_LOCAL) != 0)
-			    {
-    			    // New child is told it was inserted, and where
-                    LCount lc=LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
+            changed();
+
+            if(MUTATIONEVENTS)
+            {
+                // MUTATION POST-EVENTS:
+                // "Local" events (non-aggregated)
+                if( (mutationMask&MUTATION_LOCAL) != 0)
+                {
+                    // New child is told it was inserted, and where
+                    LCount lc =
+                        LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
                     if(lc.captures+lc.bubbles+lc.defaults>0)
                     {
-                        MutationEvent me=
-                            new MutationEventImpl();
-                            //?????ownerDocument.createEvent("MutationEvents");
-                        me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED,true,false,
-                            this,null,null,null);
+                        MutationEvent me= new MutationEventImpl();
+                        //?????ownerDocument.createEvent("MutationEvents");
+                        me.initMutationEvent(
+                                          MutationEventImpl.DOM_NODE_INSERTED,
+                                          true,false,this,null,null,null);
                         newInternal.dispatchEvent(me);
                     }
-		    	    
-			        // If within the Document, tell the subtree it's been added
-			        // to the Doc.
-                    lc=LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED_INTO_DOCUMENT);
+
+                    // If within the Document, tell the subtree it's been added
+                    // to the Doc.
+                    lc=LCount.lookup(
+                            MutationEventImpl.DOM_NODE_INSERTED_INTO_DOCUMENT);
                     if(lc.captures+lc.bubbles+lc.defaults>0)
                     {
                         NodeImpl eventAncestor=this;
                         if(enclosingAttr!=null) 
-                            eventAncestor=(NodeImpl)(enclosingAttr.node.getOwnerElement());
+                            eventAncestor=
+                              (NodeImpl)(enclosingAttr.node.getOwnerElement());
                         if(eventAncestor!=null) // Might have been orphan Attr
                         {
                             NodeImpl p=eventAncestor;
@@ -516,33 +519,32 @@ public abstract class NodeContainer
                                 // In this context, ancestry includes
                                 // walking back from Attr to Element
                                 if(p.getNodeType()==ATTRIBUTE_NODE)
-                                    p=(ElementImpl)( ((AttrImpl)p).getOwnerElement() );
+                                    p=(ElementImpl)
+                                        ((AttrImpl)p).getOwnerElement();
                                 else
                                     p=p.ownerNode;
                             }
                             if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                             {
-                                MutationEvent me=
-                                    new MutationEventImpl();
-                                    //?????ownerDocument.createEvent("MutationEvents");
-                                me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED_INTO_DOCUMENT,
-                                    false,false,
-                                    null,null,null,null);
+                                MutationEvent me= new MutationEventImpl();
+                                //??ownerDocument.createEvent("MutationEvents")
+                                me.initMutationEvent(MutationEventImpl
+                                              .DOM_NODE_INSERTED_INTO_DOCUMENT,
+                                                     false,false,
+                                                     null,null,null,null);
                                 dispatchEventToSubtree(newInternal,me);
                             }
                         }
-			        }
-			    }  
+                    }
+                }
 
                 // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified
                 // (Common to most kinds of mutation)
                 if( (mutationMask&MUTATION_AGGREGATE) != 0)
                     dispatchAggregateEvents(enclosingAttr);
-			}
-            
-    	}
-    	
-    	return newInternal;
+            }
+        }
+        return newInternal;
 
     } // internalInsertBefore(Node,Node,int):Node
 
@@ -558,59 +560,59 @@ public abstract class NodeContainer
      * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR) if this node is
      * read-only.
      */
-	public Node removeChild(Node oldChild) 
-		throws DOMException {
-		    // Tail-call, should be optimizable
-		    return internalRemoveChild(oldChild,MUTATION_ALL);
-	} // removeChild(Node) :Node
+    public Node removeChild(Node oldChild) 
+        throws DOMException {
+        // Tail-call, should be optimizable
+        return internalRemoveChild(oldChild,MUTATION_ALL);
+    } // removeChild(Node) :Node
      
-	/** NON-DOM INTERNAL: Within DOM actions,we sometimes need to be able
-	 * to control which mutation events are spawned. This version of the
-	 * removeChild operation allows us to do so. It is not intended
-	 * for use by application programs.
-	 */
+    /** NON-DOM INTERNAL: Within DOM actions,we sometimes need to be able
+     * to control which mutation events are spawned. This version of the
+     * removeChild operation allows us to do so. It is not intended
+     * for use by application programs.
+     */
     Node internalRemoveChild(Node oldChild,int mutationMask)
         throws DOMException {
 
-    	if (readOnly) {
-    		throw new DOMExceptionImpl(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+        if (readOnly) {
+            throw new DOMExceptionImpl(
+                DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                "DOM001 Modification not allowed");
         }
-     	
-    	if (ownerDocument.errorChecking && 
+         
+        if (ownerDocument.errorChecking && 
             oldChild != null && oldChild.getParentNode() != this) {
-    		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
-    		                           "DOM008 Not found");
+            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+                                       "DOM008 Not found");
         }
 
-        // call out to any NodeIterators to remove the Node and fix-up the iterator.
+        // call out to any NodeIterators to remove the Node and fix them up
         Enumeration iterators = ownerDocument.getNodeIterators();
         if (iterators != null) {
             while ( iterators.hasMoreElements()) {
-                ((NodeIteratorImpl)iterators.nextElement()).removeNode(oldChild);
+                ((NodeIteratorImpl)iterators.nextElement())
+                    .removeNode(oldChild);
             }
         }
         
         // call out to any Ranges to remove the Node and fix-up the Range.
         Enumeration ranges = ownerDocument.getRanges();
         if (ranges != null) {
-            while ( ranges.hasMoreElements()) {
+            while (ranges.hasMoreElements()) {
                 ((RangeImpl)ranges.nextElement()).removeNode(oldChild);
             }
         }
-    
-        
+
         NodeImpl oldInternal = (NodeImpl) oldChild;
 
-	    EnclosingAttr enclosingAttr=null;
-	    if(MUTATIONEVENTS)
-	    {
-    		// MUTATION PREPROCESSING AND PRE-EVENTS:
-	    	// If we're within the scope of an Attr and DOMAttrModified 
-		    // was requested, we need to preserve its previous value for
-		    // that event.
-		    LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+        EnclosingAttr enclosingAttr=null;
+        if(MUTATIONEVENTS)
+        {
+            // MUTATION PREPROCESSING AND PRE-EVENTS:
+            // If we're within the scope of an Attr and DOMAttrModified 
+            // was requested, we need to preserve its previous value for
+            // that event.
+            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
             if(lc.captures+lc.bubbles+lc.defaults>0)
             {
                 enclosingAttr=getEnclosingAttr();
@@ -622,22 +624,23 @@ public abstract class NodeContainer
                 lc=LCount.lookup(MutationEventImpl.DOM_NODE_REMOVED);
                 if(lc.captures+lc.bubbles+lc.defaults>0)
                 {
-                    MutationEvent me=
-                        new MutationEventImpl();
-                        //?????ownerDocument.createEvent("MutationEvents");
-                    me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,true,false,
-                        this,null,null,null);
+                    MutationEvent me= new MutationEventImpl();
+                    //?????ownerDocument.createEvent("MutationEvents");
+                    me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,
+                                         true,false,this,null,null,null);
                     oldInternal.dispatchEvent(me);
                 }
             
                 // If within Document, child's subtree is informed that it's
                 // losing that status
-                lc=LCount.lookup(MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT);
+                lc=LCount.lookup(
+                             MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT);
                 if(lc.captures+lc.bubbles+lc.defaults>0)
                 {
                     NodeImpl eventAncestor=this;
                     if(enclosingAttr!=null) 
-                        eventAncestor=(NodeImpl)(enclosingAttr.node.getOwnerElement());
+                        eventAncestor=
+                            (NodeImpl) enclosingAttr.node.getOwnerElement();
                     if(eventAncestor!=null) // Might have been orphan Attr
                     {
                         for(NodeImpl p=eventAncestor.ownerNode;
@@ -648,54 +651,54 @@ public abstract class NodeContainer
                         }
                         if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                         {
-                            MutationEvent me=
-                                new MutationEventImpl();
-                                //?????ownerDocument.createEvent("MutationEvents");
-                            me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT,
-                                    false,false,
-                                    null,null,null,null);
+                            MutationEvent me= new MutationEventImpl();
+                            //?????ownerDocument.createEvent("MutationEvents");
+                            me.initMutationEvent(MutationEventImpl
+                                               .DOM_NODE_REMOVED_FROM_DOCUMENT,
+                                                 false,false,
+                                                 null,null,null,null);
                             dispatchEventToSubtree(oldInternal,me);
                         }
                     }
                 }
             }
-		} // End mutation preprocessing
+        } // End mutation preprocessing
 
-    	// Patch tree past oldChild
-    	NodeImpl prev = oldInternal.previousSibling;
-    	NodeImpl next = oldInternal.nextSibling;
+        // Patch tree past oldChild
+        NodeImpl prev = oldInternal.previousSibling;
+        NodeImpl next = oldInternal.nextSibling;
 
-    	if (prev != null) {
-    		prev.nextSibling = next;
+        if (prev != null) {
+            prev.nextSibling = next;
         }
         else {
-    		firstChild = next;
+            firstChild = next;
         }
 
-    	if (next != null) {
-    		next.previousSibling = prev;
+        if (next != null) {
+            next.previousSibling = prev;
         }
         else {
-    		lastChild = prev;
+            lastChild = prev;
         }
 
-    	// Remove oldInternal's references to tree
-    	oldInternal.ownerNode      = null;
+        // Remove oldInternal's references to tree
+        oldInternal.ownerNode      = null;
         oldInternal.nextSibling     = null;
         oldInternal.previousSibling = null;
 
-    	changed();
+        changed();
 
-	    if(MUTATIONEVENTS)
-	    {
-    		// MUTATION POST-EVENTS:
+        if(MUTATIONEVENTS)
+        {
+            // MUTATION POST-EVENTS:
             // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
-		    // if required. (Common to most kinds of mutation)
-		    if( (mutationMask&MUTATION_AGGREGATE) != 0)
+            // if required. (Common to most kinds of mutation)
+            if( (mutationMask&MUTATION_AGGREGATE) != 0)
                 dispatchAggregateEvents(enclosingAttr);
-	    } // End mutation postprocessing
+        } // End mutation postprocessing
 
-    	return oldInternal;
+        return oldInternal;
 
     } // internalRemoveChild(Node,int):Node
 
@@ -722,12 +725,12 @@ public abstract class NodeContainer
      */
     public Node replaceChild(Node newChild, Node oldChild)
         throws DOMException {
-		// If Mutation Events are being generated, this operation might
-		// throw aggregate events twice when modifying an Attr -- once 
-		// on insertion and once on removal. DOM Level 2 does not specify 
-		// this as either desirable or undesirable, but hints that
-		// aggregations should be issued only once per user request.
-		
+        // If Mutation Events are being generated, this operation might
+        // throw aggregate events twice when modifying an Attr -- once 
+        // on insertion and once on removal. DOM Level 2 does not specify 
+        // this as either desirable or undesirable, but hints that
+        // aggregations should be issued only once per user request.
+
         EnclosingAttr enclosingAttr=null;
         if(MUTATIONEVENTS)
         {
@@ -742,15 +745,15 @@ public abstract class NodeContainer
             }
         } // End mutation preprocessing
 
-		internalInsertBefore(newChild, oldChild,MUTATION_LOCAL);
-		internalRemoveChild(oldChild,MUTATION_LOCAL);
-		
-		if(MUTATIONEVENTS)
-		{
-		    dispatchAggregateEvents(enclosingAttr);
-		}
-		
-		return oldChild;
+        internalInsertBefore(newChild, oldChild,MUTATION_LOCAL);
+        internalRemoveChild(oldChild,MUTATION_LOCAL);
+
+        if(MUTATIONEVENTS)
+        {
+            dispatchAggregateEvents(enclosingAttr);
+        }
+
+        return oldChild;
     }
 
     //
@@ -769,11 +772,12 @@ public abstract class NodeContainer
             nodeListIndex = 0;
             nodeListNode = firstChild;
             for (NodeImpl node = firstChild;
-		 node != null; node = node.nextSibling) {
+                 node != null;
+                 node = node.nextSibling) {
                 nodeListLength++;
             }
         }
-        
+
         return nodeListLength;
 
     } // getLength():int
@@ -825,10 +829,10 @@ public abstract class NodeContainer
      */
     public void normalize() {
 
-    	Node kid;
-    	for (kid = getFirstChild(); kid != null; kid = kid.getNextSibling()) {
-    	    kid.normalize();
-    	}
+        Node kid;
+        for (kid = getFirstChild(); kid != null; kid = kid.getNextSibling()) {
+            kid.normalize();
+        }
     }
 
     //
@@ -845,20 +849,20 @@ public abstract class NodeContainer
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
 
-	super.setReadOnly(readOnly, deep);
+        super.setReadOnly(readOnly, deep);
 
-    	if (deep) {
+        if (deep) {
 
             if (syncChildren) {
                 synchronizeChildren();
             }
 
-	    // Recursively set kids
-	    for (NodeImpl mykid = firstChild;
-		 mykid != null;
-		 mykid = mykid.nextSibling) {
-		if(!(mykid instanceof EntityReference)) {
-		    mykid.setReadOnly(readOnly,true);
+            // Recursively set kids
+            for (NodeImpl mykid = firstChild;
+                 mykid != null;
+                 mykid = mykid.nextSibling) {
+                if(!(mykid instanceof EntityReference)) {
+                    mykid.setReadOnly(readOnly,true);
                 }
             }
         }
