@@ -59,8 +59,7 @@ package org.apache.xerces.impl;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.XMLDocumentHandler;
-
+import org.apache.xerces.xni.parser.XMLDocumentFilter;
 /**
  * DOM Revalidation handler adds additional functionality to XMLDocumentHandler
  * 
@@ -68,7 +67,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public interface RevalidationHandler extends XMLDocumentHandler{
+public interface RevalidationHandler extends XMLDocumentFilter {
 
     /**
      * Set the base URI of the document
@@ -76,7 +75,7 @@ public interface RevalidationHandler extends XMLDocumentHandler{
      * @param base
      */
     public void setBaseURI(String base);
-
+    
     /**
      * Character content.
      * 

@@ -71,14 +71,20 @@ import org.apache.xerces.parsers.AbstractXMLDocumentParser;
 
 
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xni.psvi.AttributePSVI;
 
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -116,7 +122,7 @@ import java.util.Vector;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class DOMNormalizer implements XMLGrammarPool {
+public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
 
 
     //
@@ -171,6 +177,9 @@ public class DOMNormalizer implements XMLGrammarPool {
     // Validation against namespace aware grammar
     protected boolean fNamespaceValidation = false;
 
+    // Update PSVI information in the tree
+    protected boolean fPSVI = false;
+
     /** stores namespaces in scope */
     protected final NamespaceSupport fNamespaceContext = new NamespaceSupport();
 
@@ -186,7 +195,9 @@ public class DOMNormalizer implements XMLGrammarPool {
     /** DOM Locator -  for namespace fixup algorithm */
     protected final DOMLocatorImpl fLocator = new DOMLocatorImpl();
 
-
+    /** for setting the PSVI */
+    protected Node fCurrentNode = null;
+    private QName fAttrQName = new QName();
 
     // 
     // Constructor
@@ -201,6 +212,7 @@ public class DOMNormalizer implements XMLGrammarPool {
             fValidationHandler = null;
             return;
         }
+        fPSVI = false;
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (fSymbolTable == null) {
             fSymbolTable = new SymbolTable();
@@ -234,10 +246,14 @@ public class DOMNormalizer implements XMLGrammarPool {
 
         fDocument = document;
         fErrorHandler = fDocument.getErrorHandler();
-
         if (fValidationHandler != null) {
+            if (fDocument instanceof PSVIDocumentImpl) {
+                fPSVI = true;
+            }
             fValidationHandler.setBaseURI(fDocument.fDocumentURI);
+            fValidationHandler.setDocumentHandler(this);
             fValidationHandler.startDocument(null, fDocument.encoding, fNamespaceContext, null);
+            
         }
 
         Node kid, next;
@@ -332,6 +348,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
                     fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                    fCurrentNode = node;
                     // call re-validation handler
                     fValidationHandler.startElement(fQName, fAttrProxy, null);
                 }
@@ -362,7 +379,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
                     fDocument.fErrorHandlerWrapper.fCurrentNode = node;
-
+                    fCurrentNode = node;
                     fValidationHandler.endElement(fQName, null);
                 }
 
@@ -444,7 +461,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
                     fDocument.fErrorHandlerWrapper.fCurrentNode = node;
-                    
+                    fCurrentNode = node;
                     fValidationHandler.startCDATA(null);
                     fValidationHandler.characterData(node.getNodeValue(), null);
                     fValidationHandler.endCDATA(null);
@@ -506,6 +523,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                             // set error node in the dom error wrapper
                             // so if error occurs we can report an error node
                             fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                            fCurrentNode = node;
                             fValidationHandler.characterData(node.getNodeValue(), null);
                             if (DEBUG_ND) {
                                 System.out.println("=====>characterData(),"+nextType);
@@ -1103,5 +1121,338 @@ public class DOMNormalizer implements XMLGrammarPool {
     // XMLDocumentHandler methods
     //
 
+    /**
+     * The start of the document.
+     * 
+     * @param locator  The document locator, or null if the document
+     *                 location cannot be reported during the parsing
+     *                 of this document. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can
+     *                 at least report the system identifier of the
+     *                 document.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     * @param namespaceContext
+     *                 The namespace context in effect at the
+     *                 start of this document.
+     *                 This object represents the current context.
+     *                 Implementors of this class are responsible
+     *                 for copying the namespace bindings from the
+     *                 the current context (and its parent contexts)
+     *                 if that information is important.
+     *                 
+     * @param augs     Additional information that may include infoset augmentations
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext,
+                              Augmentations augs) 
+        throws XNIException{
+    }
+
+    /**
+     * Notifies of the presence of an XMLDecl line in the document. If
+     * present, this method will be called immediately following the
+     * startDocument call.
+     * 
+     * @param version    The XML version.
+     * @param encoding   The IANA encoding name of the document, or null if
+     *                   not specified.
+     * @param standalone The standalone value, or null if not specified.
+     * @param augs       Additional information that may include infoset augmentations
+     *                   
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
+        throws XNIException{
+    }
+
+    /**
+     * Notifies of the presence of the DOCTYPE line in the document.
+     * 
+     * @param rootElement
+     *                 The name of the root element.
+     * @param publicId The public identifier if an external DTD or null
+     *                 if the external DTD is specified using SYSTEM.
+     * @param systemId The system identifier if an external DTD, null
+     *                 otherwise.
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void doctypeDecl(String rootElement, String publicId, String systemId, Augmentations augs)
+        throws XNIException{
+    }
+
+    /**
+     * A comment.
+     * 
+     * @param text   The text in the comment.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by application to signal an error.
+     */
+    public void comment(XMLString text, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * A processing instruction. Processing instructions consist of a
+     * target name and, optionally, text data. The data is only meaningful
+     * to the application.
+     * <p>
+     * Typically, a processing instruction's data will contain a series
+     * of pseudo-attributes. These pseudo-attributes follow the form of
+     * element attributes but are <strong>not</strong> parsed or presented
+     * to the application as anything other than text. The application is
+     * responsible for parsing the data.
+     * 
+     * @param target The target.
+     * @param data   The data or null if none specified.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
+        throws XNIException{
+    }
+
+    /**
+     * The start of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
+     * 
+     * @param prefix The namespace prefix.
+     * @param uri    The URI bound to the prefix.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
+        throws XNIException{
+    }
+
+    /**
+     * The start of an element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     * @param augs       Additional information that may include infoset augmentations
+     *                   
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
+        throws XNIException{
+        if (fPSVI) {
+            Element currentElement = (Element)fCurrentNode;
+            int attrCount = attributes.getLength();
+            for (int i = 0; i < attrCount; i++) {
+                attributes.getName(i, fAttrQName);
+                Attr attr = null;
+                //REVISIT: schema elements must be namespace aware.
+                //         DTD re-validation is not implemented yet..
+                attr = currentElement.getAttributeNodeNS(fAttrQName.uri,fAttrQName.localpart);
+
+                AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                if (attrPSVI !=null) {
+                     ((PSVIAttrNSImpl)attr).setPSVI(attrPSVI);
+                }
+            }
+        }
+    
+    }
+
+    /**
+     * An empty element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     * @param augs       Additional information that may include infoset augmentations
+     *                   
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
+        throws XNIException{
+        startElement(element, attributes, augs);
+        endElement(element, augs);
+    }
+
+    /**
+     * This method notifies the start of a general entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name     The name of the general entity.
+     * @param identifier The resource identifier.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException Thrown by handler to signal an error.
+     */
+    public void startGeneralEntity(String name, 
+                                   XMLResourceIdentifier identifier,
+                                   String encoding,
+                                   Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * Notifies of the presence of a TextDecl line in an entity. If present,
+     * this method will be called immediately following the startEntity call.
+     * <p>
+     * <strong>Note:</strong> This method will never be called for the
+     * document entity; it is only called for external general entities
+     * referenced in document content.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param version  The XML version, or null if not specified.
+     * @param encoding The IANA encoding name of the entity.
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * This method notifies the end of a general entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name   The name of the entity.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * Character content.
+     * 
+     * @param text   The content.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void characters(XMLString text, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * Ignorable whitespace. For this method to be called, the document
+     * source must have some way of determining that the text containing
+     * only whitespace characters should be considered ignorable. For
+     * example, the validator can determine if a length of whitespace
+     * characters in the document are ignorable based on the element
+     * content model.
+     * 
+     * @param text   The ignorable whitespace.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * The end of an element.
+     * 
+     * @param element The name of the element.
+     * @param augs    Additional information that may include infoset augmentations
+     *                
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endElement(QName element, Augmentations augs) throws XNIException{
+        if (fPSVI) {
+        
+            ElementPSVI elementPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+            if (elementPSVI != null) {
+                
+                ((PSVIElementNSImpl)fCurrentNode).setPSVI(elementPSVI);
+                if (elementPSVI.getIsSchemaSpecified()) {
+                    // default value from XML Schema.
+                    fCurrentNode.setNodeValue(elementPSVI.getSchemaDefault());
+                }
+            }
+        }
+    }
+
+    /**
+     * The end of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
+     * 
+     * @param prefix The namespace prefix.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * The start of a CDATA section.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void startCDATA(Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * The end of a CDATA section.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endCDATA(Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * The end of the document.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endDocument(Augmentations augs) throws XNIException{
+    }
+
+
+    /** Sets the document source. */
+    public void setDocumentSource(XMLDocumentSource source){
+    }
+
+
+    /** Returns the document source. */
+    public XMLDocumentSource getDocumentSource(){
+        return null;
+    }
 
 }  // DOMNormalizer class
