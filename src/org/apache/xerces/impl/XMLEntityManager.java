@@ -1156,24 +1156,16 @@ public class XMLEntityManager
         gNeedEscaping[0x7f] = true;
         gAfterEscaping1[0x7f] = '7';
         gAfterEscaping2[0x7f] = 'F';
-        gNeedEscaping[' '] = true;
-        gAfterEscaping1[' '] = hexChs[' '/16];
-        gAfterEscaping2[' '] = hexChs[' '%16];
-        gNeedEscaping['<'] = true;
-        gAfterEscaping1['<'] = hexChs['<'/16];
-        gAfterEscaping2['<'] = hexChs['<'%16];
-        gNeedEscaping['>'] = true;
-        gAfterEscaping1['>'] = hexChs['>'/16];
-        gAfterEscaping2['>'] = hexChs['>'%16];
-        gNeedEscaping['#'] = true;
-        gAfterEscaping1['#'] = hexChs['#'/16];
-        gAfterEscaping2['#'] = hexChs['#'%16];
-        gNeedEscaping['%'] = true;
-        gAfterEscaping1['%'] = hexChs['%'/16];
-        gAfterEscaping2['%'] = hexChs['%'%16];
-        gNeedEscaping['"'] = true;
-        gAfterEscaping1['"'] = hexChs['"'/16];
-        gAfterEscaping2['"'] = hexChs['"'%16];
+        char[] escChs = {' ', '<', '>', '#', '%', '"', '"', '}',
+                         '|', '\\', '^', '~', '[', ']', '`'};
+        int len = escChs.length;
+        char ch;
+        for (int i = 0; i < len; i++) {
+            ch = escChs[i];
+            gNeedEscaping[ch] = true;
+            gAfterEscaping1[ch] = hexChs[ch/16];
+            gAfterEscaping2[ch] = hexChs[ch%16];
+        }
     }
     // To escape the "user.dir" system property, by using %HH to represent
     // special ASCII characters: 0x00~0x1F, 0x7F, ' ', '<', '>', '#', '%'
@@ -1197,13 +1189,17 @@ public class XMLEntityManager
             gUserDir = userDir;
             int len = userDir.length();
             StringBuffer buffer = new StringBuffer(len*3);
-            char ch;
+            char ch, separator = java.io.File.separatorChar;
             boolean escaped = false;
             // for each character in the property value, check whether it
             // needs escaping.
             for (int i = 0; i < len; i++) {
                 ch = userDir.charAt(i);
-                if (ch < 128 && gNeedEscaping[ch]) {
+                if (ch == separator && ch != '/') {
+                    buffer.append('/');
+                    escaped = true;
+                }
+                else if (ch < 128 && gNeedEscaping[ch]) {
                     buffer.append('%');
                     buffer.append(gAfterEscaping1[ch]);
                     buffer.append(gAfterEscaping2[ch]);
