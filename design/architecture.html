@@ -111,11 +111,20 @@
         <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
         <td class='component'>DTD<br>Scanner</td>
         <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
-        <td class='component'>DTD<br>Grammar</td>
+        <td class='component' rowspan='3'>Validator</td>
         <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
         <td class='component'>Parser</td>
         <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
         <td class='diagram'>Application<br>API</td>
+       </tr>
+       <tr><td>&nbsp;</td></tr>
+       <tr class='diagram'>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component'>DTD<br>Grammar</td>
        </tr>
       </table>
      </td>
@@ -123,12 +132,13 @@
    </table>
   </p>
   <p>
-   Note that the DTD scanner doesn't directly communicate with
-   the validator. This is because the validator is <em>universal</em>
-   in that it can validate document structure and content in a
-   general way and is not tied to a specific grammar syntax. Please
-   refer to the section on <a href='validation.htm'>Validation</a> for
-   additional information.
+   Note that the DTD scanner communicates directly with the validator.
+   The validator receives the callbacks from the DTD scanner in order
+   to create and populate the DTD grammar object. In this way, the
+   validator acts as a "tee", propogating the DTD events to both
+   the next stage in the pipeline and the DTD grammar object. This
+   allows the validation stage in the pipeline to be completely 
+   removed from the parser configuration, if needed.
   </p>
   <a name='Configuration'></a>
   <h2>Configuration</h2>
