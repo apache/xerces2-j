@@ -2013,7 +2013,8 @@ public class XSDHandler {
             // condition 1: both are redefine
             if (referType == XSDDescription.CONTEXT_REDEFINE ||
                 key.referType == XSDDescription.CONTEXT_REDEFINE) {
-                return referType == key.referType;
+                if (referType != key.referType)
+                    return false;
             }
             
             // condition 2: same namespace and same locatoin
