@@ -53,10 +53,9 @@
 		</ul>
 	</s2>
 	<s2 title="XML Schema (alpha) Support">
-                <p> !!! Not supported in this release !!! </p>
-		<p>This release includes preliminary support for the W3C XML Schema 
-		Language. The <link idref="schema">Schema</link> page contains a 
-		complete description of the 
+		<p>!!! Not supported in this release !!! This release includes preliminary 
+		support for the W3C XML Schema Language. The <link idref="schema">Schema</link> 
+		page contains a complete description of the 
 		schema capabilities of this release. We intend to track the W3C XML 
 		Schema Language in subsequent updates of &javaparsername;.</p>
 	</s2>
