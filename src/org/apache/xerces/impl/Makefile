@@ -8,6 +8,7 @@ TARGETS=\
         XMLEntityManager.class\
         XMLEntityScanner.class\
         XMLErrorReporter.class\
+	XMLInputSource.class\
         XMLScanner.class\
         XMLValidator.class
 

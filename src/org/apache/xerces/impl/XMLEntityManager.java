@@ -122,7 +122,7 @@ public class XMLEntityManager
     /** 
      * Debug printing of buffer. This debugging flag works best when you
      * resize the DEFAULT_BUFFER_SIZE down to something reasonable like
-     * 64 bytes.
+     * 64 characters.
      */
     private static final boolean DEBUG_PRINT = false;
 
@@ -186,7 +186,7 @@ public class XMLEntityManager
     /** Default constructor. */
     public XMLEntityManager() {
         fEntityScanner = new EntityScanner();
-    }
+    } // <init>()
 
     //
     // Public methods
@@ -199,7 +199,7 @@ public class XMLEntityManager
      */
     public void setEntityHandler(XMLEntityHandler entityHandler) {
         fEntityHandler = entityHandler;
-    }
+    } // setEntityHandler(XMLEntityHandler)
 
     /**
      * addExternalEntity
@@ -340,7 +340,7 @@ public class XMLEntityManager
     public void startDocumentEntity(XMLInputSource xmlInputSource) 
         throws IOException, SAXException {
         startEntity("[xml]", xmlInputSource);
-    } // startDocumentEntity(InputSource)
+    } // startDocumentEntity(XMLInputSource)
 
     /**
      * startDTDEntity
@@ -350,7 +350,7 @@ public class XMLEntityManager
     public void startDTDEntity(XMLInputSource xmlInputSource)
         throws IOException, SAXException {
         startEntity("[dtd]", xmlInputSource);
-    } // startDTDEntity(InputSource)
+    } // startDTDEntity(XMLInputSource)
 
     /**
      * getEntityScanner
@@ -359,7 +359,7 @@ public class XMLEntityManager
      */
     public XMLEntityScanner getEntityScanner() {
         return fEntityScanner;
-    } // getEntityScanner
+    } // getEntityScanner():XMLEntityScanner
 
     //
     // XMLComponent methods
@@ -397,6 +397,8 @@ public class XMLEntityManager
 
             addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml");
             addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml");
+            addExternalEntity("one", null, "ent/one.ent", "test/external-entity.xml");
+            addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml");
         }
 
     } // reset(XMLComponentManager)
@@ -492,13 +494,6 @@ public class XMLEntityManager
             //reader = new OneCharReader(reader);
         }
 
-        /***
-        // REVISIT: This goes away once I've updated the entity
-        //          scanner to buffer from a standard java.io.Reader
-        //          object. -Ac
-        reader = new PushbackReader(reader, 32);
-        /***/
-
         // push entity on stack
         if (fCurrentEntity != null) {
             fEntityStack.push(fCurrentEntity);
@@ -514,7 +509,7 @@ public class XMLEntityManager
             fEntityHandler.startEntity(name, publicId, systemId, ianaEncoding);
         }
 
-    } // startEntity(String,InputSource)
+    } // startEntity(String,XMLInputSource)
 
     /**
      * Ends an entity.
@@ -530,7 +525,7 @@ public class XMLEntityManager
         fCurrentEntity = fEntityStack.size() > 0
                        ? (ScannedEntity)fEntityStack.pop() : null;
 
-    } // endEntity(String)
+    } // endEntity()
 
     /**
      * Expands a system id and returns the system id as a URI, if
@@ -958,7 +953,7 @@ public class XMLEntityManager
 
         // encoding
 
-        /** Auto-detected ncoding. */
+        /** Auto-detected encoding. */
         public String encoding;
 
         // buffer
@@ -1029,7 +1024,7 @@ public class XMLEntityManager
     
         /** Default constructor. */
         public EntityScanner() {
-        }
+        } // <init>()
     
         //
         // XMLEntityScanner methods
@@ -1591,7 +1586,7 @@ public class XMLEntityManager
         /** Constructs this reader from another reader. */
         public OneCharReader(Reader reader) {
             super(reader);
-        }
+        } // <init>(Reader)
 
         //
         // Public methods
