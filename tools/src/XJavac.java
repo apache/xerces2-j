@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,10 +93,11 @@ public class XJavac extends Javac {
                 setBootclasspath(bcp);
             }
             // need to do special things for Sun too and also
-            // for Apple and Blackdown: a Linux port of Sun Java
+            // for Apple, HP and Blackdown: a Linux port of Sun Java
             else if( (vendor.indexOf("SUN") >= 0) || 
                      (vendor.indexOf("BLACKDOWN") >= 0) || 
-                     (vendor.indexOf("APPLE") >= 0) ) {
+                     (vendor.indexOf("APPLE") >= 0) ||
+                     (vendor.indexOf("HEWLETT-PACKARD") >= 0)) {
                 // we're on an SUN 1.4; fiddle with the bootclasspath.
                 // since we can't eviscerate XML-related info here,
                 // we must use the classpath
