@@ -2,6 +2,34 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version="&ParserName; 2.2.1">
+    <desc>
+        This release fixes three important bugs and several minor problems that
+        were present in Xerces-J 2.2.0.  
+    </desc>
+    <changes>
+        <fix>
+            <note>
+                Fixed SAX endElement call so that the element's
+                namespace URI is returned.  
+            </note>
+            <submitter name="Elena Litani"/>
+        </fix>
+        <fix>
+            <note>
+                Fixed HTML DOM implementation so that
+                it can be instantiated.
+            </note>
+            <submitter name="Neil Graham"/>
+        </fix>
+        <fix>
+            <note>
+                Made the external-schema-location property work again.
+            </note>
+            <submitter name="Sandy Gao"/>
+        </fix>
+    </changes>
+  </release>
   <release version="&ParserName; 2.2.0">
     <desc>
         As well as incorporating two changes to the Xerces Native Interface, this
