@@ -79,10 +79,10 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     private float[]   fEnumFloats           = null;
     private String    fPattern              = null;
     private boolean   fDerivedByList     = false; // Default is restriction
-    private float     fMaxInclusive         = Float.MAX_VALUE;
-    private float     fMaxExclusive         = Float.MAX_VALUE;
-    private float     fMinInclusive         = Float.MIN_VALUE;
-    private float     fMinExclusive         = Float.MIN_VALUE;
+    private float     fMaxInclusive         = Float.POSITIVE_INFINITY ;
+    private float     fMaxExclusive         = Float.POSITIVE_INFINITY;
+    private float     fMinInclusive         = Float.NEGATIVE_INFINITY;
+    private float     fMinExclusive         = Float.NEGATIVE_INFINITY;
     private int       fFacetsDefined        = 0;
 
     private boolean   isMaxExclusiveDefined = false;
@@ -219,14 +219,24 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
 
 
     /**
-     * validate that a string matches the real datatype
+     * Validate string content to be a valid float as
+     * defined 3.2.3. Datatype.
+     * IEEE single-precision 32-bit floatin point type
+     * [IEEE] 754-1985]. The basic value space of float
+     * consists of the values mx2^e, where m is an integer
+     * whose absolute value is less than 2^24, and e
+     * is an integer between -149 and 104 inclusive.
+     * 
      * @param content A string containing the content to be validated
+     * @param state
+     * @return 
      * @exception throws InvalidDatatypeException if the content is
-     *  is not a W3C real type
+     *                   is not a W3C real type
+     * @exception InvalidDatatypeValueException
      */
-
     public Object validate(String content, Object state) 
     throws InvalidDatatypeValueException {
+
         if ( fDerivedByList == false  ) {
             checkContent(  content );
         } else {
@@ -256,7 +266,6 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                               (( fMinInclusive != Float.MIN_VALUE )? Float.toString( fMinInclusive ):""); 
         String  lowerBoundIndicator = "";
         String  upperBoundIndicator = "";
-
 
         if ( isMaxInclusiveDefined) {
             maxOk = (d <= fMaxInclusive);
@@ -310,16 +319,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
 
     }
 
-    private void enumCheck(float v) throws InvalidDatatypeValueException {
-        for (int i = 0; i < fEnumFloats.length; i++) {
-            if (v == fEnumFloats[i]) return;
-        }
-        throw new InvalidDatatypeValueException(
-                                               getErrorString(DatatypeMessageProvider.NotAnEnumValue,
-                                                              DatatypeMessageProvider.MSG_NONE,
-                                                              new Object [] { new Float(v)}));
-    }
-
+  
     /**
      * set the locate to be used for error messages
      */
@@ -345,6 +345,17 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
+
+
+    private void enumCheck(float v) throws InvalidDatatypeValueException {
+       for (int i = 0; i < fEnumFloats.length; i++) {
+           if (v == fEnumFloats[i]) return;
+       }
+       throw new InvalidDatatypeValueException(
+                                              getErrorString(DatatypeMessageProvider.NotAnEnumValue,
+                                                             DatatypeMessageProvider.MSG_NONE,
+                                                             new Object [] { new Float(v)}));
+   }
 
 
     private String getErrorString(int major, int minor, Object args[]) {
