@@ -920,9 +920,13 @@ public class GeneralAttrCheck {
     // used to store utility reference: error reproter. set via constructor.
     protected XMLErrorReporter fErrorReporter = null;
 
+    // used to store the mapping from processed element to attributes
+    protected Hashtable fProcessedElements = null;
+
     // constructor. Sets fDVRegistry and fErrorReproter
     public GeneralAttrCheck(XMLErrorReporter er) {
         fErrorReporter = er;
+        fProcessedElements = new Hashtable();
     }
 
     // check whether the specified element conforms to the attributes restriction
@@ -932,6 +936,10 @@ public class GeneralAttrCheck {
     public Hashtable checkAttributes(Element element, int eleContext) throws Exception {
         if (element == null)
             return null;
+
+        Hashtable attrValues = (Hashtable)fProcessedElements.get(element);
+        if (attrValues != null)
+            return attrValues;
 
         // Get the proper name:
         // G_ for global;
@@ -955,7 +963,7 @@ public class GeneralAttrCheck {
             return null;
         }
 
-        Hashtable attrValues = new Hashtable();
+        attrValues = new Hashtable();
         Hashtable attrList = oneEle.attrList;
 
         // traverse all attributes
@@ -966,7 +974,7 @@ public class GeneralAttrCheck {
             // skip anything starts with x/X m/M l/L ???
             // simply put their values in the return hashtable
             if (sattr.getName().toLowerCase().startsWith("xml")) {
-                attrValues.put(sattr.getName(), sattr.getValue());
+                attrValues.put(sattr.getName(), new Object[] {sattr.getValue(), Boolean.FALSE});
                 continue;
             }
 
@@ -983,26 +991,25 @@ public class GeneralAttrCheck {
             String attrVal = sattr.getValue();
 
             try {
-                // values of ID type might be validated more than once,
-                // which would fail the validation.
-                // disable this temprorily. Enable it after modify TraverseSchema. //???
-                // and URI doesn't validate relative URIs, so disable it too. //???
+                // URI doesn't validate relative URIs, so disable it too. //???
                 // no checking on string needs to be done here.
                 // no checking on xpath needs to be done here.
                 // xpath values are validated in xpath parser
                 if (oneAttr.dvIndex >= 0) {
-                    if (oneAttr.dvIndex != DT_ID && oneAttr.dvIndex != DT_ANYURI &&
+                    if (oneAttr.dvIndex != DT_ANYURI &&
                         oneAttr.dvIndex != DT_STRING &&
-                        oneAttr.dvIndex != DT_XPATH && oneAttr.dvIndex != DT_XPATH1)
+                        oneAttr.dvIndex != DT_XPATH &&
+                        oneAttr.dvIndex != DT_XPATH1)
                         fExtraDVs[oneAttr.dvIndex].validate(attrVal, null);
-                    attrValues.put(attrName, attrVal);
+                    attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
                 } else {
                     attrVal = validate(attrName, attrVal, oneAttr.dvIndex);
-                    attrValues.put(attrName, attrVal);
+                    attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
                 }
             } catch(InvalidDatatypeValueException ide) {
                 reportSchemaError (SchemaMessageProvider.GenericError,
-                                   new Object[] {"Invalid attribute value '"+attrVal+"' for '"+attrName+"' in '"+ elName +"'"});
+                                   new Object[] {"Invalid attribute value '"+attrVal+"' for '"+
+                                   attrName+"' in '"+ elName +"': " + ide.getLocalizedMessage()});
             }
         }
 
@@ -1022,9 +1029,11 @@ public class GeneralAttrCheck {
             }
             // if the attribute is optional with default value, apply it
             else if (oneAttr.optdflt == ATT_OPT_DFLT) {
-                attrValues.put(oneAttr.name, oneAttr.dfltValue);
+                attrValues.put(oneAttr.name, new Object[] {oneAttr.dfltValue, Boolean.TRUE});
             }
         }
+
+        fProcessedElements.put(element, attrValues);
 
         return attrValues;
     }

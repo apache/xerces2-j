@@ -94,7 +94,7 @@ public class Base64BinaryDatatypeValidator extends AbstractStringValidator{
 
 
     protected void checkValueSpace (String content) throws InvalidDatatypeValueException {
-        if (getLength( content) <= 0) {
+        if (getLength( content) < 0) {
             throw new InvalidDatatypeValueException( "Value '"+content+"' is not encoded in Base64" );
         }
     }

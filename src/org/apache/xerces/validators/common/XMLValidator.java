@@ -2764,6 +2764,8 @@ public final class XMLValidator
                 // pass parser's entity resolver (local Resolver), which also has reference to user's 
                 // entity resolver, and also can fall-back to entityhandler's expandSystemId()
                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled());
+               fValID.validate( null, fResetID );//Reset ID for values appeared in the schema
+
                //allowing xsi:schemaLocation to appear on any element 
                String targetNS =   root.getAttribute("targetNamespace");
                fGrammarNameSpaceIndex = fStringPool.addSymbol(targetNS);
@@ -3279,7 +3281,7 @@ public final class XMLValidator
 
                      TraverseSchema.ComplexTypeInfo tempType = typeInfo;
                      TraverseSchema.ComplexTypeInfo destType = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex);
-                     for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
+                     for(; tempType != null && destType != null; tempType = tempType.baseComplexTypeInfo) {
                         if(tempType.typeName.equals(destType.typeName))
                             break; 
                      }
@@ -3288,7 +3290,10 @@ public final class XMLValidator
                                XMLMessages.SCHEMA_GENERIC_ERROR, 
                                 "Type : "+uri+","+localpart 
                                 +" does not derive from the type " + destType.typeName);
-                     } else { // now check whether the element or typeInfo's baseType blocks us.
+                     } else if (destType == null) {
+                     // TO BE DONE:
+                     // if the original type is a simple type, check derivation ok.
+                     } else if (typeInfo != destType) { // now check whether the element or typeInfo's baseType blocks us.
                         int derivationMethod = typeInfo.derivedBy;
                         if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & derivationMethod) != 0) {
                             XMLElementDecl tempElementDecl = new XMLElementDecl();

@@ -136,6 +136,8 @@ public final class  Base64 {
     }
 
     public static boolean isBase64( String isValidString ) {
+        if (isValidString == null)
+            return false;
         return( isArrayByteBase64( isValidString.getBytes()));
     }
 
@@ -156,22 +158,25 @@ public final class  Base64 {
      * @return 
      */
     public static synchronized byte[] removeWhiteSpace( byte[] data ) {
+        if (data == null)
+            return null;
+
         int newSize = 0;
         int len     = data.length;
         int i =0;
-        for (; i<data.length; i++) {
+        for (; i<len; i++) {
             if (!isWhiteSpace( data[i] ))
                 newSize++;
         }
 
-        if (newSize == 0)
+        if (newSize == len)
             return data;//return input array since no whiteSpace
 
 
         byte[] arrayWithoutSpaces = new byte[newSize];//Allocate new array without whiteSpace
 
-        i=0;
-        for (int j =0;i<data.length;i++) {
+        int j = 0;
+        for (i=0;i<len;i++) {
             if (isWhiteSpace( data[i] ))
                 continue;
             else
@@ -182,7 +187,7 @@ public final class  Base64 {
     }
 
     public static synchronized boolean isArrayByteBase64( byte[] arrayOctect ) {
-        return(getDecodedDataLength(arrayOctect) > 0);
+        return(getDecodedDataLength(arrayOctect) >= 0);
     }
 
     /**
@@ -192,6 +197,9 @@ public final class  Base64 {
      * @return Encoded Base64 array
      */
     public static synchronized byte[] encode( byte[] binaryData ) {
+        if (binaryData == null)
+            return null;
+
         int      lengthDataBits    = binaryData.length*EIGHTBIT;
         int      fewerThan24bits   = lengthDataBits%TWENTYFOURBITGROUP;
         int      numberTriplets    = lengthDataBits/TWENTYFOURBITGROUP;
@@ -296,7 +304,7 @@ public final class  Base64 {
         int      numberQuadruple    = (normalizedBase64Data.length/FOURBYTE );
 
         if (numberQuadruple == 0)
-            return null;
+            return new byte[0];
 
         byte     decodedData[]      = null;
         byte     b1=0,b2=0,b3=0, b4=0, marker0=0, marker1=0;
@@ -382,18 +390,21 @@ public final class  Base64 {
      * valid.
      * 
      * @param base64Data
-     * @return         a 0 would be return if not
+     * @return         a -1 would be return if not
      */
     static public synchronized int getDecodedDataLength( byte[] base64Data ) {
 
         if (base64Data == null)
+            return -1;
+
+        if (base64Data.length == 0)
             return 0;
 
         //byte[] normalizedBase64Data =  removeWhiteSpace( base64Data );//Remove any whiteSpace 
         byte[] decodedData = null;
 
         if ((decodedData = decode( base64Data ) ) == null)//decode could return a null byte array
-            return 0;
+            return -1;
 
         return decodedData.length;
     }

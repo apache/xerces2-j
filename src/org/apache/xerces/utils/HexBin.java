@@ -117,7 +117,7 @@ public final class  HexBin {
         if (arrayOctect == null)
             return false;
         int length = arrayOctect.length;
-        if( length == 0 || length % 2 != 0)
+        if (length % 2 != 0)
             return false;
         for( int i=0; i < length; i++ ){
             if( HexBin.isHex( arrayOctect[i] ) == false)
@@ -127,6 +127,8 @@ public final class  HexBin {
    }
 
     public static boolean isHex( String isValidString ){
+      if (isValidString == null)
+        return false;
       return( isArrayByteHex( isValidString.getBytes()));
   }
 
@@ -137,6 +139,8 @@ public final class  HexBin {
      * @return return encode binary array
      */
     static public byte[] encode( byte[] binaryData ) {
+        if (binaryData == null)
+            return null;
         int lengthData   = binaryData.length;
         int lengthEncode = lengthData * 2;
         byte[] encodedData = new byte[lengthEncode];
@@ -148,8 +152,10 @@ public final class  HexBin {
     }
 
     static public  byte[] decode ( byte[]  binaryData ) {
+        if (binaryData == null)
+            return null;
         int lengthData   = binaryData.length;
-        if( lengthData == 0 || lengthData % 2 != 0)
+        if (lengthData % 2 != 0)
             return null;
 
         int lengthDecode = lengthData / 2;

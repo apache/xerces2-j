@@ -75,7 +75,6 @@ import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.common.Grammar;
-import org.apache.xerces.validators.common.DFAContentModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

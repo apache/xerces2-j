@@ -73,7 +73,9 @@ public class ElementWildcard {
     private static StringPool fStringPool;
     private static XMLErrorReporter fErrorReporter;
     public static void setErrReporter (StringPool stringPool, XMLErrorReporter errorReporter) {
+        if (fStringPool == null)
         fStringPool = stringPool;
+        if (fErrorReporter == null)
         fErrorReporter = errorReporter;
     }
 

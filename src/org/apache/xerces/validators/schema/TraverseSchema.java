@@ -2377,6 +2377,10 @@ public class TraverseSchema implements
             // report error - must not have any children!
             if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
+                if (content!=null) {
+                    reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+                                      new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+            }
             }
             else {
                 reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
@@ -2391,7 +2395,6 @@ public class TraverseSchema implements
                 if (content!=null) {
                     reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
                                             new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
-
                 }
             }
             else {
@@ -5814,6 +5817,10 @@ throws Exception {
 			if(!attGrpNameStr.equals(""))
 				// REVISIT:  localize 
    	    	    reportGenericSchemaError ( "attributeGroup " + attGrpNameStr + " cannot refer to another attributeGroup, but it refers to " + ref);
+            if (XUtil.getFirstChildElement(attrGrpDecl) != null ||
+                attrGrpDecl.getNodeValue() != null)
+				// REVISIT:  localize
+   	    	    reportGenericSchemaError ( "An attributeGroup with \"ref\" present must be empty");
             
             String prefix = "";
             String localpart = ref;
@@ -5867,7 +5874,7 @@ throws Exception {
                 traverseAttributeDecl(child, typeInfo, false);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
-				if(typeInfo != null) 
+//				if(typeInfo != null)
  					// only do this if we're traversing because we were ref'd here; when we come 
 					// upon this decl by itself we're just validating.
                 	traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
