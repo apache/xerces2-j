@@ -2431,7 +2431,7 @@ public class TraverseSchema implements
             typeName = parentName + "_AnonType";
             int index=fCurrentTypeNameStack.size() -1; 
 	    for (int i = index; i > -1; i--) {
-               String parentType = (String)fCurrentTypeNameStack.get(i); 
+               String parentType = (String)fCurrentTypeNameStack.elementAt(i); 
                typeName = parentType + "_" + typeName;
                if (!(parentType.startsWith("#"))) 
                   break;
