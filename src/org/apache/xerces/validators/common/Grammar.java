@@ -241,6 +241,7 @@ implements XMLContentSpec.Provider {
         return true;
     }
 
+
     public XMLContentModel getElementContentModel(int elementDeclIndex) throws CMException {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
@@ -262,7 +263,7 @@ implements XMLContentSpec.Provider {
 
         // Get the type of content this element has
 
-        int contentSpecIndex = fElementDeclContentSpecIndex[chunk][index]; 
+        int contentSpecIndex = convertContentSpecTree(fElementDeclContentSpecIndex[chunk][index]); 
 
         /***
         if ( contentSpecIndex == -1 )
@@ -363,6 +364,11 @@ implements XMLContentSpec.Provider {
 
     protected void setGrammarDocument(Document grammarDocument) {
         fGrammarDocument = grammarDocument;
+    }
+
+    // SchemaGrammar overrides this and does a conversion 
+    protected int convertContentSpecTree(int index) {
+        return index;
     }
 
     protected int createElementDecl() {
@@ -678,6 +684,7 @@ implements XMLContentSpec.Provider {
             }
         } 
         else {
+            System.out.println("type is " + contentSpec.type);
             throw new CMException(ImplementationMessages.VAL_CST);
         }
 

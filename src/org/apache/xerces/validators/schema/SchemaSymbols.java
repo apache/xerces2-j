@@ -216,4 +216,6 @@ public final  class SchemaSymbols {
     public static final int ABSTRACT = 2;
     public static final int FIXED = 4;
 
+    public static final int OCCURRENCE_UNBOUNDED = -2;
+
 }
