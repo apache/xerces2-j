@@ -916,6 +916,7 @@ public class TraverseSchema implements
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(includeDecl, scope);
+        checkContent(includeDecl, XUtil.getFirstChildElement(includeDecl), true);
 
         Attr locationAttr = includeDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
         if (locationAttr == null) {
@@ -949,7 +950,29 @@ public class TraverseSchema implements
 
         DOMParser parser = new IgnoreWhitespaceParser();
         parser.setEntityResolver( new Resolver() );
-        parser.setErrorHandler(  new ErrorHandler() );
+        parser.setErrorHandler(  new ErrorHandler() 
+            {
+                public void fatalError(SAXParseException ex) throws SAXException {
+                    StringBuffer str = new StringBuffer(); 
+                    String systemId_ = ex.getSystemId();
+                    if (systemId_ != null) {
+                        int index = systemId_.lastIndexOf('/');
+                        if (index != -1)
+                            systemId_ = systemId_.substring(index + 1);
+                        str.append(systemId_);
+                    }
+                    str.append(':').append(ex.getLineNumber()).append(':').append(ex.getColumnNumber());
+                    String message = ex.getMessage();
+                    if(message.toLowerCase().trim().endsWith("not found.")) {
+                        System.err.println("[Warning] "+
+                               str.toString()+": "+ message);
+                    } else { // do standard thing
+                        System.err.println("[Fatal Error] "+
+                               str.toString()+":"+message);
+                        throw ex;
+                    }
+                }
+            });
 
         try {
             parser.setFeature("http://xml.org/sax/features/validation", false);
@@ -1550,6 +1573,15 @@ public class TraverseSchema implements
                         else 
 						    child.setAttribute(SchemaSymbols.ATT_REF, prefix + ":" + newName);
 						result++;
+                        if(elementSought.equals(SchemaSymbols.ELT_GROUP)) {
+				            String minOccurs = child.getAttribute( SchemaSymbols.ATT_MINOCCURS );
+				            String maxOccurs = child.getAttribute( SchemaSymbols.ATT_MAXOCCURS );
+                            if(!((maxOccurs.length() == 0 || maxOccurs.equals("1")) 
+                                    && (minOccurs.length() == 0 || minOccurs.equals("1")))) {
+                                //REVISIT:  localize
+                                reportGenericSchemaError("src-redefine.6.1.2:  the group " + ref + " which contains a reference to a group being redefined must have minOccurs = maxOccurs = 1");
+                            } 
+                        }
 					}
 				} // if ref was null some other stage of processing will flag the error 
 			}
@@ -1734,6 +1766,9 @@ public class TraverseSchema implements
         } else if (eltLocalname.equals(SchemaSymbols.ELT_GROUP)) {
 			QName processedBaseName = new QName(-1, fStringPool.addSymbol(oldName), fStringPool.addSymbol(oldName), fTargetNSURI);
 			int groupRefsCount = changeRedefineGroup(processedBaseName, eltLocalname, newName, child);
+            if(!fRedefineSucceeded) {
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false)); 
+            }
 			if(groupRefsCount > 1) {
                 fRedefineSucceeded = false;
                 fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false)); 
@@ -1759,6 +1794,7 @@ public class TraverseSchema implements
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(importDecl, scope);
+        checkContent(importDecl, XUtil.getFirstChildElement(importDecl), true);
 
         String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
         // expand it before passing it to the parser
@@ -1792,7 +1828,29 @@ public class TraverseSchema implements
 
          DOMParser parser = new IgnoreWhitespaceParser();
          parser.setEntityResolver( new Resolver() );
-         parser.setErrorHandler(  new ErrorHandler() );
+         parser.setErrorHandler(  new ErrorHandler() 
+            {
+                public void fatalError(SAXParseException ex) throws SAXException {
+                    StringBuffer str = new StringBuffer(); 
+                    String systemId_ = ex.getSystemId();
+                    if (systemId_ != null) {
+                        int index = systemId_.lastIndexOf('/');
+                        if (index != -1)
+                            systemId_ = systemId_.substring(index + 1);
+                        str.append(systemId_);
+                    }
+                    str.append(':').append(ex.getLineNumber()).append(':').append(ex.getColumnNumber());
+                    String message = ex.getMessage();
+                    if(message.toLowerCase().trim().endsWith("not found.")) {
+                        System.err.println("[Warning] "+
+                               str.toString()+": "+ message);
+                    } else { // do standard thing
+                        System.err.println("[Fatal Error] "+
+                               str.toString()+":"+message);
+                        throw ex;
+                    }
+                }
+            });
 
          try {
              parser.setFeature("http://xml.org/sax/features/validation", false);
