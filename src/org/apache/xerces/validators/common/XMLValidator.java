@@ -3153,7 +3153,7 @@ public final class XMLValidator
                                                   XMLMessages.SCHEMA_GENERIC_ERROR, 
                                                   "unresolved type : "+uri+","+localpart 
                                                   +" found  in xsi:type handling");
-                  } else
+                  } else {
 
                      //
                      // The type must not be abstract
@@ -3165,6 +3165,7 @@ public final class XMLValidator
                      }
 
                      elementIndex = typeInfo.templateElementIndex;
+                  }
                }
 
                fXsiTypeAttValue = -1;
