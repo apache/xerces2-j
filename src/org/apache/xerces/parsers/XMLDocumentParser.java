@@ -264,10 +264,8 @@ public abstract class XMLDocumentParser
      * characters
      * 
      * @param text 
-     * @param whitespace 
      */
-    public void characters(XMLString text, boolean whitespace)
-        throws SAXException {
+    public void characters(XMLString text) throws SAXException {
     } // characters
 
     /**

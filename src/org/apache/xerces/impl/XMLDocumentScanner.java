@@ -1023,18 +1023,7 @@ public class XMLDocumentScanner
 
         int c = fEntityScanner.scanContent(fString);
         if (fDocumentHandler != null) {
-            /*** REVISIT: Should we remove the whitespace param? -Ac
-            boolean whitespace = true;
-            for (int i = 0; i < fString.length; i++) {
-                if (!XMLChar.isSpace(fString.ch[fString.offset + i])) {
-                    whitespace = false;
-                    break;
-                }
-            }
-            fDocumentHandler.characters(fString, whitespace);
-            /***/
-            fDocumentHandler.characters(fString, false);
-            /***/
+            fDocumentHandler.characters(fString);
         }
         return c;
 
@@ -1106,7 +1095,7 @@ public class XMLDocumentScanner
         if (fDocumentHandler != null) {
             fSingleChar[0] = (char)value;
             fString.setValues(fSingleChar, 0, 1);
-            fDocumentHandler.characters(fString, XMLChar.isSpace(value));
+            fDocumentHandler.characters(fString);
         }
 
     } // scanCharReference()

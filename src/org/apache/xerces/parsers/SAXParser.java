@@ -167,18 +167,12 @@ public class SAXParser
         }
     }
 
-    public void characters(XMLString text, boolean whitespace) 
-        throws SAXException {
-        if (whitespace) {
-            ignorableWhitespace(text);
+    public void characters(XMLString text) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.characters(text.ch, text.offset, text.length);
         }
-        else {
-            if (fDocumentHandler != null) {
-                fDocumentHandler.characters(text.ch, text.offset, text.length);
-            }
-            if (fContentHandler != null) {
-                fContentHandler.characters(text.ch, text.offset, text.length);
-            }
+        if (fContentHandler != null) {
+            fContentHandler.characters(text.ch, text.offset, text.length);
         }
     }
 

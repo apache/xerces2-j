@@ -438,9 +438,6 @@
     <param name='text'>
      <reference idref='string'/>
     </param>
-    <param name='whitespace'>
-     <primitive type='boolean'/>
-    </param>
     <throws>
      <reference idref='sax-exception'/>
     </throws>
