@@ -18,6 +18,8 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.xs.XSException;
+import org.apache.xerces.xs.datatypes.ObjectList;
 
 /**
  * Represent the schema list types
@@ -41,10 +43,10 @@ public class ListDV extends TypeValidator{
 
     // length of a list type is the number of items in the list
     public int getDataLength(Object value) {
-        return ((ListData)value).length();
+        return ((ListData)value).getLength();
     }
 
-    final static class ListData {
+    final static class ListData implements ObjectList {
         final Object[] data;
         private String canonical;
         public ListData(Object[] data) {
@@ -65,11 +67,8 @@ public class ListDV extends TypeValidator{
             }
             return canonical;
         }
-        public int length() {
+        public int getLength() {
             return data.length;
-        }
-        public Object item(int index) {
-            return data[index];
         }
         public boolean equals(Object obj) {
             if (!(obj instanceof ListData))
@@ -87,6 +86,20 @@ public class ListDV extends TypeValidator{
     
             //everything went fine.
             return true;
+        }
+        
+        public boolean contains(Object item) {
+        	for(int i = 0;i < data.length; i++) {
+        		if(item == data[i])
+        			return true;
+        	}
+        	return false;
+        }
+        
+        public Object item(int index) throws XSException {
+        	if(index < 0 || index > data.length - 1) 
+        		throw new XSException(XSException.INDEX_SIZE_ERR, null);
+        	return data[index];
         }
     }
 } // class ListDV

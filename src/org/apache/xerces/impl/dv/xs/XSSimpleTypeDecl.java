@@ -77,6 +77,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     static final short DV_INTEGER       = DV_NOTATION + 4;
     static final short DV_LIST          = DV_NOTATION + 5;
     static final short DV_UNION         = DV_NOTATION + 6;
+    static final short DV_YEARMONTHDURATION = DV_NOTATION + 7;
+    static final short DV_DAYTIMEDURATION	= DV_NOTATION + 8;
 
     static final TypeValidator[] fDVs = {
         new AnySimpleDV(),
@@ -104,7 +106,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         new EntityDV(),
         new IntegerDV(),
         new ListDV(),
-        new UnionDV()
+        new UnionDV(),
+        new YearMonthDurationDV(), // XML Schema 1.1 type
+        new DayTimeDurationDV() // XML Schema 1.1 type
     };
 
     static final short NORMALIZE_NONE = 0;
@@ -136,7 +140,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         NORMALIZE_TRIM, //EntityDV(),
         NORMALIZE_TRIM, //IntegerDV(),
         NORMALIZE_FULL, //ListDV(),
-        NORMALIZE_NONE, //UnionDV()
+        NORMALIZE_NONE, //UnionDV(),
+        NORMALIZE_TRIM, //YearMonthDurationDV() (Schema 1.1)
+        NORMALIZE_TRIM, //DayTimeDurationDV() (Schema 1.1)
     };
 
     static final short SPECIAL_PATTERN_NONE     = 0;
@@ -260,7 +266,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     // default constructor
     public XSSimpleTypeDecl(){}
 
-    //Create a new built-in primitive types (and id/idref/entity/integer)
+    //Create a new built-in primitive types (and id/idref/entity/integer/yearMonthDuration)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
                                short ordered, boolean bounded, boolean finite,
                                boolean numeric, boolean isImmutable, short builtInKind) {
@@ -1607,7 +1613,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         } else if (fVariety == VARIETY_LIST) {
 
             ListDV.ListData values = (ListDV.ListData)ob;
-            int len = values.length();
+            int len = values.getLength();
             if (fItemType.fVariety == VARIETY_UNION) {
                 XSSimpleTypeDecl[] memberTypes = (XSSimpleTypeDecl[])validatedInfo.memberTypes;
                 XSSimpleType memberType = validatedInfo.memberType;

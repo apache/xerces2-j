@@ -16,13 +16,14 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
-import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
+import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.util.SymbolHash;
 
 /**
  * the factory to create/return built-in schema DVs and create user-defined DVs
@@ -183,6 +184,8 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         final String UNSIGNEDSHORT     = "unsignedShort";
         final String YEAR              = "gYear";
         final String YEARMONTH         = "gYearMonth";
+        final String YEARMONTHDURATION = "yearMonthDuration";
+        final String DAYTIMEDURATION   = "dayTimeDuration";
 
         final XSFacets facets = new XSFacets();
 
@@ -197,7 +200,15 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
 
         fBuiltInTypes.put(ANYURI, new XSSimpleTypeDecl(anySimpleType, ANYURI, XSSimpleTypeDecl.DV_ANYURI, XSSimpleType.ORDERED_FALSE, false, false, false, true, XSConstants.ANYURI_DT));
         fBuiltInTypes.put(BASE64BINARY, new XSSimpleTypeDecl(anySimpleType, BASE64BINARY, XSSimpleTypeDecl.DV_BASE64BINARY, XSSimpleType.ORDERED_FALSE, false, false, false, true, XSConstants.BASE64BINARY_DT));
-        fBuiltInTypes.put(DURATION, new XSSimpleTypeDecl(anySimpleType, DURATION, XSSimpleTypeDecl.DV_DURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.DURATION_DT));
+        
+        XSSimpleTypeDecl durationDV = new XSSimpleTypeDecl(anySimpleType, DURATION, XSSimpleTypeDecl.DV_DURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.DURATION_DT);
+        fBuiltInTypes.put(DURATION, durationDV);
+        
+        if (Constants.SCHEMA_1_1_SUPPORT) {
+            fBuiltInTypes.put(YEARMONTHDURATION, new XSSimpleTypeDecl(durationDV, YEARMONTHDURATION, XSSimpleTypeDecl.DV_YEARMONTHDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.YEARMONTHDURATION_DT));
+            fBuiltInTypes.put(DAYTIMEDURATION, new XSSimpleTypeDecl(durationDV, DAYTIMEDURATION, XSSimpleTypeDecl.DV_DAYTIMEDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.DAYTIMEDURATION_DT));
+        }
+        
         fBuiltInTypes.put(DATETIME, new XSSimpleTypeDecl(anySimpleType, DATETIME, XSSimpleTypeDecl.DV_DATETIME, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.DATETIME_DT));
         fBuiltInTypes.put(TIME, new XSSimpleTypeDecl(anySimpleType, TIME, XSSimpleTypeDecl.DV_TIME, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.TIME_DT));
         fBuiltInTypes.put(DATE, new XSSimpleTypeDecl(anySimpleType, DATE, XSSimpleTypeDecl.DV_DATE, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.DATE_DT));

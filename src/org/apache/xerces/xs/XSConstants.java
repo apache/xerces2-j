@@ -316,10 +316,26 @@ public interface XSConstants {
     /**
      * The type represents a list type definition.
      */
-    public static final short LIST_DT                   = 44;
+    public static final short LIST_DT                   = 44;  
+    /**
+     * yearMonthDuration
+     * 
+     * The type represents a type derived from duration to
+     * represent a restricted duration containing only year
+     * and month from the duration value space.
+     */
+    public static final short YEARMONTHDURATION_DT		= 45;
+    /**
+     * dayTimeDuration
+     * 
+     * The type represents a type derived from duration to
+     * represent a restricted duration containing the day and 
+     * time portion of the duration value space.
+     */
+    public static final short DAYTIMEDURATION_DT		= 46;
     /**
      * The built-in type category is not available.
      */
-    public static final short UNAVAILABLE_DT            = 45;
+    public static final short UNAVAILABLE_DT            = 47;
 
 }

@@ -18,6 +18,7 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.xs.datatypes.XSFloat;
 
 /**
  * Represent the schema type "float"
@@ -47,7 +48,8 @@ public class FloatDV extends TypeValidator {
         return ((XFloat)value1).compareTo((XFloat)value2);
     }//compare()
 
-    private static final class XFloat {
+    private static final class XFloat implements XSFloat {
+
         private float value;
         public XFloat(String s) throws NumberFormatException {
             try {
@@ -195,6 +197,10 @@ public class FloatDV extends TypeValidator {
                 }
             }
             return canonical;
+        }
+        
+        public float getValue() {
+            return value;
         }
     }
 } // class FloatDV

@@ -18,6 +18,7 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.impl.dv.util.ByteListImpl;
 import org.apache.xerces.impl.dv.util.HexBin;
 
 /**
@@ -44,16 +45,13 @@ public class HexBinaryDV extends TypeValidator {
 
     // length of a binary type is the number of bytes
     public int getDataLength(Object value) {
-        return ((XHex)value).length();
+        return ((XHex)value).getLength();
     }
 
-    private static final class XHex {
-        // actually data stored in a byte array
-        final byte[] data;
-        // canonical representation of the data
-        private String canonical;
+    private static final class XHex extends ByteListImpl {
+
         public XHex(byte[] data) {
-            this.data = data;
+            super(data);
         }
         public synchronized String toString() {
             if (canonical == null) {
@@ -61,9 +59,7 @@ public class HexBinaryDV extends TypeValidator {
             }
             return canonical;
         }
-        public int length() {
-            return data.length;
-        }
+        
         public boolean equals(Object obj) {
             if (!(obj instanceof XHex))
                 return false;
@@ -77,5 +73,6 @@ public class HexBinaryDV extends TypeValidator {
             }
             return true;
         }
+
     }
 }

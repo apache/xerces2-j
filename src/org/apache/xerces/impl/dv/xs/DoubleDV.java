@@ -18,6 +18,7 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.xs.datatypes.XSDouble;
 
 /**
  * Represent the schema type "double"
@@ -47,7 +48,7 @@ public class DoubleDV extends TypeValidator {
         return ((XDouble)value1).compareTo((XDouble)value2);
     }//compare()
 
-    private static final class XDouble {
+    private static final class XDouble implements XSDouble {
         private double value;
         public XDouble(String s) throws NumberFormatException {
             try {
@@ -195,6 +196,9 @@ public class DoubleDV extends TypeValidator {
                 }
             }
             return canonical;
+        }
+        public double getValue() {
+            return value;
         }
     }
 } // class DoubleDV

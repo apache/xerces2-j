@@ -19,6 +19,7 @@ package org.apache.xerces.impl.dv.xs;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.util.Base64;
+import org.apache.xerces.impl.dv.util.ByteListImpl;
 
 /**
  * Represent the schema type "base64Binary"
@@ -44,19 +45,16 @@ public class Base64BinaryDV extends TypeValidator {
 
     // length of a binary type is the number of bytes
     public int getDataLength(Object value) {
-        return ((XBase64)value).length();
+        return ((XBase64)value).getLength();
     }
 
     /**
      * represent base64 data
      */
-    private static final class XBase64 {
-        // actually data stored in a byte array
-        final byte[] data;
-        // canonical representation of the data
-        private String canonical;
+    private static final class XBase64 extends ByteListImpl {
+
         public XBase64(byte[] data) {
-            this.data = data;
+            super(data);
         }
         public synchronized String toString() {
             if (canonical == null) {
@@ -64,9 +62,7 @@ public class Base64BinaryDV extends TypeValidator {
             }
             return canonical;
         }
-        public int length() {
-            return data.length;
-        }
+        
         public boolean equals(Object obj) {
             if (!(obj instanceof XBase64))
                 return false;

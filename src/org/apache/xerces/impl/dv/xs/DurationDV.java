@@ -28,6 +28,9 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class DurationDV extends AbstractDateTimeDV {
 
+	public static final int DURATION_TYPE = 0;
+	public static final int YEARMONTHDURATION_TYPE = 1;
+	public static final int DAYTIMEDURATION_TYPE = 2;
     // order-relation on duration is a partial order. The dates below are used to
     // for comparison of 2 durations, based on the fact that
     // duration x and y is x<=y iff s+x<=s+y
@@ -42,7 +45,7 @@ public class DurationDV extends AbstractDateTimeDV {
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
-            return parse(content);
+            return parse(content, DURATION_TYPE);
         } catch (Exception ex) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "duration"});
         }
@@ -56,10 +59,10 @@ public class DurationDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected DateTimeData parse(String str) throws SchemaDateTimeException{
+    protected DateTimeData parse(String str, int durationType) throws SchemaDateTimeException{
         int len = str.length();
         DateTimeData date= new DateTimeData(this);
-
+        
         int start = 0;
         char c=str.charAt(start++);
         if ( c!='P' && c!='-' ) {
@@ -71,54 +74,73 @@ public class DurationDV extends AbstractDateTimeDV {
                 throw new SchemaDateTimeException();
             }
         }
-
+        
         int negate = 1;
         //negative duration
         if ( date.utc=='-' ) {
             negate = -1;
-
+            
         }
         //at least one number and designator must be seen after P
         boolean designator = false;
-
+        
         int endDate = indexOf (str, start, len, 'T');
         if ( endDate == -1 ) {
             endDate = len;
         }
+        else if (durationType == YEARMONTHDURATION_TYPE) {
+            throw new SchemaDateTimeException();
+        }
+        
         //find 'Y'
         int end = indexOf (str, start, endDate, 'Y');
         if ( end!=-1 ) {
+            
+            if (durationType == DAYTIMEDURATION_TYPE) {
+                throw new SchemaDateTimeException();
+            }
+            
             //scan year
             date.year=negate * parseInt(str,start,end);
             start = end+1;
             designator = true;
         }
-
+        
         end = indexOf (str, start, endDate, 'M');
         if ( end!=-1 ) {
+            
+            if (durationType == DAYTIMEDURATION_TYPE) {
+                throw new SchemaDateTimeException();
+            }
+            
             //scan month
             date.month=negate * parseInt(str,start,end);
             start = end+1;
             designator = true;
         }
-
+        
         end = indexOf (str, start, endDate, 'D');
         if ( end!=-1 ) {
+            
+            if(durationType == YEARMONTHDURATION_TYPE) {
+                throw new SchemaDateTimeException();
+            }
+            
             //scan day
             date.day=negate * parseInt(str,start,end);
             start = end+1;
             designator = true;
         }
-
+        
         if ( len == endDate && start!=len ) {
             throw new SchemaDateTimeException();
         }
         if ( len !=endDate ) {
-
+            
             //scan hours, minutes, seconds
             //REVISIT: can any item include a decimal fraction or only seconds?
             //
-
+            
             end = indexOf (str, ++start, len, 'H');
             if ( end!=-1 ) {
                 //scan hours
@@ -126,7 +148,7 @@ public class DurationDV extends AbstractDateTimeDV {
                 start=end+1;
                 designator = true;
             }
-
+            
             end = indexOf (str, start, len, 'M');
             if ( end!=-1 ) {
                 //scan min
@@ -134,7 +156,7 @@ public class DurationDV extends AbstractDateTimeDV {
                 start=end+1;
                 designator = true;
             }
-
+            
             end = indexOf (str, start, len, 'S');
             if ( end!=-1 ) {
                 //scan seconds
@@ -148,11 +170,11 @@ public class DurationDV extends AbstractDateTimeDV {
                 throw new SchemaDateTimeException();
             }
         }
-
+        
         if ( !designator ) {
             throw new SchemaDateTimeException();
         }
-
+        
         return date;
     }
 
