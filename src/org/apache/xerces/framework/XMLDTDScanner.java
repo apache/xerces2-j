@@ -648,6 +648,12 @@ public final class XMLDTDScanner {
          * @exception java.lang.Exception
          */
         public int scanDefaultAttValue(int elementType, int attrName, int attType, int enumeration) throws Exception;
+        
+        /**
+         * Supports DOM Level 2 internalSubset additions.
+         * Called when the internal subset is completely scanned.
+         */
+        public void internalSubset(int internalSubset);
     }
     //
     //
@@ -1335,6 +1341,7 @@ public final class XMLDTDScanner {
      */
     public void scanDecls(boolean extSubset) throws Exception
     {
+        int subsetOffset = fEntityReader.currentOffset();
         if (extSubset)
             fExternalSubsetReader = fReaderId;
         fIncludeSectDepth = 0;
@@ -1343,6 +1350,10 @@ public final class XMLDTDScanner {
         while (fScannerState == SCANNER_STATE_MARKUP_DECL) {
             boolean newParseTextDecl = false;
             if (!extSubset && fEntityReader.lookingAtChar(']', true)) {
+                fEventHandler.internalSubset(
+                    fEntityReader.addString(subsetOffset, 
+                                            (fEntityReader.currentOffset()-subsetOffset)-1));
+            
                 restoreScannerState(prevState);
                 return;
             }
@@ -1466,6 +1477,11 @@ public final class XMLDTDScanner {
         }
         if (extSubset)
             fEventHandler.stopReadingFromExternalSubset();
+        else 
+            fEventHandler.internalSubset(
+                fEntityReader.addString(subsetOffset, 
+                                        (fEntityReader.currentOffset()-subsetOffset)));
+        
 
     }
     //

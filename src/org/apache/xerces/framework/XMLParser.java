@@ -468,6 +468,13 @@ public abstract class XMLParser
      * @exception java.lang.Exception
      */
     public abstract void endNamespaceDeclScope(int prefix) throws Exception;
+    
+    /**
+     * Supports DOM Level 2 internalSubset additions.
+     * Called when the internal subset is completely scanned.
+     */
+    public abstract void internalSubset(int internalSubset);
+    
 
     /**
      * callback for the start of element.
