@@ -71,7 +71,7 @@ public final class Hash2intTable {
 
 
     public void put(int key1, int key2, int value) {
-        int hash = (key1+key2) % HASHTABLE_SIZE;
+        int hash = (key1+key2+1) % HASHTABLE_SIZE;
         int[] bucket = fHashTable[hash];
         
         if (bucket == null) {
@@ -112,7 +112,7 @@ public final class Hash2intTable {
     }
 
     public int get(int key1, int key2) {
-        int hash = (key1+key2) % HASHTABLE_SIZE;
+        int hash = (key1+key2+1) % HASHTABLE_SIZE;
         int[] bucket = fHashTable[hash];
 
 	if (bucket == null) {
