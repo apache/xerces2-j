@@ -66,7 +66,7 @@ import org.apache.xerces.dom.*;
 import org.apache.xerces.dom.events.*;
 
 /**
- * ParentNode inherits from NodeImpl and adds the capability of having child
+ * ParentNode inherits from ChildImpl and adds the capability of having child
  * nodes. Not every node in the DOM can have children, so only nodes that can
  * should inherit from this class and pay the price for it.
  * <P>
@@ -79,10 +79,22 @@ import org.apache.xerces.dom.events.*;
  * While we have a direct reference to the first child, the last child is
  * stored as the previous sibling of the first child. First child nodes are
  * marked as being so, and getNextSibling hides this fact.
+ * <P>Note: Not all parent nodes actually need to also be a child. At some
+ * point we used to have ParentNode inheriting from NodeImpl and another class
+ * called ChildAndParentNode that inherited from ChildNode. But due to the lack
+ * of multiple inheritance a lot of code had to be duplicated which led to a
+ * maintenance nightmare. At the same time only a few nodes (Document,
+ * DocumentFragment, Entity, and Attribute) cannot be a child so the gain is
+ * memory wasn't really worth it. The only type for which this would be the
+ * case is Attribute, but we deal with there in another special way, so this is
+ * not applicable.
  *
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
+ * @author Andy Clark, IBM
  */
 public abstract class ParentNode
-    extends NodeImpl {
+    extends ChildNode {
 
     /** Serialization version. */
     static final long serialVersionUID = 2815829867152120872L;

@@ -100,6 +100,8 @@ import org.apache.xerces.utils.StringPool;
  * @see DeferredAttrNSImpl
  *
  *
+ * @author Andy Clark, IBM
+ * @author Arnaud  Le Hors, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
@@ -159,7 +161,7 @@ public final class DeferredAttrImpl
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
-            (DeferredDocumentImpl) this.ownerDocument;
+            (DeferredDocumentImpl) ownerDocument();
         int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(elementTypeName);

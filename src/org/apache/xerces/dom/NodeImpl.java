@@ -100,6 +100,8 @@ import org.w3c.dom.events.*;
  * And when a node doesn't have an owner, ownerNode refers to its
  * ownerDocument.
  *
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
@@ -138,6 +140,7 @@ public abstract class NodeImpl
     protected final static short SPECIFIED    = 0x1<<5;
     protected final static short IGNORABLEWS  = 0x1<<6;
     protected final static short SETVALUE     = 0x1<<7;
+    protected final static short HASSTRING    = 0x1<<8;
 
     //
     // Constructors
@@ -1365,6 +1368,14 @@ public abstract class NodeImpl
 
     final void setValueCalled(boolean value) {
         flags = (short) (value ? flags | SETVALUE : flags & ~SETVALUE);
+    }
+
+    final boolean hasStringValue() {
+        return (flags & HASSTRING) != 0;
+    }
+
+    final void hasStringValue(boolean value) {
+        flags = (short) (value ? flags | HASSTRING : flags & ~HASSTRING);
     }
 
     //

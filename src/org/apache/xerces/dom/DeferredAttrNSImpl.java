@@ -73,6 +73,8 @@ import org.apache.xerces.utils.StringPool;
 /**
  * DeferredAttrNSImpl is to AttrNSImpl, what DeferredAttrImpl is to
  * AttrImpl. 
+ * @author Andy Clark, IBM
+ * @author Arnaud  Le Hors, IBM
  * @see DeferredAttrImpl
  */
 public final class DeferredAttrNSImpl
@@ -131,7 +133,7 @@ public final class DeferredAttrNSImpl
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
-	    (DeferredDocumentImpl) this.ownerDocument;
+	    (DeferredDocumentImpl) ownerDocument();
         int attrQName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(attrQName);

@@ -68,6 +68,9 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * The qualified name is the node name, and we store localName which is also
  * used in all queries. On the other hand we recompute the prefix when
  * necessary.
+ * @author Arnaud  Le Hors, IBM
+ * @author Andy Clark, IBM
+ * @author Ralf Pfeiffer, IBM
  */
 public class AttrNSImpl
     extends AttrImpl {
@@ -211,7 +214,7 @@ public class AttrNSImpl
     	    throw new DOMException(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
     	}
-	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
+	if (ownerDocument().errorChecking && !DocumentImpl.isXMLName(prefix)) {
     	    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
         }

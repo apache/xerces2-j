@@ -80,11 +80,15 @@ import org.w3c.dom.*;
  * it, does.
  * @see ElementNSImpl
  *
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
+ * @author Andy Clark, IBM
+ * @author Ralf Pfeiffer, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class ElementImpl
-    extends ChildAndParentNode
+    extends ParentNode
     implements Element {
 
     //

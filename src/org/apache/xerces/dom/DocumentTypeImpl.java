@@ -76,11 +76,14 @@ import org.w3c.dom.*;
  * and using Element and Attribute information. Nor was the linkage
  * between Entities and Entity References nailed down solidly.
  *
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
+ * @author Andy Clark, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentTypeImpl 
-    extends ChildAndParentNode
+    extends ParentNode
     implements DocumentType {
 
     //

@@ -91,6 +91,10 @@ import org.apache.xerces.dom.events.*;
  * <b>Note:</b> When any node in the document is serialized, the
  * entire document is serialized along with it.
  *
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
+ * @author Andy Clark, IBM
+ * @author Ralf Pfeiffer, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
@@ -839,13 +843,29 @@ public class DocumentImpl
          	        newnode = createAttribute(source.getNodeName());
          	    } else {
           	        newnode = createAttributeNS(source.getNamespaceURI(),
-          					source.getNodeName());
+                                                    source.getNodeName());
          	    }
-               } else {
-                   newnode = createAttribute(source.getNodeName());
-               }
-                deep = true;
-		// Kids carry value
+                }
+                else {
+                    newnode = createAttribute(source.getNodeName());
+                }
+                // if source is an AttrImpl from this very same implementation
+                // avoid creating the child nodes if possible
+                if (source instanceof AttrImpl) {
+                    AttrImpl attr = (AttrImpl) source;
+                    if (attr.hasStringValue()) {
+                        AttrImpl newattr = (AttrImpl) newnode;
+                        newattr.setValue((String) attr.value);
+                        deep = false;
+                    }
+                    else {
+                        deep = true;
+                    }
+                }
+                else {
+                    // Kids carry value
+                    deep = true;
+                }
 		break;
             }
 
