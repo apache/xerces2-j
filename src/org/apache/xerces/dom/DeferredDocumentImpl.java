@@ -1264,7 +1264,7 @@ public class DeferredDocumentImpl
         int index = nodeIndex & CHUNK_MASK;
         
         
-        Object value = fNodeValue[chunk][index];
+        Object value = fNodeValue[chunk] != null ? fNodeValue[chunk][index] : null;
         if (value != null) {
             fNodeValue[chunk][index] = null;
             RefCount c = (RefCount) fNodeValue[chunk][CHUNK_SIZE];
