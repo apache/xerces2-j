@@ -149,9 +149,6 @@ public class DTDGrammar
     // Data
     //
 
-    /** Datatype validator factory. */
-    protected DTDDVFactory fDatatypeValidatorFactory;
-
     /** Current element index. */
     protected int fCurrentElementIndex;
 
@@ -353,11 +350,6 @@ public class DTDGrammar
     //
     // Public methods
     //
-
-    /** Sets the datatype validator factory. */
-    public void setDatatypeValidatorFactory(DTDDVFactory factory) {
-        fDatatypeValidatorFactory = factory;
-    }
 
     /**
      * Returns true if the specified element declaration is external.
