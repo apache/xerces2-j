@@ -342,7 +342,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         String typeName;
         Element node = DOMUtil.getParent(complexTypeDecl);
         typeName="#AnonType_";
-        while (node != null) {
+        while (node != null && (node != DOMUtil.getRoot(DOMUtil.getDocument(node)))) {
           typeName = typeName+node.getAttribute(SchemaSymbols.ATT_NAME);
           node = DOMUtil.getParent(node);
         }
