@@ -16,9 +16,12 @@
            <li>Fixed datatype pattern bugs [jeffreyr]</li>
            <li>Fixed datatype min/maxLength bugs [jeffreyr]</li>
            <li>Modified samples to include additional switched [jeffreyr]</li>
+           <li>Fixed lexical comparison for string/qname datatypes [jeffreyr]</li>
            <li>Added regular expression character class subtraction [tkent@jp.ibm.com]</li>
            <li>Fixed regular expression bugs [tkent@jp.ibm.com]</li>
            <li>Added URI class [paul.eng@iclick.com]</li>
+           <li>Fixed import/include Schema bug [ericye]</li>
+           <li>Fixed lots of Schema bugs [ericye]</li>
         </ul>
     </s2>
     <s2 title='June 5, 2000'>
