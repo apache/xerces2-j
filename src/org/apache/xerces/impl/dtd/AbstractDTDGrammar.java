@@ -78,6 +78,7 @@ import org.apache.xerces.impl.dtd.models.ContentModelValidator;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.grammars.Grammar;
 
 /**
  * A generic grammar for use in validating XML documents. The Grammar
@@ -104,7 +105,7 @@ import org.apache.xerces.xni.QName;
  *
  * @version $Id$
  */
-public abstract class AbstractDTDGrammar extends org.apache.xerces.impl.validation.Grammar implements EntityState {
+public abstract class AbstractDTDGrammar implements EntityState, Grammar {
 
     //
     // Constants
@@ -273,6 +274,11 @@ public abstract class AbstractDTDGrammar extends org.apache.xerces.impl.validati
     protected AbstractDTDGrammar(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
     } // <init>(SymbolTable)
+
+    // Grammar methods
+    public String getGrammarType() {
+        return Grammar.XML_DTD;
+    } // getGrammarType():  String
 
     //
     // Public methods

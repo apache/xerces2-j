@@ -60,7 +60,7 @@ package xni.parser;
 
 import xni.PSVIWriter;
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.parsers.DTDXSParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
 
@@ -113,9 +113,9 @@ public class PSVIConfiguration extends DTDXSParserConfiguration {
      * @param grammarPool    The grammar pool to use.
      */
     public PSVIConfiguration(SymbolTable symbolTable,
-                                     GrammarPool grammarPool) {
+                                     XMLGrammarPool grammarPool) {
         this(symbolTable, grammarPool, null);
-    } // <init>(SymbolTable,GrammarPool)
+    } // <init>(SymbolTable,XMLGrammarPool)
 
     /**
      * Constructs a parser configuration using the specified symbol table,
@@ -130,7 +130,7 @@ public class PSVIConfiguration extends DTDXSParserConfiguration {
      * @param parentSettings The parent settings.
      */
     public PSVIConfiguration(SymbolTable symbolTable,
-                                    GrammarPool grammarPool,
+                                    XMLGrammarPool grammarPool,
                                     XMLComponentManager parentSettings) {
         super(symbolTable, grammarPool, parentSettings);
 
@@ -139,7 +139,7 @@ public class PSVIConfiguration extends DTDXSParserConfiguration {
             addComponent(fPSVIWriter);
         }
 
-    } // <init>(SymbolTable,GrammarPool)
+    } // <init>(SymbolTable,XMLGrammarPool)
 
 
     /** Configures the pipeline. */

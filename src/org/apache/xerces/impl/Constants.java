@@ -206,7 +206,7 @@ public final class Constants {
     public static final String ENTITY_RESOLVER_PROPERTY = "internal/entity-resolver";
 
     /** Grammar pool property ("internal/grammar-pool"). */
-    public static final String GRAMMAR_POOL_PROPERTY = "internal/grammar-pool";
+    public static final String XMLGRAMMAR_POOL_PROPERTY = "internal/grammar-pool";
 
     /** Datatype validator factory ("internal/datatype-validator-factory"). */
     public static final String DATATYPE_VALIDATOR_FACTORY_PROPERTY = "internal/datatype-validator-factory";
@@ -288,7 +288,7 @@ public final class Constants {
         ERROR_REPORTER_PROPERTY,
         ENTITY_MANAGER_PROPERTY,
         ENTITY_RESOLVER_PROPERTY,
-        GRAMMAR_POOL_PROPERTY,
+        XMLGRAMMAR_POOL_PROPERTY,
         DATATYPE_VALIDATOR_FACTORY_PROPERTY,
         DOCUMENT_SCANNER_PROPERTY,
         DTD_SCANNER_PROPERTY,

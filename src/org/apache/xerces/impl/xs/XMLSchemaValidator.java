@@ -64,8 +64,9 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.identity.*;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.validation.ValidationManager;
-import org.apache.xerces.impl.validation.GrammarPool;
-import org.apache.xerces.impl.validation.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.traversers.XSAttributeChecker;
@@ -172,8 +173,8 @@ public class XMLSchemaValidator
     Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
     /** Property identifier: grammar pool. */
-    public static final String GRAMMAR_POOL =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+    public static final String XMLGRAMMAR_POOL =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
 
     protected static final String VALIDATION_MANAGER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
@@ -322,7 +323,7 @@ public class XMLSchemaValidator
     // updated during reset
     protected ValidationManager fValidationManager = null;
     protected ValidationState fValidationState = null;
-    protected GrammarPool fGrammarPool;
+    protected XMLGrammarPool fGrammarPool;
 
     // schema location property values
     protected String fExternalSchemas = null;
@@ -1053,13 +1054,16 @@ public class XMLSchemaValidator
         // clear grammars, and put the one for schema namespace there
         fGrammarBucket.reset();
         fGrammarBucket.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
-        fGrammarPool = (GrammarPool)componentManager.getProperty(GRAMMAR_POOL);
-        Grammar [] initialGrammars = fGrammarPool.getGrammarsNS();
-        for (int i = 0; i < initialGrammars.length; i++) {
-            fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]));
+        fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
+        if(fGrammarPool instanceof XMLGrammarPoolImpl) {
+            XMLGrammarPoolImpl poolImpl = (XMLGrammarPoolImpl)fGrammarPool;
+            Grammar [] initialGrammars = poolImpl.getGrammarsNS();
+            for (int i = 0; i < initialGrammars.length; i++) {
+                fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]));
+            }
         }
 
-        // clear thing in substitution group handler
+        // clear things in substitution group handler
         fSubGroupHandler.reset();
 
         // reset schema handler and all traversal objects

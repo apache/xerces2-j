@@ -61,7 +61,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.ObjectFactory;
@@ -129,7 +129,7 @@ public class DOMParser
      * Constructs a DOM parser using the specified symbol table and
      * grammar pool.
      */
-    public DOMParser(SymbolTable symbolTable, GrammarPool grammarPool) {
+    public DOMParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super(new StandardParserConfiguration(symbolTable, grammarPool));
     }
 

@@ -78,7 +78,7 @@ import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -283,7 +283,7 @@ public class DOMBuilderImpl
      * Constructs a DOM Builder using the specified symbol table and
      * grammar pool.
      */
-    public DOMBuilderImpl(SymbolTable symbolTable, GrammarPool grammarPool) {
+    public DOMBuilderImpl(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         this(new DTDXSParserConfiguration(symbolTable, grammarPool));
     }
     

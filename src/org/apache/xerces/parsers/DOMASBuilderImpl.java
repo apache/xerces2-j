@@ -80,7 +80,8 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
@@ -143,7 +144,7 @@ public class DOMASBuilderImpl
     protected XMLErrorReporter fErrorReporter;
     protected XMLEntityResolver fEntityResolver;
     protected SymbolTable fSymbolTable;
-    protected GrammarPool fGrammarPool = null;
+    protected XMLGrammarPool fGrammarPool = null;
 
     protected ASModelImpl fAbstractSchema;
 
@@ -177,7 +178,7 @@ public class DOMASBuilderImpl
      * Constructs a DOM Builder using the specified symbol table and
      * grammar pool.
      */
-    public DOMASBuilderImpl(SymbolTable symbolTable, GrammarPool grammarPool) {
+    public DOMASBuilderImpl(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super(new DTDXSParserConfiguration(symbolTable, grammarPool));
         fGrammarPool = grammarPool;
     }
@@ -213,7 +214,7 @@ public class DOMASBuilderImpl
 
         // make sure the GrammarPool is properly initialized.
         if (fGrammarPool == null) {
-            fGrammarPool = (GrammarPool)fConfiguration.getProperty(StandardParserConfiguration.GRAMMAR_POOL);
+            fGrammarPool = (XMLGrammarPool)fConfiguration.getProperty(StandardParserConfiguration.XMLGRAMMAR_POOL);
         }
         initGrammarPool(fAbstractSchema);
     }
@@ -388,10 +389,13 @@ public class DOMASBuilderImpl
 
     private void initGrammarPool(ASModelImpl currModel) {
         // put all the grammars in fAbstractSchema into the grammar pool.
+        // REVISIT:  straighten this out when grammar caching's properly implemented!
+        if(!(fGrammarPool instanceof XMLGrammarPoolImpl)) return;
+        XMLGrammarPoolImpl poolImpl = (XMLGrammarPoolImpl)fGrammarPool;
         SchemaGrammar grammar = null;
         if((grammar = currModel.getGrammar()) != null) {
             String tns = grammar.getTargetNamespace();
-            fGrammarPool.putGrammarNS(tns, grammar);
+            poolImpl.putGrammarNS(tns, grammar);
         }
         Vector modelStore = currModel.getInternalASModels();
         for (int i = 0; i < modelStore.size(); i++) {

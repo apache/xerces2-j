@@ -71,7 +71,8 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactoryImpl;
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
 
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
@@ -180,8 +181,8 @@ public class StandardParserConfiguration
         Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
 
     /** Property identifier: grammar pool. */
-    protected static final String GRAMMAR_POOL = 
-        Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+    protected static final String XMLGRAMMAR_POOL = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
     
     /** Property identifier: DTD validator. */
     protected static final String DTD_VALIDATOR = 
@@ -215,7 +216,7 @@ public class StandardParserConfiguration
     // components (non-configurable)
 
     /** Grammar pool. */
-    protected GrammarPool fGrammarPool;
+    protected XMLGrammarPool fGrammarPool;
 
     /** Datatype validator factory. */
     protected DatatypeValidatorFactory fDatatypeValidatorFactory;
@@ -289,9 +290,9 @@ public class StandardParserConfiguration
      * @param grammarPool The grammar pool to use.
      */
     public StandardParserConfiguration(SymbolTable symbolTable,
-                                       GrammarPool grammarPool) {
+                                       XMLGrammarPool grammarPool) {
         this(symbolTable, grammarPool, null);
-    } // <init>(SymbolTable,GrammarPool)
+    } // <init>(SymbolTable,XMLGrammarPool)
 
     /**
      * Constructs a parser configuration using the specified symbol table,
@@ -306,7 +307,7 @@ public class StandardParserConfiguration
      * @param parentSettings The parent settings.
      */
     public StandardParserConfiguration(SymbolTable symbolTable,
-                                       GrammarPool grammarPool,
+                                       XMLGrammarPool grammarPool,
                                        XMLComponentManager parentSettings) {
         super(symbolTable, parentSettings);
 
@@ -336,7 +337,7 @@ public class StandardParserConfiguration
             DTD_SCANNER,
             DTD_VALIDATOR,
             NAMESPACE_BINDER,
-            GRAMMAR_POOL,   
+            XMLGRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
             VALIDATION_MANAGER
         };
@@ -344,10 +345,10 @@ public class StandardParserConfiguration
 
         // create and register missing components
         if (grammarPool == null) {
-            grammarPool = new GrammarPool();
+            grammarPool = new XMLGrammarPoolImpl();
         }
         fGrammarPool = grammarPool;
-        setProperty(GRAMMAR_POOL, fGrammarPool);
+        setProperty(XMLGRAMMAR_POOL, fGrammarPool);
 
         fEntityManager = createEntityManager();
         setProperty(ENTITY_MANAGER, fEntityManager);
@@ -410,7 +411,7 @@ public class StandardParserConfiguration
             // REVISIT: What is the right thing to do? -Ac
         }
 
-    } // <init>(SymbolTable,GrammarPool)
+    } // <init>(SymbolTable,XMLGrammarPool)
 
     //
     // Public methods

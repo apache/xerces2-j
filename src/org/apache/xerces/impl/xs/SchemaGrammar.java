@@ -63,7 +63,7 @@ import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 
-import org.apache.xerces.impl.validation.Grammar;
+import org.apache.xerces.xni.grammars.Grammar;
 
 import java.util.Hashtable;
 
@@ -82,7 +82,7 @@ import java.util.Hashtable;
  * @version $Id$
  */
 
-public class SchemaGrammar  extends Grammar {
+public class SchemaGrammar implements Grammar {
 
     /** Symbol table. */
     private SymbolTable fSymbolTable;
@@ -154,6 +154,10 @@ public class SchemaGrammar  extends Grammar {
 
     } // <init>(SymbolTable, boolean)
 
+    // Grammar methods
+    public String getGrammarType() {
+        return Grammar.XML_SCHEMA;
+    } // getGrammarType():  String
     // DTDGrammar methods
     public boolean isNamespaceAware () {
         return true;

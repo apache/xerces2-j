@@ -57,7 +57,7 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -110,7 +110,7 @@ public class XMLDocumentParser
      * grammar pool.
      */
     public XMLDocumentParser(SymbolTable symbolTable,
-                             GrammarPool grammarPool) {
+                             XMLGrammarPool grammarPool) {
         super(new StandardParserConfiguration(symbolTable, grammarPool));
     }
 

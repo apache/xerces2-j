@@ -337,7 +337,7 @@ public class XSDHandler {
     // This method initiates the parse of a schema.  It will likely be
     // called from the Validator and it will make the
     // resulting grammar available; it returns a reference to this object just
-    // in case.  An ErrorHandler, EntityResolver, GrammarPool and SymbolTable must
+    // in case.  An ErrorHandler, EntityResolver, XSGrammarBucket and SymbolTable must
     // already have been set; the last thing this method does is reset
     // this object (i.e., clean the registries, etc.).
     public SchemaGrammar parseSchema(String schemaNamespace,

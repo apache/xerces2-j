@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,57 +55,28 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.dtd;
+package org.apache.xerces.xni;
 
-import org.apache.xerces.xni.grammars.Grammar;
-import java.util.Hashtable;
-import java.util.Enumeration;
-
-/**
-* This very simple class is the skeleton of what the DTDValidator could use
-* to store various grammars that it gets from the GrammarPool.  As in the
-* case of XSGrammarBucket, one thinks of this object as being closely
-* associated with its validator; when fully mature, this class will be
-* filled from the GrammarPool when the DTDValidator is invoked on a
-* document, and, if a new DTD grammar is parsed, the new set will be
-* offered back to the GrammarPool for possible inclusion.
+/*
+ * <p> This represents the basic physical description of the location of any
+ * XML resource (a Schema grammar, a DTD, a general entity etc.) </p>
  *
  * @author Neil Graham, IBM
- *
  * @version $Id$
  */
-public class DTDGrammarBucket {
 
-    // REVISIT:  make this class smarter and *way* more complete!
+public interface XMLResourceIdentifier {
 
-    //
-    // Data
-    //
+    /** Returns the public identifier. */
+    public String getPublicId();
 
-    /** Grammars associated with element root name. */
-    protected Hashtable fGrammars = new Hashtable();
+    /** Returns the expanded system identifier. */
+    public String getExpandedSystemId();
 
-    //
-    // Constructors
-    //
+    /** Returns the literal system identifier. */
+    public String getLiteralSystemId();
 
-    /** Default constructor. */
-    public DTDGrammarBucket() {
-    } // <init>()
-
-    //
-    // Public methods
-    //
-
-    /**
-     * Puts the specified grammar into the grammar pool and associate it to
-     * a root element name.
-     * 
-     * @param rootElement Root element name.
-     * @param grammar     The grammar.
-     */
-    public void putGrammar(String rootElement, Grammar grammar) {
-        fGrammars.put(rootElement, grammar);
-    } // putGrammar(String,Grammar)
-
-} // class DTDGrammarBucket
+    /** <p> Returns the base URI against which the literal SystemId is to be 
+        resolved. </p> */
+    public String getBaseSystemId();
+} // XMLResourceIdentifier

@@ -57,7 +57,7 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -107,8 +107,8 @@ public class SAXParser
      * Constructs a SAX parser using the specified symbol table and
      * grammar pool.
      */
-    public SAXParser(SymbolTable symbolTable, GrammarPool grammarPool) {
+    public SAXParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super(new StandardParserConfiguration(symbolTable, grammarPool));
-    } // <init>(SymbolTable,GrammarPool)
+    } // <init>(SymbolTable,XMLGrammarPool)
 
 } // class SAXParser

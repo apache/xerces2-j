@@ -60,7 +60,7 @@ package org.apache.xerces.parsers;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -110,9 +110,9 @@ public class DTDXSParserConfiguration extends StandardParserConfiguration {
      * @param grammarPool    The grammar pool to use.
      */
     public DTDXSParserConfiguration(SymbolTable symbolTable,
-                                     GrammarPool grammarPool) {
+                                     XMLGrammarPool grammarPool) {
         this(symbolTable, grammarPool, null);
-    } // <init>(SymbolTable,GrammarPool)
+    } // <init>(SymbolTable,XMLGrammarPool)
 
     /**
      * Constructs a parser configuration using the specified symbol table,
@@ -127,7 +127,7 @@ public class DTDXSParserConfiguration extends StandardParserConfiguration {
      * @param parentSettings The parent settings.
      */
     public DTDXSParserConfiguration(SymbolTable symbolTable,
-                                    GrammarPool grammarPool,
+                                    XMLGrammarPool grammarPool,
                                     XMLComponentManager parentSettings) {
         super(symbolTable, grammarPool, parentSettings);
 
@@ -144,7 +144,7 @@ public class DTDXSParserConfiguration extends StandardParserConfiguration {
         }
 
 
-    } // <init>(SymbolTable,GrammarPool)
+    } // <init>(SymbolTable,XMLGrammarPool)
 
     //
     // Public methods
