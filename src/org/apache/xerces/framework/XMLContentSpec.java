@@ -300,12 +300,6 @@ public class XMLContentSpec {
                     if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                         str.append("#PCDATA");
                     }
-                    else if (contentSpec.otherValue != -1) {
-                        str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
-                    }
-                    else if (contentSpec.value == -1) {
-                        str.append("##any");
-                    }
                     else {
                         str.append(stringPool.toString(contentSpec.value));
                     }
