@@ -17,6 +17,24 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; TBD'>
+   <desc>TBD</desc>
+   <changes>
+    <fix>
+     <note>
+      Fixed various DOM Level 3 bugs.
+     </note>
+     <submitter name='Jonathan Au, Neil Delima, Michael Glavassevich, Naela Nissar, K. Venugopal'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a thread-safety bug concerning identity constraints which caused
+      spurious errors about duplicate field matches to be reported.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.6.2'>
    <desc>
     This release fixes several bugs which were present in
