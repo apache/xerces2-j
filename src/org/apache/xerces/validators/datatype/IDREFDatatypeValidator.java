@@ -189,18 +189,6 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
 
 
     /**
-     * REVISIT
-     * Compares two Datatype for order
-     *
-     * @param o1
-     * @param o2
-     * @return
-     */
-    public int compare( String content1, String content2) {
-        return -1;
-    }
-
-    /**
        * Returns a copy of this object.
        */
     public Object clone() throws CloneNotSupportedException {

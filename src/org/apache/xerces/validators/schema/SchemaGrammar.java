@@ -133,6 +133,8 @@ public class SchemaGrammar extends Grammar{
     Hashtable topLevelNotationDecls = new Hashtable();
     Hashtable topLevelAttrDecls  = new Hashtable();
     Hashtable topLevelAttrGrpDecls = new Hashtable();
+    Hashtable topLevelElemDecls = new Hashtable();
+    Hashtable topLevelTypeDecls = new Hashtable();
 
     private NamespacesScope fNamespacesScope = null;
     private String fTargetNamespaceURI = "";

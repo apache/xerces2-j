@@ -663,8 +663,6 @@ public class TraverseSchema implements
         fCurrentScope = -1;
 
 
-        checkTopLevelDuplicateNames(root);
-
         //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
         extractTopLevel3Components(root);
 
@@ -752,9 +750,6 @@ public class TraverseSchema implements
 
     } // traverseSchema(Element)
 
-    private void checkTopLevelDuplicateNames(Element root) {
-        //TO DO : !!!
-    }
 
     private void extractTopLevel3Components(Element root) throws Exception {
         
@@ -763,18 +758,63 @@ public class TraverseSchema implements
 
             String name = child.getLocalName();
             String compName = child.getAttribute(SchemaSymbols.ATT_NAME);
-            if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+            if (name.equals(SchemaSymbols.ELT_ELEMENT)) {
+                // Check if the element has already been declared
+                if (fSchemaGrammar.topLevelElemDecls.get(compName) != null) {
+                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for an element " +
+                                             compName);
+                }
+                else {                
+                    fSchemaGrammar.topLevelElemDecls.put(compName, child);
+                }
+            }
+            else if (name.equals(SchemaSymbols.ELT_SIMPLETYPE) ||
+                     name.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
+                 // Check for dublicate declaration
+                if (fSchemaGrammar.topLevelTypeDecls.get(compName) != null) {
+                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for a type " +
+                                             compName);
+                }
+                else {                
+                    fSchemaGrammar.topLevelTypeDecls.put(compName, child);
+                }
+            }
+            else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                 // Check for dublicate declaration
+                if (fSchemaGrammar.topLevelAttrGrpDecls.get(compName) != null) {
+                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for an attribute group " +
+                                             compName);
+                }
+                else {                
                 fSchemaGrammar.topLevelAttrGrpDecls.put(compName, child);
+                }
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
-                fSchemaGrammar.topLevelAttrDecls.put(compName, child);
+                // Check for dublicate declaration
+                if (fSchemaGrammar.topLevelAttrGrpDecls.get(compName) != null) {
+                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for an attribute " +
+                                             compName);
+                }
+                else {                
+                    fSchemaGrammar.topLevelAttrGrpDecls.put(compName, child);
+                }
             } else if ( name.equals(SchemaSymbols.ELT_GROUP) ) {
                 // Check if the group has already been declared
-                if (fSchemaGrammar.topLevelGroupDecls.get(compName) != null) 
-                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for group " +
+                if (fSchemaGrammar.topLevelGroupDecls.get(compName) != null){ 
+                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for a group " +
                                              compName);
+                }
+                else {                
                 fSchemaGrammar.topLevelGroupDecls.put(compName, child);
+                }
             } else if ( name.equals(SchemaSymbols.ELT_NOTATION) ) {
+                // Check for dublicate declaration
+                if (fSchemaGrammar.topLevelNotationDecls.get(compName) != null) {
+                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for a notation " +
+                                             compName);
+                }
+                else {                
                 fSchemaGrammar.topLevelNotationDecls.put(compName, child);
+            }
             }
         } // for each child node
     }
@@ -1038,8 +1078,6 @@ public class TraverseSchema implements
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(root, scope);
-
-        checkTopLevelDuplicateNames(root);
 
         //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
         extractTopLevel3Components(root);
