@@ -118,10 +118,10 @@ class RegexParser {
     Vector references = null;
 
     public RegexParser() {
-        //TODO IBM-JR this.setLocale(Locale.getDefault());
+        this.setLocale(Locale.getDefault());
     }
     public RegexParser(Locale locale) {
-        //TODO IBM-JR this.setLocale(locale);
+        this.setLocale(locale);
     }
 
     public void setLocale(Locale locale) {
