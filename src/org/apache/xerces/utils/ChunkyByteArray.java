@@ -195,6 +195,18 @@ public final class ChunkyByteArray extends InputStream {
         return (offset > fLength);
     }
 
+
+
+    /**
+     * Closes this input Stream
+     * 
+     * @exception IOException
+     */
+    public void close() throws IOException {
+        fInputStream.close(); 
+        }
+
+
     //
     // Fill in the next chunk with additional data.
     //
