@@ -74,9 +74,12 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
@@ -113,6 +116,7 @@ import java.io.Reader;
  * schema, other grammars may be constructed as a side-effect.
  *
  * @author Neil Graham, IBM
+ * @author Pavani Mukthipudi, Sun Microsystems
  * @version $Id$
  */
 public class XSDHandler {
@@ -284,6 +288,12 @@ public class XSDHandler {
 
     // the GrammarResolver
     private XSGrammarBucket fGrammarBucket;
+    
+    // the Grammar description
+    private SchemaGrammarDescription fSchemaGrammarDescription;
+    
+    // the Grammar Pool
+    private XMLGrammarPool fGrammarPool;
 
     //************ Traversers **********
     XSDAttributeGroupTraverser fAttributeGroupTraverser;
@@ -498,21 +508,36 @@ public class XSDHandler {
         // a schema document can always access it's own target namespace
         currSchemaInfo.addAllowedNS(currSchemaInfo.fTargetNamespace);
 
-        if (fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace) == null) {
-            // REVISIT:  the grammar bucket should have been called
-            // already, when we first tried to do the import (not with
-            // preparse of course).  So this code should be moved!  - NG
-            SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace, new XSDDescription());
+        SchemaGrammar sg = null;
+        SchemaGrammarDescription grammarDescription = null;
+        
+        // In the case of preparse, if the grammar is not available in the bucket we ask the pool
+        // If the context is instance, the validator would have already consulted the pool
+        if ((sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace)) == null && referType == XSDDescription.CONTEXT_PREPARSE) {
+            if (fGrammarPool != null) {
+            	grammarDescription = new SchemaGrammarDescription();
+            	grammarDescription.setContextType(referType);
+            	grammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
+            	grammarDescription.setLocationHints(new String[] {locationHint});
+            	sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(grammarDescription);
+             	if (sg != null) {
+             	    fGrammarBucket.putGrammar(sg);
+             	}
+	    }
+	}
+	if (sg == null) {
+	    grammarDescription = new SchemaGrammarDescription();
+	    grammarDescription.setContextType(referType);
+	    grammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
+            grammarDescription.setLocationHints(new String[] {locationHint});
+	    sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace, grammarDescription);
             fGrammarBucket.putGrammar(sg);
-        }
-        // we got a grammar of the samenamespace in the bucket, should ignore this one
-        else if (referType == XSDDescription.CONTEXT_INSTANCE ||
-                 referType == XSDDescription.CONTEXT_IMPORT ||
-                 referType == XSDDescription.CONTEXT_PREPARSE) {
+	}
+	// we got a grammar of the same namespace in the bucket, should ignore this one 
+	else if (referType == XSDDescription.CONTEXT_PREPARSE) {
             return null;
-        }
-
-        // Modified by Pavani Mukthipudi, Sun Microsystems Inc.
+	}
+	    
         fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
 
         Vector dependencies = new Vector();
@@ -543,18 +568,31 @@ public class XSDHandler {
                     reportSchemaError("src-import.1.1", new Object [] {schemaNamespace}, child);
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
+                
                 // a schema document can access it's imported namespaces
                 currSchemaInfo.addAllowedNS(schemaNamespace);
-                // consciously throw away whether was a duplicate; don't care.
-                // pass the systemId of the current document as the base systemId
-                // REVISIT:  We must consult the gtrammar bucket, then the gramar
-                // pool, and only then the entity resolver; this *must* be the
-                // order.  Therefore, the current sequence is *wrong*, since we
-                // consult the EntityResolver, only when we call constructTrees
-                // again consulting Grammar bucket.  So this code needs to be
-                // reworked - NG
-                // i.e., we need to create an XSDDescription, ask Grammar
-                // bucket, ask GrammarPool, then pass that along...
+                
+                // We first ask the GrammarBucket, then the GrammarPool and only then the EntityResolver is consulted
+                
+                if (fGrammarBucket.getGrammar(schemaNamespace) != null) {
+                    continue;
+                }
+                else {
+                    if (fGrammarPool != null) {
+                    	fSchemaGrammarDescription.reset();
+                    	fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
+                    	sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(fSchemaGrammarDescription);
+                    	if (sg != null) {
+			    fGrammarBucket.putGrammar(sg);
+			    continue;
+			}
+                    }
+                }
+                grammarDescription = new SchemaGrammarDescription();
+                grammarDescription.setTargetNamespace(schemaNamespace);
+                grammarDescription.setLocationHints(new String[] {schemaHint});
+                sg = new SchemaGrammar(fSymbolTable, schemaNamespace, grammarDescription);
+                fGrammarBucket.putGrammar(sg);
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false, XSDDescription.CONTEXT_IMPORT, child);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
@@ -1277,10 +1315,11 @@ public class XSDHandler {
                       SymbolTable symbolTable,
                       String externalSchemaLocation,
                       String externalNoNSSchemaLocation,
-                      Object jaxpSchemaSource) {
+                      Object jaxpSchemaSource, XMLGrammarPool grammarPool) {
 
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
+        fGrammarPool = grammarPool;
 
         EMPTY_STRING = fSymbolTable.addSymbol(SchemaSymbols.EMPTY_STRING);
 
@@ -1925,4 +1964,52 @@ public class XSDHandler {
             return true;
         }
     }
+    
+    /**
+     * This inner class extends XSDDescription and provides set methods for setting the
+     * protected fields of XSDDescription. It is declared private, so as, not to expose set*
+     * methods outside this class. XSDDescription is for providing the read only information 
+     * to the application about Schema Grammar required by the parser. Application uses this info
+     * in making decisions about caching/retrieving appropriate grammar. XSDHanlder will make use 
+     * of this class to provide information and give a chance to application to supply 
+     * SchemaGrammar required by parser.     
+     *
+     * @author Neeraj Bajaj SUN Microsystems.
+     *
+     */
+    private class SchemaGrammarDescription extends XSDDescription {
+    
+        
+        public void setContextType(short contextType){
+            fContextType = contextType ;
+        }
+
+        public void setTargetNamespace(String targetNamespace){
+            fTargetNamespace = targetNamespace ;
+        }
+
+        public void setLocationHints(String [] locationHints){
+            int length = locationHints.length ;
+            fLocationHints  = new String[length];
+            System.arraycopy(locationHints, 0, fLocationHints, 0, length);
+            //fLocationHints = locationHints ;
+        }
+
+        public void setTriggeringComponent(QName triggeringComponent){
+            fTriggeringComponent = triggeringComponent ;
+        }
+
+        public void setEnclosingElementName(QName enclosedElementName){
+            fEnclosedElementName = enclosedElementName ;
+        }
+
+        public void setAttributes(XMLAttributes attributes){
+            fAttributes = attributes ;    
+        }
+        
+        public void reset(){
+            super.reset();
+        }
+    
+    }//SchemaGrammarDescription
 } // XSDHandler

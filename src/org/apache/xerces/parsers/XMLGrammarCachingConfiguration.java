@@ -301,7 +301,7 @@ public class XMLGrammarCachingConfiguration
        for(int i=0; i<grammars.length; i++ )
             fXSGrammarBucket.putGrammar(grammars[i]);
        fSubGroupHandler.reset();
-       fSchemaHandler.reset(fErrorReporter, fEntityManager, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, null);
+       fSchemaHandler.reset(fErrorReporter, fEntityManager, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, null, fGrammarPool);
 
        // Should check whether the grammar with this namespace is already in
        // the grammar resolver. But since we don't know the target namespace

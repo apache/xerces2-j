@@ -61,6 +61,9 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
+import org.apache.xerces.impl.dtd.XMLDTDDescription;
+import org.apache.xerces.impl.xs.XSDDescription;
+
 import java.util.Hashtable;
 import java.util.Enumeration;
 
@@ -69,13 +72,14 @@ import java.util.Enumeration;
  * implementation stores two types of grammars: those keyed by the root element
  * name, and those keyed by the grammar's target namespace.
  *
- * This is for now, a very simple default implementation of the GrammarPool
- * interface.  As we move forward, this will become more function-rich and
- * robust.
+ * This is the default implementation of the GrammarPool interface.  
+ * As we move forward, this will become more function-rich and robust.
  *
  * @author Jeffrey Rodriguez, IBM
  * @author Andy Clark, IBM
  * @author Neil Graham, IBM
+ * @author Pavani Mukthipudi, Sun Microsystems
+ * @author Neeraj Bajaj, SUN Microsystems
  *
  * @version $Id$
  */
@@ -86,12 +90,17 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     //
 
     /** Grammars associated with element root name. */
-    protected Hashtable fGrammars = new Hashtable();
+    // REVISIT : Do we want to use Internal subset also to identify DTD grammars ?
+    protected Hashtable fDTDGrammars = new Hashtable();
 
     /** Grammars associated with namespaces. */
-    protected Hashtable fGrammarsNS = new Hashtable();
-    protected Grammar fNoNSGrammar = null;
+    // REVISIT : Do we want to use some other information available with the XSDDescription 
+    //		 along with the namespace to identify Schema grammars ? 
+    protected Hashtable fSchemaGrammars = new Hashtable();
+    protected Grammar fNoNSSchemaGrammar = null;
 
+	private static final boolean DEBUG = true ;
+	
     //
     // Constructors
     //
@@ -100,144 +109,285 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     public XMLGrammarPoolImpl() {
     } // <init>()
 
+    //
     // XMLGrammarPool methods
-    // REVISIT:  implement these!
+    //
+    
+    /* <p> Retrieve the initial known set of grammars. This method is
+     * called by a validator before the validation starts. The application 
+     * can provide an initial set of grammars available to the current 
+     * validation attempt. </p>
+     * 
+     * @param grammarType The type of the grammar, from the
+     *  		  <code>org.apache.xerces.xni.grammars.XMLGrammarDescription</code> 
+     *  		  interface.
+     * @return 		  The set of grammars the validator may put in its "bucket"
+     */
     public Grammar [] retrieveInitialGrammarSet (String grammarType) {
+
+       	if (grammarType.equals(XMLGrammarDescription.XML_DTD)) {
+    	    return getDTDGrammars();
+        }
+        else if (grammarType.equals(XMLGrammarDescription.XML_SCHEMA)) {
+    	    return getSchemaGrammars();
+        }
         return null;
     } // retrieveInitialGrammarSet (String): Grammar[]
 
+    /* <p> Return the final set of grammars that the validator ended up
+     * with. This method is called after the validation finishes. The 
+     * application may then choose to cache some of the returned grammars.</p>
+     *
+     * @param grammarType The type of the grammars being returned;
+     * @param grammars 	  An array containing the set of grammars being
+     *  		  returned; order is not significant.
+     */
     public void cacheGrammars(String grammarType, Grammar[] grammars) {
+    	for (int i = 0; i < grammars.length; i++) {
+    	if(DEBUG){
+    		System.out.println("CACHED GRAMMAR " + (i+1) ) ;
+    		Grammar temp = grammars[i] ;
+    		print(temp.getGrammarDescription());
+ 	}
+    	    putGrammar(grammars[i]);
+    	}
     } // cacheGrammars(String, Grammar[]);
-
+    
+    /* <p> This method requests that the application retrieve a grammar
+     * corresponding to the given GrammarIdentifier from its cache.
+     * If it cannot do so it must return null; the parser will then
+     * call the EntityResolver. </p>
+     * <strong>An application must not call its EntityResolver itself 
+     * from this method; this may result in infinite recursions.</strong>
+     * 
+     * This implementation chooses to use the root element name to identify a DTD grammar
+     * and the target namespace to identify a Schema grammar.
+     * 
+     * @param desc The description of the Grammar being requested.
+     * @return     The Grammar corresponding to this description or null if
+     *  	   no such Grammar is known.
+     */
     public Grammar retrieveGrammar(XMLGrammarDescription desc) {
-        return null;
-    } // retrieveGrammar(Grammar):  XMLGrammarDescription
+        if(DEBUG){
+            System.out.println("RETRIEVING GRAMMAR FROM THE APPLICATION WITH FOLLOWING DESCRIPTION :");
+            print(desc);
+        }
+        return getGrammar(desc);
+    } // retrieveGrammar(XMLGrammarDescription):  Grammar
 
     //
     // Public methods
     //
 
     /**
-     * Puts the specified grammar into the grammar pool and associate it to
-     * a root element name.
-     * 
-     * @param rootElement Root element name.
-     * @param grammar     The grammar.
-     */
-    public void putGrammar(String rootElement, Grammar grammar) {
-        fGrammars.put(rootElement, grammar);
-    } // putGrammar(String,Grammar)
-
-    /**
-     * Puts the specified grammar into the grammar pool and associate it to
-     * a target namespace.
+     * Puts the specified grammar into the grammar pool and associates it to
+     * its root element name or its target namespace.
      *
-     * @param namespace The grammar namespace.
-     * @param grammar   The grammar.
+     * @param grammar The Grammar.
      */
-    public void putGrammarNS(String namespace, Grammar grammar) {
-        if(namespace != null) {
-            fGrammarsNS.put(namespace, grammar);
-        } else {
-            fNoNSGrammar = grammar;
+    public void putGrammar(Grammar grammar) {
+    	if (grammar.getGrammarDescription().getGrammarType().equals(XMLGrammarDescription.XML_DTD)) {
+            fDTDGrammars.put(((XMLDTDDescription)grammar.getGrammarDescription()).getRootName(), grammar);
         }
-    } // putGrammarNS(String,Grammar)
-
-    /**
-     * Returns the grammar associated to the specified root element name.
-     * 
-     * @param rootElement Root element name.
-     */
-    public Grammar getGrammar(String rootElement) {
-        return (Grammar)fGrammars.get(rootElement);
-    } // getGrammar(String):Grammar
-
-    /**
-     * Returns the grammar associated to the specified target namespace.
-     * 
-     * @param namespace Target namespace.
-     */
-    public Grammar getGrammarNS(String namespace) {
-        return ((namespace == null)?
-            fNoNSGrammar :
-            (Grammar)fGrammarsNS.get(namespace));
-    } // getGrammarNS(String):Grammar
-
-    /**
-     * Removes the grammar associated to the specified root elememt name from the
-     * grammar pool and returns the removed grammar.
-     * 
-     * @param rootElement Root element name.
-     */
-    public Grammar removeGrammar(String rootElement) {
-        if (fGrammars.contains(rootElement)) {
-            return (Grammar)fGrammars.remove(rootElement);
+        else if (grammar.getGrammarDescription().getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)) {
+            String namespace = ((XSDDescription)grammar.getGrammarDescription()).getTargetNamespace();
+	    if (namespace != null) {
+    	    	fSchemaGrammars.put(namespace, grammar);
+	    }
+	    else {
+	    	fNoNSSchemaGrammar = grammar;
+	    }
         }
-        return null;
-    } // removeGrammar(String):Grammar
+    } // putGrammar(Grammar)
 
     /**
-     * Removes the grammar associated to the specified namespace from the
-     * grammar pool and returns the removed grammar.
-     * 
-     * @param namespace Target namespace.
+     * Returns the grammar associated to the specified grammar description.
+     * Currently, the root element name is used as the key for DTD grammars 
+     * and the target namespace  is used as the key for Schema grammars.
+     *
+     * @param desc The Grammar Description.
      */
-    public Grammar removeGrammarNS(String namespace) {
-        if(namespace == null) {
-            Grammar tempGrammar = fNoNSGrammar;
-            fNoNSGrammar = null;
-            return tempGrammar;
-        } else if (fGrammarsNS.contains(namespace)) {
-            return (Grammar)fGrammarsNS.remove(namespace);
+    public Grammar getGrammar(XMLGrammarDescription desc) {
+    	if (desc.getGrammarType().equals(XMLGrammarDescription.XML_DTD)) {
+            Grammar grammar = (Grammar)fDTDGrammars.get(((XMLDTDDescription)desc).getRootName());
+            
+	    // REVISIT : As of right now, calling equals(...) doesn't serve much of the purpose. It's a double check.
+	    //		 Probably it will be useful if the way two grammars are compared in equals(...) is changed.
+	    if (grammar != null && equals(grammar.getGrammarDescription(), desc)) {
+            	return grammar;
+            }
+        }
+        else if (desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)) {
+            String namespace = ((XSDDescription)desc).getTargetNamespace();
+            Grammar grammar = ((namespace == null)? fNoNSSchemaGrammar : (Grammar)fSchemaGrammars.get(namespace));
+            
+            if (grammar != null && equals(grammar.getGrammarDescription(), desc)) {
+            	return grammar;
+            }
         }
         return null;
-    } // removeGrammarNS(String):Grammar
+    } // getGrammar(XMLGrammarDescription):Grammar
+
+    /**
+     * Removes the grammar associated to the specified grammar description from the
+     * grammar pool and returns the removed grammar. Currently, the root element name 
+     * is used as the key for DTD grammars and the target namespace  is used 
+     * as the key for Schema grammars.
+     * 
+     * @param desc The Grammar Description.
+     * @return     The removed grammar.
+     */
+    public Grammar removeGrammar(XMLGrammarDescription desc) {
+    	if (containsGrammar(desc)) {
+    	    if (desc.getGrammarType().equals(XMLGrammarDescription.XML_DTD)) {
+    	    	return (Grammar)fDTDGrammars.remove(((XMLDTDDescription)desc).getRootName());
+	    }
+	    else if (desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)) {
+	    	String namespace = ((XSDDescription)desc).getTargetNamespace();
+	    	if (namespace == null) {
+            	   Grammar tempGrammar = fNoNSSchemaGrammar;
+            	   fNoNSSchemaGrammar = null;
+            	   return tempGrammar;
+            	} 
+            	else {
+            	   return (Grammar)fSchemaGrammars.remove(namespace);
+            	}
+	    }
+    	}
+    	return null;
+    } // removeGrammar(XMLGrammarDescription):Grammar
 
     /**
      * Returns true if the grammar pool contains a grammar associated
-     * to the specified root element name.
+     * to the specified grammar description. Currently, the root element name 
+     * is used as the key for DTD grammars and the target namespace  is used 
+     * as the key for Schema grammars.
      *
-     * @param rootElement Root element name.
+     * @param desc The Grammar Description.
      */
-    public boolean containsGrammar(String rootElement) {
-        return fGrammars.containsKey(rootElement);
-    } // containsGrammar(String):boolean
+    public boolean containsGrammar(XMLGrammarDescription desc) {
+    	if (desc.getGrammarType().equals(XMLGrammarDescription.XML_DTD)) {
+            Grammar grammar = (Grammar)fDTDGrammars.get(((XMLDTDDescription)desc).getRootName());
+            if (grammar != null && equals(grammar.getGrammarDescription(), desc)) {
+            	return true;
+            }
+        }
+        else if (desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)) {
+            String namespace = ((XSDDescription)desc).getTargetNamespace();
+            Grammar grammar = ((namespace == null)? fNoNSSchemaGrammar : (Grammar)fSchemaGrammars.get(namespace));
+            if (grammar != null && equals(grammar.getGrammarDescription(), desc)) {
+            	return true;
+            }
+        }
+    	return false;
+    } // containsGrammar(XMLGrammarDescription):boolean
 
     /**
-     * Returns true if the grammar pool contains a grammar associated
-     * to the specified target namespace.
-     *
-     * @param namespace Target namespace.
+     * Returns all the DTD grammars.
+     * 
+     * @return The set of DTD grammars in the pool
      */
-    public boolean containsGrammarNS(String namespace) {
-        return fGrammarsNS.containsKey(namespace);
-    } // containsGrammarNS(String):boolean
-
-    public Grammar [] getGrammars() {
-        int grammarSize = fGrammars.size() ;
+    public Grammar [] getDTDGrammars() {
+        int grammarSize = fDTDGrammars.size() ;
         Grammar [] toReturn = new Grammar[grammarSize];
         int pos = 0;
-        Enumeration grammars = fGrammars.elements();
+        Enumeration grammars = fDTDGrammars.elements();
         while (grammars.hasMoreElements()) {
             toReturn[pos++] = (Grammar)grammars.nextElement();
         }
         return toReturn;
-    } // getGrammars()
+    } // getDTDGrammars()
 
     /**
-     * Returns all grammars associated with namespaces.
+     * Returns all the Schema grammars.
      * 
+     * @return The set of Schema grammars in the pool
      */
-    public Grammar [] getGrammarsNS() {
-        int grammarSize = fGrammarsNS.size() + ((fNoNSGrammar == null) ? 0 : 1);
+    public Grammar [] getSchemaGrammars() {
+        int grammarSize = fSchemaGrammars.size() + ((fNoNSSchemaGrammar == null) ? 0 : 1);
         Grammar [] toReturn = new Grammar[grammarSize];
         int pos = 0;
-        Enumeration grammarsNS = fGrammarsNS.elements();
+        Enumeration grammarsNS = fSchemaGrammars.elements();
         while (grammarsNS.hasMoreElements()) {
             toReturn[pos++] = (Grammar)grammarsNS.nextElement();
+            if(DEBUG){
+            	System.out.println("RETRIEVING INITIAL GRAMMAR " + pos  ) ;
+            	Grammar temp = toReturn[pos - 1] ;
+            	print(temp.getGrammarDescription());
+            }
         }
-        if(pos < grammarSize) 
-            toReturn[pos++] = fNoNSGrammar;
+        if(pos < grammarSize){ 
+            toReturn[pos++] = fNoNSSchemaGrammar;
+            if(DEBUG){
+            	System.out.println("RETRIEVING INITIAL GRAMMAR " + pos  ) ;
+            	Grammar temp = toReturn[pos - 1] ;
+            	print(temp.getGrammarDescription());
+            }
+            
+        }
         return toReturn; 
-    } // getGrammarsNS()
-} // class GrammarPool
+    } // getSchemaGrammars()
+    
+    /**
+     * This method checks whether two grammars are the same. Currently, we compare 
+     * the root element names for DTD grammars and the target namespaces for Schema grammars.
+     * The application can override this behaviour and add its own logic.
+     *
+     * @param gDesc1 The grammar description
+     * @param gDesc2 The grammar description of the grammar to be compared to
+     * @return       True if the grammars are equal, otherwise false
+     */
+    public boolean equals(XMLGrammarDescription gDesc1, XMLGrammarDescription gDesc2) {
+    	if (gDesc1.getGrammarType() != gDesc2.getGrammarType()) {
+    	    return false;
+    	}
+    	if (gDesc1.getGrammarType().equals(XMLGrammarDescription.XML_DTD)) {
+    	    if (((XMLDTDDescription)gDesc1).getRootName().equals(((XMLDTDDescription)gDesc2).getRootName())) {
+    	    	return true;
+    	    }
+    	}
+    	else if (gDesc1.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)) {
+    	    String namespace1 = ((XSDDescription)gDesc1).getTargetNamespace();
+    	    String namespace2 = ((XSDDescription)gDesc2).getTargetNamespace();
+    	    if (namespace1 != null && namespace1.equals(namespace2)) {
+    	    	return true;
+    	    }
+    	    else if (namespace1 == null && namespace2 == null) {
+    	    	return true;
+    	    }
+    	}
+    	return false; 
+    }
+    
+    public int hashCode(XMLGrammarDescription desc) {
+    	if (desc.getGrammarType().equals(XMLGrammarDescription.XML_DTD)) {
+            return (((XMLDTDDescription)desc).getRootName()).hashCode();
+        }
+        else {
+            String namespace = ((XSDDescription)desc).getTargetNamespace();
+            return (namespace != null) ? namespace.hashCode() : 0;
+        }
+    }
+    
+    public void print(XMLGrammarDescription description){
+    	if(description.getGrammarType().equals(XMLGrammarDescription.XML_DTD)){
+    	
+    	}
+    	else if(description.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)){
+    		XSDDescription schema = (XSDDescription)description ;
+    		System.out.println("Context = " + schema.getContextType());
+    		System.out.println("TargetNamespace = " + schema.getTargetNamespace());
+    		String [] temp = schema.getLocationHints();
+    		
+    		for (int i = 0 ; (temp != null && i < temp.length) ; i++){
+    			System.out.println("LocationHint " + i + " = "+ temp[i]);
+    		}
+    		    		
+    		System.out.println("Triggering Component = " + schema.getTriggeringComponent());
+    		System.out.println("EnclosingElementName =" + schema.getEnclosingElementName());
+    	
+    	}
+    
+    }//print
+    
+} // class XMLGrammarPoolImpl

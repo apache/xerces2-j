@@ -66,6 +66,8 @@ import org.apache.xerces.xni.XMLAttributes;
  * All information specific to XML Schema grammars.
  *
  * @author Neil Graham, IBM
+ * @author Neeraj Bajaj, SUN Microsystems.
+ *
  * @version $Id$
  */
 public class XSDDescription extends XMLResourceIdentifierImpl 
@@ -122,6 +124,15 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      */
     public final static short CONTEXT_XSITYPE   = 7;
 
+    // REVISIT: write description of these fields	
+    protected short fContextType;
+    protected String fTargetNamespace;
+    protected String [] fLocationHints ;
+    protected QName fTriggeringComponent;
+    protected QName fEnclosedElementName;
+    protected XMLAttributes  fAttributes;
+
+        
     /**
      * the type of the grammar (e.g., DTD or XSD);
      *  
@@ -138,7 +149,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return  the value indicating the context
      */
     public short getContextType() {
-        return 0;
+        return fContextType ;
     }
 
     /**
@@ -149,7 +160,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return  the expected/enclosing target namespace
      */
     public String getTargetNamespace() {
-        return null;
+        return fTargetNamespace ;
     }
 
     /**
@@ -159,9 +170,9 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * 
      * @return  an array of all location hints associated to the expected
      *          target namespace
-     */
+     */          
     public String[] getLocationHints() {
-        return null;
+        return fLocationHints ;
     }
 
     /**
@@ -172,7 +183,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return  the name of the triggering component
      */
     public QName getTriggeringComponent() {
-        return null;
+        return fTriggeringComponent ;
     }
 
     /**
@@ -182,7 +193,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return  the name of the enclosing element
      */
     public QName getEnclosingElementName() {
-        return null;
+        return fEnclosedElementName ;
     }
     
     /**
@@ -192,7 +203,19 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return  all attributes of the tiggering/enclosing element
      */
     public XMLAttributes getAttributes() {
-        return null;
+        return fAttributes;
+    }
+    
+    /**
+     *  resets all the fields
+     */
+    protected void reset(){
+        fContextType = 0 ;
+        fTargetNamespace = null ;
+        fLocationHints  = null ;
+        fTriggeringComponent = null ;
+        fEnclosedElementName = null ;
+        fAttributes = null ;    
     }
     
 } // XSDDescription

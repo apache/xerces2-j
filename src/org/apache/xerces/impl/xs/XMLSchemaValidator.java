@@ -65,9 +65,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.identity.*;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.validation.ValidationManager;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.traversers.XSAttributeChecker;
@@ -75,8 +73,7 @@ import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationState;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.impl.XMLEntityManager;
 
 import java.io.IOException;
 import org.apache.xerces.util.AugmentationsImpl;
@@ -99,6 +96,12 @@ import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLInputSource;
+
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 
 import org.apache.xerces.xni.psvi.ElementPSVI;
@@ -355,6 +358,10 @@ public class XMLSchemaValidator
     protected String fExternalSchemas = null;
     protected String fExternalNoNamespaceSchema = null;
 
+    /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
+    protected final XSDDescription fXSDDescription = new XSDDescription() ;
+    protected final Hashtable fLocationPairs = new Hashtable() ;
+    protected String fNoNamespaceLocation = null ;
     // handlers
 
     /** Document handler. */
@@ -743,6 +750,12 @@ public class XMLSchemaValidator
     public void endDocument(Augmentations augs) throws XNIException {
 
         handleEndDocument();
+        
+        //return the final set of grammars validator ended up with
+        if(fGrammarPool != null){
+            fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA , fGrammarBucket.getGrammars() ) ;       
+        }
+        
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endDocument(augs);
@@ -1161,9 +1174,13 @@ public class XMLSchemaValidator
         // clear grammars, and put the one for schema namespace there
         fGrammarBucket.reset();
         fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
-        if(fGrammarPool instanceof XMLGrammarPoolImpl) {
-            XMLGrammarPoolImpl poolImpl = (XMLGrammarPoolImpl)fGrammarPool;
-            Grammar [] initialGrammars = poolImpl.getGrammarsNS();
+        
+        //we should retreive the initial grammar set given by the applicaion
+        //to the parser and put it in local grammar bucket. 
+        
+        if(fGrammarPool != null) {
+            
+            Grammar [] initialGrammars = fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
             for (int i = 0; i < initialGrammars.length; i++) {
                 fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]));
             }
@@ -1176,8 +1193,13 @@ public class XMLSchemaValidator
         fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter,
                              fEntityResolver, fSymbolTable,
                              fExternalSchemas, fExternalNoNamespaceSchema,
-                             jaxpSchemaSource);
+                             jaxpSchemaSource, fGrammarPool);
 
+        //reset XSDDescripton
+        fXSDDescription.reset() ;
+        fLocationPairs.clear();
+        fNoNamespaceLocation = null ;
+        
         // initialize state
         fCurrentElemDecl = null;
         fNil = false;
@@ -1587,12 +1609,18 @@ public class XMLSchemaValidator
 
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
         // parse them to get the grammars
-        // REVISIT: we'll defer this operation until there is a reference to
-        //          a component from that namespace
 
         String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCATION);
         String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCATION);
-        parseSchemas(sLocation, nsLocation);
+        
+        //store the location hints..  we need to do it so that we can defer the loading of grammar until
+        //there is a reference to a component from that namespace. To provide location hints to the
+        //application for a namespace
+        storeLocations(sLocation, nsLocation) ;
+        
+        //REVISIT: We should do the same in XSDHandler also... we should not 
+        //load the actual grammar (eg. import) unless there is reference to it. 
+        //parseSchemas(sLocation, nsLocation);
 
         // REVISIT: we should not rely on presence of
         //          schemaLocation or noNamespaceSchemaLocation
@@ -1657,8 +1685,58 @@ public class XMLSchemaValidator
         // try again to get the element decl
         if (fCurrentElemDecl == null) {
             SchemaGrammar sGrammar = fGrammarBucket.getGrammar(element.uri);
-            if (sGrammar != null)
+            //give a chance to application to be able to retreive the grammar.
+            if(sGrammar == null && fGrammarPool != null){
+
+                //application should take care of possible inclusion of xsi:type in attributes while providing grammar during 
+                //startElement call
+                fXSDDescription.reset() ;
+                fXSDDescription.fContextType = XSDDescription.CONTEXT_ELEMENT ;
+                fXSDDescription.fTargetNamespace = element.uri ;                
+                fXSDDescription.fTriggeringComponent = element ;
+                fXSDDescription.fAttributes = attributes ;                
+                //REVISIT: we need to provide location hints available for the current namespace.
+                Object locationArray = null ; 
+                if(element.uri != null){               
+                	locationArray = fLocationPairs.get(element.uri) ;                
+                }
+                if(locationArray != null){
+                    String [] locations = ((LocationArray)locationArray).getLocationArray() ;
+                    fXSDDescription.fLocationHints = new String [locations.length] ;
+                    System.arraycopy(locations, 0 , fXSDDescription.fLocationHints, 0, locations.length );                    
+                }else{
+                	fXSDDescription.fLocationHints = new String [] {fNoNamespaceLocation} ;
+                }                             
+
+                sGrammar = (SchemaGrammar)fGrammarPool.retrieveGrammar(fXSDDescription);
+                
+            }
+            //try to parse the grammar.. using location hint given.. 
+            if(sGrammar == null){
+                String locationHint = null ;
+                LocationArray locationArray = null ;
+                if(element.uri != null){               
+                    locationArray = (LocationArray)fLocationPairs.get(element.uri) ;
+                }
+                if(locationArray != null){                    
+                    //REVISIT: we are returning the first location hint available for a particular namespace.. is it the right thing to do ??
+                    locationHint = locationArray.getFirstLocation() ;
+                }else{
+                    locationHint = fNoNamespaceLocation ;
+                }
+                
+                if(!(element.uri == null && locationHint == null)){
+                    parseSchema( element.uri, locationHint, XSDDescription.CONTEXT_ELEMENT) ;
+                }
+            }
+                
+            //now try again to retreive it from local bucket..
+            sGrammar = fGrammarBucket.getGrammar(element.uri);
+            
+            if (sGrammar != null){
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
+            }
+            
         }
 
         // Element Locally Valid (Element)
@@ -1676,7 +1754,7 @@ public class XMLSchemaValidator
         // get type from xsi:type
         String xsiType = attributes.getValue(URI_XSI, XSI_TYPE);
         if (xsiType != null)
-            getAndCheckXsiType(element, xsiType);
+            getAndCheckXsiType(element, xsiType, attributes);
 
         // if the element decl is not found
         if (fCurrentType == null) {
@@ -2010,6 +2088,93 @@ public class XMLSchemaValidator
         fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
     }
 
+    private class LocationArray{
+    
+        int length ;
+        String [] locations = new String[2];
+        
+        public void resize(int oldLength , int newLength){
+            String [] tempLocations = new String[newLength] ;
+            System.arraycopy(locations,0, tempLocations, 0, Math.min(oldLength, newLength));
+            locations = tempLocations ;        
+        }
+        
+        public void setLocation(String location){
+            if(length >= locations.length - 1){
+                resize(locations.length, locations.length*2);
+            }                        
+            locations[length++] = location ;                    
+        }//setLocation()
+        
+        public String [] getLocationArray(){
+	//REVISIT:should we expanded location hints before returning ??            
+         if(length < locations.length ){
+            resize(locations.length, length);
+         }
+         return locations ;
+        }//getLocationArray()
+        
+        //REVISIT: we are returning the first location hint available for a particular namespace.. is it the right thing to do ??
+        public String getFirstLocation(){
+            return locations[0] ;
+        }
+        
+        public int getLength(){
+            return length ;
+        }
+        
+    } //locationArray
+    
+    void storeLocations(String sLocation, String nsLocation){
+        
+        if (sLocation != null) {
+            StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
+            String namespace, location;
+            while (t.hasMoreTokens()) {
+                namespace = fSymbolTable.addSymbol(t.nextToken ());
+                
+                if (!t.hasMoreTokens()) {
+                    fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                  "SchemaLocation",
+                                                  new Object[]{sLocation},
+                                                  XMLErrorReporter.SEVERITY_WARNING);
+                    break;
+                }
+                
+                Object locationArray = fLocationPairs.get(namespace) ;
+                
+                if(locationArray == null){
+                    locationArray = new LocationArray() ;
+                    //add it into hashtable...
+                    fLocationPairs.put(namespace, locationArray);
+                }
+                                
+                location = t.nextToken();
+                ((LocationArray)locationArray).setLocation(location);
+            }
+            
+        }
+        if (nsLocation != null) {
+        	fNoNamespaceLocation = nsLocation ;
+	/**        	
+            Object locationArray = fLocationPairs.get("") ;                
+            if(locationArray == null){
+                locationArray = new LocationArray() ;
+                //add it into hashtable...
+                fLocationPairs.put("", locationArray);
+            }
+            //there would always be only one location...
+            ((LocationArray)locationArray).setLocation(nsLocation);
+        */
+                                
+        }
+            
+    }//storeLocations
+    
+    void parseSchema(String nameSpace, String location, short reference){
+        fSchemaHandler.parseSchema(nameSpace, location, reference);    
+    }
+    
     void parseSchemas(String sLocation, String nsLocation) {
         if (sLocation != null) {
             StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
@@ -2024,20 +2189,63 @@ public class XMLSchemaValidator
                     break;
                 }
                 location = t.nextToken();
-                if (fGrammarBucket.getGrammar(namespace) == null) {
+                
+                if (fGrammarBucket.getGrammar(namespace) == null) {                
                     fSchemaHandler.parseSchema(namespace, location,
-                                               XSDDescription.CONTEXT_INSTANCE);
+                                           XSDDescription.CONTEXT_INSTANCE);
                 }
+                
+                /** this function will only be called in case of externalSchemaLocation property is specified...
+                
+                // We would like to give chance to application to be able to provide this grammar...
+                if (fGrammarBucket.getGrammar(namespace) == null) {                
+                    Grammar retrievedGrammar = null ;                	
+                    if(fGrammarPool != null){   
+                            //REVISIT: how to set the values of XSDDescription ??
+                            fXSDDescription.fTargetNamespace = namespace ;
+                            fXSDDescription.fContext = XSDDescription.CONTEXT_INSTANCE ;
+                            retrievedGrammar = fGrammarPool.retrieveGrammar(fXSDDescription);
+
+                    }                	
+                    if(retrievedGrammar != null){
+                            fGrammarBucket.putGrammar(retrievedGrammar) ;
+                    }
+                    else{
+                            fSchemaHandler.parseSchema(namespace, location,
+                                           XSDDescription.CONTEXT_INSTANCE);
+                    }
+                */                                
             }
         }
         if (nsLocation != null) {
-            if (fGrammarBucket.getGrammar(null) == null)
-                fSchemaHandler.parseSchema(null, nsLocation,
-                                           XSDDescription.CONTEXT_INSTANCE);
-        }
-    }
+            if (fGrammarBucket.getGrammar(null) == null){  
+                fSchemaHandler.parseSchema(null, nsLocation, XSDDescription.CONTEXT_INSTANCE);
+                
+                /*** this funcion should only be called from external SchemaLocation...
+                 
+                Grammar retrievedGrammar = null ;                	
+                //if grammar pool is provided by the application....
+                if(fGrammarPool != null){                        
+                        //REVISIT: how to set the values of XSDDescription ??
+                        fXSDDescription.fTargetNamespace = null;
+                        fXSDDescription.fContext = XSDDescription.INSTANCE ;
+                        retrievedGrammar = fGrammarPool.retrieveGrammar(fXSDDescription);
 
-    void getAndCheckXsiType(QName element, String xsiType) {
+                }                	
+                if(retrievedGrammar != null){
+                        fGrammarBucket.putGrammar(retrievedGrammar) ;
+                }
+                else{
+                        fSchemaHandler.parseSchema(null, nsLocation,
+                                   XSDDescription.CONTEXT_INSTANCE);
+                }    
+                **/            	                	            
+            }
+        }
+        
+    }//parseSchemas(String,String)
+
+    void getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
         // This method also deals with clause 1.2.1.2 of the constraint
         // Validation Rule: Schema-Validity Assessment (Element)
 
@@ -2062,6 +2270,56 @@ public class XMLSchemaValidator
         // if it's not schema built-in types, then try to get a grammar
         if (type == null) {
             SchemaGrammar grammar = fGrammarBucket.getGrammar(typeName.uri);
+            //give a chance to application to be able to retreive the grammar.
+            if(grammar == null && fGrammarPool != null){
+                       
+                fXSDDescription.reset();         
+                fXSDDescription.fContextType = XSDDescription.CONTEXT_XSITYPE ;
+                fXSDDescription.fTargetNamespace = typeName.uri ;                
+                fXSDDescription.fTriggeringComponent = typeName ;
+                fXSDDescription.fEnclosedElementName = element ;
+                fXSDDescription.fAttributes = attributes ;
+                // we need to provide location hints available to the application for a namespace
+                LocationArray locationArray = null ;
+                
+                if(typeName.uri != null){
+                	locationArray = (LocationArray)fLocationPairs.get(typeName.uri) ;
+                }
+                                
+                if(locationArray != null){
+                    String [] locations = locationArray.getLocationArray() ;
+                    fXSDDescription.fLocationHints = new String [locations.length] ;
+                    System.arraycopy(locations, 0 , fXSDDescription.fLocationHints, 0, locations.length );                    
+		}else{
+                	fXSDDescription.fLocationHints = new String [] {fNoNamespaceLocation} ;
+                }                                             
+                grammar = (SchemaGrammar)fGrammarPool.retrieveGrammar(fXSDDescription);
+            }
+            
+            //try to parse the grammar.. using location hint given.. 
+            if(grammar == null){
+                String locationHint = null ;
+                LocationArray locationArray = null ;
+                
+                if(typeName.uri != null ){
+                    locationArray = (LocationArray)fLocationPairs.get(typeName.uri) ;
+                }
+                
+                if(locationArray != null){
+                    //REVISIT: we are returning the first location hint available for a particular namespace.. is it the right thing to do ??
+                    locationHint = locationArray.getFirstLocation() ;
+                }else{
+                    locationHint = fNoNamespaceLocation ;
+                }
+                
+                if(!(typeName.uri == null && locationHint == null)){                
+                    parseSchema( typeName.uri, locationHint, XSDDescription.CONTEXT_XSITYPE) ;
+               	}
+            }
+                
+            //now try again to retreive it from local bucket..
+            grammar = fGrammarBucket.getGrammar(typeName.uri);
+
             if (grammar != null)
                 type = grammar.getGlobalTypeDecl(typeName.localpart);
         }
@@ -2083,7 +2341,7 @@ public class XMLSchemaValidator
         }
 
         fCurrentType = type;
-    }
+    }//getAndCheckXsiType
 
     void getXsiNil(QName element, String xsiNil) {
         // Element Locally Valid (Element)
@@ -2262,8 +2520,57 @@ public class XMLSchemaValidator
                     continue;
                 // now get the grammar and attribute decl
                 SchemaGrammar grammar = fGrammarBucket.getGrammar(fTempQName.uri);
-                if (grammar != null)
+                
+                //give a chance to application to be able to retreive the grammar.
+                if(grammar == null && fGrammarPool != null){
+                    fXSDDescription.reset();
+                    fXSDDescription.fContextType = XSDDescription.CONTEXT_ATTRIBUTE ;
+                    fXSDDescription.fTargetNamespace = fTempQName.uri ;                    
+                    fXSDDescription.fTriggeringComponent = fTempQName ;
+                    fXSDDescription.fEnclosedElementName = element ;
+                    fXSDDescription.fAttributes = attributes ;
+                    //REVISIT: we need to provide the location hints available for the namespace 
+                    LocationArray locationArray = null ;
+                    if(fTempQName.uri != null){
+                        locationArray = (LocationArray)fLocationPairs.get(fTempQName.uri) ;                
+                    }
+                    if(locationArray != null){
+                        String [] locations = locationArray.getLocationArray() ;
+                        fXSDDescription.fLocationHints = new String [locations.length] ;
+                        System.arraycopy(locations, 0 , fXSDDescription.fLocationHints, 0, locations.length );                    
+                    }else{
+                	fXSDDescription.fLocationHints = new String [] {fNoNamespaceLocation} ;
+                    }
+                    
+                    grammar = (SchemaGrammar)fGrammarPool.retrieveGrammar(fXSDDescription);
+                }
+                
+                //try to parse the grammar.. using location hint given.. 
+                if(grammar == null){
+                    String locationHint = null;
+                    LocationArray locationArray = null ;
+                    
+                    if(fTempQName.uri != null){
+                        locationArray = (LocationArray)fLocationPairs.get(fTempQName.uri) ;
+                    }
+                    if(locationArray != null){
+                        //REVISIT: we are returning the first location hint available for a particular namespace.. is it the right thing to do ??
+                        locationHint = locationArray.getFirstLocation() ;
+                    }else{
+                        locationHint = fNoNamespaceLocation ;
+                    }
+                    
+                    if(!(fTempQName.uri == null && locationHint == null)){
+                        parseSchema( fTempQName.uri, locationHint, XSDDescription.CONTEXT_ATTRIBUTE) ;
+                    }
+                }
+                //now try again to retreive it from local bucket..
+                grammar = fGrammarBucket.getGrammar(fTempQName.uri);
+                
+                if (grammar != null){
                     currDecl = grammar.getGlobalAttributeDecl(fTempQName.localpart);
+                }
+                
                 // if can't find
                 if (currDecl == null) {
                     // if strict, report error
@@ -2332,6 +2639,36 @@ public class XMLSchemaValidator
                     ((XSAtomicSimpleType)attDV).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION){
                    QName qName = (QName)actualValue;
                    SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
+                   
+                   
+                   //REVISIT: is it possible for the notation to be in different namespace than the attribute 
+                   //with which it is associated, CHECK !!  <fof n1:att1 = "n2:notation1" ..>
+                   // should we give chance to the application to be able to  retrieve a grammar - nb
+                   //REVISIT: what would be the triggering component here.. if it is attribute value that 
+                   // triggered the loading of grammar ?? -nb
+                   
+                   /**
+                   //give a chance to application to be able to retreive the grammar...
+                    if(grammar == null && fGrammarPool != null ){                        
+                        fXSDDescription.reset() ;
+                        fXSDDescription.fContextType = ?? ; //attribute value
+                        fXSDDescription.fTargetNamespace = qName.uri ;                        
+                        fXSDDescription.fTriggeringComponent = typeName ;
+                        fXSDDescription.fEnclosedElementName = element ;
+                        //fXSDDescription.fLocationHints ;
+                        LocationArray locationArray = (LocationArray)fLocationPairs.get(qName.uri) ;
+                
+                        if(locationArray != null){
+                            String [] locations = locationArray.getLocationArray() ;
+                            fXSDDescription.fLocationHints = new String [locations.length] ;
+                            System.arraycopy(locations, 0 , fXSDDescription.fLocationHints, 0, locations.legth );                    
+                        }                                
+
+
+                        grammar = (SchemaGrammar)fGrammarPool.retrieveGrammar(fXSDDescription);
+                   }  
+                    */
+                   
                    if (grammar != null)
                        fCurrentPSVI.fNotation = grammar.getNotationDecl(qName.localpart);
                 }
@@ -2460,7 +2797,7 @@ public class XMLSchemaValidator
     XMLString processElementContent(QName element) {
         // fCurrentElemDecl: default value; ...
         XMLString defaultValue = null;
-        // 1 If the item is ·valid· with respect to an element declaration as per Element Locally Valid (Element) (§3.3.4) and the {value constraint} is present, but clause 3.2 of Element Locally Valid (Element) (§3.3.4) above is not satisfied and the item has no element or character information item [children], then schema. Furthermore, the post-schema-validation infoset has the canonical lexical representation of the {value constraint} value as the item's [schema normalized value] property.
+        // 1 If the item is ?valid? with respect to an element declaration as per Element Locally Valid (Element) (?3.3.4) and the {value constraint} is present, but clause 3.2 of Element Locally Valid (Element) (?3.3.4) above is not satisfied and the item has no element or character information item [children], then schema. Furthermore, the post-schema-validation infoset has the canonical lexical representation of the {value constraint} value as the item's [schema normalized value] property.
         if (fCurrentElemDecl != null && fCurrentElemDecl.fDefault != null &&
             fBuffer.toString().length() == 0 && fChildCount == 0 && !fNil) {
 

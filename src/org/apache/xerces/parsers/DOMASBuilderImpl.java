@@ -80,6 +80,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.XSDDescription;
@@ -216,7 +217,9 @@ public class DOMASBuilderImpl
         if (fGrammarPool == null) {
             fGrammarPool = (XMLGrammarPool)fConfiguration.getProperty(StandardParserConfiguration.XMLGRAMMAR_POOL);
         }
-        initGrammarPool(fAbstractSchema);
+        if (fAbstractSchema != null) {
+            initGrammarPool(fAbstractSchema);
+        }
     }
 
 
@@ -344,7 +347,7 @@ public class DOMASBuilderImpl
 
        initGrammarBucket();
        fSubGroupHandler.reset();
-       fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, null);
+       fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, null, fGrammarPool);
 
        // Should check whether the grammar with this namespace is already in
        // the grammar resolver. But since we don't know the target namespace
@@ -388,17 +391,15 @@ public class DOMASBuilderImpl
 
     private void initGrammarPool(ASModelImpl currModel) {
         // put all the grammars in fAbstractSchema into the grammar pool.
-        // REVISIT:  straighten this out when grammar caching's properly implemented!
-        if(!(fGrammarPool instanceof XMLGrammarPoolImpl)) return;
-        XMLGrammarPoolImpl poolImpl = (XMLGrammarPoolImpl)fGrammarPool;
-        SchemaGrammar grammar = null;
-        if((grammar = currModel.getGrammar()) != null) {
-            String tns = grammar.getTargetNamespace();
-            poolImpl.putGrammarNS(tns, grammar);
-        }
-        Vector modelStore = currModel.getInternalASModels();
-        for (int i = 0; i < modelStore.size(); i++) {
-            initGrammarPool((ASModelImpl)modelStore.elementAt(i));
+        if (fGrammarPool != null) {
+            Grammar[] grammars = new Grammar[1];
+            if ((grammars[0] = (Grammar)currModel.getGrammar()) != null) {
+            	fGrammarPool.cacheGrammars(grammars[0].getGrammarDescription().getGrammarType(), grammars);
+            }
+            Vector modelStore = currModel.getInternalASModels();
+            for (int i = 0; i < modelStore.size(); i++) {
+            	initGrammarPool((ASModelImpl)modelStore.elementAt(i));
+            }
         }
     }
 } // class DOMASBuilderImpl

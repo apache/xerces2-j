@@ -355,12 +355,17 @@ public class StandardParserConfiguration
         };
         addRecognizedProperties(recognizedProperties);
 
+	/** //REVISIT: why to create a pool.. when application doesn't want it to create -nb
         // create and register missing components
         if (grammarPool == null) {
             grammarPool = new XMLGrammarPoolImpl();
         }
+	*/
+	
         fGrammarPool = grammarPool;
-        setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+        if(fGrammarPool != null){
+        	setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+        }
 
         fEntityManager = createEntityManager();
         setProperty(ENTITY_MANAGER, fEntityManager);
@@ -588,7 +593,12 @@ public class StandardParserConfiguration
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
-        } 
+        }
+        catch (RuntimeException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        }              
         catch (Exception ex) {
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();

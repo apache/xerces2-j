@@ -470,32 +470,40 @@ public class CachingParserPool {
         // GrammarPool methods
         //
 
-        // retrieve the initial set of grammars for the validator
-        // to work with.
-        // REVISIT:  does this need to be synchronized since it's just reading?
-        // @param grammarType type of the grammars to be retrieved.
-        // @return the initial grammar set the validator may place in its "bucket"
+        /**
+         * Retrieve the initial set of grammars for the validator to work with.
+         * REVISIT:  does this need to be synchronized since it's just reading?
+         * 
+         * @param grammarType Type of the grammars to be retrieved.
+         * @return            The initial grammar set the validator may place in its "bucket"
+         */
         public Grammar [] retrieveInitialGrammarSet(String grammarType ) {
             Grammar [] grammars = super.retrieveInitialGrammarSet(grammarType);
             if (grammars != null) return grammars;
             return fGrammarPool.retrieveInitialGrammarSet(grammarType);
         } // retrieveInitialGrammarSet(String):  Grammar[]
 
-        // retrieve a particular grammar.
-        // REVISIT:  does this need to be synchronized since it's just reading?
-        // @param gDesc description of the grammar to be retrieved
-        // @return Grammar corresponding to gDesc, or null if none exists.
+        /**
+         * Retrieve a particular grammar.
+         * REVISIT:  does this need to be synchronized since it's just reading?
+         *
+         * @param gDesc Description of the grammar to be retrieved
+         * @return      Grammar corresponding to gDesc, or null if none exists.
+         */
         public Grammar retrieveGrammar(XMLGrammarDescription gDesc) {
             Grammar g = super.retrieveGrammar(gDesc);
             if(g != null) return g;
             return fGrammarPool.retrieveGrammar(gDesc);
         } // retrieveGrammar(XMLGrammarDesc):  Grammar
 
-        // give the grammarPool the option of caching these grammars.
-        // This certainly must be synchronized.
-        // @param grammarType The type of the grammars to be cached.
-        // @param grammars the Grammars that may be cached (unordered, Grammars previously
-        //  given to the validator may be included).
+        /** 
+         * Give the grammarPool the option of caching these grammars.
+         * This certainly must be synchronized.
+         * 
+         * @param grammarType The type of the grammars to be cached.
+         * @param grammars    The Grammars that may be cached (unordered, Grammars previously
+         *  		      given to the validator may be included).
+         */
         public void cacheGrammars(String grammarType, Grammar[] grammars) { 
            // better give both grammars a shot...
            super.cacheGrammars(grammarType, grammars);
@@ -503,28 +511,28 @@ public class CachingParserPool {
         } // cacheGrammars(grammarType, Grammar[]);
 
         /**
-         * Returns the grammar associated to the specified key.
+         * Returns the grammar associated to the specified description.
          * 
-         * @param key The key of the grammar.
+         * @param desc The description of the grammar.
          */
-        public Grammar getGrammar(String key) {
+        public Grammar getGrammar(XMLGrammarDescription desc) {
 
-            if (super.containsGrammar(key)) {
-                return super.getGrammar(key);
+            if (super.containsGrammar(desc)) {
+                return super.getGrammar(desc);
             }
             return null;
 
-        } // getGrammar(String):Grammar
+        } // getGrammar(XMLGrammarDescription):Grammar
 
         /**
          * Returns true if the grammar pool contains a grammar associated
-         * to the specified key.
+         * to the specified description.
          *
-         * @param key The key of the grammar.
+         * @param desc The description of the grammar.
          */
-        public boolean containsGrammar(String key) {
-            return super.containsGrammar(key);
-        } // containsGrammar(String):boolean
+        public boolean containsGrammar(XMLGrammarDescription desc) {
+            return super.containsGrammar(desc);
+        } // containsGrammar(XMLGrammarDescription):boolean
 
     } // class ShadowedGrammarPool
 
