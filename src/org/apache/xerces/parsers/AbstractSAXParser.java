@@ -2231,7 +2231,7 @@ public abstract class AbstractSAXParser
 
         // Locator2 methods
         public String getXMLVersion() {
-            return fVersion;
+            return fLocator.getXMLVersion();
         }
 
         public String getEncoding() {

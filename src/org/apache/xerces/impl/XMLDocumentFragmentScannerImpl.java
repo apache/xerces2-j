@@ -665,6 +665,9 @@ public class XMLDocumentFragmentScannerImpl
         // set standalone
         fStandalone = standalone != null && standalone.equals("yes");
         fEntityManager.setStandalone(fStandalone);
+        
+        // set version on reader
+        fEntityScanner.setXMLVersion(version);
 
         // call handler
         if (fDocumentHandler != null) {

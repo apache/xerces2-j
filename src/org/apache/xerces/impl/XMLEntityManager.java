@@ -2310,9 +2310,14 @@ public class XMLEntityManager
 
         /** Auto-detected encoding. */
         public String encoding;
-
-		/** Encoding has been set externally for eg: using DOMInput*/
-		boolean declaredEncoding = false;
+        
+        /** Encoding has been set externally for eg: using DOMInput*/
+        boolean declaredEncoding = false;
+        
+        // version
+        
+        /** XML version. **/
+        public String xmlVersion = "1.0";
         
 		// status
 
@@ -2446,6 +2451,19 @@ public class XMLEntityManager
                ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.encoding;
+                }
+            }
+            return null;
+        }
+        
+        // return xml version of most recent external entity
+        public String getXMLVersion() {
+            // search for the first external entity on the stack
+            int size = fEntityStack.size();
+            for (int i=size-1; i>0 ; i--) {
+               ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                if (firstExternalEntity.isExternal()) {
+                    return firstExternalEntity.xmlVersion;
                 }
             }
             return null;

@@ -153,6 +153,17 @@ public class XMLEntityScanner implements XMLLocator {
         }
 
     } // setEncoding(String)
+    
+    /**
+     * Sets the XML version. This method is used by the
+     * scanners to report the value of the version pseudo-attribute
+     * in an XML or text declaration.
+     *
+     * @param xmlVersion the XML version of the current entity
+     */
+    public void setXMLVersion(String xmlVersion) {
+        fCurrentEntity.xmlVersion = xmlVersion;
+    } // setXMLVersion(String)
 
     /** Returns true if the current entity being scanned is external. */
     public boolean isExternal() {
@@ -1504,7 +1515,7 @@ public class XMLEntityScanner implements XMLLocator {
     } // getLiteralSystemId():String
 
     /**
-     * Return the line number where the current document event ends.
+     * Returns the line number where the current document event ends.
      * <p>
      * <strong>Warning:</strong> The return value from the method
      * is intended only as an approximation for the sake of error
@@ -1515,9 +1526,9 @@ public class XMLEntityScanner implements XMLLocator {
      * in the document entity or external parsed entity where the
      * markup triggering the event appears.
      * <p>
-     * If possible, the SAX driver should provide the line position
-     * of the first character after the text associated with the document
-     * event.  The first line in the document is line 1.
+     * If possible, the line position of the first character after the 
+     * text associated with the document event should be provided.
+     * The first line in the document is line 1.
      *
      * @return The line number, or -1 if none is available.
      */
@@ -1537,7 +1548,7 @@ public class XMLEntityScanner implements XMLLocator {
     } // getLineNumber():int
 
     /**
-     * Return the column number where the current document event ends.
+     * Returns the column number where the current document event ends.
      * <p>
      * <strong>Warning:</strong> The return value from the method
      * is intended only as an approximation for the sake of error
@@ -1548,13 +1559,9 @@ public class XMLEntityScanner implements XMLLocator {
      * in the document entity or external parsed entity where the
      * markup triggering the event appears.
      * <p>
-     * If possible, the SAX driver should provide the line position
-     * of the first character after the text associated with the document
-     * event.
-     * <p>
-     * If possible, the SAX driver should provide the line position
-     * of the first character after the text associated with the document
-     * event.  The first column in each line is column 1.
+     * If possible, the line position of the first character after the 
+     * text associated with the document event should be provided.
+     * The first column in each line is column 1.
      *
      * @return The column number, or -1 if none is available.
      */
@@ -1572,7 +1579,30 @@ public class XMLEntityScanner implements XMLLocator {
         return -1;
     } // getColumnNumber():int
     
-    /** Returns the encoding of the current entity.  
+    /**
+     * Returns the character offset where the current document event ends.
+     * <p>
+     * <strong>Warning:</strong> The return value from the method
+     * is intended only as an approximation for the sake of error
+     * reporting; it is not intended to provide sufficient information
+     * to edit the character content of the original XML document.
+     * <p>
+     * The return value is an approximation of the character offset
+     * in the document entity or external parsed entity where the
+     * markup triggering the event appears.
+     * <p>
+     * If possible, the character offset of the first character after the 
+     * text associated with the document event should be provided.
+     *
+     * @return The character offset, or -1 if none is available.
+     */
+    public int getCharacterOffset() {
+        /** TODO: Implement this method. **/
+        return -1;
+    } // getCharacterOffset():int
+    
+    /** 
+     * Returns the encoding of the current entity.  
      * Note that, for a given entity, this value can only be
      * considered final once the encoding declaration has been read (or once it
      * has been determined that there is no such declaration) since, no encoding
@@ -1585,56 +1615,35 @@ public class XMLEntityScanner implements XMLLocator {
                 return fCurrentEntity.encoding;
             }
             else {
-                // ask current entity to find appropriate column number
+                // ask current entity to find appropriate encoding
                 return fCurrentEntity.getEncoding();
             }
         }
-
         return null;
     } // getEncoding():String
     
-    /**
-     * @see org.apache.xerces.xni.XMLLocator#setColumnNumber(int)
+    /** 
+     * Returns the XML version of the current entity. This will normally be the
+     * value from the XML or text declaration or defaulted by the parser. Note that
+     * that this value may be different than the version of the processing rules 
+     * applied to the current entity. For instance, an XML 1.1 document may refer to
+     * XML 1.0 entities. In such a case the rules of XML 1.1 are applied to the entire 
+     * document. Also note that, for a given entity, this value can only be considered
+     * final once the XML or text declaration has been read or once it has been
+     * determined that there is no such declaration.
      */
-    public void setColumnNumber(int col) {
-        // no-op
-    }
-
-    /**
-     * @see org.apache.xerces.xni.XMLLocator#setLineNumber(int)
-     */
-    public void setLineNumber(int line) {
-        //no-op
-    }
-    
-        /**
-     * @see org.apache.xerces.xni.XMLResourceIdentifier#setBaseSystemId(String)
-     */
-    public void setBaseSystemId(String systemId) {        
-        //no-op
-    }
-
-
-    /**
-     * @see org.apache.xerces.xni.XMLResourceIdentifier#setExpandedSystemId(String)
-     */
-    public void setExpandedSystemId(String systemId) {
-        //no-op
-    }
-
-    /**
-     * @see org.apache.xerces.xni.XMLResourceIdentifier#setLiteralSystemId(String)
-     */
-    public void setLiteralSystemId(String systemId) {
-        //no-op
-    }
-
-    /**
-     * @see org.apache.xerces.xni.XMLResourceIdentifier#setPublicId(String)
-     */
-    public void setPublicId(String publicId) {
-        //no-op
-    }
+    public String getXMLVersion() {
+        if (fCurrentEntity != null) {
+            if (fCurrentEntity.isExternal()) {
+                return fCurrentEntity.xmlVersion;
+            }
+            else {
+                // ask current entity to find the appropriate XML version
+                return fCurrentEntity.getXMLVersion();
+            }
+        }
+        return null;
+    } // getXMLVersion():String
 
     // allow entity manager to tell us what the current entityis:
     public void setCurrentEntity(XMLEntityManager.ScannedEntity ent) {

@@ -705,6 +705,7 @@ public class XMLDTDScannerImpl
                 version = fStrings[0];
                 encoding = fStrings[1];
 
+                fEntityScanner.setXMLVersion(version);
                 fEntityScanner.setEncoding(encoding);
 
                 // call handler

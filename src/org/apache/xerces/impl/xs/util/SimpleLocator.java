@@ -52,6 +52,10 @@ public class SimpleLocator implements XMLLocator {
     public int getColumnNumber() {
         return column;
     }
+    
+    public int getCharacterOffset() {
+        return -1;
+    }
 
     public String getPublicId() {
         return null;
@@ -113,6 +117,10 @@ public class SimpleLocator implements XMLLocator {
      * with encoding information.
      */
     public String getEncoding() {
+        return null;
+    }
+    
+    public String getXMLVersion() {
         return null;
     }
 
