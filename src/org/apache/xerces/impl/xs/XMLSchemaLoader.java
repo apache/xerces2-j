@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.
+ * Copyright (c) 2000-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -249,8 +249,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             sHandler = new SubstitutionGroupHandler(fGrammarBucket);
         }
         fSubGroupHandler = sHandler;
-        //get the factory instance.. this class is singleton
-        CMNodeFactory nodeFactory = CMNodeFactory.newInstance() ;
+        //get an instance of the CMNodeFactory */
+        CMNodeFactory nodeFactory = new CMNodeFactory() ;
         //REVISIT: shouldn't the SecurityManager be allowed to set, if an application tries to load standalone schema - nb.
         if(builder == null) {
             builder = new CMBuilder(nodeFactory);

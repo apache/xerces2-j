@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.
+ * Copyright (c) 1999-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1077,7 +1077,7 @@ public class XMLSchemaValidator
     //          so that we can QNameDV.getCompiledForm()
     final XSSimpleType fQNameDV = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
     
-    final CMNodeFactory nodeFactory = CMNodeFactory.newInstance();
+    final CMNodeFactory nodeFactory = new CMNodeFactory();
     /** used to build content models */
     // REVISIT: create decl pool, and pass it to each traversers
     final CMBuilder fCMBuilder = new CMBuilder(nodeFactory);

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,7 @@ public class CMNodeFactory {
     private int nodeCount = 0;
     
     //No. of nodes allowed.
-    private int maxNodelimit ;
+    private int maxNodeLimit ;
 
     
     /**
@@ -94,20 +94,12 @@ public class CMNodeFactory {
      */
     private XMLErrorReporter fErrorReporter;
 
-    // stores defaults for different security holes (maxOccurlimit in current context) if it has
+    // stores defaults for different security holes (maxOccurLimit in current context) if it has
     // been set on the configuration.
     private SecurityManager fSecurityManager = null;
     
-    //static instance of CMNodeFactory..
-    private static CMNodeFactory fNodeFactory ;
-    
-    /** instance of CMNodeFactory can't be created outside this class*/
-    private CMNodeFactory() {
-    }
-    
-    /** Get the instance of CMNodeFactory, further call to this method will give same instance, its singleton class */
-    public static CMNodeFactory newInstance(){
-        return fNodeFactory != null ? fNodeFactory : new CMNodeFactory() ;
+    /** default constructor */
+    public CMNodeFactory() {
     }
     
     public void reset(XMLComponentManager componentManager){
@@ -116,7 +108,7 @@ public class CMNodeFactory {
             fSecurityManager = (SecurityManager)componentManager.getProperty(SECURITY_MANAGER);
             //we are setting the limit of number of nodes to 3times the maxOccur value..
             if(fSecurityManager != null){
-                maxNodelimit = fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY ;
+                maxNodeLimit = fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY ;
             }
         }
         catch (XMLConfigurationException e) {
@@ -141,12 +133,15 @@ public class CMNodeFactory {
     }
     
     public void nodeCountCheck(){
-        if( fSecurityManager != null && nodeCount++ > maxNodelimit){
+        if( fSecurityManager != null && nodeCount++ > maxNodeLimit){
             if(DEBUG){
                 System.out.println("nodeCount = " + nodeCount ) ;
-                System.out.println("nodeLimit = " + maxNodelimit ) ;
+                System.out.println("nodeLimit = " + maxNodeLimit ) ;
             }
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "maxOccurLimit", new Object[]{ new Integer(maxNodelimit) }, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, "maxOccurLimit", new Object[]{ new Integer(maxNodeLimit) }, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            // similarly to entity manager behaviour, take into accont
+            // behaviour if continue-after-fatal-error is set.
+            nodeCount = 0;
         }
         
     }//nodeCountCheck()
@@ -178,7 +173,7 @@ public class CMNodeFactory {
             String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
             if (property.equals(Constants.SECURITY_MANAGER_PROPERTY)) {
                 fSecurityManager = (SecurityManager)value;                
-                maxNodelimit = (fSecurityManager != null) ? fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY : 0 ;
+                maxNodeLimit = (fSecurityManager != null) ? fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY : 0 ;
                 return;
             }
             if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {

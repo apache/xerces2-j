@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,15 +94,6 @@ public class CMBuilder {
         fDeclPool = null;
         fNodeFactory = nodeFactory ;
     }
-
-    public CMBuilder(XSDeclarationPool pool) {
-        fDeclPool = pool;
-        //xxx is this constructor used ? but there would be nothing wrong if factory is created.. but we dont have security manager set.
-        if(fNodeFactory == null)
-        {
-            fNodeFactory = CMNodeFactory.newInstance();
-        }
-    }//CMBuilder
 
     public void setDeclPool(XSDeclarationPool declPool) {
         fDeclPool = declPool;
