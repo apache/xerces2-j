@@ -400,7 +400,7 @@ public class TestNS {
                 saxSerializer.startElement("myNamespace", "a", "foo:a", null);
                 saxSerializer.startElement("myNamespace", "b", "foo:b", null);
                 saxSerializer.startCDATA();
-                char data[] = {'a', ']', ']', '>', '‰', 'n'};     
+                char data[] = {'a', ']', ']', '>', '\u0089', 'n'};     
 
                 saxSerializer.characters(data, 0, 6);
                 saxSerializer.endCDATA();
@@ -442,6 +442,5 @@ public class TestNS {
 
     } // printUsage()
 }
-
 
 

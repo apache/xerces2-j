@@ -1852,7 +1852,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     private void setOrdered(){
 
-        // When {variety} is atomic, {value} is inherited from {value} of {base type definition}. For all ·primitive· types {value} is as specified in the table in Fundamental Facets (C.1).
+        // When {variety} is atomic, {value} is inherited from {value} of {base type definition}. For all "primitive" types {value} is as specified in the table in Fundamental Facets (C.1).
         if(fVariety == VARIETY_ATOMIC){
             this.fOrdered = fBase.fOrdered;
         }
@@ -2229,3 +2229,4 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	}
 
 } // class XSSimpleTypeDecl
+

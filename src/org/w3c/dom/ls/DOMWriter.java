@@ -87,7 +87,7 @@ import org.apache.xerces.dom3.DOMConfiguration;
  * <p> Within markup, but outside of attributes, any occurrence of a character 
  * that cannot be represented in the output character encoding is reported 
  * as an error. An example would be serializing the element 
- * &lt;LaCañada/&gt; with <code>encoding="us-ascii"</code>. 
+ * &lt;LaCa\u00f1ada/&gt; with <code>encoding="us-ascii"</code>. 
  * <p> When requested by setting the <code>normalize-characters</code> boolean 
  * parameter on <code>DOMWriter</code>, all data to be serialized, both 
  * markup and character data, is W3C Text normalized according to the rules 
