@@ -970,14 +970,14 @@ public class XSAttributeChecker {
     }
 
     /**
-     * check whether the specified element conforms to the attributes restriction
+     * Check whether the specified element conforms to the attributes restriction
      * an array of attribute values is returned. the caller must call
      * <code>returnAttrArray</code> to return that array.
      *
-     * @param element    - which element to check
-     * @param isGlobal   - whether a child of <schema> or <redefine>
-     * @param schemaDoc  - the document where the element lives in
-     * @return             an array containing attribute values
+     * @param element    which element to check
+     * @param isGlobal   whether a child of &lt;schema&gt; or &lt;redefine&gt;
+     * @param schemaDoc  the document where the element lives in
+     * @return           an array containing attribute values
      */
     public Object[] checkAttributes(Element element, boolean isGlobal,
                                     XSDocumentInfo schemaDoc) {
@@ -985,7 +985,7 @@ public class XSAttributeChecker {
     }
 
     /**
-     * check whether the specified element conforms to the attributes restriction
+     * Check whether the specified element conforms to the attributes restriction
      * an array of attribute values is returned. the caller must call
      * <code>returnAttrArray</code> to return that array. This method also takes
      * an extra parameter: if the element is "enumeration", whether to make a
@@ -993,7 +993,7 @@ public class XSAttributeChecker {
      * QName later.
      *
      * @param element      which element to check
-     * @param isGlobal     whether a child of <schema> or <redefine>
+     * @param isGlobal     whether a child of &lt;schema&gt; or &lt;redefine&gt;
      * @param schemaDoc    the document where the element lives in
      * @param enumAsQName  whether to tread enumeration value as QName
      * @return             an array containing attribute values

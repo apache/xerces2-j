@@ -146,7 +146,6 @@ public class XSDFACM
     /**
      * Constructs a DFA content model.
      *
-     * @param symbolTable    The symbol table.
      * @param syntaxTree    The syntax tree of the content model.
      * @param leafCount     The number of leaves.
      *
@@ -207,9 +206,9 @@ public class XSDFACM
     /**
      * one transition only
      *
-     * @param curElem     The current element's QName
-     * @param stateStack  stack to store the previous state
-     * @param curPos      the current position of the stack
+     * @param curElem The current element's QName
+     * @param state stack to store the previous state
+     * @param subGroupHandler the substitution group handler
      *
      * @return  null if transition is invalid; otherwise the Object corresponding to the
      *      XSElementDecl or XSWildcardDecl identified.  Also, the
@@ -862,7 +861,7 @@ public class XSDFACM
     /**
      * check whether this content violates UPA constraint.
      *
-     * @param errors to hold the UPA errors
+     * @param subGroupHandler the substitution group handler
      * @return true if this content model contains other or list wildcard
      */
     public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException {

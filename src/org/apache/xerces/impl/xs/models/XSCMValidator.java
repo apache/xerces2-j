@@ -70,7 +70,7 @@ public interface XSCMValidator {
     /**
      * check whether this content violates UPA constraint.
      *
-     * @param errors to hold the UPA errors
+     * @param subGroupHandler the substitution group handler
      * @return true if this content model contains other or list wildcard
      */
     public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException;
