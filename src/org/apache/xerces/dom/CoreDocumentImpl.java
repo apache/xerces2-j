@@ -884,21 +884,13 @@ public class CoreDocumentImpl
         //  newnode.ownerDocument=this;
         // }
         // else
-
-        // get source implementation
-        DOMImplementation  domImplementation     =
-                  source.getOwnerDocument().getImplementation();
-        // DOM Level 2.0 implementation?
-        boolean   domLevel20                     =
-                  domImplementation.hasFeature("XML", "2.0" );
-
-
-        int type                                 = source.getNodeType();
+        
+        int type = source.getNodeType();
 
         switch (type) {
             case ELEMENT_NODE: {
                 Element newElement;
-
+                boolean domLevel20 = source.getOwnerDocument().getImplementation().hasFeature("XML", "2.0");
                 // Create element according to namespace support/qualification.
                 if(domLevel20 == false || source.getLocalName() == null)
                     newElement = createElement(source.getNodeName());
@@ -947,7 +939,7 @@ public class CoreDocumentImpl
 
             case ATTRIBUTE_NODE: {
 
-                if( domLevel20 == true ){
+                if( source.getOwnerDocument().getImplementation().hasFeature("XML", "2.0") ){
                     if (source.getLocalName() == null) {
          	        newnode = createAttribute(source.getNodeName());
          	    } else {
