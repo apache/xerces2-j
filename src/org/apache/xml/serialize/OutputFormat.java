@@ -830,25 +830,17 @@ public class OutputFormat
         else
             _lineWidth = lineWidth;
     }
-
 	/**
 	 * Returns the preserveEmptyAttribute flag. If flag is false, then'
 	 * attributes with empty string values are output as the attribute 
 	 * name only (in HTML mode).
 	 * @return preserve the preserve flag
-	 */
-	public boolean getPreserveEmptyAttributes () {
-		return _preserveEmptyAttributes;
-	}
-	/**
+	 */	public boolean getPreserveEmptyAttributes () {		return _preserveEmptyAttributes;	}	/**
 	 * Sets the preserveEmptyAttribute flag. If flag is false, then'
 	 * attributes with empty string values are output as the attribute 
 	 * name only (in HTML mode).
 	 * @param preserve the preserve flag
-	 */
-	public void setPreserveEmptyAttributes (boolean preserve) {
-		_preserveEmptyAttributes = preserve;
-	}
+	 */	public void setPreserveEmptyAttributes (boolean preserve) {		_preserveEmptyAttributes = preserve;	}
 
     /**
      * Returns the last printable character based on the selected
