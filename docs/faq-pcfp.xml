@@ -16,9 +16,15 @@
   <q>What validation behavior do I expect from the default parser configuration?</q>
   <a>
    <p>
-    The default configuration (StandardParserConfiguration) includes DTD validator and Namespace binder. Thus, the <link idref='features' anchor="validation">validation feature</link> will enable validation against DTD only.
-To allow validation against XML Schemas you must turn on the <link idref='features' anchor="validation">validation feature</link> and the <link idref='features' anchor="validation.schema">schema feature</link>, and XML Schema Validator will be inserted in the pipeline. 
-If you've created your own configuration which does not extend StandardParserConfiguration, you must make sure that your configuration inserts all needed validators in the pipeline.
+    The default configuration (StandardParserConfiguration) includes the DTD validator 
+    and the Namespace binder. Thus, the <link idref='features' anchor="validation">
+    validation feature</link> will enable validation against a DTD only.
+To allow validation against XML Schemas you must turn on the <link 
+idref='features' anchor="validation">validation feature</link> and the 
+<link idref='features' anchor="validation.schema">schema feature</link>, and 
+XML Schema Validator will be inserted in the pipeline. 
+If you've created your own configuration which does not extend StandardParserConfiguration, 
+you must make sure that your configuration inserts all needed validators in the pipeline.
    </p>
   </a>
  </faq>
@@ -43,16 +49,21 @@ If you've created your own configuration which does not extend StandardParserCon
     </li>
    </ul>
    <p>
-     An application may choose to create the configuration that does not have DTD validator but has XML Schema validator. This will turn Xerces into non-compliant processor according to XML 1.0 and XML Schema specifications, thus the validation/augmentation outcome is undefined.
+     An application may choose to create a configuration that does not have ia DTD 
+     validator but has an XML Schema validator. This will turn Xerces into a 
+     non-compliant processor according to XML 1.0 and XML Schema specifications, 
+     thus the validation/augmentation outcome is undefined.
    </p>
 
   </a>
 </faq>
-<faq title='Validation against specific schema language'>
-  <q>How can I tell the parser to validate against XML Schema and do not report DTD validation errors?</q>
+<faq title='Validation against a specific schema language'>
+  <q>How can I tell the parser to validate against XML Schema and not to report DTD validation errors?</q>
   <a>
    <p>
-     Currently it is impossible. We hope that JAXP 1.2 will provide this capability via the schema language property. Otherwise, we might introduce Xerces language property that will allow specifying the language against which validation will occur.
+     Currently this is impossible. We hope that JAXP 1.2 will provide this capability 
+     via iits schema language property. Otherwise, we might introduce a Xerces 
+     language property that will allow specifying the language against which validation will dbimust occur.
    </p>
    </a>
  </faq>
