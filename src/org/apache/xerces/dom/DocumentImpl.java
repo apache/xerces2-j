@@ -262,7 +262,7 @@ public class DocumentImpl
      * For DOM2 support.
      * The createDocument factory method is in DOMImplementation.
      */
-    public DocumentImpl(DocumentTypeImpl doctype)
+    public DocumentImpl(DocumentType doctype)
     {
         this(doctype, false);
         // make sure the XMLCharacterProperties class is initilialized
@@ -270,10 +270,17 @@ public class DocumentImpl
     }
 
     /** For DOM2 support. */
-    public DocumentImpl(DocumentTypeImpl doctype, boolean grammarAccess) {
+    public DocumentImpl(DocumentType doctype, boolean grammarAccess) {
         this(grammarAccess);
         if (doctype != null) {
-            doctype.ownerDocument = this;
+            DocumentTypeImpl doctypeImpl;
+            try {
+                doctypeImpl = (DocumentTypeImpl) doctype;
+            } catch (ClassCastException e) {
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                       "DOM005 Wrong document");
+            }
+            doctypeImpl.ownerDocument = this;
             appendChild(doctype);
         }
         // make sure the XMLCharacterProperties class is initilialized

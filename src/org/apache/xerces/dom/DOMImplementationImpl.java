@@ -191,14 +191,7 @@ public class DOMImplementationImpl
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
                                    "DOM005 Wrong document");
         }
-        DocumentTypeImpl doctypeImpl;
-        try {
-            doctypeImpl = (DocumentTypeImpl) doctype;
-        } catch (ClassCastException e) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                   "DOM005 Wrong document");
-        }
-        DocumentImpl doc = new DocumentImpl(doctypeImpl);
+        DocumentImpl doc = new DocumentImpl(doctype);
         Element e = doc.createElementNS( namespaceURI, qualifiedName);
         doc.appendChild(e);
         return doc;
