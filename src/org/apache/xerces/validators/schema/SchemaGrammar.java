@@ -1002,21 +1002,6 @@ public class SchemaGrammar extends Grammar{
         return newarray;
     }
 
-    private DatatypeValidator[][] resize(DatatypeValidator array[][], int newsize) {
-        // TODO
-        return array;
-    }
-
-    private XMLContentModel[][] resize(XMLContentModel array[][], int newsize) {
-        // TODO
-        return array;
-    }
-
-    private QName[][] resize(QName array[][], int newsize) {
-        // TODO
-        return array;
-    }
-
     private String[][] resize(String array[][], int newsize) {
         String newarray[][] = new String[newsize][];
         System.arraycopy(array, 0, newarray, 0, array.length);
@@ -1029,8 +1014,9 @@ public class SchemaGrammar extends Grammar{
     }
 
     private Vector[][] resize(Vector array[][], int newsize) {
-        // TODO
-        return array;
+        Vector newarray[][] = new Vector[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
     }
 
     // make it public, so that other classes can access both qname and
