@@ -291,42 +291,28 @@ implements Locator {
      */
     public boolean scanContent(XMLString content)
     throws IOException {
-        /*
-       int       charValue;
-       int       delimiterLength      = delimiter.length();
-       char[]    delimiterCharArray   = delimiter.toCharArray();
-       char[]    scanContent          = new char[128];
-       char[]    holdUnreadCandidates = new char[delimiterLength];
-       int          countScannedChars = 0;
-       boolean   foundDelimiter       = false;
+        int       charValue;
+        int       countScannedChars    = 0;
+        char[]    scanContentScanned   = new char[128];
 
-       while ( countScannedChars < 128 ) {
-           charValue = this.fPushbackReader.read();
-           if ( charValue == delimiterCharArray[0] ) {
-               holdUnreadCandidates[0] = (char) charValue;
-               int i = 1;
-               for ( int candidateValue = 0;i<delimiterLength;i++) {
-                   candidateValue = this.fPushbackReader.read();
-                   holdUnreadCandidates[i-1] = (char) candidateValue;
-                   if ( candidateValue != delimiterCharArray[i] ) {
-                       this.fPushbackReader.unread(holdUnreadCandidates, 0, i );
-                       break;
-                   }
-               }
-               if ( i == delimiterLength) {
-                   fCharPosition += delimiterLength;//we are one char past delimiter
-                   foundDelimiter = true;
-                   break;//found delimiter
-               }
-           }
-           if ( charValue != -1 )
-               scanCharArray[countScannedChars++] = (char) charValue;
-           fCharPosition++;
-       }
-       content.setValues(scanCharArray,0,countScannedChars);
-       return foundDelimiter;
-       */
-       return true;
+
+        while ( countScannedChars < 128 ) {
+            charValue = this.fPushbackReader.read();
+            if ( charValue == '<' ) {
+            } else if ( charValue == '&' ) {
+            } else if ( charValue == ']' ) {
+            } else if ( XMLChar.isSpace( charValue ) ) {
+            } else if ( XMLChar.isInvalid( charValue ) ) {
+            } else {
+            }
+
+
+            scanContentScanned[countScannedChars++] = (char) charValue;
+            fCharPosition++;
+        }
+        //content.setValues(scanCharArray,0,countScannedChars);
+
+        return true;
     } // scanContent
 
 
@@ -371,8 +357,13 @@ implements Locator {
                     break;//found delimiter
                 }
             }
-            if ( charValue != -1 )
+            if ( charValue != -1 ) {
+                if ( charValue == 0x0a ) {
+                    fLineNumber++;
+                    fColumnNumber = 1;
+                }
                 scanCharArray[countScannedChars++] = (char) charValue;
+            }
             fCharPosition++;
         }
         content.setValues(scanCharArray,0,countScannedChars);
@@ -388,14 +379,19 @@ implements Locator {
      * 
      */
     public void skipSpaces() throws IOException {
-        int readChar           = this.fPushbackReader.read();
-        int countScannedSpaces = 0;
-        while (  XMLChar.isSpace( readChar ) == true ) {
+        int charValue;
+
+        while (  XMLChar.isSpace(
+                                charValue = this.fPushbackReader.read() ) == true )  {
             fCharPosition++;
-            readChar = this.fPushbackReader.read();
+            if ( charValue == 0x0a ) {
+                fLineNumber++;
+                fColumnNumber = 1;
+            } else {
+                fColumnNumber++;
+            }
         }
-        if ( readChar != -1 )
-            this.fPushbackReader.unread( readChar);
+        this.fPushbackReader.unread( charValue );//unread non-space
     } // skipSpaces
 
 
@@ -426,6 +422,12 @@ implements Locator {
                 }
                 return false;
             }
+            if ( charValue == 0x0a ) {
+                fLineNumber++;
+                fColumnNumber = 1;
+            } else {
+                fColumnNumber++;
+            }
             scannedChars[countScannedChars++] = (char) charValue;
             fCharPosition++;
         }
@@ -442,7 +444,7 @@ implements Locator {
      * @return 
      */
     public String getPublicId() {
-        return null;
+        return this.fInputSource.getSystemId();//for now we return the document entity publicId
     } // getPublicId
 
     /**
@@ -451,7 +453,7 @@ implements Locator {
      * @return 
      */
     public String getSystemId() {
-        return null;
+        return this.fInputSource.getSystemId();//for now we return the document entity systemId
     } // getSystemId
 
     /**
