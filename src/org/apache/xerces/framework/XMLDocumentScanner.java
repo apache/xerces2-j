@@ -335,6 +335,7 @@ public final class XMLDocumentScanner {
         fSeenRootElement = false;
         fSeenDoctypeDecl = false;
         fStandalone = false;
+        fScanningDTD = false;
         fDispatcher = new XMLDeclDispatcher();
         fScannerState = SCANNER_STATE_XML_DECL;
         fScannerMarkupDepth = 0;
