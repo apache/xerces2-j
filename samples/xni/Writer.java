@@ -286,7 +286,7 @@ public class Writer
     /** Comment. */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
         if (!fCanonical) {
-            if (fSeenRootElement) {
+            if (fSeenRootElement && fElementDepth == 0) {
                 fOut.print('\n');
             }
             fOut.print("<!--");
