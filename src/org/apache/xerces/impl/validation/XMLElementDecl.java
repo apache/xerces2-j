@@ -66,23 +66,23 @@ import org.apache.xerces.xni.QName;
 public class XMLElementDecl {
 
     //
-    // Constants
+    // Constants  
     //
 
     /** TYPE_ANY */
-    public static final short TYPE_ANY = -1;
+    public static final short TYPE_ANY = 0;
 
     /** TYPE_EMPTY */
-    public static final short TYPE_EMPTY = -1;
+    public static final short TYPE_EMPTY = 1;
 
     /** TYPE_MIXED */
-    public static final short TYPE_MIXED = -1;
+    public static final short TYPE_MIXED = 2;
 
     /** TYPE_CHILDREN */
-    public static final short TYPE_CHILDREN = -1;
+    public static final short TYPE_CHILDREN = 3;
 
     /** TYPE_SIMPLE */
-    public static final short TYPE_SIMPLE = -1;
+    public static final short TYPE_SIMPLE = 4;
 
     //
     // Data
@@ -117,12 +117,23 @@ public class XMLElementDecl {
      * @param simpleType 
      */
     public void setValues(QName name, int scope, short type, ContentModelValidator contentModelValidator, XMLSimpleType simpleType) {
+        this.name                  = name;
+        this.scope                 = scope;
+        this.type                  = type;
+        this.contentModelValidator = contentModelValidator;
+        this.simpleType            = simpleType;
     } // setValues
 
     /**
      * clear
      */
     public void clear() {
+        this.name.clear();
+        this.type          = -1;
+        this.scope         = -1;
+        this.type          = -1;
+        this.contentModelValidator = null;
+        this.simpleType            = null;
     } // clear
 
 } // class XMLElementDecl
