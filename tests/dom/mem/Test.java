@@ -254,8 +254,25 @@ public class Test {
         Document    doc = new DocumentImpl();
         Element     rootEl = doc.createElement("Doc03RootElement");
         doc.appendChild(rootEl);
+
         Text        textNode = doc.createTextNode("Doc03 text stuff");
+        Assertion.assert(rootEl.getFirstChild() == null);
+        Assertion.assert(rootEl.getLastChild() == null);
         rootEl.appendChild(textNode);
+        Assertion.assert(rootEl.getFirstChild() == textNode);
+        Assertion.assert(rootEl.getLastChild() == textNode);
+
+        Assertion.assert(textNode.getNextSibling() == null);
+        Assertion.assert(textNode.getPreviousSibling() == null);
+        Text        textNode2 = doc.createTextNode("Doc03 text stuff");
+        rootEl.appendChild(textNode2);
+        Assertion.assert(textNode.getNextSibling() == textNode2);
+        Assertion.assert(textNode2.getNextSibling() == null);
+        Assertion.assert(textNode.getPreviousSibling() == null);
+        Assertion.assert(textNode2.getPreviousSibling() == textNode);
+
+        Assertion.assert(rootEl.getFirstChild() == textNode);
+        Assertion.assert(rootEl.getLastChild() == textNode2);
 
         NodeList    nodeList = doc.getElementsByTagName("*");
     };
@@ -532,6 +549,32 @@ public class Test {
     }
     
 
+    //
+    //  Cloning of default attributes.
+    //
+    
+    {
+        Document    doc = new DocumentImpl();
+        Element     root = doc.createElement("CTestRoot");
+        root.setAttribute("attr", "attrValue");
+        Attr attr = root.getAttributeNode("attr");
+        // turn this into a default attribute
+        ((org.apache.xerces.dom.AttrImpl)attr).setSpecified(false);
+        // add another attribute (this one is specified)
+        root.setAttribute("attr2", "attr2Value");
+
+        Element     cloned = (Element)root.cloneNode(true);
+        Attr a = cloned.getAttributeNode("attr");
+        Assertion.assert(a.getSpecified() == false);
+        a = cloned.getAttributeNode("attr2");
+        Assertion.assert(a.getSpecified() == true);
+
+        // now if we clone the default attribute by itself the clone should be
+        // specified
+        a = (Attr)attr.cloneNode(true);
+        Assertion.assert(a.getSpecified() == true);
+    }
+
 
     //
     //  DOM Level 2 tests.  These should be split out as a separate test.
@@ -562,7 +605,7 @@ public class Test {
         Assertion.assert(impl.hasFeature("MouseEvents", null)    == false);
         Assertion.assert(impl.hasFeature("MutationEvents", null) == true);
         Assertion.assert(impl.hasFeature("HTMLEvents", null)     == false);
-        Assertion.assert(impl.hasFeature("Range", null)          == false);
+        Assertion.assert(impl.hasFeature("Range", null)          == true);
     }
     
 
