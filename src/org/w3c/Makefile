@@ -16,6 +16,7 @@ all: dirs compile
 
 dirs:
 	${MAKE} -C dom
+	${MAKE} -C dom/html
 
 compile: ${TARGETS}
 
@@ -30,4 +31,6 @@ compile: ${TARGETS}
 
 clean:
 	${MAKE} -C dom clean
+	${MAKE} -C dom/html clean
+
 
