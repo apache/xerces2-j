@@ -57,11 +57,11 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.xs.psvi.XSIDCDefinition;
-import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.xs.XSIDCDefinition;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -263,7 +263,7 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
     }
     
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement

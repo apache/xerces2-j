@@ -57,7 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.xni.NamespaceContext;
 import org.w3c.dom.Attr;

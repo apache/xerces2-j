@@ -57,10 +57,10 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
-import org.apache.xerces.impl.xs.psvi.XSParticle;
-import org.apache.xerces.impl.xs.psvi.XSTerm;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSTerm;
 
 /**
  * Store schema particle declaration.
@@ -259,7 +259,7 @@ public class XSParticleDecl implements XSParticle {
     }
 
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
 		return null;

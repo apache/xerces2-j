@@ -57,8 +57,8 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.xni.psvi.AttributePSVI;
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.xs.AttributePSVI;
+import org.apache.xerces.xs.*;
 
 /**
  * Attribute namespace implementation; stores PSVI attribute items.
@@ -234,7 +234,7 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
     }
     
 	/* (non-Javadoc)
-	 * @see org.apache.xerces.xni.psvi.ItemPSVI#getActualValue()
+	 * @see org.apache.xerces.xs.ItemPSVI#getActualValue()
 	 */
 	public Object getActualValue() {
 		// TODO Auto-generated method stub

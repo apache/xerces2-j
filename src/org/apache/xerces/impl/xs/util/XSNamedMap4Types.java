@@ -57,8 +57,8 @@
 
 package org.apache.xerces.impl.xs.util;
 
-import org.apache.xerces.impl.xs.psvi.XSObject;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.SymbolHash;
 
 /**

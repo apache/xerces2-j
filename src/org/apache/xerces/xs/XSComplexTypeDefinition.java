@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
  * This interface represents the Complex Type Definition schema component.

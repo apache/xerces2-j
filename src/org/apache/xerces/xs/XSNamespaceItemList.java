@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,47 +54,31 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.xs.psvi;
+
+package org.apache.xerces.xs;
 
 /**
- * This interface represents the Annotation schema component.
+ *  The <code>XSNamesaceItemList</code> interface provides the abstraction of 
+ * an ordered collection of <code>XSNamespaceItem</code>s, without defining 
+ * or constraining how this collection is implemented. 
  * The interface may be updated or replaced. 
  */
-public interface XSAnnotation extends XSObject {
-    // TargetType
+public interface XSNamespaceItemList {
     /**
-     * The object type is <code>org.w3c.dom.Element</code>.
+     *  The number of <code>XSNamespaceItem</code>s in the list. The range of 
+     * valid child object indices is 0 to <code>length-1</code> inclusive. 
      */
-    public static final short W3C_DOM_ELEMENT           = 1;
-    /**
-     * The object type is <code>org.w3c.dom.Document</code>.
-     */
-    public static final short W3C_DOM_DOCUMENT          = 2;
-    /**
-     * The object type is <code>org.xml.sax.ContentHandler</code>.
-     */
-    public static final short SAX_CONTENTHANDLER        = 3;
+    public int getLength();
 
     /**
-     *  Write contents of the annotation to the specified DOM object. If the 
-     * specified <code>target</code> object is a DOM in-scope namespace 
-     * declarations for <code>annotation</code> element are added as 
-     * attributes nodes of the serialized <code>annotation</code>, otherwise 
-     * the corresponding events for all in-scope namespace declaration are 
-     * sent via specified document handler. 
-     * @param target  A target pointer to the annotation target object, i.e. 
-     *   <code>org.w3c.dom.Document</code>, 
-     *   <code>org.xml.sax.ContentHandler</code>. 
-     * @param targetType  A target type. 
-     * @return If the <code>target</code> is recognized type and supported by 
-     *   this implementation return true, otherwise return false. 
+     *  Returns the <code>index</code>th item in the collection. The index 
+     * starts at 0. If <code>index</code> is greater than or equal to the 
+     * number of objects in the list, this returns <code>null</code>. 
+     * @param index  index into the collection. 
+     * @return  The <code>XSNamespaceItem</code> at the <code>index</code>th 
+     *   position in the <code>XSNamespaceItemList</code>, or 
+     *   <code>null</code> if that is not a valid index. 
      */
-    public boolean writeAnnotation(Object target, 
-                                   short targetType);
-
-    /**
-     * A text representation of annotation.
-     */
-    public String getAnnotationString();
+    public XSNamespaceItem item(int index);
 
 }

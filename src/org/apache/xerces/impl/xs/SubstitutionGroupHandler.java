@@ -57,8 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xni.QName;
 import java.util.Hashtable;
 import java.util.Vector;

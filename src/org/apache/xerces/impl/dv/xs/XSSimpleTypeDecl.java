@@ -68,15 +68,15 @@ import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
-import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSFacet;
-import org.apache.xerces.impl.xs.psvi.XSMultiValueFacet;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSFacet;
+import org.apache.xerces.xs.XSMultiValueFacet;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
@@ -2387,7 +2387,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         // REVISIT: reset for fundamental facets
     }
     /**
-     * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
      */
     public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement
@@ -2402,7 +2402,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition#getFacets()
+     * @see org.apache.xerces.xs.XSSimpleTypeDefinition#getFacets()
      */
     public XSObjectList getFacets() {
         if (fFacets == null &&
@@ -2559,49 +2559,49 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             this.annotation = annotation;
         }
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getAnnotation()
+         * @see org.apache.xerces.xs.XSFacet#getAnnotation()
          */
         public XSAnnotation getAnnotation() {
             return annotation;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getFacetKind()
+         * @see org.apache.xerces.xs.XSFacet#getFacetKind()
          */
         public short getFacetKind() {
             return kind;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getLexicalFacetValue()
+         * @see org.apache.xerces.xs.XSFacet#getLexicalFacetValue()
          */
         public String getLexicalFacetValue() {
             return value;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSFacet#isFixed()
+         * @see org.apache.xerces.xs.XSFacet#isFixed()
          */
         public boolean isFixed() {
             return fixed;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getName()
+         * @see org.apache.xerces.xs.XSObject#getName()
          */
         public String getName() {
             return null;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespace()
+         * @see org.apache.xerces.xs.XSObject#getNamespace()
          */
         public String getNamespace() {
             return null;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+         * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
          */
         public XSNamespaceItem getNamespaceItem() {
             // REVISIT: implement
@@ -2609,7 +2609,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getType()
+         * @see org.apache.xerces.xs.XSObject#getType()
          */
         public short getType() {
             return XSConstants.FACET;
@@ -2630,7 +2630,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
  
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getFacetKind()
+         * @see org.apache.xerces.xs.XSFacet#getFacetKind()
          */
         public short getFacetKind() {
             return kind;
@@ -2638,35 +2638,35 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSMultiValueFacet#getAnnotations()
+         * @see org.apache.xerces.xs.XSMultiValueFacet#getAnnotations()
          */
         public XSObjectList getAnnotations() {
             return annotations;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSMultiValueFacet#getLexicalFacetValues()
+         * @see org.apache.xerces.xs.XSMultiValueFacet#getLexicalFacetValues()
          */
         public StringList getLexicalFacetValues() {
             return values;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getName()
+         * @see org.apache.xerces.xs.XSObject#getName()
          */
         public String getName() {
             return null;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespace()
+         * @see org.apache.xerces.xs.XSObject#getNamespace()
          */
         public String getNamespace() {
             return null;
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+         * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
          */
         public XSNamespaceItem getNamespaceItem() {
             // REVISIT: implement
@@ -2674,7 +2674,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
 
         /* (non-Javadoc)
-         * @see org.apache.xerces.impl.xs.psvi.XSObject#getType()
+         * @see org.apache.xerces.xs.XSObject#getType()
          */
         public short getType() {
             return XSConstants.MULTIVALUE_FACET;

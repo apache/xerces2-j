@@ -54,15 +54,37 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * Describes term that can be one of a model group, a wildcard, or an element 
- * declaration. Objects implementing <code>XSElementDeclaration</code>, 
- * <code>XSModelGroup</code> and <code>XSWildcard</code> interfaces also 
- * implement this interface. 
+ * The <code>XSObject</code> is a base object for the XML Schema component 
+ * model. 
  * The interface may be updated or replaced. 
  */
-public interface XSTerm extends XSObject {
+public interface XSObject {
+    /**
+     *  The <code>type</code> of this object, i.e. 
+     * <code>ELEMENT_DECLARATION</code>. 
+     */
+    public short getType();
+
+    /**
+     * The name of type <code>NCName</code> of this declaration as defined in 
+     * XML Namespaces.
+     */
+    public String getName();
+
+    /**
+     *  The [target namespace] of this object, or <code>null</code> if it is 
+     * unspecified. 
+     */
+    public String getNamespace();
+
+    /**
+     * A namespace schema information itemcorresponding to the target 
+     * namespace of the component, if it's globally declared; or null 
+     * otherwise.
+     */
+    public XSNamespaceItem getNamespaceItem();
+
 }

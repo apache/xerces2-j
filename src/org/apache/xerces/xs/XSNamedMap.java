@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002, 2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,30 +49,53 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2003, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * Describes a multi value constraining facets: pattern and enumeration.
+ * Objects implementing the <code>XSNamedMap</code> interface are used to 
+ * represent collections of XML Schema components that can be accessed by 
+ * name. Note that <code>XSNamedMap</code> does not inherit from 
+ * <code>XSObjectList</code>. The <code>XSOBject</code>s in 
+ * <code>XSNamedMap</code>s are not maintained in any particular order. 
+ * The interface may be updated or replaced. 
  */
-public interface XSMultiValueFacet extends XSObject{
+public interface XSNamedMap {
     /**
-     * @return The name of the facet: e.i. <code>enumeration</code>, 
-     * or <code>pattern</code>.
+     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
+     * The range of valid child object indices is 0 to 
+     * <code>mapLength-1</code> inclusive. 
      */
-    public short getFacetKind();
-    /**
-     * @return Returns values of this facet 
-     */
-    public StringList getLexicalFacetValues();   
+    public int getLength();
 
     /**
-     * @return annotations
+     *  Returns the <code>index</code>th item in the collection. The index 
+     * starts at 0. If <code>index</code> is greater than or equal to the 
+     * number of objects in the list, this returns <code>null</code>. 
+     * @param index  index into the collection. 
+     * @return  The <code>XSObject</code> at the <code>index</code>th 
+     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
+     *   that is not a valid index. 
      */
-    public XSObjectList getAnnotations();
+    public XSObject item(int index);
+
+    /**
+     * Retrieves a node specified by local name and namespace URI.
+     * <br>Per , applications must use the value null as the 
+     * <code>namespace</code> parameter for methods if they wish to have no 
+     * namespace.
+     * @param namespace The namespace URI of the node to retrieve.
+     * @param localName The local name of the node to retrieve.
+     * @return A <code>XSObject</code> (of any type) with the specified local 
+     *   name and namespace URI, or <code>null</code> if they do not 
+     *   identify any node in this map.
+     */
+    public XSObject itemByName(String namespace, 
+                              String localName);
+
 }

@@ -59,7 +59,7 @@ package org.apache.xerces.impl.dv;
 
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.ObjectFactory;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.xs.XSObjectList;
 
 /**
  * Defines a factory API that enables applications to <p>

@@ -58,13 +58,13 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
-import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
-import org.apache.xerces.impl.xs.psvi.XSAttributeUse;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.xs.psvi.XSWildcard;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSAttributeGroupDefinition;
+import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSWildcard;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
@@ -389,7 +389,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
     }
     
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
         //REVISIT: implement

@@ -59,11 +59,11 @@ package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xpath.XPath;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.psvi.AttributePSVI;
+import org.apache.xerces.xs.AttributePSVI;
 
 
 /**

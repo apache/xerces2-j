@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs.util;
 
-import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.xs.StringList;
 import java.util.Vector;
 /**
  * Containts a list of Object's.

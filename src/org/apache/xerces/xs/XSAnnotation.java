@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,37 +54,47 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * The <code>XSObject</code> is a base object for the XML Schema component 
- * model. 
+ * This interface represents the Annotation schema component.
  * The interface may be updated or replaced. 
  */
-public interface XSObject {
+public interface XSAnnotation extends XSObject {
+    // TargetType
     /**
-     *  The <code>type</code> of this object, i.e. 
-     * <code>ELEMENT_DECLARATION</code>. 
+     * The object type is <code>org.w3c.dom.Element</code>.
      */
-    public short getType();
+    public static final short W3C_DOM_ELEMENT           = 1;
+    /**
+     * The object type is <code>org.w3c.dom.Document</code>.
+     */
+    public static final short W3C_DOM_DOCUMENT          = 2;
+    /**
+     * The object type is <code>org.xml.sax.ContentHandler</code>.
+     */
+    public static final short SAX_CONTENTHANDLER        = 3;
 
     /**
-     * The name of type <code>NCName</code> of this declaration as defined in 
-     * XML Namespaces.
+     *  Write contents of the annotation to the specified DOM object. If the 
+     * specified <code>target</code> object is a DOM in-scope namespace 
+     * declarations for <code>annotation</code> element are added as 
+     * attributes nodes of the serialized <code>annotation</code>, otherwise 
+     * the corresponding events for all in-scope namespace declaration are 
+     * sent via specified document handler. 
+     * @param target  A target pointer to the annotation target object, i.e. 
+     *   <code>org.w3c.dom.Document</code>, 
+     *   <code>org.xml.sax.ContentHandler</code>. 
+     * @param targetType  A target type. 
+     * @return If the <code>target</code> is recognized type and supported by 
+     *   this implementation return true, otherwise return false. 
      */
-    public String getName();
+    public boolean writeAnnotation(Object target, 
+                                   short targetType);
 
     /**
-     *  The [target namespace] of this object, or <code>null</code> if it is 
-     * unspecified. 
+     * A text representation of annotation.
      */
-    public String getNamespace();
-
-    /**
-     * A namespace schema information itemcorresponding to the target 
-     * namespace of the component, if it's globally declared; or null 
-     * otherwise.
-     */
-    public XSNamespaceItem getNamespaceItem();
+    public String getAnnotationString();
 
 }

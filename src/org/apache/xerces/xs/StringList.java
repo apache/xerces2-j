@@ -54,7 +54,7 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
  *  The <code>StringList</code> is an ordered collection of 

@@ -54,44 +54,44 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.xs.psvi;
+
+package org.apache.xerces.xs;
 
 /**
- * The interfaces represents the Attribute Declaration schema component.
+ * This interface represents the Model Group schema component.
  * The interface may be updated or replaced. 
  */
-public interface XSAttributeDeclaration extends XSObject {
+public interface XSModelGroup extends XSTerm {
+    // Content model compositors
     /**
-     * [type definition]: A simple type definition 
+     * This constant value signifies a sequence operator.
      */
-    public XSSimpleTypeDefinition getTypeDefinition();
+    public static final short COMPOSITOR_SEQUENCE       = 1;
+    /**
+     * This constant value signifies a choice operator.
+     */
+    public static final short COMPOSITOR_CHOICE         = 2;
+    /**
+     * This content model represents a simplified version of the SGML 
+     * &amp;-Connector and is limited to the top-level of any content model. 
+     * No element in the all content model may appear more than once.
+     */
+    public static final short COMPOSITOR_ALL            = 3;
 
     /**
-     * Optional. One of <code>SCOPE_GLOBAL</code>, <code>SCOPE_LOCAL</code>, 
-     * or <code>SCOPE_ABSENT</code>. If the scope is local, then the 
-     * <code>enclosingCTDefinition</code> is present. 
+     * [compositor]: one of all, choice or sequence. The valid constants 
+     * values are: 
+     * <code>COMPOSITOR_SEQUENCE, COMPOSITOR_CHOICE, COMPOSITOR_ALL</code>. 
      */
-    public short getScope();
+    public short getCompositor();
 
     /**
-     * The complex type definition for locally scoped declarations (see 
-     * <code>scope</code>). 
+     *  A list of [particles]. 
      */
-    public XSComplexTypeDefinition getEnclosingCTDefinition();
+    public XSObjectList getParticles();
 
     /**
-     * Value constraint: one of <code>VC_NONE, VC_DEFAULT, VC_FIXED</code>. 
-     */
-    public short getConstraintType();
-
-    /**
-     * Value constraint: The actual value with respect to the [type definition
-     * ]. 
-     */
-    public String getConstraintValue();
-
-    /**
-     * Optional. Annotation. 
+     * Optional. An [annotation]. 
      */
     public XSAnnotation getAnnotation();
 

@@ -69,7 +69,7 @@ import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.dom3.bootstrap.DOMImplementationRegistry;
 import org.apache.xerces.dom3.DOMLocator;
-import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xs.ElementPSVI;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;

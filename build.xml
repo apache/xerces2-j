@@ -888,7 +888,7 @@ Copyright:
     <copy todir="${build.src}">
         <fileset 
             dir="${src.dir}"
-            includes="org/apache/xerces/impl/xs/psvi/**,
+            includes="org/apache/xerces/xs/**,
                       org/apache/xerces/impl/xs/XSTypeDecl.java
                      ">
         </fileset>
@@ -978,31 +978,31 @@ Copyright:
                       org/apache/xerces/impl/msg/XMLSchema**,
                       org/apache/xerces/impl/xpath/regex/**,
                       org/apache/xerces/impl/xs/XSTypeDecl.java,
-			org/apache/xerces/impl/xs/psvi/StringList.java
-			org/apache/xerces/impl/xs/psvi/XSAnnotation.java
-			org/apache/xerces/impl/xs/psvi/XSAttributeDeclaration.java
-			org/apache/xerces/impl/xs/psvi/XSAttributeGroupDefinition.java
-			org/apache/xerces/impl/xs/psvi/XSAttributeUse.java
-			org/apache/xerces/impl/xs/psvi/XSComplexTypeDefinition.java
-			org/apache/xerces/impl/xs/psvi/XSConstants.java
-			org/apache/xerces/impl/xs/psvi/XSElementDeclaration.java
-			org/apache/xerces/impl/xs/psvi/XSIDCDefinition.java
-			org/apache/xerces/impl/xs/psvi/XSModel.java
-			org/apache/xerces/impl/xs/psvi/XSModelGroup.java
-			org/apache/xerces/impl/xs/psvi/XSModelGroupDefinition.java
-			org/apache/xerces/impl/xs/psvi/XSNamedMap.java
-			org/apache/xerces/impl/xs/psvi/XSNamespaceItem.java
-			org/apache/xerces/impl/xs/psvi/XSNamespaceItemList.java
-			org/apache/xerces/impl/xs/psvi/XSNotationDeclaration.java
-			org/apache/xerces/impl/xs/psvi/XSObject.java
-			org/apache/xerces/impl/xs/psvi/XSObjectList.java
-			org/apache/xerces/impl/xs/psvi/XSParticle.java
-			org/apache/xerces/impl/xs/psvi/XSSimpleTypeDefinition.java
-			org/apache/xerces/impl/xs/psvi/XSTerm.java
-			org/apache/xerces/impl/xs/psvi/XSTypeDefinition.java
-			org/apache/xerces/impl/xs/psvi/XSWildcard.java
-			org/apache/xerces/impl/xs/psvi/XSFacet.java
-			org/apache/xerces/impl/xs/psvi/XSMultiValueFacet.java
+			org/apache/xerces/xs/StringList.java
+			org/apache/xerces/xs/XSAnnotation.java
+			org/apache/xerces/xs/XSAttributeDeclaration.java
+			org/apache/xerces/xs/XSAttributeGroupDefinition.java
+			org/apache/xerces/xs/XSAttributeUse.java
+			org/apache/xerces/xs/XSComplexTypeDefinition.java
+			org/apache/xerces/xs/XSConstants.java
+			org/apache/xerces/xs/XSElementDeclaration.java
+			org/apache/xerces/xs/XSIDCDefinition.java
+			org/apache/xerces/xs/XSModel.java
+			org/apache/xerces/xs/XSModelGroup.java
+			org/apache/xerces/xs/XSModelGroupDefinition.java
+			org/apache/xerces/xs/XSNamedMap.java
+			org/apache/xerces/xs/XSNamespaceItem.java
+			org/apache/xerces/xs/XSNamespaceItemList.java
+			org/apache/xerces/xs/XSNotationDeclaration.java
+			org/apache/xerces/xs/XSObject.java
+			org/apache/xerces/xs/XSObjectList.java
+			org/apache/xerces/xs/XSParticle.java
+			org/apache/xerces/xs/XSSimpleTypeDefinition.java
+			org/apache/xerces/xs/XSTerm.java
+			org/apache/xerces/xs/XSTypeDefinition.java
+			org/apache/xerces/xs/XSWildcard.java
+			org/apache/xerces/xs/XSFacet.java
+			org/apache/xerces/xs/XSMultiValueFacet.java
                       org/apache/xerces/impl/xs/util/StringListImpl.java,
                       org/apache/xerces/impl/xs/util/XSObjectListImpl.java,
                       org/apache/xerces/util/ObjectFactory.java,

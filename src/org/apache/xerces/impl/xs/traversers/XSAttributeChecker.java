@@ -71,7 +71,7 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
 import org.apache.xerces.util.DOMUtil;

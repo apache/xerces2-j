@@ -57,14 +57,14 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSModel;
-import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSNotationDeclaration;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xs.ElementPSVI;
 
 /**
  * Element PSV infoset augmentations implementation.
@@ -270,7 +270,7 @@ public class ElementPSVImpl implements ElementPSVI {
     }
 
 	/* (non-Javadoc)
-	 * @see org.apache.xerces.xni.psvi.ItemPSVI#getActualValue()
+	 * @see org.apache.xerces.xs.ItemPSVI#getActualValue()
 	 */
 	public Object getActualValue() {
 		// TODO Auto-generated method stub

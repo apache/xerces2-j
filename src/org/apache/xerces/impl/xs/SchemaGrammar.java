@@ -63,21 +63,21 @@ import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
-import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
-import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSModel;
-import org.apache.xerces.impl.xs.psvi.XSModelGroupDefinition;
-import org.apache.xerces.impl.xs.psvi.XSNamedMap;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
-import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.xs.psvi.XSParticle;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
-import org.apache.xerces.impl.xs.psvi.XSWildcard;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeGroupDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSModelGroupDefinition;
+import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSNotationDeclaration;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSWildcard;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
@@ -933,7 +933,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSNamespaceItem#getAnnotations()
+	 * @see org.apache.xerces.xs.XSNamespaceItem#getAnnotations()
 	 */
 	public XSObjectList getAnnotations() {
 		return new XSObjectListImpl(fAnnotations, fNumAnnotations);

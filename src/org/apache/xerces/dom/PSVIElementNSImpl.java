@@ -57,8 +57,8 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.*;
 
 /**
  * Element namespace implementation; stores PSVI element items.
@@ -275,7 +275,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     }
 
 	/* (non-Javadoc)
-	 * @see org.apache.xerces.xni.psvi.ItemPSVI#getActualValue()
+	 * @see org.apache.xerces.xs.ItemPSVI#getActualValue()
 	 */
 	public Object getActualValue() {
 		// TODO Auto-generated method stub

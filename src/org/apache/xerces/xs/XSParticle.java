@@ -55,44 +55,32 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * This interface represents the Model Group schema component.
+ * This interface represents the Particle schema component.
  * The interface may be updated or replaced. 
  */
-public interface XSModelGroup extends XSTerm {
-    // Content model compositors
+public interface XSParticle extends XSObject {
     /**
-     * This constant value signifies a sequence operator.
+     * [min occurs]: determines the minimum number of terms that can occur. 
      */
-    public static final short COMPOSITOR_SEQUENCE       = 1;
-    /**
-     * This constant value signifies a choice operator.
-     */
-    public static final short COMPOSITOR_CHOICE         = 2;
-    /**
-     * This content model represents a simplified version of the SGML 
-     * &amp;-Connector and is limited to the top-level of any content model. 
-     * No element in the all content model may appear more than once.
-     */
-    public static final short COMPOSITOR_ALL            = 3;
+    public int getMinOccurs();
 
     /**
-     * [compositor]: one of all, choice or sequence. The valid constants 
-     * values are: 
-     * <code>COMPOSITOR_SEQUENCE, COMPOSITOR_CHOICE, COMPOSITOR_ALL</code>. 
+     * [max occurs] determines the maximum number of terms that can occur. To 
+     * query for value of unbounded use <code>maxOccursUnbounded</code>. 
      */
-    public short getCompositor();
+    public int getMaxOccurs();
 
     /**
-     *  A list of [particles]. 
+     * [max occurs] whether the maxOccurs value is unbounded.
      */
-    public XSObjectList getParticles();
+    public boolean getMaxOccursUnbounded();
 
     /**
-     * Optional. An [annotation]. 
+     * [term]: one of a model group, a wildcard, or an element declaration. 
      */
-    public XSAnnotation getAnnotation();
+    public XSTerm getTerm();
 
 }

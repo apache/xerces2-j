@@ -55,92 +55,124 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * The interfaces represents the namespace schema information information 
- * item. Each namespace schema information information item corresponds to 
- * an XML Schema with unique namespace name.
+ * This interface represents an XML Schema. 
  * The interface may be updated or replaced. 
  */
-public interface XSNamespaceItem {
+public interface XSModel {
     /**
-     * [schema namespace]: A namespace name or <code>null</code>.
+     * Convenience method. Returns a list of all namespaces that belong to 
+     * this schema. The value <code>null</code> is not a valid namespace 
+     * name, but if there are components that don't have a target namespace, 
+     * <code>null</code> is included in this list. 
      */
-    public String getSchemaNamespace();
+    public StringList getNamespaces();
 
     /**
-     * [schema components]: a list of top-level components, i.e. element 
-     * declarations, attribute declarations, etc. 
+     * A set of namespace schema information information items ( of type 
+     * <code>XSNamespaceItem</code>), one for each namespace name which 
+     * appears as the target namespace of any schema component in the schema 
+     * used for that assessment, and one for absent if any schema component 
+     * in the schema had no target namespace. For more information see 
+     * schema information. 
+     */
+    public XSNamespaceItemList getNamespaceItems();
+
+    /**
+     * Returns a list of top-level components, i.e. element declarations, 
+     * attribute declarations, etc. 
      * @param objectType The type of the declaration, i.e. 
      *   <code>ELEMENT_DECLARATION</code>. Note that 
      *   <code>XSTypeDefinition.SIMPLE_TYPE</code> and 
      *   <code>XSTypeDefinition.COMPLEX_TYPE</code> can also be used as the 
      *   <code>objectType</code> to retrieve only complex types or simple 
      *   types, instead of all types.
-     * @return A list of top-level definition of the specified type in 
+     * @return A list of top-level definitions of the specified type in 
      *   <code>objectType</code> or <code>null</code>. 
      */
     public XSNamedMap getComponents(short objectType);
 
     /**
-     *  [annotations]: a set of annotations.
+     * Convenience method. Returns a list of top-level component declarations 
+     * that are defined within the specified namespace, i.e. element 
+     * declarations, attribute declarations, etc. 
+     * @param objectType The type of the declaration, i.e. 
+     *   <code>ELEMENT_DECLARATION</code>.
+     * @param namespace The namespace to which declaration belong or 
+     *   <code>null</code> (for components with no target namespace).
+     * @return A list of top-level definitions of the specified type in 
+     *   <code>objectType</code> and defined in the specified 
+     *   <code>namespace</code> or <code>null</code>. 
+     */
+    public XSNamedMap getComponentsByNamespace(short objectType, 
+                                               String namespace);
+
+    /**
+     *  [annotations]: a set of annotations. 
      */
     public XSObjectList getAnnotations();
 
     /**
      * Convenience method. Returns a top-level element declaration. 
      * @param name The name of the declaration.
-     * @return A top-level element declaration or <code>null</code> if such 
-     *   declaration does not exist. 
+     * @param namespace The namespace of the declaration, otherwise null.
+     * @return A top-level element declaration or null if such declaration 
+     *   does not exist. 
      */
-    public XSElementDeclaration getElementDeclaration(String name);
+    public XSElementDeclaration getElementDeclaration(String name, 
+                                                      String namespace);
 
     /**
      * Convenience method. Returns a top-level attribute declaration. 
      * @param name The name of the declaration.
-     * @return A top-level attribute declaration or <code>null</code> if such 
-     *   declaration does not exist. 
+     * @param namespace The namespace of the declaration, otherwise null.
+     * @return A top-level attribute declaration or null if such declaration 
+     *   does not exist. 
      */
-    public XSAttributeDeclaration getAttributeDeclaration(String name);
+    public XSAttributeDeclaration getAttributeDeclaration(String name, 
+                                                          String namespace);
 
     /**
      * Convenience method. Returns a top-level simple or complex type 
      * definition. 
      * @param name The name of the definition.
-     * @return An <code>XSTypeDefinition</code> or <code>null</code> if such 
-     *   definition does not exist. 
+     * @param namespace The namespace of the declaration, otherwise null.
+     * @return An <code>XSTypeDefinition</code> or null if such definition 
+     *   does not exist. 
      */
-    public XSTypeDefinition getTypeDefinition(String name);
+    public XSTypeDefinition getTypeDefinition(String name, 
+                                              String namespace);
 
     /**
      * Convenience method. Returns a top-level attribute group definition. 
      * @param name The name of the definition.
-     * @return A top-level attribute group definition or <code>null</code> if 
-     *   such definition does not exist. 
+     * @param namespace The namespace of the definition, otherwise null.
+     * @return A top-level attribute group definition or null if such 
+     *   definition does not exist. 
      */
-    public XSAttributeGroupDefinition getAttributeGroup(String name);
+    public XSAttributeGroupDefinition getAttributeGroup(String name, 
+                                                        String namespace);
 
     /**
      * Convenience method. Returns a top-level model group definition. 
      * @param name The name of the definition.
-     * @return A top-level model group definition definition or 
-     *   <code>null</code> if such definition does not exist. 
+     * @param namespace The namespace of the definition, otherwise null.
+     * @return A top-level model group definition definition or null if such 
+     *   definition does not exist. 
      */
-    public XSModelGroupDefinition getModelGroupDefinition(String name);
+    public XSModelGroupDefinition getModelGroupDefinition(String name, 
+                                                          String namespace);
 
     /**
      * Convenience method. Returns a top-level notation declaration. 
      * @param name The name of the declaration.
-     * @return A top-level notation declaration or <code>null</code> if such 
-     *   declaration does not exist. 
+     * @param namespace The namespace of the declaration, otherwise null.
+     * @return A top-level notation declaration or null if such declaration 
+     *   does not exist. 
      */
-    public XSNotationDeclaration getNotationDeclaration(String name);
-
-    /**
-     * [document location] - a list of locations URI for the documents that 
-     * contributed to the XSModel.
-     */
-    public StringList getDocumentLocations();
+    public XSNotationDeclaration getNotationDeclaration(String name, 
+                                                        String namespace);
 
 }

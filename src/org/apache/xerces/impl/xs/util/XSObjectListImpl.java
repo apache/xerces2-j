@@ -57,8 +57,8 @@
 
 package org.apache.xerces.impl.xs.util;
 
-import org.apache.xerces.impl.xs.psvi.XSObject;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSObjectList;
 
 /**
  * Containts a list of XSObject's.

@@ -59,13 +59,13 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
-import org.apache.xerces.impl.xs.psvi.XSComplexTypeDefinition;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSNamedMap;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 
 /**
@@ -370,7 +370,7 @@ public class XSElementDecl implements XSElementDeclaration {
     
 
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement

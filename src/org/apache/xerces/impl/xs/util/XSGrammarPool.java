@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.util;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.XSModelImpl;
-import org.apache.xerces.impl.xs.psvi.XSModel;
+import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 

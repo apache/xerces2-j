@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.dv;
 
-import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 
 /**
  * This interface <code>XSSimpleType</code> represents the simple type

@@ -54,21 +54,44 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * This interface represents is the Model Group Definition schema component.
+ * The interfaces represents the Attribute Declaration schema component.
  * The interface may be updated or replaced. 
  */
-public interface XSModelGroupDefinition extends XSObject {
+public interface XSAttributeDeclaration extends XSObject {
     /**
-     * A model group. 
+     * [type definition]: A simple type definition 
      */
-    public XSModelGroup getModelGroup();
+    public XSSimpleTypeDefinition getTypeDefinition();
 
     /**
-     * Optional. An [annotation]. 
+     * Optional. One of <code>SCOPE_GLOBAL</code>, <code>SCOPE_LOCAL</code>, 
+     * or <code>SCOPE_ABSENT</code>. If the scope is local, then the 
+     * <code>enclosingCTDefinition</code> is present. 
+     */
+    public short getScope();
+
+    /**
+     * The complex type definition for locally scoped declarations (see 
+     * <code>scope</code>). 
+     */
+    public XSComplexTypeDefinition getEnclosingCTDefinition();
+
+    /**
+     * Value constraint: one of <code>VC_NONE, VC_DEFAULT, VC_FIXED</code>. 
+     */
+    public short getConstraintType();
+
+    /**
+     * Value constraint: The actual value with respect to the [type definition
+     * ]. 
+     */
+    public String getConstraintValue();
+
+    /**
+     * Optional. Annotation. 
      */
     public XSAnnotation getAnnotation();
 

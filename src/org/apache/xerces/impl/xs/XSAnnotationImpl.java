@@ -56,9 +56,9 @@
  */
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.DOMParser;
 

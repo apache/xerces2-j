@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001, 2002, 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,59 +49,30 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * This interface represents the Identity-constraint Definition schema 
- * component.
- * The interface may be updated or replaced. 
+ * Describes a multi value constraining facets: pattern and enumeration.
  */
-public interface XSIDCDefinition extends XSObject {
-    // Identity Constraints
+public interface XSMultiValueFacet extends XSObject{
     /**
-     * 
+     * @return The name of the facet: e.i. <code>enumeration</code>, 
+     * or <code>pattern</code>.
      */
-    public static final short IC_KEY                    = 1;
+    public short getFacetKind();
     /**
-     * 
+     * @return Returns values of this facet 
      */
-    public static final short IC_KEYREF                 = 2;
-    /**
-     * 
-     */
-    public static final short IC_UNIQUE                 = 3;
+    public StringList getLexicalFacetValues();   
 
     /**
-     * [identity-constraint category]: one of key, keyref or unique. 
-     */
-    public short getCategory();
-
-    /**
-     * [selector]: a restricted  expression. 
-     */
-    public String getSelectorStr();
-
-    /**
-     * [fields]: a non-empty list of restricted XPath ([XPath]) expressions. 
-     */
-    public StringList getFieldStrs();
-
-    /**
-     * [referenced key]: required if [identity-constraint category] is keyref, 
-     * forbidden otherwise. An identity-constraint definition with [
-     * identity-constraint category] equal to key or unique. 
-     */
-    public XSIDCDefinition getRefKey();
-
-    /**
-     * A set of [annotations]. 
+     * @return annotations
      */
     public XSObjectList getAnnotations();
-
 }

@@ -54,30 +54,15 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.xs.psvi;
+
+package org.apache.xerces.xs;
 
 /**
- *  The <code>XSObjectList</code> interface provides the abstraction of an 
- * ordered collection of <code>XSObject</code>s, without defining or 
- * constraining how this collection is implemented. 
+ * Describes term that can be one of a model group, a wildcard, or an element 
+ * declaration. Objects implementing <code>XSElementDeclaration</code>, 
+ * <code>XSModelGroup</code> and <code>XSWildcard</code> interfaces also 
+ * implement this interface. 
  * The interface may be updated or replaced. 
  */
-public interface XSObjectList {
-    /**
-     *  The number of <code>XSObjects</code> in the list. The range of valid 
-     * child object indices is 0 to <code>length-1</code> inclusive. 
-     */
-    public int getLength();
-
-    /**
-     *  Returns the <code>index</code>th item in the collection. The index 
-     * starts at 0. If <code>index</code> is greater than or equal to the 
-     * number of objects in the list, this returns <code>null</code>. 
-     * @param index  index into the collection. 
-     * @return  The <code>XSObject</code> at the <code>index</code>th 
-     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
-     *   that is not a valid index. 
-     */
-    public XSObject item(int index);
-
+public interface XSTerm extends XSObject {
 }

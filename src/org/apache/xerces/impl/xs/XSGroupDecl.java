@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.xs.*;
 
 /**
  * The XML representation for a group declaration
@@ -116,7 +116,7 @@ public class XSGroupDecl implements XSModelGroupDefinition {
     }
     
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement

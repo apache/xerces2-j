@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.xs.*;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 
 /**
@@ -197,7 +197,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         return fDefault;
     }
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement

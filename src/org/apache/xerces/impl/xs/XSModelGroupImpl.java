@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.xs.*;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
@@ -259,7 +259,7 @@ public class XSModelGroupImpl implements XSModelGroup {
     }
 
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
 		return null;

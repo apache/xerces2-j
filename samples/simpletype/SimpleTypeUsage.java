@@ -64,9 +64,9 @@ import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  *  It demonstrates how to use the interfaces defined in 'org.apache.xerces.impl.dv'

@@ -57,11 +57,11 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
-import org.apache.xerces.impl.xs.psvi.XSWildcard;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSWildcard;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 
 /**
@@ -617,7 +617,7 @@ public class XSWildcardDecl implements XSWildcard {
 
 
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
 	 */
 	public XSNamespaceItem getNamespaceItem() {
         // REVISIT: implement

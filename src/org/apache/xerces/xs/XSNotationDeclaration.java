@@ -55,47 +55,28 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * Objects implementing the <code>XSNamedMap</code> interface are used to 
- * represent collections of XML Schema components that can be accessed by 
- * name. Note that <code>XSNamedMap</code> does not inherit from 
- * <code>XSObjectList</code>. The <code>XSOBject</code>s in 
- * <code>XSNamedMap</code>s are not maintained in any particular order. 
+ *  This interface represents the Notation Declaration schema component. 
  * The interface may be updated or replaced. 
  */
-public interface XSNamedMap {
+public interface XSNotationDeclaration extends XSObject {
     /**
-     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
-     * The range of valid child object indices is 0 to 
-     * <code>mapLength-1</code> inclusive. 
+     *  The URI reference representing the system identifier for the notation 
+     * declaration, if present, <code>null</code> otherwise. 
      */
-    public int getLength();
+    public String getSystemId();
 
     /**
-     *  Returns the <code>index</code>th item in the collection. The index 
-     * starts at 0. If <code>index</code> is greater than or equal to the 
-     * number of objects in the list, this returns <code>null</code>. 
-     * @param index  index into the collection. 
-     * @return  The <code>XSObject</code> at the <code>index</code>th 
-     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
-     *   that is not a valid index. 
+     *  The string representing the public identifier for this notation 
+     * declaration, if present; <code>null</code> otherwise. 
      */
-    public XSObject item(int index);
+    public String getPublicId();
 
     /**
-     * Retrieves a node specified by local name and namespace URI.
-     * <br>Per , applications must use the value null as the 
-     * <code>namespace</code> parameter for methods if they wish to have no 
-     * namespace.
-     * @param namespace The namespace URI of the node to retrieve.
-     * @param localName The local name of the node to retrieve.
-     * @return A <code>XSObject</code> (of any type) with the specified local 
-     *   name and namespace URI, or <code>null</code> if they do not 
-     *   identify any node in this map.
+     * Optional. An [annotation]. 
      */
-    public XSObject itemByName(String namespace, 
-                              String localName);
+    public XSAnnotation getAnnotation();
 
 }

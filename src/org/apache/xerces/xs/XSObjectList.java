@@ -54,29 +54,30 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- *  This interface represents the Notation Declaration schema component. 
+ *  The <code>XSObjectList</code> interface provides the abstraction of an 
+ * ordered collection of <code>XSObject</code>s, without defining or 
+ * constraining how this collection is implemented. 
  * The interface may be updated or replaced. 
  */
-public interface XSNotationDeclaration extends XSObject {
+public interface XSObjectList {
     /**
-     *  The URI reference representing the system identifier for the notation 
-     * declaration, if present, <code>null</code> otherwise. 
+     *  The number of <code>XSObjects</code> in the list. The range of valid 
+     * child object indices is 0 to <code>length-1</code> inclusive. 
      */
-    public String getSystemId();
+    public int getLength();
 
     /**
-     *  The string representing the public identifier for this notation 
-     * declaration, if present; <code>null</code> otherwise. 
+     *  Returns the <code>index</code>th item in the collection. The index 
+     * starts at 0. If <code>index</code> is greater than or equal to the 
+     * number of objects in the list, this returns <code>null</code>. 
+     * @param index  index into the collection. 
+     * @return  The <code>XSObject</code> at the <code>index</code>th 
+     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
+     *   that is not a valid index. 
      */
-    public String getPublicId();
-
-    /**
-     * Optional. An [annotation]. 
-     */
-    public XSAnnotation getAnnotation();
+    public XSObject item(int index);
 
 }

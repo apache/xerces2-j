@@ -61,7 +61,7 @@ import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.util.SymbolHash;
 
 /**

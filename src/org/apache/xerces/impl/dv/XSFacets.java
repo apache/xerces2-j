@@ -59,8 +59,8 @@ package org.apache.xerces.impl.dv;
 
 import java.util.Vector;
 
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.xs.XSAnnotation;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**

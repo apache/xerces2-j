@@ -59,18 +59,18 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Vector;
 
-import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSModel;
-import org.apache.xerces.impl.xs.psvi.XSModelGroupDefinition;
-import org.apache.xerces.impl.xs.psvi.XSNamedMap;
-import org.apache.xerces.impl.xs.psvi.XSNamespaceItemList;
-import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeGroupDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSModelGroupDefinition;
+import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSNamespaceItemList;
+import org.apache.xerces.xs.XSNotationDeclaration;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.NSItemListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
@@ -430,7 +430,7 @@ public class XSModelImpl implements XSModel {
 
 
 	/**
-	 * @see org.apache.xerces.impl.xs.psvi.XSModel#getNotationDeclaration(String, String)
+	 * @see org.apache.xerces.xs.XSModel#getNotationDeclaration(String, String)
 	 */
     public XSNotationDeclaration getNotationDeclaration(String name,
                                                  String namespace) {

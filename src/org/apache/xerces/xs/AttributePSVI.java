@@ -55,9 +55,9 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.xni.psvi;
+package org.apache.xerces.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.xs.*;
 
 /**
  * Represent a PSVI item for one attribute information item.

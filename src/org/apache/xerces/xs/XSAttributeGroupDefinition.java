@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002, 2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,34 +49,40 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2003, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * Describes a constraining facet. Enumeration and pattern facets are exposed
- * via XSMultiValueFacet interface.
+ * This interface represents the Attribute Group Definition schema component
+ * The interface may be updated or replaced. 
  */
-public interface XSFacet extends XSObject{
+public interface XSAttributeGroupDefinition extends XSObject {
     /**
-     * @return The name of the facet: e.i. <code>length</code>, 
-     * <code>whiteSpace</code>, <code>pattern</code>, etc.
+     * A set of [attribute uses]. 
      */
-    public short getFacetKind();
+    public XSObjectList getAttributeUses();
+    
     /**
-     * @return Returns a value of a constraining facet. 
+     * @param namespace The [target namespace] of this object, or <code>null</code> if it is 
+     * unspecified. 
+     * @param name  The name of type <code>NCName</code> of this declaration as defined in 
+     * XML Namespaces.
+     * @return XSAttributeUse declaration for the given {namespace, name} or null.
      */
-    public String getLexicalFacetValue();   
+    public XSAttributeUse getAttributeUse(String namespace, String name);
+
     /**
-     * Check whether a facet value is fixed. 
+     * Optional. A [wildcard]. 
      */
-    public boolean isFixed();
+    public XSWildcard getAttributeWildcard();
+
     /**
-     * @return an annotation
+     * Optional. An [annotation]. 
      */
     public XSAnnotation getAnnotation();
+
 }

@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.xs.psvi.XSIDCDefinition;
+import org.apache.xerces.xs.XSIDCDefinition;
 
 /**
  * Schema key reference identity constraint.

@@ -58,8 +58,8 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xpath.XPathException;
-import org.apache.xerces.impl.xs.psvi.XSComplexTypeDefinition;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 

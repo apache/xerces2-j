@@ -55,30 +55,21 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- *  The <code>XSNamesaceItemList</code> interface provides the abstraction of 
- * an ordered collection of <code>XSNamespaceItem</code>s, without defining 
- * or constraining how this collection is implemented. 
+ * This interface represents is the Model Group Definition schema component.
  * The interface may be updated or replaced. 
  */
-public interface XSNamespaceItemList {
+public interface XSModelGroupDefinition extends XSObject {
     /**
-     *  The number of <code>XSNamespaceItem</code>s in the list. The range of 
-     * valid child object indices is 0 to <code>length-1</code> inclusive. 
+     * A model group. 
      */
-    public int getLength();
+    public XSModelGroup getModelGroup();
 
     /**
-     *  Returns the <code>index</code>th item in the collection. The index 
-     * starts at 0. If <code>index</code> is greater than or equal to the 
-     * number of objects in the list, this returns <code>null</code>. 
-     * @param index  index into the collection. 
-     * @return  The <code>XSNamespaceItem</code> at the <code>index</code>th 
-     *   position in the <code>XSNamespaceItemList</code>, or 
-     *   <code>null</code> if that is not a valid index. 
+     * Optional. An [annotation]. 
      */
-    public XSNamespaceItem item(int index);
+    public XSAnnotation getAnnotation();
 
 }

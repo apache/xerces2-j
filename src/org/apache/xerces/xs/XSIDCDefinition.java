@@ -55,32 +55,53 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
 /**
- * This interface represents the Particle schema component.
+ * This interface represents the Identity-constraint Definition schema 
+ * component.
  * The interface may be updated or replaced. 
  */
-public interface XSParticle extends XSObject {
+public interface XSIDCDefinition extends XSObject {
+    // Identity Constraints
     /**
-     * [min occurs]: determines the minimum number of terms that can occur. 
+     * 
      */
-    public int getMinOccurs();
+    public static final short IC_KEY                    = 1;
+    /**
+     * 
+     */
+    public static final short IC_KEYREF                 = 2;
+    /**
+     * 
+     */
+    public static final short IC_UNIQUE                 = 3;
 
     /**
-     * [max occurs] determines the maximum number of terms that can occur. To 
-     * query for value of unbounded use <code>maxOccursUnbounded</code>. 
+     * [identity-constraint category]: one of key, keyref or unique. 
      */
-    public int getMaxOccurs();
+    public short getCategory();
 
     /**
-     * [max occurs] whether the maxOccurs value is unbounded.
+     * [selector]: a restricted  expression. 
      */
-    public boolean getMaxOccursUnbounded();
+    public String getSelectorStr();
 
     /**
-     * [term]: one of a model group, a wildcard, or an element declaration. 
+     * [fields]: a non-empty list of restricted XPath ([XPath]) expressions. 
      */
-    public XSTerm getTerm();
+    public StringList getFieldStrs();
+
+    /**
+     * [referenced key]: required if [identity-constraint category] is keyref, 
+     * forbidden otherwise. An identity-constraint definition with [
+     * identity-constraint category] equal to key or unique. 
+     */
+    public XSIDCDefinition getRefKey();
+
+    /**
+     * A set of [annotations]. 
+     */
+    public XSObjectList getAnnotations();
 
 }

@@ -54,10 +54,10 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.xs;
 
-import org.apache.xerces.xni.psvi.AttributePSVI;
-import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xs.AttributePSVI;
+import org.apache.xerces.xs.ElementPSVI;
 
 /**
  * This interface provides access to the post schema validation infoset for an 
