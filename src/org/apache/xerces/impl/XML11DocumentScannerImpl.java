@@ -475,6 +475,20 @@ public class XML11DocumentScannerImpl
         }
         return dataok;
    }
+   
+    /**
+     * Normalize whitespace in an XMLString converting all whitespace
+     * characters to space characters.
+     */
+    protected void normalizeWhitespace(XMLString value) {
+        int end = value.offset + value.length;
+	    for (int i = value.offset; i < end; i++) {
+           int c = value.ch[i];
+           if (XMLChar.isSpace(c)) {
+               value.ch[i] = ' ';
+           }
+       }
+    }
 
     // returns true if the given character is not
     // valid with respect to the version of
