@@ -195,12 +195,10 @@ public final class XSDeclarationPool {
     //          in the pool.
 
     private boolean ensureElementDeclCapacity(int chunk) {
-        try {
-            return fElementDecl[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        if (chunk >= fElementDecl.length) {
             fElementDecl = resize(fElementDecl, fElementDecl.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fElementDecl[chunk] != null) {
+            return false;
         }
 
         fElementDecl[chunk] = new XSElementDecl[CHUNK_SIZE];
@@ -214,12 +212,10 @@ public final class XSDeclarationPool {
     }
 
     private boolean ensureParticleDeclCapacity(int chunk) {
-        try {
-            return fParticleDecl[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        if (chunk >= fParticleDecl.length) {
             fParticleDecl = resize(fParticleDecl, fParticleDecl.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fParticleDecl[chunk] != null) {
+            return false;
         }
 
         fParticleDecl[chunk] = new XSParticleDecl[CHUNK_SIZE];
@@ -234,12 +230,10 @@ public final class XSDeclarationPool {
 
 
     private boolean ensureAttrDeclCapacity(int chunk) {
-        try {
-            return fAttrDecl[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        if (chunk >= fAttrDecl.length) {
             fAttrDecl = resize(fAttrDecl, fAttrDecl.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fAttrDecl[chunk] != null) {            
+            return false;
         }
 
         fAttrDecl[chunk] = new XSAttributeDecl[CHUNK_SIZE];
@@ -253,12 +247,10 @@ public final class XSDeclarationPool {
     }
 
     private boolean ensureAttributeUseCapacity(int chunk) {
-        try {
-            return fAttributeUse[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        if (chunk >= fAttributeUse.length) {
             fAttributeUse = resize(fAttributeUse, fAttributeUse.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fAttributeUse[chunk] != null) {
+            return false;
         }
 
         fAttributeUse[chunk] = new XSAttributeUse[CHUNK_SIZE];
@@ -272,12 +264,10 @@ public final class XSDeclarationPool {
     }
 
     private boolean ensureSTDeclCapacity(int chunk) {
-        try {
-            return fSTDecl[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        if (chunk >= fSTDecl.length) {
             fSTDecl = resize(fSTDecl, fSTDecl.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fSTDecl[chunk] != null) {
+            return false;
         }
 
         fSTDecl[chunk] = new XSSimpleTypeDecl[CHUNK_SIZE];
@@ -291,12 +281,11 @@ public final class XSDeclarationPool {
     }
 
     private boolean ensureCTDeclCapacity(int chunk) {
-        try {
-            return fCTDecl[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+
+        if (chunk >= fCTDecl.length) {
             fCTDecl = resize(fCTDecl, fCTDecl.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fCTDecl[chunk] != null){
+            return false;
         }
 
         fCTDecl[chunk] = new XSComplexTypeDecl[CHUNK_SIZE];
