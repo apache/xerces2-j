@@ -297,7 +297,7 @@ catch (SAXException e) {
     Do not report attributes used for Namespace declarations, and 
     optionally do not report original prefixed names.
    </false>
-   <default value='true'/>
+   <default value='false'/>
    <access parsing='read-only' not-parsing='read-write'/>
   </feature>
   <feature name='http://xml.org/sax/features/string-interning'
