@@ -59,6 +59,7 @@ package org.apache.xerces.scanners;
 
 import org.apache.xerces.framework.XMLString;
 import org.apache.xerces.utils.QName;
+
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
 
@@ -70,18 +71,41 @@ public class XMLAttributes
     implements AttributeList, Attributes {
 
     //
+    // Data
+    //
+
+    // features
+
+    /** Namespaces. */
+    protected boolean fNamespaces = true;
+
+    // data
+
+    /** Attribute count. */
+    protected int fSize;
+
+    /** Attribute information. */
+    protected Attribute[] fAttributes = new Attribute[4];
+
+    //
     // Constructors
     //
 
-    /**
-     * 
-     */
+    /** Default constructor. */
     public XMLAttributes() {
-    }
+        for (int i = 0; i < fAttributes.length; i++) {
+            fAttributes[i] = new Attribute();
+        }
+    } // <init>()
 
     //
-    // Methods
+    // Public methods
     //
+
+    /** Sets whether namespace processing is being performed. */
+    public void setNamespaces(boolean namespaces) {
+        fNamespaces = namespaces;
+    } // setNamespaces(boolean)
 
     /**
      * setAttribute
@@ -93,8 +117,33 @@ public class XMLAttributes
      * @return 
      */
     public int setAttribute(QName name, String type, XMLString value) {
-        return -1;
-    } // setAttribute
+
+        // find attribute; create, if necessary
+        int index = name.uri != null
+                  ? getIndex(name.uri, name.localpart)
+                  : getIndex(name.rawname);
+        if (index == -1) {
+            index = fSize;
+            if (fSize++ == fAttributes.length) {
+                Attribute[] attributes = new Attribute[fAttributes.length + 4];
+                System.arraycopy(fAttributes, 0, attributes, 0, fAttributes.length);
+                for (int i = fAttributes.length; i < attributes.length; i++) {
+                    attributes[i] = new Attribute();
+                }
+                fAttributes = attributes;
+            }
+        }
+
+        // set values
+        Attribute attribute = fAttributes[index];
+        attribute.name.setValues(name);
+        attribute.type = type;
+        attribute.value = value.toString();
+
+        // return
+        return index;
+
+    } // setAttribute(QName,String,XMLString)
 
     /**
      * addAttributeEntity
@@ -105,7 +154,8 @@ public class XMLAttributes
      * @param length 
      */
     public void addAttributeEntity(int index, String name, int offset, int length) {
-    } // addAttributeEntity
+        throw new RuntimeException("not implemented");
+    } // addAttributeEntity(int,String,int,int)
 
     /**
      * removeAttribute
@@ -113,13 +163,15 @@ public class XMLAttributes
      * @param name 
      */
     public void removeAttribute(QName name) {
-    } // removeAttribute
+        throw new RuntimeException("not implemented");
+    } // removeAttribute(QName)
 
     /**
      * clear
      */
     public void clear() {
-    } // clear
+        fSize = 0;
+    } // clear()
 
     /**
      * setName
@@ -128,7 +180,8 @@ public class XMLAttributes
      * @param name 
      */
     public void setName(int index, QName name) {
-    } // setName
+        fAttributes[index].name.setValues(name);
+    } // setName(int,QName)
 
     /**
      * getName
@@ -137,7 +190,8 @@ public class XMLAttributes
      * @param name 
      */
     public void getName(int index, QName name) {
-    } // getName
+        name.setValues(fAttributes[index].name);
+    } // getName(int,QName)
 
     /**
      * setType
@@ -146,7 +200,8 @@ public class XMLAttributes
      * @param type 
      */
     public void setType(int index, String type) {
-    } // setType
+        fAttributes[index].type = type;
+    } // setType(int,String)
 
     /**
      * setValue
@@ -155,7 +210,8 @@ public class XMLAttributes
      * @param value 
      */
     public void setValue(int index, String value) {
-    } // setValue
+        fAttributes[index].value = value;
+    } // setValue(int,String)
 
     /**
      * setValue
@@ -164,6 +220,7 @@ public class XMLAttributes
      * @param value 
      */
     public void setValue(int index, XMLString value) {
+        throw new RuntimeException("not implemented");
     } // setValue
 
     /**
@@ -173,6 +230,7 @@ public class XMLAttributes
      * @param value 
      */
     public void getValue(int index, XMLString value) {
+        throw new RuntimeException("not implemented");
     } // getValue
 
     /**
@@ -183,7 +241,7 @@ public class XMLAttributes
      * @return 
      */
     public int getEntityCount(int attrIndex) {
-        return -1;
+        throw new RuntimeException("not implemented");
     } // getEntityCount
 
     /**
@@ -195,7 +253,7 @@ public class XMLAttributes
      * @return 
      */
     public String getEntityName(int attrIndex, int entityIndex) {
-        return null;
+        throw new RuntimeException("not implemented");
     } // getEntityName
 
     /**
@@ -207,7 +265,7 @@ public class XMLAttributes
      * @return 
      */
     public int getEntityOffset(int attrIndex, int entityIndex) {
-        return -1;
+        throw new RuntimeException("not implemented");
     } // getEntityOffset
 
     /**
@@ -219,7 +277,7 @@ public class XMLAttributes
      * @return 
      */
     public int getEntityLength(int attrIndex, int entityIndex) {
-        return -1;
+        throw new RuntimeException("not implemented");
     } // getEntityLength
 
     //
@@ -235,7 +293,7 @@ public class XMLAttributes
      * @return The number of attributes in the list.
      */
     public int getLength() {
-        return -1;
+        return fSize;
     }
 
     /**
@@ -259,7 +317,10 @@ public class XMLAttributes
      * @see #getLength
      */
     public String getType(int index) {
-        return null;
+        if (index < 0 || index >= fSize) {
+            return null;
+        }
+        return fAttributes[index].type;
     }
 
     /**
@@ -274,7 +335,8 @@ public class XMLAttributes
      *         are not available.
      */
     public String getType(String qname) {
-        return null;
+        int index = getIndex(qname);
+        return index != -1 ? fAttributes[index].type : null;
     }
 
     /**
@@ -291,7 +353,10 @@ public class XMLAttributes
      * @see #getLength
      */
     public String getValue(int index) {
-        return null;
+        if (index < 0 || index >= fSize) {
+            return null;
+        }
+        return fAttributes[index].value;
     }
 
     /**
@@ -306,7 +371,8 @@ public class XMLAttributes
      *         are not available.
      */
     public String getValue(String qname) {
-        return null;
+        int index = getIndex(qname);
+        return index != -1 ? fAttributes[index].value : null;
     }
 
     //
@@ -330,7 +396,10 @@ public class XMLAttributes
      * @see #getLength 
      */
     public String getName(int index) {
-        return null;
+        if (index < 0 || index >= fSize) {
+            return null;
+        }
+        return fAttributes[index].name.localpart;
     }
 
     //
@@ -345,6 +414,13 @@ public class XMLAttributes
      *         appear in the list.
      */
     public int getIndex(String qName) {
+        for (int i = 0; i < fSize; i++) {
+            Attribute attribute = fAttributes[i];
+            if (attribute.name.rawname != null &&
+                attribute.name.rawname.equals(qName)) {
+                return i;
+            }
+        }
         return -1;
     }
     
@@ -358,6 +434,15 @@ public class XMLAttributes
      *         appear in the list.
      */
     public int getIndex(String uri, String localPart) {
+        for (int i = 0; i < fSize; i++) {
+            Attribute attribute = fAttributes[i];
+            if (attribute.name.uri != null &&
+                attribute.name.uri.equals(uri) &&
+                attribute.name.localpart != null &&
+                attribute.name.localpart.equals(localPart)) {
+                return i;
+            }
+        }
         return -1;
     }
 
@@ -371,7 +456,13 @@ public class XMLAttributes
      * @see #getLength
      */
     public String getLocalName(int index) {
-        return null;
+        if (!fNamespaces) {
+            return "";
+        }
+        if (index < 0 || index >= fSize) {
+            return null;
+        }
+        return fAttributes[index].name.localpart;
     }
 
     /**
@@ -384,7 +475,11 @@ public class XMLAttributes
      * @see #getLength
      */
     public String getQName(int index) {
-        return null;
+        if (index < 0 || index >= fSize) {
+            return null;
+        }
+        String rawname = fAttributes[index].name.rawname;
+        return rawname != null ? rawname : "";
     }
 
     /**
@@ -401,7 +496,11 @@ public class XMLAttributes
      *         processing is not being performed.
      */
     public String getType(String uri, String localName) {
-        return null;
+        if (!fNamespaces) {
+            return null;
+        }
+        int index = getIndex(uri, localName);
+        return index != -1 ? getType(index) : null;
     }
 
     /**
@@ -414,7 +513,11 @@ public class XMLAttributes
      * @see #getLength
      */
     public String getURI(int index) {
-        return null;
+        if (index < 0 || index >= fSize) {
+            return null;
+        }
+        String uri = fAttributes[index].name.uri;
+        return uri != null ? uri : "";
     }
 
     /**
@@ -429,8 +532,35 @@ public class XMLAttributes
      * @return The attribute value as a string, or null if the
      *         attribute is not in the list.
      */
-    public String getValue (String uri, String localName) {
-        return null;
+    public String getValue(String uri, String localName) {
+        int index = getIndex(uri, localName);
+        return index != -1 ? getValue(index) : null;
     }
+
+    //
+    // Classes
+    //
+
+    /**
+     * Attribute information.
+     *
+     * @author Andy Clark, IBM
+     */
+    static class Attribute {
+        
+        //
+        // Data
+        //
+
+        /** Name. */
+        public QName name = new QName();
+
+        /** Type. */
+        public String type;
+
+        /** Value. */
+        public String value;
+
+    } // class Attribute
 
 } // class XMLAttributes

@@ -158,6 +158,30 @@ public class XMLValidator
     } // setDocumentHandler
 
     //
+    // XMLEntityHandler methods
+    //
+
+    /** 
+     * startEntity
+     *
+     * @param name
+     * @param publicId
+     * @param systemId
+     */
+    public void startEntity(String name, String publicId, String systemId) 
+        throws SAXException {
+    }
+
+    /**
+     * endEntity
+     * 
+     * @param name 
+     */
+    public void endEntity(String name)
+        throws SAXException {
+    } // endEntity
+
+    //
     // XMLDocumentHandler methods
     //
 
@@ -268,35 +292,6 @@ public class XMLValidator
     } // endPrefixMapping
 
     /**
-     * startEntity
-     * 
-     * @param name 
-     */
-    public void startEntity(String name)
-        throws SAXException {
-    } // startEntity
-
-    /**
-     * textDecl
-     * 
-     * @param version 
-     * @param encoding 
-     * @param actualEncoding 
-     */
-    public void textDecl(String version, String encoding, String actualEncoding)
-        throws SAXException {
-    } // textDecl
-
-    /**
-     * endEntity
-     * 
-     * @param name 
-     */
-    public void endEntity(String name)
-        throws SAXException {
-    } // endEntity
-
-    /**
      * startCDATA
      */
     public void startCDATA()
@@ -309,6 +304,17 @@ public class XMLValidator
     public void endCDATA()
         throws SAXException {
     } // endCDATA
+
+    /**
+     * textDecl
+     * 
+     * @param version 
+     * @param encoding 
+     * @param actualEncoding 
+     */
+    public void textDecl(String version, String encoding, String actualEncoding)
+        throws SAXException {
+    } // textDecl
 
     /**
      * endDocument

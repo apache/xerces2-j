@@ -132,15 +132,21 @@ public abstract class XMLDocumentParser
                                 GrammarPool grammarPool) {
         super(symbolTable);
 
+        // set default features
+        fFeatures.put(SAX2_FEATURES_PREFIX+"namespaces", Boolean.TRUE);
+        fFeatures.put(SAX2_FEATURES_PREFIX+"validation", Boolean.FALSE);
+
         // create and register components
         fGrammarPool = grammarPool;
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "grammar-pool",
+        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/grammar-pool",
                         fGrammarPool);
         fScanner = new XMLDocumentScanner();
+        fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/document-scanner",
+                        fScanner);
         // fValidator = new Validator();
         // fDatatypeValidatorFactory = ...
         // fProperties.put(XERCES_PROPERTIES_PREFIX +
-        //                "datatype-validator-factory",
+        //                "internal/datatype-validator-factory",
         //                fDatatypeValidatorFactory);
 
         // plug in components
@@ -148,6 +154,29 @@ public abstract class XMLDocumentParser
         // fScanner.setDocumentHandler(fValidator);
         // fValidator.setDocumentHandler(this);
     }
+
+    //
+    // XMLEntityHandler methods
+    //
+
+    /**
+     * startEntity
+     * 
+     * @param name 
+     * @param publicId 
+     * @param systemId 
+     */
+    public void startEntity(String name, String publicId, String systemId)
+        throws SAXException {
+    } // startEntity
+
+    /**
+     * endEntity
+     * 
+     * @param name 
+     */
+    public void endEntity(String name) throws SAXException {
+    } // endEntity
 
     //
     // XMLDocumentHandler methods
@@ -260,15 +289,6 @@ public abstract class XMLDocumentParser
     } // endPrefixMapping
 
     /**
-     * startEntity
-     * 
-     * @param name 
-     */
-    public void startEntity(String name)
-        throws SAXException {
-    } // startEntity
-
-    /**
      * textDecl
      * 
      * @param version 
@@ -278,15 +298,6 @@ public abstract class XMLDocumentParser
     public void textDecl(String version, String encoding, String actualEncoding)
         throws SAXException {
     } // textDecl
-
-    /**
-     * endEntity
-     * 
-     * @param name 
-     */
-    public void endEntity(String name)
-        throws SAXException {
-    } // endEntity
 
     /**
      * startCDATA
