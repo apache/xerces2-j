@@ -8,8 +8,7 @@
    </sequence>
   </complexType>
 
-<!--  Identity constraints commented out for now...
-  <unique>
+  <unique name="unique1">
    <selector xpath="person"/>
    <field xpath="@name"/>
   </unique>
@@ -17,11 +16,10 @@
    <selector xpath="person"/>
    <field xpath="@id"/>
   </key>
-  <keyref name='empid'>
+  <keyref name="keyref1" refer='empid'>
    <selector xpath="person"/> 
    <field xpath="link/@manager"/>  
   </keyref>
--->
 
  </element>
 
