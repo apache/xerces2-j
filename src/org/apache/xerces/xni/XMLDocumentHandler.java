@@ -77,18 +77,16 @@ public interface XMLDocumentHandler
     /**
      * startDocument
      */
-    public void startDocument()
-        throws SAXException;
+    public void startDocument() throws SAXException;
 
     /**
      * xmlDecl
      * 
      * @param version 
      * @param encoding 
-     * @param actualEncoding 
      * @param standalone 
      */
-    public void xmlDecl(String version, String encoding, String actualEncoding, String standalone)
+    public void xmlDecl(String version, String encoding, String standalone)
         throws SAXException;
 
     /**
@@ -106,8 +104,7 @@ public interface XMLDocumentHandler
      * 
      * @param text 
      */
-    public void comment(XMLString text)
-        throws SAXException;
+    public void comment(XMLString text) throws SAXException;
 
     /**
      * processingInstruction
@@ -150,51 +147,43 @@ public interface XMLDocumentHandler
      * 
      * @param text 
      */
-    public void ignorableWhitespace(XMLString text)
-        throws SAXException;
+    public void ignorableWhitespace(XMLString text) throws SAXException;
 
     /**
      * endElement
      * 
      * @param element 
      */
-    public void endElement(QName element)
-        throws SAXException;
+    public void endElement(QName element) throws SAXException;
 
     /**
      * endPrefixMapping
      * 
      * @param prefix 
      */
-    public void endPrefixMapping(String prefix)
-        throws SAXException;
+    public void endPrefixMapping(String prefix) throws SAXException;
 
     /**
      * textDecl
      * 
      * @param version 
      * @param encoding 
-     * @param actualEncoding 
      */
-    public void textDecl(String version, String encoding, String actualEncoding)
-        throws SAXException;
+    public void textDecl(String version, String encoding) throws SAXException;
 
     /**
      * startCDATA
      */
-    public void startCDATA()
-        throws SAXException;
+    public void startCDATA() throws SAXException;
 
     /**
      * endCDATA
      */
-    public void endCDATA()
-        throws SAXException;
+    public void endCDATA() throws SAXException;
 
     /**
      * endDocument
      */
-    public void endDocument()
-        throws SAXException;
+    public void endDocument() throws SAXException;
 
 } // interface XMLDocumentHandler

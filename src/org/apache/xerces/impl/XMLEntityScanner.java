@@ -89,6 +89,7 @@ public abstract class XMLEntityScanner
     // Public methods
     //
 
+    public abstract void setEncoding(String encoding) throws IOException;
     public abstract int peekChar() throws IOException, SAXException;
     public abstract int scanChar() throws IOException, SAXException;
     public abstract String scanNmtoken() throws IOException, SAXException;

@@ -547,7 +547,6 @@ public class XMLDocumentScanner
         // pseudo-attribute values
         String version = null;
         String encoding = null;
-        String actualEncoding = null;
         String standalone = null;
 
         // scan pseudo-attributes
@@ -655,10 +654,10 @@ public class XMLDocumentScanner
         // call handler
         if (fDocumentHandler != null) {
             if (scanningTextDecl) {
-                fDocumentHandler.textDecl(version, encoding, actualEncoding);
+                fDocumentHandler.textDecl(version, encoding);
             }
             else {
-                fDocumentHandler.xmlDecl(version, encoding, actualEncoding, standalone);
+                fDocumentHandler.xmlDecl(version, encoding, standalone);
             }
         }
 
@@ -1968,45 +1967,52 @@ public class XMLDocumentScanner
         public boolean dispatch(boolean complete) 
             throws IOException, SAXException {
 
-            do {
-
-                if (fEntityScanner.skipChar('<')) {
-                    setScannerState(SCANNER_STATE_START_OF_MARKUP);
-                    if (fEntityScanner.skipChar('?')) {
-                        scanPI();
-                    }
-                    else if ( fEntityScanner.skipChar('!')) {
-                        scanComment();
-                    }
-                    setScannerState(SCANNER_STATE_TRAILING_MISC);
-                }
-                else if ( fEntityScanner.skipSpaces() ) {
-                    // do nothing
-                }
-                else {
-                    int ch = fEntityScanner.peekChar();
-
-                    if (XMLChar.isInvalid(ch)) {
-                        if (ch == -1 ) {
-                            setScannerState(SCANNER_STATE_END_OF_INPUT);
-                            setDispatcher(fEndOfInputDispatcher);
-                            return true;
+            try {
+                do {
+    
+                    if (fEntityScanner.skipChar('<')) {
+                        setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                        if (fEntityScanner.skipChar('?')) {
+                            scanPI();
                         }
-                        else {
-                            // REVISIT report error
-                            // throw new SAXException("invalid char in trailing Misc);
-                            setScannerState(SCANNER_STATE_END_OF_INPUT);
-                            setDispatcher(fEndOfInputDispatcher);
-                            return false;
+                        else if ( fEntityScanner.skipChar('!')) {
+                            scanComment();
                         }
+                        setScannerState(SCANNER_STATE_TRAILING_MISC);
+                    }
+                    else if ( fEntityScanner.skipSpaces() ) {
+                        // do nothing
                     }
                     else {
-                        //REVISIT: report error
-                        throw new SAXException("not recognized in trailing Misc");
+                        int ch = fEntityScanner.peekChar();
+    
+                        if (XMLChar.isInvalid(ch)) {
+                            if (ch == -1 ) {
+                                setScannerState(SCANNER_STATE_END_OF_INPUT);
+                                setDispatcher(fEndOfInputDispatcher);
+                                return true;
+                            }
+                            else {
+                                // REVISIT report error
+                                // throw new SAXException("invalid char in trailing Misc);
+                                setScannerState(SCANNER_STATE_END_OF_INPUT);
+                                setDispatcher(fEndOfInputDispatcher);
+                                return false;
+                            }
+                        }
+                        else {
+                            //REVISIT: report error
+                            throw new SAXException("not recognized in trailing Misc");
+                        }
                     }
-                }
-
-            } while ( complete );
+    
+                } while ( complete );
+            }
+            catch (EOFException e) {
+                // NOTE: This is the only place we're allowed to reach
+                //       the real end of the document stream. So ignore
+                //       the exception and move to end of input. -Ac
+            }
 
             setScannerState(SCANNER_STATE_END_OF_INPUT);
             setDispatcher(fEndOfInputDispatcher);

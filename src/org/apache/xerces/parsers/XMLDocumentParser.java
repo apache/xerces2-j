@@ -204,10 +204,9 @@ public abstract class XMLDocumentParser
      * 
      * @param version 
      * @param encoding 
-     * @param actualEncoding 
      * @param standalone 
      */
-    public void xmlDecl(String version, String encoding, String actualEncoding, String standalone)
+    public void xmlDecl(String version, String encoding, String standalone)
         throws SAXException {
     } // xmlDecl
 
@@ -303,10 +302,8 @@ public abstract class XMLDocumentParser
      * 
      * @param version 
      * @param encoding 
-     * @param actualEncoding 
      */
-    public void textDecl(String version, String encoding, String actualEncoding)
-        throws SAXException {
+    public void textDecl(String version, String encoding) throws SAXException {
     } // textDecl
 
     /**

@@ -59,16 +59,20 @@ package org.apache.xerces.impl;
 
 import java.io.EOFException;
 import java.io.FileInputStream;
+import java.io.FilterReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.PushbackInputStream;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
 
 import org.apache.xerces.xni.QName;
@@ -110,6 +114,9 @@ public class XMLEntityManager
     // Constants
     //
 
+    /** Default buffer size (1024). */
+    public static final int DEFAULT_BUFFER_SIZE = 1024;
+
     // xerces features
 
     /** Xerces feature prefix. */
@@ -135,12 +142,26 @@ public class XMLEntityManager
     // Data
     //
 
+    // features
+
+    /** 
+     * Buffer size. This feature does not have a feature identifier, yet. 
+     * Should it?
+     */
+    protected int fBufferSize = DEFAULT_BUFFER_SIZE;
+
     // properties
 
-    /** Entity resolver. */
+    /** 
+     * Entity resolver. This property identifier is:
+     * http://apache.org/xml/properties/internal/entity-resolver
+     */
     protected EntityResolver fEntityResolver;
 
-    /** Symbol table. */
+    /** 
+     * Symbol table. This property identifier is:
+     * http://apache.org/xml/properties/internal/symbol-table
+     */
     protected SymbolTable fSymbolTable;
 
     // handlers
@@ -153,6 +174,8 @@ public class XMLEntityManager
     /** Entity scanner. */
     protected XMLEntityScanner fEntityScanner;
 
+    // entities
+
     /** Entities. */
     protected Hashtable fEntities = new Hashtable();
 
@@ -161,17 +184,6 @@ public class XMLEntityManager
 
     /** Current entity. */
     protected ScannedEntity fCurrentEntity;
-
-    // private
-
-    /** Reader. */
-    private PushbackReader fReader;
-
-    /** Character buffer. */
-    private char[] fBuffer = new char[1024];
-
-    /** Buffer length. */
-    private int fLength;
 
     //
     // Constructors
@@ -204,7 +216,6 @@ public class XMLEntityManager
      * @param baseSystemId 
      */
     public void addExternalEntity(String name, String publicId, String systemId, String baseSystemId) {
-        name = fSymbolTable.addSymbol(name);
         Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId);
         fEntities.put(name, entity);
     } // addExternalEntity(String,String,String,String)
@@ -216,7 +227,6 @@ public class XMLEntityManager
      * @param text 
      */
     public void addInternalEntity(String name, String text) {
-        name = fSymbolTable.addSymbol(name);
         Entity entity = new InternalEntity(name, text);
         fEntities.put(name, entity);
     } // addInternalEntity(String,String)
@@ -232,7 +242,29 @@ public class XMLEntityManager
      */
     public InputSource resolveEntity(String publicId, String systemId, String baseSystemId)
         throws IOException, SAXException {
-        throw new RuntimeException("XMLEntityManager#resolveEntity(String,String,String) not implemented");
+
+        // give the entity resolver a chance
+        InputSource inputSource = null;
+        if (fEntityResolver != null) {
+            inputSource = fEntityResolver.resolveEntity(publicId, systemId);
+        }
+
+        // do default resolution
+        if (inputSource == null) {
+            // if no base systemId given, assume that it's relative
+            // to the systemId of the current scanned entity
+            if (baseSystemId == null) {
+                baseSystemId = fCurrentEntity.systemId;
+            }
+
+            // expand the system id
+            systemId = expandSystemId(systemId, baseSystemId);
+            inputSource = new InputSource(systemId);
+            inputSource.setPublicId(publicId);
+        }
+
+        return inputSource;
+
     } // resolveEntity
 
     /**
@@ -325,9 +357,6 @@ public class XMLEntityManager
         addInternalEntity("apos", "'");
         addInternalEntity("quot", "\"");
 
-        // initialize scanner info
-        fReader = null;
-
     } // reset(XMLComponentManager)
 
     /**
@@ -380,24 +409,51 @@ public class XMLEntityManager
         String encoding = inputSource.getEncoding();
 
         // create reader
+        InputStream stream = null;
         Reader reader = inputSource.getCharacterStream();
         if (reader == null) {
-            InputStream stream = inputSource.getByteStream();
+            stream = inputSource.getByteStream();
             if (stream == null) {
                 // REVISIT: open system identifier
                 stream = new FileInputStream(systemId);
             }
-            reader = new InputStreamReader(stream);
+                
+            // perform auto-detect of encoding
+            if (encoding == null) {
+                // read first four bytes and determine encoding
+                final byte[] b4 = new byte[4];
+                int count = stream.read(b4, 0, 4);
+                encoding = getJavaEncodingName(b4, count);
+
+                // push back the characters we read
+                PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
+                pbstream.unread(b4, 0, count);
+                stream = pbstream;
+            }
+
+            // create reader from input stream
+            // REVISIT: We can use customized readers here. -Ac
+            reader = new InputStreamReader(stream, encoding);
+
+            // REVISIT: Activate this reader once I've updated the
+            //          entity scanner. -Ac
+            //reader = new OneCharReader(reader);
         }
-        fReader = new PushbackReader(reader, 32);
+
+        // REVISIT: This goes away once I've updated the entity
+        //          scanner to buffer from a standard java.io.Reader
+        //          object. -Ac
+        reader = new PushbackReader(reader, 32);
 
         // push entity on stack
-        fCurrentEntity = new ScannedEntity(name, publicId, systemId, reader);
+        fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
+                                           stream, reader, encoding);
         fEntityStack.push(fCurrentEntity);
 
         // call handler
         if (fEntityHandler != null) {
-            fEntityHandler.startEntity(name, publicId, systemId, encoding);
+            String ianaEncoding = EncodingMap.getJava2IANAMapping(encoding);
+            fEntityHandler.startEntity(name, publicId, systemId, ianaEncoding);
         }
 
     } // startEntity(String,InputSource)
@@ -416,6 +472,197 @@ public class XMLEntityManager
         }
 
     } // endEntity(String)
+
+    /**
+     * Expands a system id and returns the system id as a URI, if
+     * it can be expanded. A return value of null means that the
+     * identifier is already expanded. An exception thrown
+     * indicates a failure to expand the id.
+     *
+     * @param systemId The systemId to be expanded.
+     *
+     * @return Returns the URI string representing the expanded system
+     *         identifier. A null value indicates that the given
+     *         system identifier is already expanded.
+     *
+     */
+    protected String expandSystemId(String systemId) {
+        return expandSystemId(systemId, null);
+    } // expandSystemId(String):String
+
+    /**
+     * Expands a system id and returns the system id as a URI, if
+     * it can be expanded. A return value of null means that the
+     * identifier is already expanded. An exception thrown
+     * indicates a failure to expand the id.
+     *
+     * @param systemId The systemId to be expanded.
+     *
+     * @return Returns the URI string representing the expanded system
+     *         identifier. A null value indicates that the given
+     *         system identifier is already expanded.
+     *
+     */
+    protected String expandSystemId(String systemId, 
+                                    String baseSystemId) {
+
+        // check for bad parameters id
+        if (systemId == null || systemId.length() == 0) {
+            return systemId;
+        }
+
+        // if id already expanded, return
+        try {
+            URI uri = new URI(systemId);
+            if (uri != null) {
+                return systemId;
+            }
+        }
+        catch (URI.MalformedURIException e) {
+            // continue on...
+        }
+
+        // normalize id
+        String id = fixURI(systemId);
+
+        // normalize base
+        URI base = null;
+        URI uri = null;
+        try {
+            if (baseSystemId == null) {
+                String dir;
+                try {
+                    dir = fixURI(System.getProperty("user.dir"));
+                }
+                catch (SecurityException se) {
+                    dir = "";
+                }
+                if (!dir.endsWith("/")) {
+                    dir = dir + "/";
+                }
+                base = new URI("file", "", dir, null, null);
+            }
+            else {
+                base = new URI(baseSystemId);
+            }
+
+            // expand id
+            uri = new URI(base, id);
+        }
+        catch (Exception e) {
+            // let it go through
+        }
+        if (uri == null) {
+            return systemId;
+        }
+        return uri.toString();
+
+    } // expandSystemId(String,String):String
+
+    //
+    // Private methods
+    //
+
+    /**
+     * Returns the Java encoding name that is auto-detected from
+     * the bytes specified.
+     *
+     * @param b4    The first four bytes of the input.
+     * @param count The number of bytes actually read.
+     *
+     * @returns The Java encoding name.
+     */
+    private static String getJavaEncodingName(byte[] b4, int count) {
+
+        if (count < 2) {
+            return "UTF8";
+        }
+
+        // UTF-16, with BOM
+        byte b0 = b4[0];
+        byte b1 = b4[1];
+        if (b0 == 0xFE && b1 == 0xFF) {
+            // UTF-16, big-endian
+            return "UnicodeBig";
+        }
+        if (b0 == 0xFF && b1 == 0xFE) {
+            // UTF-16, little-endian
+            return "UnicodeLittle";
+        }
+
+        if (count < 4) {
+            return "UTF8";
+        }
+
+        // other encodings
+        byte b2 = b4[2];
+        byte b3 = b4[3];
+        if (b0 == 0x00 && b1 == 0x00 && b2 == 0x00 && b3 == 0x3C) {
+            // UCS-4, big endian (1234)
+            // REVISIT: What should this be?
+            return "Unicode";
+        }
+        if (b0 == 0x3C && b1 == 0x00 && b2 == 0x00 && b3 == 0x00) {
+            // UCS-4, little endian (4321)
+            // REVISIT: What should this be?
+            return "Unicode";
+        }
+        if (b0 == 0x00 && b1 == 0x00 && b2 == 0x3C && b3 == 0x00) {
+            // UCS-4, unusual octet order (2143)
+            // REVISIT: What should this be?
+            return "Unicode";
+        }
+        if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x00) {
+            // UCS-4, unusual octect order (3412)
+            // REVISIT: What should this be?
+            return "Unicode";
+        }
+        if (b1 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
+            // UTF-16, big-endian, no BOM
+            // REVISIT: What should this be?
+            return "Unicode";
+        }
+        if (b1 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
+            // UTF-16, little-endian, no BOM
+            return "UnicodeLittle";
+        }
+        if (b1 == 0x4C && b1 == 0x6F && b2 == 0xA7 && b3 == 0x94) {
+            // EBCDIC
+            return "DBCS_EBCDIC";
+        }
+
+        // default encoding
+        return "UTF8";
+
+    } // getJavaEncodingName(byte[],int):String
+
+    /**
+     * Fixes a platform dependent filename to standard URI form.
+     *
+     * @param str The string to fix.
+     *
+     * @return Returns the fixed URI string.
+     */
+    private static String fixURI(String str) {
+
+        // handle platform dependent strings
+        str = str.replace(java.io.File.separatorChar, '/');
+
+        // Windows fix
+        if (str.length() >= 2) {
+            char ch1 = str.charAt(1);
+            if (ch1 == ':') {
+                char ch0 = Character.toUpperCase(str.charAt(0));
+                if (ch0 >= 'A' && ch0 <= 'Z') {
+                    str = "/" + str;
+                }
+            }
+        }
+
+        // done
+        return str;
+
+    } // fixURI(String):String
 
     //
     // Classes
@@ -539,7 +786,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    protected static class ScannedEntity 
+    protected class ScannedEntity 
         extends Entity {
 
         //
@@ -547,6 +794,9 @@ public class XMLEntityManager
         //
 
         // i/o
+
+        /** Input stream. */
+        public InputStream stream;
 
         /** Reader. */
         public Reader reader;
@@ -565,10 +815,15 @@ public class XMLEntityManager
         /** Column number. */
         public int columnNumber;
 
+        // encoding
+
+        /** Auto-detected ncoding. */
+        public String encoding;
+
         // buffer
 
         /** Character buffer. */
-        public char[] ch;
+        public char[] ch = new char[fBufferSize];
 
         /** Offset. */
         public int offset;
@@ -582,11 +837,14 @@ public class XMLEntityManager
 
         /** Constructs a scanned entity. */
         public ScannedEntity(String name, String publicId, String systemId,
-                             Reader reader) {
+                             InputStream stream, Reader reader, 
+                             String encoding) {
             super(name);
             this.publicId = publicId;
             this.systemId = systemId;
+            this.stream = stream;
             this.reader = reader;
+            this.encoding = encoding;
         } // <init>(Reader,String,String,String)
 
         //
@@ -620,6 +878,13 @@ public class XMLEntityManager
         // XMLEntityScanner methods
         //
     
+        public void setEncoding(String encoding) throws IOException {
+            if (fCurrentEntity.stream != null) {
+                OneCharReader ocreader = (OneCharReader)fCurrentEntity.reader;
+                fCurrentEntity.reader = ocreader.getReader();
+            }
+        } // setEncoding(String)
+
         /**
          * peekChar
          * 
@@ -652,16 +917,16 @@ public class XMLEntityManager
         public String scanNmtoken() throws IOException, SAXException {
             if (DEBUG) System.out.println("#scanNmtoken()");
     
-            fLength = 0;
+            fCurrentEntity.length = 0;
             boolean nmtoken = false;
             while (XMLChar.isName(peek())) {
                 nmtoken = true;
-                fBuffer[fLength++] = (char)read();
+                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
             }
     
             String symbol = null;
             if (nmtoken) {
-                symbol = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+                symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
             }
             return symbol;
     
@@ -675,19 +940,19 @@ public class XMLEntityManager
         public String scanName() throws IOException, SAXException {
             if (DEBUG) System.out.println("#scanName()");
     
-            fLength = 0;
+            fCurrentEntity.length = 0;
             boolean name = false;
             if (XMLChar.isNameStart(peek())) {
                 name = true;
-                fBuffer[fLength++] = (char)read();
+                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
                 while (XMLChar.isName(peek())) {
-                    fBuffer[fLength++] = (char)read();
+                    fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
                 }
             }
     
             String symbol = null;
             if (name) {
-                symbol = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+                symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
             }
             return symbol;
     
@@ -705,25 +970,25 @@ public class XMLEntityManager
             String localpart = null;
             String rawname = null;
     
-            fLength = 0;
+            fCurrentEntity.length = 0;
             int colons = -1;
             int index = 0;
             if (XMLChar.isNameStart(peek())) {
                 colons = 0;
-                fBuffer[fLength++] = (char)read();
+                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
                 int c = -1;
                 while (XMLChar.isName(c = peek())) {
                     if (c == ':') {
                         colons++;
                         if (colons == 1) {
-                            index = fLength + 1;
-                            prefix = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+                            index = fCurrentEntity.length + 1;
+                            prefix = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
                         }
                     }
-                    fBuffer[fLength++] = (char)read();
+                    fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
                 }
-                localpart = fSymbolTable.addSymbol(fBuffer, index, fLength - index);
-                rawname = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+                localpart = fSymbolTable.addSymbol(fCurrentEntity.ch, index, fCurrentEntity.length - index);
+                rawname = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
             }
     
             if (colons >= 0 && colons < 2) {
@@ -743,14 +1008,14 @@ public class XMLEntityManager
         public int scanContent(XMLString content) 
             throws IOException, SAXException {
     
-            fLength = 0;
+            fCurrentEntity.length = 0;
             while (peek() != '<' && peek() != '&') {
-                fBuffer[fLength++] = (char)read();
-                if (fLength == fBuffer.length) {
+                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
+                if (fCurrentEntity.length == fCurrentEntity.ch.length) {
                     break;
                 }
             }
-            content.setValues(fBuffer, 0, fLength);
+            content.setValues(fCurrentEntity.ch, 0, fCurrentEntity.length);
     
             return peek();
     
@@ -765,14 +1030,14 @@ public class XMLEntityManager
         public int scanAttContent(int quote, XMLString content)
             throws IOException, SAXException {
     
-            fLength = 0;
+            fCurrentEntity.length = 0;
             while (peek() != quote) {
-                fBuffer[fLength++] = (char)read();
-                if (fLength == fBuffer.length) {
+                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
+                if (fCurrentEntity.length == fCurrentEntity.ch.length) {
                     break;
                 }
             }
-            content.setValues(fBuffer, 0, fLength);
+            content.setValues(fCurrentEntity.ch, 0, fCurrentEntity.length);
     
             return peek();
     
@@ -891,18 +1156,18 @@ public class XMLEntityManager
     
         /** Peeks the next character. */
         private final int peek() throws IOException {
-            int c = fReader.read();
+            int c = fCurrentEntity.reader.read();
             if (c == -1) {
                 throw new EOFException();
             }
             if (DEBUG) System.out.println("?"+(char)c);
-            fReader.unread(c);
+            ((PushbackReader)fCurrentEntity.reader).unread(c);
             return c;
         }
     
         /** Reads the next character. */
         private int read() throws IOException {
-            int c = fReader.read();
+            int c = fCurrentEntity.reader.read();
             if (c == -1) {
                 throw new EOFException();
             }
@@ -912,14 +1177,95 @@ public class XMLEntityManager
     
         private void unread(int c) throws IOException {
             if (DEBUG) System.out.println("-"+(char)c);
-            fReader.unread(c);
+            ((PushbackReader)fCurrentEntity.reader).unread(c);
         }
     
         private void unread(char[] ch, int offset, int length) throws IOException {
             if (DEBUG) System.out.println("-"+new String(ch, offset, length));
-            fReader.unread(ch, offset, length);
+            ((PushbackReader)fCurrentEntity.reader).unread(ch, offset, length);
         }
     
     } // class EntityScanner
+
+    /**
+     * A reader that reads only one character at a time. This is
+     * needed for those times when we've auto-detected the encoding
+     * from an input stream and need to swap out the reader once
+     * the xmlDecl/textDecl has been read and processed. If we
+     * read too far, then we could erroneously convert bytes from
+     * the input stream to the wrong character code point.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected class OneCharReader
+        extends FilterReader {
+
+        //
+        // Data
+        //
+
+        /** True if we've seen the end of the first markup. */
+        private boolean seenEndOfMarkup;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs this reader from another reader. */
+        public OneCharReader(Reader reader) {
+            super(reader);
+        }
+
+        //
+        // Public methods
+        //
+
+        /** Returns the reader that is being wrapped. */
+        public Reader getReader() {
+            return in;
+        } // getReader():Reader
+
+        //
+        // Reader methods
+        //
+
+        /** Returns a single character. */
+        public int read() throws IOException {
+
+            // swap out this inefficient reader because we've
+            // already passed the first piece of markup and
+            // the encoding was not set
+            if (seenEndOfMarkup) {
+                fCurrentEntity.reader = getReader();
+                return fCurrentEntity.reader.read();
+            }
+
+            // read character and look for end of markup
+            int c = in.read();
+            seenEndOfMarkup = c == '>';
+            return c;
+
+        } // read():int
+
+        /** 
+         * Reads as many characters as possible which, in this case,
+         * is only a single character.
+         */
+        public int read(char[] ch, int offset, int length)
+            throws IOException {
+
+            // handle end of file
+            int c = read();
+            if (c == -1) {
+                return 0;
+            }
+
+            // return the 1 character
+            ch[offset] = (char)c;
+            return 1;
+
+        } // read(char[],int,int):int
+
+    } // class OneCharReader
 
 } // class XMLEntityManager
