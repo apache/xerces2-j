@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
@@ -102,7 +103,12 @@ public class XIncludeTextReader {
     private XIncludeHandler fHandler;
     private XMLInputSource fSource;
     private XMLErrorReporter fErrorReporter;
-
+    
+    // Content negotation parameters
+    private String fAccept;
+    private String fAcceptCharset;
+    private String fAcceptLanguage;
+ 
     /**
      * Construct the XIncludeReader using the XMLInputSource and XIncludeHandler.
      *
@@ -124,6 +130,20 @@ public class XIncludeTextReader {
      */
     public void setErrorReporter(XMLErrorReporter errorReporter) {
         fErrorReporter = errorReporter;
+    }
+    
+    /**
+     * Sets content negotation parameters to 
+     * be attached to an HTTP request.
+     * 
+     * @param accept the Accept HTTP request property
+     * @param acceptCharset the Accept-Charset HTTP request property
+     * @param acceptLanguage the Accept-Language HTTP request property
+     */
+    public void setHttpProperties(String accept, String acceptCharset, String acceptLanguage) {
+        fAccept = accept;
+        fAcceptCharset = acceptCharset;
+        fAcceptLanguage = acceptLanguage;
     }
 
     /**
@@ -151,12 +171,27 @@ public class XIncludeTextReader {
             }
             else {
                 String expandedSystemId = XMLEntityManager.expandSystemId(source.getSystemId(), source.getBaseSystemId(), false);
+
                 URL url = new URL(expandedSystemId);
+                URLConnection urlCon = url.openConnection();
+				
+                // If this is an HTTP connection attach any 
+                // content negotation parameters to the request.
+                if (urlCon instanceof HttpURLConnection) {
+                    if( fAccept != null && fAccept.length() > 0) {
+                        urlCon.setRequestProperty(XIncludeHandler.HTTP_ACCEPT, fAccept);
+                    }
+                    if( fAcceptCharset != null && fAcceptCharset.length() > 0) {
+                        urlCon.setRequestProperty(XIncludeHandler.HTTP_ACCEPT_CHARSET, fAcceptCharset);
+                    }
+                    if( fAcceptLanguage != null && fAcceptLanguage.length() > 0) {
+                        urlCon.setRequestProperty(XIncludeHandler.HTTP_ACCEPT_LANGUAGE, fAcceptLanguage);
+                    }
+                }
                 
                 // Wrap the InputStream so that it is possible to rewind it.
-                stream = new BufferedInputStream(url.openStream());
-                URLConnection urlCon = url.openConnection();
-
+                stream = new BufferedInputStream(urlCon.getInputStream());
+                
                 // content type will be string like "text/xml; charset=UTF-8" or "text/xml"
                 String rawContentType = urlCon.getContentType();
                 

@@ -161,6 +161,9 @@ public class XIncludeHandler
     public final static String XINCLUDE_ATTR_HREF = "href".intern();
     public final static String XINCLUDE_ATTR_PARSE = "parse".intern();
     public final static String XINCLUDE_ATTR_ENCODING = "encoding".intern();
+    public final static String XINCLUDE_ATTR_ACCEPT = "accept".intern();
+    public final static String XINCLUDE_ATTR_ACCEPT_LANGUAGE = "accept-language".intern();
+    public final static String XINCLUDE_ATTR_ACCEPT_CHARSET = "accept-charset".intern();    
 
     // Top Level Information Items have [included] property in infoset
     public final static String XINCLUDE_INCLUDED = "[included]".intern();
@@ -1200,8 +1203,16 @@ public class XIncludeHandler
                 false);
 
             try {
+                // REVISIT: If we're going to support content negotation for
+                // parse=xml we need to find a clean way to propogate the
+                // parameters to the child parser. We cannot set those parameters
+                // here because we may lose some information if we process the
+                // URLConnection and then open a stream. The parser needs a
+                // URLConnection to follow HTTP redirects and may also need
+                // this object in the future to read external encoding information
+                // which may be available in the Content-Type. -- mrglavas
+
                 fNamespaceContext.pushScope();
-				setHttpProperties(includedSource,attributes);
                 fChildConfig.parse(includedSource);
                 // necessary to make sure proper location is reported in errors
                 if (fErrorReporter != null) {
@@ -1239,12 +1250,17 @@ public class XIncludeHandler
 
             XIncludeTextReader reader = null;
             try {
-				setHttpProperties(includedSource,attributes);
                 if (fIsXML11) {
                     reader = new XInclude11TextReader(includedSource, this);
                 }
                 else {
                     reader = new XIncludeTextReader(includedSource, this);
+                }
+                if (includedSource.getCharacterStream() == null 
+                    && includedSource.getByteStream() == null) {
+                    reader.setHttpProperties(attributes.getValue(XINCLUDE_ATTR_ACCEPT), 
+                        attributes.getValue(XINCLUDE_ATTR_ACCEPT_CHARSET), 
+                        attributes.getValue(XINCLUDE_ATTR_ACCEPT_LANGUAGE));
                 }
                 reader.setErrorReporter(fErrorReporter);
                 reader.parse();
@@ -2179,35 +2195,4 @@ public class XIncludeHandler
             }
         }
     }
-
-	/**
-		Set the Accept,Accept-Language,Accept-CharSet 
-	*/
-	protected void setHttpProperties(XMLInputSource source,XMLAttributes attributes) throws IOException{
-        Reader reader = source.getCharacterStream();
-        if (reader != null) 
-			return; 
-		String httpAcceptLang = attributes.getValue(HTTP_ACCEPT_LANGUAGE);
-		String httpAccept = attributes.getValue(HTTP_ACCEPT);
-		String httpAcceptchar = attributes.getValue(HTTP_ACCEPT_CHARSET);
-		InputStream stream = source.getByteStream();
-		if (stream == null) {
-			String literalSystemId = source.getSystemId();
-			String baseSystemId = source.getBaseSystemId();
-        	String expandedSystemId = XMLEntityManager.expandSystemId(literalSystemId, 
-													baseSystemId, false);
-   	        URL location = new URL(expandedSystemId);
-   	        URLConnection connect = location.openConnection();
-			if (connect instanceof HttpURLConnection) {
-				if( httpAcceptLang !=null && !httpAcceptLang.equals(""))
-					connect.setRequestProperty(HTTP_ACCEPT_LANGUAGE,httpAcceptLang);
-					if( httpAccept !=null && !httpAccept.equals(""))
-						connect.setRequestProperty(HTTP_ACCEPT,httpAccept);
-					if( httpAcceptchar !=null && !httpAcceptchar.equals(""))
-						connect.setRequestProperty(HTTP_ACCEPT_CHARSET,httpAcceptchar);
-   	         }
-			stream = connect.getInputStream(); 
-			source.setByteStream(stream);
-		}
-	}
 }
