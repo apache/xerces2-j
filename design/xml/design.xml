@@ -242,15 +242,97 @@
  <!-- Category: XNI -->
  <category name='Xerces Native Interface (XNI)' package='&package;.xni'>
   
+  <interface id='configurable' name='XMLComponent'>
+   <method name='reset'>
+    <param name='componentManager'>
+     <reference idref='configuration-manager'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='setFeature'>
+    <param name='featureId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='state'>
+     <primitive type='boolean'/>
+    </param>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+   <method name='setProperty'>
+    <param name='propertyId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='value'>
+     <reference idref='java-object'/>
+    </param>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+  </interface>
+
+  <interface id='configuration-manager' name='XMLComponentManager'>
+   <method name='getFeature'>
+    <param name='featureId'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <primitive type='boolean'/>
+    </returns>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+   <method name='getProperty'>
+    <param name='propertyId'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <reference idref='java-object'/>
+    </returns>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+  </interface>
+
   <interface id='entity-handler' name='XMLEntityHandler'>
    <method name='startEntity'>
     <param name='name'>
+     <note>
+      The document has the pseudo-name of "[xml]", the DTD has the
+      pseudo-name of "[dtd]; parameter entity names start with '%';
+      and general entities are just specified by their name.
+     </note>
      <reference idref='java-string'/>
     </param>
     <param name='publicId'>
      <reference idref='java-string'/>
     </param>
     <param name='systemId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='encoding'>
+     <note>
+      The auto-detected encoding of the entity or null if not appropriate. 
+      The encoding name will be specified using the IANA encoding name.
+     </note>
      <reference idref='java-string'/>
     </param>
     <throws>
@@ -289,9 +371,6 @@
      <reference idref='java-string'/>
     </param>
     <param name='encoding'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='actualEncoding'>
      <reference idref='java-string'/>
     </param>
     <param name='standalone'>
@@ -408,9 +487,6 @@
     <param name='encoding'>
      <reference idref='java-string'/>
     </param>
-    <param name='actualEncoding'>
-     <reference idref='java-string'/>
-    </param>
     <throws>
      <reference idref='sax-exception'/>
     </throws>
@@ -420,6 +496,15 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
+  </interface>
+
+  <interface id='document-filter' name='XMLDocumentFilter'>
+   <extends>
+    <reference idref='document-handler'/>
+   </extends>
+   <extends>
+    <reference idref='document-source'/>
+   </extends>
   </interface>
 
   <interface id='dtd-source' name='XMLDTDSource'>
@@ -623,6 +708,15 @@
    </method>
   </interface>
 
+  <interface id='dtd-filter' name='XMLDTDFilter'>
+   <extends>
+    <reference idref='dtd-handler'/>
+   </extends>
+   <extends>
+    <reference idref='dtd-source'/>
+   </extends>
+  </interface>
+
   <interface id='dtd-content-model-source' name='XMLDTDContentModelSource'>
    <method name='setDTDContentModelHandler'>
     <param name='dtdContentModelHandler'>
@@ -717,6 +811,15 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
+  </interface>
+
+  <interface id='dtd-content-model-filter' name='XMLDTDContentModelFilter'>
+   <extends>
+    <reference idref='dtd-content-model-handler'/>
+   </extends>
+   <extends>
+    <reference idref='dtd-content-model-source'/>
+   </extends>
   </interface>
 
   <class id='qname' name='QName'>
@@ -820,50 +923,6 @@
    </method>
   </class>
   
-  <class id='string-buffer' name='XMLStringBuffer'>
-   <extends>
-    <reference idref='string'/>
-   </extends>
-   <constant name='DEFAULT_SIZE'>
-    <primitive type='int'/>
-   </constant>
-   <constructor/>
-   <constructor>
-    <param name='size'>
-     <primitive type='int'/>
-    </param>
-   </constructor>
-   <method name='clear'/>
-   <method name='append'>
-    <param name='c'>
-     <primitive type='char'/>
-    </param>
-   </method>
-   <method name='append'>
-    <param name='s'>
-     <reference idref='java-string'/>
-    </param>
-   </method>
-   <method name='append'>
-    <param name='ch'>
-     <array>
-      <primitive type='char'/>
-     </array>
-    </param>
-    <param name='offset'>
-     <primitive type='int'/>
-    </param>
-    <param name='length'>
-     <primitive type='int'/>
-    </param>
-   </method>
-   <method name='append'>
-    <param name='s'>
-     <reference idref='string'/>
-    </param>
-   </method>
-  </class>
-
   <class id='attributes' name='XMLAttributes'>
    <implements>
     <reference idref='sax-attribute-list'/>
@@ -1020,179 +1079,18 @@
 
  </category>                                                   
 
- <!-- Category: UNKNOWN -->
- <category name='To Be Decided' package='&package;.tbd'>
+ <!-- Category: XERCES IMPLEMENTATION -->
+ <category name='Implementation: Core Components' package='&package;.impl'>
  
-  <interface id='configurable' name='XMLComponent'>
-   <method name='reset'>
-    <param name='componentManager'>
-     <reference idref='configuration-manager'/>
-    </param>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-   <method name='setFeature'>
-    <param name='featureId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='state'>
-     <primitive type='boolean'/>
-    </param>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='setProperty'>
-    <param name='propertyId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='value'>
-     <reference idref='java-object'/>
-    </param>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-  </interface>
-
-  <interface id='configuration-manager' name='XMLComponentManager'>
-   <method name='getFeature'>
-    <param name='featureId'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='getProperty'>
-    <param name='propertyId'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='java-object'/>
-    </returns>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-  </interface>
-
- </category>
-                                                   
- <!-- Category: ERROR HANDLING -->
- <category name='Error Handling' package='&package;.framework'>
-
-  <class id='error-reporter' name='XMLErrorReporter'>
-   <implements>
-    <reference idref='configurable'/>
-   </implements>
-   <constant name='SEVERITY_WARNING'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='SEVERITY_ERROR'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='SEVERITY_FATAL_ERROR'>
-    <primitive type='short'/>
-   </constant>
-   <field name='fLocale'>
-    <reference idref='java-locale'/>
-   </field>
-   <field name='fMessageFormatters'>
-    <collection>
-     <collector>
-      <reference idref='java-hashtable'/>
-     </collector>
-     <items>
-      <reference idref='message-formatter'/>
-     </items>
-    </collection>
-   </field>
-   <field name='fErrorHandler'>
-    <reference idref='sax-error-handler'/>
-   </field>
-   <field name='fContinueAfterFatalError'>
-    <note>This field is initialized on reset.</note>
-    <primitive type='boolean'/>
-   </field>
-   <constructor/>
-   <method name='setLocale'>
-    <param name='locale'>
-     <reference idref='java-locale'/>
-    </param>
-   </method>
-   <method name='putMessageFormatter'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='messageFormatter'>
-     <reference idref='message-formatter'/>
-    </param>
-   </method>
-   <method name='getMessageFormatter'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='message-formatter'/>
-    </returns>
-   </method>
-   <method name='removeMessageFormatter'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='message-formatter'/>
-    </returns>
-   </method>
-   <method name='reportError'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='key'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='arguments'>
-     <array>
-      <reference idref='java-object'/>
-     </array>
-    </param>
-    <param name='severity'>
-     <primitive type='short'/>
-    </param>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-  </class>
-
- </category>
-
- <!-- Category: SCANNING -->
- <category name='Scanning' package='&package;.scanners'>
-
   <class id='document-scanner' name='XMLDocumentScanner'>
    <implements>
     <reference idref='configurable'/>
    </implements>
    <implements>
     <reference idref='document-source'/>
+   </implements>
+   <implements>
+    <reference idref='entity-handler'/>
    </implements>
    <field name='fSymbolTable'>
     <note>This field is initialized on reset.</note>
@@ -1259,6 +1157,9 @@
    </implements>
    <implements>
     <reference idref='dtd-content-model-source'/>
+   </implements>
+   <implements>
+    <reference idref='entity-handler'/>
    </implements>
    <field name='fSymbolTable'>
     <note>This field is initialized on reset.</note>
@@ -1327,11 +1228,6 @@
    </method>
   </class>
 
- </category>
-
- <!-- Category: READING -->
- <category name='Reading' package='&package;.readers'>
-
   <class id='entity-manager' name='XMLEntityManager'>
    <implements>
     <reference idref='configurable'/>
@@ -1342,7 +1238,15 @@
    <field name='fEntityReader'>
     <reference idref='entity-reader'/>
    </field>
+   <field name='fEntityHandler'>
+    <reference idref='entity-handler'/>
+   </field>
    <constructor/>
+   <method name='setEntityHandler'>
+    <param name='entityHandler'>
+     <reference idref='entity-handler'/>
+    </param>
+   </method>
    <method name='addGeneralEntity'>
     <param name='name'>
      <reference idref='java-string'/>
@@ -1417,7 +1321,12 @@
      <reference idref='java-string'/>
     </param>
    </method>
-   <method name='startEntity'>
+   <method name='startDocumentEntity'>
+    <param name='inputSource'>
+     <reference idref='sax-input-source'/>
+    </param>
+   </method>
+   <method name='startDTDEntity'>
     <param name='inputSource'>
      <reference idref='sax-input-source'/>
     </param>
@@ -1433,9 +1342,7 @@
    <implements>
     <reference idref='sax-locator'/>
    </implements>
-   <field name='fEntityHandler'>
-    <reference idref='entity-handler'/>
-   </field>
+   <!--
    <field name='fSymbolTable'>
     <reference idref='symbol-table'/>
    </field>
@@ -1455,11 +1362,6 @@
     <primitive type='long'/>
    </field>
    <constructor/>
-   <method name='setEntityHandler'>
-    <param name='entityHandler'>
-     <reference idref='entity-handler'/>
-    </param>
-   </method>
    <method name='getBytePosition'>
     <returns>
      <primitive type='long'/>
@@ -1470,6 +1372,7 @@
      <primitive type='long'/>
     </returns>
    </method>
+   -->
    <method name='peekChar'>
     <returns>
      <primitive type='int'/>
@@ -1551,8 +1454,8 @@
      <reference idref='string'/>
     </param>
     <returns>
-     <note>The next character on the stream.</note>
-     <primitive type='int'/>
+     <note>True if there is more data to scan.</note>
+     <primitive type='boolean'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1563,7 +1466,7 @@
      <primitive type='int'/>
     </param>
     <returns>
-     <note>True if spaces were skipped.</note>
+     <note>True if the char was skipped.</note>
      <primitive type='boolean'/>
     </returns>
     <throws>
@@ -1594,20 +1497,12 @@
    </method>
   </class>
 
- </category>
-
- <!-- Category: VALIDATING -->
- <category name='Validating' package='&package;.validators'>
-
   <class id='validator' name='XMLValidator'>
    <implements>
     <reference idref='configurable'/>
    </implements>
    <implements>
-    <reference idref='document-source'/>
-   </implements>
-   <implements>
-    <reference idref='document-handler'/>
+    <reference idref='document-filter'/>
    </implements>
    <field name='fSymbolTable'>
     <note>This field is initialized on reset.</note>
@@ -1638,6 +1533,11 @@
    </field>
    <constructor/>
   </class>
+
+ </category>
+
+ <!-- Category: VALIDATING -->
+ <category name='Implementation: Validation' package='&package;.impl.validation'>
 
   <class id='grammar-pool' name='GrammarPool'>
    <field name='fGrammars'>
@@ -2277,7 +2177,7 @@
  </category>
 
  <!-- Category: VALIDATING: Content Models -->
- <category name='Validating: Content Models' package='&package;.validators.models'>
+ <category name='Implementation: Validation Content Models' package='&package;.impl.validation.models'>
   
   <class id='simple-content-model' name='SimpleContentModel'>
    <implements>
@@ -2360,7 +2260,7 @@
  </category>
  
  <!-- Category: VALIDATING: Datatypes -->
- <category name='Validating: Datatypes' package='&package;.validators.datatypes'>
+ <category name='Implementation: Validation Datatypes' package='&package;.impl.validation.datatypes'>
 
   <class id='datatype-validator-factory-impl' name='DatatypeValidatorFactoryImpl'>
    <implements>
@@ -2445,7 +2345,7 @@
  </category>
 
  <!-- Category: VALIDATING: Grammars -->
- <category name='Validating: Grammars' package='&package;.validators.grammars'>
+ <category name='Implementation: Validation Grammars' package='&package;.impl.validation.grammars'>
 
   <class id='dtd-grammar' name='DTDGrammar'>
    <extends>
@@ -3065,6 +2965,90 @@
    </method>
   </class>
 
+  <class id='error-reporter' name='XMLErrorReporter'>
+   <implements>
+    <reference idref='configurable'/>
+   </implements>
+   <constant name='SEVERITY_WARNING'>
+    <primitive type='short'/>
+   </constant>
+   <constant name='SEVERITY_ERROR'>
+    <primitive type='short'/>
+   </constant>
+   <constant name='SEVERITY_FATAL_ERROR'>
+    <primitive type='short'/>
+   </constant>
+   <field name='fLocale'>
+    <reference idref='java-locale'/>
+   </field>
+   <field name='fMessageFormatters'>
+    <collection>
+     <collector>
+      <reference idref='java-hashtable'/>
+     </collector>
+     <items>
+      <reference idref='message-formatter'/>
+     </items>
+    </collection>
+   </field>
+   <field name='fErrorHandler'>
+    <reference idref='sax-error-handler'/>
+   </field>
+   <field name='fContinueAfterFatalError'>
+    <note>This field is initialized on reset.</note>
+    <primitive type='boolean'/>
+   </field>
+   <constructor/>
+   <method name='setLocale'>
+    <param name='locale'>
+     <reference idref='java-locale'/>
+    </param>
+   </method>
+   <method name='putMessageFormatter'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='messageFormatter'>
+     <reference idref='message-formatter'/>
+    </param>
+   </method>
+   <method name='getMessageFormatter'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <reference idref='message-formatter'/>
+    </returns>
+   </method>
+   <method name='removeMessageFormatter'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <reference idref='message-formatter'/>
+    </returns>
+   </method>
+   <method name='reportError'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='key'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='arguments'>
+     <array>
+      <reference idref='java-object'/>
+     </array>
+    </param>
+    <param name='severity'>
+     <primitive type='short'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+  </class>
+
   <interface id='message-formatter' name='MessageFormatter'>
    <method name='formatMessage'>
     <param name='locale'>
@@ -3086,6 +3070,50 @@
     </throws>
    </method>
   </interface>
+
+  <class id='string-buffer' name='XMLStringBuffer'>
+   <extends>
+    <reference idref='string'/>
+   </extends>
+   <constant name='DEFAULT_SIZE'>
+    <primitive type='int'/>
+   </constant>
+   <constructor/>
+   <constructor>
+    <param name='size'>
+     <primitive type='int'/>
+    </param>
+   </constructor>
+   <method name='clear'/>
+   <method name='append'>
+    <param name='c'>
+     <primitive type='char'/>
+    </param>
+   </method>
+   <method name='append'>
+    <param name='s'>
+     <reference idref='java-string'/>
+    </param>
+   </method>
+   <method name='append'>
+    <param name='ch'>
+     <array>
+      <primitive type='char'/>
+     </array>
+    </param>
+    <param name='offset'>
+     <primitive type='int'/>
+    </param>
+    <param name='length'>
+     <primitive type='int'/>
+    </param>
+   </method>
+   <method name='append'>
+    <param name='s'>
+     <reference idref='string'/>
+    </param>
+   </method>
+  </class>
 
  </category>
 
