@@ -128,24 +128,27 @@ public final class DeferredAttrNSImpl
         syncData = false;
 
         // fluff data
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
+        DeferredDocumentImpl ownerDocument =
+	    (DeferredDocumentImpl) this.ownerDocument;
         int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(elementTypeName);
         specified = ownerDocument.getNodeValue(fNodeIndex) == 1;
 
 	prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
-	if (prefix != null)  { // REVIST: Unqualified attributes do not inherit default namespaces.
-	    namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
-	    if (namespaceURI == null) {
-		if (prefix.equals("xml")) {
-		    namespaceURI = "http://www.w3.org/XML/1998/namespace";
-		} else if (prefix.equals("xmlns")) {
+	namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+	// DOM Level 2 wants all namespace declaration attributes
+	// to be bound to "http://www.w3.org/2000/xmlns/"
+	// So as long as the XML parser doesn't do it, it needs to
+	// done here.
+	if (namespaceURI == null) {
+	    if (prefix != null)  {
+		if (prefix.equals("xmlns")) {
 		    namespaceURI = "http://www.w3.org/2000/xmlns/";
 		}
+	    } else if (name.equals("xmlns")) {
+		namespaceURI = "http://www.w3.org/2000/xmlns/";
 	    }
-	} else if (name.equals("xmlns")) {
-	    namespaceURI = "http://www.w3.org/2000/xmlns/";
 	}
 	localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
 
