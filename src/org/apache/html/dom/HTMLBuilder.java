@@ -197,10 +197,9 @@ public class HTMLBuilder
     public void endElement( String tagName )
         throws SAXException
     {
-
         if ( _current == null )
             throw new SAXException( "HTM007 State error: endElement called with no current node." );
-	if ( ! _current.getNodeName().equals( tagName ) )
+	if ( ! _current.getNodeName().equalsIgnoreCase( tagName ))
 	    throw new SAXException( "HTM008 State error: mismatch in closing tag name " + tagName + "\n" + tagName);
 
 	// Move up to the parent element. When you reach the top (closing the root element).
