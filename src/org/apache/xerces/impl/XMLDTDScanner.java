@@ -58,11 +58,14 @@
 package org.apache.xerces.impl;
 
 import java.io.IOException;
+import java.io.EOFException;
 
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.GrammarPool;
 
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.XMLComponent;
@@ -72,6 +75,7 @@ import org.apache.xerces.xni.XMLDTDContentModelSource;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDSource;
 import org.apache.xerces.xni.XMLEntityHandler;
+import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -86,6 +90,37 @@ public class XMLDTDScanner
     extends XMLScanner
     implements XMLComponent, 
                XMLDTDSource, XMLDTDContentModelSource, XMLEntityHandler {
+
+    //
+    // Constants
+    //
+
+    // scanner states
+
+    /** Scanner state: Text declaration. */
+    protected static final int SCANNER_STATE_TEXT_DECL = 0;
+
+    /** Scanner state: start of markup. */
+    protected static final int SCANNER_STATE_MARKUP_DECL = 1;
+
+    /** Scanner state: comment. */
+    protected static final int SCANNER_STATE_COMMENT = 2;
+
+    /** Scanner state: processing instruction. */
+    protected static final int SCANNER_STATE_PI = 3;
+
+    protected static final int SCANNER_STATE_ELEMENT_DECL = 4;
+
+    protected static final int SCANNER_STATE_ATTLIST_DECL = 5;
+
+    protected static final int SCANNER_STATE_NOTATION_DECL = 6;
+
+    protected static final int SCANNER_STATE_ENTITY_DECL = 7;
+
+    // debugging
+
+    /** Debug scanner state. */
+    private static final boolean DEBUG_SCANNER_STATE = false;
 
     //
     // Data
@@ -106,10 +141,16 @@ public class XMLDTDScanner
     /** fDTDContentModelHandler */
     protected XMLDTDContentModelHandler fDTDContentModelHandler;
 
+    /** Scanner state. */
+    protected int fScannerState;
 
     // private data
 
     private boolean fValidation = false;
+
+    private boolean fScanningExtSubset;
+
+    private String[] fPseudoAttributeValues = new String[3];
 
     // symbols
 
@@ -141,7 +182,35 @@ public class XMLDTDScanner
      */
     public boolean scanDTD(boolean complete)
         throws IOException, SAXException {
-        return false;
+
+        try {
+            // set starting state
+            setScannerState(SCANNER_STATE_TEXT_DECL);
+
+            scanTextDecl(complete);
+
+            // next state is markup decls regardless of whether there
+            // is a TextDecl or not
+            setScannerState(SCANNER_STATE_MARKUP_DECL);
+
+            // keep dispatching "events"
+            while (complete) {
+                if (!scanDecls(complete)) {
+                    return false;
+                }
+            }
+        } catch (EOFException e) {
+            if (fScannerState == SCANNER_STATE_MARKUP_DECL) {
+                // no opened markup, this is the normal eof, we're all set
+            } else {
+                // markup is truncated, forward exception
+                throw e;
+            }
+        }
+
+        // return success
+        return true;
+
     } // scanDTD
 
     /**
@@ -153,7 +222,28 @@ public class XMLDTDScanner
      */
     public boolean scanDTDFragment(boolean complete)
         throws IOException, SAXException {
-        return false;
+
+        fScanningExtSubset = true;
+
+        // set starting state
+        setScannerState(SCANNER_STATE_TEXT_DECL);
+
+        scanTextDecl(complete);
+
+        // next state is markup decls regardless of whether there
+        // is a TextDecl or not
+        setScannerState(SCANNER_STATE_MARKUP_DECL);
+
+        // keep dispatching "events"
+        do {
+            if (!scanDecls(complete)) {
+                return false;
+            }
+        } while (complete);
+
+        // return success
+        return true;
+
     } // scanDTDFragment
 
     /**
@@ -165,7 +255,22 @@ public class XMLDTDScanner
      */
     public boolean scanDTDInternalSubset(boolean complete)
         throws IOException, SAXException {
-        return false;
+
+        fScanningExtSubset = false;
+
+        // set starting state
+        setScannerState(SCANNER_STATE_MARKUP_DECL);
+
+        // keep dispatching "events"
+        do {
+            if (!scanDecls(complete)) {
+                return false;
+            }
+        } while (complete);
+
+        // return success
+        return true;
+
     } // scanDTDInternalSubset
 
     //
@@ -183,10 +288,10 @@ public class XMLDTDScanner
         super.reset(componentManager);
 
         // Xerces features
-        fValidation =
+/*        fValidation =
             componentManager.getFeature(Constants.XERCES_FEATURE_PREFIX
                                         + Constants.VALIDATION_FEATURE);
-
+*/
         // Xerces properties
         fGrammarPool = (GrammarPool)
             componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
@@ -197,10 +302,6 @@ public class XMLDTDScanner
         fXmlSpace = fSymbolTable.addSymbol("xml:space");
         fDefault = fSymbolTable.addSymbol("default");
         fPreserve = fSymbolTable.addSymbol("preserve");
-
-        // setup dispatcher
-        //        setScannerState(SCANNER_STATE_XML_DECL);
-        //        setDispatcher(fXMLDeclDispatcher);
 
     } // reset
 
@@ -288,6 +389,17 @@ public class XMLDTDScanner
      */
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
+        // keep track of this entity
+/*        Entity entity = new Entity(name, publicId, systemId, fElementDepth);
+        fEntityStack.push(entity);
+*/
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.startEntity(name, publicId, systemId, encoding);
+            if (name.equals("[dtd]")) {
+                fDTDHandler.startDTD();
+            }
+        }
     } // startEntity(String,String,String,String)
 
     /**
@@ -297,6 +409,352 @@ public class XMLDTDScanner
      */
     public void endEntity(String name)
         throws SAXException {
+
+        // call handler
+        if (fDTDHandler != null) {
+            if (name.equals("[dtd]")) {
+                fDTDHandler.endDTD();
+            }
+            fDTDHandler.endEntity(name);
+        }
+
     } // endEntity(String)
+
+    // helper methods
+
+    /**
+     * Sets the scanner state.
+     *
+     * @param state The new scanner state.
+     */
+    protected final void setScannerState(int state) {
+
+        fScannerState = state;
+        if (DEBUG_SCANNER_STATE) {
+            System.out.print("### setScannerState: ");
+            System.out.print(getScannerStateName(state));
+            System.out.println();
+        }
+
+    } // setScannerState(int)
+
+    //
+    // Private methods
+    //
+
+    /** Returns the scanner state name. */
+    private static String getScannerStateName(int state) {
+
+        if (DEBUG_SCANNER_STATE) {
+            switch (state) {
+                case SCANNER_STATE_TEXT_DECL: return "SCANNER_STATE_TEXT_DECL";
+            }
+        }
+
+        return "??? ("+state+')';
+
+    } // getScannerStateName(int):String
+
+    /** 
+     * Dispatch an XML "event".
+     *
+     * @param complete True if this method is intended to scan
+     *                 and dispatch as much as possible.                 
+     *
+     * @returns True if there is more to dispatch either from this 
+     *          or a another dispatcher.
+     *
+     * @throws IOException  Thrown on i/o error.
+     * @throws SAXException Thrown on parse error.
+     *
+     * @author Andy Clark, IBM
+     * @author Arnaud  Le Hors, IBM
+     */
+    protected boolean scanTextDecl(boolean complete) 
+        throws IOException, SAXException {
+
+        // scan XMLDecl
+        if (fEntityScanner.skipString("<?xml")) {
+            // NOTE: special case where document starts with a PI
+            //       whose name starts with "xml" (e.g. "xmlfoo")
+            if (XMLChar.isName(fEntityScanner.peekChar())) {
+                fStringBuffer.clear();
+                fStringBuffer.append("xml");
+                while (XMLChar.isName(fEntityScanner.peekChar())) {
+                    fStringBuffer.append((char)fEntityScanner.scanChar());
+                }
+                String target =
+                    fSymbolTable.addSymbol(fStringBuffer.ch,
+                                           fStringBuffer.offset,
+                                           fStringBuffer.length);
+                scanPIData(target, fString);
+            }
+
+            // standard Text declaration
+            else {
+                scanXMLDeclOrTextDecl(true, fPseudoAttributeValues);
+            }
+            return complete;
+        }
+
+        // if no TextDecl, then scan piece of decls
+        return true;
+
+    } // scanTextDecl(boolean):boolean
+
+    /**
+     * Scans a processing data. This is needed to handle the situation
+     * where a document starts with a processing instruction whose 
+     * target name <em>starts with</em> "xml". (e.g. xmlfoo)
+     *
+     * @param target The PI target
+     * @param data The string to fill in with the data
+     */
+    protected void scanPIData(String target, XMLString data) 
+        throws IOException, SAXException {
+
+        super.scanPIData(target, data);
+
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.processingInstruction(target, data);
+        }
+
+    } // scanPIData(String)
+
+    /**
+     * Scans a comment.
+     * <p>
+     * <pre>
+     * [15] Comment ::= '&lt!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!--'
+     */
+    protected void scanComment() throws IOException, SAXException {
+
+        scanComment(fStringBuffer);
+
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.comment(fStringBuffer);
+        }
+
+    } // scanComment()
+
+    /**
+     * Scans an element declaration
+     * <p>
+     * <pre>
+     * [45]    elementdecl    ::=    '<!ELEMENT' S Name S contentspec S? '>'
+     * [46]    contentspec    ::=    'EMPTY' | 'ANY' | Mixed | children  
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!ELEMENT'
+     */
+    protected void scanElementDecl() throws IOException, SAXException {
+
+            // TODO: scan definition
+            while (fEntityScanner.scanData(">", fString)) {
+                // skip to end of internal subset
+            }
+        // call handler
+        if (fDTDHandler != null) {
+            //            fDTDHandler.(fStringBuffer);
+        }
+
+    } // scanElementDecl()
+
+    /**
+     * Scans an attlist declaration
+     * <p>
+     * <pre>
+     * [52]  AttlistDecl    ::=   '<!ATTLIST' S Name AttDef* S? '>' 
+     * [53]  AttDef         ::=   S Name S AttType S DefaultDecl 
+     * [54]  AttType        ::=   StringType | TokenizedType | EnumeratedType  
+     * [55]  StringType     ::=   'CDATA' 
+     * [56]  TokenizedType  ::=   'ID'
+     *                          | 'IDREF'
+     *                          | 'IDREFS'
+     *                          | 'ENTITY'
+     *                          | 'ENTITIES'
+     *                          | 'NMTOKEN'
+     *                          | 'NMTOKENS'
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!ATTLIST'
+     */
+    protected void scanAttlistDecl() throws IOException, SAXException {
+
+            // TODO: scan definition
+            while (fEntityScanner.scanData(">", fString)) {
+                // skip to end of internal subset
+            }
+
+        // call handler
+        if (fDTDHandler != null) {
+            //            fDTDHandler.(fStringBuffer);
+        }
+
+    } // scanAttlistDecl()
+
+    /**
+     * Scans an entity declaration
+     * <p>
+     * <pre>
+     * [70]    EntityDecl  ::=    GEDecl | PEDecl 
+     * [71]    GEDecl      ::=    '<!ENTITY' S Name S EntityDef S? '>' 
+     * [72]    PEDecl      ::=    '<!ENTITY' S '%' S Name S PEDef S? '>' 
+     * [73]    EntityDef   ::=    EntityValue | (ExternalID NDataDecl?) 
+     * [74]    PEDef       ::=    EntityValue | ExternalID 
+     * [75]    ExternalID  ::=    'SYSTEM' S SystemLiteral 
+     *                          | 'PUBLIC' S PubidLiteral S SystemLiteral  
+     * [76]    NDataDecl   ::=    S 'NDATA' S Name 
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!ENTITY'
+     */
+    protected void scanEntityDecl() throws IOException, SAXException {
+
+            // TODO: scan definition
+            while (fEntityScanner.scanData(">", fString)) {
+                // skip to end of internal subset
+            }
+
+        // call handler
+        if (fDTDHandler != null) {
+            //            fDTDHandler.(fStringBuffer);
+        }
+
+    } // scanEntityDecl()
+
+    /**
+     * Scans a notation declaration
+     * <p>
+     * <pre>
+     * [82] NotationDecl ::= '<!NOTATION' S Name S (ExternalID|PublicID) S? '>'
+     * [83]  PublicID    ::= 'PUBLIC' S PubidLiteral  
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!NOTATION'
+     */
+    protected void scanNotationDecl() throws IOException, SAXException {
+
+            // TODO: scan definition
+            while (fEntityScanner.scanData(">", fString)) {
+                // skip to end of internal subset
+            }
+
+        // call handler
+        if (fDTDHandler != null) {
+            //            fDTDHandler.(fStringBuffer);
+        }
+
+    } // scanNotationDecl()
+
+    /** 
+     * Dispatch an XML "event".
+     *
+     * @param complete True if this method is intended to scan
+     *                 and dispatch as much as possible.                 
+     *
+     * @returns True if there is more to dispatch either from this 
+     *          or a another dispatcher.
+     *
+     * @throws IOException  Thrown on i/o error.
+     * @throws SAXException Thrown on parse error.
+     *
+     * @author Arnaud  Le Hors, IBM
+     */
+    protected boolean scanDecls(boolean complete)
+            throws IOException, SAXException {
+        
+        boolean again;
+        do {
+            again = false;
+            switch (fScannerState) {
+                case SCANNER_STATE_MARKUP_DECL: {
+                    fEntityScanner.skipSpaces();
+                    if (fEntityScanner.skipChar('<')) {
+                        if (fEntityScanner.skipChar('?')) {
+                            setScannerState(SCANNER_STATE_PI);
+                            again = true;
+                            break;
+                        }
+                        else if (fEntityScanner.skipChar('!')) {
+                            if (fEntityScanner.skipChar('-')) {
+                                if (!fEntityScanner.skipChar('-')) {
+                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                               "InvalidCommentStart",
+                                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                }
+                                setScannerState(SCANNER_STATE_COMMENT);
+                                again = true;
+                                break;
+                            }
+                            else if (fEntityScanner.skipString("ELEMENT")) {
+                                setScannerState(SCANNER_STATE_ELEMENT_DECL);
+                                again = true;
+                                break;
+                            }
+                            else if (fEntityScanner.skipString("ATTLIST")) {
+                                setScannerState(SCANNER_STATE_ATTLIST_DECL);
+                                again = true;
+                                break;
+                            }
+                            else if (fEntityScanner.skipString("ENTITY")) {
+                                setScannerState(SCANNER_STATE_ENTITY_DECL);
+                                again = true;
+                                break;
+                            }
+                            else if (fEntityScanner.skipString("NOTATION")) {
+                                setScannerState(SCANNER_STATE_NOTATION_DECL);
+                                again = true;
+                                break;
+                            }
+                        }
+                    }
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MarkupNotRecognizedInProlog",
+                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    complete = false;
+                    break;
+                }
+                case SCANNER_STATE_ELEMENT_DECL: {
+                    scanElementDecl();
+                    setScannerState(SCANNER_STATE_MARKUP_DECL);
+                    break;  
+                }
+                case SCANNER_STATE_ATTLIST_DECL: {
+                    scanAttlistDecl();
+                    setScannerState(SCANNER_STATE_MARKUP_DECL);
+                    break;  
+                }
+                case SCANNER_STATE_COMMENT: {
+                    scanComment();
+                    setScannerState(SCANNER_STATE_MARKUP_DECL);
+                    break;  
+                }
+                case SCANNER_STATE_PI: {
+                    scanPI();
+                    setScannerState(SCANNER_STATE_MARKUP_DECL);
+                    break;  
+                }
+                case SCANNER_STATE_ENTITY_DECL: {
+                    scanEntityDecl();
+                    setScannerState(SCANNER_STATE_MARKUP_DECL);
+                    break;  
+                }
+                case SCANNER_STATE_NOTATION_DECL: {
+                    scanNotationDecl();
+                    setScannerState(SCANNER_STATE_MARKUP_DECL);
+                    break;  
+                }
+            }
+        } while (complete || again);
+
+        return complete;
+    }
+
 
 } // class XMLDTDScanner
