@@ -890,7 +890,6 @@ public class SAXParser
      * encountered.
      */
     public void startDTD(QName rootElement, int publicId, int systemId) throws Exception {
-        System.out.println("!!! startDTD !!!");
         if (fLexicalHandler != null || DEBUG_CALLBACKS) {
 
             // strings
