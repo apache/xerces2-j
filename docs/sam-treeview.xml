@@ -45,7 +45,7 @@
 set CLASSPATH=%CLASSPATH%;c:\&javaparserdirectory;\xerces.jar;c:\&javaparserdirectory;\xercesSamples.jar
 set CLASSPATH=%CLASSPATH%;c:\Swing-1.1.1\swingall.jar
 cd c:\&javaparserdirectory;
-java dom.TreeViewer data/personal.xml</source>
+java ui.TreeViewer data/personal.xml</source>
 		
 		<p><em>With jdk1.2.2:</em></p>
 		<p>Swing is included in the Java 2 release and it doesn't required 
@@ -53,7 +53,7 @@ java dom.TreeViewer data/personal.xml</source>
 <source>set PATH=%PATH%;c:\jdk1.2.2\bin
 set CLASSPATH=%CLASSPATH%;c:\&javaparserdirectory;\xerces.jar;c:\&javaparserdirectory;\xercesSamples.jar
 cd c:\&javaparserdirectory;
-java dom.TreeViewer data/personal.xml</source>
+java ui.TreeViewer data/personal.xml</source>
 
 		<note>Parse your own XML file instead of data/personal.xml</note>
 	</s2>
