@@ -699,21 +699,7 @@ public abstract class AbstractDOMParser
             System.out.println("==>startElement ("+element.rawname+")");
         }
         if (!fDeferNodeExpansion) {
-            Element el;
-            if (fNamespaceAware) {
-                // if we are using xerces DOM implementation, call our
-                // own constructor to reuse the strings we have here.
-                if (fDocumentImpl != null) {
-                    el = fDocumentImpl.createElementNS(element.uri, element.rawname,
-                                                       element.localpart);
-                }
-                else {
-                    el = fDocument.createElementNS(element.uri, element.rawname);
-                }
-            }
-            else {
-                el = fDocument.createElement(element.rawname);
-            } 
+            Element el = createElementNode(element);
             
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
@@ -725,23 +711,7 @@ public abstract class AbstractDOMParser
                     attributeName.equals("xmlns"))) {
                     fAttrQName.uri = NamespaceContext.XMLNS_URI;
                 }
-                Attr attr;
-                if (fNamespaceAware) {
-                    if (fDocumentImpl != null) {
-                        // if we are using xerces DOM implementation, call our
-                        // own constructor to reuse the strings we have here.
-                        attr = fDocumentImpl.createAttributeNS(fAttrQName.uri,
-                                                               fAttrQName.rawname,
-                                                               fAttrQName.localpart);
-                    }
-                    else {
-                        attr = fDocument.createAttributeNS(fAttrQName.uri,
-                                                           fAttrQName.rawname);
-                    }
-                }
-                else {
-                    attr = fDocument.createAttribute(fAttrQName.rawname);
-                }
+                Attr attr = createAttrNode(fAttrQName);
 
                 String attrValue = attributes.getValue(i);
                 if (fNormalizeData) {
@@ -1678,4 +1648,52 @@ public abstract class AbstractDOMParser
 
     } // attributeDecl(String,String,String,String[],String,XMLString, XMLString, Augmentations)
 
+    // method to create an element node.
+    // subclasses can override this method to create element nodes in other ways.
+    protected Element createElementNode(QName element) {
+        Element el = null;
+        
+        if (fNamespaceAware) {
+            // if we are using xerces DOM implementation, call our
+            // own constructor to reuse the strings we have here.
+            if (fDocumentImpl != null) {
+                el = fDocumentImpl.createElementNS(element.uri, element.rawname,
+                                                   element.localpart);
+            }
+            else {
+                el = fDocument.createElementNS(element.uri, element.rawname);
+            }
+        }
+        else {
+            el = fDocument.createElement(element.rawname);
+        }
+        
+        return el;
+    }
+
+    // method to create an attribute node.
+    // subclasses can override this method to create attribute nodes in other ways.
+    protected Attr createAttrNode(QName attrQName) {
+        Attr attr = null;
+        
+        if (fNamespaceAware) {
+            if (fDocumentImpl != null) {
+                // if we are using xerces DOM implementation, call our
+                // own constructor to reuse the strings we have here.
+                attr = fDocumentImpl.createAttributeNS(attrQName.uri,
+                                                       attrQName.rawname,
+                                                       attrQName.localpart);
+            }
+            else {
+                attr = fDocument.createAttributeNS(attrQName.uri,
+                                                   attrQName.rawname);
+            }
+        }
+        else {
+            attr = fDocument.createAttribute(attrQName.rawname);
+        }
+        
+        return attr;
+    }
+    
 } // class AbstractDOMParser
