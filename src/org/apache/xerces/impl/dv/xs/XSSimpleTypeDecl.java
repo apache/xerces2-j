@@ -271,7 +271,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     public XSAnnotation whiteSpaceAnnotation;
     public XSAnnotation totalDigitsAnnotation;
     public XSAnnotation fractionDigitsAnnotation;
-    public XSObjectList patternAnnotations;
+    public XSObjectListImpl patternAnnotations;
     public XSObjectList enumerationAnnotations;
     public XSAnnotation maxInclusiveAnnotation;
     public XSAnnotation maxExclusiveAnnotation;
@@ -1339,7 +1339,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             else {
                 for (int i = fBase.fPattern.size()-1; i >= 0; i--) {
                     fPattern.addElement(fBase.fPattern.elementAt(i));
-                    fPatternStr.addElement(fBase.fPatternStr.elementAt(i));
+                    fPatternStr.addElement(fBase.fPatternStr.elementAt(i));                    
+                }
+                if (fBase.patternAnnotations != null){
+                    for (int i = fBase.patternAnnotations.getLength()-1;i>=0;i--){
+                        patternAnnotations.add(fBase.patternAnnotations.item(i));
+                    }
                 }
             }
         }
