@@ -66,6 +66,7 @@ import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
@@ -132,6 +133,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * @version $Id$
  */
 public abstract class BasicParserConfiguration
+    extends ParserConfigurationSettings
     implements XMLParserConfiguration {
 
     //
@@ -188,18 +190,6 @@ public abstract class BasicParserConfiguration
     /** Locale. */
     protected Locale fLocale;
 
-    /** Recognized properties. */
-    protected Vector fRecognizedProperties;
-
-    /** Properties. */
-    protected Hashtable fProperties;
-
-    /** Recognized features. */
-    protected Vector fRecognizedFeatures;
-
-    /** Features. */
-    protected Hashtable fFeatures;
-
     /** Components. */
     protected Vector fComponents;
 
@@ -220,15 +210,28 @@ public abstract class BasicParserConfiguration
 
     /** Default Constructor. */
     protected BasicParserConfiguration() {
-        this(null);
+        this(null, null);
     } // <init>()
 
-    /**
-     * Constructs a document parser using the specified symbol table
-     * and a default grammar pool.
+    /** 
+     * Constructs a parser configuration using the specified symbol table. 
      *
+     * @param symbolTable The symbol table to use.
      */
     protected BasicParserConfiguration(SymbolTable symbolTable) {
+        this(null, null);
+    } // <init>(SymbolTable)
+
+    /** 
+     * Constructs a parser configuration using the specified symbol table
+     * and parent settings.
+     *
+     * @param symbolTable    The symbol table to use.
+     * @param parentSettings The parent settings.
+     */
+    protected BasicParserConfiguration(SymbolTable symbolTable,
+                                       XMLComponentManager parentSettings) {
+        super(parentSettings);
 
         // create a vector to hold all the components in use
         fComponents = new Vector();
@@ -300,45 +303,8 @@ public abstract class BasicParserConfiguration
     } // addComponent(XMLComponent)
 
     //
-    // Public methods
+    // XMLParserConfiguration methods
     //
-
-    /**
-     * Parses the input source specified by the given system identifier.
-     * <p>
-     * This method is equivalent to the following:
-     * <pre>
-     *     parse(new InputSource(systemId));
-     * </pre>
-     *
-     * @param source The input source.
-     *
-     * @exception org.xml.sax.SAXException Throws exception on SAX error.
-     * @exception java.io.IOException Throws exception on i/o error.
-     */
-    /***
-    public void parse(String systemId)
-        throws XNIException, IOException {
-
-        InputSource source = new InputSource(systemId);
-        parse(source);
-        try {
-            Reader reader = source.getCharacterStream();
-            if (reader != null) {
-                reader.close();
-            }
-            else {
-                InputStream is = source.getByteStream();
-                if (is != null) {
-                    is.close();
-                }
-            }
-        }
-        catch (IOException e) {
-            // ignore
-        }
-
-    } // parse(String)
 
     /**
      * parse
@@ -420,26 +386,6 @@ public abstract class BasicParserConfiguration
     } // getErrorHandler():XMLErrorHandler
 
     /**
-     * Allows a parser to add parser specific features to be recognized
-     * and managed by the parser configuration.
-     *
-     * @param featureIds An array of the additional feature identifiers 
-     *                   to be recognized.
-     */
-    public void addRecognizedFeatures(String[] featureIds) {
-
-        // add recognized features
-        int featureIdsCount = featureIds != null ? featureIds.length : 0;
-        for (int i = 0; i < featureIdsCount; i++) {
-            String featureId = featureIds[i];
-            if (!fRecognizedFeatures.contains(featureId)) {
-                fRecognizedFeatures.addElement(featureId);
-            }
-        }
-
-    } // addRecognizedFeatures(String[])
-
-    /**
      * Set the state of a feature.
      *
      * Set the state of any feature in a SAX2 parser.  The parser
@@ -460,38 +406,17 @@ public abstract class BasicParserConfiguration
     public void setFeature(String featureId, boolean state)
         throws XMLConfigurationException {
 
-        checkFeature(featureId);
-
         // forward to every component
         int count = fComponents.size();
         for (int i = 0; i < count; i++) {
             XMLComponent c = (XMLComponent) fComponents.elementAt(i);
             c.setFeature(featureId, state);
         }
-        // then store the information
-        fFeatures.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
+
+        // save state if noone "objects"
+        super.setFeature(featureId, state);
 
     } // setFeature(String,boolean)
-
-    /**
-     * Allows a parser to add parser specific properties to be recognized
-     * and managed by the parser configuration.
-     *
-     * @param propertyIds An array of the additional property identifiers 
-     *                    to be recognized.
-     */
-    public void addRecognizedProperties(String[] propertyIds) {
-
-        // add recognizedProperties
-        int propertyIdsCount = propertyIds != null ? propertyIds.length : 0;
-        for (int i = 0; i < propertyIdsCount; i++) {
-            String propertyId = propertyIds[i];
-            if (!fRecognizedProperties.contains(propertyId)) {
-                fRecognizedProperties.addElement(propertyId);
-            }
-        }
-
-    } // addRecognizedProperties(String[])
 
     /**
      * setProperty
@@ -502,16 +427,15 @@ public abstract class BasicParserConfiguration
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
 
-        checkProperty(propertyId);
-
         // forward to every component
         int count = fComponents.size();
         for (int i = 0; i < count; i++) {
             XMLComponent c = (XMLComponent) fComponents.elementAt(i);
             c.setProperty(propertyId, value);
         }
-        // then store the information
-        fProperties.put(propertyId, value);
+
+        // store value if noone "objects"
+        super.setProperty(propertyId, value);
 
     } // setProperty(String,Object)
 
@@ -526,69 +450,6 @@ public abstract class BasicParserConfiguration
     public void setLocale(Locale locale) throws XNIException {
         fLocale = locale;
     } // setLocale(Locale)
-
-    //
-    // XMLComponentManager methods
-    //
-
-    /**
-     * Returns the state of a feature.
-     * 
-     * @param featureId The feature identifier.
-     * 
-     * @throws XMLConfigurationException Thrown for configuration error.
-     *                                   In general, components should
-     *                                   only throw this exception if
-     *                                   it is <strong>really</strong>
-     *                                   a critical error.
-     */
-    public boolean getFeature(String featureId)
-        throws XMLConfigurationException {
-
-        checkFeature(featureId);
-
-        Boolean state = (Boolean) fFeatures.get(featureId);
-        return state != null ? state.booleanValue() : false;
-
-    } // getFeature(String):boolean
-
-    /**
-     * Returns the value of a property.
-     * 
-     * @param propertyId The property identifier.
-     * 
-     * @throws XMLConfigurationException Thrown for configuration error.
-     *                                   In general, components should
-     *                                   only throw this exception if
-     *                                   it is <strong>really</strong>
-     *                                   a critical error.
-     */
-    public Object getProperty(String propertyId)
-        throws XMLConfigurationException {
-
-        checkProperty(propertyId);
-
-        return fProperties.get(propertyId);
-
-    } // getProperty(String):Object
-
-    /*** These should be queried through the property mechanism. -Ac ***
-    public Locator getLocator() {
-        return fLocator;
-    } // getLocator():Locator
-
-    public SymbolTable getSymbolTable() {
-        return fSymbolTable;
-    } // getSymbolTable():SymbolTable
-
-    public Hashtable getFeatureTable() {
-        return fFeatures;
-    }
-
-    public Hashtable getPropertyTable() {
-        return fProperties;
-    }
-    /***/
 
     //
     // Protected methods
@@ -606,32 +467,7 @@ public abstract class BasicParserConfiguration
             c.reset(this);
         }
 
-    } // reset(XMLParser)
-
-    /**
-     * Check a feature. If feature is known and supported, this method simply
-     * returns. Otherwise, the appropriate exception is thrown.
-     *
-     * @param featureId The unique identifier (URI) of the feature.
-     *
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested feature is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested feature is known, but the requested
-     *            state is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
-     */
-    protected void checkFeature(String featureId)
-        throws XMLConfigurationException {
-
-        // check feature
-        if (!fRecognizedFeatures.contains(featureId)) {
-            short type = XMLConfigurationException.NOT_RECOGNIZED;
-            throw new XMLConfigurationException(type, featureId);
-        }
-
-    } // checkFeature(String)
+    } // reset()
 
     /**
      * Check a property. If the property is known and supported, this method
@@ -674,10 +510,7 @@ public abstract class BasicParserConfiguration
         }
 
         // check property
-        if (!fRecognizedProperties.contains(propertyId)) {
-            short type = XMLConfigurationException.NOT_RECOGNIZED;
-            throw new XMLConfigurationException(type, propertyId);
-        }
+        super.checkProperty(propertyId);
 
     } // checkProperty(String)
 

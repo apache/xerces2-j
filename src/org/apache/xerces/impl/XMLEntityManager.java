@@ -278,14 +278,38 @@ public class XMLEntityManager
     /** Current entity. */
     protected ScannedEntity fCurrentEntity;
 
+    // shared context
+
+    /** Shared declared entities. */
+    protected Hashtable fDeclaredEntities;
+
     //
     // Constructors
     //
 
     /** Default constructor. */
     public XMLEntityManager() {
-        fEntityScanner = new EntityScanner();
+        this(null);
     } // <init>()
+
+    /** 
+     * Constructs an entity manager that shares the specified entity 
+     * declarations during each parse.
+     * <p>
+     * <strong>REVISIT:</strong> We might want to think about the "right"
+     * way to expose the list of declared entities. For now, the knowledge
+     * how to access the entity declarations is implicit.
+     */
+    public XMLEntityManager(XMLEntityManager entityManager) {
+        
+        // create scanner
+        fEntityScanner = new EntityScanner();
+
+        // save shared entity declarations
+        fDeclaredEntities = entityManager != null 
+                          ? entityManager.getDeclaredEntities() : null;
+
+    } // <init>(XMLEntityManager)
 
     //
     // Public methods
@@ -851,6 +875,16 @@ public class XMLEntityManager
             addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml");
         }
 
+        // copy declared entities
+        if (fDeclaredEntities != null) {
+            java.util.Enumeration keys = fDeclaredEntities.keys();
+            while (keys.hasMoreElements()) {
+                Object key = keys.nextElement();
+                Object value = fDeclaredEntities.get(key);
+                fEntities.put(key, value);
+            }
+        }
+
     } // reset(XMLComponentManager)
 
     /**
@@ -1263,6 +1297,18 @@ public class XMLEntityManager
     //
     // Package visible methods
     //
+
+    /** 
+     * Returns the hashtable of declared entities.
+     * <p>
+     * <strong>REVISIT:</strong>
+     * This should be done the "right" way by designing a better way to
+     * enumerate the declared entities. For now, this method is needed
+     * by the constructor that takes an XMLEntityManager parameter.
+     */
+    Hashtable getDeclaredEntities() {
+        return fEntities;
+    } // getDeclaredEntities():Hashtable
 
     /** Prints the contents of the buffer. */
     final void print() {

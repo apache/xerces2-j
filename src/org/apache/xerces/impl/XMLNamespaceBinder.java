@@ -65,6 +65,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -161,7 +162,12 @@ public class XMLNamespaceBinder
     /** Only pass start and end prefix mapping events. */
     protected boolean fOnlyPassPrefixMappingEvents;
 
-    // private data
+    // shared context
+
+    /** Namespace context. */
+    private NamespaceContext fNamespaceContext;
+
+    // temp vars
 
     /** Attribute QName. */
     private QName fAttributeQName = new QName();
@@ -178,8 +184,33 @@ public class XMLNamespaceBinder
     private String fXmlnsSymbol;
 
     //
+    // Constructors
+    //
+
+    /** Default constructor. */
+    public XMLNamespaceBinder() {
+        this(null);
+    } // <init>()
+
+    /** 
+     * Constructs a namespace binder that shares the specified namespace
+     * context during each parse.
+     *
+     * @param namespaceContext The shared context.
+     */
+    public XMLNamespaceBinder(NamespaceContext namespaceContext) {
+        fNamespaceContext = namespaceContext;
+    } // <init>(NamespaceContext)
+    
+
+    //
     // Public methods
     //
+
+    /** Returns the current namespace context. */
+    public NamespaceContext getNamespaceContext() {
+        return fNamespaceSupport;
+    } // getNamespaceContext():NamespaceContext
 
     // settings
 
@@ -246,6 +277,20 @@ public class XMLNamespaceBinder
         fXmlSymbol = fSymbolTable.addSymbol("xml");
         fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
     
+        // use shared context
+        NamespaceContext context = fNamespaceContext;
+        while (context != null) {
+            int count = context.getDeclaredPrefixCount();
+            for (int i = 0; i < count; i++) {
+                String prefix = context.getDeclaredPrefixAt(i);
+                if (fNamespaceSupport.getURI(prefix) == null) {
+                    String uri = context.getURI(prefix);
+                    fNamespaceSupport.declarePrefix(prefix, uri);
+                }
+            }
+            context = context.getParentContext();
+        }
+
     } // reset(XMLComponentManager)
 
     /**

@@ -75,6 +75,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentScanner;
 import org.apache.xerces.xni.parser.XMLDTDScanner;
@@ -243,28 +244,50 @@ public class StandardParserConfiguration
     // Constructors
     //
 
-    /**
-     * Constructs a document parser using the default symbol table and grammar
-     * pool or the ones specified by the application (through the properties).
-     */
+    /** Default constructor. */
     public StandardParserConfiguration() {
-        this(null, null);
+        this(null, null, null);
     } // <init>()
 
-    /**
-     * Constructs a document parser using the specified symbol table.
+    /** 
+     * Constructs a parser configuration using the specified symbol table. 
+     *
+     * @param symbolTable The symbol table to use.
      */
     public StandardParserConfiguration(SymbolTable symbolTable) {
-        this(symbolTable, null);
+        this(symbolTable, null, null);
     } // <init>(SymbolTable)
 
     /**
-     * Constructs a document parser using the specified symbol table and
+     * Constructs a parser configuration using the specified symbol table and
      * grammar pool.
+     * <p>
+     * <strong>REVISIT:</strong> 
+     * Grammar pool will be updated when the new validation engine is
+     * implemented.
+     *
+     * @param symbolTable The symbol table to use.
+     * @param grammarPool The grammar pool to use.
      */
     public StandardParserConfiguration(SymbolTable symbolTable,
                                        GrammarPool grammarPool) {
-        super(symbolTable);
+    } // <init>(SymbolTable,GrammarPool)
+    /**
+     * Constructs a parser configuration using the specified symbol table,
+     * grammar pool, and parent settings.
+     * <p>
+     * <strong>REVISIT:</strong> 
+     * Grammar pool will be updated when the new validation engine is
+     * implemented.
+     *
+     * @param symbolTable    The symbol table to use.
+     * @param grammarPool    The grammar pool to use.
+     * @param parentSettings The parent settings.
+     */
+    public StandardParserConfiguration(SymbolTable symbolTable,
+                                       GrammarPool grammarPool,
+                                       XMLComponentManager parentSettings) {
+        super(symbolTable, parentSettings);
 
         // add default recognized features
         final String[] recognizedFeatures = {
@@ -288,6 +311,10 @@ public class StandardParserConfiguration
         final String[] recognizedProperties = {
             ERROR_REPORTER,             
             ENTITY_MANAGER, 
+            DOCUMENT_SCANNER,
+            DTD_SCANNER,
+            DTD_VALIDATOR,
+            NAMESPACE_BINDER,
             GRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
         };
@@ -295,34 +322,29 @@ public class StandardParserConfiguration
 
         // create and register missing components
         if (grammarPool == null) {
-            if (fGrammarPool == null) {
-                fGrammarPool = new GrammarPool();
-                fProperties.put(GRAMMAR_POOL, fGrammarPool);
-            }
+            grammarPool = new GrammarPool();
         }
-        else {
-            fGrammarPool = grammarPool;
-            fProperties.put(GRAMMAR_POOL, fGrammarPool);
-        }
+        fGrammarPool = grammarPool;
+        setProperty(GRAMMAR_POOL, fGrammarPool);
 
         fEntityManager = createEntityManager();
-        fProperties.put(ENTITY_MANAGER, fEntityManager);
+        setProperty(ENTITY_MANAGER, fEntityManager);
         addComponent(fEntityManager);
 
         fErrorReporter = createErrorReporter();
         fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
-        fProperties.put(ERROR_REPORTER, fErrorReporter);
+        setProperty(ERROR_REPORTER, fErrorReporter);
         addComponent(fErrorReporter);
 
         fScanner = createDocumentScanner();
-        fProperties.put(DOCUMENT_SCANNER, fScanner);
+        setProperty(DOCUMENT_SCANNER, fScanner);
         if (fScanner instanceof XMLComponent) {
             addComponent((XMLComponent)fScanner);
         }
 
         fDTDScanner = createDTDScanner();
         if (fDTDScanner != null) {
-            fProperties.put(DTD_SCANNER, fDTDScanner);
+            setProperty(DTD_SCANNER, fDTDScanner);
             if (fDTDScanner instanceof XMLComponent) {
                 addComponent((XMLComponent)fDTDScanner);
             }
@@ -330,20 +352,20 @@ public class StandardParserConfiguration
 
         fDTDValidator = createDTDValidator();
         if (fDTDValidator != null) {
-            fProperties.put(DTD_VALIDATOR, fDTDValidator);
+            setProperty(DTD_VALIDATOR, fDTDValidator);
             addComponent(fDTDValidator);
         }
 
         fNamespaceBinder = createNamespaceBinder();
         if (fNamespaceBinder != null) {
-            fProperties.put(NAMESPACE_BINDER, fNamespaceBinder);
+            setProperty(NAMESPACE_BINDER, fNamespaceBinder);
             addComponent(fNamespaceBinder);
         }
         
         fDatatypeValidatorFactory = createDatatypeValidatorFactory();
         if (fDatatypeValidatorFactory != null) {
-            fProperties.put(DATATYPE_VALIDATOR_FACTORY,
-                            fDatatypeValidatorFactory);
+            setProperty(DATATYPE_VALIDATOR_FACTORY,
+                        fDatatypeValidatorFactory);
         }
 
         // add message formatters
@@ -377,20 +399,6 @@ public class StandardParserConfiguration
      *                         specified locale.
      */
     public void setLocale(Locale locale) throws XNIException {
-        // REVISIT: Is this code needed? We're now creating
-        //          these components in the constructor. -Ac
-        if (fErrorReporter == null) {
-            if (fEntityManager == null) {
-                fEntityManager = createEntityManager();
-                fProperties.put(ENTITY_MANAGER, fEntityManager);
-                addComponent(fEntityManager);
-                fLocator = (XMLLocator)fEntityManager.getEntityScanner();
-            }
-            fErrorReporter = createErrorReporter();
-            fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
-            fProperties.put(ERROR_REPORTER, fErrorReporter);
-            addComponent(fErrorReporter);
-        }
         fErrorReporter.setLocale(locale);
     } // setLocale(Locale)
 
