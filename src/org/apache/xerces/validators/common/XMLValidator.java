@@ -4400,7 +4400,7 @@ public final class XMLValidator
                     //          then this code can be swapped out. -Ac
                     /***
                     if (validator.compare(value1, value2) != 0) {
-                        return false;
+                        continue LOOP;
                     }
                     /***/
                     if (!value1.equals(value2)) {
@@ -4826,7 +4826,19 @@ public final class XMLValidator
         /** Returns the index of the entry with the specified key. */
         public int indexOf(Field key) {
             for (int i = 0; i < fSize; i++) {
-                if (fEntries[i].key.equals(key)) {
+                // NOTE: Only way to be sure that the keys are the
+                //       same is by using a reference comparison. In
+                //       order to rely on the equals method, each 
+                //       field would have to take into account its
+                //       position in the identity constraint, the
+                //       identity constraint, the declaring element,
+                //       and the grammar that it is defined in. 
+                //       Otherwise, you have the possibility that 
+                //       the equals method would return true for two
+                //       fields that look *very* similar.
+                //       The reference compare isn't bad, actually,
+                //       because the field objects are cacheable. -Ac
+                if (fEntries[i].key == key) {
                     return i;
                 }
             }
