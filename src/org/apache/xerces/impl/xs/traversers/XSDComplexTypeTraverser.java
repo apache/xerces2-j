@@ -114,6 +114,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private boolean fIsAbstract = false;
     private XSComplexTypeDecl fComplexTypeDecl = null;
 
+    private XSParticleDecl fEmptyParticle = null;
+
     // our own little stack to retain state when getGlobalDecls is called:
     private Object [] fGlobalStore = null;
     private int fGlobalStorePos = 0;
@@ -721,27 +723,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
             // This is an EXTENSION
 
-            //
-            // Check if the contentType of the base is consistent with the new type
-            // cos-ct-extends.1.4.2.2
-            if (baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
-                if (((baseType.getContentType() ==
-                      XSComplexTypeDecl.CONTENTTYPE_ELEMENT) &&
-                     mixedContent) ||
-                    ((baseType.getContentType() ==
-                      XSComplexTypeDecl.CONTENTTYPE_MIXED) && !mixedContent)) {
-
-                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.2.2.2.1",
-                          new Object[]{fName}, complexContent);
-                }
-
-            }
-
             // Create the particle
             if (fParticle == null) {
+                fContentType = baseType.getContentType();
                 fParticle = baseContent;
             }
-            else if (baseContent==null) {
+            else if (baseType.getContentType() == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
             }
             else {
                 // if the content of either type is an "all" model group, error.
@@ -767,13 +754,22 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fParticle = particle;
             }
 
-            // Set the contentType
-            if (mixedContent)
-                fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
-            else if (fParticle == null)
-                fContentType = XSComplexTypeDecl.CONTENTTYPE_EMPTY;
-            else
-                fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
+            //
+            // Check if the contentType of the base is consistent with the new type
+            // cos-ct-extends.1.4.2.2
+            if (baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
+                if (((baseType.getContentType() ==
+                      XSComplexTypeDecl.CONTENTTYPE_ELEMENT) &&
+                     fContentType != XSComplexTypeDecl.CONTENTTYPE_ELEMENT) ||
+                    ((baseType.getContentType() ==
+                      XSComplexTypeDecl.CONTENTTYPE_MIXED) &&
+                      fContentType != XSComplexTypeDecl.CONTENTTYPE_MIXED)) {
+
+                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.2.2.2.1",
+                          new Object[]{fName}, complexContent);
+                }
+
+            }
 
             // Remove prohibited uses.   Must be done before merge for EXTENSION.
             fAttrGrp.removeProhibitedAttrs();
@@ -830,8 +826,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
     }
 
-
-
     private void processComplexContent(Element complexContentChild,
                                        boolean isMixed, boolean isDerivation,
                                        XSDocumentInfo schemaDoc, SchemaGrammar grammar)
@@ -858,16 +852,31 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 particle = traverseSequence(complexContentChild,schemaDoc,grammar,
                                             NOT_ALL_CONTEXT,fComplexTypeDecl);
+                if (particle != null) {
+                    XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
+                    if (group.fParticleCount == 0)
+                        particle = null;
+                }
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 particle = traverseChoice(complexContentChild,schemaDoc,grammar,
                                           NOT_ALL_CONTEXT,fComplexTypeDecl);
+                if (particle != null && particle.fMinOccurs == 0) {
+                    XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
+                    if (group.fParticleCount == 0)
+                        particle = null;
+                }
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 particle = traverseAll(complexContentChild,schemaDoc,grammar,
                                        PROCESSING_ALL_GP,fComplexTypeDecl);
+                if (particle != null) {
+                    XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
+                    if (group.fParticleCount == 0)
+                        particle = null;
+                }
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else {
@@ -876,17 +885,27 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
         }
 
+        if (particle == null && isMixed) {
+            if (fEmptyParticle == null) {
+                XSModelGroupImpl group = new XSModelGroupImpl();
+                group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+                group.fParticleCount = 0;
+                group.fParticles = null;
+                fEmptyParticle = new XSParticleDecl();
+                fEmptyParticle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+                fEmptyParticle.fValue = group;
+            }
+            particle = fEmptyParticle;
+        }
         fParticle = particle;
 
         // -----------------------------------------------------------------------
         // Set the content type
         // -----------------------------------------------------------------------
-
-        if (isMixed) {
-            fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
-        }
-        else if (fParticle == null)
+        if (fParticle == null)
             fContentType = XSComplexTypeDecl.CONTENTTYPE_EMPTY;
+        else if (isMixed)
+            fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
         else
             fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
 
