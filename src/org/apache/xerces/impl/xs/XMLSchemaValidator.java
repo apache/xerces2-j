@@ -635,25 +635,31 @@ public class XMLSchemaValidator
     public void characters(XMLString text, Augmentations augs) throws XNIException {
 
         boolean emptyAug = false;
-        if (augs == null) {
-            emptyAug = true;
-            augs = fAugmentations;
-            augs.clear();
-        }
-        // get PSVI object
-        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
-        if (fCurrentPSVI == null) {
-            fCurrentPSVI = fElemPSVI;
-            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+        
+        if (fNormalizeData) {
+            if (augs == null) {
+                emptyAug = true;
+                augs = fAugmentations;
+                augs.clear();
+            }
+            // get PSVI object
+            fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
+            if (fCurrentPSVI == null) {
+                fCurrentPSVI = fElemPSVI;
+                augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+            }
+            else {
+                fCurrentPSVI.reset();
+            }
         }
         else {
-            fCurrentPSVI.reset();
+            fCurrentPSVI = fElemPSVI;
         }
 
         handleCharacters(text);
         // call handlers
         if (fDocumentHandler != null) {
-            if (fUnionType) {
+            if (fNormalizeData && fUnionType) {
                 // for union types we can't normalize data
                 // thus we only need to send augs information if any;
                 // the normalized data for union will be send
