@@ -62,24 +62,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-/***
-import sax.helpers.AttributesImpl;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.Parser;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.ParserAdapter;
-import org.xml.sax.helpers.ParserFactory;
-import org.xml.sax.helpers.XMLReaderFactory;
-/***/
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.util.XMLAttributesImpl;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
@@ -90,7 +75,7 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-/***/
+import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
 
 /**
  * A sample XNI writer. This sample program illustrates how to
@@ -148,6 +133,9 @@ public class Writer
     /** Default canonical output (false). */
     protected static final boolean DEFAULT_CANONICAL = false;
 
+    /** Default incremental mode (false). */
+    protected static final boolean DEFAULT_INCREMENTAL = false;
+
     //
     // Data
     //
@@ -161,8 +149,8 @@ public class Writer
     /** Element depth. */
     protected int fElementDepth;
 
-    /** In DTD. */
-    protected boolean fInDTD;
+    /** Seen root element. */
+    protected boolean fSeenRootElement;
 
     //
     // Constructors
@@ -209,23 +197,24 @@ public class Writer
     //
 
     /** Start document. */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
         throws XNIException {
 
+        fSeenRootElement = false;
         fElementDepth = 0;
-        fInDTD = false;
 
         if (!fCanonical) {
             fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             fOut.flush();
         }
 
-    } // startDocument(XMLLocator,String)
+    } // startDocument(XMLLocator,String,Augmentations)
 
     /** Start element. */
-    public void startElement(QName element, XMLAttributes attrs)
+    public void startElement(QName element, XMLAttributes attrs, Augmentations augs)
         throws XNIException {
 
+        fSeenRootElement = true;
         fElementDepth++;
         fOut.print('<');
         fOut.print(element.rawname);
@@ -245,12 +234,13 @@ public class Writer
         fOut.print('>');
         fOut.flush();
 
-    } // startElement(QName,XMLAttributes)
+    } // startElement(QName,XMLAttributes,Augmentations)
 
     /** Empty element. */
-    public void emptyElement(QName element, XMLAttributes attrs)
+    public void emptyElement(QName element, XMLAttributes attrs, Augmentations augs)
         throws XNIException {
 
+        fSeenRootElement = true;
         fElementDepth++;
         fOut.print('<');
         fOut.print(element.rawname);
@@ -270,26 +260,63 @@ public class Writer
         fOut.print("/>");
         fOut.flush();
 
-    } // emptyElement(QName,XMLAttributes)
+    } // emptyElement(QName,XMLAttributes,Augmentations)
+
+    /** Processing instruction. */
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
+        throws XNIException {
+
+        if (fSeenRootElement) {
+            fOut.print('\n');
+        }
+        fOut.print("<?");
+        fOut.print(target);
+        if (data != null && data.length > 0) {
+            fOut.print(' ');
+            fOut.print(data.toString());
+        }
+        fOut.print("?>");
+        if (!fSeenRootElement) {
+            fOut.print('\n');
+        }
+        fOut.flush();
+
+    } // processingInstruction(String,XMLString,Augmentations)
+
+    /** Comment. */
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
+        if (!fCanonical) {
+            if (fSeenRootElement) {
+                fOut.print('\n');
+            }
+            fOut.print("<!--");
+            normalizeAndPrint(text);
+            fOut.print("-->");
+            if (!fSeenRootElement) {
+                fOut.print('\n');
+            }
+            fOut.flush();
+        }
+    } // comment(XMLString,Augmentations)
 
     /** Characters. */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
 
         normalizeAndPrint(text);
         fOut.flush();
 
-    } // characters(XMLString);
+    } // characters(XMLString,Augmentations)
 
     /** Ignorable whitespace. */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
 
-        characters(text);
+        characters(text, augs);
         fOut.flush();
 
-    } // ignorableWhitespace(XMLString);
+    } // ignorableWhitespace(XMLString,Augmentations)
 
     /** End element. */
-    public void endElement(QName element) throws XNIException {
+    public void endElement(QName element, Augmentations augs) throws XNIException {
 
         fElementDepth--;
         fOut.print("</");
@@ -297,70 +324,56 @@ public class Writer
         fOut.print('>');
         fOut.flush();
 
-    } // endElement(QName)
+    } // endElement(QName,Augmentations)
 
     /** Start CDATA section. */
-    public void startCDATA() throws XNIException {
-    } // startCDATA()
+    public void startCDATA(Augmentations augs) throws XNIException {
+    } // startCDATA(Augmentations)
 
     /** End CDATA section. */
-    public void endCDATA() throws XNIException {
-    } // endCDATA()
+    public void endCDATA(Augmentations augs) throws XNIException {
+    } // endCDATA(Augmentations)
 
     //
-    // Shared XMLDocumentHandler and XMLDTDHandler methods
+    // XMLDTDHandler methods
     //
 
     /** Processing instruction. */
     public void processingInstruction(String target, XMLString data)
         throws XNIException {
 
-        if (fElementDepth > 0) {
-            fOut.print("<?");
-            fOut.print(target);
-            if (data != null && data.length > 0) {
-                fOut.print(' ');
-                fOut.print(data.toString());
-            }
-            fOut.print("?>");
-            fOut.flush();
+        if (fSeenRootElement) {
+            fOut.print('\n');
         }
+        fOut.print("<?");
+        fOut.print(target);
+        if (data != null && data.length > 0) {
+            fOut.print(' ');
+            fOut.print(data.toString());
+        }
+        fOut.print("?>");
+        if (!fSeenRootElement) {
+            fOut.print('\n');
+        }
+        fOut.flush();
 
     } // processingInstruction(String,XMLString)
 
     /** Comment. */
     public void comment(XMLString text) throws XNIException {
-        if (!fCanonical && fElementDepth > 0) {
+        if (!fCanonical) {
+            if (fSeenRootElement) {
+                fOut.print('\n');
+            }
             fOut.print("<!--");
             normalizeAndPrint(text);
             fOut.print("-->");
+            if (!fSeenRootElement) {
+                fOut.print('\n');
+            }
             fOut.flush();
         }
     } // comment(XMLString)
-
-    /** Start entity. */
-    public void startEntity(String name,
-                            String publicId, String systemId,
-                            String baseSystemId) throws XNIException {
-    } // startEntity(String,String,String,String)
-
-    /** End entity. */
-    public void endEntity(String name) throws XNIException {
-    } // endEntity(String)
-
-    //
-    // XMLDTDHandler methods
-    //
-
-    /** Start DTD. */
-    public void startDTD(XMLLocator locator) throws XNIException {
-        fInDTD = true;
-    } // startDTD(XMLLocator)
-
-    /** End DTD. */
-    public void endDTD() throws XNIException {
-        fInDTD = false;
-    } // endDTD()
 
     //
     // XMLErrorHandler methods
@@ -515,6 +528,7 @@ public class Writer
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean canonical = DEFAULT_CANONICAL;
+        boolean incremental = DEFAULT_INCREMENTAL;
 
         // process arguments
         for (int i = 0; i < argv.length; i++) {
@@ -562,6 +576,10 @@ public class Writer
                 }
                 if (option.equalsIgnoreCase("c")) {
                     canonical = option.equals("c");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("i")) {
+                    incremental = option.equals("i");
                     continue;
                 }
                 if (option.equals("h")) {
@@ -631,7 +649,17 @@ public class Writer
             }
             writer.setCanonical(canonical);
             try {
-                writer.parse(new XMLInputSource(null, arg, null));
+                if (incremental && parserConfig instanceof XMLPullParserConfiguration) {
+                    XMLPullParserConfiguration pullParserConfig = (XMLPullParserConfiguration)parserConfig;
+                    pullParserConfig.setInputSource(new XMLInputSource(null, arg, null));
+                    int step = 1;
+                    do {
+                        //System.err.println("# step "+step++);
+                    } while (pullParserConfig.parse(false));
+                }
+                else {
+                    writer.parse(new XMLInputSource(null, arg, null));
+                }
             }
             catch (XMLParseException e) {
                 // ignore
@@ -669,6 +697,9 @@ public class Writer
         System.err.println("  -c | -C  Turn on/off Canonical XML output.");
         System.err.println("           NOTE: This is not W3C canonical output.");
         /***/
+        System.err.println("  -i | -I  Incremental mode.");
+        System.err.println("           NOTE: This feature only works if the configuration used");
+        System.err.println("                 implements XMLPullParserConfiguration.");
         System.err.println("  -h       This help screen.");
         System.err.println();
 
@@ -686,6 +717,8 @@ public class Writer
         System.err.print("  Canonical:  ");
         System.err.println(DEFAULT_CANONICAL ? "on" : "off");
         /***/
+        System.err.print("  Incremental:  ");
+        System.err.println(DEFAULT_INCREMENTAL ? "on" : "off");
 
     } // printUsage()
 
