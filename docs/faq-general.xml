@@ -180,9 +180,9 @@ and xni.parser.PSVIConfiguration.
    				One of the reason could be your proxy settings 
    that does not allow parser to make URL connections through proxy server. To solve 
    this problem application has to set two System properties "http.proxyHost" and 
-   "http.prxoyPort" before the parsing begins. Other reasons could be the strict firewall
-    settings which doesn't allow any URL connection to be made to outside web or the 
-    server on which documents are kept is currently not running etc..
+   "http.proxyPort" before the parsing begins. Other reasons could be the strict firewall
+   settings which doesn't allow any URL connection to be made to the outside web or the 
+   server on which documents are kept is currently not running etc..
    </p>
   </a>
  </faq> 

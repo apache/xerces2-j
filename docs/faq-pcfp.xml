@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
-<faqs title='Parser Configuration and Validation'>
+<faqs title='Configuring Parser'>
  <faq title='Validation and infoset augmentation'>
   <q>What's the result of having a DTD validator or XML Schema validator in the pipeline?</q>
   <a>

@@ -35,8 +35,8 @@
  <faqs label='FAQs' title='Frequently Asked Questions' id='faqs'>
   <faq title='Common FAQs' id='faq-common' source='faq-common.xml'/>
   <faq title='General FAQs' id='faq-general' source='faq-general.xml'/>
-  <faq title='Caching and Preparsing Grammars' id='faq-grammars' source='faq-grammars.xml'/>
-  <faq title='Parser Configuration, Features and Properties FAQs' id='faq-pcfp' source='faq-pcfp.xml'/>
+  <faq title='Caching &amp; Preparsing Grammars' id='faq-grammars' source='faq-grammars.xml'/>
+  <faq title='Configuring Parser' id='faq-pcfp' source='faq-pcfp.xml'/>
   <faq title='Xerces Native Interface FAQs' id='faq-xni' source='faq-xni.xml'/>
   <faq title='Building and Running FAQs' 
        id='faq-build' source='faq-build.xml'/>
@@ -48,7 +48,7 @@
        id='faq-xs' source='faq-xs.xml'/>
   <faq title='Performance FAQs' 
        id='faq-performance' source='faq-performance.xml'/>
-  <faq title='FAQs for Developers and Prospective Contributors' id='faq-contributing' source='faq-contributing.xml'/>
+  <faq title='FAQs for Contributors' id='faq-contributing' source='faq-contributing.xml'/>
  </faqs>
  <separator/>
  <settings title='Parser Features' label='Features' 

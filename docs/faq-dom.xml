@@ -16,8 +16,8 @@
     <a>
       <p>
 	Use 
-	<jump href="">http://apache.org/xml/properties/dom/document-class-name</jump> property
-	to register your own implementation of the 
+    <link idref='properties' anchor="dom.document-class-name">http://apache.org/xml/properties/dom/document-class-name</link> property
+ 	to register your own implementation of the 
         <code>org.w3c.dom.Document</code> interface.</p>
       <p>
         Xerces provides the following implementations of the 

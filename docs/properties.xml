@@ -27,7 +27,7 @@ try {
     parser.setProperty(id, value);
 } 
 catch (SAXException e) {
-    System.err.println("could not set parser feature");
+    System.err.println("could not set parser property");
 }</source>
   <p>
    Using the SAXParser interface in JAXP is better because you can
@@ -42,13 +42,13 @@ import org.xml.sax.XMLReader;
 SAXParser parser = /* created from SAXParserFactory */;
 XMLReader reader = parser.getXMLReader();
 
-String id    = "http://apache.org/xml/properties/dom/document-class-name";
-Object value = "org.apache.xerces.dom.DocumentImpl";
+String id    = "http://apache.org/xml/properties/input-buffer-size";
+Object value = new Integer(2048);
 try {
     reader.setProperty(id, value);
 } 
 catch (SAXException e) {
-    System.err.println("could not set parser feature");
+    System.err.println("could not set parser property");
 }</source>
  </desc>
  <pcategory name='General Properties'>

@@ -125,8 +125,8 @@ public void endElement(QName element, Augmentations augs) {
   <faq title="Accessing PSVI via DOM">
     <q>How do I access PSVI via DOM?</q>  
     <a><anchor name="dom3-psvi"/><p>Use  
-	<jump href="">http://apache.org/xml/properties/dom/document-class-name</jump> property
-	to set <code>org.apache.xerces.dom.PSVIDocumentImpl</code> document 
+	<link idref='properties' anchor="dom.document-class-name">http://apache.org/xml/properties/dom/document-class-name</link> property
+ 	to set <code>org.apache.xerces.dom.PSVIDocumentImpl</code> document 
         interfaces implementation. In the resulting DOM tree, you may cast 
         <code>org.w3c.dom.Element</code> to the 
         <code>org.apache.xerces.xni.psvi.ElementPSVI</code> and  
