@@ -489,16 +489,16 @@ public class XMLDocumentScanner
         if (fScannerState != SCANNER_STATE_CONTENT) {
             switch (fScannerState) {
                 case SCANNER_STATE_COMMENT: {
-                    // REVISIT: report error
-                    throw new SAXException("MSG_COMMENT_NOT_IN_ONE_ENTITY");
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "COMMENT_NOT_IN_ONE_ENTITY",
+                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 case SCANNER_STATE_PI: {
-                    // REVISIT: report error
-                    throw new SAXException("MSG_PI_NOT_IN_ONE_ENTITY");
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PI_NOT_IN_ONE_ENTITY",
+                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 default: {
                     // REVISIT: report error
-                    throw new SAXException("at end of entity, state should be CONTENT, not "+fScannerState);
+                    throw new SAXException("internal error: at end of entity, state should be CONTENT, not "+fScannerState);
                 }
             }
         }
@@ -506,8 +506,8 @@ public class XMLDocumentScanner
         // 2) scanner markup depth isn't what it was at the start of
         //    the entity
         if (fElementDepth != entity.elementDepth) {
-            // REVISIT: report error
-            throw new SAXException("entity content not balanced");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ElementEntityMismatch", 
+                                       new Object[]{fCurrentElement.rawname}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // call handler
@@ -564,25 +564,31 @@ public class XMLDocumentScanner
                         version = fString.toString();
                         state = STATE_ENCODING;
                         if (!version.equals("1.0")) {
-                            // REVISIT: report error
-                            throw new SAXException("only support XML version 1.0");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                       "VersionNotSupported", 
+                                                       new Object[]{version}, 
+                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                     }
                     else if (name.equals("encoding")) {
                         if (!scanningTextDecl) {
-                            // REVISIT: report error
-                            throw new SAXException("XMLDecl requires version pseudo-attribute");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                       "VersionInfoRequired", 
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                         encoding = fString.toString();
                         state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
                     }
                     else {
-                        // REVISIT: report error
                         if (scanningTextDecl) {
-                            throw new SAXException("expected version or encoding pseudo-attribute");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                       "EncodingDeclRequired", 
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                         else {
-                            throw new SAXException("expected version pseudo-attribute");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                       "VersionInfoRequired", 
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                     }
                     break;
@@ -598,13 +604,15 @@ public class XMLDocumentScanner
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            // REVISIT: report error
-                            throw new SAXException("standalone pseudo-attribute can only have values of 'yes' or 'no'");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                       "SDDeclInvalid", 
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                     }
                     else {
-                        // REVISIT: report error
-                        throw new SAXException("expected encoding pseudo-attribute");
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                   "EncodingDeclRequired", 
+                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     break;
                 }
@@ -613,39 +621,39 @@ public class XMLDocumentScanner
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            // REVISIT: report error
-                            throw new SAXException("standalone pseudo-attribute can only have values of 'yes' or 'no'");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                       "SDDeclInvalid", 
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                     }
                     else {
-                        // REVISIT: report error
-                        throw new SAXException("expected encoding pseudo-attribute");
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                   "EncodingDeclRequired", 
+                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     break;
                 }
                 default: {
-                    // REVISIT: report error
-                    throw new SAXException("no more pseudo-attributes allowed");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                               "NoMorePseudoAttributes", 
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
             }
             fEntityScanner.skipSpaces();
         }
         if ((scanningTextDecl && state != STATE_DONE) ||
             !(state == STATE_STANDALONE || state == STATE_DONE)) {
-            // REVISIT: report error
-            throw new SAXException("expected more pseudo-attributes");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                       "MorePseudoAttributes", 
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // end
         if (!fEntityScanner.skipChar('?')) {
-            // REVISIT: report error
-            //throw new SAXException("expected '?'");
             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         if (!fEntityScanner.skipChar('>')) {
-            // REVISIT: report error
-            // throw new SAXException("expected '>'");
             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
 
@@ -671,26 +679,26 @@ public class XMLDocumentScanner
 
         String name = fEntityScanner.scanName();
         if (name == null) {
-            // REVISIT: report error
-            throw new SAXException("expected pseudo-attribute name");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PseudoAttrNameExpected", 
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
-            // REVISIT: report error
-            throw new SAXException("expected equals for pseudo-attribute");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "EqRequiredInTextDecl", 
+                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fEntityScanner.skipSpaces();
         int quote = fEntityScanner.peekChar();
         if (quote != '\'' && quote != '"') {
-            // REVISIT: report error
-            throw new SAXException("expected quote for pseudo-attribute");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "QuoteRequiredInTextDecl", 
+                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fEntityScanner.scanChar();
         // REVISIT: fix this
         fEntityScanner.scanAttContent(quote, value);
         if (!fEntityScanner.skipChar(quote)) {
-            // REVISIT: report error
-            throw new SAXException("expected close quote for pseudo-attribute");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInTextDecl", 
+                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // return
@@ -711,8 +719,8 @@ public class XMLDocumentScanner
         // target
         String target = fEntityScanner.scanName();
         if (target == null) {
-            // REVISIT: report error
-            throw new SAXException("pi target expected");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PITargetRequired", 
+                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // scan data
@@ -734,8 +742,8 @@ public class XMLDocumentScanner
             char c1 = Character.toLowerCase(target.charAt(1));
             char c2 = Character.toLowerCase(target.charAt(2));
             if (c0 == 'x' && c1 == 'm' && c2 == 'l') {
-                // REVISIT: report error
-                throw new SAXException("MSG_RESERVED_PITARGET");
+                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "ReservedPITarget", 
+                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
         }
 
@@ -777,8 +785,8 @@ public class XMLDocumentScanner
         }
         fStringBuffer.append(fString);
         if (!fEntityScanner.skipChar('>')) {
-            // REVISIT: report error
-            throw new SAXException("MSG_DASH_DASH_IN_COMMENT");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "DashDashInComment", 
+                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // call handler
