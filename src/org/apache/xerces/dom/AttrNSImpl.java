@@ -81,6 +81,8 @@ public class AttrNSImpl
 
     /** Serialization version. */
     static final long serialVersionUID = -781906615369795414L;
+    static final String xmlnsURI = "http://www.w3.org/2000/xmlns/";
+    static final String xmlURI = "http://www.w3.org/XML/1998/namespace";
 
     //
     // Data
@@ -99,36 +101,47 @@ public class AttrNSImpl
 			 String qualifiedName) {
 
     	super(ownerDocument, qualifiedName);
-    	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    	    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "DOM002 Illegal character");
-        }
 
         int index = qualifiedName.indexOf(':');
         String prefix;
         if (index < 0) {
             prefix = null;
             localName = qualifiedName;
-        } 
+
+            if (ownerDocument.errorChecking &&
+                qualifiedName.equals("xmlns") &&
+                (namespaceURI == null || !namespaceURI.equals(xmlnsURI))) {
+
+                throw new DOMException(DOMException.NAMESPACE_ERR, 
+				       "DOM003 Namespace error");
+            }
+        }
         else {
             prefix = qualifiedName.substring(0, index); 
             localName = qualifiedName.substring(index+1);
-        }
         
-	if ((prefix != null &&
-	     (namespaceURI == null || namespaceURI.equals("") ||
-	      (prefix.equals("xml") &&
-	       !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
-	      ||
-	      (prefix.equals("xmlns") &&
-	       !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))))
-	     || (qualifiedName.equals("xmlns") &&
-		 (namespaceURI == null ||
-		  !namespaceURI.equals("http://www.w3.org/2000/xmlns/")))) {
-
-	    throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
-	}
+            if (ownerDocument.errorChecking) {
+                if (namespaceURI == null
+                    || (localName.length() == 0)
+                    || (localName.indexOf(':') >= 0)) {
+                    throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                           "DOM003 Namespace error");
+                } else if (prefix.equals("xml")) {
+                    if (!namespaceURI.equals(xmlURI)) {
+                        throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                               "DOM003 Namespace error");
+                    }
+                } else if (prefix.equals("xmlns")) {
+                    if (!namespaceURI.equals(xmlnsURI)) {
+                        throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                               "DOM003 Namespace error");
+                    }
+                } else if (index == 0) {
+                    throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                           "DOM003 Namespace error");
+                }
+            }
+        }
 	this.namespaceURI = namespaceURI;
     } 
 
@@ -203,20 +216,32 @@ public class AttrNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-	if (namespaceURI == null ||
-	    (prefix != null &&
-	     ((prefix.equals("xmlns") &&
-	       !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))
-	      ||
-	      (prefix.equals("xml") &&
-	       !namespaceURI.equals("http://www.w3.org/XML/1998/namespace")))))
-	{
-    	    throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
-    	}
-	if (ownerDocument().errorChecking && !DocumentImpl.isXMLName(prefix)) {
-    	    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+	if (ownerDocument().errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+            if (!DocumentImpl.isXMLName(prefix)) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
+            }
+            if (namespaceURI == null) {
+                throw new DOMException(DOMException.NAMESPACE_ERR, 
+				       "DOM003 Namespace error");
+            } else if (prefix != null) {
+                if (prefix.equals("xmlns")) {
+                    if (!namespaceURI.equals(xmlnsURI)){
+                        throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                               "DOM003 Namespace error");
+                    }
+                } else if (prefix.equals("xml")) {
+                    if (!namespaceURI.equals(xmlURI)) {
+                        throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                               "DOM003 Namespace error");
+                    }
+                }
+            }
         }
         // update node name with new qualifiedName
 	name = prefix + ":" + localName;

@@ -881,21 +881,17 @@ public class AttrImpl
     Node internalRemoveChild(Node oldChild,int mutationMask)
         throws DOMException {
 
-        if (isReadOnly()) {
-            throw new DOMException(
-                DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                "DOM001 Modification not allowed");
-        }
-         
         DocumentImpl ownerDocument = ownerDocument();
-        if (ownerDocument.errorChecking && 
-            oldChild != null && oldChild.getParentNode() != this) {
-            System.err.println("oldChild: " + oldChild +
-                               " parentNode: " + oldChild.getParentNode() +
-                               " this: " + this + 
-                               " value: " + value);
-            throw new DOMException(DOMException.NOT_FOUND_ERR, 
-                                   "DOM008 Not found");
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+            if (oldChild != null && oldChild.getParentNode() != this) {
+                throw new DOMException(DOMException.NOT_FOUND_ERR, 
+                                       "DOM008 Not found");
+            }
         }
 
         // notify document

@@ -584,16 +584,17 @@ public abstract class ParentNode
     Node internalRemoveChild(Node oldChild,int mutationMask)
         throws DOMException {
 
-        if (isReadOnly()) {
-            throw new DOMException(
-                DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                "DOM001 Modification not allowed");
-        }
-         
-        if (ownerDocument.errorChecking && 
-            oldChild != null && oldChild.getParentNode() != this) {
-            throw new DOMException(DOMException.NOT_FOUND_ERR, 
+        DocumentImpl ownerDocument = ownerDocument();
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+            if (oldChild != null && oldChild.getParentNode() != this) {
+                throw new DOMException(DOMException.NOT_FOUND_ERR, 
                                        "DOM008 Not found");
+            }
         }
 
         // notify document

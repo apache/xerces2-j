@@ -363,10 +363,9 @@ public class ElementImpl
      */
     public void removeAttribute(String name) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
     		
         if (needsSyncData()) {
@@ -399,13 +398,11 @@ public class ElementImpl
      * readonly.
      */
     public Attr removeAttributeNode(Attr oldAttr)
-        throws DOMException
-        {
+        throws DOMException {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
     		
         if (needsSyncData()) {
@@ -442,10 +439,9 @@ public class ElementImpl
      */
     public void setAttribute(String name, String value) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
 
         if (needsSyncData()) {
@@ -486,20 +482,21 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
-        }
-    	
         if (needsSyncData()) {
             synchronizeData();
         }
 
-    	if (ownerDocument.errorChecking
-            && newAttr.getOwnerDocument() != ownerDocument) {
+    	if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+    	
+            if (newAttr.getOwnerDocument() != ownerDocument) {
     		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "DOM005 Wrong document");
+                                       "DOM005 Wrong document");
+            }
         }
 
         if (attributes == null) {
@@ -585,10 +582,9 @@ public class ElementImpl
      */
     public void setAttributeNS(String namespaceURI, String localName, String value) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
 
         if (needsSyncData()) {
@@ -629,10 +625,9 @@ public class ElementImpl
      */
     public void removeAttributeNS(String namespaceURI, String localName) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
     		
         if (needsSyncData()) {
@@ -700,20 +695,19 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
-        }
-    	
         if (needsSyncData()) {
             synchronizeData();
         }
-
-    	if (ownerDocument.errorChecking
-            && newAttr.getOwnerDocument() != ownerDocument) {
-    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-    		"DOM005 Wrong document");
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+    		throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+            if (newAttr.getOwnerDocument() != ownerDocument) {
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                       "DOM005 Wrong document");
+            }
         }
 
         if (attributes == null) {

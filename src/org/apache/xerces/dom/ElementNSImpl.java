@@ -76,6 +76,7 @@ public class ElementNSImpl
 
     /** Serialization version. */
     static final long serialVersionUID = -9142310625494392642L;
+    static final String xmlURI = "http://www.w3.org/XML/1998/namespace";
 
     //
     // Data
@@ -97,10 +98,6 @@ public class ElementNSImpl
         throws DOMException
     {
     	super(ownerDocument, qualifiedName);
-    	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    	    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "DOM002 Illegal character");
-        }
 
         int index = qualifiedName.indexOf(':');
         String prefix;
@@ -111,16 +108,25 @@ public class ElementNSImpl
         else {
             prefix = qualifiedName.substring(0, index); 
             localName = qualifiedName.substring(index+1);
-        }
         
-	if (prefix != null &&
-	    (namespaceURI == null || namespaceURI.equals("") ||
-	     (prefix.equals("xml") &&
-	      !namespaceURI.equals("http://www.w3.org/XML/1998/namespace")))) {
-
-	    throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
-	}
+            if (ownerDocument.errorChecking) {
+                if (namespaceURI == null
+                    || (localName.length() == 0)
+                    || (localName.indexOf(':') >= 0)) {
+                    throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                           "DOM003 Namespace error");
+                }
+                else if (prefix.equals("xml")) {
+                    if (!namespaceURI.equals(xmlURI)) {
+                        throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                               "DOM003 Namespace error");
+                    }
+                } else if (index == 0) {
+                    throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                           "DOM003 Namespace error");
+                }
+            }
+        }
 	this.namespaceURI = namespaceURI;
     }
 
@@ -197,15 +203,27 @@ public class ElementNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-	if (namespaceURI == null ||
-	    (prefix != null && prefix.equals("xml") &&
-	     !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))) {
-    	    throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
-        }
-	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
-    	    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+	if (ownerDocument().errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+            if (!DocumentImpl.isXMLName(prefix)) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
+            }
+            if (namespaceURI == null) {
+                  throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                         "DOM003 Namespace error");
+            } else if (prefix != null) {
+                if (prefix.equals("xml")) {
+                    if (!namespaceURI.equals(xmlURI)) {
+                        throw new DOMException(DOMException.NAMESPACE_ERR, 
+                                               "DOM003 Namespace error");
+                    }
+                }
+            }
         }
         // update node name with new qualifiedName
         name = prefix + ":" + localName;

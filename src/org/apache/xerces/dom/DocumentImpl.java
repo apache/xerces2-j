@@ -488,10 +488,9 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(tagName)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
         }
-
     	return new ElementImpl(this, tagName);
 
     } // createElement(String):Element
@@ -510,10 +509,9 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
         }
-
     	return new EntityReferenceImpl(this, name);
 
     } // createEntityReference(String):EntityReference
@@ -538,7 +536,6 @@ public class DocumentImpl
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
-
     	return new ProcessingInstructionImpl(this, target, data);
 
     } // createProcessingInstruction(String,String):ProcessingInstruction
@@ -580,7 +577,7 @@ public class DocumentImpl
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-	    return docElement;
+        return docElement;
     }
 
     /**
@@ -593,7 +590,7 @@ public class DocumentImpl
 	 * @see DeepNodeListImpl
 	 */
     public NodeList getElementsByTagName(String tagname) {
-	    return new DeepNodeListImpl(this,tagname);
+        return new DeepNodeListImpl(this,tagname);
     }
 
     /**
@@ -677,8 +674,8 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(qualifiedName)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
         }
     	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
 
@@ -1155,6 +1152,10 @@ public class DocumentImpl
     public Element createElementNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
+    	if (errorChecking && !isXMLName(qualifiedName)) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
+        }
         return new ElementNSImpl( this, namespaceURI, qualifiedName);
     }
 
@@ -1179,6 +1180,10 @@ public class DocumentImpl
     public Attr createAttributeNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
+    	if (errorChecking && !isXMLName(qualifiedName)) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
+        }
         return new AttrNSImpl( this, namespaceURI, qualifiedName);
     }
 
@@ -1199,7 +1204,7 @@ public class DocumentImpl
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName)
     {
-	    return new DeepNodeListImpl(this, namespaceURI, localName);
+        return new DeepNodeListImpl(this, namespaceURI, localName);
     }
 
     //
@@ -1286,17 +1291,13 @@ public class DocumentImpl
                                        NodeFilter filter,
                                        boolean entityReferenceExpansion)
     {
-    	if( root==null) {
-    		throw new DOMException(
+    	if (root==null) {
+            throw new DOMException(
     			DOMException.NOT_SUPPORTED_ERR, 
 			"DOM007 Not supported");
         }
-        
-        TreeWalker treeWalker = new TreeWalkerImpl(root,
-                                                   whatToShow,
-                                                   filter,
-                                                   entityReferenceExpansion);
-        return treeWalker;
+        return new TreeWalkerImpl(root, whatToShow, filter,
+                                  entityReferenceExpansion);
     }
 
     //
