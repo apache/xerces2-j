@@ -75,4 +75,64 @@
    <source>java -Dorg.apache.xerces.xni.parser.XMLParserConfiguration=MyConfig application_class</source>
   </a>
  </faq>
+ <faq title="Xerces Parser Congfigurations">
+  <q>In the Xerces distribution, what are the available parser configurations?</q>
+  <a>
+   <p>
+    The default parser configuration is <code>&DefaultConfigLong;</code>. It
+    and the other available parser configurations are described in the table 
+    below. All of them are located in the <code>org.apache.xerces.parsers</code>
+    package.
+   </p>
+   <table>
+    <tr><th>Configuration</th><th>Description</th></tr>
+    <tr>
+     <td>DTDConfiguration</td>
+     <td>A DTD-only configuration. Contains components appropriate to DTD-centric validation.</td>
+    </tr>
+    <tr>
+     <td>IntegratedParserConfiguration</td>
+     <td>Extends StandardParserConfiguration by including a scanner that integrates 
+         both scanning of the document and binding namespaces.</td>
+    </tr>
+    <tr>
+     <td>NonValidatingConfiguration</td>
+     <td>A non-validating configuration. It does not provide a
+         <jump href="http://www.w3.org/TR/REC-xml#sec-conformance">conformant</jump>
+         non-validating XML processor because it does not process the declarations
+         in an internal subset besides checking their well-formedness.
+     </td>
+    </tr>
+    <tr>
+     <td>SecurityConfiguration</td>
+     <td>Extends the default configuration allowing Xerces to behave in a more
+         security conscious manner by installing a 
+         <link idref='properties' anchor='security-manager'>SecurityManager</link>.
+     </td>
+    </tr>
+    <tr>
+     <td>StandardParserConfiguration</td>
+     <td>Extends DTDConfiguration by adding support for XML schema validation.</td>
+    </tr>
+    <tr>
+     <td>XIncludeParserConfiguration</td>
+     <td>Extends the default configuration by providing experimental support
+         for XInclude. See the XInclude <link idref='faq-xinclude'>FAQ</link>.
+     </td>
+    </tr>
+    <tr>
+     <td>XML11Configuration</td>
+     <td>Like IntegratedParserConfiguration except that is supports XML 1.1
+         in addition to XML 1.0.
+     </td>
+    </tr>
+    <tr>
+     <td>XMLGrammarCachingConfiguration</td>
+     <td>Extends the default configuration by providing a generic
+         way of using Xerces' grammar caching facilities.
+     </td>
+    </tr>
+   </table>
+  </a>
+ </faq>
 </faqs>
