@@ -63,6 +63,10 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/xerces/utils
 	${CP}  ../src/org/apache/xerces/utils/*.class                    ../class/org/apache/xerces/utils
 
+#-src/org/apache/xerces/validaters/common
+	${MKDIR} ../class/org/apache/xerces/validators/common
+	${CP}  ../src/org/apache/xerces/validators/common/*.class      ../class/org/apache/xerces/validators/common
+
 #-src/org/apache/xerces/validaters/datatype
 	${MKDIR} ../class/org/apache/xerces/validators/datatype
 	${CP}  ../src/org/apache/xerces/validators/datatype/*.class      ../class/org/apache/xerces/validators/datatype
@@ -218,6 +222,10 @@ package_src:
 	${MKDIR} ../source/src/org/apache/xerces/utils
 	${CP}  ../src/org/apache/xerces/utils/*.java                    ../source/src/org/apache/xerces/utils
 
+#-src/org/apache/xerces/validaters/common
+	${MKDIR} ../source/src/org/apache/xerces/validators/common
+	${CP}  ../src/org/apache/xerces/validators/common/*.java      ../source/src/org/apache/xerces/validators/common
+
 #-src/org/apache/xerces/validaters/datatype
 	${MKDIR} ../source/src/org/apache/xerces/validators/datatype
 	${CP}  ../src/org/apache/xerces/validators/datatype/*.java      ../source/src/org/apache/xerces/validators/datatype
@@ -332,6 +340,9 @@ package_src:
 
 #-src/org/apache/xerces/utils
 	${CP}  ../src/org/apache/xerces/utils/Makefile                    ../source/src/org/apache/xerces/utils
+
+#-src/org/apache/xerces/validaters/common
+	${CP}  ../src/org/apache/xerces/validators/common/Makefile      ../source/src/org/apache/xerces/validators/common
 
 #-src/org/apache/xerces/validaters/datatype
 	${CP}  ../src/org/apache/xerces/validators/datatype/Makefile      ../source/src/org/apache/xerces/validators/datatype
