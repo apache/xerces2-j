@@ -614,7 +614,8 @@ public class DTDGrammar
         boolean isPE = name.startsWith("%");
         boolean inExternal = fReadingExternalDTD;
 
-        entityDecl.setValues(name,null,null, null, null, isPE, inExternal);
+        entityDecl.setValues(name,null,null, null, null, 
+                             text.toString(), isPE, inExternal);
         int entityIndex = getEntityDeclIndex(name);
         if (entityIndex == -1) {
             entityIndex = createEntityDecl();
@@ -646,7 +647,7 @@ public class DTDGrammar
         boolean inExternal = fReadingExternalDTD;
        
         entityDecl.setValues(name, publicId, systemId, baseSystemId, 
-                             null, isPE, inExternal);
+                             null, null, isPE, inExternal);
 
         int entityIndex = getEntityDeclIndex(name);
         if (entityIndex == -1) {
@@ -676,7 +677,8 @@ public class DTDGrammar
         boolean isPE = name.startsWith("%");
         boolean inExternal = fReadingExternalDTD;
 
-        entityDecl.setValues(name,publicId,systemId, null, notation, isPE, inExternal);
+        entityDecl.setValues(name,publicId,systemId, null, notation, 
+                             null, isPE, inExternal);
         int entityIndex = getEntityDeclIndex(name);
         if (entityIndex == -1) {
             entityIndex = createEntityDecl();

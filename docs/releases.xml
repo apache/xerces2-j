@@ -2,8 +2,18 @@
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
  <release version='NOT YET RELEASED'>
-  <desc>This is primarily a bug fix release.</desc>
+  <desc>
+   This is primarily a bug fix release with some minor changes to
+   XNI interfaces related to DTD information.
+  </desc>
   <changes>
+   <update>
+    <note>
+     Simplified XMLAttributes interface by removing the methods
+     related to entities appearing in attribute values.
+    </note>
+    <submitter name='Andy Clark'/>
+   </update>
    <update>
     <note>
      Changed the XMLDTDHandler defined in XNI to add a non-normalized 

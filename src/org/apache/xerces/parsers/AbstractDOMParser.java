@@ -524,17 +524,10 @@ public abstract class AbstractDOMParser
                     ? fDocument.createAttributeNS(fAttrQName.uri,
                                                   fAttrQName.rawname)
                     : fDocument.createAttribute(fAttrQName.rawname);
-                attr.setNodeValue(attributes.getValue(i));
-                // REVISIT: Handle entities in attribute value.
+                String attrValue = attributes.getValue(i);
+                attr.setNodeValue(attrValue);
                 el.setAttributeNode(attr);
-
-                // build entity references
-                int entityCount = attributes.getEntityCount(i);
-                if (entityCount > 0) {
-                    Text text = (Text)attr.getFirstChild();
-                    buildAttrEntityRefs(text, attributes,
-                                        i, entityCount, 0, 0);
-                }
+                // REVISIT: Handle entities in attribute value.
             }
             fCurrentNode.appendChild(el);
             fCurrentNode = el;
@@ -776,94 +769,5 @@ public abstract class AbstractDOMParser
         }
 
     } // endEntity(String)
-
-    //
-    // Protected methods
-    //
-
-    /**
-     * Builds entity references in attribute values. This method is
-     * recursive because entity references can contain entity
-     * references.
-     *
-     * @param text        The text node that needs to be split.
-     * @param attributes  The attribute information.
-     * @param attrIndex   The attribute index.
-     * @param entityCount The number of entities. This is passed as
-     *                    a convenience so that this method doesn't
-     *                    have to call XMLAttributes#getEntityCount.
-     *                    The caller already has the entity count so
-     *                    it's kind of a waste to make each invocation
-     *                    of this method query it again.
-     * @param entityIndex The entity index that this method invocation
-     *                    should start building from.
-     * @param textOffset  The offset at which the start of this text
-     *                    should be considered. We need this to adjust
-     *                    the offset since the characters in the current
-     *                    text string are indexed from zero.
-     *
-     * @return Returns the number of entities built by this method.
-     */
-    protected int buildAttrEntityRefs(Text text, XMLAttributes attributes,
-                                      int attrIndex,
-                                      int entityCount, int entityIndex,
-                                      int textOffset) {
-
-        // iterate over entities
-        String textString = text.getNodeValue();
-        int textBound = textString.length() + textOffset;
-        int i = entityIndex;
-        while (i < entityCount) {
-
-            // get entity information
-            String entityName = attributes.getEntityName(attrIndex, i);
-            int entityOffset = attributes.getEntityOffset(attrIndex, i);
-            int entityLength = attributes.getEntityLength(attrIndex, i);
-
-            // is this entity not in this text?
-            //
-
-            if ( text.getNodeValue().length() == 0 || entityOffset >= textBound) {
-                break;
-            }
-
-            // split text into 3 parts; first part remains the
-            // text node that was passed into this method
-            Text text1 = text.splitText(entityOffset - textOffset);
-            Text text2 = text1.splitText(entityLength);
-
-            // create entity reference
-            EntityReference entityRef = fDocument.createEntityReference(entityName);
-            ((EntityReferenceImpl)entityRef).setReadOnly(false, false);
-
-            // insert entity ref into tree and append middle text
-            Node parent = text.getParentNode();
-            parent.replaceChild(entityRef, text1);
-            entityRef.appendChild(text1);
-
-            // see if there are any nested entity refs
-            if (i < entityCount - 1) {
-                int nextEntityOffset = attributes.getEntityOffset(attrIndex, i + 1);
-                if (nextEntityOffset < entityOffset + entityLength) {
-                    // NOTE: Notice that we're incrementing the entity
-                    //       index variable. Since the following call will
-                    //       "consume" some of the entities.
-                    i += buildAttrEntityRefs(text1, attributes, attrIndex, entityCount, i + 1, entityOffset);
-                }
-            }
-            ((EntityReferenceImpl)entityRef).setReadOnly(true, false);
-
-            // adjust text node
-            textOffset += text.getLength() + entityLength;
-            text = text2;
-
-            // increment and keep going
-            i++;
-        }
-
-        // return number of entities we handled
-        return i - entityIndex;
-
-    } // buildAttrEntityRefs(Text,XMLAttributes,int,int,int,int):int
 
 } // class AbstractDOMParser

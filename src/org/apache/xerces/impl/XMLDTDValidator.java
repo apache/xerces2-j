@@ -1842,19 +1842,14 @@ public class XMLDTDValidator
                     // REVISIT: this can be combined to a single check in
                     // startEntity if we add one more argument in
                     // startEnity, inAttrValue
-                    int entityCount = attributes.getEntityCount(i);
-                    for (int j=0;  j < entityCount; j++) {
-                        String entityName= attributes.getEntityName(i, j);
-                        int entIndex = fDTDGrammar.getEntityDeclIndex(entityName);
-                        if (entIndex > -1) {
-                            fDTDGrammar.getEntityDecl(entIndex,
-                                                          fEntityDecl);
-                            if (fEntityDecl.inExternal) {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
-                                                           new Object[]{entityName},
-                                                           XMLErrorReporter.SEVERITY_ERROR);
-                            }
+                    String nonNormalizedValue = attributes.getNonNormalizedValue(i);
+                    if (nonNormalizedValue != null) {
+                        String entityName = getExternalEntityRefInAttrValue(nonNormalizedValue);
+                        if (entityName != null) {
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
+                                                       new Object[]{entityName},
+                                                       XMLErrorReporter.SEVERITY_ERROR);
                         }
                     }
                 }
@@ -1940,6 +1935,30 @@ public class XMLDTDValidator
         } // for all attributes
 
     } // addDTDDefaultAttrsAndValidate(int,XMLAttrList)
+
+    /** Checks entities in attribute values for standalone VC. */
+    private String getExternalEntityRefInAttrValue(String nonNormalizedValue) {
+        int valLength = nonNormalizedValue.length();
+        int ampIndex = nonNormalizedValue.indexOf('&');
+        while (ampIndex != -1) {
+            if (ampIndex + 1 < valLength &&
+                nonNormalizedValue.charAt(ampIndex+1) != '#') {
+                int semicolonIndex = nonNormalizedValue.indexOf(';', ampIndex+1);
+                String entityName = nonNormalizedValue.substring(ampIndex+1, semicolonIndex);
+                entityName = fSymbolTable.addSymbol(entityName);
+                int entIndex = fDTDGrammar.getEntityDeclIndex(entityName);
+                if (entIndex > -1) {
+                    fDTDGrammar.getEntityDecl(entIndex, fEntityDecl);
+                    if (fEntityDecl.inExternal || 
+                        (entityName = getExternalEntityRefInAttrValue(fEntityDecl.value)) != null) {
+                        return entityName;
+                    }
+                }
+            }
+            ampIndex = nonNormalizedValue.indexOf('&', ampIndex+1);
+        }
+        return null;
+    } // isExternalEntityRefInAttrValue(String):String
 
     /**
      * Validate attributes in DTD fashion.

@@ -977,23 +977,6 @@ public class DocumentTracer
                 if (attributes.isSpecified(i) == false ) {
                    fOut.print("(default)");
                 }
-                int entityCount = attributes.getEntityCount(i);
-                for (int j = 0; j < entityCount; j++) {
-                    String entityName = attributes.getEntityName(i, j);
-                    int entityOffset = attributes.getEntityOffset(i, j);
-                    int entityLength = attributes.getEntityLength(i, j);
-                    fOut.print(',');
-                    fOut.print('[');
-                    fOut.print("name=");
-                    printQuotedString(entityName);
-                    fOut.print(',');
-                    fOut.print("offset=");
-                    fOut.print(entityOffset);
-                    fOut.print(',');
-                    fOut.print("length=");
-                    fOut.print(entityLength);
-                    fOut.print(']');
-                }
                 fOut.print('}');
             }
             fOut.print('}');

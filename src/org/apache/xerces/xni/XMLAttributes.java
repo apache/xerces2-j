@@ -118,43 +118,6 @@ public interface XMLAttributes {
     public void removeAttributeAt(int attrIndex);
 
     /**
-     * Adds an entity to the specified attribute.
-     * <p>
-     * <strong>Note:</strong> This method does not replace any existing
-     * entities for the specified attribute, even if an entity of the
-     * same name already exists.
-     * <p>
-     * <strong>Note:</strong> This method does <em>not</em> ensure that 
-     * the entities appear in increasing offset order. The caller is
-     * required to add attribute entities in increasing offset order.
-     * 
-     * @param attrIndex    The attribute index.
-     * @param entityName   The entity name.
-     * @param entityOffset The entity offset.
-     * @param entityLength The entity length
-     */
-    public int addAttributeEntity(int attrIndex, String entityName, 
-                                  int entityOffset, int entityLength);
-
-    /** 
-     * Removes all of the entities for the specified attribute.
-     *
-     * @param attrIndex The attribute index.
-     */
-    public void removeAllEntitiesFor(int attrIndex);
-
-    /**
-     * Removes the specified entity of a given attribute.
-     * <p>
-     * <strong>Note:</strong> This operation changes the indexes of all
-     * entities following the entity at the specified index.
-     *
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public void removeEntityAt(int attrIndex, int entityIndex);
-
-    /**
      * Returns the number of attributes in the list.
      * <p>
      * Once you know the number of attributes, you can iterate
@@ -403,66 +366,5 @@ public interface XMLAttributes {
      * @param attrIndex The attribute index.
      */
     public boolean isSpecified(int attrIndex);
-
-    /**
-     * Returns the number of entities for the specified attribute.
-     * 
-     * @param attrIndex The attribute index.
-     */
-    public int getEntityCount(int attrIndex);
-
-    /**
-     * Sets the entity name.
-     *
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     * @param entityName  The new entity name.
-     */
-    public void setEntityName(int attrIndex, int entityIndex, 
-                              String entityName);
-
-    /**
-     * Returns the name of the entity of a given attribute.
-     * 
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public String getEntityName(int attrIndex, int entityIndex);
-
-    /**
-     * Sets the entity offset.
-     *
-     * @param attrIndex    The attribute index.
-     * @param entityIndex  The entity index.
-     * @param entityOffset The new entity offset.
-     */
-    public void setEntityOffset(int attrIndex, int entityIndex,
-                                int entityOffset);
-
-    /**
-     * Returns the offset of the entity of a given attribute.
-     * 
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public int getEntityOffset(int attrIndex, int entityIndex);
-
-    /**
-     * Sets the entity length.
-     *
-     * @param attrIndex    The attribute index.
-     * @param entityIndex  The entity index.
-     * @param entityLength The new entity length.
-     */
-    public void setEntityLength(int attrIndex, int entityIndex,
-                                int entityLength);
-
-    /**
-     * Returns the length of the entity of a given attribute.
-     * 
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public int getEntityLength(int attrIndex, int entityIndex);
 
 } // interface XMLAttributes

@@ -175,7 +175,6 @@ public class XMLAttributesImpl
         attribute.name.setValues(name);
         attribute.type = type;
         attribute.value = value;
-        attribute.entityCount = 0;
         attribute.specified = false;
 
         // return
@@ -205,86 +204,6 @@ public class XMLAttributesImpl
         }
         fLength--;
     } // removeAttributeAt(int)
-
-    /**
-     * Adds an entity to the specified attribute.
-     * <p>
-     * <strong>Note:</strong> This method does not replace any existing
-     * entities for the specified attribute, even if an entity of the
-     * same name already exists.
-     * <p>
-     * <strong>Note:</strong> This method does <em>not</em> ensure that 
-     * the entities appear in increasing offset order. The caller is
-     * required to add attribute entities in increasing offset order.
-     * 
-     * @param attrIndex    The attribute index.
-     * @param entityName   The entity name.
-     * @param entityOffset The entity offset.
-     * @param entityLength The entity length
-     */
-    public int addAttributeEntity(int attrIndex, String entityName, 
-                                  int entityOffset, int entityLength) {
-
-        // create entity arrays, if needed
-        Attribute attribute = fAttributes[attrIndex];
-        if (attribute.entityName == null) {
-            attribute.entityName = new String[2];
-            attribute.entityOffset = new int[2];
-            attribute.entityLength = new int[2];
-        }
-
-        // resize entity arrays, if needed
-        if (attribute.entityCount == attribute.entityName.length) {
-            String[] names = new String[attribute.entityName.length * 2];
-            System.arraycopy(attribute.entityName, 0, names, 0, attribute.entityName.length);
-            attribute.entityName = names;
-            int[] offsets = new int[attribute.entityOffset.length * 2];
-            System.arraycopy(attribute.entityOffset, 0, offsets, 0, attribute.entityOffset.length);
-            attribute.entityOffset = offsets;
-            int[] lengths = new int[attribute.entityLength.length * 2];
-            System.arraycopy(attribute.entityLength, 0, lengths, 0, attribute.entityLength.length);
-            attribute.entityLength = lengths;
-        }
-
-        // save values
-        int entityIndex = attribute.entityCount++;
-        attribute.entityName[entityIndex] = entityName;
-        attribute.entityOffset[entityIndex] = entityOffset;
-        attribute.entityLength[entityIndex] = entityLength;
-        
-        
-        // return entity index
-        return entityIndex;
-
-    } // addAttributeEntity(int,String,int,int):int
-
-    /** 
-     * Removes all of the entities for the specified attribute.
-     *
-     * @param attrIndex The attribute index.
-     */
-    public void removeAllEntitiesFor(int attrIndex) {
-        fAttributes[attrIndex].entityCount = 0;
-    } // removeAllEntitiesFor(int)
-
-    /**
-     * Removes the specified entity of a given attribute.
-     * <p>
-     * <strong>Note:</strong> This operation changes the indexes of all
-     * entities following the entity at the specified index.
-     *
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public void removeEntityAt(int attrIndex, int entityIndex) {
-        Attribute attribute = fAttributes[attrIndex];
-        if (entityIndex < attribute.entityCount - 1) {
-            System.arraycopy(attribute.entityName, entityIndex + 1, attribute.entityName, entityIndex, attribute.entityCount - entityIndex - 1);
-            System.arraycopy(attribute.entityOffset, entityIndex + 1, attribute.entityOffset, entityIndex, attribute.entityCount - entityIndex - 1);
-            System.arraycopy(attribute.entityLength, entityIndex + 1, attribute.entityLength, entityIndex, attribute.entityCount - entityIndex - 1);
-        }
-        attribute.entityCount--;
-    } // removeEntityAt(int,int)
 
     /**
      * Sets the name of the attribute at the specified index.
@@ -380,81 +299,6 @@ public class XMLAttributesImpl
     public boolean isSpecified(int attrIndex) {
         return fAttributes[attrIndex].specified;
     } // isSpecified(int):boolean
-
-    /**
-     * Returns the number of entities for the specified attribute.
-     * 
-     * @param attrIndex The attribute index.
-     */
-    public int getEntityCount(int attrIndex) {
-        return fAttributes[attrIndex].entityCount;
-    } // getEntityCount(int):int
-
-    /**
-     * Sets the entity name.
-     *
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     * @param entityName  The new entity name.
-     */
-    public void setEntityName(int attrIndex, int entityIndex, 
-                              String entityName) {
-        fAttributes[attrIndex].entityName[entityIndex] = entityName;
-    } // setEntityName(int,int,String)
-
-    /**
-     * Returns the name of the entity of a given attribute.
-     * 
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public String getEntityName(int attrIndex, int entityIndex) {
-        return fAttributes[attrIndex].entityName[entityIndex];
-    } // getEntityName(int,int):String
-
-    /**
-     * Sets the entity offset.
-     *
-     * @param attrIndex    The attribute index.
-     * @param entityIndex  The entity index.
-     * @param entityOffset The new entity offset.
-     */
-    public void setEntityOffset(int attrIndex, int entityIndex,
-                                int entityOffset) {
-        fAttributes[attrIndex].entityOffset[entityIndex] = entityOffset;
-    } // setEntityOffset(int,int,int)
-
-    /**
-     * Returns the offset of the entity of a given attribute.
-     * 
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public int getEntityOffset(int attrIndex, int entityIndex) {
-        return fAttributes[attrIndex].entityOffset[entityIndex];
-    } // getEntityOffset(int,int):int
-
-    /**
-     * Sets the entity length.
-     *
-     * @param attrIndex    The attribute index.
-     * @param entityIndex  The entity index.
-     * @param entityLength The new entity length.
-     */
-    public void setEntityLength(int attrIndex, int entityIndex,
-                                int entityLength) {
-        fAttributes[attrIndex].entityLength[entityIndex] = entityLength;
-    } // setEntityLength(int,int,int)
-
-    /**
-     * Returns the length of the entity of a given attribute.
-     * 
-     * @param attrIndex   The attribute index.
-     * @param entityIndex The entity index.
-     */
-    public int getEntityLength(int attrIndex, int entityIndex) {
-        return fAttributes[attrIndex].entityLength[entityIndex];
-    } // getEntityLength(int,int):int
 
     //
     // AttributeList and Attributes methods
@@ -744,20 +588,6 @@ public class XMLAttributesImpl
 
         /** Specified. */
         public boolean specified;
-
-        // entity info
-
-        /** Entity count. */
-        public int entityCount;
-
-        /** Entity name. */
-        public String[] entityName;
-
-        /** Entity offset. */
-        public int[] entityOffset;
-
-        /** Entity length. */
-        public int[] entityLength;
 
     } // class Attribute
 

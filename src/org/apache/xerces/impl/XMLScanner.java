@@ -127,6 +127,11 @@ public abstract class XMLScanner
     protected static final String ENTITY_MANAGER = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
 
+    // debugging
+
+    /** Debug attribute normalization. */
+    protected static final boolean DEBUG_ATTR_NORMALIZATION = false;
+
     //
     // Data
     //
@@ -164,12 +169,6 @@ public abstract class XMLScanner
     /** Literal value of the last character refence scanned. */
     protected String fCharRefLiteral = null;
 
-    /** Attribute entity stack. */
-    protected AttrEntityStack fAttributeEntityStack = new AttrEntityStack();
-
-    /** Attribute value offset. */
-    protected int fAttributeOffset;
-
     /** Scanning attribute. */
     protected boolean fScanningAttribute;
 
@@ -198,14 +197,6 @@ public abstract class XMLScanner
 
     /** Symbol: "apos". */
     protected String fAposSymbol;
-
-    // debugging
-
-    /** Debug attribute entities. */
-    protected static final boolean DEBUG_ATTR_ENTITIES = false;
-
-    /** Debug attribute normalization. */
-    protected static final boolean DEBUG_ATTR_NORMALIZATION = false;
 
     // temporary variables
 
@@ -721,40 +712,28 @@ public abstract class XMLScanner
         }
         if (c != quote) {
             fScanningAttribute = true;
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** reset attribute entity stack");
-            }
-            fAttributeEntityStack.reset(attributes, attrIndex);
-            fAttributeOffset = 0;
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** set attribute offset: "+fAttributeOffset);
-            }
             fStringBuffer.clear();
             do {
                 fStringBuffer.append(value);
-                fAttributeOffset += value.length;
                 if (DEBUG_ATTR_NORMALIZATION) {
                     System.out.println("** value2: \""
                                        + fStringBuffer.toString() + "\"");
                 }
-                if (DEBUG_ATTR_ENTITIES) {
-                    System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                }
                 if (c == '&') {
                     fEntityScanner.skipChar('&');
-                    fStringBuffer2.append('&');
+                    if (entityDepth == fEntityDepth) {
+                        fStringBuffer2.append('&');
+                    }
                     if (fEntityScanner.skipChar('#')) {
-                        fStringBuffer2.append('#');
+                        if (entityDepth == fEntityDepth) {
+                            fStringBuffer2.append('#');
+                        }
                         int ch = scanCharReferenceValue(fStringBuffer, fStringBuffer2);
                         if (ch != -1) {
-                            fAttributeOffset++;
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value3: \""
                                                    + fStringBuffer.toString()
                                                    + "\"");
-                            }
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
                             }
                         }
                     }
@@ -763,94 +742,54 @@ public abstract class XMLScanner
                         if (entityName == null) {
                             reportFatalError("NameRequiredInReference", null);
                         }
-                        else {
+                        else if (entityDepth == fEntityDepth) {
                             fStringBuffer2.append(entityName);
                         }
                         if (!fEntityScanner.skipChar(';')) {
                             reportFatalError("SemicolonRequiredInReference",
                                              null);
                         }
-                        else {
+                        else if (entityDepth == fEntityDepth) {
                             fStringBuffer2.append(';');
                         }
                         if (entityName == fAmpSymbol) {
                             fStringBuffer.append('&');
-                            if (fNotifyCharRefs) {
-                                notifyAttrCharRef(fAmpSymbol);
-                            }
-                            fAttributeOffset++;
-                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value5: \""
                                                    + fStringBuffer.toString()
                                                    + "\"");
                             }
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
                         }
                         else if (entityName == fAposSymbol) {
                             fStringBuffer.append('\'');
-                            if (fNotifyCharRefs) {
-                                notifyAttrCharRef(fAposSymbol);
-                            }
-                            fAttributeOffset++;
-                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value7: \""
                                                    + fStringBuffer.toString()
                                                    + "\"");
                             }
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
                         }
                         else if (entityName == fLtSymbol) {
                             fStringBuffer.append('<');
-                            if (fNotifyCharRefs) {
-                                notifyAttrCharRef(fLtSymbol);
-                            }
-                            fAttributeOffset++;
-                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value9: \""
                                                    + fStringBuffer.toString()
                                                    + "\"");
                             }
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
                         }
                         else if (entityName == fGtSymbol) {
                             fStringBuffer.append('>');
-                            if (fNotifyCharRefs) {
-                                notifyAttrCharRef(fGtSymbol);
-                            }
-                            fAttributeOffset++;
-                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** valueB: \""
                                                    + fStringBuffer.toString()
                                                    + "\"");
                             }
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
-                            }
                         }
                         else if (entityName == fQuotSymbol) {
                             fStringBuffer.append('"');
-                            if (fNotifyCharRefs) {
-                                notifyAttrCharRef(fQuotSymbol);
-                            }
-                            fAttributeOffset++;
-                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** valueD: \""
                                                    + fStringBuffer.toString()
                                                    + "\"");
-                            }
-                            if (DEBUG_ATTR_ENTITIES) {
-                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
                             }
                         }
                         else {
@@ -886,7 +825,9 @@ public abstract class XMLScanner
                 else if (c == '%' || c == ']') {
                     fEntityScanner.scanChar();
                     fStringBuffer.append((char)c);
-                    fStringBuffer2.append((char)c);
+                    if (entityDepth == fEntityDepth) {
+                        fStringBuffer2.append((char)c);
+                    }
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("** valueF: \""
                                            + fStringBuffer.toString() + "\"");
@@ -900,7 +841,9 @@ public abstract class XMLScanner
                     fEntityScanner.scanChar();
                     fStringBuffer.append(' ');
                     fStringBuffer.append((char)c);
-                    fAttributeOffset++;
+                    if (entityDepth == fEntityDepth) {
+                        fStringBuffer2.append((char)c);
+                    }
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("** valueG: \""
                                            + fStringBuffer.toString()
@@ -910,7 +853,9 @@ public abstract class XMLScanner
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
                     if (scanSurrogates(fStringBuffer3)) {
                         fStringBuffer.append(fStringBuffer3);
-                        fStringBuffer2.append(fStringBuffer3);
+                        if (entityDepth == fEntityDepth) {
+                            fStringBuffer2.append(fStringBuffer3);
+                        }
                         if (DEBUG_ATTR_NORMALIZATION) {
                             System.out.println("** valueI: \""
                                                + fStringBuffer.toString()
@@ -950,8 +895,9 @@ public abstract class XMLScanner
                     }
                     fEntityScanner.scanChar();
                     fStringBuffer.append((char)c);
-                    fStringBuffer2.append((char)c);
-                    fAttributeOffset += value.length + 1;
+                    if (entityDepth == fEntityDepth) {
+                        fStringBuffer2.append((char)c);
+                    }
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("** valueL: \""
                                            + fStringBuffer.toString()
@@ -959,26 +905,13 @@ public abstract class XMLScanner
                     }
                 }
             } while (c != quote);
-            fAttributeOffset += value.length;
             fStringBuffer.append(value);
-            //fStringBuffer2.append(value);
+            fStringBuffer2.append(value);
             if (DEBUG_ATTR_NORMALIZATION) {
                 System.out.println("** valueN: \""
                                    + fStringBuffer.toString() + "\"");
             }
             value.setValues(fStringBuffer);
-            int attrEntityCount = fAttributeEntityStack.size();
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** add remaining attribute entities: "
-                                   + attrEntityCount);
-            }
-            for (int i = 0; i < attrEntityCount; i++) {
-                if (DEBUG_ATTR_ENTITIES) {
-                    System.out.println("*** popAttrEntity("
-                                       + fAttributeOffset+')');
-                }
-                fAttributeEntityStack.popAttrEntity(fAttributeOffset);
-            }
             fScanningAttribute = false;
         }
         nonNormalizedValue.setValues(fStringBuffer2);
@@ -1174,13 +1107,6 @@ public abstract class XMLScanner
         // keep track of the entity depth
         fEntityDepth++;
 
-        // keep track of entities appearing in attribute values
-        if (fScanningAttribute) {
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** pushAttrEntity("+name+','+fAttributeOffset+')');
-            }
-            fAttributeEntityStack.pushAttrEntity(name, fAttributeOffset);
-        }
     } // startEntity(String,String,String,String,String)
 
     /**
@@ -1198,16 +1124,7 @@ public abstract class XMLScanner
         // keep track of the entity depth
         fEntityDepth--;
 
-        // keep track of entities appearing in attribute values
-        if (fScanningAttribute) {
-            if (DEBUG_ATTR_ENTITIES) {
-                System.out.println("*** popAttrEntity("+fAttributeOffset+") \""+name+'"');
-            }
-            fAttributeEntityStack.popAttrEntity(fAttributeOffset);
-        }
-    }
-
-
+    } // endEntity(String)
 
     /**
      * Scans a character reference and append the corresponding chars to the
@@ -1299,14 +1216,7 @@ public abstract class XMLScanner
         // char refs notification code
         if (fNotifyCharRefs && value != -1) {
             String literal = "#" + (hex ? "x" : "") + fStringBuffer3.toString();
-            if (fScanningAttribute == true) {
-                fAttributeEntityStack.fAttributes.addAttributeEntity(
-                    fAttributeEntityStack.fAttributeIndex,
-                    literal,
-                    fAttributeOffset,
-                    1  //REVISIT: 2 for surrogates?
-                );
-            } else {
+            if (!fScanningAttribute) {
                 fCharRefLiteral = literal;
             }
         }
@@ -1364,104 +1274,5 @@ public abstract class XMLScanner
                                    msgId, args,
                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
     }
-
-
-    /*
-     * Add to XMLAttributes information about used character refs
-     * or built-in entities (&amp;lt;, etc.)
-     */
-    private void notifyAttrCharRef(String name) {
-        fAttributeEntityStack.fAttributes.addAttributeEntity(
-            fAttributeEntityStack.fAttributeIndex, name, 
-            fAttributeOffset, 1
-        );        
-    }
-
-    /**
-     * A stack for keeping track of entity offsets and lengths in
-     * attribute values. This stack adds the attribute entities to
-     * a specified XMLAttribute object.
-     *
-     * @author Andy Clark, IBM
-     */
-    protected static class AttrEntityStack {
-
-        //
-        // Data
-        //
-
-        /** Attributes. */
-        protected XMLAttributes fAttributes;
-
-        /** The index of the attribute where to add entities. */
-        protected int fAttributeIndex;
-
-        // stack information
-
-        /** The size of the stack. */
-        protected int fSize;
-
-        /** The entity indexes on the stack. */
-        protected int[] fEntityIndexes = new int[4];
-
-        //
-        // Public methods
-        //
-
-        /** 
-         * Resets the attribute entity stack and sets the attributes
-         * object to add entities to.
-         *
-         * @param attributes The attributes object where new attribute
-         *                   entities are added.
-         * @param attrIndex  The index of the attribute where to add
-         *                   entities.
-         */
-        public void reset(XMLAttributes attributes, int attrIndex) {
-            fAttributes = attributes;
-            fAttributeIndex = attrIndex;
-            fSize = 0;
-        } // reset(XMLAttributes,int)
-
-        /** Returns the size of the stack. */
-        public int size() {
-            return fSize;
-        } // size():int
-
-        /** 
-         * Pushes a new entity onto the stack. 
-         *
-         * @param entityName   The entity name.
-         * @param entityOffset The entity offset.
-         */
-        public void pushAttrEntity(String entityName, int entityOffset) {
-            if (fSize == fEntityIndexes.length) {
-                int[] indexarray = new int[fEntityIndexes.length * 2];
-                System.arraycopy(fEntityIndexes, 0, indexarray, 0, fEntityIndexes.length);
-                fEntityIndexes = indexarray;
-            }
-            fEntityIndexes[fSize] = 
-                fAttributes.addAttributeEntity(fAttributeIndex, entityName, 
-                                               entityOffset, -1);
-            fSize++;
-        } // pushAttrEntity(String,int)
-
-        /**
-         * Pops the current entity off of the stack and adds it to the
-         * list of entities for the attribute in the XMLAttributes object.
-         *
-         * @param endOffset The entity's ending offset.
-         */
-        public void popAttrEntity(int endOffset) {
-            if (fSize == 0)
-                return;
-            fSize--;
-            int entityIndex = fEntityIndexes[fSize];
-            int offset = fAttributes.getEntityOffset(fAttributeIndex, entityIndex);
-            int length = endOffset - offset;
-            fAttributes.setEntityLength(fAttributeIndex, entityIndex, length);
-        } // popAttrEntity(int)
-
-    } // class AttrEntityStack
 
 } // class XMLScanner

@@ -1461,7 +1461,7 @@ public class DeferredDocumentImpl
         int last = getLastChild(nodeIndex);
         int prev = getPrevSibling(last);
         if (prev == -1) {
-            a.value = getNodeValueString(last);
+            a.value = getNodeValueString(nodeIndex);
             a.hasStringValue(true);
         }
         else {
