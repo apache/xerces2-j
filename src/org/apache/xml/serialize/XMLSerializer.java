@@ -90,6 +90,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeFilter;
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -1061,7 +1062,7 @@ extends BaseMarkupSerializer {
                         // change prefix for this attribute
                     }
 
-                    printAttribute (name, (value==null)?XMLSymbols.EMPTY_STRING:value, attr.getSpecified());
+                    printAttribute (name, (value==null)?XMLSymbols.EMPTY_STRING:value, attr.getSpecified(), attr);
                 } else { // attribute uri == null
                     if (attr.getLocalName() == null) {
                         if (fDOMErrorHandler != null) {
@@ -1078,12 +1079,12 @@ extends BaseMarkupSerializer {
             	                   "SerializationStopped", null));
                             }
                         }
-                        printAttribute (name, value, attr.getSpecified());
+                        printAttribute (name, value, attr.getSpecified(), attr);
                     } else { // uri=null and no colon
 
                         // no fix up is needed: default namespace decl does not 
                         // apply to attributes
-                        printAttribute (name, value, attr.getSpecified());
+                        printAttribute (name, value, attr.getSpecified(), attr);
                     }
                 }
             } // end loop for attributes
@@ -1166,9 +1167,22 @@ extends BaseMarkupSerializer {
      * @param isSpecified
      * @exception IOException
      */
-    private void printAttribute (String name, String value, boolean isSpecified) throws IOException{
+    private void printAttribute (String name, String value, boolean isSpecified, Attr attr) throws IOException{
 
         if (isSpecified || (features & DOMSerializerImpl.DISCARDDEFAULT) != 0) {
+            if (fDOMFilter !=null && 
+                (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ATTRIBUTE)!= 0) {
+                short code = fDOMFilter.acceptNode(attr);
+                switch (code) {
+                    case NodeFilter.FILTER_REJECT:
+                    case NodeFilter.FILTER_SKIP: { 
+                        return;
+                    }
+                    default: {
+                        // fall through
+                    }
+                }
+            }
             _printer.printSpace();
             _printer.printText( name );
             _printer.printText( "=\"" );
