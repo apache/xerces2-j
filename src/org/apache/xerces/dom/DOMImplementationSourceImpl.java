@@ -97,6 +97,11 @@ public class DOMImplementationSourceImpl
         if (testImpl(impl, features)) {
             return impl;
         }
+        // if not try the PSVIDOMImplementation
+        impl = PSVIDOMImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            return impl;
+        }
         return null;
     }
 
