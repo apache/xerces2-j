@@ -192,6 +192,7 @@ public abstract class XMLParser {
         throws SAXException, IOException {
 
         try {
+            reset();
             fConfiguration.parse(inputSource);
         }
         catch (XNIException e) {
@@ -388,5 +389,15 @@ public abstract class XMLParser {
         return fConfiguration.getProperty(propertyId);
 
     } // getProperty(String):Object
+
+    //
+    // Protected methods
+    //
+
+    /**
+     * reset all components before parsing
+     */
+    protected void reset() throws SAXException {
+    } // reset()
 
 } // class XMLParser

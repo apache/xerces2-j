@@ -113,25 +113,6 @@ public abstract class AbstractXMLDocumentParser
     } // <init>(XMLParserConfiguration)
 
     //
-    // Public methods
-    //
-
-    /**
-     * parse
-     *
-     * @param inputSource
-     *
-     * @exception org.xml.sax.SAXException
-     * @exception java.io.IOException
-     */
-    public void parse(InputSource inputSource) 
-        throws SAXException, IOException {
-
-        reset();
-        super.parse(inputSource);
-    }
-
-    //
     // XMLDocumentHandler methods
     //
 
@@ -710,6 +691,7 @@ public abstract class AbstractXMLDocumentParser
      * reset all components before parsing
      */
     protected void reset() throws SAXException {
+        super.reset();
         fInDTD = false;
     } // reset()
 
