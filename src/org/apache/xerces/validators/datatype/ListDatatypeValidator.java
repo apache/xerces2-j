@@ -70,6 +70,7 @@ import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
  * StringValidator validates that XML content is a W3C string type.
+ * @author  Elena Litani
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
@@ -200,13 +201,33 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
         return null;
     }
 
-    public int compare( String content, String facetValue ){
-        // if derive by list then this should iterate through
-        // the tokens in each string and compare using the base type
-        // compare function.
-        // if not derived by list just pass the compare down to the
-        // base type.
-        return 0;
+    public int compare( String value1, String value2 ){
+        if (!fDerivedByList) { //derived by restriction
+          return ((ListDatatypeValidator)this.fBaseValidator).compare( value1, value2 );
+        }
+        // <list> datatype
+        StringTokenizer pList1 = new StringTokenizer( value1 );
+        StringTokenizer pList2 = new StringTokenizer( value2 );
+        int numberOfTokens = pList1.countTokens();         
+        if (numberOfTokens < pList2.countTokens()) {
+            return -1; 
+        }
+        else if (numberOfTokens > pList2.countTokens()) {
+            return 1;
+        }
+        else { //compare each token
+            int i=0;
+            while(i++<numberOfTokens) {
+                if ( this.fBaseValidator != null ) {
+                    int returnValue = this.fBaseValidator.compare( pList1.nextToken(), pList2.nextToken());
+                    if (returnValue!=0) {
+                        return returnValue; //REVISIT: does it make sense to return -1 or +1..?
+                    }
+                }
+                
+            }
+            return 0;
+        }
     }
 
     /**
@@ -246,11 +267,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             
             //REVISIT: attemt to make enumeration to be validated against value space.
             //a redesign of Datatypes might help to reduce complexity of this validation
-        StringTokenizer parsedList = null;
-        int numberOfTokens = 0;
-        parsedList= new StringTokenizer( content );
-        numberOfTokens =  parsedList.countTokens();
-        
+        StringTokenizer parsedList = new StringTokenizer( content );
+        int numberOfTokens = parsedList.countTokens();         
         if (!this.fDerivedByList) { 
             //<simpleType name="fRestriction"><restriction base="fList">...</restriction></simpleType>
             try {

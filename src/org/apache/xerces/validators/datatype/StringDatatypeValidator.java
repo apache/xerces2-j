@@ -211,15 +211,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     }
 
 
-    /**
-     * 
-     * @return   A Hashtable containing the facets
-     *         for this datatype.
-     */
-    public Hashtable getFacets(){
-        return null;
-    }
-
     private void checkContent( String content, Object state )throws InvalidDatatypeValueException
     {
 
@@ -263,10 +254,12 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         }
 
     }
-    public int compare( String content, String facetValue ){
+
+
+    public int compare( String value1, String value2 ){
         Locale    loc       = Locale.getDefault();
         Collator  collator  = Collator.getInstance( loc );
-        return collator.compare( content, facetValue );
+        return collator.compare( value1, value2 );
     }
 
     /**

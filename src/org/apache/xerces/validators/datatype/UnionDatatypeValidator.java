@@ -173,13 +173,21 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         return(null);
     }
 
-    public int compare( String content, String facetValue ){
-        // if derive by list then this should iterate through
-        // the tokens in each string and compare using the base type
-        // compare function.
-        // if not derived by list just pass the compare down to the
-        // base type.
-        return(0);
+    public int compare( String value1, String value2 ){
+        if (fBaseValidator != null) {
+            return this.fBaseValidator.compare(value1, value2);
+        }
+        //union datatype
+        int index=-1;
+        DatatypeValidator currentDV;
+        while ( ++index < fValidatorsSize ) {  
+            currentDV =  (DatatypeValidator)this.fBaseValidators.elementAt(index);
+            if (currentDV.compare(value1, value2) == 0) {
+                return  0;
+            }
+        }
+        //REVISIT: what does it mean for UNION1 to be <less than> or <greater than> UNION2 ?
+        return -1;
     }
 
     /**
@@ -263,8 +271,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
             return;
         }
         // native union type
-        while ( (fValidatorsSize-1) > index++ ) {  
-
+        while ( ++index < fValidatorsSize) {  
             // check content against each base validator in Union
             // report an error only in case content is not valid against all base datatypes.
             currentDV =  (DatatypeValidator)this.fBaseValidators.elementAt(index);

@@ -58,6 +58,7 @@
 
 /**
  * @version $Id$
+ * @author  Elena Litani
  * @author  Jeffrey Rodriguez
 */
 
@@ -101,7 +102,8 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
      * @return
      */
     public Hashtable getFacets() {
-        return null;  // Not implemented yet
+        //REVISIT: do we really need getFacets? 
+        return fFacets;  
     }
     
     /**
@@ -121,8 +123,8 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
      * @param valu2
      * @return
      */
-    public int compare(String value1, String valu2) {
-        return 0;     //Not implemented yet 
+    public int compare(String value1, String value2) {
+        return value1.compareTo(value2);
     }
 
 

@@ -65,7 +65,7 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
- *
+ * @author Elena Litani
  * @author Ted Leung
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
@@ -380,27 +380,21 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
                                                               new Object [] { new Double(v)}));
     }
 
-    /**
-     * Compare two Double datatype. Comparison is
-     * in Space value.
-     * 
-     * @param content1
-     * @param content2
-     * @return 
-     */
-    public int compare( String content1, String content2){
-        return 0;
+    
+   public int compare( String value1, String value2){
+        try {
+            //REVISIT: datatypes create lots of *new* objects..
+            Double d1 = Double.valueOf(value1);
+            Double d2 = Double.valueOf(value2);
+            return d1.compareTo(d2);
+        } catch (NumberFormatException e){
+            //REVISIT: should we throw exception??
+            return -1;
+        }
     }
 
 
-    /**
-     * Returns a Hashtable containing facet information.
-     * 
-     * @return 
-     */
-    public Hashtable getFacets(){
-        return null;
-    }
+
     /**
        * Returns a copy of this object.
        */

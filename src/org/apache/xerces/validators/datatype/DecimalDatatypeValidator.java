@@ -71,6 +71,7 @@ import org.apache.xerces.utils.regex.RegularExpression;
  *
  * DecimalValidator validates that content satisfies the W3C XML Datatype for decimal
  *
+ * @author  Elena Litani
  * @author Ted Leung
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
@@ -427,9 +428,6 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         fLocale = locale;
     }
 
-    public Hashtable getFacets(){
-        return fFacets;
-    }
 
     private String getErrorString(int major, int minor, Object args[]) {
         try {
@@ -445,30 +443,17 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-
-    /*
-    public static void main(String args[]) {
-        // simple unit test
+        
+    public int compare( String value1, String value2){
         try {
-            DatatypeValidator v = new DecimalValidator();
-            Hashtable facets = new Hashtable();
-            facets.put("minInclusive","0");
-            DatatypeValidator nonneg = new DecimalValidator();
-            nonneg.setBasetype(v);
-            nonneg.setFacets(facets);
-            facets = new Hashtable();
-            facets.put("minInclusive","-1");
-            DatatypeValidator bad = new DecimalValidator();
-            bad.setBasetype(nonneg);
-            bad.setFacets(facets);
-        } catch (Exception e) {
-            e.printStackTrace();
+            //REVISIT: datatypes create lots of *new* objects..
+            BigDecimal d1 = new BigDecimal(stripPlusIfPresent(value1));
+            BigDecimal d2 = new BigDecimal(stripPlusIfPresent(value2));
+            return d1.compareTo(d2);
+        } catch (NumberFormatException e){
+            //REVISIT: should we throw exception??
+            return -1;
         }
-    }
-    */
-
-    public int compare( String content1, String content2){
-        return 0;
     }
 
 

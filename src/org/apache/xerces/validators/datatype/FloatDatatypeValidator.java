@@ -68,6 +68,7 @@ import java.util.NoSuchElementException;
 
 /**
  *
+ * @author  Elena Litani
  * @author Ted Leung
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
@@ -395,21 +396,22 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
         fLocale = locale;
     }
 
-    public int compare( String content1, String content2){
-        return 0;
+    public int compare( String value1, String value2){
+        try {
+           //REVISIT: datatypes create lots of *new* objects..
+           Float f1 = Float.valueOf(value1);
+           Float f2 = Float.valueOf(value2);
+           return f1.compareTo(f2);
+       } catch (NumberFormatException e){
+           //REVISIT: should we throw exception??
+           return -1;
+       }
+
     }
 
-
-    
-
-
-
-    public Hashtable getFacets(){
-        return null;
-    }
     /**
-       * Returns a copy of this object.
-       */
+      * Returns a copy of this object.
+      */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
