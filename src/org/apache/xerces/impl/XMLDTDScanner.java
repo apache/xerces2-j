@@ -383,6 +383,8 @@ public class XMLDTDScanner
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
+        super.setFeature(featureId, state);
+            
         if (featureId.equals(VALIDATION)) {
             fValidation = state;
         }

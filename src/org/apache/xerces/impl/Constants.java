@@ -163,6 +163,9 @@ public final class Constants {
     /** Validate datatypes feature ("validation/validate-datatypes"). */
     public static final String VALIDATE_DATATYPES_FEATURE = "validation/validate-datatypes";
 
+    /** Should scanner resolve character deferences? */
+    public static final String NOTIFY_CHAR_REFS_FEATURE = "scanner/notify-char-refs";
+    
     // xerces properties
 
     /** Xerces properties prefix ("http://apache.org/xml/properties/"). */
@@ -244,6 +247,7 @@ public final class Constants {
         DEFAULT_ATTRIBUTE_VALUES_FEATURE,
         VALIDATE_CONTENT_MODELS_FEATURE,
         VALIDATE_DATATYPES_FEATURE,
+        NOTIFY_CHAR_REFS_FEATURE
     };
 
     /** Xerces properties. */

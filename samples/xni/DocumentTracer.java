@@ -104,6 +104,9 @@ public class DocumentTracer
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
     protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
 
+    /** Character ref notification feature id (http://apache.org/xml/features/scanner/notify-char-refs). */
+    protected static final String NOTIFY_CHAR_REFS_FEATURE_ID = "http://apache.org/xml/features/scanner/notify-char-refs";
+
     // default settings
 
     /** Default namespaces support (true). */
@@ -115,6 +118,9 @@ public class DocumentTracer
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
 
+    /** Default character notifications (false). */
+    protected static final boolean DEFAULT_NOTIFY_CHAR_REFS = false; 
+    
     //
     // Data
     //
@@ -898,6 +904,9 @@ public class DocumentTracer
                 fOut.print(',');
                 fOut.print("value=");
                 printQuotedString(attrValue);
+                if (attributes.isSpecified(i) == false ) {
+                   fOut.print("(default)");
+                }
                 int entityCount = attributes.getEntityCount(i);
                 for (int j = 0; j < entityCount; j++) {
                     String entityName = attributes.getEntityName(i, j);
@@ -1033,7 +1042,7 @@ public class DocumentTracer
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
-        
+        boolean notifyCharRefs = DEFAULT_NOTIFY_CHAR_REFS;
         // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
@@ -1049,6 +1058,10 @@ public class DocumentTracer
                 }
                 if (option.equalsIgnoreCase("s")) {
                     schemaValidation = option.equals("s");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("c")) {
+                    notifyCharRefs = option.equals("c");
                     continue;
                 }
                 if (option.equals("h")) {
@@ -1078,6 +1091,15 @@ public class DocumentTracer
             }
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(NOTIFY_CHAR_REFS_FEATURE_ID, notifyCharRefs);
+            }
+            catch (SAXNotRecognizedException e) {
+                e.printStackTrace();
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+NOTIFY_CHAR_REFS_FEATURE_ID+")");
             }
     
             // parse file
@@ -1112,6 +1134,7 @@ public class DocumentTracer
         System.err.println("  -n | -N  Turn on/off namespace processing.");
         System.err.println("  -v | -V  Turn on/off validation.");
         System.err.println("  -s | -S  Turn on/off Schema validation support.");
+        System.err.println("  -c | -C  Turn on/off character notifications");
         System.err.println("  -h       This help screen.");
         System.err.println();
 
@@ -1122,6 +1145,8 @@ public class DocumentTracer
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.out.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.out.print("  Character refs:");
+        System.err.println(DEFAULT_NOTIFY_CHAR_REFS ? "on" : "off" );
 
     } // printUsage()
 

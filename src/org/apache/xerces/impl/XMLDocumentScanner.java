@@ -92,6 +92,7 @@ import org.xml.sax.SAXNotSupportedException;
  * component manager that uses it:
  * <ul>
  *  <li>http://xml.org/sax/features/namespaces</li>
+ *  <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
@@ -186,7 +187,7 @@ public class XMLDocumentScanner
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        NAMESPACES,     LOAD_EXTERNAL_DTD,
+        NOTIFY_CHAR_REFS, VALIDATION, NAMESPACES, LOAD_EXTERNAL_DTD,
     };
 
     /** Recognized properties. */
@@ -418,6 +419,8 @@ public class XMLDocumentScanner
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
+        super.setFeature(featureId, state);
+            
         // Xerces properties
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
@@ -886,7 +889,7 @@ public class XMLDocumentScanner
     } // scanAttribute(XMLAttributes)
 
     /**
-     * Scans content.
+     * Scans element content.
      *
      * @returns Returns the next character on the stream.
      */
@@ -1068,7 +1071,14 @@ public class XMLDocumentScanner
         if (ch != -1) {
             // call handler
             if (fDocumentHandler != null) {
+                if (fNotifyCharRefs) {
+                    fDocumentHandler.startEntity(fCharRefLiteral, null,
+                                                 null, null);
+                }
                 fDocumentHandler.characters(fStringBuffer2);
+                if (fNotifyCharRefs) {
+                    fDocumentHandler.endEntity(fCharRefLiteral);
+                }
             }
         }
 
@@ -1097,19 +1107,19 @@ public class XMLDocumentScanner
 
         // handle built-in entities
         if (name == fAmpSymbol) {
-            handleCharacter('&');
+            handleCharacter('&', fAmpSymbol);
         }
         else if (name == fLtSymbol) {
-            handleCharacter('<');
+            handleCharacter('<', fLtSymbol);
         }
         else if (name == fGtSymbol) {
-            handleCharacter('>');
+            handleCharacter('>', fGtSymbol);
         }
         else if (name == fQuotSymbol) {
-            handleCharacter('"');
+            handleCharacter('"', fQuotSymbol);
         }
         else if (name == fAposSymbol) {
-            handleCharacter('\'');
+            handleCharacter('\'', fAposSymbol);
         }
         // start general entity
         else if (fEntityManager.isUnparsedEntity(name)) {
@@ -1134,15 +1144,25 @@ public class XMLDocumentScanner
     // utility methods
 
     /** 
-     * Calls document handler with a single character. 
+     * Calls document handler with a single character resulting from
+     * built-in entity resolution. 
      *
      * @param c
+     * @param entity built-in name
      */
-    protected void handleCharacter(char c) throws SAXException {
+    private void handleCharacter(char c, String entity) throws SAXException {
         if (fDocumentHandler != null) {
+            if (fNotifyCharRefs) {
+                fDocumentHandler.startEntity(entity, null, null, null);
+            }
+            
             fSingleChar[0] = c;
             fString.setValues(fSingleChar, 0, 1);
             fDocumentHandler.characters(fString);
+            
+            if (fNotifyCharRefs) {
+                fDocumentHandler.endEntity(entity);
+            }            
         }
     } // handleCharacter(char)
 

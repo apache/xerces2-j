@@ -173,6 +173,7 @@ public class XMLAttributesImpl
         attribute.type = type;
         attribute.value = value;
         attribute.entityCount = 0;
+        attribute.specified = false;
 
         // return
         return index;

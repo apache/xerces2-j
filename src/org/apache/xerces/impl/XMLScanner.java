@@ -88,6 +88,7 @@ import org.xml.sax.SAXNotSupportedException;
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
+ *  <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
  * </ul>
  *
  * @author Andy Clark, IBM
@@ -141,7 +142,13 @@ public abstract class XMLScanner
 
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
-    
+
+    /** Character references resolution. */
+    protected boolean fNotifyCharRefs = false;
+
+     /** Literal value of the last character refence scanned. */
+    protected String fCharRefLiteral = null;
+
     /** Attribute entity stack. */
     protected AttrEntityStack fAttributeEntityStack = new AttrEntityStack();
 
@@ -188,6 +195,19 @@ public abstract class XMLScanner
     /** Symbol: "apos". */
     protected String fAposSymbol;
 
+    // feature identifiers
+    protected static final String VALIDATION =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    protected static final String NOTIFY_CHAR_REFS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
+
+    // recognized features
+    /** has to be declared in subclasses to avoid having to concatenate
+    private static final String[] RECOGNIZED_FEATURES = {
+        VALIDATION, NOTIFY_CHAR_REFS, 
+    };
+    /***/
+
     //
     // XMLComponent methods
     //
@@ -228,7 +248,9 @@ public abstract class XMLScanner
         fAposSymbol = fSymbolTable.addSymbol("apos");
         
         // sax features
-        fValidation = componentManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
+        fValidation = componentManager.getFeature(VALIDATION);
+        fNotifyCharRefs = componentManager.getFeature(NOTIFY_CHAR_REFS);
+ 
 
     } // reset(XMLComponentManager)
 
@@ -259,6 +281,19 @@ public abstract class XMLScanner
 
     } // setProperty(String,Object)
 
+    /*
+     * Sets the feature of the scanner.
+     */
+    public void setFeature(String featureId, boolean value)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+            
+        if (VALIDATION.equals(featureId)) {
+            fValidation = value;
+        } else if (NOTIFY_CHAR_REFS.equals(featureId)) {
+            fNotifyCharRefs = value;
+        }
+    }
+    
     //
     // Protected methods
     //
@@ -701,7 +736,11 @@ public abstract class XMLScanner
                         }
                         if (entityName == fAmpSymbol) {
                             fStringBuffer2.append('&');
+                            if (fNotifyCharRefs) {
+                                notifyAttrCharRef(fAmpSymbol);
+                            }
                             fAttributeOffset++;
+                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value5: \""
                                                    + fStringBuffer2.toString()
@@ -713,7 +752,11 @@ public abstract class XMLScanner
                         }
                         else if (entityName == fAposSymbol) {
                             fStringBuffer2.append('\'');
+                            if (fNotifyCharRefs) {
+                                notifyAttrCharRef(fAposSymbol);
+                            }
                             fAttributeOffset++;
+                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value7: \""
                                                    + fStringBuffer2.toString()
@@ -725,7 +768,11 @@ public abstract class XMLScanner
                         }
                         else if (entityName == fLtSymbol) {
                             fStringBuffer2.append('<');
+                            if (fNotifyCharRefs) {
+                                notifyAttrCharRef(fLtSymbol);
+                            }
                             fAttributeOffset++;
+                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value9: \""
                                                    + fStringBuffer2.toString()
@@ -737,7 +784,11 @@ public abstract class XMLScanner
                         }
                         else if (entityName == fGtSymbol) {
                             fStringBuffer2.append('>');
+                            if (fNotifyCharRefs) {
+                                notifyAttrCharRef(fGtSymbol);
+                            }
                             fAttributeOffset++;
+                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** valueB: \""
                                                    + fStringBuffer2.toString()
@@ -749,7 +800,11 @@ public abstract class XMLScanner
                         }
                         else if (entityName == fQuotSymbol) {
                             fStringBuffer2.append('"');
+                            if (fNotifyCharRefs) {
+                                notifyAttrCharRef(fQuotSymbol);
+                            }
                             fAttributeOffset++;
+                            
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** valueD: \""
                                                    + fStringBuffer2.toString()
@@ -882,7 +937,7 @@ public abstract class XMLScanner
 
         // quote
         int cquote = fEntityScanner.scanChar();
-        if (cquote != cquote) {
+        if (cquote != quote) {
             reportFatalError("CloseQuoteExpected", new Object[]{atName});
         }
     } // scanAttributeValue()
@@ -1116,7 +1171,7 @@ public abstract class XMLScanner
      *
      * @param buf the character buffer to append chars to
      *
-     * @return the character value
+     * @return the character value or (-1) on conversion failure
      */
     protected int scanCharReferenceValue(XMLStringBuffer buf) 
         throws IOException, SAXException {
@@ -1184,6 +1239,21 @@ public abstract class XMLScanner
             buf.append(XMLChar.lowSurrogate(value));
         }
 
+        // char refs notification code
+        if (fNotifyCharRefs && value != -1) {
+            String literal = "#" + (hex ? "x" : "") + fStringBuffer.toString();
+            if (fScanningAttribute == true) {
+                fAttributeEntityStack.fAttributes.addAttributeEntity(
+                    fAttributeEntityStack.fAttributeIndex,
+                    literal,
+                    fAttributeOffset,
+                    1  //REVISIT: 2 for surrogates?
+                );
+            } else {
+                fCharRefLiteral = literal;
+            }
+        }
+                
         return value;
     }
 
@@ -1238,6 +1308,17 @@ public abstract class XMLScanner
                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
     }
 
+
+    /*
+     * Add to XMLAttributes information about used character refs
+     * or built-in entities (&amp;lt;, etc.)
+     */
+    private void notifyAttrCharRef(String name) {
+        fAttributeEntityStack.fAttributes.addAttributeEntity(
+            fAttributeEntityStack.fAttributeIndex, name, 
+            fAttributeOffset, 1
+        );        
+    }
 
     /**
      * A stack for keeping track of entity offsets and lengths in
