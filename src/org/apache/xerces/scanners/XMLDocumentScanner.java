@@ -765,11 +765,14 @@ public class XMLDocumentScanner
         // bind the attributes
         for (int i = 0; i < length; i++) {
             attributes.getName(i, fAttrQName);
-            String rawname = attributes.getQName(i);
-            if (rawname.startsWith("xmlns")) {
+            String arawname = fAttrQName.rawname;
+            String aprefix = fAttrQName.prefix != null 
+                          ? fAttrQName.prefix : "";
+            if (aprefix.equals("xml")) {
                 fAttrQName.uri = NamespaceSupport.XMLNS;
+                attributes.setName(i, fAttrQName);
             }
-            else {
+            else if (!arawname.equals("xmlns") && !arawname.startsWith("xmlns:")) {
                 if (fAttrQName.prefix != null) {
                     fAttrQName.uri = fNamespaceSupport.getURI(fAttrQName.prefix);
                     if (fAttrQName.uri == null) {
@@ -781,8 +784,8 @@ public class XMLDocumentScanner
                     // attributes with no prefix get element's uri
                     fAttrQName.uri = element.uri;
                 }
+                attributes.setName(i, fAttrQName);
             }
-            attributes.setName(i, fAttrQName);
         }
 
     } // bindNamespaces(QName,XMLAttributes)
