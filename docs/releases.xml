@@ -2,6 +2,12 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+  <s2 title='TBD'>
+	<ul>
+	  <li>Removed final from XMLSerializer per request [andyc]</li>
+	  <li>Fixed identity constraint bugs (support still limited) [andyc]</li>
+	</ul>
+  </s2>
   <s2 title='January 31, 2001 (version 1.3.0)'>
         <ul>
 				<li>Upgraded schema support to the schema CR drafts at a
