@@ -29,8 +29,8 @@ public class DesignDoc {
     //
 
     public static void main(String argv[]) {
-        if (argv.length != 1) {
-            System.err.println("usage: DesignDoc xml_file");
+        if (argv.length != 2) {
+            System.err.println("usage: DesignDoc xml_file zip_file");
             System.exit(1);
         }
         Document document = readDesign(argv[0]);
@@ -45,7 +45,7 @@ public class DesignDoc {
         }
         DesignDoc design = new DesignDoc();
         try {
-            design.generateDesign(argv[0], root);
+            design.generateDesign(argv[1], root);
         }
         catch (Exception e) {
             System.err.println("error: Error building stubs.");
@@ -109,9 +109,13 @@ public class DesignDoc {
     // generation
 
     public void generateDesign(String filename, Element design) throws IOException {
+        /***
         int index = filename.lastIndexOf('.');
         String basename = index != -1 ? filename.substring(0, index) : filename;
         zip = new ZipOutputStream(new FileOutputStream(basename+".zip"));
+        /***/
+        zip = new ZipOutputStream(new FileOutputStream(filename));
+        /***/
         out = new IndentingWriter(new PrintWriter(zip, true));
         Element child = getFirstChildElement(design);
         while (child != null) {

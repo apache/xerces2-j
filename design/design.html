@@ -226,6 +226,7 @@
   <BLOCKQUOTE>
    <A name="XMLDocumentHandler"><DL class="interface">
      <DT>interface <SPAN class="interface-title">XMLDocumentHandler</SPAN>
+     <DD class="extends">      extends      <SPAN class="interface-title">XMLEntityHandler</SPAN>
      <DD class="methods">      methods:      <UL>
        <LI>
         <SPAN class="method-title">startDocument</SPAN>      (
@@ -288,10 +289,6 @@
          <SPAN class="class-title">String</SPAN> <SPAN
         class="param-title">prefix</SPAN>          )
        <LI>
-        <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">name</SPAN>          )
-       <LI>
         <SPAN class="method-title">textDecl</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">version</SPAN>, <SPAN
@@ -299,10 +296,6 @@
         class="param-title">encoding</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">actualEncoding</SPAN>          )
-       <LI>
-        <SPAN class="method-title">endEntity</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">name</SPAN>          )
        <LI>
         <SPAN class="method-title">startCDATA</SPAN>      (
         )
@@ -456,6 +449,7 @@
   <BLOCKQUOTE>
    <A name="XMLDTDHandler"><DL class="interface">
      <DT>interface <SPAN class="interface-title">XMLDTDHandler</SPAN>
+     <DD class="extends">      extends      <SPAN class="interface-title">XMLEntityHandler</SPAN>
      <DD class="constants">      constants:      <UL>
        <LI>short <SPAN class="constant-title">CONDITIONAL_INCLUDE</SPAN>
        <LI>short <SPAN class="constant-title">CONDITIONAL_IGNORE</SPAN>
@@ -613,14 +607,12 @@
   <BLOCKQUOTE>
    <A name="XMLEntityManager"><DL class="class">
      <DT>class <SPAN class="class-title">XMLEntityManager</SPAN>
-     <DD class="implements">      implements      <SPAN
-      class="interface-title">XMLComponent</SPAN>, <SPAN class="interface-title">Locator</SPAN>
+     <DD class="implements">      implements      <SPAN class="interface-title">XMLComponent</SPAN>
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="interface-title">EntityResolver</SPAN> <SPAN class="field-title">fEntityResolver</SPAN>
        <LI>
-        <SPAN class="class-title">Stack</SPAN>      &lt;   <SPAN
-        class="class-title">XMLEntityReader</SPAN>      &gt;   <SPAN class="field-title">fEntityReaders</SPAN>
+        <SPAN class="class-title">XMLEntityScanner</SPAN> <SPAN class="field-title">fEntityReader</SPAN>
       </UL>
      <DD class="constructors">      constructors:      <UL>
        <LI>
@@ -628,6 +620,38 @@
         )
       </UL>
      <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">addGeneralEntity</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">publicId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">systemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>          )
+       <LI>
+        <SPAN class="method-title">addGeneralEntity</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">text</SPAN>          )
+       <LI>
+        <SPAN class="method-title">addParameterEntity</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">publicId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">systemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>          )
+       <LI>
+        <SPAN class="method-title">addParameterEntity</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">text</SPAN>          )
        <LI>
         <SPAN class="method-title">resolveEntity</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
@@ -638,41 +662,27 @@
         class="param-title">baseSystemId</SPAN>          )       :
          <SPAN class="class-title">InputSource</SPAN>
        <LI>
-        <SPAN class="method-title">addEntity</SPAN>      (   <SPAN
+        <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
-        class="param-title">name</SPAN>, <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">publicId</SPAN>, <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">systemId</SPAN>, <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">baseSystemId</SPAN>          )
+        class="param-title">entityName</SPAN>, boolean <SPAN
+        class="param-title">parameter</SPAN>          )
        <LI>
-        <SPAN class="method-title">createEntityReader</SPAN>      (
-         <SPAN class="class-title">String</SPAN> <SPAN
-        class="param-title">entityName</SPAN>          )       :
-         <SPAN class="class-title">XMLEntityReader</SPAN>
+        <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
+        class="class-title">InputSource</SPAN> <SPAN
+        class="param-title">inputSource</SPAN>          )
        <LI>
-        <SPAN class="method-title">createEntityReader</SPAN>      (
-         <SPAN class="class-title">InputSource</SPAN> <SPAN
-        class="param-title">inputSource</SPAN>          )       :
-         <SPAN class="class-title">XMLEntityReader</SPAN>
-       <LI>
-        <SPAN class="method-title">pushEntityReader</SPAN>      (
-         <SPAN class="class-title">XMLEntityReader</SPAN> <SPAN
-        class="param-title">entityReader</SPAN>          )
-       <LI>
-        <SPAN class="method-title">popEntityReader</SPAN>      (
-        )       :    <SPAN class="class-title">XMLEntityReader</SPAN>
+        <SPAN class="method-title">getEntityScanner</SPAN>      (
+        )       :    <SPAN class="class-title">XMLEntityScanner</SPAN>
       </UL>
     </DL>
    </A></BLOCKQUOTE>
   <BLOCKQUOTE>
-   <A name="XMLEntityReader"><DL class="class">
-     <DT>class <SPAN class="class-title">XMLEntityReader</SPAN>
-     <DD class="extends">      extends      <SPAN class="class-title">Reader</SPAN>
+   <A name="XMLEntityScanner"><DL class="class">
+     <DT>class <SPAN class="class-title">XMLEntityScanner</SPAN>
      <DD class="implements">      implements      <SPAN class="interface-title">Locator</SPAN>
      <DD class="fields">      fields:      <UL>
+       <LI>
+        <SPAN class="interface-title">XMLEntityHandler</SPAN> <SPAN class="field-title">fEntityHandler</SPAN>
        <LI>
         <SPAN class="class-title">InputSource</SPAN> <SPAN class="field-title">fInputSource</SPAN>
        <LI>int <SPAN class="field-title">fLineNumber</SPAN>
@@ -682,11 +692,14 @@
       </UL>
      <DD class="constructors">      constructors:      <UL>
        <LI>
-        <SPAN class="constructor-title">XMLEntityReader</SPAN>      (
-         <SPAN class="class-title">InputSource</SPAN> <SPAN
-        class="param-title">inputSource</SPAN>          )
+        <SPAN class="constructor-title">XMLEntityScanner</SPAN>      (
+        )
       </UL>
      <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">setEntityHandler</SPAN>      (
+         <SPAN class="interface-title">XMLEntityHandler</SPAN> <SPAN
+        class="param-title">entityHandler</SPAN>          )
        <LI>
         <SPAN class="method-title">getBytePosition</SPAN>      (
         )       :    long
@@ -694,15 +707,54 @@
         <SPAN class="method-title">getCharPosition</SPAN>      (
         )       :    long
        <LI>
-        <SPAN class="method-title">read</SPAN>      (             )
-        :    int
+        <SPAN class="method-title">peekChar</SPAN>      (             )
+        :    char
        <LI>
-        <SPAN class="method-title">read</SPAN>      (   char[]   <SPAN
-        class="param-title">buffer</SPAN>, int <SPAN
-        class="param-title">offset</SPAN>, int <SPAN
-        class="param-title">length</SPAN>          )       :    int
+        <SPAN class="method-title">scanChar</SPAN>      (             )
+        :    char
        <LI>
-        <SPAN class="method-title">close</SPAN>      (             )
+        <SPAN class="method-title">scanNmtoken</SPAN>      (
+        )       :    <SPAN class="class-title">String</SPAN>
+       <LI>
+        <SPAN class="method-title">scanName</SPAN>      (             )
+        :    <SPAN class="class-title">String</SPAN>
+       <LI>
+        <SPAN class="method-title">scanQName</SPAN>      (   <SPAN
+        class="class-title">QName</SPAN> <SPAN
+        class="param-title">qname</SPAN>          )
+       <LI>
+        <SPAN class="method-title">scanContent</SPAN>      (   <SPAN
+        class="class-title">XMLString</SPAN> <SPAN
+        class="param-title">content</SPAN>          )
+       <LI>
+        <SPAN class="method-title">scanAttContent</SPAN>      (   <SPAN
+        class="class-title">XMLString</SPAN> <SPAN
+        class="param-title">content</SPAN>          )
+       <LI>
+        <SPAN class="method-title">skipSpaces</SPAN>      (
+        )
+       <LI>
+        <SPAN class="method-title">skipString</SPAN>      (
+        )
+      </UL>
+    </DL>
+   </A></BLOCKQUOTE>
+  <BLOCKQUOTE>
+   <A name="XMLEntityHandler"><DL class="interface">
+     <DT>interface <SPAN class="interface-title">XMLEntityHandler</SPAN>
+     <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">publicId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">systemId</SPAN>          )
+       <LI>
+        <SPAN class="method-title">endEntity</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>          )
       </UL>
     </DL>
    </A></BLOCKQUOTE>
