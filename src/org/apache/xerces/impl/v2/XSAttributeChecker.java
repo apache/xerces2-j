@@ -863,8 +863,8 @@ public class XSAttributeChecker {
     protected Hashtable fNonSchemaAttrs = new Hashtable();
 
     // constructor. Sets fErrorReproter and get datatype validators
-    private XSAttributeChecker() {}
-    public XSAttributeChecker (XMLErrorReporter er, DatatypeValidatorFactoryImpl datatypeRegistry) {
+    public XSAttributeChecker (DatatypeValidatorFactoryImpl datatypeRegistry,
+                               XMLErrorReporter er) {
         fErrorReporter = er;
         synchronized (getClass()) {
             if (fExtraDVs[DT_ANYURI] == null) {
@@ -894,6 +894,12 @@ public class XSAttributeChecker {
         }
     }
 
+    public void reset() {
+        fIdDefs.clear();
+        //???fErrorReporter = null;
+        fNonSchemaAttrs.clear();
+    }
+
     // check whether the specified element conforms to the attributes restriction
     // @param: element    - which element to check
     // @param: isGlobal   - whether a child of <schema> or <redefine>
@@ -919,7 +925,7 @@ public class XSAttributeChecker {
         // get desired attribute list of this element
         OneElement oneEle = (OneElement)fEleAttrsMap.get(name);
         if (oneEle == null) {
-            reportSchemaError (SchemaMessageProvider.Con3X3ElementAppearance,
+            reportSchemaError ("Con3X3ElementAppearance",
                                new Object[] {elName});
             return null;
         }
@@ -950,7 +956,7 @@ public class XSAttributeChecker {
                 // and not allowed on "document" and "appInfo"
                 if (attrURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ||
                     !oneEle.allowNonSchemaAttr) {
-                    reportSchemaError (SchemaMessageProvider.Con3X3AttributeAppearance,
+                    reportSchemaError ("Con3X3AttributeAppearance",
                                        new Object[] {elName, attrName});
                 } else {
                     // for attributes from other namespace
@@ -977,7 +983,7 @@ public class XSAttributeChecker {
             // check whether this attribute is allowed
             OneAttr oneAttr = (OneAttr)attrList.get(attrName);
             if (oneAttr == null) {
-                reportSchemaError (SchemaMessageProvider.Con3X3AttributeAppearance,
+                reportSchemaError ("Con3X3AttributeAppearance",
                                    new Object[] {elName, attrName});
                 continue;
             }
@@ -1004,7 +1010,7 @@ public class XSAttributeChecker {
                     attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
                 }
             } catch(InvalidDatatypeValueException ide) {
-                reportSchemaError (SchemaMessageProvider.Con3X3AttributeInvalidValue,
+                reportSchemaError ("Con3X3AttributeInvalidValue",
                                    new Object[] {elName, attrName, ide.getLocalizedMessage()});
             }
         }
@@ -1020,7 +1026,7 @@ public class XSAttributeChecker {
 
             // if the attribute is required, report an error
             if (oneAttr.optdflt == ATT_REQUIRED) {
-                reportSchemaError (SchemaMessageProvider.Con3X3AttributeMustAppear,
+                reportSchemaError ("Con3X3AttributeMustAppear",
                                    new Object[] {elName, oneAttr.name});
             }
             // if the attribute is optional with default value, apply it
@@ -1208,15 +1214,17 @@ public class XSAttributeChecker {
             }
         }
         else {
-            fErrorReporter.reportError(SchemaMessageProvider.SCHEMA_DOMAIN,
-                                       key,
-                                       args,
-                                       XMLErrorReporter.SEVERITY_ERROR);
+            //REVISIT: how to report schema errors?
+            //fErrorReporter.reportError(SomeMessageProvider.SCHEMA_DOMAIN,
+            //                           key,
+            //                           args,
+            //                           XMLErrorReporter.SEVERITY_ERROR);
         }
     }
 
+    // REVISIT: enable it later.
     // validate attriubtes from non-schema namespaces
-   /* public void checkNonSchemaAttributes(GrammarResolver grammarResolver) throws Exception {
+    /*public void checkNonSchemaAttributes(XSGrammarResolver grammarResolver) throws Exception {
         // for all attributes
         Enumeration enum = fNonSchemaAttrs.keys();
         while (enum.hasMoreElements()) {
@@ -1225,16 +1233,11 @@ public class XSAttributeChecker {
             String attrURI = attrRName.substring(0,attrRName.indexOf(','));
             String attrLocal = attrRName.substring(attrRName.indexOf(',')+1);
             // find associated grammar
-            Grammar grammar = grammarResolver.getGrammar(attrURI);
-            if (grammar == null || !(grammar instanceof SchemaGrammar))
-                continue;
-            SchemaGrammar sGrammar = (SchemaGrammar)grammar;
-            // then get all top-level attributes from that grammar
-            Hashtable attrRegistry = sGrammar.getAttributeDeclRegistry();
-            if (attrRegistry == null)
+            SchemaGrammar sGrammar = grammarResolver.getGrammar(attrURI);
+            if (sGrammar == null)
                 continue;
             // and get the datatype validator, if there is one
-            XMLAttributeDecl tempAttrDecl = (XMLAttributeDecl)attrRegistry.get(attrLocal);
+            XSAttributeDecl tempAttrDecl = sGrammar.getGlobalAttrDecl(attrLocal);
             if (tempAttrDecl == null)
                 continue;
             DatatypeValidator dv = tempAttrDecl.datatypeValidator;
@@ -1255,7 +1258,7 @@ public class XSAttributeChecker {
                     // and validate it using the DatatypeValidator
                     dv.validate(attrVal,null);
                 } catch(InvalidDatatypeValueException ide) {
-                    reportSchemaError (SchemaMessageProvider.Con3X3AttributeInvalidValue,
+                    reportSchemaError ("Con3X3AttributeInvalidValue",
                                        new Object[] {elName, attrName, ide.getLocalizedMessage()});
                 }
             }

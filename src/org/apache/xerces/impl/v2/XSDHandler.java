@@ -75,16 +75,17 @@ import org.w3c.dom.Element;
 import java.util.Hashtable;
 import java.util.Vector;
 
-// The purpose of this class is to co-ordinate the construction of a
-// grammar object corresponding to a schema.  To do this, it must be
-// prepared to parse several schema documents (for instance if the
-// schema document originally referred to contains <include> or
-// <redefined> information items).  If any of the schemas imports a
-// schema, other grammars may be constructed as a side-effect.
-
-// @author Neil Graham, IBM
-// @version $ID$
-
+/**
+ * The purpose of this class is to co-ordinate the construction of a
+ * grammar object corresponding to a schema.  To do this, it must be
+ * prepared to parse several schema documents (for instance if the
+ * schema document originally referred to contains <include> or
+ * <redefined> information items).  If any of the schemas imports a
+ * schema, other grammars may be constructed as a side-effect.
+ *
+ * @author Neil Graham, IBM
+ * @version $ID$
+ */
 class XSDHandler {
 
     // data
@@ -139,6 +140,9 @@ class XSDHandler {
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
 
+    // the XSAttributeChecker
+    private XSAttributeChecker fAttributeChecker;
+
     // the XMLEntityResolver
     private XMLEntityResolver fEntityResolver;
 
@@ -146,7 +150,7 @@ class XSDHandler {
     private SymbolTable fSymbolTable;
 
     // the GrammarResolver
-    private GrammarResolver fGrammarResolver;
+    private XSGrammarResolver fGrammarResolver;
 
     // REVISIT:  old kind of DatatypeValidator...
     private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
@@ -166,7 +170,7 @@ class XSDHandler {
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
-    XSDHandler (GrammarResolver gResolver,
+    XSDHandler (XSGrammarResolver gResolver,
             XMLErrorReporter errorReporter,
             XMLEntityResolver entityResolver,
             SymbolTable symbolTable) {
@@ -174,8 +178,8 @@ class XSDHandler {
         fErrorReporter = errorReporter;
         fGrammarResolver = gResolver;
         fSymbolTable = symbolTable;
-        fDatatypeRegistry =
-        (DatatypeValidatorFactoryImpl)fGrammarResolver.getDatatypeRegistry();
+        fDatatypeRegistry = new DatatypeValidatorFactoryImpl();
+        fDatatypeRegistry.expandRegistryToFullSchemaSet();
         createTraversers();
     } // end constructor
 
@@ -208,7 +212,7 @@ class XSDHandler {
         reset();
 
         // and return.
-        return fGrammarResolver.get(fRoot.fTargetNamespace);
+        return fGrammarResolver.getGrammar(fRoot.fTargetNamespace);
     } // end parseSchema
 
     // may wish to have setter methods for ErrorHandler,
@@ -272,12 +276,6 @@ class XSDHandler {
     protected void buildGlobalNameRegistries() {
     } // end buildGlobalNameRegistries
 
-    // this should only need to be called once during the construction
-    // of this object; it creates the traversers that will be used to
-    // construct schemaGrammars.
-    protected void createTraversers() {
-    } // createTraversers
-
     // Beginning at the first schema processing was requested for
     // (fRoot), this method
     // examines each child (global schema information item) of each
@@ -325,11 +323,6 @@ class XSDHandler {
     protected void resolveKeyRefs() {
     } // end resolveKeyRefs
 
-    // this method resets this object, and should also probably be
-    // used to call reset methods on the traversers.
-    protected void reset() {
-    } // reset
-
     private Document getSchema(String schemaNamespace,
             String schemaHint) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
@@ -347,30 +340,33 @@ class XSDHandler {
     } // getSchema(String, String):  Document
 
     // initialize all the traversers.
+    // this should only need to be called once during the construction
+    // of this object; it creates the traversers that will be used to
+    // construct schemaGrammars.
     private void createTraversers() {
         fAttributeChecker = new
-            XSDAttributeChecker(fDatatypeRegistry, fErrorReporter);
+            XSAttributeChecker(fDatatypeRegistry, fErrorReporter);
         fAttributeGroupTraverser = new
-            XSDAttributeGroupTraverser(this, fErrorReporter);
+            XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this,
-            fErrorReporter);
+            fErrorReporter, fAttributeChecker);
         fComplexTypeTraverser = new XSDComplexTypeTraverser(this,
-            fErrorReporter);
-        fElementTraverser = new SDElementTraverser(this,
-            fErrorReporter);
+            fErrorReporter, fAttributeChecker);
+        fElementTraverser = new XSDElementTraverser(this,
+            fErrorReporter, fAttributeChecker);
         fGroupTraverser = new XSDGroupTraverser(this,
-            fErrorReporter);
+            fErrorReporter, fAttributeChecker);
         fNotationTraverser = new XSDNotationTraverser(this,
-            fErrorReporter);
+            fErrorReporter, fAttributeChecker);
         fSimpleTypeTraverser = new XSDSimpleTypeTraverser(this,
-            fErrorReporter);
+            fErrorReporter, fAttributeChecker);
         fWildCardTraverser = new XSDWildcardTraverser(this,
-            fErrorReporter);
+            fErrorReporter, fAttributeChecker);
     } // createTraversers()
 
     // this method clears all the global structs of this object
     // (except those passed in via the constructor).
-    void reset() {
+    protected void reset() {
         fUnparsedAttributeRegistry.clear();
         fUnparsedAttributeGroupRegistry.clear();
         fUnparsedElementRegistry.clear();
@@ -384,9 +380,10 @@ class XSDHandler {
         fTraversed.removeAllElements();
         fRoot = null;
 
-    fDatatypeRegistry = null;
+        fDatatypeRegistry = null;
 
         // reset traversers
+        fAttributeChecker.reset();
         fAttributeGroupTraverser.reset();
         fAttributeTraverser.reset();
         fComplexTypeTraverser.reset();

@@ -1,4 +1,3 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
@@ -59,6 +58,8 @@ package org.apache.xerces.impl.v2;
 
 import  org.apache.xerces.impl.XMLErrorReporter;
 import  org.w3c.dom.Element;
+import  java.util.Stack;
+import  java.util.Hashtable;
 
 /**
  * The model group schema component traverser.

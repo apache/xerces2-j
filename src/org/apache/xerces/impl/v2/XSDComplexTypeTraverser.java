@@ -115,16 +115,20 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
     private void processComplexContent(int typeNameIndex,
-                                       Element complexContentChild, ComplexTypeInfo typeInfo, QName baseName,
+                                       Element complexContentChild,
+                                       ComplexTypeInfo typeInfo,
+                                       QName baseName,
                                        boolean isMixed) throws Exception {
 
     }
     private void traverseSimpleContentDecl(int typeNameIndex,
-                                           Element simpleContentDecl, ComplexTypeInfo typeInfo) {
+                                           Element simpleContentDecl,
+                                           ComplexTypeInfo typeInfo) {
     }
 
     private void traverseComplexContentDecl(int typeNameIndex,
-                                            Element complexContentDecl, ComplexTypeInfo typeInfo,
+                                            Element complexContentDecl,
+                                            ComplexTypeInfo typeInfo,
                                             boolean mixedOnComplexTypeDecl){
     }
     // HELP FUNCTIONS:

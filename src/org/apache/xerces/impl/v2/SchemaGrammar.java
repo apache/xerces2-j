@@ -57,53 +57,8 @@
 
 package org.apache.xerces.impl.v2;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
-import  org.w3c.dom.Element;
-import java.util.Hashtable;
-
-
 /**
- * The attribute declaration schema component traverser.
- *
- * <attribute
- *   default = string
- *   fixed = string
- *   form = (qualified | unqualified)
- *   id = ID
- *   name = NCName
- *   ref = QName
- *   type = QName
- *   use = (optional | prohibited | required) : optional
- *   {any attributes with non-schema namespace . . .}>
- *   Content: (annotation?, (simpleType?))
- * </attribute>
- *
  * @version $Id$
  */
-class  XSDAttributeTraverser extends XSDAbstractTraverser {
-
-
-
-    public XSDAttributeTraverser (XSDHandler handler,
-                                  XMLErrorReporter errorReporter,
-                                  XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
-    }
-
-    //REVISIT: should we pass typeInfo, referredTo?
-    protected int traverse(Element elmNode,
-                           XSDocumentInfo schemaDoc,
-                           SchemaGrammar grammar) {
-
-        return -1;
-    }
-
-    protected int traverseGlobal(Element elmNode,
-                                 XSDocumentInfo schemaDoc,
-                                 SchemaGrammar grammar) {
-
-        return -1;
-    }
-
-
-}
+class SchemaGrammar {
+} // class SchemaGrammar

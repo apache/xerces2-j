@@ -59,6 +59,7 @@ package org.apache.xerces.impl.v2;
 
 import  org.apache.xerces.impl.XMLErrorReporter;
 import  org.w3c.dom.Element;
+import  java.util.Stack;
 
 /**
  * The simple type definition schema component traverser.

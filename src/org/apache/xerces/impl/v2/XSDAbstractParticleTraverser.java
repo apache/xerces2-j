@@ -57,9 +57,17 @@
 
 package org.apache.xerces.impl.v2;
 
+import  org.apache.xerces.impl.XMLErrorReporter;
 import  org.w3c.dom.Element;
 
 abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
+
+    XSDAbstractParticleTraverser (XSDHandler handler,
+                                  XMLErrorReporter errorReporter,
+                                  XSAttributeChecker gAttrCheck) {
+
+        super(handler, errorReporter, gAttrCheck);
+    }
 
     /**
      *

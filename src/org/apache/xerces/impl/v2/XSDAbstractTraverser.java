@@ -88,6 +88,9 @@ abstract class XSDAbstractTraverser {
         fAttrChecker = attrChecker;
     }
 
+    void reset() {
+    }
+
     // REVISIT: should symbol table passed as parameter to constractor or
     // be set using the following method?
     void setSymbolTable (SymbolTable table) {
