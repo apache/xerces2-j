@@ -283,6 +283,10 @@ public class TraverseSchema implements
         ComplexTypeRecoverableError(String s) {super(s);}
     }
 
+    private class ParticleRecoverableError extends Exception {
+        ParticleRecoverableError(String s) {super(s);}
+    }
+
     //REVISIT: verify the URI.
     public final static String SchemaForSchemaURI = "http://www.w3.org/TR-1/Schema";
 
@@ -1172,7 +1176,12 @@ public class TraverseSchema implements
                     if(dCSIndexObj == null) // something went wrong...
                         continue;
                     int dCSIndex = dCSIndexObj.intValue();
-                    checkParticleDerivationOK(dCSIndex, -1, bCSIndex, -1, null);
+                    try {
+                      checkParticleDerivationOK(dCSIndex, -1, bCSIndex, -1, null);
+                    }
+                    catch (ParticleRecoverableError e) {
+                      reportGenericSchemaError(e.getMessage());
+                    }
                 } else
                     // REVISIT:  localize
                     reportGenericSchemaError("src-redefine.6.2:  a <group> within a <redefine> must either have a ref to a <group> with the same name or must restrict such an <group>");
@@ -3669,9 +3678,16 @@ public class TraverseSchema implements
               // derivation-ok-restriction 5.3
               //
               else {
-                checkParticleDerivationOK(typeInfo.contentSpecHandle,fCurrentScope,
-                     baseContentSpecHandle,typeInfo.baseComplexTypeInfo.scopeDefined,
-                     typeInfo.baseComplexTypeInfo);
+                
+                try {
+                  checkParticleDerivationOK(typeInfo.contentSpecHandle,fCurrentScope,
+                       baseContentSpecHandle,typeInfo.baseComplexTypeInfo.scopeDefined,
+                      typeInfo.baseComplexTypeInfo);
+                }
+                catch (ParticleRecoverableError e) {
+                   String message = e.getMessage();
+                   throw new ComplexTypeRecoverableError(message);
+                }
               }
            }
            //-------------------------------------------------------------
@@ -4121,8 +4137,7 @@ public class TraverseSchema implements
 
               default:
               { 
-           	reportGenericSchemaError("internal Xerces error"); 
-                return;
+           	throw new ParticleRecoverableError("internal Xerces error"); 
               }
             }
          }
@@ -4147,14 +4162,12 @@ public class TraverseSchema implements
               case XMLContentSpec.CONTENTSPECNODE_ALL:
               case XMLContentSpec.CONTENTSPECNODE_LEAF:
               {
-                 reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: Any: Choice,Seq,All,Elt");
-                 return;
+                 throw new ParticleRecoverableError("cos-particle-restrict: Forbidden restriction: Any: Choice,Seq,All,Elt");
               }
 
               default:
               { 
-           	reportGenericSchemaError("internal Xerces error"); 
-                return;
+           	throw new ParticleRecoverableError("internal Xerces error"); 
               }
             }
          }
@@ -4182,14 +4195,12 @@ public class TraverseSchema implements
               case XMLContentSpec.CONTENTSPECNODE_SEQ:
               case XMLContentSpec.CONTENTSPECNODE_LEAF:
               {
-                 reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: All:Choice,Seq,Elt");
-                 return;
+                 throw new ParticleRecoverableError("cos-particle-restrict: Forbidden restriction: All:Choice,Seq,Elt");
               }
 
               default:
               { 
-           	reportGenericSchemaError("internal Xerces error"); 
-                return;
+           	throw new ParticleRecoverableError("internal Xerces error"); 
               }
             }
          }
@@ -4217,14 +4228,12 @@ public class TraverseSchema implements
               case XMLContentSpec.CONTENTSPECNODE_SEQ:
               case XMLContentSpec.CONTENTSPECNODE_LEAF:
               {
-                 reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: Choice:All,Seq,Leaf");
-                 return;
+                 throw new ParticleRecoverableError("cos-particle-restrict: Forbidden restriction: Choice:All,Seq,Leaf");
               }
 
               default:
               { 
-           	reportGenericSchemaError("internal Xerces error"); 
-                return;
+           	throw new ParticleRecoverableError("internal Xerces error"); 
               }
             }
          }
@@ -4263,14 +4272,12 @@ public class TraverseSchema implements
 
               case XMLContentSpec.CONTENTSPECNODE_LEAF:
               {
-                reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: Seq:Elt");
-                return;
+                throw new ParticleRecoverableError("cos-particle-restrict: Forbidden restriction: Seq:Elt");
               }
 
               default:
               { 
-           	reportGenericSchemaError("internal Xerces error"); 
-                return;
+           	throw new ParticleRecoverableError("internal Xerces error"); 
               }
             }
          }
@@ -4355,13 +4362,11 @@ public class TraverseSchema implements
 
       //start the checking...
       if (!(localpart1==localpart2 && uri1==uri2)) {
-        reportGenericSchemaError("rcase-nameAndTypeOK.1:  Element name/uri in restriction does not match that of corresponding base element");
-        return;
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.1:  Element name/uri in restriction does not match that of corresponding base element");
       }
  
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        reportGenericSchemaError("rcase-nameAndTypeOK.3:  Element occurrence range not a restriction of base element's range: element is " +  fStringPool.toString(localpart1));
-        return;
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.3:  Element occurrence range not a restriction of base element's range: element is " +  fStringPool.toString(localpart1));
       }
 
       SchemaGrammar aGrammar = fSchemaGrammar;
@@ -4390,14 +4395,12 @@ public class TraverseSchema implements
       String element2Value = aGrammar.getElementDefaultValue(eltndx2);
       
       if (! (element2IsNillable || !element1IsNillable)) {
-        reportGenericSchemaError("rcase-nameAndTypeOK.2:  Element " +fStringPool.toString(localpart1) + "is nillable in the restriction but not the base");
-        return;
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.2:  Element " +fStringPool.toString(localpart1) + "is nillable in the restriction but not the base");
       }
 
       if (! (element2Value == null || !element2IsFixed ||  
              (element1IsFixed && element1Value.equals(element2Value)))) {
-        reportGenericSchemaError("rcase-nameAndTypeOK.4:  Element " +fStringPool.toString(localpart1) + "is either not fixed, or is not fixed with the same value as in the base");
-        return;
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.4:  Element " +fStringPool.toString(localpart1) + "is either not fixed, or is not fixed with the same value as in the base");
       }
          
       // check identity constraints - TO BE DONE
@@ -4449,21 +4452,108 @@ public class TraverseSchema implements
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        reportGenericSchemaError("rcase-NSCompat.2:  Element occurrence range not a restriction of base any element's range");
-        return;
+        throw new ParticleRecoverableError("rcase-NSCompat.2:  Element occurrence range not a restriction of base any element's range");
       }
 
+      
+      fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
+      int uri = tempContentSpec1.otherValue;
+
+      // check wildcard subset
+      if (!wildcardEltAllowsNamespace(csIndex2, uri)) 
+        throw new ParticleRecoverableError("rcase-NSCompat.1:  Element's namespace not allowed by wildcard in base");
 
     }
 
-    private void checkNSSubset(int csIndex1, int csIndex2) { 
+    private boolean wildcardEltAllowsNamespace(int wildcardNode, int uriIndex) {
+
+      fSchemaGrammar.getContentSpec(wildcardNode, tempContentSpec1);
+      if ((tempContentSpec1.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) 
+        return true;
+
+      if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+        if (uriIndex == tempContentSpec1.otherValue) 
+           return true; 
+      }
+      else { // must be ANY_OTHER 
+        if (uriIndex != tempContentSpec1.otherValue && uriIndex != StringPool.EMPTY_STRING)
+            return true;
+      }
+
+      return false;
+    }
+       
+
+    private void checkNSSubset(int csIndex1, int csIndex2) throws Exception {
+      int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
+      int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
+
+      // check Occurrence ranges
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        throw new ParticleRecoverableError("rcase-NSSubset.2:  Wildcard's occurrence range not a restriction of base wildcard's range");
+      }
+
+      if (!wildcardEltSubset(csIndex1, csIndex2)) 
+         throw new ParticleRecoverableError("rcase-NSSubset.1:  Wildcard is not a subset of corresponding wildcard in base");
+
 
     }
 
-    private void checkRecurseAsIfGroup(int csIndex1, int derivedScope, int csindex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) {
+    private boolean wildcardEltSubset(int wildcardNode, int wildcardBaseNode) {
+
+      fSchemaGrammar.getContentSpec(wildcardNode, tempContentSpec1);
+      fSchemaGrammar.getContentSpec(wildcardBaseNode, tempContentSpec2);
+
+      if ((tempContentSpec2.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) 
+        return true;
+
+      if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+        if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
+            tempContentSpec1.otherValue == tempContentSpec2.otherValue) 
+           return true; 
+      }
+
+      if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+        if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL &&
+            tempContentSpec1.otherValue == tempContentSpec2.otherValue) 
+           return true; 
+
+        if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
+            tempContentSpec1.otherValue != tempContentSpec2.otherValue) 
+           return true; 
+
+      }
+
+      return false;
+    }
+
+    private void checkRecurseAsIfGroup(int csIndex1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) {
+
+      fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
+     
+       //  Treat the element as if it were in a group of the same type as csindex2
+      int indexOfGrp=fSchemaGrammar.addContentSpecNode(tempContentSpec2.type, 
+                             csIndex1,-2, false);
+      Vector tmpVector = new Vector();
+      tmpVector.addElement(new Integer(csIndex1));
+
+      
+      tmpVector = null;
+      if (tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_ALL || 
+          tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_SEQ) 
+         checkRecurse(indexOfGrp, tmpVector, derivedScope, csIndex2, 
+                      tempVector2, baseScope, bInfo);
+      else
+         checkRecurseLax(indexOfGrp, tmpVector, derivedScope, csIndex2, 
+                         tempVector2, baseScope, bInfo);
+       
     }
 
     private void checkNSRecurseCheckCardinality(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2) { 
+
+      
     }
 
     private void checkRecurse(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) { 
