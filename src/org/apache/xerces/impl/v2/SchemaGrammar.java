@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.v2.datatypes.*;
+import org.apache.xerces.impl.v2.identity.IdentityConstraint;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
@@ -119,6 +120,7 @@ public class SchemaGrammar {
 
     // decl count: element, attribute, notation, particle, type
     private int fElementDeclCount = 0;
+    private int fIDConstraintCount = 0;
     private int fAttributeDeclCount = 0 ;
     private int fNotationCount = 0;
     private int fParticleCount = 0;
@@ -135,9 +137,11 @@ public class SchemaGrammar {
     private String fElementDeclDefault[][];
     private String fElementDeclSubGroupNS[][];
     private int fElementDeclSubGroupIdx[][];
-    private Vector fElementDeclUnique[][];
-    private Vector fElementDeclKey[][];
-    private Vector fElementDeclKeyRef[][];
+    // need to establish a registry of IdentityConstraints so
+    // that object refs not necessary from key refs to their keys across grammars.
+    private int[] fElementDeclUniqueOrKey[][];
+    private int[] fElementDeclKeyRef[][];
+    private IdentityConstraint fIDConstraintRegistry[][];
 
     // attribute declarations
     private String fAttributeDeclName[][];
@@ -176,6 +180,7 @@ public class SchemaGrammar {
     SymbolHash fGlobalAttrGrpDecls;
     SymbolHash fGlobalElemDecls;
     SymbolHash fGlobalTypeDecls;
+    SymbolHash fGlobalIDConstraintDecls;
 
     // REVISIT: do we need the option?
     // Set if we check Unique Particle Attribution
@@ -203,9 +208,9 @@ public class SchemaGrammar {
         fElementDeclDefault = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fElementDeclSubGroupNS = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fElementDeclSubGroupIdx = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
-        fElementDeclUnique = new Vector[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
-        fElementDeclKey = new Vector[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
-        fElementDeclKeyRef = new Vector[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclUniqueOrKey = new int [INITIAL_CHUNK_COUNT][CHUNK_SIZE][1];
+        fElementDeclKeyRef = new int [INITIAL_CHUNK_COUNT][CHUNK_SIZE][1];
+        fIDConstraintRegistry = new IdentityConstraint [INITIAL_CHUNK_COUNT][CHUNK_SIZE];
 
         // attribute declarations
         fAttributeDeclName = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
@@ -240,6 +245,7 @@ public class SchemaGrammar {
         fGlobalAttrGrpDecls = new SymbolHash();
         fGlobalElemDecls = new SymbolHash();
         fGlobalTypeDecls = new SymbolHash();
+        fGlobalIDConstraintDecls = new SymbolHash();
     } // <init>(SymbolTable)
 
     private static final int BASICSET_COUNT = 29;
@@ -561,6 +567,57 @@ public class SchemaGrammar {
         return getElementDecl(elementIndex, elementDecl);
     } // getElementDecl(int,XSElementDecl):XSElementDecl
 
+    // add an ID Constraint declaration.  This returns the global ID
+    // constraint index (index of the object in the fIDConstraintDecl
+    // array); this index is also placed in the correct array of the
+    // given element decl, given its type.
+    // Finally, the fGlobalIDConstraintDecl registry is updated.
+    public int addIDConstraint(int elemIndex, IdentityConstraint ic) {
+        // store in fIDConstraintRegistry
+        //ensureCapacityElement();
+        int icIndex = fIDConstraintCount++;
+        int chunk = icIndex >> CHUNK_SHIFT;
+        int index = icIndex & CHUNK_MASK;
+        fIDConstraintRegistry[chunk][index] = ic;
+
+        // now put this index in correct element registry...
+        //ensureCapacityElement();
+        chunk = elemIndex >> CHUNK_SHIFT;
+        index = elemIndex & CHUNK_MASK;
+        if(ic.getType() == IdentityConstraint.KEYREF) { 
+            // REVISIT:  find a more efficient way of growing these arrays
+            // (though people are not likely to have *too* many
+            // IDConstraints/element...
+            if(fElementDeclKeyRef[chunk][index].length == 0) {
+                fElementDeclKeyRef[chunk][index][0] = icIndex;
+            } else {
+                System.arraycopy(fElementDeclKeyRef[chunk][index], 0, 
+                    fElementDeclKeyRef[chunk][index], 0, fElementDeclKeyRef.length);
+            }
+        } else { // must be unique or key...
+            if(fElementDeclUniqueOrKey[chunk][index].length == 0) {
+                fElementDeclUniqueOrKey[chunk][index][0] = icIndex;
+            } else {
+                System.arraycopy(fElementDeclUniqueOrKey[chunk][index], 0, 
+                    fElementDeclUniqueOrKey[chunk][index], 0, fElementDeclUniqueOrKey.length);
+            }
+        }
+        // update fGlobalIDConstraintDecl registry
+        fGlobalIDConstraintDecls.put(ic.getIdentityConstraintName(), icIndex);
+        return icIndex;
+    } // addIDConstraint(int, IdentityConstraint):void
+
+    // this method is needed for keyref processing.  
+    public IdentityConstraint getIDConstraint(int icIndex) {
+        int chunk = icIndex >> CHUNK_SHIFT;
+        int index = icIndex & CHUNK_MASK;
+        return fIDConstraintRegistry[chunk][index];
+    } // getIDConstraint(int):  IdentityConstraint
+
+    // return IDConstraint index given name
+    public int getIDConstraintIndex(String icName) {
+        return fGlobalIDConstraintDecls.get(icName);
+    } // getIDConstraintIndex(String):int
 
     // ***********************************************
     // Methods to create and get attribute declarations

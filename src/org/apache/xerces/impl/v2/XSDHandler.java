@@ -201,8 +201,10 @@ class XSDHandler {
     XSDComplexTypeTraverser fComplexTypeTraverser;
     XSDElementTraverser fElementTraverser;
     XSDGroupTraverser fGroupTraverser;
+    XSDKeyrefTraverser fKeyrefTraverser;;
     XSDNotationTraverser fNotationTraverser;
     XSDSimpleTypeTraverser fSimpleTypeTraverser;
+    XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
     XSDWildcardTraverser fWildCardTraverser;
 
     // Constructors
@@ -778,9 +780,13 @@ class XSDHandler {
                                                     fAttributeChecker, fSubGroupHandler);
         fGroupTraverser = new XSDGroupTraverser(this,
                                                 fErrorReporter, fAttributeChecker);
+        fKeyrefTraverser = new XSDKeyrefTraverser(this,
+                                                fErrorReporter, fAttributeChecker);
         fNotationTraverser = new XSDNotationTraverser(this,
                                                       fErrorReporter, fAttributeChecker);
         fSimpleTypeTraverser = new XSDSimpleTypeTraverser(this,
+                                                          fErrorReporter, fAttributeChecker);
+        fUniqueOrKeyTraverser = new XSDUniqueOrKeyTraverser(this,
                                                           fErrorReporter, fAttributeChecker);
         fWildCardTraverser = new XSDWildcardTraverser(this,
                                                       fErrorReporter, fAttributeChecker);
@@ -811,8 +817,10 @@ class XSDHandler {
         fComplexTypeTraverser.reset();
         fElementTraverser.reset();
         fGroupTraverser.reset();
+        fKeyrefTraverser.reset();
         fNotationTraverser.reset();
         fSimpleTypeTraverser.reset();
+        fUniqueOrKeyTraverser.reset();
         fWildCardTraverser.reset();
 
     } // reset
