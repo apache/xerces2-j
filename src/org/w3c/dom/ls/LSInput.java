@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -44,11 +44,13 @@ package org.w3c.dom.ls;
  * <li> <code>LSInput.publicId</code> 
  * </li>
  * </ol> 
+ * <p> If all inputs are null, the <code>LSParser</code> will report a 
+ * <code>DOMError</code> with its <code>DOMError.type</code> set to 
+ * <code>"no-input-specified"</code> and its <code>DOMError.severity</code> 
+ * set to <code>DOMError.SEVERITY_FATAL_ERROR</code>. 
  * <p> <code>LSInput</code> objects belong to the application. The DOM 
  * implementation will never modify them (though it may make copies and 
  * modify the copies, if necessary). 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
-and Save Specification</a>.
  */
 public interface LSInput {
     /**
@@ -101,12 +103,13 @@ public interface LSInput {
      * provide one, since the application will use it to resolve any 
      * relative URIs and can include it in error messages and warnings (the 
      * <code>LSParser</code> will only attempt to fetch the resource 
-     * identified by the URI reference only if there is no other input 
-     * available in the input source). 
+     * identified by the URI reference if there is no other input available 
+     * in the input source). 
      * <br> If the application knows the character encoding of the object 
      * pointed to by the system identifier, it can set the encoding using 
      * the <code>encoding</code> attribute. 
-     * <br> If the system ID is a relative URI reference (see section 5 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]), the DOM 
+     * <br> If the specified system ID is a relative URI reference (see 
+     * section 5 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]), the DOM 
      * implementation will attempt to resolve the relative URI with the 
      * <code>baseURI</code> as the base, if that fails, the behavior is 
      * implementation dependent. 
@@ -119,12 +122,13 @@ public interface LSInput {
      * provide one, since the application will use it to resolve any 
      * relative URIs and can include it in error messages and warnings (the 
      * <code>LSParser</code> will only attempt to fetch the resource 
-     * identified by the URI reference only if there is no other input 
-     * available in the input source). 
+     * identified by the URI reference if there is no other input available 
+     * in the input source). 
      * <br> If the application knows the character encoding of the object 
      * pointed to by the system identifier, it can set the encoding using 
      * the <code>encoding</code> attribute. 
-     * <br> If the system ID is a relative URI reference (see section 5 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]), the DOM 
+     * <br> If the specified system ID is a relative URI reference (see 
+     * section 5 in [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]), the DOM 
      * implementation will attempt to resolve the relative URI with the 
      * <code>baseURI</code> as the base, if that fails, the behavior is 
      * implementation dependent. 

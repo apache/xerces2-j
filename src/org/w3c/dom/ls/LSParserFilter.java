@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -26,7 +26,14 @@ import org.w3c.dom.Node;
  * methods, i.e. it is not possible to filter out the document element. 
  * <code>Document</code>, <code>DocumentType</code>, <code>Notation</code>, 
  * <code>Entity</code>, and <code>Attr</code> nodes are never passed to the 
- * <code>acceptNode</code> method on the filter. 
+ * <code>acceptNode</code> method on the filter. The child nodes of an 
+ * <code>EntityReference</code> node are passed to the filter if the 
+ * parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
+ * entities</a>" is set to <code>false</code>, or if the <code>EntityReference</code> 
+ * node is skipped by the method <code>LSParserFilter.acceptNode()</code>. 
+ * Note that, as described by the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
+ * entities</a>", entity reference nodes to non-defined entities are never discarded and 
+ * are always passed to the filter. 
  * <p> All validity checking while parsing a document occurs on the source 
  * document as it appears on the input stream, not on the DOM document as it 
  * is built in memory. With filters, the document in memory may be a subset 
@@ -35,9 +42,8 @@ import org.w3c.dom.Node;
  * <p> All default attributes must be present on elements when the elements 
  * are passed to the filter methods. All other default content must be 
  * passed to the filter methods. 
- * <p> The <code>LSParser</code> ignores any exception raised in the filter. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
-and Save Specification</a>.
+ * <p> DOM applications must not raise exceptions in a filter. The effect of 
+ * throwing exceptions from a filter is DOM implementation dependent. 
  */
 public interface LSParserFilter {
     // Constants returned by startElement and acceptNode
@@ -154,12 +160,14 @@ public interface LSParserFilter {
 
     /**
      *  Tells the <code>LSParser</code> what types of nodes to show to the 
-     * filter. See <code>NodeFilter</code> for definition of the constants. 
-     * The constants <code>SHOW_ATTRIBUTE</code>, <code>SHOW_DOCUMENT</code>
-     * , <code>SHOW_DOCUMENT_TYPE</code>, <code>SHOW_NOTATION</code>, 
-     * <code>SHOW_ENTITY</code>, and <code>SHOW_DOCUMENT_FRAGMENT</code> are 
-     * meaningless here, those nodes will never be passed to a 
-     * <code>LSParserFilter</code>. 
+     * method <code>LSParserFilter.acceptNode</code>. If a node is not shown 
+     * to the filter using this attribute, it is automatically included in 
+     * the DOM document being built. See <code>NodeFilter</code> for 
+     * definition of the constants. The constants <code>SHOW_ATTRIBUTE</code>
+     * , <code>SHOW_DOCUMENT</code>, <code>SHOW_DOCUMENT_TYPE</code>, 
+     * <code>SHOW_NOTATION</code>, <code>SHOW_ENTITY</code>, and 
+     * <code>SHOW_DOCUMENT_FRAGMENT</code> are meaningless here, those nodes 
+     * will never be passed to <code>LSParserFilter.acceptNode</code>. 
      * <br> The constants used here are defined in [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>DOM Level 2 Traversal and      Range</a>]
      * . 
      */

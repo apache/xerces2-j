@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -22,12 +22,10 @@ import org.w3c.dom.DOMException;
  * binding-specific casting methods on an instance of the 
  * <code>DOMImplementation</code> interface or, if the <code>Document</code> 
  * supports the feature <code>"Core"</code> version <code>"3.0"</code> 
- * defined in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+ * defined in [DOM Level 3 Core]
  * , by using the method <code>DOMImplementation.getFeature</code> with 
  * parameter values <code>"LS"</code> (or <code>"LS-Async"</code>) and 
  * <code>"3.0"</code> (respectively). 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
-and Save Specification</a>.
  */
 public interface DOMImplementationLS {
     // DOMImplementationLSMode
@@ -75,7 +73,7 @@ public interface DOMImplementationLS {
      *   error-handler</a>" configuration parameter is <code>null</code>. However, implementations 
      *   may provide a default error handler at creation time. In that case, 
      *   the initial value of the <code>"error-handler"</code> configuration 
-     *   parameter on the new created <code>LSParser</code> contains a 
+     *   parameter on the new <code>LSParser</code> object contains a 
      *   reference to the default error handler. 
      * @exception DOMException
      *    NOT_SUPPORTED_ERR: Raised if the requested mode or schema type is 
@@ -94,7 +92,7 @@ public interface DOMImplementationLS {
      *   parameter is <code>null</code>. However, implementations may 
      *   provide a default error handler at creation time. In that case, the 
      *   initial value of the <code>"error-handler"</code> configuration 
-     *   parameter on the new created <code>LSSerializer</code> contains a 
+     *   parameter on the new <code>LSSerializer</code> object contains a 
      *   reference to the default error handler. 
      */
     public LSSerializer createLSSerializer();

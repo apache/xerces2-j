@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -19,8 +19,10 @@ import org.w3c.dom.DOMException;
 /**
  *  A <code>LSSerializer</code> provides an API for serializing (writing) a 
  * DOM document out into XML. The XML data is written to a string or an 
- * output stream. 
- * <p> During serialization of XML data, namespace fixup is done as defined in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+ * output stream. Any changes or fixups made during the serialization affect 
+ * only the serialized data. The <code>Document</code> object and its 
+ * children are never altered by the serialization operation. 
+ * <p> During serialization of XML data, namespace fixup is done as defined in [DOM Level 3 Core]
  * , Appendix B. [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113'>DOM Level 2 Core</a>]
  *  allows empty strings as a real namespace URI. If the 
  * <code>namespaceURI</code> of a <code>Node</code> is empty string, the 
@@ -49,29 +51,37 @@ import org.w3c.dom.DOMException;
  * namespace fixup is done. The resulting output will be valid as an 
  * external entity. 
  * </li>
- * <li> <code>EntityReference</code> nodes are serialized as an 
- * entity reference of the form "<code>&amp;entityName;</code>" in the 
- * output. Child nodes (the expansion) of the entity reference are ignored. 
+ * <li> If the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
+ * entities</a>" is set to <code>true</code>, <code>EntityReference</code> nodes are 
+ * serialized as an entity reference of the form "
+ * <code>&amp;entityName;</code>" in the output. Child nodes (the expansion) 
+ * of the entity reference are ignored. If the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
+ * entities</a>" is set to <code>false</code>, only the children of the entity reference 
+ * are serialized. <code>EntityReference</code> nodes with no children (no 
+ * corresponding <code>Entity</code> node or the corresponding 
+ * <code>Entity</code> nodes have no children) are always serialized. 
  * </li>
  * <li> 
- * CDATA sections containing content characters that cannot be represented 
- * in the specified output encoding are handled according to the "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-split-cdata-sections'>
- * split-cdata-sections</a>" parameter.  If the parameter is set to <code>true</code>, CDATA sections 
- * are split, and the unrepresentable characters are serialized as numeric 
- * character references in ordinary content. The exact position and number 
- * of splits is not specified.  If the parameter is set to <code>false</code>
- * , unrepresentable characters in a CDATA section are reported as 
- * <code>"invalid-data-in-cdata-section"</code> errors. The error is not 
- * recoverable - there is no mechanism for supplying alternative characters 
- * and continuing with the serialization. 
+ * <code>CDATAsections</code> containing content characters that cannot be 
+ * represented in the specified output encoding are handled according to the 
+ * "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-split-cdata-sections'>
+ * split-cdata-sections</a>" parameter.  If the parameter is set to <code>true</code>, 
+ * <code>CDATAsections</code> are split, and the unrepresentable characters 
+ * are serialized as numeric character references in ordinary content. The 
+ * exact position and number of splits is not specified.  If the parameter 
+ * is set to <code>false</code>, unrepresentable characters in a 
+ * <code>CDATAsection</code> are reported as 
+ * <code>"wf-invalid-character"</code> errors if the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-wellformed'>
+ * well-formed</a>" is set to <code>true</code>. The error is not recoverable - there is no 
+ * mechanism for supplying alternative characters and continuing with the 
+ * serialization. 
  * </li>
- * <li> <code>DocumentFragment</code> 
- * nodes are serialized by serializing the children of the document fragment 
- * in the order they appear in the document fragment. 
+ * <li> <code>DocumentFragment</code> nodes are serialized by 
+ * serializing the children of the document fragment in the order they 
+ * appear in the document fragment. 
  * </li>
- * <li> All other node types 
- * (Element, Text, etc.) are serialized to their corresponding XML source 
- * form. 
+ * <li> All other node types (Element, Text, 
+ * etc.) are serialized to their corresponding XML source form. 
  * </li>
  * </ul>
  * <p ><b>Note:</b>  The serialization of a <code>Node</code> does not always 
@@ -96,8 +106,11 @@ import org.w3c.dom.DOMException;
  * numeric character reference. 
  * <p> Within markup, but outside of attributes, any occurrence of a character 
  * that cannot be represented in the output character encoding is reported 
- * as a fatal error. An example would be serializing the element 
- * &lt;LaCa\u00f1ada/&gt; with <code>encoding="us-ascii"</code>. 
+ * as a <code>DOMError</code> fatal error. An example would be serializing 
+ * the element &lt;LaCa\u00f1ada/&gt; with <code>encoding="us-ascii"</code>. 
+ * This will result with a generation of a <code>DOMError</code> 
+ * "wf-invalid-character-in-node-name" (as proposed in "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-well-formed'>
+ * well-formed</a>"). 
  * <p> When requested by setting the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-normalize-characters'>
  * normalize-characters</a>" on <code>LSSerializer</code> to true, character normalization is 
  * performed according to the rules defined in [<a href='http://www.w3.org/TR/2003/WD-charmod-20030822/'>CharModel</a>] on 
@@ -110,37 +123,25 @@ import org.w3c.dom.DOMException;
  * implementation dependent. 
  * <p> Namespaces are fixed up during serialization, the serialization process 
  * will verify that namespace declarations, namespace prefixes and the 
- * namespace URI's associated with elements and attributes are consistent. 
- * If inconsistencies are found, the serialized form of the document will be 
+ * namespace URI associated with elements and attributes are consistent. If 
+ * inconsistencies are found, the serialized form of the document will be 
  * altered to remove them. The method used for doing the namespace fixup 
  * while serializing a document is the algorithm defined in Appendix B.1, 
- * "Namespace normalization", of [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+ * "Namespace normalization", of [DOM Level 3 Core]
  * . 
- * <p> Any changes made affect only the namespace prefixes and declarations 
- * appearing in the serialized data. The DOM's view of the document is not 
- * altered by the serialization operation, and does not reflect any changes 
- * made to namespace declarations or prefixes in the serialized output.  We 
- * may take back what we say in the above paragraph depending on feedback 
- * from implementors, but for now the belief is that the DOM's view of the 
- * document is not changed during serialization. 
  * <p> While serializing a document, the parameter "discard-default-content" 
  * controls whether or not non-specified data is serialized. 
  * <p> While serializing, errors and warnings are reported to the application 
- * through the error handler (<code>LSSerializer.config</code>'s "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+ * through the error handler (<code>LSSerializer.domConfig</code>'s "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
  * error-handler</a>" parameter). This specification does in no way try to define all possible 
  * errors and warnings that can occur while serializing a DOM node, but some 
  * common error and warning cases are defined. The types (
  * <code>DOMError.type</code>) of errors and warnings defined by this 
  * specification are: 
  * <dl>
- * <dt><code>"invalid-data-in-cdata-section" [fatal]</code></dt>
- * <dd> 
- * Raised if the configuration parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-split-cdata-sections'>
- * split-cdata-sections</a>" is set to <code>false</code> and invalid data is encountered in a CDATA 
- * section. </dd>
  * <dt><code>"no-output-specified" [fatal]</code></dt>
- * <dd> Raised when writing 
- * to a <code>LSOutput</code> if no output is specified in the 
+ * <dd> Raised when 
+ * writing to a <code>LSOutput</code> if no output is specified in the 
  * <code>LSOutput</code>. </dd>
  * <dt> 
  * <code>"unbound-prefix-in-entity-reference" [fatal]</code> </dt>
@@ -158,14 +159,13 @@ import org.w3c.dom.DOMException;
  * are expected to raise implementation specific errors and warnings for any 
  * other error and warning cases such as IO errors (file not found, 
  * permission denied,...) and so on. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
-and Save Specification</a>.
  */
 public interface LSSerializer {
     /**
      *  The <code>DOMConfiguration</code> object used by the 
      * <code>LSSerializer</code> when serializing a DOM node. 
-     * <br> In addition to the parameters recognized in the [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+     * <br> In addition to the parameters recognized in on the <a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#DOMConfiguration'>
+     * DOMConfiguration</a> interface defined in [DOM Level 3 Core]
      * , the <code>DOMConfiguration</code> objects for 
      * <code>LSSerializer</code> adds, or modifies, the following 
      * parameters: 
@@ -174,9 +174,15 @@ public interface LSSerializer {
      * <dd>
      * <dl>
      * <dt><code>true</code></dt>
-     * <dd>[<em>optional</em>] This formatting writes the document according to the rules specified in [<a href='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'>Canonical XML</a>]. 
-     * Setting this parameter to <code>true</code> will set the parameter "
-     * format-pretty-print" to <code>false</code>. </dd>
+     * <dd>[<em>optional</em>] Writes the document according to the rules specified in [<a href='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'>Canonical XML</a>]. 
+     * In addition to the behavior described in "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-canonical-form'>
+     * canonical-form</a>" [DOM Level 3 Core]
+     * , setting this parameter to <code>true</code> will set the parameters 
+     * "format-pretty-print", "discard-default-content", and "xml-declaration
+     * ", to <code>false</code>. Setting one of those parameters to 
+     * <code>true</code> will set this parameter to <code>false</code>. 
+     * Serializing an XML 1.1 document when "canonical-form" is 
+     * <code>true</code> will generate a fatal error. </dd>
      * <dt><code>false</code></dt>
      * <dd>[<em>required</em>] (<em>default</em>) Do not canonicalize the output. </dd>
      * </dl></dd>
@@ -203,10 +209,9 @@ public interface LSSerializer {
      * indented, human-readable form. The exact form of the transformations 
      * is not specified by this specification. Pretty-printing changes the 
      * content of the document and may affect the validity of the document, 
-     * validating implementations should preserve validity. Setting this 
-     * parameter to <code>true</code> will set the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-canonical-form'>
-     * canonical-form</a>" to <code>false</code>. </dd>
-     * <dt><code>false</code></dt>
+     * validating implementations should preserve validity. </dd>
+     * <dt>
+     * <code>false</code></dt>
      * <dd>[<em>required</em>] (<em>default</em>) Don't pretty-print the result. </dd>
      * </dl></dd>
      * <dt> 
@@ -220,17 +225,16 @@ public interface LSSerializer {
      * properties cannot be determined, then raise a 
      * <code>"unknown-character-denormalization"</code> warning (instead of 
      * raising an error, if this parameter is not set) and ignore any 
-     * possible denormalizations caused by these characters.  IMO it would 
-     * make sense to move this parameter into the DOM Level 3 Core spec, and 
-     * the error/warning should be defined there. </dd>
-     * <dt><code>false</code></dt>
-     * <dd>[<em>optional</em>] Report an fatal error if a character is encountered for which the 
+     * possible denormalizations caused by these characters. </dd>
+     * <dt>
+     * <code>false</code></dt>
+     * <dd>[<em>optional</em>] Report a fatal error if a character is encountered for which the 
      * processor cannot determine the normalization properties. </dd>
      * </dl></dd>
      * <dt>
      * <code>"normalize-characters"</code></dt>
      * <dd> This parameter is equivalent to 
-     * the one defined by <code>DOMConfiguration</code> in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+     * the one defined by <code>DOMConfiguration</code> in [DOM Level 3 Core]
      * . Unlike in the Core, the default value for this parameter is 
      * <code>true</code>. While DOM implementations are not required to 
      * support fully normalizing the characters in the document according to 
@@ -258,67 +262,49 @@ public interface LSSerializer {
      * encoding would be needed to be able to re-parse the serialized data). </dd>
      * </dl></dd>
      * </dl>
-     * <br> The parameters "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-well-formed'>
-     * well-formed</a>", "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-namespaces'>
-     * namespaces</a>", and "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-namespace-declarations'>
-     * namespace-declarations</a>" cannot be set to <code>false</code>. 
      */
-    public DOMConfiguration getConfig();
+    public DOMConfiguration getDomConfig();
 
     /**
      *  The end-of-line sequence of characters to be used in the XML being 
-     * written out. Any string is supported, but these are the recommended 
-     * end-of-line sequences (using other character sequences than these 
-     * recommended ones can result in a document that is either not 
-     * serializable or not well-formed): 
-     * <dl>
-     * <dt><code>null</code></dt>
-     * <dd> Use a default 
-     * end-of-line sequence. DOM implementations should choose the default 
-     * to match the usual convention for text files in the environment being 
-     * used. Implementations must choose a default sequence that matches one 
-     * of those allowed by section 2.11, "End-of-Line Handling" in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], if the 
+     * written out. Any string is supported, but XML treats only a certain 
+     * set of characters sequence as end-of-line (See section 2.11, 
+     * "End-of-Line Handling" in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], if the 
      * serialized content is XML 1.0 or section 2.11, "End-of-Line Handling" 
      * in [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>], if the 
-     * serialized content is XML 1.1. </dd>
-     * <dt>CR</dt>
-     * <dd>The carriage-return character (#xD).</dd>
-     * <dt>
-     * CR-LF</dt>
-     * <dd> The carriage-return and line-feed characters (#xD #xA). </dd>
-     * <dt>LF</dt>
-     * <dd> The 
-     * line-feed character (#xA). </dd>
-     * </dl>
-     * <br>The default value for this attribute is <code>null</code>.
+     * serialized content is XML 1.1). Using other character sequences than 
+     * the recommended ones can result in a document that is either not 
+     * serializable or not well-formed). 
+     * <br> On retrieval, the default value of this attribute is the 
+     * implementation specific default end-of-line sequence. DOM 
+     * implementations should choose the default to match the usual 
+     * convention for text files in the environment being used. 
+     * Implementations must choose a default sequence that matches one of 
+     * those allowed by XML 1.0 or XML 1.1, depending on the serialized 
+     * content. Setting this attribute to <code>null</code> will reset its 
+     * value to the default value. 
+     * <br> 
      */
     public String getNewLine();
     /**
      *  The end-of-line sequence of characters to be used in the XML being 
-     * written out. Any string is supported, but these are the recommended 
-     * end-of-line sequences (using other character sequences than these 
-     * recommended ones can result in a document that is either not 
-     * serializable or not well-formed): 
-     * <dl>
-     * <dt><code>null</code></dt>
-     * <dd> Use a default 
-     * end-of-line sequence. DOM implementations should choose the default 
-     * to match the usual convention for text files in the environment being 
-     * used. Implementations must choose a default sequence that matches one 
-     * of those allowed by section 2.11, "End-of-Line Handling" in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], if the 
+     * written out. Any string is supported, but XML treats only a certain 
+     * set of characters sequence as end-of-line (See section 2.11, 
+     * "End-of-Line Handling" in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], if the 
      * serialized content is XML 1.0 or section 2.11, "End-of-Line Handling" 
      * in [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>], if the 
-     * serialized content is XML 1.1. </dd>
-     * <dt>CR</dt>
-     * <dd>The carriage-return character (#xD).</dd>
-     * <dt>
-     * CR-LF</dt>
-     * <dd> The carriage-return and line-feed characters (#xD #xA). </dd>
-     * <dt>LF</dt>
-     * <dd> The 
-     * line-feed character (#xA). </dd>
-     * </dl>
-     * <br>The default value for this attribute is <code>null</code>.
+     * serialized content is XML 1.1). Using other character sequences than 
+     * the recommended ones can result in a document that is either not 
+     * serializable or not well-formed). 
+     * <br> On retrieval, the default value of this attribute is the 
+     * implementation specific default end-of-line sequence. DOM 
+     * implementations should choose the default to match the usual 
+     * convention for text files in the environment being used. 
+     * Implementations must choose a default sequence that matches one of 
+     * those allowed by XML 1.0 or XML 1.1, depending on the serialized 
+     * content. Setting this attribute to <code>null</code> will reset its 
+     * value to the default value. 
+     * <br> 
      */
     public void setNewLine(String newLine);
 
@@ -357,7 +343,7 @@ public interface LSSerializer {
      * <li> <code>LSOutput.encoding</code>, 
      * </li>
      * <li> 
-     * <code>Document.actualEncoding</code>, 
+     * <code>Document.inputEncoding</code>, 
      * </li>
      * <li> 
      * <code>Document.xmlEncoding</code>. 
@@ -380,11 +366,19 @@ public interface LSSerializer {
      * @param nodeArg  The node to serialize. 
      * @param destination The destination for the serialized DOM.
      * @return  Returns <code>true</code> if <code>node</code> was 
-     *   successfully serialized and <code>false</code> in case the node 
-     *   couldn't be serialized. 
+     *   successfully serialized. Return <code>false</code> in case the 
+     *   normal processing stopped but the implementation kept serializing 
+     *   the document; the result of the serialization being implementation 
+     *   dependent then. 
+     * @exception LSException
+     *    SERIALIZE_ERR: Raised if the <code>LSSerializer</code> was unable to 
+     *   serialize the node. DOM applications should attach a 
+     *   <code>DOMErrorHandler</code> using the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+     *   error-handler</a>" if they wish to get details on the error. 
      */
     public boolean write(Node nodeArg, 
-                         LSOutput destination);
+                         LSOutput destination)
+                         throws LSException;
 
     /**
      *  A convenience method that acts as if <code>LSSerializer.write</code> 
@@ -394,11 +388,19 @@ public interface LSSerializer {
      * @param nodeArg  The node to serialize. 
      * @param uri The URI to write to.
      * @return  Returns <code>true</code> if <code>node</code> was 
-     *   successfully serialized and <code>false</code> in case the node 
-     *   couldn't be serialized. 
+     *   successfully serialized. Return <code>false</code> in case the 
+     *   normal processing stopped but the implementation kept serializing 
+     *   the document; the result of the serialization being implementation 
+     *   dependent then. 
+     * @exception LSException
+     *    SERIALIZE_ERR: Raised if the <code>LSSerializer</code> was unable to 
+     *   serialize the node. DOM applications should attach a 
+     *   <code>DOMErrorHandler</code> using the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+     *   error-handler</a>" if they wish to get details on the error. 
      */
     public boolean writeToURI(Node nodeArg, 
-                              String uri);
+                              String uri)
+                              throws LSException;
 
     /**
      *  Serialize the specified node as described above in the general 
@@ -407,13 +409,17 @@ public interface LSSerializer {
      * (this method completely ignores all the encoding information 
      * available). 
      * @param nodeArg  The node to serialize. 
-     * @return  Returns the serialized data, or <code>null</code> in case the 
-     *   node couldn't be serialized. 
+     * @return  Returns the serialized data. 
      * @exception DOMException
      *    DOMSTRING_SIZE_ERR: Raised if the resulting string is too long to 
      *   fit in a <code>DOMString</code>. 
+     * @exception LSException
+     *    SERIALIZE_ERR: Raised if the <code>LSSerializer</code> was unable to 
+     *   serialize the node. DOM applications should attach a 
+     *   <code>DOMErrorHandler</code> using the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+     *   error-handler</a>" if they wish to get details on the error. 
      */
     public String writeToString(Node nodeArg)
-                                throws DOMException;
+                                throws DOMException, LSException;
 
 }

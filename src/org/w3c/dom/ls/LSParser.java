@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -24,7 +24,7 @@ import org.w3c.dom.DOMException;
  * corresponding DOM document structure. A <code>LSParser</code> instance 
  * can be obtained by invoking the 
  * <code>DOMImplementationLS.createLSParser()</code> method. 
- * <p> As specified in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+ * <p> As specified in DOM Level 3 Core
  * , when a document is first made available via the LSParser: 
  * <ul>
  * <li> there will 
@@ -61,7 +61,7 @@ import org.w3c.dom.DOMException;
  * <code>LSParser</code> signals progress as data is parsed.  This 
  * specification does not attempt to define exactly when progress events 
  * should be dispatched, that is intentionally left as implementation 
- * depenedent, but here is one example of how an application might dispatch 
+ * dependent, but here is one example of how an application might dispatch 
  * progress events. Once the parser starts receiving data, a progress event 
  * is dispatched to indicate that the parsing starts, then from there on, a 
  * progress event is dispatched for every 4096 bytes of data that is 
@@ -73,7 +73,7 @@ import org.w3c.dom.DOMException;
  * <p ><b>Note:</b>  All events defined in this specification use the 
  * namespace URI <code>"http://www.w3.org/2002/DOMLS"</code>. 
  * <p> While parsing an input source, errors are reported to the application 
- * through the error handler (<code>LSParser.config</code>'s "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+ * through the error handler (<code>LSParser.domConfig</code>'s "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
  * error-handler</a>" parameter). This specification does in no way try to define all possible 
  * errors that can occur while parsing XML, or any other markup, but some 
  * common error cases are defined. The types (<code>DOMError.type</code>) of 
@@ -83,16 +83,20 @@ import org.w3c.dom.DOMException;
  * <code>"check-character-normalization-failure" [error]</code> </dt>
  * <dd> Raised if 
  * the paramter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-check-character-normalization'>
- * check-character-normalization</a>" is set to true and a string is encoutered that fails normalization 
+ * check-character-normalization</a>" is set to true and a string is encountered that fails normalization 
  * checking. </dd>
  * <dt><code>"doctype-not-allowed" [fatal]</code></dt>
  * <dd> Raised if the 
  * configuration parameter "disallow-doctype" is set to <code>true</code> 
  * and a doctype is encountered. </dd>
+ * <dt><code>"no-input-specified" [fatal]</code></dt>
+ * <dd> 
+ * Raised when loading a document and no input is specified in the 
+ * <code>LSInput</code> object. </dd>
  * <dt>
  * <code>"pi-base-uri-not-preserved" [warning]</code></dt>
  * <dd> Raised if a processing 
- * instruction is encoutered in a location where the base URI of the 
+ * instruction is encountered in a location where the base URI of the 
  * processing instruction can not be preserved.  One example of a case where 
  * this warning will be raised is if the configuration parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-entities'>
  * entities</a>" is set to <code>false</code> and the following XML file is parsed: 
@@ -131,8 +135,6 @@ import org.w3c.dom.DOMException;
  * are expected to raise implementation specific errors and warnings for any 
  * other error and warning cases such as IO errors (file not found, 
  * permission denied,...), XML well-formedness errors, and so on. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
-and Save Specification</a>.
  */
 public interface LSParser {
     /**
@@ -146,7 +148,8 @@ public interface LSParser {
      * <code>DOMConfiguration</code> object to the 
      * <code>DOMConfiguration</code> object referenced by the 
      * <code>Document</code> object. 
-     * <br> In addition to the parameters recognized in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+     * <br> In addition to the parameters recognized in on the <a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#DOMConfiguration'>
+     * DOMConfiguration</a> interface defined in DOM Level 3 Core
      * , the <code>DOMConfiguration</code> objects for <code>LSParser</code> 
      * add or modify the following parameters: 
      * <dl>
@@ -155,7 +158,7 @@ public interface LSParser {
      * <dd>
      * <dl>
      * <dt><code>true</code></dt>
-     * <dd>[<em>required</em>] (<em>default</em>) If a higher level protocol such as HTTP [<a href='http://www.ietf.org/rfc/rfc2616.txt'>IETF RFC 2616</a>] provides an 
+     * <dd>[<em>optional</em>] (<em>default</em>) If a higher level protocol such as HTTP [<a href='http://www.ietf.org/rfc/rfc2616.txt'>IETF RFC 2616</a>] provides an 
      * indication of the character encoding of the input stream being 
      * processed, that will override any encoding specified in the XML 
      * declaration or the Text declaration (see also section 4.3.3, 
@@ -196,7 +199,7 @@ public interface LSParser {
      * <dt><code>"infoset"</code></dt>
      * <dd> See 
      * the definition of <code>DOMConfiguration</code> for a description of 
-     * this parameter. Unlike in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>DOM Level 3 Core</a>]
+     * this parameter. Unlike in [DOM Level 3 Core]
      * , this parameter will default to <code>true</code> for 
      * <code>LSParser</code>. </dd>
      * <dt><code>"namespaces"</code></dt>
@@ -233,7 +236,7 @@ public interface LSParser {
      * <br> The parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-well-formed'>
      * well-formed</a>" cannot be set to <code>false</code>. 
      */
-    public DOMConfiguration getConfig();
+    public DOMConfiguration getDomConfig();
 
     /**
      *  When a filter is provided, the implementation will call out to the 
@@ -285,9 +288,14 @@ public interface LSParser {
      * @exception DOMException
      *    INVALID_STATE_ERR: Raised if the <code>LSParser</code>'s 
      *   <code>LSParser.busy</code> attribute is <code>true</code>. 
+     * @exception LSException
+     *    PARSE_ERR: Raised if the <code>LSParser</code> was unable to load 
+     *   the XML document. DOM applications should attach a 
+     *   <code>DOMErrorHandler</code> using the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+     *   error-handler</a>" if they wish to get details on the error. 
      */
     public Document parse(LSInput input)
-                          throws DOMException;
+                          throws DOMException, LSException;
 
     /**
      *  Parse an XML document from a location identified by a URI reference [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>]. If the URI 
@@ -297,15 +305,21 @@ public interface LSParser {
      * @param uri The location of the XML document to be read.
      * @return  If the <code>LSParser</code> is a synchronous 
      *   <code>LSParser</code>, the newly created and populated 
-     *   <code>Document</code> is returned. If the <code>LSParser</code> is 
-     *   asynchronous, <code>null</code> is returned since the document 
-     *   object may not yet be constructed when this method returns. 
+     *   <code>Document</code> is returned, or <code>null</code> if an error 
+     *   occured. If the <code>LSParser</code> is asynchronous, 
+     *   <code>null</code> is returned since the document object may not yet 
+     *   be constructed when this method returns. 
      * @exception DOMException
      *    INVALID_STATE_ERR: Raised if the <code>LSParser.busy</code> 
      *   attribute is <code>true</code>. 
+     * @exception LSException
+     *    PARSE_ERR: Raised if the <code>LSParser</code> was unable to load 
+     *   the XML document. DOM applications should attach a 
+     *   <code>DOMErrorHandler</code> using the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+     *   error-handler</a>" if they wish to get details on the error. 
      */
     public Document parseURI(String uri)
-                             throws DOMException;
+                             throws DOMException, LSException;
 
     // ACTION_TYPES
     /**
@@ -360,14 +374,13 @@ public interface LSParser {
      * is <code>ACTION_REPLACE_CHILDREN</code>, then the document that is 
      * passed as the context node will be changed such that its 
      * <code>xmlEncoding</code>, <code>documentURI</code>, 
-     * <code>xmlVersion</code>, <code>actualEncoding</code>, 
+     * <code>xmlVersion</code>, <code>inputEncoding</code>, 
      * <code>xmlStandalone</code>, and all other such attributes are set to 
      * what they would be set to if the input source was parsed using 
      * <code>LSParser.parse()</code>. 
-     * <br> If the <code>LSParser</code> is asynchronous then the insertion of 
-     * the resulting DOM structure is atomic, e.g. the whole structure is 
-     * inserted only once the whole input stream is completely parsed 
-     * without errors. 
+     * <br> This method is always synchronous, even if the 
+     * <code>LSParser</code> is asynchronous (<code>LSParser.async</code> is 
+     * <code>true</code>). 
      * <br> If an error occurs while parsing, the caller is notified through 
      * the <code>ErrorHandler</code> instance associated with the "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
      * error-handler</a>" parameter of the <code>DOMConfiguration</code>. 
@@ -399,17 +412,31 @@ public interface LSParser {
      *   the result is more than one top-level node, the first one is 
      *   returned. 
      * @exception DOMException
-     *    NOT_SUPPORTED_ERR: Raised if the <code>LSParser</code> doesn't 
-     *   support this method. 
+     *   HIERARCHY_REQUEST_ERR: Raised if the content cannot replace, be 
+     *   inserted before, after, or as a child of the context node (see also 
+     *   <code>Node.insertBefore</code> or <code>Node.replaceChild</code> in [DOM Level 3 Core]
+     *   ).
+     *   <br> NOT_SUPPORTED_ERR: Raised if the <code>LSParser</code> doesn't 
+     *   support this method, or if the context node is of type 
+     *   <code>Document</code> and the DOM implementation doesn't support 
+     *   the replacement of the <code>DocumentType</code> child or 
+     *   <code>Element</code> child. 
      *   <br> NO_MODIFICATION_ALLOWED_ERR: Raised if the context node is a 
-     *   read only node.
+     *   read only node and the content is being appended to its child list, 
+     *   or if the parent node of the context node is read only node and the 
+     *   content is being inserted in its child list.
      *   <br> INVALID_STATE_ERR: Raised if the <code>LSParser.busy</code> 
      *   attribute is <code>true</code>. 
+     * @exception LSException
+     *    PARSE_ERR: Raised if the <code>LSParser</code> was unable to load 
+     *   the XML fragment. DOM applications should attach a 
+     *   <code>DOMErrorHandler</code> using the parameter "<a href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#parameter-error-handler'>
+     *   error-handler</a>" if they wish to get details on the error. 
      */
     public Node parseWithContext(LSInput input, 
                                  Node contextArg, 
                                  short action)
-                                 throws DOMException;
+                                 throws DOMException, LSException;
 
     /**
      *  Abort the loading of the document that is currently being loaded by 

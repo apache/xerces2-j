@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -43,7 +43,7 @@ package org.w3c.dom.ls;
  * <p> <code>LSOutput</code> objects belong to the application. The DOM 
  * implementation will never modify them (though it may make copies and 
  * modify the copies, if necessary). 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>Document Object Model (DOM) Level 3 Load
+ * <p>See also the <a href='http://www.w3.org/2004/01/PR-DOM-Level-3-LS-20040112'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface LSOutput {
@@ -91,8 +91,6 @@ public interface LSOutput {
      * character encodings registered (as charsets) with the Internet 
      * Assigned Numbers Authority [<a href='ftp://ftp.isi.edu/in-notes/iana/assignments/character-sets'>IANA-CHARSETS</a>]
      *  should be referred to using their registered names. 
-     * <br> This attribute has no effect when outputting to a character 
-     * stream. 
      */
     public String getEncoding();
     /**
@@ -102,8 +100,6 @@ public interface LSOutput {
      * character encodings registered (as charsets) with the Internet 
      * Assigned Numbers Authority [<a href='ftp://ftp.isi.edu/in-notes/iana/assignments/character-sets'>IANA-CHARSETS</a>]
      *  should be referred to using their registered names. 
-     * <br> This attribute has no effect when outputting to a character 
-     * stream. 
      */
     public void setEncoding(String encoding);
 
