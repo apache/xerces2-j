@@ -59,7 +59,6 @@ public class MonthDayDV extends AbstractDateTimeDV {
     protected DateTimeData parse(String str) throws SchemaDateTimeException{
         DateTimeData date = new DateTimeData(this);
         int len = str.length();
-        int[] timeZone = new int[2];
 
         //initialize
         date.year=YEAR;
@@ -82,15 +81,15 @@ public class MonthDayDV extends AbstractDateTimeDV {
                 throw new SchemaDateTimeException ("Error in month parsing:" +str);
             }
             else {
-                getTimeZone(str, date, sign, len, timeZone);
+                getTimeZone(str, date, sign, len);
             }
         }
         //validate and normalize
 
-        validateDateTime(date, timeZone);
+        validateDateTime(date);
 
         if ( date.utc!=0 && date.utc!='Z' ) {
-            normalize(date, timeZone);
+            normalize(date);
         }
         return date;
     }

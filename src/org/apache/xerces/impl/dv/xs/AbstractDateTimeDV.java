@@ -42,8 +42,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
     //define shared variables for date/time
 
-    //define constants
-    protected final static int hh=0, mm=1;
 
     //define constants to be used in assigning default values for
     //all date/time excluding duration
@@ -77,17 +75,16 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         short c1, c2;
 
         DateTimeData tempDate = new DateTimeData(this);
-        int[] timeZone = new int[2];
 
         if ( date1.utc=='Z' ) {
 
             //compare date1<=date1<=(date2 with time zone -14)
             //
             cloneDate(date2, tempDate); //clones date1 value to global temporary storage: fTempDate
-            timeZone[hh]=14;
-            timeZone[mm]=0;
+            tempDate.timezoneHr=14;
+            tempDate.timezoneMin = 0;
             tempDate.utc='+';
-            normalize(tempDate, timeZone);
+            normalize(tempDate);
             c1 = compareOrder(date1, tempDate);
             if (c1 == LESS_THAN)
                 return c1;
@@ -95,10 +92,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             //compare date1>=(date2 with time zone +14)
             //
             cloneDate(date2, tempDate); //clones date1 value to global temporary storage: tempDate
-            timeZone[hh]=14;
-            timeZone[mm]=0;
+            tempDate.timezoneHr = -14;
+            tempDate.timezoneMin = 0;
             tempDate.utc='-';
-            normalize(tempDate, timeZone);
+            normalize(tempDate);
             c2 = compareOrder(date1, tempDate);
             if (c2 == GREATER_THAN)
                 return c2;
@@ -110,13 +107,13 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             //compare (date1 with time zone -14)<=date2
             //
             cloneDate(date1, tempDate); //clones date1 value to global temporary storage: tempDate
-            timeZone[hh]=14;
-            timeZone[mm]=0;
+            tempDate.timezoneHr = -14;
+            tempDate.timezoneMin = 0;
             tempDate.utc='-';
             if (DEBUG) {
                System.out.println("tempDate=" + dateToString(tempDate));
             }
-            normalize(tempDate, timeZone);
+            normalize(tempDate);
             c1 = compareOrder(tempDate, date2);
             if (DEBUG) {
                 System.out.println("date=" + dateToString(date2));
@@ -128,10 +125,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             //compare (date1 with time zone +14)<=date2
             //
             cloneDate(date1, tempDate); //clones date1 value to global temporary storage: tempDate
-            timeZone[hh]=14;
-            timeZone[mm]=0;
+            tempDate.timezoneHr = 14;
+            tempDate.timezoneMin = 0;
             tempDate.utc='+';
-            normalize(tempDate, timeZone);
+            normalize(tempDate);
             c2 = compareOrder(tempDate, date2);
             if (DEBUG) {
                System.out.println("tempDate=" + dateToString(tempDate));
@@ -193,7 +190,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param data
      * @exception RuntimeException
      */
-    protected  void getTime (String buffer, int start, int end, DateTimeData data, int[] timeZone) throws RuntimeException{
+    protected  void getTime (String buffer, int start, int end, DateTimeData data) throws RuntimeException{
 
         int stop = start+2;
 
@@ -224,7 +221,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
         //parse UTC time zone (hh:mm)
         if (sign > 0) {
-            getTimeZone(buffer, data, sign, end, timeZone);
+            getTimeZone(buffer, data, sign, end);
         }
     }
 
@@ -291,7 +288,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param date
      * @exception RuntimeException
      */
-    protected void parseTimeZone (String buffer, int start, int end, DateTimeData date, int[] timeZone) throws RuntimeException{
+    protected void parseTimeZone (String buffer, int start, int end, DateTimeData date) throws RuntimeException{
 
         //fStart points right after the date
 
@@ -301,7 +298,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
                 throw new RuntimeException ("Error in month parsing");
             }
             else {
-                getTimeZone(buffer, date, sign, end, timeZone);
+                getTimeZone(buffer, date, sign, end);
             }
         }
     }
@@ -313,7 +310,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param sign
      * @exception RuntimeException
      */
-    protected void getTimeZone (String buffer, DateTimeData data, int sign, int end, int[] timeZone) throws RuntimeException{
+    protected void getTimeZone (String buffer, DateTimeData data, int sign, int end) throws RuntimeException{
         data.utc=buffer.charAt(sign);
 
         if ( buffer.charAt(sign) == 'Z' ) {
@@ -324,26 +321,26 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         }
         if ( sign<=(end-6) ) {
 
-            //parse [hh]
+        	int negate = buffer.charAt(sign) == '-'?-1:1;
+            //parse hr
             int stop = ++sign+2;
-            timeZone[hh]=parseInt(buffer, sign, stop);
+            data.timezoneHr = negate*parseInt(buffer, sign, stop);
             if (buffer.charAt(stop++)!=':') {
                 throw new RuntimeException("Error in parsing time zone" );
             }
 
-            //parse [ss]
-            timeZone[mm]=parseInt(buffer, stop, stop+2);
+            //parse min
+            data.timezoneMin = negate*parseInt(buffer, stop, stop+2);
 
             if ( stop+2!=end ) {
                 throw new RuntimeException("Error in parsing time zone");
             }
-
         }
         else {
             throw new RuntimeException("Error in parsing time zone");
         }
         if ( DEBUG ) {
-            System.out.println("time[hh]="+timeZone[hh] + " time[mm]=" +timeZone[mm]);
+            System.out.println("time[hh]="+data.timezoneHr + " time[mm]=" +data.timezoneMin);
         }
     }
 
@@ -370,7 +367,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *
      * @param data
      */
-    protected void validateDateTime (DateTimeData data, int[] timeZone) {
+    protected void validateDateTime (DateTimeData data) {
 
         //REVISIT: should we throw an exception for not valid dates
         //          or reporting an error message should be sufficient?
@@ -406,9 +403,9 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
                         }
                         else if (++data.year == 0) {
                             data.year = 1;
-                        }
                     }
                 }
+            }
             }
             else {
                 throw new RuntimeException("Hour must have values 0-23, unless 24:00:00");
@@ -427,14 +424,16 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         }
 
         //validate
-        if ( timeZone[hh]>14 || timeZone[hh]<-14 ) {
-            throw new RuntimeException("Time zone should have range -14..+14");
+        if ( data.timezoneHr>14 || data.timezoneHr<-14 ) {
+            throw new RuntimeException("Time zone should have range -14:00 to +14:00");
+        }
+        else {
+        	if((data.timezoneHr == 14 || data.timezoneHr == -14) && data.timezoneMin != 0)
+        		throw new RuntimeException("Time zone should have range -14:00 to +14:00");
+        	else if(data.timezoneMin > 59 || data.timezoneMin < -59)
+        		throw new RuntimeException("Minute must have values 0-59");
         }
 
-        //validate
-        if ( timeZone[mm]>59 || timeZone[mm]<-59 ) {
-            throw new RuntimeException("Minute must have values 0-59");
-        }
     }
 
     /**
@@ -530,22 +529,20 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param date   CCYY-MM-DDThh:mm:ss+03
      * @return CCYY-MM-DDThh:mm:ssZ
      */
-    protected void normalize(DateTimeData date, int[] timeZone) {
+    protected void normalize(DateTimeData date) {
 
         // REVISIT: we have common code in addDuration() for durations
         //          should consider reorganizing it.
         //
-
+    	
         //add minutes (from time zone)
-        int negate = 1;
-        if (date.utc=='+') {
-            negate = -1;
-        }
+        int negate = -1;
+
         if ( DEBUG ) {
             System.out.println("==>date.minute"+date.minute);
-            System.out.println("==>timeZone[mm]" +timeZone[mm]);
+            System.out.println("==>date.timezoneMin" +date.timezoneMin);
         }
-        int temp = date.minute + negate*timeZone[mm];
+        int temp = date.minute + negate * date.timezoneMin;
         int carry = fQuotient (temp, 60);
         date.minute= mod(temp, 60, carry);
 
@@ -553,7 +550,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             System.out.println("==>carry: " + carry);
         }
         //add hours
-        temp = date.hour + negate*timeZone[hh] + carry;
+        temp = date.hour + negate * date.timezoneHr + carry;
         carry = fQuotient(temp, 24);
         date.hour=mod(temp, 24, carry);
         if ( DEBUG ) {
@@ -597,6 +594,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         data.minute = 0;
         data.second = 0;
         data.utc = 0;
+        data.timezoneHr = 0;
+        data.timezoneMin = 0;
     }
 
     /**
@@ -752,6 +751,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         tempDate.minute = finalValue.minute;
         tempDate.second = finalValue.second;
         tempDate.utc = finalValue.utc;
+        tempDate.timezoneHr = finalValue.timezoneHr;
+        tempDate.timezoneMin = finalValue.timezoneMin;
     }
 
     /**
@@ -760,6 +761,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     static final class DateTimeData {
         int year, month, day, hour, minute, utc;
         double second;
+        int timezoneHr, timezoneMin;
         // a pointer to the type that was used go generate this data
         // note that this is not the actual simple type, but one of the
         // statically created XXXDV objects, so this won't cause any GC problem.

@@ -48,17 +48,16 @@ public class DateDV extends DateTimeDV {
     protected DateTimeData parse(String str) throws SchemaDateTimeException{
         DateTimeData date = new DateTimeData(this);
         int len = str.length();
-        int[] timeZone = new int[2];
 
         int end = getDate(str, 0, len, date);
-        parseTimeZone (str, end, len, date, timeZone);
+        parseTimeZone (str, end, len, date);
 
         //validate and normalize
         //REVISIT: do we need SchemaDateTimeException?
-        validateDateTime(date, timeZone);
+        validateDateTime(date);
 
         if (date.utc!=0 && date.utc!='Z') {
-            normalize(date, timeZone);
+            normalize(date);
         }
         return date;
     }

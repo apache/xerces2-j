@@ -49,13 +49,12 @@ public class DateTimeDV extends AbstractDateTimeDV {
     protected DateTimeData parse(String str) throws SchemaDateTimeException {
         DateTimeData date = new DateTimeData(this);
         int len = str.length();
-        int[] timeZone = new int[2];
 
         int end = indexOf (str, 0, len, 'T');
 
         // both time and date
         int dateEnd = getDate(str, 0, end, date);
-        getTime(str, end+1, len, date, timeZone);
+        getTime(str, end+1, len, date);
 
         //Check the separator character between Date and Time
         if (dateEnd != end) {
@@ -67,10 +66,10 @@ public class DateTimeDV extends AbstractDateTimeDV {
         //validate and normalize
 
         //REVISIT: do we need SchemaDateTimeException?
-        validateDateTime(date, timeZone);
+        validateDateTime(date);
 
         if (date.utc!=0 && date.utc!='Z') {
-            normalize(date, timeZone);
+            normalize(date);
         }
         return date;
     }

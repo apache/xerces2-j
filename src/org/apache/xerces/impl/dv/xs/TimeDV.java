@@ -56,21 +56,20 @@ public class TimeDV extends AbstractDateTimeDV {
     protected DateTimeData parse(String str) throws SchemaDateTimeException{
         DateTimeData date = new DateTimeData(this);
         int len = str.length();
-        int[] timeZone = new int[2];
 
         // time
         // initialize to default values
         date.year=YEAR;
         date.month=MONTH;
         date.day=DAY;
-        getTime(str, 0, len, date, timeZone);
+        getTime(str, 0, len, date);
 
         //validate and normalize
 
-        validateDateTime(date, timeZone);
+        validateDateTime(date);
 
         if ( date.utc!=0 ) {
-            normalize(date, timeZone);
+            normalize(date);
         }
         return date;
     }
