@@ -123,7 +123,7 @@ public class WrappedInputStream
 
         // read packet header
         if (fPacketCount == 0) {
-            fPacketCount = fDataInputStream.readShort() & 0x0000FFFF;
+            fPacketCount = fDataInputStream.readInt() & 0x7FFFFFFF;
             if (fPacketCount == 0) {
                 fClosed = true;
                 return -1;
@@ -148,7 +148,7 @@ public class WrappedInputStream
 
         // read packet header
         if (fPacketCount == 0) {
-            fPacketCount = fDataInputStream.readShort() & 0x0000FFFF;
+            fPacketCount = fDataInputStream.readInt() & 0x7FFFFFFF;
             if (fPacketCount == 0) {
                 fClosed = true;
                 return -1;
@@ -201,7 +201,7 @@ public class WrappedInputStream
             fClosed = true;
             do {
                 super.in.skip(fPacketCount);
-                fPacketCount = fDataInputStream.readShort() & 0x0000FFFF;
+                fPacketCount = fDataInputStream.readInt() & 0x7FFFFFFF;
             } while (fPacketCount > 0);
         }
     } // close()
