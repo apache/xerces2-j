@@ -910,7 +910,8 @@ public class XMLSchemaValidator
             fBuffer.append(fNormalizedStr.ch, fNormalizedStr.offset, fNormalizedStr.length);
         }
         else {
-            fBuffer.append(data);
+            if (fAppendBuffer)
+                fBuffer.append(data);
         }
 
         // When it's a complex type with element-only content, we need to
@@ -1183,6 +1184,9 @@ public class XMLSchemaValidator
     /** Temporary string buffers. */
     final StringBuffer fBuffer = new StringBuffer();
 
+    /** Whether need to append characters to fBuffer */
+    boolean fAppendBuffer = true;
+    
     /** Did we see any character data? */
     boolean fSawText = false;
 
@@ -1571,7 +1575,8 @@ public class XMLSchemaValidator
             normalizeWhitespace(text, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
             text = fNormalizedStr;
         }
-        fBuffer.append(text.ch, text.offset, text.length);
+        if (fAppendBuffer)
+            fBuffer.append(text.ch, text.offset, text.length);
         
         // When it's a complex type with element-only content, we need to
         // find out whether the content contains any non-whitespace character.
@@ -1912,9 +1917,25 @@ public class XMLSchemaValidator
             fCurrentType = SchemaGrammar.fAnyType;
             fStrictAssess = false;
             fNFullValidationDepth = fElementDepth;
+            // any type has mixed content, so we don't need to append buffer
+            fAppendBuffer = false;
         }
         else {
             fNNoneValidationDepth = fElementDepth;
+            // if the element has a fixed value constraint, we need to append
+            if (fCurrentElemDecl != null &&
+                fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED) {
+                fAppendBuffer = true;
+            }
+            // if the type is simple, we need to append
+            else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+                fAppendBuffer = true;
+            }
+            else {
+                // if the type is simple content complex type, we need to append
+                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                fAppendBuffer = (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE);
+            }
         }
 
         // make the current element validation root
@@ -2185,6 +2206,9 @@ public class XMLSchemaValidator
             // only value we are going to push/pop in the stack is -1.
             // Here we just mimic the effect of popping -1. -SG
             fWhiteSpace = -1;
+            // Same for append buffer. Simple types and elements with fixed
+            // value constraint don't allow sub-elements. -SG
+            fAppendBuffer = false;
         }
 
         return augs;
@@ -2782,7 +2806,9 @@ public class XMLSchemaValidator
         }
         // fixed values are handled later, after xsi:type determined.
 
-        String content = fBuffer.toString();
+        String content = XMLSymbols.EMPTY_STRING;
+        if (fAppendBuffer)
+            content = fBuffer.toString();
         fValidatedInfo.normalizedValue = null;
 
         // Element Locally Valid (Element)
