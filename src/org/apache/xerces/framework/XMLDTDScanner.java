@@ -1133,6 +1133,12 @@ public final class XMLDTDScanner {
                                                                                     markupDepth());
             fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
         }
+        else {
+            fDTDGrammar.callEndDTD();
+            if (fDTDHandler != null) {
+                fDTDHandler.endDTD();
+            }
+        }
 
         fGrammarResolver.putGrammar("", fDTDGrammar);
 
