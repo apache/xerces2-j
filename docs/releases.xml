@@ -9,6 +9,7 @@
            <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec [ericye]</li>
            <li>Fixed "xml:space" bug in DTD validation [ericye, andyc]</li>
            <li>Fixed "any" element bugs when there are multilple URIs [ericye]</li>
+           <li>Cleaned up XMLValidator [ericye]</li>
            <li>Fixed misc. Schema bugs [ericye]</li>
            <li>Fixed resolving Schema location bug in XMLValidator [David.Blankenship@kla_tencor.com, ericye]</li>
         </ul>

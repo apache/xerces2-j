@@ -152,9 +152,6 @@ public final class XMLValidator
 
     // attribute validators
 
-    // REVISIT: Validation. A validator per element declaration and
-    //          attribute declaration is required to accomodate
-    //          Schema facets on simple types.
     private AttributeValidator fAttValidatorCDATA = null;
     private AttributeValidator fAttValidatorID = new AttValidatorID();
     private AttributeValidator fAttValidatorIDREF = new AttValidatorIDREF();
@@ -192,7 +189,6 @@ public final class XMLValidator
     private DefaultEntityHandler fEntityHandler = null;
     private QName fCurrentElement = new QName();
 
-    //REVISIT: validation
     private int[] fScopeStack = new int[8];
     private int[] fGrammarNameSpaceIndexStack = new int[8];
 
@@ -800,7 +796,6 @@ public final class XMLValidator
             System.out.println("=======EndElement : " + fStringPool.toString(fCurrentElement.localpart)+"\n");
 
         int prefixIndex = fCurrentElement.prefix;
-        // REVISIT: Validation
         int elementType = fCurrentElement.rawname;
 
         if (fCurrentElementEntity != readerId) {
@@ -840,7 +835,7 @@ public final class XMLValidator
                     reportRecoverableXMLError(majorCode,
                                               0,
                                               fStringPool.toString(elementType),
-                                              XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));// REVISIT: getContentSpecAsString(elementIndex));
+                                              XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));
                 }
             }
             fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
@@ -887,7 +882,6 @@ public final class XMLValidator
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
 
-        //REVISIT: Validation
         fCurrentScope = fScopeStack[fElementDepth];
 
         //if ( DEBUG_SCHEMA_VALIDATION ) {
@@ -1198,7 +1192,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         int retVal = 0;
         try {
             // Get the content model for this element
-            final XMLContentModel cmElem = getContentModel(elementIndex);
+            final XMLContentModel cmElem = getElementContentModel(elementIndex);
 
             // And delegate this call to it
             retVal = cmElem.whatCanGoHere(fullyValid, info);
@@ -1292,66 +1286,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // getLocatorImpl(LocatorImpl):LocatorImpl
 
-    // content models
-
-    /**
-     * This method will handle the querying of the content model for a
-     * particular element. If the element does not have a content model, then
-     * it will be created.
-     */
-    private XMLContentModel getContentModel(int elementIndex) 
-        throws CMException {
-
-        // See if a content model already exists first
-        XMLContentModel cmRet = getElementContentModel(elementIndex);
-
-        // If we have one, just return that. Otherwise, gotta create one
-        if (cmRet != null) {
-            return cmRet;
-        }
-
-        // Get the type of content this element has
-        final int contentSpec = getContentSpecType(elementIndex);
-
-        // And create the content model according to the spec type
-        if (contentSpec == XMLElementDecl.TYPE_MIXED) {
-            //
-            //  Just create a mixel content model object. This type of
-            //  content model is optimized for mixed content validation.
-            //
-
-            //REVISIT, could not compile
-           // XMLContentSpec specNode = new XMLContentSpec();
-           // int contentSpecIndex = getContentSpecHandle(elementIndex);
-           // makeContentList(contentSpecIndex, specNode);
-           // cmRet = new MixedContentModel(fCount, fContentList);
-        }
-        else if (contentSpec == XMLElementDecl.TYPE_CHILDREN) {
-            //
-            //  This method will create an optimal model for the complexity
-            //  of the element's defined model. If its simple, it will create
-            //  a SimpleContentModel object. If its a simple list, it will
-            //  create a SimpleListContentModel object. If its complex, it
-            //  will create a DFAContentModel object.
-            //
-            //REVISIT: couldnot compile
-            //cmRet = createChildModel(elementIndex);
-        }
-        else if (contentSpec == fDATATYPESymbol) {
-           // cmRet = fSchemaImporter.createDatatypeContentModel(elementIndex);
-        }
-        else {
-            throw new CMException(ImplementationMessages.VAL_CST);
-        }
-
-        // Add the new model to the content model for this element
-        //REVISIT
-        setContentModel(elementIndex, cmRet);
-
-        return cmRet;
-
-    } // getContentModel(int):XMLContentModel
-    
+  
     // initialization
 
     /** Reset pool. */
@@ -1429,26 +1364,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
         fXMLLang = fStringPool.addSymbol("xml:lang");
         
-        /**
-         fEMPTYSymbol = XMLElementDecl.TYPE_EMPTY;
-         fANYSymbol = XMLElementDecl.TYPE_ANY;
-         fMIXEDSymbol = XMLElementDecl.TYPE_MIXED;
-         fCHILDRENSymbol = XMLElementDecl.TYPE_CHILDREN;
- 
-         fCDATASymbol = XMLAttributeDecl.TYPE_CDATA;
-         fIDSymbol = XMLAttributeDecl.TYPE_ID;
-         fIDREFSymbol = XMLAttributeDecl.TYPE_IDREF;
-         fIDREFSSymbol = XMLAttributeDecl.TYPE_IDREF;
-         fENTITYSymbol = XMLAttributeDecl.TYPE_ENTITY;
-         fENTITIESSymbol = XMLAttributeDecl.TYPE_ENTITY;
-         fNMTOKENSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
-         fNMTOKENSSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
-         fNOTATIONSymbol = XMLAttributeDecl.TYPE_NOTATION;
-         fENUMERATIONSymbol = XMLAttributeDecl.TYPE_ENUMERATION;
-         fREQUIREDSymbol = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-         fFIXEDSymbol = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
-         fDATATYPESymbol = XMLElementDecl.TYPE_SIMPLE;
-         **/
     } // init()
 
     // other
@@ -1621,17 +1536,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     }
     
 
-    /** Sets the content model for the specified element index. */
-    private void setContentModel(int elementIndex, XMLContentModel cm) {
-        // REVISIT: What's this method do?
-        /*if (elementIndex < 0 || elementIndex >= fElementCount) {
-            return;
-        }
-        int chunk = elementIndex >> CHUNK_SHIFT;
-        int index = elementIndex & CHUNK_MASK;
-        fContentModel[chunk][index] = cm;
-        */
-    }
 
     // query attribute information
 
@@ -2743,7 +2647,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             // Get the content model for this element, faulting it in if needed
             XMLContentModel cmElem = null;
             try {
-                cmElem = getContentModel(elementIndex);
+                cmElem = getElementContentModel(elementIndex);
                 int result = cmElem.validateContent(children, childOffset, childCount);
                 if (result != -1 && fGrammarIsSchemaGrammar) {
                     // REVISIT: not optimized for performance, 
@@ -2773,10 +2677,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             XMLContentModel cmElem = null;
             try {
-                // REVISIT: this might not be right
-                //cmElem = getContentModel(elementIndex);
-                //fTempQName.rawname = fTempQName.localpart = fStringPool.addString(fDatatypeBuffer.toString());
-                //return cmElem.validateContent(1, new QName[] { fTempQName });
                 fGrammar.getElementDecl(elementIndex, fTempElementDecl);
 
                 DatatypeValidator dv = fTempElementDecl.datatypeValidator;
@@ -2790,9 +2690,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
 
             } 
-            //catch (CMException cme) {
-              //  System.out.println("Internal Error in datatype validation");
-            //} 
             catch (InvalidDatatypeValueException idve) {
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                            SchemaMessageProvider.SCHEMA_DOMAIN,
