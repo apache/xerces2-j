@@ -257,6 +257,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     private boolean DEBUG_ATTRIBUTES;
     private boolean DEBUG_ELEMENT_CHILDREN;
 
+    /** to check for duplicate ID or ANNOTATION attribute declare in ATTLIST*/
+
+    private Hashtable fTableOfIDAttributeNames;
+    private Hashtable fTableOfNOTATIONAttributeNames;
+
+
     //
     // Constructors
     //
@@ -1119,8 +1125,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void startAttlist(String elementName) throws SAXException {
-
         // call handlers
+
         fDTDGrammar.startAttlist(elementName);
         if (fDTDHandler != null) {
             fDTDHandler.startAttlist(elementName);
@@ -1133,7 +1139,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * 
      * @param elementName   The name of the element that this attribute
      *                      is associated with.
-     * @param attributeName The name of the attribute.
+   * @param attributeName The name of the attribute.
      * @param type          The attribute type. This value will be one of
      *                      the following: "CDATA", "ENTITY", "ENTITIES",
      *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
@@ -1149,10 +1155,41 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
+    String fnameOfElement;
+
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue)
     throws SAXException {
+
+        //Should check if duplicate ID or Notations attributes if validation enable 
+        if (fValidation == true) {
+            if (type.equals("ID")) {
+                if (fTableOfIDAttributeNames.containsKey( elementName ) == false) {
+                    fTableOfIDAttributeNames.put( elementName, attributeName);
+                } else {
+                    String previousIDAttributeName = (String) fTableOfIDAttributeNames.get( elementName );
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_MORE_THAN_ONE_ID_ATTRIBUTE",
+                                               new Object[]{ elementName, previousIDAttributeName, attributeName},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+
+                }
+            }
+            if (type.equals("NOTATION")) {
+                if (fTableOfNOTATIONAttributeNames.containsKey( elementName ) == false) {
+                    fTableOfNOTATIONAttributeNames.put( elementName, attributeName);
+                } else {
+                    String previousNOTATIONAttributeName = (String) fTableOfNOTATIONAttributeNames.get( elementName );
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE",
+                                               new Object[]{ elementName, previousNOTATIONAttributeName, attributeName},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+
+                }
+
+            }
+        }
 
         // call handlers
         fDTDGrammar.attributeDecl(elementName, attributeName, 
@@ -1173,7 +1210,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void endAttlist() throws SAXException {
 
+
         // call handlers
+
         fDTDGrammar.endAttlist();
         if (fDTDHandler != null) {
             fDTDHandler.endAttlist();
@@ -1355,6 +1394,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
+           fTableOfIDAttributeNames = null;//should be safe to release these references
+           fTableOfNOTATIONAttributeNames = null;
+
         }
 
         // call handlers
@@ -2368,6 +2410,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fValID.initialize(fTableOfIDs);
         fValIDRef.initialize(fTableOfIDs);
         fValIDRefs.initialize(fTableOfIDs);
+
+        if (fValidation) {
+            fTableOfIDAttributeNames = new Hashtable();
+            fTableOfNOTATIONAttributeNames = new Hashtable();
+        }
     }
 
     /** ensure element stack capacity */
