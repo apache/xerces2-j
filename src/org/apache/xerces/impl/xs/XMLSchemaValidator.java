@@ -266,8 +266,7 @@ public class XMLSchemaValidator
     // this is included for the convenience of handleEndElement
     protected XMLString fDefaultValue;
 
-    /** Validation. */
-    protected boolean fValidation = false;
+    // Validation features
     protected boolean fDynamicValidation = false;
     protected boolean fDoValidation = false;
     protected boolean fFullChecking = false;
@@ -1182,18 +1181,30 @@ public class XMLSchemaValidator
         fState4ApplyDefault.setNamespaceSupport(fNamespaceSupport);
 
         try {
-            fValidation = componentManager.getFeature(VALIDATION);
+            fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
         }
         catch (XMLConfigurationException e) {
-            fValidation = false;
+            fDynamicValidation = false;
         }
 
-        // Xerces features
-        try {
-            fValidation = fValidation && componentManager.getFeature(SCHEMA_VALIDATION);
+        if (fDynamicValidation) {
+            fDoValidation = true;
         }
-        catch (XMLConfigurationException e) {
-            fValidation = false;
+        else {
+            try {
+                fDoValidation = componentManager.getFeature(VALIDATION);
+            }
+            catch (XMLConfigurationException e) {
+                fDoValidation = false;
+            }
+        }
+
+        if (fDoValidation) {
+            try {
+                fDoValidation = componentManager.getFeature(this.SCHEMA_VALIDATION);
+            }
+            catch (XMLConfigurationException e) {
+            }
         }
 
         try {
@@ -1205,13 +1216,6 @@ public class XMLSchemaValidator
         // the validator will do full checking anyway; the loader should
         // not (and in fact cannot) concern itself with this.
         fSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, false);
-
-        try {
-            fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
-        }
-        catch (XMLConfigurationException e) {
-            fDynamicValidation = false;
-        }
 
         try {
            fNormalizeData = componentManager.getFeature(NORMALIZE_DATA);
@@ -1245,8 +1249,12 @@ public class XMLSchemaValidator
         }
         fSchemaLoader.setProperty(SCHEMA_LOCATION, fExternalSchemas);
         fSchemaLoader.setProperty(SCHEMA_NONS_LOCATION, fExternalNoNamespaceSchema);
-
-
+        // store the external schema locations. they are set when reset is called,
+        // so any other schemaLocation declaration for the same namespace will be
+        // effectively ignored. becuase we choose to take first location hint
+        // available for a particular namespace.
+        storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
+        
         try {
             fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
         }
@@ -1414,17 +1422,11 @@ public class XMLSchemaValidator
 
     // handle start document
     void handleStartDocument(XMLLocator locator, String encoding) {
-
-        if (fValidation)
-            fValueStoreCache.startDocument();
-
+        fValueStoreCache.startDocument();
     } // handleStartDocument(XMLLocator,String)
 
     void handleEndDocument() {
-
-        if (fValidation)
-            fValueStoreCache.endDocument();
-
+        fValueStoreCache.endDocument();
     } // handleEndDocument()
 
     // handle character contents
@@ -1649,15 +1651,11 @@ public class XMLSchemaValidator
         fCurrentPSVI.reset();
 
         // root element
-        if (fElementDepth == -1) {
-            // at this point we assume that no XML schemas found in the instance document
-            // thus we will not validate in the case dynamic feature is on or we found dtd grammar
-            fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
-
-            //store the external schema locations, these locations will be set at root element, so any other
-            // schemaLocation declaration for the same namespace will be effectively ignored.. becuase we
-            // choose to take first location hint available for a particular namespace.
-            storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
+        if (fElementDepth == -1 && fValidationManager.isGrammarFound()) {
+            // if a DTD grammar is found, we do the same thing as Dynamic:
+            // if a schema grammar is found, validation is performed;
+            // otherwise, skip the whole document.
+            fDynamicValidation = true;
         }
 
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
@@ -1669,20 +1667,6 @@ public class XMLSchemaValidator
         //there is a reference to a component from that namespace. To provide location hints to the
         //application for a namespace
         storeLocations(sLocation, nsLocation) ;
-
-        //REVISIT: We should do the same in XSDHandler also... we should not
-        //load the actual grammar (eg. import) unless there is reference to it.
-
-        // REVISIT: we should not rely on presence of
-        //          schemaLocation or noNamespaceSchemaLocation
-        //          attributes
-        if (sLocation !=null || nsLocation !=null) {
-            // if we found grammar we should attempt to validate
-            // based on values of validation & schema features
-            // only
-
-            fDoValidation = fValidation;
-        }
 
         // update normalization flags
         if (fNormalizeData) {
@@ -1714,7 +1698,7 @@ public class XMLSchemaValidator
         if (fCurrentCM != null) {
             decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
             // it could be an element decl or a wildcard decl
-            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
+            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                 //REVISIT: is it the only case we will have particle = null?
                 if (ctype.fParticle != null) {
@@ -1802,20 +1786,24 @@ public class XMLSchemaValidator
 
         // if the element decl is not found
         if (fCurrentType == null) {
-            if (fDoValidation) {
-                // if this is the validation root, report an error, because
-                // we can't find eith decl or type for this element
-                // REVISIT: should we report error, or warning?
-                if (fElementDepth == 0) {
-                    // report error, because it's root element
-                    reportSchemaError("cvc-elt.1", new Object[]{element.rawname});
-                }
-                // if wildcard = strict, report error
-                else if (wildcard != null &&
-                         wildcard.fProcessContents == XSWildcardDecl.PC_STRICT) {
-                    // report error, because wilcard = strict
-                    reportSchemaError("cvc-complex-type.2.4.c", new Object[]{element.rawname});
-                }
+            // if this is the validation root, report an error, because
+            // we can't find eith decl or type for this element
+            // REVISIT: should we report error, or warning?
+            // for dynamic validation, skip the whole content,
+            // because no grammar was found.
+            if (fDynamicValidation) {
+                fSkipValidationDepth = fElementDepth;
+                return augs;
+            }
+            if (fElementDepth == 0) {
+                // report error, because it's root element
+                reportSchemaError("cvc-elt.1", new Object[]{element.rawname});
+            }
+            // if wildcard = strict, report error
+            else if (wildcard != null &&
+                     wildcard.fProcessContents == XSWildcardDecl.PC_STRICT) {
+                // report error, because wilcard = strict
+                reportSchemaError("cvc-complex-type.2.4.c", new Object[]{element.rawname});
             }
             // no element decl or type found for this element.
             // Allowed by the spec, we can choose to either laxly assess this
@@ -1908,31 +1896,29 @@ public class XMLSchemaValidator
         }
 
         // activate identity constraints
-        if (fDoValidation) {
-            fValueStoreCache.startElement();
-            fMatcherStack.pushContext();
-            if (fCurrentElemDecl != null) {
-                fValueStoreCache.initValueStoresFor(fCurrentElemDecl);
-                int icCount = fCurrentElemDecl.fIDCPos;
-                int uniqueOrKey = 0;
-                for (;uniqueOrKey < icCount; uniqueOrKey++) {
-                    if (fCurrentElemDecl.fIDConstraints[uniqueOrKey].getCategory() != IdentityConstraint.IC_KEYREF) {
-                        activateSelectorFor(fCurrentElemDecl.fIDConstraints[uniqueOrKey]);
-                    }
-                    else
-                        break;
+        fValueStoreCache.startElement();
+        fMatcherStack.pushContext();
+        if (fCurrentElemDecl != null) {
+            fValueStoreCache.initValueStoresFor(fCurrentElemDecl);
+            int icCount = fCurrentElemDecl.fIDCPos;
+            int uniqueOrKey = 0;
+            for (;uniqueOrKey < icCount; uniqueOrKey++) {
+                if (fCurrentElemDecl.fIDConstraints[uniqueOrKey].getCategory() != IdentityConstraint.IC_KEYREF) {
+                    activateSelectorFor(fCurrentElemDecl.fIDConstraints[uniqueOrKey]);
                 }
-                for (int keyref = uniqueOrKey; keyref < icCount; keyref++) {
-                    activateSelectorFor((IdentityConstraint)fCurrentElemDecl.fIDConstraints[keyref]);
-                }
+                else
+                    break;
             }
+            for (int keyref = uniqueOrKey; keyref < icCount; keyref++) {
+                activateSelectorFor((IdentityConstraint)fCurrentElemDecl.fIDConstraints[keyref]);
+            }
+        }
 
-            // call all active identity constraints
-            int count = fMatcherStack.getMatcherCount();
-            for (int i = 0; i < count; i++) {
-                XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-                matcher.startElement(element, attributes, fCurrentElemDecl);
-            }
+        // call all active identity constraints
+        int count = fMatcherStack.getMatcherCount();
+        for (int i = 0; i < count; i++) {
+            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+            matcher.startElement(element, attributes, fCurrentElemDecl);
         }
         return augs;
 
@@ -2052,16 +2038,14 @@ public class XMLSchemaValidator
         fElementDepth--;
         // have we reached the end tag of the validation root?
         if (fElementDepth == -1) {
-            if (fDoValidation) {
-                // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
-                String invIdRef = fValidationState.checkIDRefID();
-                if (invIdRef != null) {
-                    reportSchemaError("cvc-id.1", new Object[]{invIdRef});
-                }
-                // check extra schema constraints
-                if (fFullChecking) {
-                    XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
-                }
+            // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
+            String invIdRef = fValidationState.checkIDRefID();
+            if (invIdRef != null) {
+                reportSchemaError("cvc-id.1", new Object[]{invIdRef});
+            }
+            // check extra schema constraints
+            if (fFullChecking) {
+                XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
             }
             fValidationState.resetIDTables();
 
@@ -2301,8 +2285,7 @@ public class XMLSchemaValidator
             attrPSVI.fValidationContext = fValidationRoot;
         }
 
-        // if we don't do validation, we don't need to validate the attributes
-        if (!fDoValidation || attributes.getLength() == 0){
+        if (attributes.getLength() == 0){
             // PSVI: validity is unknown, and validation attempted is none
             // this is a default value thus we should not set anything else here.
             return;
@@ -2674,95 +2657,93 @@ public class XMLSchemaValidator
         }
         // fixed values are handled later, after xsi:type determined.
 
-        if (fDoValidation) {
-            String content = fBuffer.toString();
-            fValidatedInfo.normalizedValue = null;
-            
-            // Element Locally Valid (Element)
-            // 3.2.1 The element information item must have no character or element information item [children].
-            if (fNil) {
-                if (fChildCount != 0 || content.length() != 0){
-                    reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_NIL});
-                    // PSVI: nil
-                    fCurrentPSVI.fNil = false;
-                } else {
-                    fCurrentPSVI.fNil = true;
-                }
+        String content = fBuffer.toString();
+        fValidatedInfo.normalizedValue = null;
+        
+        // Element Locally Valid (Element)
+        // 3.2.1 The element information item must have no character or element information item [children].
+        if (fNil) {
+            if (fChildCount != 0 || content.length() != 0){
+                reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_NIL});
+                // PSVI: nil
+                fCurrentPSVI.fNil = false;
+            } else {
+                fCurrentPSVI.fNil = true;
             }
+        }
 
-            // 5 The appropriate case among the following must be true:
-            // 5.1 If the declaration has a {value constraint}, the item has neither element nor character [children] and clause 3.2 has not applied, then all of the following must be true:
+        // 5 The appropriate case among the following must be true:
+        // 5.1 If the declaration has a {value constraint}, the item has neither element nor character [children] and clause 3.2 has not applied, then all of the following must be true:
+        if (fCurrentElemDecl != null &&
+            fCurrentElemDecl.getConstraintType() != XSConstants.VC_NONE &&
+            fChildCount == 0 && content.length() == 0 && !fNil) {
+            // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
+            if (fCurrentType != fCurrentElemDecl.fType) {
+                //REVISIT:we should pass ValidatedInfo here.
+                if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.normalizedValue, fState4XsiType, null) == null)
+                    reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getName(), fCurrentElemDecl.fDefault.normalizedValue});
+            }
+            // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its normalized value must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
+            // REVISIT: don't use toString, but validateActualValue instead
+            //          use the fState4ApplyDefault
+            elementLocallyValidType(element, fCurrentElemDecl.fDefault.normalizedValue);
+        }
+        else {
+            // The following method call also deal with clause 1.2.2 of the constraint
+            // Validation Rule: Schema-Validity Assessment (Element)
+
+            // 5.2 If the declaration has no {value constraint} or the item has either element or character [children] or clause 3.2 has applied, then all of the following must be true:
+            // 5.2.1 The element information item must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
+            Object actualValue = elementLocallyValidType(element, content);
+            // 5.2.2 If there is a fixed {value constraint} and clause 3.2 has not applied, all of the following must be true:
             if (fCurrentElemDecl != null &&
-                fCurrentElemDecl.getConstraintType() != XSConstants.VC_NONE &&
-                fChildCount == 0 && content.length() == 0 && !fNil) {
-                // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
-                if (fCurrentType != fCurrentElemDecl.fType) {
-                    //REVISIT:we should pass ValidatedInfo here.
-                    if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.normalizedValue, fState4XsiType, null) == null)
-                        reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getName(), fCurrentElemDecl.fDefault.normalizedValue});
-                }
-                // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its normalized value must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
-                // REVISIT: don't use toString, but validateActualValue instead
-                //          use the fState4ApplyDefault
-                elementLocallyValidType(element, fCurrentElemDecl.fDefault.normalizedValue);
-            }
-            else {
-                // The following method call also deal with clause 1.2.2 of the constraint
-                // Validation Rule: Schema-Validity Assessment (Element)
-
-                // 5.2 If the declaration has no {value constraint} or the item has either element or character [children] or clause 3.2 has applied, then all of the following must be true:
-                // 5.2.1 The element information item must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
-                Object actualValue = elementLocallyValidType(element, content);
-                // 5.2.2 If there is a fixed {value constraint} and clause 3.2 has not applied, all of the following must be true:
-                if (fCurrentElemDecl != null &&
-                    fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED &&
-                    !fNil) {
-                    // 5.2.2.1 The element information item must have no element information item [children].
-                    if (fChildCount != 0)
-                        reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
-                    // 5.2.2.2 The appropriate case among the following must be true:
-                    if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
-                        XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                        // 5.2.2.2.1 If the {content type} of the actual type definition is mixed, then the initial value of the item must match the canonical lexical representation of the {value constraint} value.
-                        if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-                            // REVISIT: how to get the initial value, does whiteSpace count?
-                            if (!fCurrentElemDecl.fDefault.normalizedValue.equals(content))
-                                reportSchemaError("cvc-elt.5.2.2.2.1", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
-                        }
-                        // 5.2.2.2.2 If the {content type} of the actual type definition is a simple type definition, then the actual value of the item must match the canonical lexical representation of the {value constraint} value.
-                        else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                            if (actualValue != null &&
-                                !ctype.fXSSimpleType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
-                                reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
-                        }
+                fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED &&
+                !fNil) {
+                // 5.2.2.1 The element information item must have no element information item [children].
+                if (fChildCount != 0)
+                    reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
+                // 5.2.2.2 The appropriate case among the following must be true:
+                if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+                    XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                    // 5.2.2.2.1 If the {content type} of the actual type definition is mixed, then the initial value of the item must match the canonical lexical representation of the {value constraint} value.
+                    if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                        // REVISIT: how to get the initial value, does whiteSpace count?
+                        if (!fCurrentElemDecl.fDefault.normalizedValue.equals(content))
+                            reportSchemaError("cvc-elt.5.2.2.2.1", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
                     }
-                    else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
-                        XSSimpleType sType = (XSSimpleType)fCurrentType;
+                    // 5.2.2.2.2 If the {content type} of the actual type definition is a simple type definition, then the actual value of the item must match the canonical lexical representation of the {value constraint} value.
+                    else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
                         if (actualValue != null &&
-                            !sType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
-                            // REVISIT: the spec didn't mention this case: fixed
-                            //          value with simple type
+                            !ctype.fXSSimpleType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
                             reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
                     }
                 }
-            }
-
-            if (defaultValue == null && fNormalizeData &&
-                fDocumentHandler != null && fUnionType) {
-                // for union types we need to send data because we delayed sending
-                // this data when we received it in the characters() call.
-                if (fValidatedInfo.normalizedValue != null)
-                   content = fValidatedInfo.normalizedValue;
-                int bufLen = content.length();
-                if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < bufLen) {
-                    fNormalizedStr.ch = new char[bufLen];
+                else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+                    XSSimpleType sType = (XSSimpleType)fCurrentType;
+                    if (actualValue != null &&
+                        !sType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
+                        // REVISIT: the spec didn't mention this case: fixed
+                        //          value with simple type
+                        reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
                 }
-                content.getChars(0, bufLen, fNormalizedStr.ch, 0);
-                fNormalizedStr.offset = 0;
-                fNormalizedStr.length = bufLen;
-                fDocumentHandler.characters(fNormalizedStr, null);
             }
-        } // if fDoValidation
+        }
+
+        if (defaultValue == null && fNormalizeData &&
+            fDocumentHandler != null && fUnionType) {
+            // for union types we need to send data because we delayed sending
+            // this data when we received it in the characters() call.
+            if (fValidatedInfo.normalizedValue != null)
+               content = fValidatedInfo.normalizedValue;
+            int bufLen = content.length();
+            if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < bufLen) {
+                fNormalizedStr.ch = new char[bufLen];
+            }
+            content.getChars(0, bufLen, fNormalizedStr.ch, 0);
+            fNormalizedStr.offset = 0;
+            fNormalizedStr.length = bufLen;
+            fDocumentHandler.characters(fNormalizedStr, null);
+        }
 
         return defaultValue;
     } // processElementContent
