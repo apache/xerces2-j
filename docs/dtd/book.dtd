@@ -39,6 +39,7 @@
 
 <!ELEMENT container (entry)+>
 <!ATTLIST container id    ID    #IMPLIED
+	            source CDATA #REQUIRED
                	    label CDATA #REQUIRED>
 
 <!ELEMENT entry EMPTY>
