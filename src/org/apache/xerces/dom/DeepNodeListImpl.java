@@ -136,10 +136,8 @@ public class DeepNodeListImpl
     /** Constructor for Namespace support. */
     public DeepNodeListImpl(NodeImpl rootNode, String nsName, String tagName) {
         this(rootNode, tagName);
-	    this.nsName  = nsName;
-		enableNS = ( nsName == null 
-		          || nsName.equals("") 
-		          || nsName.equals("*") ) ? false : true;
+	    this.nsName  = (nsName != null && !nsName.equals("")) ? nsName : null;
+	    enableNS = true;
     }
     
     //
@@ -229,20 +227,47 @@ public class DeepNodeListImpl
 			// ("*" matches anything.)
 		    if (current != rootNode 
 		        && current != null
-		        && current.getNodeType() ==  Node.ELEMENT_NODE 
-		        && (tagName.equals("*") 
-		            || ((ElementImpl) current).getTagName().equals(tagName))
-		        // DOM2: Namespace logic. 
-		        && (!enableNS
-		            || ( enableNS
-		                && ((ElementImpl) current).getNamespaceURI() != null
-		                && ((ElementImpl) current).getNamespaceURI().equals(nsName)
-		                )
-		            )
-		         )
-		    {
-			    return current;
+		        && current.getNodeType() ==  Node.ELEMENT_NODE) {
+			if (!enableNS) {
+			    if (tagName.equals("*") ||
+				((ElementImpl) current).getTagName().equals(tagName))
+			    {
+				return current;
+			    }
+			} else {
+			    // DOM2: Namespace logic. 
+			    if (tagName.equals("*")) {
+				if (nsName != null && nsName.equals("*")) {
+				    return current;
+				} else {
+				    ElementImpl el = (ElementImpl) current;
+				    if ((nsName == null
+					 && el.getNamespaceURI() == null)
+					|| (nsName != null
+					    && nsName.equals(el.getNamespaceURI())))
+				    {
+					return current;
+				    }
+				}
+			    } else {
+				ElementImpl el = (ElementImpl) current;
+				if (el.getLocalName() != null
+				    && el.getLocalName().equals(tagName)) {
+				    if (nsName != null && nsName.equals("*")) {
+					return current;
+				    } else {
+					if ((nsName == null
+					     && el.getNamespaceURI() == null)
+					    || (nsName != null &&
+						nsName.equals(el.getNamespaceURI())))
+					{
+					    return current;
+					}
+				    }
+				}
+			    }
 			}
+		    }
 
 		// Otherwise continue walking the tree
 	    }
