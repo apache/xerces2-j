@@ -1121,6 +1121,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         if (fValidating && (fInElementContent || fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY)) {
             charDataInContent();
         }
+        if (fValidating) {
+            if (fBufferDatatype) {
+                fDatatypeBuffer.append(fCharRefData,0,1);
+            }
+        }
         if (fSendCharDataAsCharArray) {
             fDocumentHandler.characters(fCharRefData, 0, count);
         } else {
