@@ -167,7 +167,7 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+        if ( !isLegalContainer(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -187,7 +187,7 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+        if ( !isLegalContainer(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -206,7 +206,9 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+		if ( !hasLegalRootContainer(refNode) ||
+			 !isLegalContainedNode(refNode) )
+		{
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -226,7 +228,8 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+        if ( !hasLegalRootContainer(refNode) || 
+			 !isLegalContainedNode(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -246,7 +249,8 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+        if ( !hasLegalRootContainer(refNode) ||
+			 !isLegalContainedNode(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -267,7 +271,8 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+        if ( !hasLegalRootContainer(refNode) ||
+			 !isLegalContainedNode(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -304,7 +309,8 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+        if ( !isLegalContainer( refNode.getParentNode() ) ||
+			 !isLegalContainedNode( refNode ) ) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -331,7 +337,7 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
-        if ( !isAncestorTypeValid(refNode)) {
+        if ( !isLegalContainer(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
@@ -1373,18 +1379,88 @@ public class RangeImpl  implements Range {
         }
     }
 
-    boolean isAncestorTypeValid(Node node) {
-        for (Node n = node; n!=null; n = n.getParentNode()) {
-            int type = n.getNodeType();
-            if (type == Node.ATTRIBUTE_NODE
-             || type == Node.ENTITY_NODE
-             || type == Node.NOTATION_NODE
-             || type == Node.DOCUMENT_TYPE_NODE)
-             return false;
-        }
-        return true;
-    }
-    
+	/**
+	 * Given a node, calculate what the Range's root container
+	 * for that node would be.
+	 */
+	private Node getRootContainer( Node node )
+	{
+		if ( node==null )
+			return null;
+
+		while( node.getParentNode()!=null )
+			node = node.getParentNode();
+		return node;
+	}
+
+	/**
+	 * Returns true IFF the given node can serve as a container
+	 * for a range's boundary points.
+	 */
+	private boolean isLegalContainer( Node node )
+	{
+		if ( node==null )
+			return false;
+
+		while( node!=null )
+		{
+			switch( node.getNodeType() )
+			{
+			case Node.ENTITY_NODE:
+			case Node.NOTATION_NODE:
+			case Node.DOCUMENT_TYPE_NODE:
+				return false;
+			}
+			node = node.getParentNode();
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * Finds the root container for the given node and determines
+	 * if that root container is legal with respect to the
+	 * DOM 2 specification.  At present, that means the root
+	 * container must be either an attribute, a document,
+	 * or a document fragment.
+	 */
+	private boolean hasLegalRootContainer( Node node )
+	{
+		if ( node==null )
+			return false;
+
+		Node rootContainer = getRootContainer( node );
+		switch( rootContainer.getNodeType() )
+		{
+		case Node.ATTRIBUTE_NODE:
+		case Node.DOCUMENT_NODE:
+		case Node.DOCUMENT_FRAGMENT_NODE:
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns true IFF the given node can be contained by
+	 * a range.
+	 */
+	private boolean isLegalContainedNode( Node node )
+	{
+		if ( node==null )
+			return false;
+		switch( node.getNodeType() )
+		{
+		case Node.DOCUMENT_NODE:
+		case Node.DOCUMENT_FRAGMENT_NODE:
+		case Node.ATTRIBUTE_NODE:
+		case Node.ENTITY_NODE:
+		case Node.NOTATION_NODE:
+			return false;
+		}
+		return true;
+	}
+
     Node nextNode(Node node, boolean visitChildren) {
             
         if (node == null) return null;
