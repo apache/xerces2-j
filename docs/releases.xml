@@ -10,14 +10,38 @@
    should be considered alpha at this time.
   </desc>
   <changes>
-   <add>
+  
+ <add>
     <note>
      Redesigned and rewrote XML Schema validation code. Also updated
      standard parser configuration to include the XML Schema validator 
      in the document pipeline by default.
     </note>
-    <submitter name='IBM Toronto team w/ help from Sun'/>
+    <submitter name='Sandy Gao, Lisa Martin, Neil Graham, Elena Litani, Rahul Srivastava, Gopal Sharma, Pavani Mukthipudi, Neeraj Bajaj'/>
    </add>
+
+  <add>
+    <note>
+     Added new default parser configuration that includes DTD and XML Schema validators (DTDXSParserConfiguration). Implemented dynamic validation for both validators.
+    </note>
+    <submitter name='Sandy Gao, Elena Litani'/>
+   </add>
+   
+  <fix>
+    <note>
+     Synced up javax.xml.parsers package with latest code from xml-commons
+  module and various bug fixes.
+    </note>
+    <submitter name='Edwin Goei'/>
+   </fix> 
+   <fix>
+    <note>
+    DOM/ DOMParser bug fixes. 
+    </note>
+    <submitter name='Ted Leung, Andy Clark, Elena Litani, Arun Yadav'/>
+   </fix> 
+
+
    <fix>
     <note>
      Fixed newline normalization bug. Previously, the sequence #x0A #x0D
