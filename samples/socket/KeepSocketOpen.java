@@ -57,17 +57,17 @@
 
 package socket;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
+
+import socket.io.WrappedInputStream;
+import socket.io.WrappedOutputStream;
 
 import org.apache.xerces.parsers.SAXParser;
 
@@ -139,8 +139,6 @@ public class KeepSocketOpen {
     //
     // Classes
     //
-
-    // client/server code
 
     /** 
      * Server. 
@@ -427,272 +425,5 @@ public class KeepSocketOpen {
         } // class InputStreamReporter
 
     } // class Client
-
-    // input/output streams
-
-    /**
-     * This output stream works in conjunction with the WrappedInputStream
-     * to introduce a protocol for sending arbitrary length data in a
-     * uniform way. This output stream allows variable length data to be
-     * inserted into an existing output stream so that it can be read by
-     * an input stream without reading too many bytes (in case of buffering
-     * by the input stream).
-     * <p>
-     * This output stream is used like any normal output stream. The protocol
-     * is introduced by the WrappedOutputStream and does not need to be known
-     * by the user of this class. However, for those that are interested, the
-     * method is described below.
-     * <p>
-     * The output stream writes the requested bytes as packets of binary
-     * information. The packet consists of a header and payload. The header
-     * is two bytes of a single unsigned short (written in network order) 
-     * that specifies the length of bytes in the payload. A header value of
-     * 0 indicates that the stream is "closed".
-     * <p>
-     * <strong>Note:</strong> For this wrapped output stream to be used,
-     * the application <strong>must</strong> call <code>close()</code>
-     * to end the output.
-     *
-     * @see WrappedInputStream
-     *
-     * @author Andy Clark, IBM
-     */
-    public static class WrappedOutputStream
-        extends FilterOutputStream {
-
-        //
-        // Constants
-        //
-
-        /** Default buffer size (1024). */
-        public static final int DEFAULT_BUFFER_SIZE = 1024;
-
-        //
-        // Data
-        //
-
-        /** Buffer. */
-        protected byte[] fBuffer;
-
-        /** Buffer position. */
-        protected int fPosition;
-
-        /** 
-         * Data output stream. This stream is used to output the block sizes
-         * into the data stream that are read by the WrappedInputStream.
-         * <p>
-         * <strong>Note:</strong> The data output stream is only used for
-         * writing the byte count for performance reasons. We avoid the
-         * method indirection for writing the byte data.
-         */
-        protected DataOutputStream fDataOutputStream;
-
-        //
-        // Constructors
-        //
-
-        /** Constructs a wrapper for the given output stream. */
-        public WrappedOutputStream(OutputStream stream) {
-            this(stream, DEFAULT_BUFFER_SIZE);
-        } // <init>(OutputStream)
-
-        /** 
-         * Constructs a wrapper for the given output stream with the
-         * given buffer size.
-         */
-        public WrappedOutputStream(OutputStream stream, int bufferSize) {
-            super(stream);
-            fBuffer = new byte[bufferSize];
-            fDataOutputStream = new DataOutputStream(stream);
-        } // <init>(OutputStream)
-
-        //
-        // OutputStream methods
-        //
-
-        /** 
-         * Writes a single byte to the output. 
-         * <p>
-         * <strong>Note:</strong> Single bytes written to the output stream
-         * will be buffered
-         */
-        public void write(int b) throws IOException {
-            fBuffer[fPosition++] = (byte)b;
-            if (fPosition == fBuffer.length) {
-                fPosition = 0;
-                write(fBuffer, 0, fBuffer.length);
-            }
-        } // write(int)
-
-        /** Writes an array of bytes to the output. */
-        public void write(byte[] b, int offset, int length) 
-            throws IOException {
-
-            // write header followed by actual bytes
-            fDataOutputStream.writeShort(length);
-            super.out.write(b, offset, length);
-
-        } // write(byte[])
-
-        /** 
-         * Flushes the output buffer, writing all bytes currently in
-         * the buffer to the output.
-         */
-        public void flush() throws IOException {
-            int length = fPosition;
-            fPosition = 0;
-            if (length > 0) {
-                super.out.write(fBuffer, 0, length);
-            }
-            super.out.flush();
-        } //
-
-        /** 
-         * Closes the output stream. This method <strong>must</strong> be
-         * called when done writing all data to the output stream.
-         * <p>
-         * <strong>Note:</strong> This method does <em>not</em> close the
-         * actual output stream, only makes the input stream see the stream
-         * closed. Do not write bytes after closing the output stream.
-         */
-        public void close() throws IOException {
-            fDataOutputStream.writeShort(0);
-        } // close()
-
-    } // class WrappedOutputStream
-
-    /**
-     * This input stream works in conjunction with the WrappedOutputStream
-     * to introduce a protocol for reading arbitrary length data in a
-     * uniform way.
-     * <p>
-     * <strong>Note:</strong> See the javadoc for WrappedOutputStream for
-     * more information.
-     *
-     * @see WrappedOutputStream
-     *
-     * @author Andy Clark, IBM
-     */
-    public static class WrappedInputStream
-        extends FilterInputStream {
-
-        //
-        // Data
-        //
-
-        /** Bytes left on input stream for current packet. */
-        protected int fPacketCount;
-
-        /** 
-         * Data input stream. This stream is used to input the block sizes
-         * from the data stream that are written by the WrappedOutputStream.
-         * <p>
-         * <strong>Note:</strong> The data input stream is only used for
-         * reading the byte count for performance reasons. We avoid the
-         * method indirection for reading the byte data.
-         */
-        protected DataInputStream fDataInputStream;
-
-        /** To mark that the stream is "closed". */
-        protected boolean fClosed;
-
-        //
-        // Constructors
-        //
-
-        /** Constructs a wrapper for the given an input stream. */
-        public WrappedInputStream(InputStream stream) {
-            super(stream);
-            fDataInputStream = new DataInputStream(stream);
-        } // <init>(InputStream)
-
-        //
-        // InputStream methods
-        //
-
-        /** Reads a single byte. */
-        public int read() throws IOException {
-
-            // ignore, if already closed
-            if (fClosed) {
-                return -1;
-            }
-
-            // read packet header
-            if (fPacketCount == 0) {
-                fPacketCount = fDataInputStream.readShort() & 0x0000FFFF;
-                if (fPacketCount == 0) {
-                    fClosed = true;
-                    return -1;
-                }
-            }
-
-            // read a byte from the packet
-            fPacketCount--;
-            return super.in.read();
-
-        } // read():int
-
-        /** 
-         * Reads a block of bytes and returns the total number of bytes read. 
-         */
-        public int read(byte[] b, int offset, int length) throws IOException {
-
-            // ignore, if already closed
-            if (fClosed) {
-                return -1;
-            }
-
-            // read packet header
-            if (fPacketCount == 0) {
-                fPacketCount = fDataInputStream.readShort() & 0x0000FFFF;
-                if (fPacketCount == 0) {
-                    fClosed = true;
-                    return -1;
-                }
-            }
-
-            // read bytes from packet
-            if (length > fPacketCount) {
-                length = fPacketCount;
-            }
-            int count = super.in.read(b, offset, length);
-            if (count == -1) {
-                // NOTE: This condition should not happen. The end of 
-                //       the stream should always be designated by a 
-                //       byte count header of 0. -Ac
-                fClosed = true;
-                return -1;
-            }
-            fPacketCount -= count;
-
-            // return total bytes read
-            return count;
-
-        } // read(byte[],int,int):int
-
-        /** Skips the specified number of bytes from the input stream. */
-        public long skip(long n) throws IOException {
-            // NOTE: This should be rewritten to be more efficient. -Ac
-            for (long i = 0; i < n; i++) {
-                int b = read();
-                if (b == -1) {
-                    return i + 1;
-                }
-            }
-            return n;
-        } // skip(long)
-
-        /** 
-         * Closes the input stream. 
-         * <p>
-         * <strong>Note:</strong> This method does not close the underlying
-         * input stream.
-         */
-        public void close() throws IOException {
-            fClosed = true;
-        } // close()
-
-    } // class WrappedInputStream
 
 } // class KeepSocketOpen
