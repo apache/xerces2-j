@@ -2,8 +2,8 @@
 
 TARGETS=\
 	DTDReader.class\
+	SAXCount.class\
 	SAX2Count.class\
-	SAXWriter.class\
 	SAXWriter.class\
 	SAX2Writer.class
 
