@@ -247,8 +247,7 @@ public class SchemaGrammar {
         addGlobalTypeDecl(SchemaSymbols.ATTVAL_TOKEN, tokenDV);
         facets.clear();
         facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
-        //REVISIT: won't run: regexparser, locale, resource bundle
-        //facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*");
+        facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*");
         addGlobalTypeDecl(SchemaSymbols.ATTVAL_LANGUAGE, new StringDatatypeValidator(tokenDV, facets, false, null));
         facets.clear();
         facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
