@@ -115,7 +115,7 @@ public class AttributeMap extends NamedNodeMapImpl {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
-        if (arg.getNodeType() != arg.ATTRIBUTE_NODE) {
+        if (arg.getNodeType() != Node.ATTRIBUTE_NODE) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
             throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
         }
@@ -184,7 +184,7 @@ public class AttributeMap extends NamedNodeMapImpl {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
 
-        if (arg.getNodeType() != arg.ATTRIBUTE_NODE) {
+        if (arg.getNodeType() != Node.ATTRIBUTE_NODE) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
             throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
         }
