@@ -454,7 +454,10 @@ abstract class XSDAbstractTraverser {
                     // perform intersection of attribute wildcard
                     else {
                         attrGrp.fAttributeWC = attrGrp.fAttributeWC.
-                                               performIntersectionWith(tempAttrGrp.fAttributeWC);
+                                               performIntersectionWith(tempAttrGrp.fAttributeWC, attrGrp.fAttributeWC.fProcessContents);
+                        if (attrGrp.fAttributeWC == null) {
+                            reportGenericSchemaError("intersection of wildcards is not expressible");
+                        }
                     }
                 }
             }
@@ -473,7 +476,10 @@ abstract class XSDAbstractTraverser {
                 // perform intersection of attribute wildcard
                 else {
                     attrGrp.fAttributeWC = tempAttrWC.
-                                           performIntersectionWith(attrGrp.fAttributeWC);
+                                           performIntersectionWith(attrGrp.fAttributeWC, tempAttrWC.fProcessContents);
+                    if (attrGrp.fAttributeWC == null) {
+                        reportGenericSchemaError("intersection of wildcards is not expressible");
+                    }
                 }
                 child = DOMUtil.getNextSiblingElement(child);
             }

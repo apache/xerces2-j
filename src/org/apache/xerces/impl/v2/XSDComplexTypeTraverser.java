@@ -741,7 +741,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
            toAttrGrp.fAttributeWC = fromAttrGrp.fAttributeWC;
          }
          else if (fromAttrGrp.fAttributeWC != null) {
-           toAttrGrp.fAttributeWC = toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC);
+            toAttrGrp.fAttributeWC = toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC, toAttrGrp.fAttributeWC.fProcessContents);
+            if (toAttrGrp.fAttributeWC == null) {
+                reportGenericSchemaError("intersection of wildcards is not expressible");
+            }
          }
 
        }
