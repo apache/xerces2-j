@@ -2150,6 +2150,7 @@ public class XMLDocumentScanner
                         }
                         case SCANNER_STATE_PI: {
                             scanPI();
+                            setScannerState(SCANNER_STATE_TRAILING_MISC);
                             break;
                         }
                         case SCANNER_STATE_COMMENT: {
@@ -2160,6 +2161,7 @@ public class XMLDocumentScanner
                                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
                             scanComment();
+                            setScannerState(SCANNER_STATE_TRAILING_MISC);
                             break;
                         }
                         case SCANNER_STATE_CONTENT: {

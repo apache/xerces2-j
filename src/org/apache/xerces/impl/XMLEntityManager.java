@@ -933,8 +933,8 @@ public class XMLEntityManager
         }
 
         // UTF-16, with BOM
-        byte b0 = b4[0];
-        byte b1 = b4[1];
+        int b0 = b4[0] & 0xFF;
+        int b1 = b4[1] & 0xFF;
         if (b0 == 0xFE && b1 == 0xFF) {
             // UTF-16, big-endian
             return "UTF-16";
@@ -949,8 +949,8 @@ public class XMLEntityManager
         }
 
         // other encodings
-        byte b2 = b4[2];
-        byte b3 = b4[3];
+        int b2 = b4[2] & 0xFF;
+        int b3 = b4[3] & 0xFF;
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x00 && b3 == 0x3C) {
             // UCS-4, big endian (1234)
             // REVISIT: What should this be?

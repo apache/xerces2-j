@@ -563,6 +563,7 @@ public class EncodingMap {
         fIANA2JavaMap.put("KOI8-R",          "KOI8_R");
         fIANA2JavaMap.put("US-ASCII",        "8859_1"); // ?
         fIANA2JavaMap.put("UTF-8",           "UTF8");
+        fIANA2JavaMap.put("UTF-16",           "Unicode");
 
         // REVISIT:
         //   j:CNS11643 -> EUC-TW?
@@ -606,6 +607,7 @@ public class EncodingMap {
         fJava2IANAMap.put("KSC5601",   "EUC-KR");
         fJava2IANAMap.put("SJIS",      "Shift_JIS");
         fJava2IANAMap.put("UTF8",      "UTF-8");
+        fJava2IANAMap.put("Unicode",   "UTF-16");
 
     } // <clinit>()
 
