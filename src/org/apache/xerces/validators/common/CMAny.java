@@ -63,11 +63,11 @@ import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 
 /**
- * Content model all node.
+ * Content model any node.
  *
  * @version $Id$
  */
-public class CMAll
+public class CMAny
     extends CMNode {
 
     //
@@ -75,18 +75,18 @@ public class CMAll
     //
 
     /** 
-     * The all content model type. This value is one of the following:
-     * XMLContentSpec.CONTENTSPECNODE_ALL, 
-     * XMLContentSpec.CONTENTSPECNODE_ALL_OTHER,
-     * XMLContentSpec.CONTENTSPECNODE_ALL_LOCAL.
+     * The any content model type. This value is one of the following:
+     * XMLContentSpec.CONTENTSPECNODE_ANY, 
+     * XMLContentSpec.CONTENTSPECNODE_ANY_OTHER,
+     * XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL.
      */
     private int fType;
 
     /**
-     * URI of the all content model. This value is set if the type is
+     * URI of the any content model. This value is set if the type is
      * of the following:
-     * XMLContentSpec.CONTENTSPECNODE_ALL, 
-     * XMLContentSpec.CONTENTSPECNODE_ALL_OTHER.
+     * XMLContentSpec.CONTENTSPECNODE_ANY, 
+     * XMLContentSpec.CONTENTSPECNODE_ANY_OTHER.
      */
     private int fURI;
 
@@ -101,8 +101,8 @@ public class CMAll
     // Constructors
     //
 
-    /** Constructs a content model leaf. */
-    public CMAll(int type, int uri, int position) throws CMException {
+    /** Constructs a content model any. */
+    public CMAny(int type, int uri, int position) throws CMException {
         super(type);
 
         // Store the information
@@ -188,4 +188,4 @@ public class CMAll
             toSet.setBit(fPosition);
     }
 
-} // class CMAll
+} // class CMAny

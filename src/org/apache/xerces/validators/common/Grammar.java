@@ -646,13 +646,13 @@ implements XMLContentSpec.Provider {
         CMNode nodeRet = null;
         getContentSpec(startNode, contentSpec);
         if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-            nodeRet = new CMAll(contentSpec.type, -1, fLeafCount++);
+            nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
         }
         else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
-            nodeRet = new CMAll(contentSpec.type, contentSpec.otherValue, fLeafCount++);
+            nodeRet = new CMAny(contentSpec.type, contentSpec.otherValue, fLeafCount++);
         }
         else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-            nodeRet = new CMAll(contentSpec.type, -1, fLeafCount++);
+            nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
         }
         //
         //  If this node is a leaf, then its an easy one. We just add it

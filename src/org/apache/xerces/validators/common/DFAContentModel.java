@@ -1053,8 +1053,8 @@ public class DFAContentModel
             nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
             nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
             // REVISIT: Don't waste these structures.
-            QName qname = new QName(-1, -1, -1, ((CMAll)nodeCur).getURI());
-            fLeafList[curIndex] = new CMLeaf(qname, ((CMAll)nodeCur).getPosition());
+            QName qname = new QName(-1, -1, -1, ((CMAny)nodeCur).getURI());
+            fLeafList[curIndex] = new CMLeaf(qname, ((CMAny)nodeCur).getPosition());
             fLeafListType[curIndex] = nodeCur.type();
             curIndex++;
         }

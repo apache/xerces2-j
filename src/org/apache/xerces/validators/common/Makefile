@@ -1,4 +1,5 @@
 TARGETS=\
+	CMAny.class\
 	CMBinOp.class\
 	CMException.class\
 	CMLeaf.class\
