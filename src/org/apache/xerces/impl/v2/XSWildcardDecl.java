@@ -178,9 +178,12 @@ public class XSWildcardDecl  extends XSElementDecl {
         
 	XSWildcardDecl unionWildcard = new XSWildcardDecl();
 	
-        // 1 If O1 and O2 are the same value, then that value must be the value.     
-	if (fType == wildcard.fType) {
+        // 1 If O1 and O2 are the same value, then that value must be the value.
+	if (areSame(wildcard)) {
 		unionWildcard.fType = fType;
+		if (fType != WILDCARD_ANY)
+			//REVISIT: Is it okay to copy like this.
+			unionWildcard.fNamespaceList = fNamespaceList;
 	}
 	// 2 If either O1 or O2 is any, then any must be the value.
 	else if ( (fType == WILDCARD_ANY) || (wildcard.fType == WILDCARD_ANY) ) {
@@ -189,12 +192,18 @@ public class XSWildcardDecl  extends XSElementDecl {
 	// 3 If both O1 and O2 are sets of (namespace names or ·absent·), then the union of those sets 
 	//   must be the value.
 	else if ( (fType == WILDCARD_LIST) && (wildcard.fType == WILDCARD_LIST) ) {
-		Vector union = new Vector(fNamespaceList.length, wildcard.fNamespaceList.length);
+		boolean found;
+		Vector union = null;
+		
+		// This way, the vector may be resized exactly once or none.
+		if (fNamespaceList.length > wildcard.fNamespaceList.length)
+			union = new Vector(fNamespaceList.length, wildcard.fNamespaceList.length);
+		else
+			union = new Vector(wildcard.fNamespaceList.length, fNamespaceList.length);
 		
 		for (int i=0; i<fNamespaceList.length; i++)
 			union.addElement(fNamespaceList[i]);
 		
-		boolean found;
 		for (int i=0; i<wildcard.fNamespaceList.length; i++) {
 			found = false;
 			for (int j=0; j<fNamespaceList.length; j++)
@@ -212,7 +221,8 @@ public class XSWildcardDecl  extends XSElementDecl {
         	unionWildcard.fNamespaceList = new String[size];
         	union.copyInto(unionWildcard.fNamespaceList);
 	}
-	// 4 If the two are negations of different namespace names, then the intersection is not expressible.
+	
+	//REVISIT: 4 If the two are negations of different namespace names, then the intersection is not expressible.
 	
 	// 5 If either O1 or O2 is a pair of not and a namespace name and the other is a set of 
 	//   (namespace names or ·absent·), then The appropriate case among the following must be true:
@@ -232,8 +242,11 @@ public class XSWildcardDecl  extends XSElementDecl {
 				}
 			// Loop traversed completely. This means, negated namespace viz. tNS (here)
 			// is not in the other list. So, union is other.
-			if (i == wildcard.fNamespaceList.length)
+			if (i == wildcard.fNamespaceList.length) {
 				unionWildcard.fType = fType;
+				//REVISIT: Is it okay to copy like this.
+				unionWildcard.fNamespaceList = fNamespaceList;
+			}
 		}
 		else {
 			for (i=0; i<fNamespaceList.length; i++)
@@ -243,14 +256,18 @@ public class XSWildcardDecl  extends XSElementDecl {
 				}
 			// Loop traversed completely. This means, negated namespace viz. tNS (here)
 			// is not in the other list. So, union is other.
-			if (i == fNamespaceList.length)
+			if (i == fNamespaceList.length) {
 				unionWildcard.fType = wildcard.fType;
+				//REVISIT: Is it okay to copy like this.
+				unionWildcard.fNamespaceList = wildcard.fNamespaceList;
+			}
 		}
 	}
 
 	unionWildcard.fProcessContents = fProcessContents;
 	return unionWildcard;
-    }
+	
+    } // performUnionWith
 
 
     public XSWildcardDecl performIntersectionWith(XSWildcardDecl wildcard) {
@@ -258,30 +275,43 @@ public class XSWildcardDecl  extends XSElementDecl {
     	// such values (call them O1 and O2): the appropriate case among the following must be true:
     	
 	XSWildcardDecl intersectWildcard = new XSWildcardDecl();
-        
-        // 1 If O1 and O2 are the same value, then that value must be the value.     
-	if (fType == wildcard.fType) {
+
+        // 1 If O1 and O2 are the same value, then that value must be the value.
+	if (areSame(wildcard)) {
 		intersectWildcard.fType = fType;
+		if (fType != WILDCARD_ANY)
+			//REVISIT: Is it okay to copy like this.
+			intersectWildcard.fNamespaceList = fNamespaceList;
 	}
 	// 2 If either O1 or O2 is any, then the other must be the value.
 	else if ( (fType == WILDCARD_ANY) || (wildcard.fType == WILDCARD_ANY) ) {
-		if (fType == WILDCARD_ANY)
+		if (fType == WILDCARD_ANY) {
 			intersectWildcard.fType = wildcard.fType;
-		else
+			// both cannot be ANY, if we have reached here.
+			//REVISIT: Is it okay to copy like this.
+			intersectWildcard.fNamespaceList = wildcard.fNamespaceList;
+		}
+		else {
 			intersectWildcard.fType = fType;
+			// both cannot be ANY, if we have reached here.
+			//REVISIT: Is it okay to copy like this.
+			intersectWildcard.fNamespaceList = fNamespaceList;
+		}
 	}
 	// 3 If either O1 or O2 is a pair of not and a namespace name and the other is a set of 
 	//   (namespace names or ·absent·), then that set, minus the negated namespace name if it was in 
 	//   the set, must be the value.
 	else if ( ((fType == WILDCARD_OTHER) && (wildcard.fType == WILDCARD_LIST)) ||
 	          ((fType == WILDCARD_LIST) && (wildcard.fType == WILDCARD_OTHER)) ) {
-	        Vector intersect = new Vector(5,2);
+	        Vector intersect = null;
 	        if (fType == WILDCARD_OTHER) {
+	        	intersect = new Vector(wildcard.fNamespaceList.length);
 	        	for (int i=0; i<wildcard.fNamespaceList.length; i++)
 	        		if (fNamespaceList[0] != wildcard.fNamespaceList[i])
 	        			intersect.addElement(wildcard.fNamespaceList[i]);
 	        }
 	        else {
+	        	intersect = new Vector(fNamespaceList.length);
 	        	for (int i=0; i<fNamespaceList.length; i++)
 	        		if (wildcard.fNamespaceList[0] != fNamespaceList[i])
 	        			intersect.addElement(fNamespaceList[i]);
@@ -295,8 +325,13 @@ public class XSWildcardDecl  extends XSElementDecl {
 	// 4 If both O1 and O2 are sets of (namespace names or ·absent·), then the intersection of those 
 	//   sets must be the value.
 	else if ( (fType == WILDCARD_LIST) && (wildcard.fType == WILDCARD_LIST) ) {
-		Vector intersect = new Vector(fNamespaceList.length,2);
 		boolean found;
+		Vector intersect = null;
+		
+		if (fNamespaceList.length < wildcard.fNamespaceList.length)
+			intersect = new Vector(fNamespaceList.length);
+		else
+			intersect = new Vector(wildcard.fNamespaceList.length);
 		
 		for (int i=0; i<fNamespaceList.length; i++) {
 			found = false;
@@ -315,12 +350,33 @@ public class XSWildcardDecl  extends XSElementDecl {
         	intersectWildcard.fNamespaceList = new String[size];
         	intersect.copyInto(intersectWildcard.fNamespaceList);
 	}
-	// 5 If the two are negations of different namespace names, then the intersection is not expressible.
+	//REVISIT: 5 If the two are negations of different namespace names, then the intersection is not expressible.
 	
 	intersectWildcard.fProcessContents = fProcessContents;
 	return intersectWildcard;
-    }
+	
+    } // performIntersectionWith
 
+    private boolean areSame(XSWildcardDecl wildcard) {
+	if (fType == wildcard.fType) {
+		if (fType == WILDCARD_ANY)
+			return true;
+		else {
+			if (fNamespaceList.length == wildcard.fNamespaceList.length) {
+				int i=0;
+				for (; i<fNamespaceList.length; i++) {
+					if (fNamespaceList[i] != wildcard.fNamespaceList[i])
+						break;
+				}
+				if (i == fNamespaceList.length)
+					return true;
+			}
+		}
+	}
+	
+	return false;
+
+    } // areSame
 
     public String toString() {
         String ret = null;
