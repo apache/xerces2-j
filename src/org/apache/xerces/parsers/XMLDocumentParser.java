@@ -187,9 +187,7 @@ public abstract class XMLDocumentParser
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fProperties.put(DTD_SCANNER, fDTDScanner);
 
-        //REVISIT, for now, plug in the default DTD validator;
-        //fValidator = new XMLValidator();
-        fValidator = new XMLDTDValidator();
+        fValidator = new XMLValidator();
         final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
         fProperties.put(VALIDATOR, fValidator);
         
