@@ -259,7 +259,7 @@ public class XMLEntityScanner
                 if (c == ':') {
                     colons++;
                     if (colons == 1) {
-                        index = fLength;
+                        index = fLength + 1;
                         prefix = fSymbolTable.addSymbol(fBuffer, 0, fLength);
                     }
                 }
@@ -285,7 +285,20 @@ public class XMLEntityScanner
      */
     public boolean scanContent(XMLString content)
         throws IOException {
-        throw new RuntimeException("not implemented");
+
+        fLength = 0;
+        while (peek() != '<' && peek() != '&') {
+            fBuffer[fLength++] = (char)read();
+            if (fLength == fBuffer.length) {
+                break;
+            }
+        }
+        content.setValues(fBuffer, 0, fLength);
+
+
+        // return true if more to come
+        return fLength == fBuffer.length;
+
     } // scanContent
 
     /**
@@ -296,7 +309,19 @@ public class XMLEntityScanner
      */
     public boolean scanAttContent(int quote, XMLString content)
         throws IOException {
-        throw new RuntimeException("not implemented");
+
+        fLength = 0;
+        while (peek() != quote) {
+            fBuffer[fLength++] = (char)read();
+            if (fLength == fBuffer.length) {
+                break;
+            }
+        }
+        content.setValues(fBuffer, 0, fLength);
+
+        // return true if more to come
+        return fLength == fBuffer.length;
+
     } // scanAttContent
 
     /**
