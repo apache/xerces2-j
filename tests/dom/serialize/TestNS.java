@@ -200,6 +200,16 @@ public class TestNS {
                         System.out.println("Modifying information for the element: "+element.getNodeName());
                     }
 
+                    
+                    element.appendChild(core.createComment("attributes: make sure that NS* prefix is created"));
+                    element.appendChild(core.createTextNode("\n"));
+                    Element e1 = core.createElementNS(null, "root");
+                    element.appendChild(e1);
+                    e1.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xx", "foo");
+                    e1.setAttributeNS("http://rsa2", "xx:attr", "value");
+                    element.appendChild(e1);
+                    element.appendChild(core.createTextNode("\n\n"));
+
 
                     // add element in same scope                            
                     element.appendChild(core.createComment("add element in the same scope"));
@@ -226,6 +236,16 @@ public class TestNS {
                     element.appendChild(core.createElementNS(null,"child4"));
                     element.appendChild(core.createTextNode("\n\n"));
 
+                    element.appendChild(core.createComment("make sure only one 'xmlns:m1'declaration appears not several"));
+                    element.appendChild(core.createTextNode("\n"));
+                    e1 = core.createElementNS("http://rsa", "m1:root");
+                    element.appendChild(e1);
+                    Element e2 = core.createElementNS("http://rsa", "m1:e1");
+                    e2.setAttributeNS("http://rsa", "m1:a1", "v");
+                    e2.setAttributeNS("http://rsa2", "m2:a2", "v");
+                    e1.appendChild(e2);
+                    element.appendChild(core.createTextNode("\n\n"));
+                    
 
                     Text text;
                     // add xmlns attribute

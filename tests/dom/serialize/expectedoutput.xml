@@ -6,7 +6,7 @@
 
 <!-- xmlns is removed during the modifications -->
 <empty xmlns="">
- <elem xmlns=""/>
+ <elem/>
  <elem xmlns="newURI"><a/></elem>
 </empty>
 
@@ -22,6 +22,9 @@
  <good a="1" n1:a="2" xmlns:n1="http://www.w3.org"/>
 </x>
 
+<!--attributes: make sure that NS* prefix is created-->
+<root xmlns="" xmlns:xx="foo" xmlns:NS1="http://rsa2" NS1:attr="value"/>
+
 <!--add element in the same scope-->
 <s:child1/>
 
@@ -33,6 +36,9 @@
 
 <!--add element no prefix no namespace-->
 <child4 xmlns=""/>
+
+<!--make sure only one 'xmlns:m1'declaration appears not several-->
+<m1:root xmlns:m1="http://rsa"><m1:e1 m1:a1="v" xmlns:m2="http://rsa2" m2:a2="v"/></m1:root>
 
 <!--create element: prefix bound to http://child7, local declaration of xmlns:prefix = http://child8-->
 <prefix:child7 xmlns:prefix="http://child7"/>
@@ -53,7 +59,7 @@
 <!--
 1) attr_B with no prefix and http://attr_B
 2) attr_A had no prefix and http://attr_A. There is local default decl bound to the same namespace-->
-<s:testAttributes2 xmlns:NS2="http://attr_A" NS2:attr_A="" xmlns:NS3="http://attr_B" NS3:attr_B="" xmlns="http://attr_A"/>
+<s:testAttributes2 xmlns:NS1="http://attr_A" NS1:attr_A="" xmlns:NS2="http://attr_B" NS2:attr_B="" xmlns="http://attr_A"/>
 </s:Body>
 
 </s:Envelope>
