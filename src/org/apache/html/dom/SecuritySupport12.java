@@ -28,7 +28,7 @@ import java.io.*;
  * 
  * @xerces.internal
  */
-class SecuritySupport12 extends SecuritySupport {
+class SecuritySupport12 {
 
     ClassLoader getContextClassLoader() {
 	return (ClassLoader)

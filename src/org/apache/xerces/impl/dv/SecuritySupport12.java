@@ -28,7 +28,7 @@ import java.io.*;
  *
  * Security related methods that only work on J2SE 1.2 and newer.
  */
-class SecuritySupport12 extends SecuritySupport {
+class SecuritySupport12 {
 
     ClassLoader getContextClassLoader() {
 	return (ClassLoader)
