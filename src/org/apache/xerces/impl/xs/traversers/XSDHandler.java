@@ -978,7 +978,7 @@ public class XSDHandler {
         null,               // index 0
         "attribute declaration",
         "attribute group",
-        "elment declaration",
+        "element declaration",
         "group",
         "identity constraint",
         "notation",
