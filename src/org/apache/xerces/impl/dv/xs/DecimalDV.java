@@ -77,115 +77,171 @@ public class DecimalDV extends TypeValidator {
     }
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-
-        int len = content.length();
-        if (len == 0)
-            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
-        
-        // these 4 variables are used to indicate where the integre/fraction
-        // parts start/end.
-        int intStart = 0, intEnd = 0, fracStart = 0, fracEnd = 0;
-
-        // Deal with leading sign symbol if present
-        if (content.charAt(0) == '+') {
-            // skip '+', so intStart should be 1
-            intStart = intEnd = 1;
-        }
-        else if (content.charAt(0) == '-') {
-            // keep '-', so intStart is stil 0
-            intEnd = 1;
-        }
-
-        // Find the ending position of the integer part
-        while (intEnd < len && isDigit(content.charAt(intEnd)))
-            intEnd++;
-        
-        // Not reached the end yet
-        if (intEnd < len) {
-            // the remaining part is not ".DDD", error
-            if (content.charAt(intEnd) != '.')
-                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
-
-            // fraction part starts after '.', and ends at the end of the input
-            fracStart = intEnd + 1;
-            fracEnd = len;
-        }
-        
-        // no integer part, no fraction part, error.
-        if (intStart == intEnd && fracStart == fracEnd)
-            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
-
-        // count leading zeroes in integer part
-        int actualIntStart = content.charAt(intStart) == '-' ? intStart + 1 : intStart;
-        while (actualIntStart < intEnd && content.charAt(actualIntStart) == '0') {
-            actualIntStart++;
-        }
-        
-        // ignore trailing zeroes in fraction part
-        while (fracEnd > fracStart && content.charAt(fracEnd-1) == '0') {
-            fracEnd--;
-        }
-        
-        // check whether there is non-digit characters in the fraction part
-        for (int fracPos = fracStart; fracPos < fracEnd; fracPos++) {
-            if (!isDigit(content.charAt(fracPos)))
-                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
-        }
-        
-        int fracNum = fracEnd - fracStart;
-        
-        // concatenate the two parts to one integer string
-        String intString = null;
-        if (intEnd > intStart) {
-            intString = content.substring(intStart, intEnd);
-            if (fracNum > 0)
-                intString += content.substring(fracStart, fracEnd);
-        }
-        else {
-            if (fracNum > 0)
-                intString = content.substring(fracStart, fracEnd);
-            else
-                // ".00", treat it as "0"
-                intString = "0";
-        }
-        
         try {
-            // create a BigInteger using the integer string
-            BigInteger intVal = new BigInteger(intString);
-            // carete a MyDecimal using the BigInteger and scale
-            return new XDecimal(intVal, intEnd - actualIntStart, fracNum);
-        } catch (Exception nfe) {
+            return new MyDecimal(content);
+        } catch (NumberFormatException nfe) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
         }
     }
 
     public boolean isEqual(Object value1, Object value2) {
-        if (!(value1 instanceof BigDecimal) || !(value2 instanceof BigDecimal))
+        if (!(value1 instanceof MyDecimal) || !(value2 instanceof MyDecimal))
             return false;
-        return ((BigDecimal)value1).compareTo((BigDecimal)value2) == 0;
+        return ((MyDecimal)value1).equals((MyDecimal)value2);
     }
 
     public int compare(Object value1, Object value2){
-        return ((BigDecimal)value1).compareTo((BigDecimal)value2);
+        return ((MyDecimal)value1).compareTo((MyDecimal)value2);
     }
 
     public int getTotalDigits(Object value){
-        return ((XDecimal)value).totalDigits;
+        return ((MyDecimal)value).totalDigits;
     }
 
     public int getFractionDigits(Object value){
-        return ((BigDecimal)value).scale();
+        return ((MyDecimal)value).fracDigits;
     }
     
 } // class DecimalDV
 
-// store total digits in this class
-class XDecimal extends java.math.BigDecimal {
+// Avoid using the heavy-weight java.math.BigDecimal
+class MyDecimal {
+    // sign: 0 for vlaue 0; 1 for positive values; -1 for negative values
+    int sign = 1;
+    // total digits. >= 1
     int totalDigits = 0;
-    XDecimal(BigInteger intVal, int intNum, int fracNum) {
-        super(intVal, fracNum);
-        // the canonical form of decimal requires at least one digit
-        // on both sides of the decimal point
-        totalDigits = (intNum == 0 ? 1 : intNum) + fracNum;
+    // integer digits when sign != 0
+    int intDigits = 0;
+    // fraction digits when sign != 0
+    int fracDigits = 0;
+    // the string representing the integer part
+    String ivalue = "";
+    // the string representing the fraction part
+    String fvalue = "";
+    
+    MyDecimal(String content) throws NumberFormatException {
+        if (content.equals("0")) {
+            int i = 0;
+        }
+        int len = content.length();
+        if (len == 0)
+            throw new NumberFormatException();
+
+        // these 4 variables are used to indicate where the integre/fraction
+        // parts start/end.
+        int intStart = 0, intEnd = 0, fracStart = 0, fracEnd = 0;
+        
+        // Deal with leading sign symbol if present
+        if (content.charAt(0) == '+') {
+            // skip '+', so intStart should be 1
+            intStart = 1;
+        }
+        else if (content.charAt(0) == '-') {
+            // keep '-', so intStart is stil 0
+            intStart = 1;
+            sign = -1;
+        }
+
+        // skip leading zeroes in integer part
+        int actualIntStart = intStart;
+        while (actualIntStart < len && content.charAt(actualIntStart) == '0') {
+            actualIntStart++;
+        }
+
+        // Find the ending position of the integer part
+        for (intEnd = actualIntStart;
+             intEnd < len && TypeValidator.isDigit(content.charAt(intEnd));
+             intEnd++);
+
+        // Not reached the end yet
+        if (intEnd < len) {
+            // the remaining part is not ".DDD", error
+            if (content.charAt(intEnd) != '.')
+                throw new NumberFormatException();
+
+            // fraction part starts after '.', and ends at the end of the input
+            fracStart = intEnd + 1;
+            fracEnd = len;
+        }
+
+        // no integer part, no fraction part, error.
+        if (intStart == intEnd && fracStart == fracEnd)
+            throw new NumberFormatException();
+
+        // ignore trailing zeroes in fraction part
+        while (fracEnd > fracStart && content.charAt(fracEnd-1) == '0') {
+            fracEnd--;
+        }
+
+        // check whether there is non-digit characters in the fraction part
+        for (int fracPos = fracStart; fracPos < fracEnd; fracPos++) {
+            if (!TypeValidator.isDigit(content.charAt(fracPos)))
+                throw new NumberFormatException();
+        }
+
+        intDigits = intEnd - actualIntStart;
+        fracDigits = fracEnd - fracStart;
+        totalDigits = (intDigits == 0 ? 1 : intDigits) + fracDigits;
+
+        if (intDigits > 0) {
+            ivalue = content.substring(actualIntStart, intEnd);
+            if (fracDigits > 0)
+                fvalue = content.substring(fracStart, fracEnd);
+        }
+        else {
+            if (fracDigits > 0) {
+                fvalue = content.substring(fracStart, fracEnd);
+            }
+            else {
+                // ".00", treat it as "0"
+                sign = 0;
+            }
+        }
+    }
+    public boolean equals(MyDecimal val) {
+        if (val == null)
+            return false;
+        if (val == this)
+            return true;
+        
+        if (sign != val.sign)
+           return false;
+        if (sign == 0)
+            return true;
+        
+        return intDigits == val.intDigits && fracDigits == val.fracDigits &&
+               ivalue.equals(val.ivalue) && fvalue.equals(val.fvalue);
+    }
+    public int compareTo(MyDecimal val) {
+        if (sign != val.sign)
+            return sign > val.sign ? 1 : -1;
+        if (sign == 0)
+            return 0;
+        return sign * intComp(val);
+    }
+    private int intComp(MyDecimal val) {
+        if (intDigits != val.intDigits)
+            return intDigits > val.intDigits ? 1 : -1;
+        int ret = ivalue.compareTo(val.ivalue);
+        if (ret != 0)
+            return ret > 0 ? 1 : -1;;
+        ret = fvalue.compareTo(val.fvalue);
+        return ret == 0 ? 0 : (ret > 0 ? 1 : -1);
+    }
+    public String toString() {
+        if (sign == 0)
+            return "0";
+        StringBuffer buffer = new StringBuffer(totalDigits+2);
+        if (sign == -1)
+            buffer.append('-');
+        if (intDigits != 0)
+            buffer.append(ivalue);
+        else
+            buffer.append('0');
+        if (fracDigits != 0) {
+            buffer.append('.');
+            buffer.append(fvalue);
+        }
+        return buffer.toString();
     }
 }
