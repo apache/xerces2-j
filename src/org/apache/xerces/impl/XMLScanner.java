@@ -82,7 +82,8 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
  * This component requires the following features and properties from the
  * component manager that uses it:
  * <ul>
- *  <li>http://xml.org/sax/features/validation</li>
+ *  <li>http://xml.org/sax/features/validation</li> 
+ *  <li>http://xml.org/sax/features/namespaces</li>
  *  <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
@@ -107,6 +108,10 @@ public abstract class XMLScanner
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
         Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+
+    /** Feature identifier: namespaces. */
+    protected static final String NAMESPACES = 
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
     /** Feature identifier: notify character references. */
     protected static final String NOTIFY_CHAR_REFS =
@@ -143,6 +148,9 @@ public abstract class XMLScanner
      */
     protected boolean fValidation = false;
     
+    /** Namespaces. */
+    protected boolean fNamespaces;
+
     /** Character references notification. */
     protected boolean fNotifyCharRefs = false;
 
@@ -250,6 +258,12 @@ public abstract class XMLScanner
         }
         catch (XMLConfigurationException e) {
             fValidation = false;
+        }
+        try {
+            fNamespaces = componentManager.getFeature(NAMESPACES);
+        }
+        catch (XMLConfigurationException e) {
+            fNamespaces = true;
         }
         try {
             fNotifyCharRefs = componentManager.getFeature(NOTIFY_CHAR_REFS);
@@ -598,7 +612,12 @@ public abstract class XMLScanner
 
         // target
         fReportEntity = false;
-        String target = fEntityScanner.scanName();
+        String target = null;
+        if(fNamespaces) {
+            target = fEntityScanner.scanNCName();
+        } else {
+            target = fEntityScanner.scanName();
+        }
         if (target == null) {
             reportFatalError("PITargetRequired", null);
         }
@@ -641,8 +660,17 @@ public abstract class XMLScanner
                 return;
             }
             else {
-                // if there is data there should be some space
-                reportFatalError("SpaceRequiredInPI", null);
+                if(fNamespaces && fEntityScanner.peekChar() == ':') { 
+                    fEntityScanner.scanChar();
+                    XMLStringBuffer colonName = new XMLStringBuffer(target);
+                    colonName.append(":");
+                    colonName.append(fEntityScanner.scanName());
+                    reportFatalError("ColonNotLegalWithNS", new Object[] {colonName.toString()});
+                    fEntityScanner.skipSpaces();
+                } else {
+                    // if there is data there should be some space
+                    reportFatalError("SpaceRequiredInPI", null);
+                }
             }
         }
 

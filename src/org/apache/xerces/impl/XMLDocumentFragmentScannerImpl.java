@@ -85,7 +85,6 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * This component requires the following features and properties from the
  * component manager that uses it:
  * <ul>
- *  <li>http://xml.org/sax/features/namespaces</li>
  *  <li>http://xml.org/sax/features/validation</li>
  *  <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
  *  <li>http://apache.org/xml/features/scanner/notify-builtin-refs</li>
@@ -241,9 +240,6 @@ public class XMLDocumentFragmentScannerImpl
 
     // features
 
-    /** Namespaces. */
-    protected boolean fNamespaces;
-
     /** Notify built-in references. */
     protected boolean fNotifyBuiltInRefs = false;
 
@@ -374,12 +370,6 @@ public class XMLDocumentFragmentScannerImpl
         //fDocumentSystemId = null;
 
         // sax features
-        try {
-            fNamespaces = componentManager.getFeature(NAMESPACES);
-        }
-        catch (XMLConfigurationException e) {
-            fNamespaces = true;
-        }
         fAttributes.setNamespaces(fNamespaces);
 
         // xerces features

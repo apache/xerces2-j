@@ -1473,13 +1473,29 @@ public class XMLDTDScannerImpl
         }
 
         // name
-        String name = fEntityScanner.scanName();
+        String name = null;
+        if(fNamespaces) {
+            name = fEntityScanner.scanNCName();
+        } else { 
+            name = fEntityScanner.scanName();
+        }
         if (name == null) {
             reportFatalError("MSG_ENTITY_NAME_REQUIRED_IN_ENTITYDECL", null);
         }
-
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
+            if(fNamespaces && fEntityScanner.peekChar() == ':') {
+                fEntityScanner.scanChar();
+                XMLStringBuffer colonName = new XMLStringBuffer(name);
+                colonName.append(":");
+                colonName.append(fEntityScanner.scanName());
+                reportFatalError("ColonNotLegalWithNS", new Object[] {colonName.toString()});
+            } 
+            if (!skipSeparator(true, !scanningInternalSubset())) {
+                reportFatalError("MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
+                             new Object[]{name});
+            }
+        } else {
             reportFatalError("MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
                              new Object[]{name});
         }
@@ -1707,7 +1723,12 @@ public class XMLDTDScannerImpl
         }
 
         // notation name
-        String name = fEntityScanner.scanName();
+        String name = null;
+        if(fNamespaces) {
+            name = fEntityScanner.scanNCName();
+        } else {
+            name = fEntityScanner.scanName();
+        }
         if (name == null) {
             reportFatalError("MSG_NOTATION_NAME_REQUIRED_IN_NOTATIONDECL",
                              null);
@@ -1715,8 +1736,18 @@ public class XMLDTDScannerImpl
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            reportFatalError("MSG_SPACE_REQUIRED_AFTER_NOTATION_NAME_IN_NOTATIONDECL",
-                             new Object[]{name});
+            // check for invalid ":"
+            if(fNamespaces && fEntityScanner.peekChar() == ':') {
+                fEntityScanner.scanChar();
+                XMLStringBuffer colonName = new XMLStringBuffer(name);
+                colonName.append(":");
+                colonName.append(fEntityScanner.scanName());
+                reportFatalError("ColonNotLegalWithNS", new Object[] {colonName.toString()});
+                skipSeparator(true, !scanningInternalSubset());
+            } else {
+                reportFatalError("MSG_SPACE_REQUIRED_AFTER_NOTATION_NAME_IN_NOTATIONDECL",
+                                new Object[]{name});
+            }
         }
 
         // external id
