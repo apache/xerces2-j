@@ -85,35 +85,35 @@ public abstract class SerializerFactory
 
     static
     {
-	SerializerFactory factory;
-	String            list;
-	StringTokenizer   token;
-	String            className;
-
-	// The default factories are always registered first,
-	// any factory specified in the properties file and supporting
-	// the same method will override the default factory.
-	factory =  new SerializerFactoryImpl( Method.XML );
-	registerSerializerFactory( factory );
-	factory =  new SerializerFactoryImpl( Method.HTML );
-	registerSerializerFactory( factory );
-	factory =  new SerializerFactoryImpl( Method.XHTML );
-	registerSerializerFactory( factory );
-	factory =  new SerializerFactoryImpl( Method.TEXT );
-	registerSerializerFactory( factory );
-
-	list = System.getProperty( FactoriesProperty );
-	if ( list != null ) {
-	    token = new StringTokenizer( list, " ;,:" );
-	    while ( token.hasMoreTokens() ) {
-		className = token.nextToken();
-		try {
-		    factory = (SerializerFactory) Class.forName( className ).newInstance();
-		    if ( _factories.contains( factory.getSupportedMethod() ) )
-			_factories.put( factory.getSupportedMethod(), factory );
-		} catch ( Exception except ) { }
-	    }
-	}
+        SerializerFactory factory;
+        String            list;
+        StringTokenizer   token;
+        String            className;
+        
+        // The default factories are always registered first,
+        // any factory specified in the properties file and supporting
+        // the same method will override the default factory.
+        factory =  new SerializerFactoryImpl( Method.XML );
+        registerSerializerFactory( factory );
+        factory =  new SerializerFactoryImpl( Method.HTML );
+        registerSerializerFactory( factory );
+        factory =  new SerializerFactoryImpl( Method.XHTML );
+        registerSerializerFactory( factory );
+        factory =  new SerializerFactoryImpl( Method.TEXT );
+        registerSerializerFactory( factory );
+        
+        list = System.getProperty( FactoriesProperty );
+        if ( list != null ) {
+            token = new StringTokenizer( list, " ;,:" );
+            while ( token.hasMoreTokens() ) {
+                className = token.nextToken();
+                try {
+                    factory = (SerializerFactory) Class.forName( className ).newInstance();
+                    if ( _factories.contains( factory.getSupportedMethod() ) )
+                        _factories.put( factory.getSupportedMethod(), factory );
+                } catch ( Exception except ) { }
+            }
+        }
     }
 
 
@@ -123,12 +123,12 @@ public abstract class SerializerFactory
      */
     public static void registerSerializerFactory( SerializerFactory factory )
     {
-	String method;
-
-	synchronized ( _factories ) {
-	    method = factory.getSupportedMethod();
-	    _factories.put( method, factory );
-	}
+        String method;
+        
+        synchronized ( _factories ) {
+            method = factory.getSupportedMethod();
+            _factories.put( method, factory );
+        }
     }
 
 
@@ -138,7 +138,7 @@ public abstract class SerializerFactory
      */
     public static SerializerFactory getSerializerFactory( String method )
     {
-	return (SerializerFactory) _factories.get( method );
+        return (SerializerFactory) _factories.get( method );
     }
 
 
@@ -167,9 +167,9 @@ public abstract class SerializerFactory
      * method is used, the encoding property will be ignored.
      */
     public abstract Serializer makeSerializer( Writer writer,
-					       OutputFormat format );
-
-
+                                               OutputFormat format );
+    
+    
     /**
      * Create a new serializer, based on the {@link OutputFormat} and
      * using the output byte stream and the encoding specified in the
@@ -179,9 +179,9 @@ public abstract class SerializerFactory
      *   not supported
      */
     public abstract Serializer makeSerializer( OutputStream output,
-					       OutputFormat format )
-	throws UnsupportedEncodingException;
-
+                                               OutputFormat format )
+        throws UnsupportedEncodingException;
+    
 
 }
 

@@ -79,72 +79,72 @@ final class SerializerFactoryImpl
 
 
     private String _method;
-
-
+    
+    
     SerializerFactoryImpl( String method )
     {
-	_method = method;
-	if ( ! _method.equals( Method.XML ) &&
-	     ! _method.equals( Method.HTML ) &&
-	     ! _method.equals( Method.XHTML ) &&
-	     ! _method.equals( Method.TEXT ) )
-	    throw new IllegalArgumentException( "SER004 The method '" + method + "' is not supported by this factory\n" + method);
+        _method = method;
+        if ( ! _method.equals( Method.XML ) &&
+             ! _method.equals( Method.HTML ) &&
+             ! _method.equals( Method.XHTML ) &&
+             ! _method.equals( Method.TEXT ) )
+            throw new IllegalArgumentException( "SER004 The method '" + method + "' is not supported by this factory\n" + method);
     }
 
 
     public Serializer makeSerializer( OutputFormat format )
     {
-	Serializer serializer;
-
-	serializer = getSerializer( format );
-	serializer.setOutputFormat( format );
-	return serializer;
+        Serializer serializer;
+        
+        serializer = getSerializer( format );
+        serializer.setOutputFormat( format );
+        return serializer;
     }
-
-
-
+    
+    
+    
     public Serializer makeSerializer( Writer writer,
-				      OutputFormat format )
+                                      OutputFormat format )
     {
-	Serializer serializer;
-
-	serializer = getSerializer( format );
-	serializer.setOutputCharStream( writer );
-	return serializer;
+        Serializer serializer;
+        
+        serializer = getSerializer( format );
+        serializer.setOutputCharStream( writer );
+        return serializer;
     }
-
-
+    
+    
     public Serializer makeSerializer( OutputStream output,
-				      OutputFormat format )
-	throws UnsupportedEncodingException
+                                      OutputFormat format )
+        throws UnsupportedEncodingException
     {
-	Serializer serializer;
-
-	serializer = getSerializer( format );
-	serializer.setOutputByteStream( output );
-	return serializer;
+        Serializer serializer;
+        
+        serializer = getSerializer( format );
+        serializer.setOutputByteStream( output );
+        return serializer;
     }
-
+    
     
     private Serializer getSerializer( OutputFormat format )
     {
-	if ( _method.equals( Method.XML ) ) {
-	    return new XMLSerializer( format );
-	} else if ( _method.equals( Method.HTML ) ) {
-	    return new HTMLSerializer( format );
-	}  else if ( _method.equals( Method.XHTML ) ) {
-	    return new XHTMLSerializer( format );
-	}  else if ( _method.equals( Method.TEXT ) ) {
-	    return new TextSerializer( format );
-	} else {
-	    throw new IllegalStateException( "SER005 The method '" + _method + "' is not supported by this factory\n" + _method);
-	}
+        if ( _method.equals( Method.XML ) ) {
+            return new XMLSerializer( format );
+        } else if ( _method.equals( Method.HTML ) ) {
+            return new HTMLSerializer( format );
+        }  else if ( _method.equals( Method.XHTML ) ) {
+            return new XHTMLSerializer( format );
+        }  else if ( _method.equals( Method.TEXT ) ) {
+            return new TextSerializer( format );
+        } else {
+            throw new IllegalStateException( "SER005 The method '" + _method + "' is not supported by this factory\n" + _method);
+        }
     }
-
-
+    
+    
     protected String getSupportedMethod()
     {
-	return _method;
+        return _method;
     }
 
 

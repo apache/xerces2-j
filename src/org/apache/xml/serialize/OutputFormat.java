@@ -97,59 +97,59 @@ public class OutputFormat
     public static class DTD
     {
 
-	/**
-	 * Public identifier for HTML document type.
-	 */
-	public static final String HTMLPublicId = "-//W3C//DTD HTML 4.0//EN";
-
-	/**
-	 * System identifier for HTML document type.
-	 */
-	public static final String HTMLSystemId =
-	    "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
-
-	/**
-	 * Public identifier for XHTML document type.
-	 */
-	public static final String XHTMLPublicId =
-	    "-//W3C//DTD XHTML 1.0 Strict//EN";
-
-	/**
-	 * System identifier for XHTML document type.
-	 */
-	public static final String XHTMLSystemId =
-	    "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
-
+        /**
+         * Public identifier for HTML document type.
+         */
+        public static final String HTMLPublicId = "-//W3C//DTD HTML 4.0//EN";
+        
+        /**
+         * System identifier for HTML document type.
+         */
+        public static final String HTMLSystemId =
+            "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
+        
+        /**
+         * Public identifier for XHTML document type.
+         */
+        public static final String XHTMLPublicId =
+            "-//W3C//DTD XHTML 1.0 Strict//EN";
+        
+        /**
+         * System identifier for XHTML document type.
+         */
+        public static final String XHTMLSystemId =
+            "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
+        
     }
-
-
+    
+    
     public static class Defaults
     {
-
-	/**
-	 * If indentation is turned on, the default identation
-	 * level is 4.
-	 *
-	 * @see #setIndenting(boolean)
-	 */
-	public static final int Indent = 4;
-	
-	/**
-	 * The default encoding for Web documents it UTF-8.
-	 *
-	 * @see #getEncoding()
-	 */
-	public static final String Encoding = "UTF-8";
-	
-	/**
-	 * The default line width at which to break long lines
-	 * when identing. This is set to 72.
-	 */
-	public static final int LineWidth = 72;
-
+        
+        /**
+         * If indentation is turned on, the default identation
+         * level is 4.
+         *
+         * @see #setIndenting(boolean)
+         */
+        public static final int Indent = 4;
+        
+        /**
+         * The default encoding for Web documents it UTF-8.
+         *
+         * @see #getEncoding()
+         */
+        public static final String Encoding = "UTF-8";
+        
+        /**
+         * The default line width at which to break long lines
+         * when identing. This is set to 72.
+         */
+        public static final int LineWidth = 72;
+        
     }
-
-
+    
+    
     /**
      * Holds the output method specified for this document,
      * or null if no method was specified.
@@ -264,9 +264,9 @@ public class OutputFormat
      */
     public OutputFormat( String method, String encoding, boolean indenting )
     {
-	setMethod( method );
-	setEncoding( encoding );
-	setIndenting( indenting );
+        setMethod( method );
+        setEncoding( encoding );
+        setIndenting( indenting );
     }
 
 
@@ -280,9 +280,9 @@ public class OutputFormat
      */
     public OutputFormat( Document doc )
     {
-	setMethod( whichMethod( doc ) );
-	setDoctype( whichDoctypePublic( doc ), whichDoctypeSystem( doc ) );
-	setMediaType( whichMediaType( getMethod() ) );
+        setMethod( whichMethod( doc ) );
+        setDoctype( whichDoctypePublic( doc ), whichDoctypeSystem( doc ) );
+        setMediaType( whichMediaType( getMethod() ) );
     }
     
 
@@ -302,9 +302,9 @@ public class OutputFormat
      */
     public OutputFormat( Document doc, String encoding, boolean indenting )
     {
-	this( doc );
-	setEncoding( encoding );
-	setIndenting( indenting );
+        this( doc );
+        setEncoding( encoding );
+        setIndenting( indenting );
     }
 
 
@@ -332,7 +332,7 @@ public class OutputFormat
      */
     public void setMethod( String method )
     {
-	_method = method;
+        _method = method;
     }
 
 
@@ -347,7 +347,7 @@ public class OutputFormat
      */
     public String getVersion()
     {
-	return _version;
+        return _version;
     }
 
 
@@ -361,7 +361,7 @@ public class OutputFormat
      */
     public void setVersion( String version )
     {
-	_version = version;
+        _version = version;
     }
 
 
@@ -375,16 +375,16 @@ public class OutputFormat
      */
     public int getIndent()
     {
-	return _indent;
+        return _indent;
     }
-
+    
 
     /**
      * Returns true if indentation was specified.
      */
     public boolean getIndenting()
     {
-	return ( _indent > 0 );
+        return ( _indent > 0 );
     }
 
 
@@ -398,10 +398,10 @@ public class OutputFormat
      */
     public void setIndent( int indent )
     {
-	if ( indent < 0 )
-	    _indent = 0;
-	else
-	    _indent = indent;
+        if ( indent < 0 )
+            _indent = 0;
+        else
+            _indent = indent;
     }
 
 
@@ -416,13 +416,13 @@ public class OutputFormat
      */
     public void setIndenting( boolean on )
     {
-	if ( on ) {
-	    _indent = Defaults.Indent;
-	    _lineWidth = Defaults.LineWidth;
-	} else {
-	    _indent = 0;
-	    _lineWidth = 0;
-	}
+        if ( on ) {
+            _indent = Defaults.Indent;
+            _lineWidth = Defaults.LineWidth;
+        } else {
+            _indent = 0;
+            _lineWidth = 0;
+        }
     }
 
 
@@ -434,7 +434,7 @@ public class OutputFormat
      */
     public String getEncoding()
     {
-	return _encoding;
+        return _encoding;
     }
 
 
@@ -449,7 +449,7 @@ public class OutputFormat
      */
     public void setEncoding( String encoding )
     {
-	_encoding = encoding;
+        _encoding = encoding;
     }
 
 
@@ -462,7 +462,7 @@ public class OutputFormat
      */
     public String getMediaType()
     {
-	return _mediaType;
+        return _mediaType;
     }
 
 
@@ -474,7 +474,7 @@ public class OutputFormat
      */
     public void setMediaType( String mediaType )
     {
-	_mediaType = mediaType;
+        _mediaType = mediaType;
     }
 
 
@@ -489,8 +489,8 @@ public class OutputFormat
      */
     public void setDoctype( String publicId, String systemId )
     {
-	_doctypePublic = publicId;
-	_doctypeSystem = systemId;
+        _doctypePublic = publicId;
+        _doctypeSystem = systemId;
     }
 
 
@@ -500,7 +500,7 @@ public class OutputFormat
      */
     public String getDoctypePublic()
     {
-	return _doctypePublic;
+        return _doctypePublic;
     }
 
 
@@ -510,7 +510,7 @@ public class OutputFormat
      */
     public String getDoctypeSystem()
     {
-	return _doctypeSystem;
+        return _doctypeSystem;
     }
 
 
@@ -520,7 +520,7 @@ public class OutputFormat
      */
     public boolean getOmitXMLDeclaration()
     {
-	return _omitXmlDeclaration;
+        return _omitXmlDeclaration;
     }
 
 
@@ -531,7 +531,7 @@ public class OutputFormat
      */
     public void setOmitXMLDeclaration( boolean omit )
     {
-	_omitXmlDeclaration = omit;
+        _omitXmlDeclaration = omit;
     }
 
 
@@ -541,7 +541,7 @@ public class OutputFormat
      */
     public boolean getStandalone()
     {
-	return _standalone;
+        return _standalone;
     }
 
 
@@ -554,7 +554,7 @@ public class OutputFormat
      */
     public void setStandalone( boolean standalone )
     {
-	_standalone = standalone;
+        _standalone = standalone;
     }
 
 
@@ -565,7 +565,7 @@ public class OutputFormat
      */
     public String[] getCDataElements()
     {
-	return _cdataElements;
+        return _cdataElements;
     }
 
 
@@ -578,14 +578,14 @@ public class OutputFormat
      */
     public boolean isCDataElement( String tagName )
     {
-	int i;
-
-	if ( _cdataElements == null )
-	    return false;
-	for ( i = 0 ; i < _cdataElements.length ; ++i )
-	    if ( _cdataElements[ i ].equals( tagName ) )
-		return true;
-	return false;
+        int i;
+        
+        if ( _cdataElements == null )
+            return false;
+        for ( i = 0 ; i < _cdataElements.length ; ++i )
+            if ( _cdataElements[ i ].equals( tagName ) )
+                return true;
+        return false;
     }
 
 
@@ -597,7 +597,7 @@ public class OutputFormat
      */
     public void setCDataElements( String[] cdataElements )
     {
-	_cdataElements = cdataElements;
+        _cdataElements = cdataElements;
     }
 
 
@@ -608,7 +608,7 @@ public class OutputFormat
      */
     public String[] getNonEscapingElements()
     {
-	return _nonEscapingElements;
+        return _nonEscapingElements;
     }
 
 
@@ -621,14 +621,14 @@ public class OutputFormat
      */
     public boolean isNonEscapingElement( String tagName )
     {
-	int i;
-
-	if ( _nonEscapingElements == null )
-	    return false;
-	for ( i = 0 ; i < _nonEscapingElements.length ; ++i )
-	    if ( _nonEscapingElements[ i ].equals( tagName ) )
-		return true;
-	return false;
+        int i;
+        
+        if ( _nonEscapingElements == null )
+            return false;
+        for ( i = 0 ; i < _nonEscapingElements.length ; ++i )
+            if ( _nonEscapingElements[ i ].equals( tagName ) )
+                return true;
+        return false;
     }
 
 
@@ -640,7 +640,7 @@ public class OutputFormat
      */
     public void setNonEscapingElements( String[] nonEscapingElements )
     {
-	_nonEscapingElements = nonEscapingElements;
+        _nonEscapingElements = nonEscapingElements;
     }
 
 
@@ -654,7 +654,7 @@ public class OutputFormat
      */
     public String getLineSeparator()
     {
-	return _lineSeparator;
+        return _lineSeparator;
     }
 
 
@@ -669,13 +669,13 @@ public class OutputFormat
      */
     public void setLineSeparator( String lineSeparator )
     {
-	if ( lineSeparator == null )
-	    _lineSeparator =  LineSeparator.Web;
-	else
-	    _lineSeparator = lineSeparator;
+        if ( lineSeparator == null )
+            _lineSeparator =  LineSeparator.Web;
+        else
+            _lineSeparator = lineSeparator;
     }
-
-
+    
+    
     /**
      * Returns true if the default behavior for this format is to
      * preserve spaces. All elements that do not specify otherwise
@@ -685,7 +685,7 @@ public class OutputFormat
      */
     public boolean getPreserveSpace()
     {
-	return _preserve;
+        return _preserve;
     }
 
 
@@ -698,7 +698,7 @@ public class OutputFormat
      */
     public void setPreserveSpace( boolean preserve )
     {
-	_preserve = preserve;
+        _preserve = preserve;
     }
 
 
@@ -710,7 +710,7 @@ public class OutputFormat
      */
     public int getLineWidth()
     {
-	return _lineWidth;
+        return _lineWidth;
     }
 
 
@@ -725,10 +725,10 @@ public class OutputFormat
      */
     public void setLineWidth( int lineWidth )
     {
-	if ( lineWidth <= 0 )
-	    _lineWidth = 0;
-	else
-	    _lineWidth = lineWidth;
+        if ( lineWidth <= 0 )
+            _lineWidth = 0;
+        else
+            _lineWidth = lineWidth;
     }
 
 
@@ -739,11 +739,11 @@ public class OutputFormat
      */
     public char getLastPrintable()
     {
-	if ( getEncoding() != null &&
-	     ( getEncoding().equalsIgnoreCase( "ASCII" ) ) )
-	    return 0xFF;
-	else
-	    return 0xFFFF;
+        if ( getEncoding() != null &&
+             ( getEncoding().equalsIgnoreCase( "ASCII" ) ) )
+            return 0xFF;
+        else
+            return 0xFFFF;
     }
 
 
@@ -761,47 +761,47 @@ public class OutputFormat
     public static String whichMethod( Document doc )
     {
         Node    node;
-	String  value;
-	int     i;
+        String  value;
+        int     i;
 
-	// If document is derived from HTMLDocument then the default
-	// method is html.
+        // If document is derived from HTMLDocument then the default
+        // method is html.
         if ( doc instanceof HTMLDocument )
             return Method.HTML;
         
-	// Lookup the root element and the text nodes preceding it.
-	// If root element is html and all text nodes contain whitespace
-	// only, the method is html.
-	
-	// FIXME (SM) should we care about namespaces here?
-	
+        // Lookup the root element and the text nodes preceding it.
+        // If root element is html and all text nodes contain whitespace
+        // only, the method is html.
+        
+        // FIXME (SM) should we care about namespaces here?
+        
         node = doc.getFirstChild();
         while (node != null) {
-	    // If the root element is html, the method is html.
-	    if ( node.getNodeType() == Node.ELEMENT_NODE ) {
-		if ( node.getNodeName().equalsIgnoreCase( "html" ) ) {
-		    return Method.HTML;
-		} else if ( node.getNodeName().equalsIgnoreCase( "root" ) ) {		         
-		    return Method.FOP;
-		} else {
-		    return Method.XML;
-		}
-	    } else if ( node.getNodeType() == Node.TEXT_NODE ) {
-		// If a text node preceding the root element contains
-		// only whitespace, this might be html, otherwise it's
-		// definitely xml.
-		value = node.getNodeValue();
-		for ( i = 0 ; i < value.length() ; ++i )
-		    if ( value.charAt( i ) != 0x20 && value.charAt( i ) != 0x0A &&
-			 value.charAt( i ) != 0x09 && value.charAt( i ) != 0x0D )
-			return Method.XML;
-	    }
-	    node = node.getNextSibling();
-	}
-	// Anything else, the method is xml.
-	return Method.XML;
+            // If the root element is html, the method is html.
+            if ( node.getNodeType() == Node.ELEMENT_NODE ) {
+                if ( node.getNodeName().equalsIgnoreCase( "html" ) ) {
+                    return Method.HTML;
+                } else if ( node.getNodeName().equalsIgnoreCase( "root" ) ) {         
+                    return Method.FOP;
+                } else {
+                    return Method.XML;
+                }
+            } else if ( node.getNodeType() == Node.TEXT_NODE ) {
+                // If a text node preceding the root element contains
+                // only whitespace, this might be html, otherwise it's
+                // definitely xml.
+                value = node.getNodeValue();
+                for ( i = 0 ; i < value.length() ; ++i )
+                    if ( value.charAt( i ) != 0x20 && value.charAt( i ) != 0x0A &&
+                         value.charAt( i ) != 0x09 && value.charAt( i ) != 0x0D )
+                        return Method.XML;
+            }
+            node = node.getNextSibling();
+        }
+        // Anything else, the method is xml.
+        return Method.XML;
     }
-
+    
 
     /**
      * Returns the document type public identifier
@@ -809,21 +809,21 @@ public class OutputFormat
      */
     public static String whichDoctypePublic( Document doc )
     {
-	DocumentType doctype;
-
+        DocumentType doctype;
+        
         /* XXX  Delayed until DOM Level 2 is introduced into the code base
-	doctype = doc.getDoctype();
-	if ( doctype != null ) {
-	    // Note on catch: DOM Level 1 does not specify this method
-	    // and the code will throw a NoSuchMethodError
-	    try {
-		return doctype.getPublicID();
-	    } catch ( Error except ) {  }
-	}
-	*/
-	if ( doc instanceof HTMLDocument )
-	    return DTD.XHTMLPublicId;
-	return null;
+           doctype = doc.getDoctype();
+           if ( doctype != null ) {
+           // Note on catch: DOM Level 1 does not specify this method
+           // and the code will throw a NoSuchMethodError
+           try {
+           return doctype.getPublicID();
+           } catch ( Error except ) {  }
+           }
+        */
+        if ( doc instanceof HTMLDocument )
+            return DTD.XHTMLPublicId;
+        return null;
     }
 
 
@@ -833,21 +833,21 @@ public class OutputFormat
      */
     public static String whichDoctypeSystem( Document doc )
     {
-	DocumentType doctype;
-
+        DocumentType doctype;
+        
         /* XXX  Delayed until DOM Level 2 is introduced into the code base
-	doctype = doc.getDoctype();
-	if ( doctype != null ) {
-	    // Note on catch: DOM Level 1 does not specify this method
-	    // and the code will throw a NoSuchMethodError
-	    try {
-		return doctype.getSystemID();
-	    } catch ( Error except ) { }
-	}
-	*/
-	if ( doc instanceof HTMLDocument )
-	    return DTD.XHTMLSystemId;
-	return null;
+           doctype = doc.getDoctype();
+           if ( doctype != null ) {
+           // Note on catch: DOM Level 1 does not specify this method
+           // and the code will throw a NoSuchMethodError
+           try {
+           return doctype.getSystemID();
+           } catch ( Error except ) { }
+           }
+        */
+        if ( doc instanceof HTMLDocument )
+            return DTD.XHTMLSystemId;
+        return null;
     }
 
 
@@ -857,17 +857,17 @@ public class OutputFormat
      */
     public static String whichMediaType( String method )
     {
-	if ( method.equalsIgnoreCase( Method.XML ) )
-	    return "text/xml";
-	if ( method.equalsIgnoreCase( Method.HTML ) )
-	    return "text/html";
-	if ( method.equalsIgnoreCase( Method.XHTML ) )
-	    return "text/html";
-	if ( method.equalsIgnoreCase( Method.TEXT ) )
-	    return "text/plain";
-	if ( method.equalsIgnoreCase( Method.FOP ) )
-	    return "application/pdf";
-	return null;
+        if ( method.equalsIgnoreCase( Method.XML ) )
+            return "text/xml";
+        if ( method.equalsIgnoreCase( Method.HTML ) )
+            return "text/html";
+        if ( method.equalsIgnoreCase( Method.XHTML ) )
+            return "text/html";
+        if ( method.equalsIgnoreCase( Method.TEXT ) )
+            return "text/plain";
+        if ( method.equalsIgnoreCase( Method.FOP ) )
+            return "application/pdf";
+        return null;
     }
 
 

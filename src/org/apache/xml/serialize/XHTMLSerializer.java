@@ -86,7 +86,7 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer()
     {
-	super( true, null );
+        super( true, null );
     }
 
 
@@ -97,7 +97,7 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer( OutputFormat format )
     {
-	super( true, format );
+        super( true, format );
     }
 
 
@@ -111,8 +111,8 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer( Writer writer, OutputFormat format )
     {
-	super( true, format );
-	setOutputCharStream( writer );
+        super( true, format );
+        setOutputCharStream( writer );
     }
 
 
@@ -126,21 +126,21 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer( OutputStream output, OutputFormat format )
     {
-	super( true, format );
-	try {
-	    setOutputByteStream( output );
-	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend
-	}
+        super( true, format );
+        try {
+            setOutputByteStream( output );
+        } catch ( UnsupportedEncodingException except ) {
+            // Should never happend
+        }
     }
 
 
     public void setOutputFormat( OutputFormat format )
     {
-	if ( format == null )
-	    super.setOutputFormat( new OutputFormat( Method.XHTML, null, false ) );
-	else
-	    super.setOutputFormat( format );
+        if ( format == null )
+            super.setOutputFormat( new OutputFormat( Method.XHTML, null, false ) );
+        else
+            super.setOutputFormat( format );
     }
 
 

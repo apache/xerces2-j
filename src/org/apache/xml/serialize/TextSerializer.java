@@ -106,7 +106,7 @@ public final class TextSerializer
      */
     public TextSerializer()
     {
-	setOutputFormat( null );
+        setOutputFormat( null );
     }
 
 
@@ -117,7 +117,7 @@ public final class TextSerializer
      */
     public TextSerializer( OutputFormat format )
     {
-	setOutputFormat( format );
+        setOutputFormat( format );
     }
 
 
@@ -131,8 +131,8 @@ public final class TextSerializer
      */
     public TextSerializer( Writer writer, OutputFormat format )
     {
-	setOutputFormat( format );
-	setOutputCharStream( writer );
+        setOutputFormat( format );
+        setOutputCharStream( writer );
     }
 
 
@@ -146,21 +146,21 @@ public final class TextSerializer
      */
     public TextSerializer( OutputStream output, OutputFormat format )
     {
-	setOutputFormat( format );
-	try {
-	    setOutputByteStream( output );
-	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend
-	}
+        setOutputFormat( format );
+        try {
+            setOutputByteStream( output );
+        } catch ( UnsupportedEncodingException except ) {
+            // Should never happend
+        }
     }
 
 
     public void setOutputFormat( OutputFormat format )
     {
-	if ( format == null )
-	    super.setOutputFormat( new OutputFormat( Method.TEXT, null, false ) );
-	else
-	    super.setOutputFormat( format );
+        if ( format == null )
+            super.setOutputFormat( new OutputFormat( Method.TEXT, null, false ) );
+        else
+            super.setOutputFormat( format );
     }
 
 
@@ -170,16 +170,16 @@ public final class TextSerializer
 
 
     public void startElement( String namespaceURI, String localName,
-			      String rawName, Attributes attrs )
+                              String rawName, Attributes attrs )
     {
-	startElement( rawName == null ? localName : rawName, null );
+        startElement( rawName == null ? localName : rawName, null );
     }
 
 
     public void endElement( String namespaceURI, String localName,
-			    String rawName )
+                            String rawName )
     {
-	endElement( rawName == null ? localName : rawName );
+        endElement( rawName == null ? localName : rawName );
     }
 
 
@@ -187,64 +187,64 @@ public final class TextSerializer
     // SAX document handler serializing methods //
     //------------------------------000---------//
 
-
+    
     public void startDocument()
     {
-	// Nothing to do here. All the magic happens in startDocument(String)
+        // Nothing to do here. All the magic happens in startDocument(String)
     }
-
-
+    
+    
     public void startElement( String tagName, AttributeList attrs )
     {
-	boolean      preserveSpace;
-	ElementState state;
-
-	state = getElementState();
-	if ( state == null ) {
-	    // If this is the root element handle it differently.
-	    // If the first root element in the document, serialize
-	    // the document's DOCTYPE. Space preserving defaults
-	    // to that of the output format.
-	    if ( ! _started )
-		startDocument( tagName );
-	    preserveSpace = _format.getPreserveSpace();
-	} else {
-	    // For any other element, if first in parent, then
-	    // use the parnet's space preserving.
-	    preserveSpace = state.preserveSpace;
-	}
-	// Do not change the current element state yet.
-	// This only happens in endElement().
-
-	// Ignore all other attributes of the element, only printing
-	// its contents.
-
-	// Now it's time to enter a new element state
-	// with the tag name and space preserving.
-	// We still do not change the curent element state.
-	state = enterElementState( null, null, tagName, preserveSpace );
+        boolean      preserveSpace;
+        ElementState state;
+        
+        state = getElementState();
+        if ( state == null ) {
+            // If this is the root element handle it differently.
+            // If the first root element in the document, serialize
+            // the document's DOCTYPE. Space preserving defaults
+            // to that of the output format.
+            if ( ! _started )
+                startDocument( tagName );
+            preserveSpace = _format.getPreserveSpace();
+        } else {
+            // For any other element, if first in parent, then
+            // use the parnet's space preserving.
+            preserveSpace = state.preserveSpace;
+        }
+        // Do not change the current element state yet.
+        // This only happens in endElement().
+        
+        // Ignore all other attributes of the element, only printing
+        // its contents.
+        
+        // Now it's time to enter a new element state
+        // with the tag name and space preserving.
+        // We still do not change the curent element state.
+        state = enterElementState( null, null, tagName, preserveSpace );
     }
-
-
+    
+    
     public void endElement( String tagName )
     {
-	ElementState state;
-
-	// Works much like content() with additions for closing
-	// an element. Note the different checks for the closed
-	// element's state and the parent element's state.
-	state = getElementState();
-	// Leave the element state and update that of the parent
-	// (if we're not root) to not empty and after element.
-	state = leaveElementState();
-	if ( state != null ) {
-	    state.afterElement = true;
-	    state.empty = false;
-	} else {
-	    // [keith] If we're done printing the document but don't
-	    // get to call endDocument(), the buffer should be flushed.
-	    flush();
-	}
+        ElementState state;
+        
+        // Works much like content() with additions for closing
+        // an element. Note the different checks for the closed
+        // element's state and the parent element's state.
+        state = getElementState();
+        // Leave the element state and update that of the parent
+        // (if we're not root) to not empty and after element.
+        state = leaveElementState();
+        if ( state != null ) {
+            state.afterElement = true;
+            state.empty = false;
+        } else {
+            // [keith] If we're done printing the document but don't
+            // get to call endDocument(), the buffer should be flushed.
+            flush();
+        }
     }
 
 
@@ -265,19 +265,19 @@ public final class TextSerializer
 
     public void characters( char[] chars, int start, int length )
     {
-	characters( new String( chars, start, length ), false );
+        characters( new String( chars, start, length ), false );
     }
 
 
     protected void characters( String text, boolean unescaped )
     {
-	ElementState state;
-
-	state = content();
-	if ( state != null ) {
-	    state.doCData = state.inCData = false;
-	}
-	printText( text, true );
+        ElementState state;
+        
+        state = content();
+        if ( state != null ) {
+            state.doCData = state.inCData = false;
+        }
+        printText( text, true );
     }
 
 
@@ -297,13 +297,13 @@ public final class TextSerializer
      */
     protected void startDocument( String rootTagName )
     {
-	// Required to stop processing the DTD, even though the DTD
-	// is not printed.
-	leaveDTD();
-
-	_started = true;
-	// Always serialize these, even if not te first root element.
-	serializePreRoot();
+        // Required to stop processing the DTD, even though the DTD
+        // is not printed.
+        leaveDTD();
+        
+        _started = true;
+        // Always serialize these, even if not te first root element.
+        serializePreRoot();
     }
 
 
@@ -314,51 +314,51 @@ public final class TextSerializer
      */
     protected void serializeElement( Element elem )
     {
-	Node         child;
-	ElementState state;
-	boolean      preserveSpace;
-	String       tagName;
-
-	tagName = elem.getTagName();
-	state = getElementState();
-	if ( state == null ) {
-	    // If this is the root element handle it differently.
-	    // If the first root element in the document, serialize
-	    // the document's DOCTYPE. Space preserving defaults
-	    // to that of the output format.
-	    if ( ! _started )
-		startDocument( tagName );
-	    preserveSpace = _format.getPreserveSpace();
-	} else {
-	    // For any other element, if first in parent, then
-	    // use the parnet's space preserving.
-	    preserveSpace = state.preserveSpace;
-	}
-	// Do not change the current element state yet.
-	// This only happens in endElement().
-
-	// Ignore all other attributes of the element, only printing
-	// its contents.
-
-	// If element has children, then serialize them, otherwise
-	// serialize en empty tag.
-	if ( elem.hasChildNodes() ) {
-	    // Enter an element state, and serialize the children
-	    // one by one. Finally, end the element.
-	    state = enterElementState( null, null, tagName, preserveSpace );
-	    child = elem.getFirstChild();
-	    while ( child != null ) {
-		serializeNode( child );
-		child = child.getNextSibling();
-	    }
-	    endElement( tagName );
-	} else {
-	    if ( state != null ) {
-		// After element but parent element is no longer empty.
-		state.afterElement = true;
-		state.empty = false;
-	    }
-	}
+        Node         child;
+        ElementState state;
+        boolean      preserveSpace;
+        String       tagName;
+        
+        tagName = elem.getTagName();
+        state = getElementState();
+        if ( state == null ) {
+            // If this is the root element handle it differently.
+            // If the first root element in the document, serialize
+            // the document's DOCTYPE. Space preserving defaults
+            // to that of the output format.
+            if ( ! _started )
+                startDocument( tagName );
+            preserveSpace = _format.getPreserveSpace();
+        } else {
+            // For any other element, if first in parent, then
+            // use the parnet's space preserving.
+            preserveSpace = state.preserveSpace;
+        }
+        // Do not change the current element state yet.
+        // This only happens in endElement().
+        
+        // Ignore all other attributes of the element, only printing
+        // its contents.
+        
+        // If element has children, then serialize them, otherwise
+        // serialize en empty tag.
+        if ( elem.hasChildNodes() ) {
+            // Enter an element state, and serialize the children
+            // one by one. Finally, end the element.
+            state = enterElementState( null, null, tagName, preserveSpace );
+            child = elem.getFirstChild();
+            while ( child != null ) {
+                serializeNode( child );
+                child = child.getNextSibling();
+            }
+            endElement( tagName );
+        } else {
+            if ( state != null ) {
+                // After element but parent element is no longer empty.
+                state.afterElement = true;
+                state.empty = false;
+            }
+        }
     }
 
 
@@ -369,102 +369,73 @@ public final class TextSerializer
      */
     protected void serializeNode( Node node )
     {
-	// Based on the node type call the suitable SAX handler.
-	// Only comments entities and documents which are not
-	// handled by SAX are serialized directly.
+        // Based on the node type call the suitable SAX handler.
+        // Only comments entities and documents which are not
+        // handled by SAX are serialized directly.
         switch ( node.getNodeType() ) {
-	case Node.TEXT_NODE :
-	    characters( node.getNodeValue(), true );
-	    break;
-
-	case Node.CDATA_SECTION_NODE :
-	    characters( node.getNodeValue(), true );
-	    break;
-
-	case Node.COMMENT_NODE :
-	    break;
-
-	case Node.ENTITY_REFERENCE_NODE :
-	    // Ignore.
-	    break;
-
-	case Node.PROCESSING_INSTRUCTION_NODE :
-	    break;
-
-	case Node.ELEMENT_NODE :
-	    serializeElement( (Element) node );
-	    break;
-
-	case Node.DOCUMENT_NODE :
-	    DocumentType docType;
-	    NamedNodeMap map;
-	    Entity       entity;
-	    Notation     notation;
-	    int          i;
-	 
-	    // If there is a document type, use the SAX events to
-	    // serialize it.
-	    docType = ( (Document) node ).getDoctype();
-	    if ( docType != null ) {
-		startDTD( docType.getName(), null, null );
-		map = docType.getEntities();
-		if ( map != null ) {
-		    for ( i = 0 ; i < map.getLength() ; ++i ) {
-			entity = (Entity) map.item( i );
-			unparsedEntityDecl( entity.getNodeName(), entity.getPublicId(),
-				    entity.getSystemId(), entity.getNotationName() );
-		    }
-		}
-		map = docType.getNotations();
-		if ( map != null ) {
-		    for ( i = 0 ; i < map.getLength() ; ++i ) {
-			notation = (Notation) map.item( i );
-			notationDecl( notation.getNodeName(), notation.getPublicId(), notation.getSystemId() );
-		    }
-		}
-		endDTD();
-	    }
-	    // !! Fall through
-	case Node.DOCUMENT_FRAGMENT_NODE : {
-	    Node         child;
-	    
-	    // By definition this will happen if the node is a document,
-	    // document fragment, etc. Just serialize its contents. It will
-	    // work well for other nodes that we do not know how to serialize.
-	    child = node.getFirstChild();
-	    while ( child != null ) {
-		serializeNode( child );
-		child = child.getNextSibling();
-	    }
-	    break;
-	}
-
-	default:
-	    break;
-	}
+        case Node.TEXT_NODE :
+            characters( node.getNodeValue(), true );
+            break;
+            
+        case Node.CDATA_SECTION_NODE :
+            characters( node.getNodeValue(), true );
+            break;
+            
+        case Node.COMMENT_NODE :
+            break;
+            
+        case Node.ENTITY_REFERENCE_NODE :
+            // Ignore.
+            break;
+            
+        case Node.PROCESSING_INSTRUCTION_NODE :
+            break;
+            
+        case Node.ELEMENT_NODE :
+            serializeElement( (Element) node );
+            break;
+            
+        case Node.DOCUMENT_NODE :
+        case Node.DOCUMENT_FRAGMENT_NODE : {
+            Node         child;
+            
+            // By definition this will happen if the node is a document,
+            // document fragment, etc. Just serialize its contents. It will
+            // work well for other nodes that we do not know how to serialize.
+            child = node.getFirstChild();
+            while ( child != null ) {
+                serializeNode( child );
+                child = child.getNextSibling();
+            }
+            break;
+        }
+        
+        default:
+            break;
+        }
     }
-
-
+    
+    
     protected ElementState content()
     {
-	ElementState state;
-
-	state = getElementState();
-	if ( state != null ) {
-	    // If this is the first content in the element,
-	    // change the state to not-empty.
-	    if ( state.empty ) {
-		state.empty = false;
-	    }
-	    // Except for one content type, all of them
-	    // are not last element. That one content
-	    // type will take care of itself.
-	    state.afterElement = false;
-	}
-	return state;
+        ElementState state;
+        
+        state = getElementState();
+        if ( state != null ) {
+            // If this is the first content in the element,
+            // change the state to not-empty.
+            if ( state.empty ) {
+                state.empty = false;
+            }
+            // Except for one content type, all of them
+            // are not last element. That one content
+            // type will take care of itself.
+            state.afterElement = false;
+        }
+        return state;
     }
-
-
+    
+    
     protected String getEntityRef( char ch )
     {
         return null;

@@ -116,8 +116,8 @@ public interface Serializer
      * serializer is in the process of serializing a document.
      */
     public void setOutputByteStream(OutputStream output)
-      throws UnsupportedEncodingException;
-
+        throws UnsupportedEncodingException;
+    
 
     /**
      * Specifies a writer to which the document should be serialized.
