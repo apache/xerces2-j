@@ -1129,6 +1129,9 @@ public class XMLDocumentScanner
 
     /** 
      * Scans a CDATA section. 
+     * <p>
+     * <strong>Note:</strong> This method uses the fString and
+     * fStringBuffer variables.
      *
      * @param complete True if the CDATA section is to be scanned
      *                 completely.
@@ -1143,22 +1146,34 @@ public class XMLDocumentScanner
             fDocumentHandler.startCDATA();
         }
 
-        OUTER: while (true) {
-            while (fEntityScanner.scanData("]]", fString)) {
-                if (fDocumentHandler != null) {
+        while (true) {
+            if (!fEntityScanner.scanData("]]", fString)) {
+                if (fDocumentHandler != null && fString.length > 0) {
                     fDocumentHandler.characters(fString);
                 }
+                int brackets = 2;
+                while (fEntityScanner.skipChar(']')) {
+                    brackets++;
+                }
+                if (fDocumentHandler != null && brackets > 2) {
+                    fStringBuffer.clear();
+                    for (int i = 2; i < brackets; i++) {
+                        fStringBuffer.append(']');
+                    }
+                    fDocumentHandler.characters(fStringBuffer);
+                }
+                if (fEntityScanner.skipChar('>')) {
+                    break;
+                }
+                if (fDocumentHandler != null) {
+                    fStringBuffer.clear();
+                    fStringBuffer.append("]]");
+                    fDocumentHandler.characters(fStringBuffer);
+                }
+                // REVISIT: handle invalid char
             }
-            if (fDocumentHandler != null) {
+            else if (fDocumentHandler != null) {
                 fDocumentHandler.characters(fString);
-            }
-            if (fEntityScanner.skipChar('>')) {
-                break OUTER;
-            }
-            if (fDocumentHandler != null) {
-                fStringBuffer.clear();
-                fStringBuffer.append("]]");
-                fDocumentHandler.characters(fStringBuffer);
             }
         }
 

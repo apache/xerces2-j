@@ -105,7 +105,7 @@ public abstract class XMLDocumentParser
     // debugging
 
     /** Set to true and recompile to print exception stack trace. */
-    private static final boolean PRINT_EXCEPTION_STACK_TRACE = true;
+    private static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
 
     //
     // Data

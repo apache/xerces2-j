@@ -68,7 +68,9 @@ import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Provides a complete trace of XNI document and DTD events for 
@@ -80,7 +82,8 @@ import org.xml.sax.SAXException;
  * @version $Id$
  */
 public class DocumentTracer 
-    extends XMLDocumentParser {
+    extends XMLDocumentParser
+    implements ErrorHandler {
 
     //
     // Data
@@ -91,6 +94,15 @@ public class DocumentTracer
 
     /** Indent level. */
     private int fIndent;
+
+    //
+    // Constructors
+    //
+
+    /** Default constructor. */
+    public DocumentTracer() {
+        setErrorHandler(this);
+    } // <init>()
 
     //
     // Public methods
@@ -556,6 +568,32 @@ public class DocumentTracer
     } // endContentModel
 
     //
+    // ErrorHandler methods
+    //
+
+    /** Warning. */
+    public void warning(SAXParseException ex) {
+        System.err.println("[Warning] "+
+                           getLocationString(ex)+": "+
+                           ex.getMessage());
+    }
+
+    /** Error. */
+    public void error(SAXParseException ex) {
+        System.err.println("[Error] "+
+                           getLocationString(ex)+": "+
+                           ex.getMessage());
+    }
+
+    /** Fatal error. */
+    public void fatalError(SAXParseException ex) throws SAXException {
+        System.err.println("[Fatal Error] "+
+                           getLocationString(ex)+": "+
+                           ex.getMessage());
+        throw ex;
+    }
+
+    //
     // Static methods
     //
 
@@ -602,27 +640,49 @@ public class DocumentTracer
     // Private methods
     //
 
+    /** Prints the indent. */
     private void printIndent() {
         for (int i = 0; i < fIndent; i++) {
             System.out.print(' ');
         }
     }
 
+    /** Returns a string of the location. */
+    private String getLocationString(SAXParseException ex) {
+        StringBuffer str = new StringBuffer();
+
+        String systemId = ex.getSystemId();
+        if (systemId != null) {
+            int index = systemId.lastIndexOf('/');
+            if (index != -1) 
+                systemId = systemId.substring(index + 1);
+            str.append(systemId);
+        }
+        str.append(':');
+        str.append(ex.getLineNumber());
+        str.append(':');
+        str.append(ex.getColumnNumber());
+
+        return str.toString();
+
+    } // getLocationString(SAXParseException):String
+
     //
     // MAIN
     //
 
+    /** Main. */
     public static void main(String[] argv) throws Exception {
         XMLDocumentParser parser = new DocumentTracer();
-        parser.getFeature("http://xml.org/sax/features/namespaces");
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
             System.err.println("# argv["+i+"]: "+arg);
             print(arg);
             parser.parse(arg);
         }
-    }
+    } // main(String[])
 
+    /** Prints the file. */
     private static void print(String filename) throws IOException {
         InputStream in = new FileInputStream(filename);
         int c = -1;
@@ -631,6 +691,6 @@ public class DocumentTracer
         }
         System.out.println();
         in.close();
-    }
+    } // print(String)
 
 } // class DocumentTracer
