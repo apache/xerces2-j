@@ -68,13 +68,9 @@ import java.io.Reader;
 import java.util.Vector;
 
 /**
- * An abstract class for readers that process input data as characters.
- *
- * This is the base class of the CharReader and UTF8CharReader classes.
- * The CharReader classes fills in the "chunks" of data to process from
- * a character stream (java.io.Reader).  The UTF8CharReader performs
- * its own UTF-8 transcoding to fill in the data from an InputStream.
- *
+ * An reader class for applications that need to process input data as 
+ * it arrives on the stream.
+ * *
  * @version
  */
 public class StreamingCharReader extends XMLEntityReader {
