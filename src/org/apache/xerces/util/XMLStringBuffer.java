@@ -153,7 +153,7 @@ public class XMLStringBuffer
             this.ch = newch;
         }
         s.getChars(0, length, this.ch, this.length);
-        length += length;
+        this.length += length;
     } // append(String)
 
     /**
