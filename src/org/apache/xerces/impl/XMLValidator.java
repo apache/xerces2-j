@@ -1817,7 +1817,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     // REVISIT: this can be combined to a single check in startEntity 
                     // if we add one more argument in startEnity, inAttrValue
                     if (fStandaloneIsYes) {
-                        for (int j=0;  j<attributes.getEntityCount(i); j++) {
+                        int entityCount = attributes.getEntityCount(i);
+                        for (int j=0;  j < entityCount; j++) {
                             String entityName= attributes.getEntityName(i, j);
                             int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
                             if (entIndex > -1) {
@@ -2200,7 +2201,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     } else {
                         if (leadingSpace || !spaceStart) {
                             eaten ++;
-                            for (int j=0;  j<attributes.getEntityCount(index); j++) {
+                            int entityCount = attributes.getEntityCount(index);
+                            for (int j=0;  j < entityCount; j++) {
                                 int offset = attributes.getEntityOffset(index, j);
                                 int length = attributes.getEntityLength(index, j);
                                 if (offset <= i-eaten+1) {
@@ -2229,7 +2231,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             // check if the last appended character is a space.
             if (count > 0 && fBuffer.charAt(count-1) == ' ') {
                 fBuffer.setLength(count-1);
-                for (int j=0;  j<attributes.getEntityCount(index); j++) {
+                int entityCount = attributes.getEntityCount(index);
+                for (int j=0;  j < entityCount; j++) {
                     int offset = attributes.getEntityOffset(index, j);
                     int length = attributes.getEntityLength(index, j);
                     if (offset < count-1) {
