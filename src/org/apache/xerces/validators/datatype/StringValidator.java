@@ -218,11 +218,61 @@ public class StringValidator implements DatatypeValidator {
                 throw new ConstrainException(
                                             "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
             }
-      } else { //derived by list
+         } else { //derived by list
+             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+               String key = (String) e.nextElement();
+               if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+                   _facetsDefined += DatatypeValidator.FACET_LENGTH;
+                   String lengthValue = (String)facets.get(key);
+                   try {
+                       _length     = Integer.parseInt( lengthValue );
+                   } catch (NumberFormatException nfe) {
+                       throw new IllegalFacetValueException("Length value '"+lengthValue+"' is invalid.");
+                   }
+                   if ( _length < 0 )
+                       throw new IllegalFacetValueException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
+               } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                   _facetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                   String minLengthValue = (String)facets.get(key);
+                   try {
+                       _minLength     = Integer.parseInt( minLengthValue );
+                   } catch (NumberFormatException nfe) {
+                       throw new IllegalFacetValueException("maxLength value '"+minLengthValue+"' is invalid.");
+                   }
+               } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
+                   _facetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                   String maxLengthValue = (String)facets.get(key);
+                   try {
+                       _maxLength     = Integer.parseInt( maxLengthValue );
+                   } catch (NumberFormatException nfe) {
+                       throw new IllegalFacetValueException("maxLength value '"+maxLengthValue+"' is invalid.");
+                   }
+               } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                   _facetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                   _enumeration    = (Vector)facets.get(key);
+               } else {
+                   throw new IllegalFacetException();
+               }
+             }
+             if (((_facetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
+                 if (((_facetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
+                     throw new ConstrainException(
+                                              "It is an error for both length and maxLength to be members of facets." );  
+                 } else if (((_facetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
+                     throw new ConstrainException(
+                                              "It is an error for both length and minLength to be members of facets." );
+                 }
+             }
 
-
-      }
+             if ( ( (_facetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
+                                     DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
+                 if ( _minLength < _maxLength ) {
+                     throw new ConstrainException( "Value of minLength = " + _minLength +
+                                                "must be greater that the value of maxLength" + _maxLength );
+                 }
+             }
+         }
     }
 
     public void setBasetype( String base) {
