@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.v2;
 
-import org.apache.xerces.impl.v2.msg.ImplementationMessages;
+import org.apache.xerces.impl.msg.ImplementationMessages;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.validation.models.CMNode;
 import org.apache.xerces.impl.validation.models.CMStateSet;
