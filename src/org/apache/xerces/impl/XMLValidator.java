@@ -245,8 +245,8 @@ public class XMLValidator
         // clear grammars
         fCurrentGrammar = null;
         fDTDGrammar = null;
-        fCurrentGrammarIsDTD = true;
-        fCurrentGrammarIsSchema = false;
+        fCurrentGrammarIsDTD = false;
+        fCurrentGrammarIsSchema = true;
 
         // initialize state
         fInDTD = false;
@@ -1008,6 +1008,10 @@ public class XMLValidator
         // create DTD grammar
         fDTDGrammar = new DTDGrammar();
         fDTDGrammar.setErrorReporter(fErrorReporter);
+
+        // REVESIT: if schema validation is turned on, we shouldn't be doing this.
+        fCurrentGrammarIsDTD = true;
+        fCurrentGrammarIsSchema = false;
 
         // call handlers
         fDTDGrammar.startDTD();
