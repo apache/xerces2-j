@@ -177,7 +177,6 @@ Copyright:
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java **/v1/** **/v2/**
-                       org/apache/xerces/dom3/*.java
                        org/apache/xerces/dom3/ls/**">
         </fileset>
     </copy>
@@ -276,7 +275,7 @@ Copyright:
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
         <fileset dir="${tests.dir}"
-         excludes="dom/rename/**, dom/dom3/**" />
+         excludes="dom/rename/**, dom/dom3/**, dom/registry/**, dom/mem/**" />
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -650,12 +649,6 @@ Copyright:
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
      -->
-    <echo message="Running dom.mem.Test ..." />
-    <java fork="yes"
-          classpath="${build.dir}/classes"
-          classname="dom.mem.Test"
-          failOnError="yes">
-    </java>
     <echo message="Running dom.DTest ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
@@ -992,6 +985,44 @@ Copyright:
     <!-- substitute tokens as needed -->
     <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
              token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
+
+
+       <!-- DOM level 3 hack: replace import statements-->
+     <replace file="${build.src}/org/apache/xerces/dom/NodeImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/DocumentImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/DOMNormalizer.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/DOMLocatorImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/DOMImplementationSourceImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/DOMErrorImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/CoreDocumentImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+   
+    <replace file="${build.src}/org/apache/xerces/parsers/DOMBuilderImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+                                    
+   <replace file="${build.src}/org/apache/xerces/util/DOMErrorHandlerWrapper.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+             
+    <replace file="${build.src}/org/apache/xml/serialize/XMLSerializer.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xml/serialize/BaseMarkupSerializer.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xml/serialize/DOMWriterImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+             
+    <replace file="${build.src}/org/w3c/dom/ls/DOMWriter.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/w3c/dom/ls/ParseErrorEvent.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/w3c/dom/ls/DOMBuilder.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+
   </target>
 
   <!-- =================================================================== -->
@@ -1022,12 +1053,23 @@ Copyright:
     <copy todir="${build.samples}" >
         <fileset dir="${samples.dir}" />
     </copy>
-    <javac srcdir="${build.samples}"
+   <!-- DOM Level 3 hack: replace import statements-->
+    <replace file="${build.samples}/dom/ASBuilder.java"  
+             token="org.apache.xerces.dom3.DOMError" value="org.w3c.dom.DOMError"/>
+
+   <replace file="${build.samples}/dom/ASBuilder.java"  
+             token="org.apache.xerces.dom3.DOMErrorHandler" value="org.w3c.dom.DOMErrorHandler"/>
+ 
+
+   <javac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/classes"
            debug="${debug}"
            includeAntRuntime="false"
            includeJavaRuntime="true"/>
+
+ 
+    
   </target>
 
   <!-- =================================================================== -->
@@ -1169,7 +1211,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Builds xercesImpl, xmlParserAPIs, and sample jars with DOM Level 3  -->
   <!-- =================================================================== -->
-  <target name="jars-dom3" depends="jar-dom3, sampjar-dom3, apijar-dom3">
+  <target name="jars-dom3" depends="jar-dom3, apijar-dom3, sampjar-dom3">
   </target>
 
 </project>
