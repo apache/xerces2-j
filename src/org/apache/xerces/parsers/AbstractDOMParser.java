@@ -61,8 +61,6 @@ import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.TextImpl;
 
-import org.apache.xerces.util.SymbolTable;
-
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
@@ -128,15 +126,9 @@ public abstract class AbstractDOMParser
     //
 
     /** Default constructor. */
-    protected AbstractDOMParser() {
-    } // <init>()
-
-    /**
-     * Constructs a DOM parser using the specified symbol table.
-     */
-    protected AbstractDOMParser(SymbolTable symbolTable) {
-        super(symbolTable);
-    } // <init>(SymbolTable)
+    protected AbstractDOMParser(ParserConfiguration config) {
+        super(config);
+    } // <init>(ParserConfiguration)
 
     //
     // Public methods
@@ -156,7 +148,7 @@ public abstract class AbstractDOMParser
      *
      * @throws SAXException Thrown on initialization error.
      */
-    protected void reset() throws SAXException {
+    public void reset() throws SAXException {
         super.reset();
 
         // reset dom information

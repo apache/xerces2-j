@@ -57,7 +57,7 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.IOException;
+import java.util.Hashtable;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.SymbolTable;
@@ -70,7 +70,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
@@ -120,20 +119,23 @@ public abstract class AbstractSAXParser
     /** Symbol: empty string (""). */
     private String fEmptySymbol;
 
+    // state
+
+    /** 
+     * True if a parse is in progress. This state is needed because
+     * some features/properties cannot be set while parsing (e.g.
+     * validation and namespaces).
+     */
+    protected boolean fParseInProgress = false;
+
     //
     // Constructors
     //
 
     /** Default constructor. */
-    protected AbstractSAXParser() {
-    } // <init>()
-
-    /**
-     * Constructs a SAX parser using the specified symbol table.
-     */
-    protected AbstractSAXParser(SymbolTable symbolTable) {
-        super(symbolTable);
-    } // <init>(SymbolTable)
+    protected AbstractSAXParser(ParserConfiguration config) {
+        super(config);
+    } // <init>(ParserConfiguration)
 
     //
     // XMLDocumentHandler methods
@@ -355,6 +357,12 @@ public abstract class AbstractSAXParser
      * pseudo-name of "[dtd]; parameter entity names start with '%'; and 
      * general entity names are just the entity name.
      * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the start of the document entity by calling the
+     * startEntity method with the entity name "[xml]" <em>before</em> calling
+     * the startDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
+     * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the start of the DTD entity by calling the
      * startEntity method with the entity name "[dtd]" <em>before</em> calling
@@ -386,6 +394,12 @@ public abstract class AbstractSAXParser
      * This method notifies the end of an entity. The DTD has the pseudo-name 
      * of "[dtd]; parameter entity names start with '%'; and general entity
      * names are just the entity name.
+     * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the end of the document entity by calling the
+     * endEntity method with the entity name "[xml]" <em>after</em> calling
+     * the endDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the end of the DTD entity by calling the
@@ -682,7 +696,7 @@ public abstract class AbstractSAXParser
      */
     public void setDocumentHandler(DocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
-        fDocumentHandler.setDocumentLocator(fLocator);
+        fDocumentHandler.setDocumentLocator(fConfiguration.getLocator());
     } // setDocumentHandler(DocumentHandler)
 
     //
@@ -758,6 +772,7 @@ public abstract class AbstractSAXParser
         // SAX2 Features
         //
 
+        Hashtable features = fConfiguration.getFeatureTable();
         if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
 
@@ -768,7 +783,7 @@ public abstract class AbstractSAXParser
             //   and xmlns* attributes must not be reported.
             //
             if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                fFeatures.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
+                features.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
                 return;
             }
             // http://xml.org/sax/features/string-interning
@@ -832,6 +847,7 @@ public abstract class AbstractSAXParser
         // SAX2 Features
         //
 
+        Hashtable features = fConfiguration.getFeatureTable();
         if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature =
                 featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
@@ -843,7 +859,7 @@ public abstract class AbstractSAXParser
             //   and xmlns* attributes must not be reported.
             //
             if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                Boolean state = (Boolean) fFeatures.get(featureId);
+                Boolean state = (Boolean) features.get(featureId);
                 return state.booleanValue();
             }
             // http://xml.org/sax/features/string-interning
@@ -1160,11 +1176,11 @@ public abstract class AbstractSAXParser
      *
      * @throws SAXException Thrown if an error occurs during initialization.
      */
-    protected void reset() throws SAXException {
+    public void reset() throws SAXException {
         super.reset();
 
         // save needed symbols
-        fEmptySymbol = fSymbolTable.addSymbol("");
+        fEmptySymbol = fConfiguration.getSymbolTable().addSymbol("");
 
     } // reset()
 

@@ -83,12 +83,12 @@ public abstract class XMLGrammarParser
     //
 
     /**
-     * 
+     * Construct an XMLGrammarParser with the specified symbol table
      * 
      * @param symbolTable 
      */
     protected XMLGrammarParser(SymbolTable symbolTable) {
-        super(symbolTable);
+        super(new StandardParserConfiguration(symbolTable));
     }
 
     //
