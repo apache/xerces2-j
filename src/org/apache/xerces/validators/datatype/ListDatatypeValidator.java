@@ -174,8 +174,13 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
      */
     public Object validate(String content, Object state)  throws InvalidDatatypeValueException
     {
-        checkContent( content, state );
-        return null;
+         if ( content == null && state != null ) {
+            this.fBaseValidator.validate( content, state );//Passthrough setup information
+                                                          //for state validators
+         }else{
+            checkContent( content, state );
+         }
+         return null;
     }
 
 
