@@ -1817,7 +1817,11 @@ public abstract class AbstractSAXParser
         }
 
         public String getURI(int index) {
-            return fAttributes.getURI(index);
+            // REVISIT: this hides the fact that internally we use
+            //          null instead of empty string
+            //          SAX requires URI to be a string or an empty string
+            String uri= fAttributes.getURI(index);
+            return uri != null ? uri : "";
         }
 
         public String getLocalName(int index) {
