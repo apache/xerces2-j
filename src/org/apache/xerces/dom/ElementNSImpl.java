@@ -212,7 +212,7 @@ public class ElementNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-	this.name = qualifiedName;
+		this.name = qualifiedName;
         setName(namespaceURI, qualifiedName);
         reconcileDefaultAttributes();
     }
@@ -328,7 +328,7 @@ public class ElementNSImpl
                                      msg);
             }
             if (prefix != null && prefix.length() != 0) {
-                if (!CoreDocumentImpl.isXMLName(prefix)) {
+                if (!CoreDocumentImpl.isXMLName(prefix,ownerDocument().isXML11Version())) {
                     String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
                     throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
                 }
@@ -342,6 +342,7 @@ public class ElementNSImpl
                      }
                 }
             }
+
         }
         // update node name with new qualifiedName
         if (prefix !=null && prefix.length() != 0) {
