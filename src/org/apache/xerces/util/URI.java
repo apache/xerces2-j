@@ -743,7 +743,7 @@ import java.io.Serializable;
       }
       else {
       	int colonIndex = p_uriSpec.lastIndexOf(':', end);
-      	index = (colonIndex != -1) ? colonIndex : end;
+      	index = (colonIndex > start) ? colonIndex : end;
       	hasPort = (index != end);
       }
     }
@@ -1559,9 +1559,9 @@ import java.io.Serializable;
    *
    * <p><code>IPv6reference = "[" IPv6address "]"</code></p>
    *
-   * <p>Note: The BNF expressed in RFC 2732 Appendix B does not 
+   * <p>Note: The BNF expressed in RFC 2373 Appendix B does not 
    * accurately describe section 2.2, and was in fact removed from
-   * RFC 3513, the successor of RFC 2732.</p>
+   * RFC 3513, the successor of RFC 2373.</p>
    *
    * @return true if the string is a syntactically valid IPv6 reference
    */
