@@ -294,8 +294,7 @@ public abstract class SAXParser {
             throw new IllegalArgumentException("File cannot be null");
         }
         
-        String escapedURI = ConvertToURI.getEscapedURI(f.getAbsolutePath()) ;
-        escapedURI = "file://" + escapedURI ;
+        String escapedURI = FilePathToURI.filepath2URI(f.getAbsolutePath()) ;
 
         if(DEBUG)
         System.out.println("Escaped URI = " + escapedURI) ;
@@ -325,8 +324,7 @@ public abstract class SAXParser {
             throw new IllegalArgumentException("File cannot be null");
         }
         
-        String escapedURI = ConvertToURI.getEscapedURI(f.getAbsolutePath()) ;
-        escapedURI = "file://" + escapedURI ;
+        String escapedURI = FilePathToURI.filepath2URI(f.getAbsolutePath()) ;
 
         if(DEBUG)
         System.out.println("Escaped URI = " + escapedURI) ;
