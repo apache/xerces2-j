@@ -171,10 +171,6 @@ public class SchemaGrammar extends Grammar{
 	super.setElementDecl(elementDeclIndex,elementDecl);
     }
 
-    public void addAttributeDecl(int attributeDeclIndex, int elementDeclIndex) {
-	super.addAttributeDecl(attributeDeclIndex, elementDeclIndex);
-    }
-
     //public int addAttributeDeclByHead(int attributeDeclIndex, int attributeListHead) {
     //	return super.addAttributeDeclByHead(attributeDeclIndex, attributeListHead);
     //}
@@ -250,6 +246,7 @@ public class SchemaGrammar extends Grammar{
 	int attrDeclIndex = createAttributeDecl();
 	fTempAttributeDecl.name = attQName;
         fTempAttributeDecl.datatypeValidator = dv;
+	fTempAttributeDecl.type = attType;
         fTempAttributeDecl.defaultType = new String(); //TO DO: fStringPool.toString(attDefaultType);
 	fTempAttributeDecl.defaultValue = new String(); //TO DO: fStringPool.toString(attDefaultValue);
         //setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
