@@ -915,11 +915,14 @@ public class TraverseSchema implements
             String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
             if (!targetNSURI.equals(namespaceString) ) {
                 // REVISIT: Localize
-                reportGenericSchemaError("included schema '"+location+"' has a different targetNameSpace '"
+                reportGenericSchemaError("imported schema '"+location+"' has a different targetNameSpace '"
                                          +targetNSURI+"' from what is declared '"+namespaceString+"'.");
             }
             else
                 new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location);
+        }
+        else {
+            reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
         }
     }
 
@@ -1174,7 +1177,7 @@ public class TraverseSchema implements
                         baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
                         if (baseTypeValidator == null) {
                             //TO DO: report error here;
-                            System.out.println("Counld not find base type " +localpart 
+                            System.out.println("Could not find base type " +localpart 
                                                + " in schema " + typeURI);
                         }
                         else{
@@ -1684,6 +1687,8 @@ public class TraverseSchema implements
             typeName = fTargetNSURIString + "," + typeName;
         }
         typeInfo.typeName = new String(typeName);
+        if ( DEBUGGING )
+            System.out.println("add complex Type to Registry: " + typeName +","+content+".");
         fComplexTypeRegistry.put(typeName,typeInfo);
 
         // before exit the complex type definition, restore the scope, mainly for nested Anonymous Types
@@ -2496,7 +2501,7 @@ public class TraverseSchema implements
                     if (dv == null) {
                         //TO DO: report error here;
                         noErrorSoFar = false;
-                        System.out.println("Counld not find base type " +localpart 
+                        System.out.println("Could not find base type " +localpart 
                                            + " in schema " + typeURI);
                     }
                 }
@@ -2723,7 +2728,7 @@ public class TraverseSchema implements
         Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
         if (grammar != null && grammar instanceof SchemaGrammar) {
             SchemaGrammar sGrammar = (SchemaGrammar) grammar;
-            ComplexTypeInfo typeInfo = (ComplexTypeInfo) fSchemaGrammar.getComplexTypeRegistry().get(newSchemaURI+","+localpart);
+            ComplexTypeInfo typeInfo = (ComplexTypeInfo) sGrammar.getComplexTypeRegistry().get(newSchemaURI+","+localpart);
             return typeInfo;
         }
         else {
