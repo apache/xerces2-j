@@ -1025,27 +1025,27 @@ public class DOMParser
             for (int i = 0; i < attrListLength; i++) {
                 if (nsEnabled) {
                     int attName = xmlAttrList.getAttrName(i);
-		    String attNameStr = fStringPool.toString(attName);
-		    int nsURIIndex = fStringPool.getURIForQName(attName);
-		    String namespaceURI = fStringPool.toString(nsURIIndex);
-		    // DOM Level 2 wants all namespace declaration attributes
-		    // to be bound to "http://www.w3.org/2000/xmlns/"
-		    // So as long as the XML parser doesn't do it, it needs to
-		    // done here.
-		    int prefixIndex = fStringPool.getPrefixForQName(attName);
-		    String prefix = fStringPool.toString(prefixIndex);
-		    if (namespaceURI == null) {
-			if (prefix != null) {
-			    if (prefix.equals("xmlns")) {
-				namespaceURI = "http://www.w3.org/2000/xmlns/";
-			    }
-			} else if (attNameStr.equals("xmlns")) {
-			    namespaceURI = "http://www.w3.org/2000/xmlns/";
-			}
-		    }
-                    e.setAttributeNS(namespaceURI,
-				     attNameStr,
-				     attrList.getValue(i));
+		            String attNameStr = fStringPool.toString(attName);
+		            int nsURIIndex = fStringPool.getURIForQName(attName);
+		            String namespaceURI = fStringPool.toString(nsURIIndex);
+		            // DOM Level 2 wants all namespace declaration attributes
+		            // to be bound to "http://www.w3.org/2000/xmlns/"
+		            // So as long as the XML parser doesn't do it, it needs to
+		            // done here.
+		            int prefixIndex = fStringPool.getPrefixForQName(attName);
+		            String prefix = fStringPool.toString(prefixIndex);
+		            if (namespaceURI == null) {
+			            if (prefix != null) {
+			                if (prefix.equals("xmlns")) {
+				            namespaceURI = "http://www.w3.org/2000/xmlns/";
+			                }
+			            } else if (attNameStr.equals("xmlns")) {
+			                namespaceURI = "http://www.w3.org/2000/xmlns/";
+			            }
+		            }
+                        e.setAttributeNS(namespaceURI,
+				            attNameStr,
+				            attrList.getValue(i));
                 } else {
                     String attrName = attrList.getName(i);
                     String attrValue = attrList.getValue(i);
