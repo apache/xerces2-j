@@ -1,5 +1,5 @@
 # Decide if we're on unix or DOS
-ifeq (CYGWIN,$(findstring CYGWIN,$(shell uname)))
+ifneq ($(findstring WIN,$(shell uname)),)
 # DOS
 CLPATHSEP := ;
 else 
@@ -30,8 +30,6 @@ JAVA12 = $(JDK12BIN)/java -classpath "$(CLPATH)"
 JAVADOC12 = $(JDK12BIN)/javadoc -classpath "$(CLPATH)"
 STYLEBOOK = $(JDK12BIN)/java -classpath "$(SB_CLPATH)" org.apache.stylebook.StyleBook
 endif
-
-
 
 MKDIR = mkdir -p 
 RM = -rm 
