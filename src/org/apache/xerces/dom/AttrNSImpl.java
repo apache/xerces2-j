@@ -60,6 +60,7 @@ package org.apache.xerces.dom;
 import org.w3c.dom.DOMException;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.util.XMLSymbols;
 
 /**
  * AttrNSImpl inherits from AttrImpl and adds namespace support. 
@@ -371,4 +372,24 @@ public class AttrNSImpl
         }
         return null;
     }
+    
+	public void setValue(String newvalue) {
+		String qname = super.getName();
+		int colon1 = qname.indexOf(':');
+		if(colon1 > 0){
+			String prefix = qname.substring(0, colon1);
+			checkNSBinding(prefix,newvalue);
+		}
+		super.setValue(newvalue);
+	}
+
+	private void checkNSBinding(String prefix ,String value){
+		boolean xmlVersion = ownerDocument().isXML11Version();
+		if( !xmlVersion && prefix.equals(XMLSymbols.PREFIX_XMLNS) 
+			&& value.equals(XMLSymbols.EMPTY_STRING)){
+                String msg = DOMMessageFormatter.formatMessage(
+                DOMMessageFormatter.DOM_DOMAIN,"NAMESPACE_ERR",null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
+       }
+	}
 }
