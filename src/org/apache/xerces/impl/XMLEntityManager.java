@@ -2534,15 +2534,40 @@ public class XMLEntityManager
             }
 
             // skip character
-            if (fCurrentEntity.ch[fCurrentEntity.position] == c) {
+            int cc = fCurrentEntity.ch[fCurrentEntity.position];
+            if (cc == c) {
                 fCurrentEntity.position++;
+                if (c == '\n') {
+                    fCurrentEntity.lineNumber++;
+                    fCurrentEntity.columnNumber = 1;
+                }
+                else {
+                    fCurrentEntity.columnNumber++;
+                }
                 if (DEBUG_BUFFER) {
                     System.out.print(")skipChar, '"+(char)c+"': ");
                     print();
                     System.out.println(" -> true");
                 }
-                // REVISIT: handle case where asked to skip newline
-                fCurrentEntity.columnNumber++;
+                return true;
+            }
+            else if (c == '\n' && cc == '\r' && fCurrentEntity.isExternal()) {
+                // handle newlines
+                if (fCurrentEntity.position == fCurrentEntity.count) {
+                    fCurrentEntity.ch[0] = (char)cc;
+                    load(1, false);
+                }
+                fCurrentEntity.position++;
+                if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
+                    fCurrentEntity.position++;
+                }
+                fCurrentEntity.lineNumber++;
+                fCurrentEntity.columnNumber = 1;
+                if (DEBUG_BUFFER) {
+                    System.out.print(")skipChar, '"+(char)c+"': ");
+                    print();
+                    System.out.println(" -> true");
+                }
                 return true;
             }
             
