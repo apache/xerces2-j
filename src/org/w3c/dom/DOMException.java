@@ -44,6 +44,13 @@ public abstract class DOMException extends RuntimeException {
   public static final short           NOT_FOUND_ERR        = 8;
   public static final short           NOT_SUPPORTED_ERR    = 9;
   public static final short           INUSE_ATTRIBUTE_ERR  = 10;
-
+  // Introduced in DOM Level 2:
+  public static final short           INVALID_STATE_ERR    = 11;
+  // Introduced in DOM Level 2:
+  public static final short           SYNTAX_ERR           = 12;
+  // Introduced in DOM Level 2:
+  public static final short           INVALID_MODIFICATION_ERR = 13;
+  // Introduced in DOM Level 2:
+  public static final short           NAMESPACE_ERR        = 14; 
 }
 
