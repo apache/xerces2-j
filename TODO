@@ -1,0 +1,25 @@
+*** CURRENT ***
+
+1. Documentation
+ 1.1. Samples
+ 1.2. Xerces Native Interface (XNI)
+  1.2.1. XNI overview
+  1.2.2. Parser components and configurations
+ 1.3. Remove/add FAQ items
+
+2. Schema Validation
+ 2.1. Port of Xerces 1.x Schema code [andyc,???]
+      * starting point: "valport_x1" tag
+      * ported code:    "valport_x2" branch
+  2.1.1. Remove old classes
+  2.1.2. Add classes, changing packaging
+  2.1.3. Remove StringPool dependencies
+  2.1.4. Move from internal interfaces to XNI
+
+3. Validation Engine
+ 3.1. Separate "universal" validator into separate components:
+      DTD validator, namespace binder, and Schema validator
+  3.1.1. Separate source code, changing packages as needed
+  3.1.2. Update parser configuration
+
+*** COMPLETED ***
