@@ -528,7 +528,8 @@ public abstract class AbstractSAXParser
      * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws XNIException {
+                            String baseSystemId, String encoding) 
+        throws XNIException {
 
         try {
             // SAX2 extension
@@ -540,7 +541,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // startEntity(String,String,String,String)
+    } // startEntity(String,String,String,String,String)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name 
@@ -579,6 +580,44 @@ public abstract class AbstractSAXParser
         }
 
     } // endEntity(String)
+
+    /** 
+     * The start of a CDATA section. 
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startCDATA() throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.startCDATA();
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
+    } // startCDATA()
+
+    /**
+     * The end of a CDATA section. 
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endCDATA() throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.endCDATA();
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
+    } // endCDATA()
 
     /**
      * A comment.
