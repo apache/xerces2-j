@@ -1164,7 +1164,7 @@ public class XMLValidator
 
         // create DTD grammar
         fDTDGrammar = createDTDGrammar();
-        fDTDGrammar.setDatatypeValidatorFactory(fDatatypeValidatorFactory);
+        //fDTDGrammar.setDatatypeValidatorFactory(fDatatypeValidatorFactory);
         // REVISIT: should we use the systemId as the key instead?
         fGrammarPool.putGrammar("", fDTDGrammar);
 
@@ -1630,10 +1630,20 @@ public class XMLValidator
     } // startContentModel(String)
 
     /** ANY. */
-    public void any() throws XNIException {}
+    public void any() throws XNIException {
+        fDTDGrammar.any();
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.any();
+        }
+    } // any()
 
     /** EMPTY. */
-    public void empty() throws XNIException {}
+    public void empty() throws XNIException {
+        fDTDGrammar.empty();
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.empty();
+        }
+    } // empty()
 
     /** Start group. */
     public void startGroup() throws XNIException {
