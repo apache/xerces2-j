@@ -163,16 +163,16 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
                                                  String systemID)
     {
     	if (!CoreDocumentImpl.isXMLName(qualifiedName)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         int index = qualifiedName.indexOf(':');
         int lastIndex = qualifiedName.lastIndexOf(':');
         // it is an error for NCName to have more than one ':'
         if (index == 0 || index == qualifiedName.length() - 1 || lastIndex!=index) {
-	    throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
-	}
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+	        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+	    }
     	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
     }
     /**
@@ -201,8 +201,8 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
                                              throws DOMException
     {
     	if (doctype != null && doctype.getOwnerDocument() != null) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                   "DOM005 Wrong document");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
         DocumentImpl doc = new DocumentImpl(doctype);
         Element e = doc.createElementNS( namespaceURI, qualifiedName);

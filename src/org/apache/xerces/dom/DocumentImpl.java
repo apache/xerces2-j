@@ -307,8 +307,8 @@ public class DocumentImpl
                                        boolean entityReferenceExpansion)
     {
     	if (root == null) {
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                                   "DOM007 Not supported");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
         }
         return new TreeWalkerImpl(root, whatToShow, filter,
                                   entityReferenceExpansion);
@@ -452,9 +452,10 @@ public class DocumentImpl
 	    if (type.equalsIgnoreCase("MutationEvents") ||
                 "MutationEvent".equals(type))
 	        return new MutationEventImpl();
-	    else
-	        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-					   "DOM007 Not supported");
+	    else {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+	        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+        }
 	}
 
     /**
@@ -696,9 +697,10 @@ public class DocumentImpl
 
         // VALIDATE -- must have been initialized at least once, must have
         // a non-null non-blank name.
-        if(!evt.initialized || evt.type == null || evt.type.equals(""))
-            throw new EventException(EventException.UNSPECIFIED_EVENT_TYPE_ERR,
-                                     "DOM010 Unspecified event type");
+        if(!evt.initialized || evt.type == null || evt.type.equals("")) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "UNSPECIFIED_EVENT_TYPE_ERR", null);
+            throw new EventException(EventException.UNSPECIFIED_EVENT_TYPE_ERR, msg);
+        }
         
         // If nobody is listening for this event, discard immediately
         LCount lc = LCount.lookup(evt.getType());

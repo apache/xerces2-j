@@ -392,8 +392,8 @@ public class ElementImpl
     public void removeAttribute(String name) {
 
     	if (ownerDocument.errorChecking && isReadOnly()) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                   "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
     		
         if (needsSyncData()) {
@@ -429,8 +429,8 @@ public class ElementImpl
         throws DOMException {
 
     	if (ownerDocument.errorChecking && isReadOnly()) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                   "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
     		
         if (needsSyncData()) {
@@ -438,8 +438,8 @@ public class ElementImpl
         }
 
         if (attributes == null) {
-            throw new DOMException(DOMException.NOT_FOUND_ERR, 
-                                       "DOM008 Not found");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
         return (Attr) attributes.removeItem(oldAttr, true);
 
@@ -468,8 +468,8 @@ public class ElementImpl
     public void setAttribute(String name, String value) {
 
     	if (ownerDocument.errorChecking && isReadOnly()) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                   "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
 
         if (needsSyncData()) {
@@ -516,14 +516,15 @@ public class ElementImpl
 
     	if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                     "DOM001 Modification not allowed");
+                                     msg);
             }
     	
             if (newAttr.getOwnerDocument() != ownerDocument) {
-    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                       "DOM005 Wrong document");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+    		    throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
             }
         }
 
@@ -612,8 +613,8 @@ public class ElementImpl
     public void setAttributeNS(String namespaceURI, String qualifiedName, String value) {
 
     	if (ownerDocument.errorChecking && isReadOnly()) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                   "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
 
         if (needsSyncData()) {
@@ -665,8 +666,8 @@ public class ElementImpl
     public void removeAttributeNS(String namespaceURI, String localName) {
 
     	if (ownerDocument.errorChecking && isReadOnly()) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                   "DOM001 Modification not allowed");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
     		
         if (needsSyncData()) {
@@ -740,13 +741,14 @@ public class ElementImpl
         }
         if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
-    		throw new DOMException(
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+    		    throw new DOMException(
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                     "DOM001 Modification not allowed");
+                                     msg);
             }
             if (newAttr.getOwnerDocument() != ownerDocument) {
-                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                       "DOM005 Wrong document");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
             }
         }
 
@@ -881,14 +883,15 @@ public class ElementImpl
         }
     	if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                     "DOM001 Modification not allowed");
+                                     msg);
             }
     	
             if (at.getOwnerElement() != this) {
-                throw new DOMException(DOMException.NOT_FOUND_ERR, 
-                                       "DOM008 Not found");
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             }
         }
         ((AttrImpl) at).isIdAttribute(true);
