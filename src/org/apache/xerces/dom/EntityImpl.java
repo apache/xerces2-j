@@ -164,6 +164,7 @@ public class EntityImpl
     /** Clone node. */
     public Node cloneNode(boolean deep) {
         EntityImpl newentity = (EntityImpl)super.cloneNode(deep);
+        newentity.setReadOnly(true, deep);
         return newentity;
     }
 

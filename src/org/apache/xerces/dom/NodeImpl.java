@@ -258,16 +258,17 @@ public abstract class NodeImpl
             newnode = (NodeImpl)clone();
     	}
     	catch (CloneNotSupportedException e) {
-//      Revisit : don't fail silently - but don't want to tie to parser guts
-//            System.out.println("UNEXPECTED "+e);
-            return null;
+            // if we get here we have an error in our program we may as well
+            // be vocal about it, so that people can take appropriate action.
+            throw new RuntimeException("**Internal Error**" + e);
     	}
     	
         // Need to break the association w/ original kids
     	newnode.ownerNode      = ownerDocument();
         newnode.isOwned(false);
 
-        // REVISIT: What to do when readOnly? -Ac
+        // By default we make all clones readwrite,
+        // this is overriden in readonly subclasses
         newnode.isReadOnly(false);
 
     	return newnode;

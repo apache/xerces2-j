@@ -176,6 +176,13 @@ public class EntityReferenceImpl
         return name;
     }
 
+    /** Clone node. */
+    public Node cloneNode(boolean deep) {
+        EntityReferenceImpl er = (EntityReferenceImpl)super.cloneNode(deep);
+        er.setReadOnly(true, deep);
+        return er;
+    }
+
     /**
      * EntityReference's children are a reflection of those defined in the
      * named Entity. This method creates them if they haven't been created yet.
