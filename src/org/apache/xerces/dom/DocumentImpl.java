@@ -131,8 +131,11 @@ public class DocumentImpl
     /** Table for quick check of child insertion. */
     protected static int[] kidOK;
 
-    /** Table for quick check of child insertion. */
+    /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
+
+    /** Table for event listeners registered to this document nodes. */
+    protected Hashtable eventListeners;
 
     /**
      * Number of alterations made to this document since its creation.
@@ -302,6 +305,7 @@ public class DocumentImpl
         newdoc.iterators = null;
         newdoc.ranges = null;
         newdoc.userData = null;
+        newdoc.eventListeners = null;
 
         // experimental
         newdoc.allowGrammarAccess = allowGrammarAccess;
@@ -1521,6 +1525,9 @@ public class DocumentImpl
 
     /**
      * Store user data related to a given node
+     * This is a place where we could use weak references! Indeed, the node
+     * here won't be GC'ed as long as some user data is attached to it, since
+     * the userData table will have a reference to the node.
      */
     protected void setUserData(NodeImpl n, Object data) {
         if (userData == null) {
@@ -1541,6 +1548,39 @@ public class DocumentImpl
             return null;
         }
         return userData.get(n);
+    }
+
+    /**
+     * Store event listener registered on a given node
+     * This is another place where we could use weak references! Indeed, the
+     * node here won't be GC'ed as long as some listener is registered on it,
+     * since the eventsListeners table will have a reference to the node.
+     */
+    protected void setEventListeners(NodeImpl n, Vector listeners) {
+        if (eventListeners == null) {
+            eventListeners = new Hashtable();
+        }
+        if (listeners == null) {
+            eventListeners.remove(n);
+            if (eventListeners.isEmpty()) {
+                // stop firing events when there isn't any listener
+                mutationEvents = false;
+            }
+        } else {
+            eventListeners.put(n, listeners);
+            // turn mutation events on
+            mutationEvents = true;
+        }
+    }
+
+    /**
+     * Retreive event listener registered on a given node
+     */
+    protected Vector getEventListeners(NodeImpl n) {
+        if (eventListeners == null) {
+            return null;
+        }
+        return (Vector) eventListeners.get(n);
     }
 
     //

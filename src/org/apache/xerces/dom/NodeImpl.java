@@ -678,10 +678,6 @@ public abstract class NodeImpl
 	protected final static int MUTATION_LOCAL=0x01;
 	protected final static int MUTATION_AGGREGATE=0x02;
 	protected final static int MUTATION_ALL=0xffff;
-	/** NON-DOM INTERNAL: EventListeners currently registered at
-	 * THIS NODE; preferably null if none.
-	 */
-    Vector nodeListeners=null;
 	
 	/* NON-DOM INTERNAL: Class LEntry is just a struct used to represent
 	 * event listeners registered with this node. Copies of this object
@@ -730,7 +726,11 @@ public abstract class NodeImpl
 	    // Simplest way to code that is to zap the previous entry, if any.
 	    removeEventListener(type,listener,useCapture);
 	    
-	    if(nodeListeners==null) nodeListeners=new Vector();
+            Vector nodeListeners = ownerDocument().getEventListeners(this);
+	    if(nodeListeners==null) {
+                nodeListeners=new Vector();
+                ownerDocument().setEventListeners(this, nodeListeners);
+            }
 	    nodeListeners.addElement(new LEntry(type,listener,useCapture));
 	    
 	    // Record active listener
@@ -739,9 +739,6 @@ public abstract class NodeImpl
 	        ++lc.captures;
 	    else
 	        ++lc.bubbles;
-
-            // turn mutation events on
-            ownerDocument().mutationEvents = true;
 
 	} // addEventListener(String,EventListener,boolean) :void
 	
@@ -758,6 +755,7 @@ public abstract class NodeImpl
 	public void removeEventListener(String type,EventListener listener,boolean useCapture)
 	{
 	    // If this couldn't be a valid listener registration, ignore request
+            Vector nodeListeners = ownerDocument().getEventListeners(this);
   	    if(nodeListeners==null || type==null || type.equals("") || listener==null)
 	        return;
 
@@ -771,21 +769,29 @@ public abstract class NodeImpl
             {
                 nodeListeners.removeElementAt(i);
                 // Storage management: Discard empty listener lists
-                if(nodeListeners.size()==0) nodeListeners=null;
+                if(nodeListeners.size()==0)
+                    ownerDocument().setEventListeners(this, null);
 
-	            // Remove active listener
-	            LCount lc=LCount.lookup(type);
-        	    if(useCapture)
-	                --lc.captures;
-        	    else
-	                --lc.bubbles;
-	                
+                // Remove active listener
+                LCount lc=LCount.lookup(type);
+                if(useCapture)
+                    --lc.captures;
+                else
+                    --lc.bubbles;
+
                 break;  // Found it; no need to loop farther.
             }
         }
 	} // removeEventListener(String,EventListener,boolean) :void
 	
-	/** NON-DOM INTERNAL:
+	/** COMMENTED OUT **
+            Now that event listeners are stored on the document with the node
+            as the key, nodes can't be finalized if they have any event
+            listener. This finalize method becomes useless... This is a place
+            where we could definitely use weak references!! If we did, then
+            this finalize method could be put back in (which is why I don't
+            remove if completely). - ALH
+         ** NON-DOM INTERNAL:
 	    A finalizer has added to NodeImpl in order to correct the event-usage
 	    counts of any remaining listeners before discarding the Node.
 	    This isn't absolutely required, and finalizers are of dubious
@@ -793,7 +799,7 @@ public abstract class NodeImpl
 	    But given the expense of event generation and distribution it 
 	    seems a worthwhile safety net.
 	    ***** RECONSIDER at some future point.
-	   */
+
 	protected void finalize() throws Throwable
 	{
 	    super.finalize();
@@ -808,6 +814,7 @@ public abstract class NodeImpl
 	                --lc.bubbles;
 	        }
 	}	
+	   */
 
     /**
      * Introduced in DOM Level 2. <p>
@@ -917,9 +924,10 @@ public abstract class NodeImpl
                 // Handle all capturing listeners on this node
                 NodeImpl nn=(NodeImpl)pv.elementAt(j);
                 evt.currentNode=nn;
-                if(nn.nodeListeners!=null)
+                Vector nodeListeners = ownerDocument().getEventListeners(nn);
+                if(nodeListeners!=null)
                 {
-                    Vector nl=(Vector)(nn.nodeListeners.clone());
+                    Vector nl=(Vector)(nodeListeners.clone());
                     for(int i=nl.size()-1;i>=0;--i) // count-down more efficient
                     {
 	                    LEntry le=(LEntry)(nl.elementAt(i));
@@ -945,6 +953,7 @@ public abstract class NodeImpl
             //are _not_ invoked, even during the capture phase.
             evt.eventPhase=Event.AT_TARGET;
             evt.currentNode=this;
+            Vector nodeListeners = ownerDocument().getEventListeners(this);
             if(!evt.stopPropagation && nodeListeners!=null)
             {
                 Vector nl=(Vector)nodeListeners.clone();
@@ -978,9 +987,10 @@ public abstract class NodeImpl
                     // Handle all bubbling listeners on this node
                     NodeImpl nn=(NodeImpl)pv.elementAt(j);
                     evt.currentNode=nn;
-                    if(nn.nodeListeners!=null)
+                    nodeListeners = ownerDocument().getEventListeners(nn);
+                    if(nodeListeners!=null)
                     {
-                        Vector nl=(Vector)(nn.nodeListeners.clone());
+                        Vector nl=(Vector)(nodeListeners.clone());
                         for(int i=nl.size()-1;i>=0;--i) // count-down more efficient
     	                {
 	                        LEntry le=(LEntry)(nl.elementAt(i));
@@ -1030,6 +1040,7 @@ public abstract class NodeImpl
     {
       if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
+          Vector nodeListeners = ownerDocument().getEventListeners(this);
 	    if(nodeListeners==null || n==null)
             return;
 
@@ -1130,6 +1141,7 @@ public abstract class NodeImpl
 	{
       if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
+          Vector nodeListeners = ownerDocument().getEventListeners(this);
 	    if(nodeListeners==null)
             return;
 
