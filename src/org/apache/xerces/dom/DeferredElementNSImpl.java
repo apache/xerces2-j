@@ -66,12 +66,9 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Enumeration;
-import java.util.Vector;
+import org.w3c.dom.NamedNodeMap;
 
 import org.apache.xerces.utils.StringPool;
-
-import org.w3c.dom.*;
 
 /**
  * DeferredElementNSImpl is to ElementNSImpl, what DeferredElementImpl is to
@@ -153,6 +150,10 @@ public class DeferredElementNSImpl
         }
 
 	namespaceURI = pool.toString(ownerDocument.getNodeURI(fNodeIndex));
+        // hide the fact that our parser uses an empty string for null
+        if (namespaceURI.length() == 0) {
+            namespaceURI = null;
+        }
 
         // attributes
         setupDefaultAttributes();

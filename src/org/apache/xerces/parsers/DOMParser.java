@@ -1124,9 +1124,12 @@ public class DOMParser
 
             Element e;
             if (nsEnabled) {
-                e = fDocument.createElementNS(
-                        // REVISIT: Make sure uri is filled in by caller.
-                        fStringPool.toString(elementQName.uri), elementName);
+                String namespaceURI = fStringPool.toString(elementQName.uri);
+                // hide the fact that our parser uses an empty string for null
+                if (namespaceURI.length() == 0) {
+                    namespaceURI = null;
+                }
+                e = fDocument.createElementNS(namespaceURI, elementName);
             } else {
                 e = fDocument.createElement(elementName);
             }
@@ -1145,7 +1148,11 @@ public class DOMParser
 		    // done here.
 		    int prefixIndex = xmlAttrList.getAttrPrefix(attrHandle);
 		    String prefix = fStringPool.toString(prefixIndex);
-		    if (namespaceURI == null || namespaceURI.length() == 0) {
+                    // hide that our parser uses an empty string for null
+                    if (namespaceURI.length() == 0) {
+                        namespaceURI = null;
+                    }
+		    if (namespaceURI == null) {
 			if (prefix != null) {
 			    if (prefix.equals("xmlns")) {
 				namespaceURI = "http://www.w3.org/2000/xmlns/";
@@ -2141,7 +2148,11 @@ public class DOMParser
 		    // So as long as the XML parser doesn't do it, it needs to
 		    // done here.
 		    String prefix = fStringPool.toString(attributeDecl.prefix);
-		    if (namespaceURI == null || namespaceURI.length() == 0) {
+                    // hide that our parser uses an empty string for null
+                    if (namespaceURI.length() == 0) {
+                        namespaceURI = null;
+                    }
+		    if (namespaceURI == null) {
 			if (prefix != null) {
 			    if (prefix.equals("xmlns")) {
 				namespaceURI = "http://www.w3.org/2000/xmlns/";

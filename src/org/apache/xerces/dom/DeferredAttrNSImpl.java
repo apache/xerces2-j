@@ -66,8 +66,6 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-
 import org.apache.xerces.utils.StringPool;
 
 /**
@@ -153,11 +151,15 @@ public final class DeferredAttrNSImpl
         isSpecified(ownerDocument.getNodeValue(fNodeIndex) == 1);
 	//namespaceURI = pool.toString(ownerDocument.getNodeURI(attrQName));
         namespaceURI = pool.toString(ownerDocument.getNodeURI(fNodeIndex));
+        // hide the fact that our parser uses an empty string for null
+        if (namespaceURI.length() == 0) {
+            namespaceURI = null;
+        }
 	// DOM Level 2 wants all namespace declaration attributes
 	// to be bound to "http://www.w3.org/2000/xmlns/"
 	// So as long as the XML parser doesn't do it, it needs to
 	// done here.
-	if (namespaceURI == null || namespaceURI.length() == 0) {
+	if (namespaceURI == null) {
 	    if (prefix != null)  {
 		if (prefix.equals("xmlns")) {
 		    namespaceURI = "http://www.w3.org/2000/xmlns/";
