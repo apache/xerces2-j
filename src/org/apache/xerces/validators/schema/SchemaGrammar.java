@@ -313,8 +313,8 @@ public class SchemaGrammar extends Grammar{
           return contentSpecIndex;
     }
 
-    public void setDeferContentSpecExpansion(boolean defer) {
-        deferContentSpecExpansion = defer;
+    public void setDeferContentSpecExpansion() {
+        deferContentSpecExpansion = true;
     }
 
 

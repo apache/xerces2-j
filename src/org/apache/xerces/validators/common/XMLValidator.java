@@ -264,6 +264,7 @@ public final class XMLValidator
    private boolean fValidationEnabled = false;
    private boolean fDynamicValidation = false;
    private boolean fSchemaValidation = true;
+   private boolean fSchemaValidationFullChecking = false; 
    private boolean fValidationEnabledByDynamic = false;
    private boolean fDynamicDisabledByValidation = false;
    private boolean fWarningOnDuplicateAttDef = false;
@@ -532,6 +533,16 @@ public final class XMLValidator
    /** Returns true if Schema support is on. */
    public boolean getSchemaValidationEnabled() {
       return fSchemaValidation;
+   }
+
+   /** Sets whether full Schema error checking is on/off */
+   public void setSchemaFullCheckingEnabled(boolean flag) {
+      fSchemaValidationFullChecking = flag;
+   }
+
+   /** Returns true if full Schema checking is on. */
+   public boolean getSchemaFullCheckingEnabled() {
+      return fSchemaValidationFullChecking;
    }
 
    /** Sets whether validation is dynamic. */
@@ -2745,8 +2756,7 @@ public final class XMLValidator
                 //At this point we should expand the registry table.
                 // pass parser's entity resolver (local Resolver), which also has reference to user's 
                 // entity resolver, and also can fall-back to entityhandler's expandSystemId()
-               tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER);
-               
+               tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled());
                //allowing xsi:schemaLocation to appear on any element 
                String targetNS =   root.getAttribute("targetNamespace");
                fGrammarNameSpaceIndex = fStringPool.addSymbol(targetNS);
