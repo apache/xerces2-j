@@ -121,6 +121,7 @@ public class XSAttributeGroupDecl {
     }
 
     public void removeProhibitedAttrs() {
+        if (fAttrUseNum == 0) return;
         int pCount = 0;
         XSAttributeUse[] pUses = new XSAttributeUse[fAttrUseNum];
         for (int i = 0; i < fAttrUseNum; i++) {
@@ -135,13 +136,13 @@ public class XSAttributeGroupDecl {
 
         int newCount = 0;
         if (pCount > 0) {
-            for (int i = 0; i < fAttrUseNum; i++) {
+            OUTER: for (int i = 0; i < fAttrUseNum; i++) {
                 if (fAttributeUses[i].fUse == SchemaSymbols.USE_PROHIBITED)
                     continue;
                 for (int j = 1; j <= pCount; j++) {
                     if (fAttributeUses[i].fAttrDecl.fName == pUses[fAttrUseNum-pCount].fAttrDecl.fName &&
                         fAttributeUses[i].fAttrDecl.fTargetNamespace == pUses[fAttrUseNum-pCount].fAttrDecl.fTargetNamespace) {
-                        continue;
+                        continue OUTER;
                     }
                 }
                 pUses[newCount++] = fAttributeUses[i];
