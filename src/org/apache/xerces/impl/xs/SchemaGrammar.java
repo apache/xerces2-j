@@ -100,7 +100,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     //
 
     // needed to make BuiltinSchemaGrammar work.
-    private SchemaGrammar() {}
+    protected SchemaGrammar() {}
 
     /**
      * Default constructor.
