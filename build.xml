@@ -597,38 +597,38 @@ Copyright:
   <!-- =================================================================== -->
   <target name="test" depends="tests">
     <echo message="Performing sanity test for ${parser.Name} ${parser.Version} ..." />
-    <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
+    <echo message="Using classpath=&apos;${tools.dir}/${jar.apis}:${build.dir}/classes&apos;" />
     <echo message="Running sax.Counter ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="sax.Counter"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running sax.Writer ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes" 
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes" 
           classname="sax.Writer"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Counter ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.Counter"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Writer ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes" 
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes" 
           classname="dom.Writer"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running thread.Test dom" />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="thread.Test"
           failOnError="yes">
            <arg value="-dom"/>
@@ -641,7 +641,7 @@ Copyright:
     </java>
     <echo message="Running thread.Test sax" />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="thread.Test"
           failOnError="yes">
            <arg value="-dom"/>
@@ -658,52 +658,52 @@ Copyright:
     <!--
     <echo message="Running DOMFilter ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.DOMFilter"
           args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
     -->
     <!-- The following are samples but not command-line applications.
     <echo message="Running IteratorView ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.traversal.IteratorView"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeWalkerView ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.traversal.TreeWalkerView"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeViewer ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.TreeViewer"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
      -->
     <echo message="Running dom.DTest ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.DTest"
           failOnError="yes">
     </java>
     <echo message="Running dom.mem.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.mem.Test"
           failOnError="yes">
     </java>
 
     <echo message="Running dom.ids.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.ids.Test"
           failOnError="yes">
     </java>
     <echo message="Running dom.serialization.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="dom.serialization.Test"
           failOnError="yes">
            <arg value="${data.dir}/personal.xml"/>
@@ -729,7 +729,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Builds and packages tools, sources and binary distributions         -->
   <!-- =================================================================== -->
-  <target name="all" depends="pack-bin, deprecated-bin, pack-src, pack-tools">
+  <target name="all" depends="pack-bin, pack-src, pack-tools">
   </target>
 
   <!-- =================================================================== -->
@@ -848,6 +848,8 @@ Copyright:
 
   <!-- =================================================================== -->
   <!-- Creates the XML 1.1-enabled implementation class package, excluding DOM Level 3     -->
+  <!-- REVISIT:  Once a release or so has gone by with XML 1.1 support being enabled by default, these targets should be
+    removed; as should the XML11ParserConfiguration file in the org/apache/xerces/parsers directory.  -->
   <!-- =================================================================== -->
   <target name="xml11jar" depends="compile">
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XML11Configuration"
