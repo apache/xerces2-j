@@ -308,5 +308,24 @@ class CMStateSet
     int         fBits1;
     int         fBits2;
     byte[]      fByteArray;
-};
+    /* Optimization(Jan, 2001) */
+    public boolean equals(Object o) {
+	if (!(o instanceof CMStateSet)) return false;
+	return isSameSet((CMStateSet)o);
+    }
 
+    public int hashCode() {
+        if (fBitCount < 65)
+        {
+            return fBits1+ fBits2 * 31;
+        }
+         else
+        {
+            int hash = 0;
+            for (int index = fByteCount - 1; index >= 0; index--)
+                hash = fByteArray[index] + hash * 31;
+            return hash;
+        }
+    }
+   /* Optimization(Jan, 2001) */
+};

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1368,25 +1368,17 @@ public abstract class Grammar {
 
                 nodeRet = new CMBinOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec)
                                        , buildSyntaxTree(rightNode, contentSpec));
-            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE) {
+            } 
+            else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE) {
                 nodeRet = new CMUniOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
-            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
-                // Convert to (x|epsilon)
-                String epsilon = "<<CMNODE_EPSILON>>";
-                epsilon.intern();
-                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                                       buildSyntaxTree(leftNode, contentSpec)
-                                       , new CMLeaf( new QName(null, epsilon, epsilon, null), fEpsilonIndex));
-                                       // REVISIT: Epsilon constants in DFAContentModel.
-                                       //, new CMLeaf( new QName(-1,-2,-2,-1), fEpsilonIndex));
-            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
-                // Convert to (x,x*)
-                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_SEQ, 
-                                       buildSyntaxTree(leftNode, contentSpec), 
-                                       new CMUniOp( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-                                                    buildSyntaxTree(leftNode, contentSpec) ));
-            } else {
-                throw new RuntimeException("ImplementationMessages.VAL_CST");
+            } 
+            else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
+		       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
+		       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+                nodeRet = new CMUniOp(contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
+            } 
+            else {
+		        throw new RuntimeException("ImplementationMessages.VAL_CST");
             }
         }
         // And return our new node for this level
