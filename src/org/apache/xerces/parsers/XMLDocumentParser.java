@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001-2002 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@
 package org.apache.xerces.parsers;
 
 import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
@@ -70,7 +71,8 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  *
- * @version $Id$ */
+ * @version $Id$ 
+ */
 public class XMLDocumentParser
     extends AbstractXMLDocumentParser {
 
@@ -83,8 +85,11 @@ public class XMLDocumentParser
      * configuration.
      */
     public XMLDocumentParser() {
-        super(new StandardParserConfiguration());
-    } // <init>
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+    } // <init>()
 
     /**
      * Constructs a document parser using the specified parser configuration.

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,7 @@ import java.io.Reader;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParseException;
@@ -103,8 +104,11 @@ public class DOMParser
      * Constructs a DOM parser using the dtd/xml schema parser configuration.
      */
     public DOMParser() {
-        super(new StandardParserConfiguration());
-    } // <init>
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+    } // <init>()
 
     /**
      * Constructs a DOM parser using the specified parser configuration.

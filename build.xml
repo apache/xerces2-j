@@ -140,6 +140,9 @@ Copyright:
     <copy file="${src.dir}/org/apache/xerces/parsers/org.xml.sax.driver"
       tofile="${build.dest}/META-INF/services/org.xml.sax.driver"/>
 
+    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
+      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
+
     <!-- copy src files -->
     <copy todir="${build.src}">
         <fileset 

@@ -7,6 +7,12 @@
   </desc>
   <changes>
    <add>
+    <note>
+     Added ability to override default parser configuration.
+    </note>
+    <submitter name='Andy Clark'/>
+   </add>
+   <add>
     <note>Implemented support for UCS-4 and UCS-2 encodings.</note>
     <submitter name='Neil Graham'/>
    </add>
