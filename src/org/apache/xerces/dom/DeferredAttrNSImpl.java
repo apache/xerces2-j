@@ -149,7 +149,8 @@ public final class DeferredAttrNSImpl
         }
 
         specified(ownerDocument.getNodeValue(fNodeIndex) == 1);
-	namespaceURI = pool.toString(ownerDocument.getNodeURI(attrQName));
+	//namespaceURI = pool.toString(ownerDocument.getNodeURI(attrQName));
+        namespaceURI = pool.toString(ownerDocument.getNodeURI(fNodeIndex));
 	// DOM Level 2 wants all namespace declaration attributes
 	// to be bound to "http://www.w3.org/2000/xmlns/"
 	// So as long as the XML parser doesn't do it, it needs to
