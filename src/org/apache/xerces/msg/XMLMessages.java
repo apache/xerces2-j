@@ -278,6 +278,7 @@ public class XMLMessages extends ListResourceBundle {
         { "PrefixDeclared", "The namespace prefix \"{0}\" was not declared." },
         { "MSG_ATT_DEFAULT_INVALID", "The defaultValue \"{1}\" of attribute \"{0}\" is not legal as for the lexical constraints of this attribute type." },
         { "MSG_GENERIC_SCHEMA_ERROR", "General Schema Error: {0}." },
+        { "MSG_DTD_SCHEMA_ERROR", "Xerces-J parser may not validate an XML document correctly if both XML Schema and DTD are present." }
 
     };
 

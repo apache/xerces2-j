@@ -2411,7 +2411,6 @@ public final class XMLValidator
          if (fGrammar == null) {
 
             fGrammar = fGrammarResolver.getGrammar("");
-
             if (fDynamicValidation && fGrammar==null) {
                fValidating = false;
             }
@@ -2698,11 +2697,20 @@ public final class XMLValidator
 
 
    private void resolveSchemaGrammar( String loc, String uri) throws Exception {
-       SchemaGrammar grammar = null;
-
+       Grammar grammar = null;
        if (uri!=null) {
-         grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
+           if (fGrammarIsDTDGrammar && uri.length()==0) {
+               fErrorReporter.reportError(fErrorReporter.getLocator(), 
+                                          XMLMessages.XML_DOMAIN,
+                                          XMLMessages.MSG_DTD_SCHEMA_ERROR, 
+                                          XMLMessages.MSG_DTD_SCHEMA_ERROR, 
+                                          null,
+                                          fErrorReporter.ERRORTYPE_WARNING);
+           }  else {         
+                grammar = fGrammarResolver.getGrammar(uri);
+           }
        }
+
        if (grammar == null) {
 
           if (fSchemaGrammarParser == null) {

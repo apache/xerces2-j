@@ -311,6 +311,7 @@ public class XMLMessages implements XMLMessageProvider {
         MSG_PREFIX_DECLARED = 167,
         MSG_ATT_DEFAULT_INVALID = 168,
         MSG_GENERIC_SCHEMA_ERROR = 169,
+        MSG_DTD_SCHEMA_ERROR = 170,
 
         // ...
         MSG_MAX_CODE = 200;
@@ -486,7 +487,7 @@ public class XMLMessages implements XMLMessageProvider {
         "PrefixDeclared",               // 167, "MSG_PREFIX_DECLARED"
         "MSG_ATT_DEFAULT_INVALID",      // 168, "MSG_ATT_DEFAULT_INVALID"
         "MSG_GENERIC_SCHEMA_ERROR",     // 169  "MSG_GENERIC_SCHEMA_ERROR"
-
+        "MSG_DTD_SCHEMA_ERROR",         // 170
         // ...
         ""                              //
     };
@@ -639,7 +640,7 @@ public class XMLMessages implements XMLMessageProvider {
         NC_PREFIX_DECLARED = 144,
         VC_ATTRIBUTE_DEFAULT_LEGAL = 145,
         SCHEMA_GENERIC_ERROR = 146,
-
+        
         // ...
         CONSTRAINT_MAX_CODE = 200;
 
