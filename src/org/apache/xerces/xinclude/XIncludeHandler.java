@@ -318,6 +318,9 @@ public class XIncludeHandler
     
     // track whether the root element of the result infoset has been processed
     private boolean fSeenRootElement;
+    
+    // track whether the child config needs its features refreshed
+    private boolean fNeedCopyFeatures = true;
 
     // Constructors
 
@@ -385,6 +388,9 @@ public class XIncludeHandler
             }
         } 
         catch (XMLConfigurationException e) {}
+        
+        // parser settings changed. Need to refresh features on child config.
+        fNeedCopyFeatures = true;
 
         try {
             fSendUEAndNotationEvents =
@@ -540,6 +546,7 @@ public class XIncludeHandler
             fSendUEAndNotationEvents = state;
         }
         if (fSettings != null) {
+            fNeedCopyFeatures = true;
             fSettings.setFeature(featureId, state);
         }
     } // setFeature(String,boolean)
@@ -1469,8 +1476,11 @@ public class XIncludeHandler
                 if (fSymbolTable != null) fChildConfig.setProperty(SYMBOL_TABLE, fSymbolTable);
                 if (fErrorReporter != null) fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
                 if (fEntityResolver != null) fChildConfig.setProperty(ENTITY_RESOLVER, fEntityResolver);
-                if (fSecurityManager != null) fChildConfig.setProperty(SECURITY_MANAGER, fSecurityManager);
+                fChildConfig.setProperty(SECURITY_MANAGER, fSecurityManager);
                 fChildConfig.setProperty(BUFFER_SIZE, new Integer(fBufferSize));
+                
+                // features must be copied to child configuration
+                fNeedCopyFeatures = true;
 
                 // use the same namespace context
                 fChildConfig.setProperty(
@@ -1487,7 +1497,10 @@ public class XIncludeHandler
             }
 
             // set all features on parserConfig to match this parser configuration
-            copyFeatures(fSettings, fChildConfig);
+            if (fNeedCopyFeatures) {
+                copyFeatures(fSettings, fChildConfig);
+            }
+            fNeedCopyFeatures = false;
 
             try {
                 fNamespaceContext.pushScope();
