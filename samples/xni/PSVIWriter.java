@@ -1063,18 +1063,18 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
     }
 
     private void processPSVISchemaComponents(XSNamespaceItem item) {
-        // typeDefinitions
-        XSNamedMap components =
-            item == null
-                ? null
-                : item.getComponents(XSConstants.TYPE_DEFINITION);
-
-        if (components == null || components.getLength() == 0) {
+        if (item == null) {
             sendEmptyElementEvent("psv:schemaComponents");
             return;
-
         }
+
+        // it we happen to not get any components, this will output a start tag
+        // and a close tag, instead of an empty element tag.  This isn't a big
+        // deal, though
         sendIndentedElement("psv:schemaComponents");
+
+        // typeDefinitions
+        XSNamedMap components = item.getComponents(XSConstants.TYPE_DEFINITION);
         for (int i = 0; i < components.getLength(); i++) {
             processPSVITypeDefinition((XSTypeDefinition)components.item(i));
         }
@@ -1642,7 +1642,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             sendIndentedElement("psv:term");
             switch (part.getTerm().getType()) {
                 case XSConstants.ELEMENT_DECLARATION :
-                    processPSVIElementDeclaration(
+                    processPSVIElementDeclarationOrRef(
                         (XSElementDeclaration)part.getTerm());
                     break;
                 case XSConstants.MODEL_GROUP :
@@ -1747,6 +1747,26 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         }
     }
 
+    private void processPSVIElementDeclarationRef(XSElementDeclaration elem) {
+        if (elem == null)
+            return;
+        processPSVIElementRef("psv:elementDeclaration", elem);
+    }
+    
+    private void processPSVIElementDeclarationOrRef(XSElementDeclaration elem) {
+        if (elem == null)
+            return;
+        // for global attributes, and attributes that have already been printed,
+        // we always want to print references
+        if (elem.getScope() == XSConstants.SCOPE_GLOBAL
+            || fDefined.contains(this.getID(elem))) {
+                processPSVIElementDeclarationRef(elem);
+        }
+        else {
+            processPSVIElementDeclaration(elem);
+        }
+    }
+    
     /**
      * This method writes an empty element at the current indent level.
      *
