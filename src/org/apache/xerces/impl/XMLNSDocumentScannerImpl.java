@@ -72,6 +72,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLDocumentSource; 
 import org.apache.xerces.xni.XMLDocumentHandler; 
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -126,13 +127,8 @@ extends XMLDocumentScannerImpl {
     // private data
     //
 
-    /** The filter component before DTD validator if any. If the DTDValidator 
-        followed the scanner, this field is null.*/
-    private XMLDocumentFilter fPreviousComponent;
     /** DTD validator */
     private XMLDTDValidatorFilter fDTDValidator;
-    /** The document handler (of filter) after the DTD validator */
-    private XMLDocumentHandler fNextComponent;
 
 
     /**
@@ -144,11 +140,8 @@ extends XMLDocumentScannerImpl {
      *                 The DTDValidator
      * @param next     The documentHandler after the DTDValidator
      */
-    public void setComponents(XMLDocumentFilter previous, XMLDTDValidatorFilter dtd, 
-                              XMLDocumentHandler next){
-        fPreviousComponent = previous;
+    public void setDTDValidator(XMLDTDValidatorFilter dtd){
         fDTDValidator = dtd;
-        fNextComponent = next;
     }
 
     /** 
@@ -604,17 +597,13 @@ extends XMLDocumentScannerImpl {
                 fBindNamespaces = true;
                 fPerformValidation = fDTDValidator.validate();
                 // re-configure pipeline
-                // 
-                if (fPreviousComponent != null) {
-                    // there is a filter component between scanner and DTDValidator
-                    fPreviousComponent.setDocumentHandler(fNextComponent);
-                    fNextComponent.setDocumentSource(fPreviousComponent);
-                } 
-                else {
-                    // DTD validator was the next component after the scanner.
-                    fDocumentHandler = fNextComponent;
-                    fNextComponent.setDocumentSource(XMLNSDocumentScannerImpl.this);
-                }
+                XMLDocumentSource source = fDTDValidator.getDocumentSource();
+                XMLDocumentHandler handler = fDTDValidator.getDocumentHandler();
+                source.setDocumentHandler(handler);
+                if (handler != null)
+                    handler.setDocumentSource(source);
+                fDTDValidator.setDocumentSource(null);
+                fDTDValidator.setDocumentHandler(null);
             }
 
             if (scanStartElement()) {
@@ -628,4 +617,3 @@ extends XMLDocumentScannerImpl {
     }
 
 } // class XMLDocumentScannerImpl
-

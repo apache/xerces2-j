@@ -235,7 +235,7 @@ extends StandardParserConfiguration {
             fProperties.put(DTD_VALIDATOR, fDTDValidator);
             fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
             fScanner = fNamespaceScanner;
-            fNamespaceScanner.setComponents(null, fDTDValidator, fSchemaValidator);
+            fNamespaceScanner.setDTDValidator(fDTDValidator);
             fNamespaceScanner.setDocumentHandler(fDTDValidator);
             fDTDValidator.setDocumentSource(fNamespaceScanner);
             fDTDValidator.setDocumentHandler(fSchemaValidator);
@@ -250,7 +250,7 @@ extends StandardParserConfiguration {
                 fScanner = fNamespaceScanner;
                 fProperties.put(DTD_VALIDATOR, fDTDValidator);
                 fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
-                fNamespaceScanner.setComponents(null, fDTDValidator, fDocumentHandler);
+                fNamespaceScanner.setDTDValidator(fDTDValidator);
                 fNamespaceScanner.setDocumentHandler(fDTDValidator);
                 fDTDValidator.setDocumentSource(fNamespaceScanner);
                 fDTDValidator.setDocumentHandler(fDocumentHandler);

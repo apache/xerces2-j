@@ -609,7 +609,7 @@ public class NonValidatingConfiguration
                 addComponent((XMLComponent)fNamespaceScanner);
             }
             fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
-            fNamespaceScanner.setComponents(null, null, fDocumentHandler);
+            fNamespaceScanner.setDTDValidator(null);
             fScanner = fNamespaceScanner;
         } 
         else {
