@@ -96,7 +96,7 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
             return;
 
         // make a string validator for NCName
-        if ( fgStrValidator == null) {
+        if ( fgStrValidator == null ) {
             Hashtable strFacets = new Hashtable();
             strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
             strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
@@ -104,14 +104,15 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
         }
 
         Vector enum = null;
-        if (facets != null)
+        if ( facets != null )
             enum = (Vector)facets.get(SchemaSymbols.ELT_ENUMERATION);
-        if (enum != null) {
+        if ( enum != null ) {
             int i = 0;
             try {
-                for ( ; i < enum.size(); i++)
+                for ( ; i < enum.size(); i++ )
                     fgStrValidator.validate((String)enum.elementAt(i), null);
-            } catch ( Exception idve ){
+            }
+            catch ( Exception idve ) {
                 throw new InvalidDatatypeFacetException( "Value of enumeration = '" + enum.elementAt(i) +
                                                          "' must be from the value space of base.");
             }
@@ -121,7 +122,7 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
     /**
      * return value of whiteSpace facet
      */
-    public short getWSFacet(){
+    public short getWSFacet() {
         return fgStrValidator.getWSFacet();
     }
 
@@ -142,10 +143,10 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
     public Object validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
 
         // no validation if asked to clear ID hash table
-        if (IDStorage != null) {
+        if ( IDStorage != null ) {
             StateMessageDatatype message = (StateMessageDatatype) IDStorage;
-            if (message.getDatatypeState() == IDDatatypeValidator.ID_CLEAR ){
-                if ( this.fTableOfId != null ){
+            if ( message.getDatatypeState() == IDDatatypeValidator.ID_CLEAR ) {
+                if ( this.fTableOfId != null ) {
                     this.fTableOfId.clear();
                     this.fTableOfId = null;
                 }
@@ -159,14 +160,15 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
         // check if content is a valid NCName
         try {
             fgStrValidator.validate(content, null);
-        } catch (InvalidDatatypeValueException idve) {
+        }
+        catch ( InvalidDatatypeValueException idve ) {
             InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
             error.setMinorCode(XMLMessages.MSG_ID_INVALID);
             error.setMajorCode(XMLMessages.VC_ID);
             throw error;
         }
 
-        if (!addId( content, IDStorage) ) {
+        if ( !addId( content, IDStorage) ) {
             InvalidDatatypeValueException error =
             new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
             error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
@@ -192,18 +194,27 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
 
         if ( this.fTableOfId == null ) {
             this.fTableOfId = new Hashtable();
-        } else if ( this.fTableOfId.containsKey( content ) ){
+        }
+        else if ( this.fTableOfId.containsKey( content ) ) {
             return false;
         }
-        if ( this.fNullValue == null ){
+        if ( this.fNullValue == null ) {
             fNullValue = new Object();
         }
         try {
             this.fTableOfId.put( content, fNullValue );
-        } catch( OutOfMemoryError ex ){
+        }
+        catch ( OutOfMemoryError ex ) {
             System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableOfId.size() + " Elements" );
             ex.printStackTrace();
         }
         return true;
     } // addId(int):boolean
+
+    protected void resetIDs() {
+        if ( this.fTableOfId != null ) {
+            this.fTableOfId.clear();
+            this.fTableOfId = null;
+        }
+    }
 }

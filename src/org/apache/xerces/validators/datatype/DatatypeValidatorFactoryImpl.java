@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,25 +66,29 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 
 /**
- * This class implements a factory of Datatype Validators. Internally the
- * DatatypeValidators are kept in a registry.<BR>
- * There is one instance of DatatypeValidatorFactoryImpl per Parser.<BR>
- * There is one datatype Registry per instance of DatatypeValidatorFactoryImpl,
- * such registry is first allocated with the number DatatypeValidators needed.<BR>
- * e.g.
- * If Parser finds an XML document with a DTD, a registry of DTD validators (only
- * 9 validators) get initialized in the registry.
- * The initialization process consist of instantiating the Datatype and
- * facets and registering the Datatype into registry table.
- * This implementatio uses a Hahtable as a registry table but future implementation
+ * 
+ * This class implements a factory of datatype validators. Internally the
+ * DatatypeValidators are kept in three registries:<BR>
+ * (i) DTDRegistry - stores DTD datatype validators
+ * <ii> SchemaRegistry - stores Schema datatype validators
+ * <iii> UserDefinedRegistry - stores Schema user defined datatypes.
+ * <BR>
+ * The above registries will be initialized on demand (for XML document with a DTD, only
+ * DTDRegistry will be initialized).
+ * <BR>
+ * <B>Note: </B>Between multiple parse() calls, only _user_defined_ registry will be reset.
+ * DTD registry and schema registry are initialized only once and are kept for the *life-time* of the parser .
+ * <BR>
+ * This implementation uses a Hahtable as a registry table but future implementation
  * should use a lighter object, maybe a Map class ( not use a derived Map class
  * because of JDK 1.1.8 no supporting Map).<BR>
  * <BR>
  * As the Parser parses an instance document it knows if validation needs
- * to be checked. If no validation is necesary we should not instantiate a
+ * to be checked. If no validation is necessary we should not instantiate a
  * DatatypeValidatorFactoryImpl.<BR>
- * If validation is needed, we need to instantiate a DatatypeValidatorFactoryImpl.<BR>
+ * <BR>
  * 
+ * @author Elena Litani
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
@@ -93,219 +97,212 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
     private static final boolean fDebug = false;
     private Hashtable fRegistry;
-    private boolean   fRegistryExpanded = false;
+    private Hashtable fDTDDatatypeRegistry;
+    private Hashtable fSchemaDatatypeRegistry;
 
+    // 0 -> not expanded, 1-> dtd registry ready, 2 -> schema registry ready
+    private byte fRegistryExpanded = 0;
+
+
+    // fSchemaValidation allows to determine between different parse() calls
+    // what registy can be accessable (e.g only DTDRegistry)
+    // 0 -> dtd validation, 1->schema validation
+    private byte fSchemaValidation = 0;
 
     public DatatypeValidatorFactoryImpl() {
+        // registry for user-defined datatypes
+        fRegistry = new Hashtable(30);
+
+        // schema has total of 44 datatypes: primitive and derived
+        // note: for schema validation we always instantiate DTDDatatypes as well..
+        fSchemaDatatypeRegistry = new Hashtable (40);
+        // dtd has total of 9 datatypes
+        fDTDDatatypeRegistry = new Hashtable (10);
     }
 
     /**
-     * Initializes registry with primitive and derived
-     * Simple types.
-     * 
-     * This method does not clear the registry to clear
-     * the registry you have to call resetRegistry.
-     * 
-     * The net effect of this method is to start with
-     * a the smallest set of datatypes needed by the
-     * validator.
-     * 
-     * If we start with DTD's then we initialize the
-     * table to only the 9 validators needed by DTD Validation.
-     * 
-     * If we start with Schema's then we initialize to
-     * to full set of validators.
-     * 
-     * @param registrySet
+     * Initializes fDTDRegistry with (9) DTD related datatypes . 
      */
     public void initializeDTDRegistry() {
 
-        if (fRegistry == null) {
-            fRegistry = new Hashtable();
-            fRegistryExpanded = false;
-        }
-
         //Register Primitive Datatypes
 
-        if (fRegistryExpanded == false) { //Core datatypes shared by DTD attributes and Schema
-
+        if ( fRegistryExpanded == 0 ) { //Core datatypes shared by DTD attributes and Schema
             try {
-                fRegistry.put("string",            new StringDatatypeValidator() );
-                fRegistry.put("ID",                new IDDatatypeValidator());
-                fRegistry.put("IDREF",             new IDREFDatatypeValidator());
-                fRegistry.put("ENTITY",            new ENTITYDatatypeValidator());
-                fRegistry.put("NOTATION",          new NOTATIONDatatypeValidator());
+                fDTDDatatypeRegistry.put("string",            new StringDatatypeValidator() );
+                fDTDDatatypeRegistry.put("ID",                new IDDatatypeValidator());
+                fDTDDatatypeRegistry.put("IDREF",             new IDREFDatatypeValidator());
+                fDTDDatatypeRegistry.put("ENTITY",            new ENTITYDatatypeValidator());
+                fDTDDatatypeRegistry.put("NOTATION",          new NOTATIONDatatypeValidator());
 
-                createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
+                createDTDDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
 
-                createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
+                createDTDDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
 
-                Hashtable facets = new Hashtable();
+                Hashtable facets = new Hashtable(2);
                 facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-                createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
+                createDTDDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
 
-                createDatatypeValidator("NMTOKENS",  
-                                        getDatatypeValidator( "NMTOKEN" ), null, true );
-
-            } catch (InvalidDatatypeFacetException ex) {
+                createDTDDatatypeValidator("NMTOKENS",  getDatatypeValidator( "NMTOKEN" ), null, true );
+                fRegistryExpanded = 1;
+            }
+            catch ( InvalidDatatypeFacetException ex ) {
                 ex.printStackTrace();
             }
         }
     }
 
 
+    /**
+     * Initializes fSchemaDatatypeRegistry with schema primitive and derived datatypes.
+     * See W3C Schema Datatype REC. 
+     * If DTD registry is not initialized yet, this method will initialize it as well.
+     */
     public void expandRegistryToFullSchemaSet() {
-
-        if (fRegistry == null) {
-            fRegistry = new Hashtable(); // if it is null
-            fRegistryExpanded = false;
-        }
+        fSchemaValidation = 1;
         //Register Primitive Datatypes 
-        if (fRegistryExpanded == false) {
+        if ( fRegistryExpanded != 2 ) {
             DatatypeValidator v;
             try {
-                //fRegistry.put("string",            new StringDatatypeValidator() );
-                fRegistry.put("boolean",           new BooleanDatatypeValidator()  );
-                fRegistry.put("float",             new FloatDatatypeValidator());
-                fRegistry.put("double",            new DoubleDatatypeValidator());
-                fRegistry.put("decimal",           new DecimalDatatypeValidator());
-                fRegistry.put("hexBinary",         new HexBinaryDatatypeValidator());
-                fRegistry.put("base64Binary",      new Base64BinaryDatatypeValidator());
-                fRegistry.put("anyURI",            new AnyURIDatatypeValidator());
-                fRegistry.put("QName",             new QNameDatatypeValidator()); 
-                fRegistry.put("duration",          new DurationDatatypeValidator());
-                fRegistry.put("gDay",              new DayDatatypeValidator()); 
-                fRegistry.put("time",              new TimeDatatypeValidator());
+                fSchemaDatatypeRegistry.put("boolean",           new BooleanDatatypeValidator()  );
+                fSchemaDatatypeRegistry.put("float",             new FloatDatatypeValidator());
+                fSchemaDatatypeRegistry.put("double",            new DoubleDatatypeValidator());
+                fSchemaDatatypeRegistry.put("decimal",           new DecimalDatatypeValidator());
+                fSchemaDatatypeRegistry.put("hexBinary",         new HexBinaryDatatypeValidator());
+                fSchemaDatatypeRegistry.put("base64Binary",      new Base64BinaryDatatypeValidator());
+                fSchemaDatatypeRegistry.put("anyURI",            new AnyURIDatatypeValidator());
+                fSchemaDatatypeRegistry.put("QName",             new QNameDatatypeValidator()); 
+                fSchemaDatatypeRegistry.put("duration",          new DurationDatatypeValidator());
+                fSchemaDatatypeRegistry.put("gDay",              new DayDatatypeValidator()); 
+                fSchemaDatatypeRegistry.put("time",              new TimeDatatypeValidator());
 
-                // need to check if the registry has been "DTD" initilized --ericye
-                // since we share the same instance of DTD attribute validators across the board,
-                // we couldn't afford call the initializeDTDRegistry more than one time.
-                if (fRegistry.get("IDREF") == null) {
+                if ( fRegistryExpanded == 0 ) {
                     initializeDTDRegistry(); //Initialize common Schema/DTD Datatype validator set if not already initialized
                 }
-
-                Hashtable facets = new Hashtable();
+                Hashtable facets = new Hashtable (2);
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_REPLACE);
-                createDatatypeValidator("normalizedString", new StringDatatypeValidator(), facets, false);
+                createSchemaDatatypeValidator("normalizedString", new StringDatatypeValidator(), facets, false);
 
-                facets = new Hashtable();
+
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-                createDatatypeValidator("token", getDatatypeValidator("normalizedString"), facets, false);
+                createSchemaDatatypeValidator("token", getDatatypeValidator("normalizedString"), facets, false);
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
-                createDatatypeValidator("language", getDatatypeValidator("token") , facets, false );
+                createSchemaDatatypeValidator("language", getDatatypeValidator("token") , facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN , "\\i\\c*" );
-                createDatatypeValidator("Name", getDatatypeValidator("token"), facets, false );
+                createSchemaDatatypeValidator("Name", getDatatypeValidator("token"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-                createDatatypeValidator("NCName", getDatatypeValidator("token"), facets, false );
+                createSchemaDatatypeValidator("NCName", getDatatypeValidator("token"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_FRACTIONDIGITS, "0");
-                createDatatypeValidator("integer", getDatatypeValidator("decimal"), facets, false);
+                createSchemaDatatypeValidator("integer", getDatatypeValidator("decimal"), facets, false);
 
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "0" );
-                createDatatypeValidator("nonPositiveInteger", 
-                                        getDatatypeValidator("integer"), facets, false );
+                createSchemaDatatypeValidator("nonPositiveInteger", 
+                                              getDatatypeValidator("integer"), facets, false );
 
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "-1" );
-                createDatatypeValidator("negativeInteger", 
-                                        getDatatypeValidator( "nonPositiveInteger"), facets, false );
+                createSchemaDatatypeValidator("negativeInteger", 
+                                              getDatatypeValidator( "nonPositiveInteger"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "9223372036854775807");
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-9223372036854775808");
-                createDatatypeValidator("long", getDatatypeValidator( "integer"), facets, false );
+                createSchemaDatatypeValidator("long", getDatatypeValidator( "integer"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "2147483647");
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-2147483648");
-                createDatatypeValidator("int", getDatatypeValidator( "long"), facets,false );
+                createSchemaDatatypeValidator("int", getDatatypeValidator( "long"), facets,false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "32767");
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-32768");
-                createDatatypeValidator("short", getDatatypeValidator( "int"), facets, false );
+                createSchemaDatatypeValidator("short", getDatatypeValidator( "int"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "127");
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-128");
-                createDatatypeValidator("byte",
-                                        getDatatypeValidator( "short"), facets, false );
+                createSchemaDatatypeValidator("byte",
+                                              getDatatypeValidator( "short"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
-                createDatatypeValidator("nonNegativeInteger", 
-                                        getDatatypeValidator( "integer"), facets, false );
+                createSchemaDatatypeValidator("nonNegativeInteger", 
+                                              getDatatypeValidator( "integer"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "18446744073709551615" );
-                createDatatypeValidator("unsignedLong",
-                                        getDatatypeValidator( "nonNegativeInteger"), facets, false );
+                createSchemaDatatypeValidator("unsignedLong",
+                                              getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "4294967295" );
-                createDatatypeValidator("unsignedInt",
-                                        getDatatypeValidator( "unsignedLong"), facets, false );
+                createSchemaDatatypeValidator("unsignedInt",
+                                              getDatatypeValidator( "unsignedLong"), facets, false );
 
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "65535" );
-                createDatatypeValidator("unsignedShort", 
-                                        getDatatypeValidator( "unsignedInt"), facets, false );
+                createSchemaDatatypeValidator("unsignedShort", 
+                                              getDatatypeValidator( "unsignedInt"), facets, false );
 
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
-                createDatatypeValidator("unsignedByte",
-                                        getDatatypeValidator( "unsignedShort"), facets, false );
+                createSchemaDatatypeValidator("unsignedByte",
+                                              getDatatypeValidator( "unsignedShort"), facets, false );
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE, "1" );
-                createDatatypeValidator("positiveInteger",
-                                        getDatatypeValidator( "nonNegativeInteger"), facets, false );
+                createSchemaDatatypeValidator("positiveInteger",
+                                              getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
 
                 //REVISIT: it looks like patterns are expensive
                 //         should we rely on error reporting for date/times and not use pattern here?
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createDatatypeValidator("dateTime", new DateTimeDatatypeValidator(), facets, false);
+                createSchemaDatatypeValidator("dateTime", new DateTimeDatatypeValidator(), facets, false);
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createDatatypeValidator("date", new DateDatatypeValidator(), facets, false);
-                
-                facets = new Hashtable();
+                createSchemaDatatypeValidator("date", new DateDatatypeValidator(), facets, false);
+
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN,"--(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createDatatypeValidator("gMonthDay", new MonthDayDatatypeValidator(), facets, false);
-                
-                facets = new Hashtable();
+                createSchemaDatatypeValidator("gMonthDay", new MonthDayDatatypeValidator(), facets, false);
+
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
-                createDatatypeValidator("gYearMonth", new YearMonthDatatypeValidator(), facets, false);
-                
-                facets = new Hashtable();
+                createSchemaDatatypeValidator("gYearMonth", new YearMonthDatatypeValidator(), facets, false);
+
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
-                createDatatypeValidator("gYear", new YearDatatypeValidator(), facets, false);
+                createSchemaDatatypeValidator("gYear", new YearDatatypeValidator(), facets, false);
 
 
-                facets = new Hashtable();
+                facets.clear();
                 facets.put(SchemaSymbols.ELT_PATTERN,"--(\\d\\d)--(Z)?");
-                createDatatypeValidator("gMonth", new MonthDatatypeValidator(), facets, false);
-                
+                createSchemaDatatypeValidator("gMonth", new MonthDatatypeValidator(), facets, false);
 
-                fRegistryExpanded = true;
-            } catch (InvalidDatatypeFacetException ex) {
+
+                fRegistryExpanded = 2;
+            }
+            catch ( InvalidDatatypeFacetException ex ) {
                 ex.printStackTrace();
             }
         }
@@ -319,72 +316,130 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
      * do a parse cycle.
      */
     public void resetRegistry() {
-        if (fRegistry != null) {
-            fRegistry.clear();
-            fRegistryExpanded = false;
-            //initializeDTDRegistry();
-        }
+        fRegistry.clear();
+        fSchemaValidation = 0;
+        //reset some Primitive datatypes - static fields
+        ((IDDatatypeValidator)fDTDDatatypeRegistry.get("ID")).resetIDs();
+        ((IDREFDatatypeValidator)fDTDDatatypeRegistry.get("IDREF")).resetIDRefs();
     }
 
     public DatatypeValidator createDatatypeValidator(String typeName, 
                                                      DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
+        if ( base == null ) {
+            return null;
+        }
+        DatatypeValidator simpleType = createSchemaValidator(typeName, base, facets, list);
+        registerUserDefinedValidator(typeName, simpleType);
+        return simpleType;
+    }
+
+
+    public DatatypeValidator createDatatypeValidator(String typeName, Vector validators) {
+        DatatypeValidator simpleType = null;
+        if ( validators!=null ) {
+            simpleType = new UnionDatatypeValidator(validators);
+        }
+        if ( simpleType !=null ) {
+            registerUserDefinedValidator(typeName, simpleType);
+        }
+        return simpleType;
+    }
+
+
+    /**
+     * Searches different datatype registries depending on validation mode (schema or dtd)
+     * 
+     * @param type
+     * @return 
+     */
+    public DatatypeValidator getDatatypeValidator(String type) {
+        AbstractDatatypeValidator simpleType = null;
+        if ( type == null ) {
+            return null;
+        }
+        simpleType = (AbstractDatatypeValidator) fDTDDatatypeRegistry.get(type);
+        if ( simpleType == null && fSchemaValidation == 1 ) {
+            simpleType = (AbstractDatatypeValidator) fSchemaDatatypeRegistry.get(type);
+            if ( simpleType == null ) {
+                return(DatatypeValidator) fRegistry.get(type);
+            }
+
+        }
+
+        return(DatatypeValidator)simpleType;
+
+    }
+
+
+    private DatatypeValidator createSchemaDatatypeValidator(String typeName, 
+                                                            DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
+        DatatypeValidator primitive = createSchemaValidator(typeName, base, facets, list);
+        registerSchemaValidator(typeName, primitive);
+        return primitive;
+    }
+
+    private DatatypeValidator createDTDDatatypeValidator(String typeName, 
+                                                         DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
+        DatatypeValidator primitive = createSchemaValidator(typeName, base, facets, list);
+        registerDTDValidator(typeName, primitive);
+        return primitive;
+    }
+
+    private DatatypeValidator createSchemaValidator (String typeName, 
+                                                     DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException{
 
         DatatypeValidator simpleType = null;
-
-        if (this.fDebug == true) {
-            System.out.println("type name = " + typeName );
+        if ( list ) {
+            simpleType = new ListDatatypeValidator(base, facets, list);    
         }
+        else {
+            try {
+                String value = (String)facets.get(SchemaSymbols.ELT_WHITESPACE);
+                //for all datatypes other than string, we don't pass WHITESPACE Facet
+                //its value is always 'collapse' and cannot be reset by user
 
-        if (base != null) {
-            if (list) {
-                simpleType = new ListDatatypeValidator(base, facets, list);    
-            } else {
-                try {
-                    String value = (String)facets.get(SchemaSymbols.ELT_WHITESPACE);
-                    //for all datatypes other than string, we don't pass WHITESPACE Facet
-                        //its value is always 'collapse' and cannot be reset by user
-
-                    if (value != null && !(base instanceof StringDatatypeValidator)) {
-                        if (!value.equals(SchemaSymbols.ATT_COLLAPSE))
-                            throw new InvalidDatatypeFacetException( "whiteSpace value '" + value +
-                                                                     "' for this type must be 'collapse'.");
-                            facets.remove(SchemaSymbols.ELT_WHITESPACE);
-                        }
-
-                    Class validatorDef = base.getClass();
-                    
-                    Class [] validatorArgsClass = new Class[] {  
-                        org.apache.xerces.validators.datatype.DatatypeValidator.class,
-                        java.util.Hashtable.class,
-                        boolean.class};
-
-
-
-                    Object [] validatorArgs     = new Object[] {
-                        base, facets, Boolean.FALSE};
-
-
-
-
-                    Constructor validatorConstructor =
-                    validatorDef.getConstructor( validatorArgsClass );
-
-
-                    simpleType = 
-                    ( DatatypeValidator ) createDatatypeValidator (
-                                                                  validatorConstructor, validatorArgs );
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
+                if ( value != null && !(base instanceof StringDatatypeValidator) ) {
+                    if ( !value.equals(SchemaSymbols.ATT_COLLAPSE) )
+                        throw new InvalidDatatypeFacetException( "whiteSpace value '" + value +
+                                                                 "' for this type must be 'collapse'.");
+                    facets.remove(SchemaSymbols.ELT_WHITESPACE);
                 }
-            }
 
-            if (simpleType != null) {
-                addValidator( typeName, simpleType );//register validator
+                Class validatorDef = base.getClass();
+
+                Class [] validatorArgsClass = new Class[] {  
+                    org.apache.xerces.validators.datatype.DatatypeValidator.class,
+                    java.util.Hashtable.class,
+                    boolean.class};
+
+                Object [] validatorArgs     = new Object[] { base, facets, Boolean.FALSE};
+                Constructor validatorConstructor = validatorDef.getConstructor( validatorArgsClass );
+                simpleType = ( DatatypeValidator ) createDatatypeValidator ( validatorConstructor, validatorArgs );
+            }
+            catch ( NoSuchMethodException e ) {
+                e.printStackTrace();
             }
 
         }
-        return simpleType;// return it
+        return simpleType;
     }
+
+    private void registerUserDefinedValidator (String typeName, DatatypeValidator simpleType) {
+        if ( simpleType != null ) {
+            fRegistry.put(typeName, simpleType);
+        }
+    }
+    private void registerSchemaValidator (String typeName, DatatypeValidator simpleType) {
+        if ( simpleType != null ) {
+            fSchemaDatatypeRegistry.put(typeName, simpleType);
+        }
+    }
+    private void registerDTDValidator (String typeName, DatatypeValidator simpleType) {
+        if ( simpleType != null ) {
+            fDTDDatatypeRegistry.put(typeName, simpleType);
+        }
+    }
+
 
 
     private static Object createDatatypeValidator(Constructor validatorConstructor, 
@@ -393,81 +448,42 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         try {
             validator = validatorConstructor.newInstance(arguments);
             return validator;
-        } catch (InstantiationException e) {
-            if (fDebug) {
+        }
+        catch ( InstantiationException e ) {
+            if ( fDebug ) {
                 e.printStackTrace();
-            } else {
+            }
+            else {
                 return null;
             }
-        } catch (IllegalAccessException e) {
-            if (fDebug) {
+        }
+        catch ( IllegalAccessException e ) {
+            if ( fDebug ) {
                 e.printStackTrace();
-            } else {
+            }
+            else {
                 return null;
             }
-        } catch (IllegalArgumentException e) {
-            if (fDebug) {
+        }
+        catch ( IllegalArgumentException e ) {
+            if ( fDebug ) {
                 e.printStackTrace();
-            } else {
+            }
+            else {
                 return null;
             }
-        } catch (InvocationTargetException e) {
-            if (fDebug) {
+        }
+        catch ( InvocationTargetException e ) {
+            if ( fDebug ) {
                 System.out.println("!! The original error message is: " + e.getTargetException().getMessage() );
                 e.getTargetException().printStackTrace();
-            } else {
+            }
+            else {
                 throw new InvalidDatatypeFacetException( e.getTargetException().getMessage() );
-                //System.out.println("Exception: " + e.getTargetException
-                //validator = null;
             }
         }
         return validator;
     }
 
-    public DatatypeValidator createDatatypeValidator(String typeName, Vector validators) {
-         DatatypeValidator simpleType = null;
-         if (validators!=null) {
-             simpleType = new UnionDatatypeValidator(validators);
-         }
-         if (simpleType !=null) {
-             addValidator(typeName, simpleType);
-         }
-         return simpleType;
-    }
-
-
-    public DatatypeValidator getDatatypeValidator(String type) {
-        AbstractDatatypeValidator simpleType = null;
-        if (fDebug) {
-            System.out.println( "type = >" + type +"<");
-            System.out.println( "fRegistry = >" + fRegistry +"<" );
-            simpleType = (AbstractDatatypeValidator) fRegistry.get(type);
-        }
-        if (type != null && fRegistry != null
-            && fRegistry.containsKey( type ) == true) {
-            simpleType = (AbstractDatatypeValidator) fRegistry.get(type);
-
-            // This code is not needed after all.
-            // and it is a potential performance hit.
-            //if ( simpleType != null ) { // if not registered type to create one
-            //  try {
-            //     simpleType  = (AbstractDatatypeValidator) simpleType.clone();
-            //} catch (CloneNotSupportedException cloneExc) {
-            //  try {
-            //     simpleType = (AbstractDatatypeValidator) simpleType.getClass().newInstance(); 
-            // } catch( InstantiationException e ) {
-            //    e.printStackTrace();
-            // } catch( IllegalAccessException e ) {
-            //    e.printStackTrace();
-            //}
-            //}
-            //}
-        }
-        return(DatatypeValidator) simpleType;
-    }
-
-    private void addValidator(String name, DatatypeValidator v) {
-        fRegistry.put(name,v);
-    }
 }
 

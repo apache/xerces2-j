@@ -920,7 +920,8 @@ public abstract class XMLParser
         fScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
         fValidator.resetOrCopy(fStringPool);
         fNeedReset = false;
-        fGrammarResolver = new GrammarResolverImpl();
+        // REVISIT: why did we do it?
+        //fGrammarResolver = new GrammarResolverImpl();
         fGrammarResolver.clearGrammarResolver();
         fScanner.setGrammarResolver(fGrammarResolver);
         fValidator.setGrammarResolver(fGrammarResolver);

@@ -353,7 +353,9 @@ public class TraverseSchema implements
         fSchemaGrammar = schemaGrammar;
         fGrammarResolver = grammarResolver;
         fDatatypeRegistry = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
-        fDatatypeRegistry.expandRegistryToFullSchemaSet();//Expand to registry type to contain all primitive datatype
+        
+        //Expand to registry type to contain all primitive datatype
+        fDatatypeRegistry.expandRegistryToFullSchemaSet(); 
 
         // General Attribute Checking
         fGeneralAttrCheck = new GeneralAttrCheck(fErrorReporter);
@@ -1612,7 +1614,7 @@ public class TraverseSchema implements
         boolean union = false;
         boolean restriction = false;
         int     newSimpleTypeName    = -1;
-        if ( nameProperty.equals("")) { // anonymous simpleType
+        if ( nameProperty.length() == 0) { // anonymous simpleType
             newSimpleTypeName = fStringPool.addSymbol(
                 "#S#"+fSimpleTypeAnonCount++ );   
         }
@@ -1651,7 +1653,7 @@ public class TraverseSchema implements
         else if (varietyProperty.equals(SchemaSymbols.ELT_UNION)) { //traverse union
             union = true;
             baseTypeQNameProperty = content.getAttribute( SchemaSymbols.ATT_MEMBERTYPES);
-            if (!baseTypeQNameProperty.equals("")) {
+            if (baseTypeQNameProperty.length() != 0) {
                 unionMembers = new StringTokenizer( baseTypeQNameProperty );
                 size = unionMembers.countTokens();
             }
@@ -1673,7 +1675,7 @@ public class TraverseSchema implements
         int typeNameIndex;
         DatatypeValidator baseValidator = null;
         
-        if ( baseTypeQNameProperty.equals("") ) { //must 'see' <simpleType>
+        if ( baseTypeQNameProperty.length() == 0 ) { //must 'see' <simpleType>
             //content = {annotation?,simpleType?...}
             content = XUtil.getFirstChildElement(content);
             //check content (annotation?, ...)
@@ -1797,7 +1799,7 @@ public class TraverseSchema implements
                                         prefix = enumVal.substring(0,colonptr);
                                         localpart = enumVal.substring(colonptr+1);
                                 }
-                                String uriStr = (!prefix.equals(""))?resolvePrefixToURI(prefix):fTargetNSURIString;
+                                String uriStr = (prefix.length() != 0)?resolvePrefixToURI(prefix):fTargetNSURIString;
                                 qualifiedName=uriStr + ":" + localpart;
                                 localName = (String)fNotationRegistry.get(qualifiedName);
                                 if(localName == null){
@@ -1888,7 +1890,7 @@ public class TraverseSchema implements
 
         
         else if (list && content!=null) { // report error - must not have any children!
-            if (!baseTypeQNameProperty.equals("")) {
+            if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
             }
             else {
@@ -1898,7 +1900,7 @@ public class TraverseSchema implements
             }
         }
         else if (union && content!=null) { //report error - must not have any children!
-             if (!baseTypeQNameProperty.equals("")) {
+             if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
                 if (content!=null) {
                     reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
@@ -5849,7 +5851,7 @@ public class TraverseSchema implements
         }
         String publicId = notation.getAttribute(SchemaSymbols.ATT_PUBLIC);
         String systemId = notation.getAttribute(SchemaSymbols.ATT_SYSTEM);
-        if (publicId.equals("") && systemId.equals("")) {
+        if (publicId.length() == 0 && systemId.length() == 0) {
             //REVISIT: update error messages
             reportGenericSchemaError("<notation> declaration is invalid");
         }

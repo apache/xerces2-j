@@ -273,6 +273,7 @@ public final class XMLValidator
 
    // declarations
 
+   private DOMParser fSchemaGrammarParser = null;
    private int fDeclaration[];
    private XMLErrorReporter fErrorReporter = null;
    private DefaultEntityHandler fEntityHandler = null;
@@ -1910,10 +1911,11 @@ public final class XMLValidator
       
       fGrammar = null;
       fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
-      //fGrammarResolver = null;
-      if (fGrammarResolver != null) {
+      
+      // we will reset fGrammarResolver in XMLParser before passing it to Validator
+      /*if (fGrammarResolver != null) {
          fGrammarResolver.clearGrammarResolver(); //This also clears the Datatype registry
-      }
+      }*/
       fGrammarIsDTDGrammar = false;
       fGrammarIsSchemaGrammar = false;
 
@@ -2670,28 +2672,35 @@ public final class XMLValidator
       }
 
    }// parseSchemaLocaltion(String, Hashtable)
+
+
    private void resolveSchemaGrammar( String loc, String uri) throws Exception {
 
       SchemaGrammar grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
-
+                  
       if (grammar == null) {
-         DOMParser parser = new DOMParser();
-         parser.setEntityResolver( new Resolver(fEntityHandler) );
-         parser.setErrorHandler(  new ErrorHandler() );
+          if (fSchemaGrammarParser == null) {
+              //
+              // creating a parser for schema only once per parser instance
+              // leads to less objects, but increases time we spend in reset()
+              // 
+              fSchemaGrammarParser = new DOMParser();
+              fSchemaGrammarParser.setEntityResolver( new Resolver(fEntityHandler) );
+              fSchemaGrammarParser.setErrorHandler(  new ErrorHandler() );
 
-         try {
-            parser.setFeature("http://xml.org/sax/features/validation", false);
-            parser.setFeature("http://xml.org/sax/features/namespaces", true);
-            parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
-         } catch (  org.xml.sax.SAXNotRecognizedException e ) {
-            e.printStackTrace();
-         } catch ( org.xml.sax.SAXNotSupportedException e ) {
-            e.printStackTrace();
-         }
-
+              try {
+                fSchemaGrammarParser.setFeature("http://xml.org/sax/features/validation", false);
+                fSchemaGrammarParser.setFeature("http://xml.org/sax/features/namespaces", true);
+                fSchemaGrammarParser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+              } catch (  org.xml.sax.SAXNotRecognizedException e ) {
+                e.printStackTrace();
+              } catch ( org.xml.sax.SAXNotSupportedException e ) {
+                e.printStackTrace();
+              }
+          }
          // expand it before passing it to the parser
          InputSource source = null;
-         EntityResolver currentER = parser.getEntityResolver();
+         EntityResolver currentER = fSchemaGrammarParser.getEntityResolver();
          if (currentER != null) {
             source = currentER.resolveEntity("", loc);
          }
@@ -2700,17 +2709,15 @@ public final class XMLValidator
             source = new InputSource(loc);
          }
          try {
-            parser.parse( source );
+            fSchemaGrammarParser.parse( source );
          } catch ( IOException e ) {
             e.printStackTrace();
          } catch ( SAXException e ) {
-            //System.out.println("loc = "+loc);
-            //e.printStackTrace();
             reportRecoverableXMLError( XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
                                        XMLMessages.SCHEMA_GENERIC_ERROR, e.getMessage() );
          } 
 
-         Document     document   = parser.getDocument(); //Our Grammar
+         Document     document   = fSchemaGrammarParser.getDocument(); //Our Grammar
 
          TraverseSchema tst = null;
          try {
@@ -2733,16 +2740,13 @@ public final class XMLValidator
                grammar = new SchemaGrammar();
                grammar.setGrammarDocument(document);
   
-				// Since we've just constructed a schema grammar, we should make sure we know what we've done.
-				fGrammarIsSchemaGrammar = true;
-				fGrammarIsDTDGrammar = false;
+                // Since we've just constructed a schema grammar, we should make sure we know what we've done.
+                fGrammarIsSchemaGrammar = true;
+                fGrammarIsDTDGrammar = false;
 
-                    //At this point we should expand the registry table.
-
-
-
-         	   // pass parser's entity resolver (local Resolver), which also has reference to user's 
-         	   // entity resolver, and also can fall-back to entityhandler's expandSystemId()
+                //At this point we should expand the registry table.
+                // pass parser's entity resolver (local Resolver), which also has reference to user's 
+                // entity resolver, and also can fall-back to entityhandler's expandSystemId()
                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER);
                fGrammarResolver.putGrammar(root.getAttribute("targetNamespace"), grammar);
                fGrammar = (SchemaGrammar)grammar;
@@ -2751,7 +2755,7 @@ public final class XMLValidator
             e.printStackTrace(System.err);
          }
       }
-
+     
    }
 
    private void resolveSchemaGrammar(String uri) throws Exception{
@@ -4062,7 +4066,7 @@ public final class XMLValidator
                         if (!fNil) { 
                             fCurrentDV.validate(value, null); 
                         }
-                        else if ( fNil && !value.equals("") ) {
+                        else if ( fNil && value.length() != 0 ) {
                             reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                                       XMLMessages.SCHEMA_GENERIC_ERROR,
                                                       "An element <" +fStringPool.toString(elementType)+"> with attribute xsi:nil=\"true\" must be empty");
@@ -4071,7 +4075,7 @@ public final class XMLValidator
                     else {
                         String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
                         if ( (((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED) != 0 ) {
-                            if ( value.equals("") ) {   // use fixed as default value
+                            if ( value.length() == 0 ) {   // use fixed as default value
                                 // Note:  this is inefficient where the DOMParser
                                 // is concerned.  However, if we used the characters(int)
                                 // callback instead, this would be just as inefficient for SAX.
@@ -4088,7 +4092,7 @@ public final class XMLValidator
                             }
                         }
                         else {
-                            if ( value.equals("") ) {   // use default value
+                            if ( value.length() == 0 ) {   // use default value
                                 fDocumentHandler.characters(currentElementDefault.toCharArray(), 0, currentElementDefault.length());
                             }
                             

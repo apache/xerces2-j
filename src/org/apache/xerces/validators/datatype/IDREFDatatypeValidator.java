@@ -99,7 +99,7 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
             return;
 
         // make a string validator for NCName
-        if ( fgStrValidator == null) {
+        if ( fgStrValidator == null ) {
             Hashtable strFacets = new Hashtable();
             strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
             strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
@@ -107,14 +107,15 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
         }
 
         Vector enum = null;
-        if (facets != null)
+        if ( facets != null )
             enum = (Vector)facets.get(SchemaSymbols.ELT_ENUMERATION);
-        if (enum != null) {
+        if ( enum != null ) {
             int i = 0;
             try {
-                for ( ; i < enum.size(); i++)
+                for ( ; i < enum.size(); i++ )
                     fgStrValidator.validate((String)enum.elementAt(i), null);
-            } catch ( Exception idve ){
+            }
+            catch ( Exception idve ) {
                 throw new InvalidDatatypeFacetException( "Value of enumeration = '" + enum.elementAt(i) +
                                                          "' must be from the value space of base.");
             }
@@ -124,7 +125,7 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
     /**
      * return value of whiteSpace facet
      */
-    public short getWSFacet(){
+    public short getWSFacet() {
         return fgStrValidator.getWSFacet();
     }
 
@@ -146,32 +147,35 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
 
-        if (state!= null){
+        if ( state!= null ) {
             StateMessageDatatype message = (StateMessageDatatype) state;
-            if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
-                if ( this.fTableOfId != null ){
+            if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ) {
+                if ( this.fTableOfId != null ) {
                     fTableOfId.clear(); //This is pass to us through the state object
                     fTableOfId = null;
                 }
-                if ( this.fTableIDRefs != null ){
+                if ( this.fTableIDRefs != null ) {
                     fTableIDRefs.clear();
                     fTableIDRefs = null;
                 }
-            } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
+            }
+            else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ) {
                 // Validate that all keyRef is a keyIds
                 this.checkIdRefs();
-            } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
+            }
+            else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
                 this.fTableOfId = (Hashtable) message.getDatatypeObject();
             }
-                return null;
-            }
+            return null;
+        }
 
         // use StringDatatypeValidator to validate content against facets
         super.validate(content, state);
         // check if content is a valid NCName
         try {
             fgStrValidator.validate(content, null);
-        } catch (InvalidDatatypeValueException idve) {
+        }
+        catch ( InvalidDatatypeValueException idve ) {
             InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "IDREF is not valid: " + content );
             error.setMinorCode(XMLMessages.MSG_IDREF_INVALID);
             error.setMajorCode(XMLMessages.VC_IDREF);
@@ -192,7 +196,7 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
      * @param o2
      * @return
      */
-    public int compare( String content1, String content2){
+    public int compare( String content1, String content2) {
         return -1;
     }
 
@@ -205,23 +209,25 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
 
     /** addId. */
     private void addIdRef(String content, Object state) {
-        if ( this.fTableOfId != null &&  this.fTableOfId.containsKey( content ) ){
+        if ( this.fTableOfId != null &&  this.fTableOfId.containsKey( content ) ) {
             return;
         }
 
-        if ( this.fTableIDRefs == null ){
+        if ( this.fTableIDRefs == null ) {
             this.fTableIDRefs = new Hashtable();
-        } else if ( fTableIDRefs.containsKey( content ) ){
+        }
+        else if ( fTableIDRefs.containsKey( content ) ) {
             return;
         }
 
-        if ( this.fNullValue == null ){
+        if ( this.fNullValue == null ) {
             fNullValue = new Object();
         }
 
         try {
             this.fTableIDRefs.put( content, fNullValue );
-        } catch( OutOfMemoryError ex ){
+        }
+        catch ( OutOfMemoryError ex ) {
             System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableIDRefs.size() + " Elements" );
             ex.printStackTrace();
         }
@@ -230,14 +236,14 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
 
     private void checkIdRefs() throws InvalidDatatypeValueException {
 
-        if ( this.fTableIDRefs == null)
+        if ( this.fTableIDRefs == null )
             return;
 
         Enumeration en = this.fTableIDRefs.keys();
 
-        while (en.hasMoreElements()) {
+        while ( en.hasMoreElements() ) {
             String key = (String)en.nextElement();
-            if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key)) {
+            if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key) ) {
 
                 InvalidDatatypeValueException error = new InvalidDatatypeValueException( key );
                 error.setMinorCode(XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED);
@@ -247,4 +253,16 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
         }
 
     } // checkIdRefs()
+
+    protected void resetIDRefs() {
+
+        if ( this.fTableOfId != null ) {
+            fTableOfId.clear(); 
+            fTableOfId = null;
+        }
+        if ( this.fTableIDRefs != null ) {
+            fTableIDRefs.clear();
+            fTableIDRefs = null;
+        }
+    }
 }
