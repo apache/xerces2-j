@@ -81,7 +81,8 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version  $Id$
  */
 public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator     = null;
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator fBaseValidator     = null;
 
     private int       fLength          = 0;
     private int       fMaxLength       = Integer.MAX_VALUE;

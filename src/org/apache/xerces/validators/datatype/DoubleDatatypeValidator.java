@@ -74,7 +74,8 @@ import org.apache.xerces.utils.regex.RegularExpression;
 
 public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
     private Locale            fLocale           = null;
-    private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
     private double[]          fEnumDoubles      = null;
     private String            fPattern          = null;
     private double            fMaxInclusive     = Double.POSITIVE_INFINITY;

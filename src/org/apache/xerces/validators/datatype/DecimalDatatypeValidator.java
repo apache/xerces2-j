@@ -80,7 +80,8 @@ import org.apache.xerces.utils.regex.RegularExpression;
 
 public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
     private Locale            fLocale           = null;
-    private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
     private BigDecimal[]      fEnumDecimal      = null;
     private String            fPattern          = null;
     private BigDecimal        fMaxInclusive     = null;

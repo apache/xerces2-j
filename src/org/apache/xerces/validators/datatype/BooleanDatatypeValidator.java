@@ -76,7 +76,8 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     private Locale                  fLocale          = null;
-    private DatatypeValidator       fBaseValidator   = null; //Basetype null means we are a native type
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator       fBaseValidator   = null; //Basetype null means we are a native type
     private String                  fPattern         = null;
     private int                     fFacetsDefined   = 0;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();

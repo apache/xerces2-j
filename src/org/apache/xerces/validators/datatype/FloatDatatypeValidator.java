@@ -77,7 +77,8 @@ import java.util.NoSuchElementException;
 
 public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     private Locale    fLocale               = null;
-    private DatatypeValidator    fBaseValidator = null; // null means a native datatype
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator    fBaseValidator = null; // null means a native datatype
     private float[]   fEnumFloats           = null;
     private String    fPattern              = null;
     private float     fMaxInclusive         = Float.POSITIVE_INFINITY ;

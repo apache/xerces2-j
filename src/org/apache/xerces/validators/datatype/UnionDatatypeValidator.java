@@ -79,7 +79,8 @@ import org.apache.xerces.utils.regex.RegularExpression;
 public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     private Locale     fLocale          = null;
     private Vector  fBaseValidators   = null;             // union collection of validators
-    private DatatypeValidator  fBaseValidator   = null;   // Native datatypes have null
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator  fBaseValidator   = null;   // Native datatypes have null
     private int fValidatorsSize = 0;
     private String     fPattern          = null;
     private Vector     fEnumeration      = null;

@@ -188,15 +188,16 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_URI =  "uri";
     public static final String ATTVAL_URIREFERENCE =  "uriReference";
     public static final String ATTVAL_SUBSTITUTIONGROUP = "substitutionGroup";
+    public static final String ATTVAL_SUBSTITUTION = "substitution";
 
 
     public static final int                     EMPTY_SET = 0;          
     public static final int                     EXTENSION = 1;
     public static final int                     RESTRICTION = 2;
-    public static final int                     REPRODUCTION = 4;
+    public static final int                     UNION = 4;
     public static final int                     LIST = 8;
     public static final int                     ENUMERATION = 16;
-    public static final int                     SUBSTITUTIONGROUP = 32;
+    public static final int                     SUBSTITUTION = 32;
 
     public static final int                     CHOICE = 0;                     // group orders
     public static final int                     SEQUENCE = 1;           // group orders

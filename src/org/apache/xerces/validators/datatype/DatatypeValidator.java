@@ -121,6 +121,8 @@ public interface DatatypeValidator {
      */
     public Hashtable getFacets();
 
+    // returns the base datatypeValidator of the current validator.  
+    public DatatypeValidator getBaseValidator();
 
     /**
      * Compares content in the Domain value vs. lexical

@@ -75,7 +75,8 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  * @version $Id$
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator             fBaseValidator = null;
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator             fBaseValidator = null;
     private Object                        fNullValue = null;
     private DatatypeMessageProvider       fMessageProvider = new DatatypeMessageProvider();
     private Hashtable                     fTableOfId;

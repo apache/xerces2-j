@@ -1,4 +1,4 @@
-/*
+/* 
  * The Apache Software License, Version 1.1
  *
  *
@@ -180,6 +180,9 @@ public class TraverseSchema implements
     // qualified group names are keys and their contentSpecIndexes are values.  
     private Hashtable fGroupNameRegistry = new Hashtable();
 
+    // stores "final" values of simpleTypes--no clean way to integrate this into the existing datatype validation structure...
+    private Hashtable fSimpleTypeFinalRegistry = new Hashtable();
+
     // stores <notation> decl
     private Hashtable fNotationRegistry = new Hashtable();
 
@@ -198,6 +201,8 @@ public class TraverseSchema implements
 
     private boolean fElementDefaultQualified = false;
     private boolean fAttributeDefaultQualified = false;
+    private int fBlockDefault = 0;
+    private int fFinalDefault = 0;
 
     private int fTargetNSURI;
     private String fTargetNSURIString = "";
@@ -407,6 +412,10 @@ public class TraverseSchema implements
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
         fAttributeDefaultQualified = 
             root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+        fBlockDefault = 
+            parseBlockSet(root.getAttribute(SchemaSymbols.ATT_BLOCKDEFAULT));
+        fFinalDefault = 
+            parseFinalSet(root.getAttribute(SchemaSymbols.ATT_FINALDEFAULT));
         
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
@@ -679,6 +688,7 @@ public class TraverseSchema implements
                 // the counters in the Schema Grammar, 
                 if (fSchemaInfoListRoot == null) {
                     fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                        fBlockDefault, fFinalDefault,
                         fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, null, null);
                     fCurrentSchemaInfo = fSchemaInfoListRoot;
                 }
@@ -687,6 +697,7 @@ public class TraverseSchema implements
                 traverseIncludedSchemaHeader(root);
                 // and now we'd better save this stuff!  
                 fCurrentSchemaInfo = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                        fBlockDefault, fFinalDefault, 
                         fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, fCurrentSchemaInfo.getNext(), fCurrentSchemaInfo);
                 (fCurrentSchemaInfo.getPrev()).setNext(fCurrentSchemaInfo);
                 traverseIncludedSchema(root);
@@ -732,6 +743,10 @@ public class TraverseSchema implements
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
         fAttributeDefaultQualified = 
             root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+        fBlockDefault = 
+            parseBlockSet(root.getAttribute(SchemaSymbols.ATT_BLOCKDEFAULT));
+        fFinalDefault = 
+            parseFinalSet(root.getAttribute(SchemaSymbols.ATT_FINALDEFAULT));
         
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
@@ -907,6 +922,7 @@ public class TraverseSchema implements
             traverseIncludedSchemaHeader(root);
             // and then save them...
             store.setNext(new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                    fBlockDefault, fFinalDefault, 
                     fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, null, store));
             (store.getNext()).setPrev(store);
             fCurrentSchemaInfo = store.getNext();
@@ -928,6 +944,7 @@ public class TraverseSchema implements
         // done this already one way or another.  
         if (fSchemaInfoListRoot == null) {
             fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                    fBlockDefault, fFinalDefault, 
                     fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, null, null);
             openRedefinedSchema(redefineDecl, fSchemaInfoListRoot);
             if(!fRedefineSucceeded)
@@ -1401,39 +1418,53 @@ public class TraverseSchema implements
    
    //@param: elm - top element
    //@param: baseTypeStr - type (base/itemType/memberTypes)
-   //return DatatypeValidator available for the baseTypeStr.
+   //@param: baseRefContext:  whether the caller is using this type as a base for restriction, union or list
+   //return DatatypeValidator available for the baseTypeStr, null if not found or disallowed.
+   // also throws an error if the base type won't allow itself to be used in this context.
    //REVISIT: this function should be used in some|all traverse* methods!
-   private DatatypeValidator findDTValidator (Element elm, String baseTypeStr )  throws Exception{
-            int baseType      = fStringPool.addSymbol( baseTypeStr );
-            String prefix = "";
-            DatatypeValidator baseValidator = null;
-            String localpart = baseTypeStr;
-            int colonptr = baseTypeStr.indexOf(":");
-            if ( colonptr > 0) {
-                prefix = baseTypeStr.substring(0,colonptr);
-                localpart = baseTypeStr.substring(colonptr+1);
+   private DatatypeValidator findDTValidator (Element elm, String baseTypeStr, int baseRefContext )  throws Exception{
+        int baseType      = fStringPool.addSymbol( baseTypeStr );
+        String prefix = "";
+        DatatypeValidator baseValidator = null;
+        String localpart = baseTypeStr;
+        int colonptr = baseTypeStr.indexOf(":");
+        if ( colonptr > 0) {
+            prefix = baseTypeStr.substring(0,colonptr);
+            localpart = baseTypeStr.substring(colonptr+1);
+        }
+        String uri = resolvePrefixToURI(prefix);
+        baseValidator = getDatatypeValidator(uri, localpart);
+        if (baseValidator == null) {
+            Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+            if (baseTypeNode != null) {
+                traverseSimpleTypeDecl( baseTypeNode ); 
+                
+                baseValidator = getDatatypeValidator(uri, localpart);
             }
-            String uri = resolvePrefixToURI(prefix);
-            baseValidator = getDatatypeValidator(uri, localpart);
-            if (baseValidator == null) {
-                Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
-                if (baseTypeNode != null) {
-                    traverseSimpleTypeDecl( baseTypeNode ); 
-                    
-                    baseValidator = getDatatypeValidator(uri, localpart);
-                }
+        }
+        Integer finalValue;
+        if ( baseValidator == null ) {
+            reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                              new Object [] { elm.getAttribute( SchemaSymbols.ATT_BASE ),
+                                  elm.getAttribute(SchemaSymbols.ATT_NAME)});
+        } else {
+            finalValue = (uri.equals("")?
+                    ((Integer)fSimpleTypeFinalRegistry.get(localpart)):
+                    ((Integer)fSimpleTypeFinalRegistry.get(uri + "," +localpart)));
+            if((finalValue != null) &&
+                    ((finalValue.intValue() & baseRefContext) != 0)) {
+                //REVISIT:  localize
+                reportGenericSchemaError("the base type " + baseTypeStr + " does not allow itself to be used as the base for a restriction and/or as a type in a list and/or union");
+                return null;
             }
-            if ( baseValidator == null ) {
-                reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                                  new Object [] { elm.getAttribute( SchemaSymbols.ATT_BASE ),
-                                      elm.getAttribute(SchemaSymbols.ATT_NAME)});
-            }
+        }
        return baseValidator;
     }
 
    /**
      * Traverse SimpleType declaration:
      * <simpleType
+     *         final = #all | list of (restriction, union or list)
      *         id = ID 
      *         name = NCName>
      *         Content: (annotation? , ((list | restriction | union)))
@@ -1448,17 +1479,23 @@ public class TraverseSchema implements
         //REVISIT: remove all DEBUG_UNION.
         
         String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
-        
         String qualifiedName = nameProperty;
         if (fTargetNSURIString.length () != 0) {
             qualifiedName = fTargetNSURIString+","+nameProperty;
         }
+
         //check if we have already traversed the same simpleType decl
         if (fDatatypeRegistry.getDatatypeValidator(qualifiedName)!=null) {
             return fStringPool.addSymbol(qualifiedName);
         }
         
+        int finalProperty = parseFinalSet(simpleTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL));
+        // REVISIT:  is "extension" allowed???
         
+        // if we have a nonzero final , store it in the hash...
+        if(finalProperty != 0) 
+            fSimpleTypeFinalRegistry.put(qualifiedName, new Integer(finalProperty));
+
         boolean list = false;
         boolean union = false;
         boolean restriction = false;
@@ -1569,11 +1606,16 @@ public class TraverseSchema implements
             if (union) {
                 numOfTypes= size;
             }
+            // this loop is also where we need to find out whether the type being used as
+            // a base (or itemType or whatever) allows such things.
+            int baseRefContext = (restriction? SchemaSymbols.RESTRICTION:0);
+            baseRefContext = baseRefContext | (union? SchemaSymbols.UNION:0);
+            baseRefContext = baseRefContext | (list ? SchemaSymbols.LIST:0);
             for (int i=0; i<numOfTypes; i++) {  //find all validators
                 if (union) {
                     baseTypeQNameProperty = unionMembers.nextToken();
                 }
-                baseValidator = findDTValidator ( simpleTypeDecl, baseTypeQNameProperty);
+                baseValidator = findDTValidator ( simpleTypeDecl, baseTypeQNameProperty, baseRefContext);
                 if ( baseValidator == null) {
                     return (-1);
                 }
@@ -2181,6 +2223,22 @@ public class TraverseSchema implements
        
               }
           }
+          typeInfo.blockSet = parseBlockSet(blockSet); 
+          // make sure block's value was absent, #all or in {extension, restriction}
+          if( !blockSet.equals("") &&
+                (!blockSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
+                (((typeInfo.blockSet & SchemaSymbols.RESTRICTION) == 0) && 
+                ((typeInfo.blockSet & SchemaSymbols.EXTENSION) == 0))))  
+            throw new ComplexTypeRecoverableError("The values of the 'block' attribute of a complexType must be either #all or a list of 'restriction' and 'extension'; " + blockSet + " was found");
+
+          typeInfo.finalSet = parseFinalSet(finalSet); 
+          // make sure final's value was absent, #all or in {extension, restriction}
+          if( !finalSet.equals("") &&
+                (!finalSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
+                (((typeInfo.finalSet & SchemaSymbols.RESTRICTION) == 0) && 
+                ((typeInfo.finalSet & SchemaSymbols.EXTENSION) == 0))))  
+            throw new ComplexTypeRecoverableError("The values of the 'final' attribute of a complexType must be either #all or a list of 'restriction' and 'extension'; " + finalSet + " was found");
+
         }
         catch (ComplexTypeRecoverableError e) {
            String message = e.getMessage();
@@ -2192,8 +2250,6 @@ public class TraverseSchema implements
         // Finish the setup of the typeInfo and register the type
         // ------------------------------------------------------------------
         typeInfo.scopeDefined = scopeDefined; 
-        typeInfo.blockSet = parseBlockSet(blockSet); 
-        typeInfo.finalSet = parseFinalSet(finalSet); 
         typeInfo.isAbstract = isAbstract.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false ;
         typeName = fTargetNSURIString + "," + typeName;
         typeInfo.typeName = new String(typeName);
@@ -2937,11 +2993,19 @@ public class TraverseSchema implements
            int baseContentSpecHandle = typeInfo.baseComplexTypeInfo.contentSpecHandle;
 
            if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION) {
+              // check to see if the baseType permits derivation by restriction
+              if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.RESTRICTION) != 0)
+                    throw new ComplexTypeRecoverableError("Derivation by extension is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
+               
               //
               //REVISIT: !!!really hairy stuff to check the particle derivation OK in 5.10
               //checkParticleDerivationOK();
            }
            else {
+               // check to see if the baseType permits derivation by extension
+               if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.EXTENSION) != 0)
+                    throw new ComplexTypeRecoverableError("Derivation by extension is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
+               
                //
                // Compose the final content model by concatenating the base and the 
                // current in sequence
@@ -4029,8 +4093,21 @@ public class TraverseSchema implements
         }
         
         // parse out 'block', 'final', 'nullable', 'abstract'
-        int blockSet = parseBlockSet(elementDecl.getAttribute(SchemaSymbols.ATT_BLOCK));
-        int finalSet = parseFinalSet(elementDecl.getAttribute(SchemaSymbols.ATT_FINAL));
+        String blockSetStr = elementDecl.getAttribute(SchemaSymbols.ATT_BLOCK);
+        int blockSet = parseBlockSet(blockSetStr);
+        if( !blockSetStr.equals("") &&
+                (!blockSetStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
+                (((blockSet & SchemaSymbols.RESTRICTION) == 0) && 
+                (((blockSet & SchemaSymbols.EXTENSION) == 0) &&
+                ((blockSet & SchemaSymbols.SUBSTITUTION) == 0)))))  
+            reportGenericSchemaError("The values of the 'block' attribute of an element must be either #all or a list of 'substitution', 'restriction' and 'extension'; " + blockSetStr + " was found");
+        String finalSetStr = elementDecl.getAttribute(SchemaSymbols.ATT_FINAL);
+        int finalSet = parseFinalSet(finalSetStr);
+        if( !finalSetStr.equals("") &&
+                (!finalSetStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
+                (((finalSet & SchemaSymbols.RESTRICTION) == 0) && 
+                ((finalSet & SchemaSymbols.EXTENSION) == 0))))  
+            reportGenericSchemaError("The values of the 'final' attribute of an element must be either #all or a list of 'restriction' and 'extension'; " + finalSetStr + " was found");
         boolean isNullable = elementDecl.getAttribute
             (SchemaSymbols.ATT_NULLABLE).equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
         boolean isAbstract = elementDecl.getAttribute
@@ -4144,7 +4221,7 @@ public class TraverseSchema implements
                     if ( substitutionGroupElementDeclIndex == -1) {
                         noErrorSoFar = false;
                         // REVISIT: Localize
-                        reportGenericSchemaError("substitutionGroup affiliation element "
+                        reportGenericSchemaError("unable to locate substitutionGroup affiliation element "
                                                   +substitutionGroup
                                                   +" in element declaration " 
                                                   +name);  
@@ -4298,9 +4375,6 @@ public class TraverseSchema implements
         }
         // type specified as an attribute and no child is type decl.
         else if (!type.equals("")) { 
-            if (substitutionGroupElementDecl != null) {
-                checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl); 
-            }
             String prefix = "";
             String localpart = type;
             int colonptr = type.indexOf(":");
@@ -4380,20 +4454,18 @@ public class TraverseSchema implements
             }
    
         } 
-        else if (haveAnonType){
-            if (substitutionGroupElementDecl != null ) {
-                checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl); 
-            }
-
+        // now we need to make sure that our substitution (if any)
+        // is valid, now that we have all the requisite type-related info.
+        if(substitutionGroup.length() > 0) {
+            checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV); 
         }
-        // this element is ur-type, check its substitutionGroup afficliation.
-        else {
-            // if there is substitutionGroup affiliation and not type defition found for this element, 
-            // then grab substitutionGroup affiliation's type and give it to this element
-            if ( typeInfo == null && dv == null ) {
-				typeInfo = substitutionGroupEltTypeInfo;
-				dv = substitutionGroupEltDV;
-			}
+        
+        // this element is ur-type, check its substitutionGroup affiliation.
+        // if there is substitutionGroup affiliation and not type definition found for this element, 
+        // then grab substitutionGroup affiliation's type and give it to this element
+        if ( noErrorSoFar && typeInfo == null && dv == null ) {
+			typeInfo = substitutionGroupEltTypeInfo;
+			dv = substitutionGroupEltDV;
         }
 
         if (typeInfo == null && dv==null) {
@@ -4882,8 +4954,91 @@ public class TraverseSchema implements
         return prefix;
     }
     
-    private void checkSubstitutionGroupOK(Element elementDecl, Element substitutionGroupElementDecl){
-        //TO DO!!
+    private void checkSubstitutionGroupOK(Element elementDecl, Element substitutionGroupElementDecl, 
+            boolean noErrorSoFar, int substitutionGroupElementDeclIndex, ComplexTypeInfo typeInfo, 
+            ComplexTypeInfo substitutionGroupEltTypeInfo, DatatypeValidator dv, 
+            DatatypeValidator substitutionGroupEltDV)  throws Exception {
+        // here we must do two things:
+        // 1.  Make sure there actually *is* a relation between the types of
+        // the element being nominated and the element doing the nominating;
+        // (see PR 3.3.6 point #3 in the first tableau, for instance; this
+        // and the corresponding tableaux from 3.4.6 and 3.14.6 rule out the nominated
+        // element having an anonymous type declaration.
+        // 2.  Make sure the nominated element allows itself to be nominated by
+        // an element with the given type-relation.
+        // Note:  we assume that (complex|simple)Type processing checks
+        // whether the type in question allows itself to
+        // be modified as this element desires.  
+
+        // Check for type relationship;
+        // that is, make sure that the type we're deriving has some relatoinship
+        // to substitutionGroupElt's type.
+        if (typeInfo != null) {
+            int derivationMethod = typeInfo.derivedBy;
+            if(typeInfo.baseComplexTypeInfo == null) {
+                if (typeInfo.baseDataTypeValidator != null) { // take care of complexType based on simpleType case...
+                    DatatypeValidator dTemp = typeInfo.baseDataTypeValidator; 
+                    for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
+                        // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+                        if(dTemp == substitutionGroupEltDV) break;
+                    }
+                    if (dTemp == null) {
+                        // REVISIT:  localize
+                        reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+                        noErrorSoFar = false;
+                    } else { // now let's see if substitutionGroup element allows this:
+                        if((derivationMethod & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                            noErrorSoFar = false;
+                            // REVISIT:  localize
+                            reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
+                                + " cannot be part of the substitution group headed by " 
+                                + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+                        } 
+                    }
+                } else {
+                    // REVISIT:  localize
+                    reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " which is part of a substitution must have a type which derives from the type of the element at the head of the substitution group");
+                    noErrorSoFar = false;
+                }
+            } else {
+                String eltBaseName = typeInfo.baseComplexTypeInfo.typeName;
+                ComplexTypeInfo subTypeInfo = substitutionGroupEltTypeInfo;
+                for (; subTypeInfo != null && !subTypeInfo.typeName.equals(eltBaseName); subTypeInfo = subTypeInfo.baseComplexTypeInfo);
+                if (subTypeInfo == null) { // then this type isn't in the chain...
+                    // REVISIT:  localize
+                    reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type whose base is " + eltBaseName + "; this basetype does not derive from the type of the element at the head of the substitution group");
+                    noErrorSoFar = false;
+                } else { // type is fine; does substitutionElement allow this?
+                    if((derivationMethod & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                        noErrorSoFar = false;
+                        // REVISIT:  localize
+                        reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
+                            + " cannot be part of the substitution group headed by " 
+                            + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+                    } 
+                }
+            } 
+        } else if (dv != null) { // do simpleType case...
+            // first, check for type relation.
+            DatatypeValidator dTemp = dv; 
+            for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
+                // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+                if(dTemp == substitutionGroupEltDV) break;
+            }
+            if (dTemp == null) {
+                // REVISIT:  localize
+                reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+                noErrorSoFar = false;
+            } else { // now let's see if substitutionGroup element allows this:
+                if((SchemaSymbols.RESTRICTION & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                    noErrorSoFar = false;
+                    // REVISIT:  localize
+                    reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
+                        + " cannot be part of the substitution group headed by " 
+                        + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+                } 
+            } 
+        } 
     }
     
     // this originally-simple method is much -complicated by the fact that, when we're 
@@ -5737,12 +5892,11 @@ public class TraverseSchema implements
     private int parseSimpleFinal (String finalString) throws Exception
     {
             if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
-                    return SchemaSymbols.ENUMERATION+SchemaSymbols.RESTRICTION+SchemaSymbols.LIST+SchemaSymbols.REPRODUCTION;
+                    return SchemaSymbols.ENUMERATION+SchemaSymbols.RESTRICTION+SchemaSymbols.LIST;
             } else {
                     int enumerate = 0;
                     int restrict = 0;
                     int list = 0;
-                    int reproduce = 0;
 
                     StringTokenizer t = new StringTokenizer (finalString, " ");
                     while (t.hasMoreTokens()) {
@@ -5771,7 +5925,7 @@ public class TraverseSchema implements
                             }
                     }
 
-                    return enumerate+restrict+list+reproduce;
+                    return enumerate+list;
             }
     }
 
@@ -5794,12 +5948,11 @@ public class TraverseSchema implements
 
     private int parseDerivationSet (String finalString)  throws Exception
     {
-            if ( finalString.equals ("#all") ) {
-                    return SchemaSymbols.EXTENSION+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
+            if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
+                    return SchemaSymbols.EXTENSION+SchemaSymbols.RESTRICTION;
             } else {
                     int extend = 0;
                     int restrict = 0;
-                    int reproduce = 0;
 
                     StringTokenizer t = new StringTokenizer (finalString, " ");
                     while (t.hasMoreTokens()) {
@@ -5825,101 +5978,112 @@ public class TraverseSchema implements
                             }
                     }
 
-                    return extend+restrict+reproduce;
+                    return extend+restrict;
             }
     }
 
-    private int parseBlockSet (String finalString)  throws Exception
+    private int parseBlockSet (String blockString)  throws Exception
     {
-            if ( finalString.equals ("#all") ) {
-                    return SchemaSymbols.SUBSTITUTIONGROUP+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
+            if ( blockString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
+                    return SchemaSymbols.SUBSTITUTION+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.UNION;
             } else {
                     int extend = 0;
                     int restrict = 0;
-                    int reproduce = 0;
+                    int substitute = 0;
+                    int list = 0;
+                    int union = 0;
 
-                    StringTokenizer t = new StringTokenizer (finalString, " ");
+                    StringTokenizer t = new StringTokenizer (blockString, " ");
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (SchemaSymbols.ATTVAL_SUBSTITUTIONGROUP) ) {
-                                    if ( extend == 0 ) {
-                                            extend = SchemaSymbols.SUBSTITUTIONGROUP;
+                            if ( token.equals (SchemaSymbols.ATTVAL_SUBSTITUTION) ) {
+                                    if ( substitute == 0 ) {
+                                            substitute = SchemaSymbols.SUBSTITUTION;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "'substitutionGroup' already in set" );
+                                            reportGenericSchemaError ( "The value 'substitution' already in the list" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.EXTENSION;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "extension already in set" );
+                                            reportGenericSchemaError ( "The value 'extension' is already in the list" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ELT_LIST) ) {
-                                    if ( extend == 0 ) {
-                                            extend = SchemaSymbols.LIST;
+                                    if ( list == 0 ) {
+                                            list = SchemaSymbols.LIST;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "'list' already in set" );
+                                            reportGenericSchemaError ( "The value 'list' is already present in the list" );
+                                    }
+                            } else if ( token.equals (SchemaSymbols.ELT_UNION) ) {
+                                    if ( union == 0 ) {
+                                            union = SchemaSymbols.UNION;
+                                    } else {
+                                        // REVISIT: Localize
+                                            reportGenericSchemaError ( "The value 'union' is already present in the list" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = SchemaSymbols.RESTRICTION;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "restriction already in set" );
+                                            reportGenericSchemaError ( "The value 'restriction' is already in the list" );
                                     }
                             } else {
                                 // REVISIT: Localize
-                                    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
+                                    reportGenericSchemaError ( "Invalid block value (" + blockString + ")" );
                             }
                     }
 
-                    return extend+restrict+reproduce;
+                    int defaultVal = extend+restrict+list+union+substitute;
+                    return (defaultVal == 0 ? fBlockDefault : defaultVal);
             }
     }
 
     private int parseFinalSet (String finalString)  throws Exception
     {
-            if ( finalString.equals ("#all") ) {
-                    return SchemaSymbols.SUBSTITUTIONGROUP+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
+            if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
+                    return SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.UNION;
             } else {
                     int extend = 0;
                     int restrict = 0;
-                    int reproduce = 0;
+                    int list = 0;
+                    int union = 0;
 
                     StringTokenizer t = new StringTokenizer (finalString, " ");
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (SchemaSymbols.ATTVAL_SUBSTITUTIONGROUP) ) {
-                                    if ( extend == 0 ) {
-                                            extend = SchemaSymbols.SUBSTITUTIONGROUP;
+                            if ( token.equals (SchemaSymbols.ELT_UNION) ) {
+                                    if ( union == 0 ) {
+                                            union = SchemaSymbols.UNION;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "'substitutionGroup' already in set" );
+                                            reportGenericSchemaError ( "The value 'union' is already in the list" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.EXTENSION;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "extension already in set" );
+                                            reportGenericSchemaError ( "The value 'extension' is already in the list" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ELT_LIST) ) {
-                                    if ( extend == 0 ) {
-                                            extend = SchemaSymbols.LIST;
+                                    if ( list == 0 ) {
+                                            list = SchemaSymbols.LIST;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "'list' already in set" );
+                                            reportGenericSchemaError ( "The value 'list' is already in the list" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = SchemaSymbols.RESTRICTION;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "restriction already in set" );
+                                            reportGenericSchemaError ( "The value 'restriction' is already in the list" );
                                     }
                             } else {
                                 // REVISIT: Localize
@@ -5927,7 +6091,8 @@ public class TraverseSchema implements
                             }
                     }
 
-                    return extend+restrict+reproduce;
+                    int defaultVal = extend+restrict+list+union;
+                    return (defaultVal == 0 ? fFinalDefault : defaultVal);
             }
     }
 
@@ -6110,17 +6275,22 @@ public class TraverseSchema implements
     // It's also a handy way of saving schema info when importing/including; saves some code.
     public class SchemaInfo {
         private Element saveRoot;
+        private SchemaInfo nextRoot;
+        private SchemaInfo prevRoot;
+        private String savedSchemaURL = fCurrentSchemaURL;
         private boolean saveElementDefaultQualified = fElementDefaultQualified;
         private boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
         private int saveScope = fCurrentScope;
-        private String savedSchemaURL = fCurrentSchemaURL;
-        private SchemaInfo nextRoot;
-        private SchemaInfo prevRoot;
+        private int saveBlockDefault = fBlockDefault;
+        private int saveFinalDefault = fFinalDefault;
 
         public SchemaInfo ( boolean saveElementDefaultQualified, boolean saveAttributeDefaultQualified,
+                int saveBlockDefault, int saveFinalDefault, 
                 int saveScope, String savedSchemaURL, Element saveRoot, SchemaInfo nextRoot, SchemaInfo prevRoot) {
             this.saveElementDefaultQualified = saveElementDefaultQualified;
             this.saveAttributeDefaultQualified = saveAttributeDefaultQualified;
+            this.saveBlockDefault = saveBlockDefault;
+            this.saveFinalDefault = saveFinalDefault;
             this.saveScope  = saveScope ;
             this.savedSchemaURL = savedSchemaURL;
             this.saveRoot  = saveRoot ;
@@ -6147,6 +6317,8 @@ public class TraverseSchema implements
             fCurrentScope = saveScope;
             fElementDefaultQualified = saveElementDefaultQualified;
             fAttributeDefaultQualified = saveAttributeDefaultQualified;
+            fBlockDefault = saveBlockDefault;
+            fFinalDefault = saveFinalDefault;
             fSchemaRootElement = saveRoot; 
         }
     } // class SchemaInfo

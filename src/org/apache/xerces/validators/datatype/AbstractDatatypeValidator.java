@@ -72,7 +72,7 @@ import org.apache.xerces.validators.datatype.DatatypeValidator;
 public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
 
     private Hashtable fFacets; // Hashtable of Facets Strings.
-
+    protected DatatypeValidator fBaseValidator = null; // formerly private in every class!
 
      /**
      * Checks that "content" string is valid
@@ -113,6 +113,12 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
     public short getWSFacet (){
         return DatatypeValidator.COLLAPSE;
     }
+
+    // returns the base datatypeValidator of the current validator.
+    public DatatypeValidator getBaseValidator() {
+        return fBaseValidator;
+    }
+
     /**
      * Compares content in the Domain value vs. lexical
      * value.

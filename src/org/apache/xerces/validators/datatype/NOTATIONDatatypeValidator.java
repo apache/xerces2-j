@@ -76,7 +76,8 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
 public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
     // REVISIT: add facets allowed for NOTATION.
     // wait for schema to clarify why we need so many facets on NOTATION..
-    private DatatypeValidator fBaseValidator = null;
+    // moved to AbstractDatatypbeValidator
+    // private DatatypeValidator fBaseValidator = null;
     private Vector     fEnumeration      = new Vector();
     private int        fFacetsDefined    = 0;
     private int        fLength           = 0;

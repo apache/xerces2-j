@@ -77,7 +77,8 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 public class StringDatatypeValidator extends AbstractDatatypeValidator{
     private Locale     fLocale          = null;
-    DatatypeValidator  fBaseValidator   = null; // Native datatypes have null
+    // moved this member into the abstract class.
+    // DatatypeValidator  fBaseValidator   = null; // Native datatypes have null
 
     private int        fLength           = 0;
     private int        fMaxLength        = Integer.MAX_VALUE;

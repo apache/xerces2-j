@@ -83,7 +83,8 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
     private Locale    fLocale          = null;
-    private DatatypeValidator    fBaseValidator   = null;
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator    fBaseValidator   = null;
 
     private int       fLength          = 0;
     private int       fMaxLength       = Integer.MAX_VALUE;

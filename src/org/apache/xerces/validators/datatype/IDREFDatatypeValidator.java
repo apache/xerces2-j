@@ -78,7 +78,8 @@ import org.apache.xerces.utils.XMLMessages;
  * @version $Id$
  */
 public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator    = null;
+    // moved to AbstractDatatypeValidator
+    // private DatatypeValidator fBaseValidator    = null;
     private Hashtable              fTableOfId   = null; //This is pass to us through the state object
     private Hashtable              fTableIDRefs = null;
     private Object                   fNullValue = null;
