@@ -6096,11 +6096,12 @@ throws Exception {
                 String childAttName = child.getAttribute(SchemaSymbols.ATT_NAME);
                 if ( childAttName.length() > 0 ) {
                     Hashtable attDeclRegistry = aGrammar.getAttributeDeclRegistry();
-                    if (attDeclRegistry != null) {
-                        if (attDeclRegistry.get((Object)childAttName) != null ){
-                            addAttributeDeclFromAnotherSchema(childAttName, uriStr, typeInfo);
-                            return -1;
-                        }
+                    if ((attDeclRegistry != null) &&
+                            (attDeclRegistry.get((Object)childAttName) != null) ){
+                        addAttributeDeclFromAnotherSchema(childAttName, uriStr, typeInfo);
+                        return -1;
+                    } else {
+                        traverseAttributeDecl(child, typeInfo, false);
                     }
                 }
                 else
