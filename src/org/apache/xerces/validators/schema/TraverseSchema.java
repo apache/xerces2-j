@@ -948,7 +948,7 @@ public class TraverseSchema implements
         else if (varietyProperty.equals(SchemaSymbols.ELT_UNION)) { //traverse union
             union = true;
             baseTypeQNameProperty = content.getAttribute( SchemaSymbols.ATT_MEMBERTYPES);
-            if (baseTypeQNameProperty != "" ) {
+            if (!baseTypeQNameProperty.equals("")) {
                 unionMembers = new StringTokenizer( baseTypeQNameProperty );
                 size = unionMembers.countTokens();
             }
@@ -974,7 +974,7 @@ public class TraverseSchema implements
                 System.out.println("[unionMembers]= " +unionMembers.toString());
             }
         }
-        if ( baseTypeQNameProperty == "" ) { //must 'see' <simpleType>
+        if ( baseTypeQNameProperty.equals("") ) { //must 'see' <simpleType>
             //content = {annotation?,simpleType?...}
             content = XUtil.getFirstChildElement(content);
             //check content (annotation?, ...)
@@ -1000,6 +1000,11 @@ public class TraverseSchema implements
                                             content.getAttribute(SchemaSymbols.ATT_NAME) });
                       return -1;
               }
+            }
+            else {
+                 reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+                        new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                 return -1;
             }
         } //end - must see simpleType?
         else { //base was provided - get proper validator. 
@@ -1032,7 +1037,7 @@ public class TraverseSchema implements
         // move to next child 
         // restriction ->[simpleType]->[facets]  OR
         // restriction ->[facets]
-        if (baseTypeQNameProperty == "") {  //we already got the first kid of union/list/restriction
+        if (baseTypeQNameProperty.equals ("")) {  //we already got the first kid of union/list/restriction
             content = XUtil.getNextSiblingElement( content );
         }
         else { //we need to look at first kid of union/list/restriction
@@ -1106,7 +1111,7 @@ public class TraverseSchema implements
 
         
         else if (list && content!=null) { // report error - must not have any children!
-            if (baseTypeQNameProperty != "") {
+            if (!baseTypeQNameProperty.equals("")) {
                 content = checkContent(simpleTypeDecl, content, true);
             }
             else {
@@ -1116,7 +1121,7 @@ public class TraverseSchema implements
             }
         }
         else if (union && content!=null) { //report error - must not have any children!
-             if (baseTypeQNameProperty != "") {
+             if (!baseTypeQNameProperty.equals("")) {
                 content = checkContent(simpleTypeDecl, content, true);
             }
             else {
