@@ -95,6 +95,10 @@ public class XMLGrammarPreparser {
     // Constants
     //
 
+    // feature:  continue-after-fatal-error
+    private final static String CONTINUE_AFTER_FATAL_ERROR =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
+
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -323,6 +327,11 @@ public class XMLGrammarPreparser {
             } catch(Exception e) {
                 // eat it up...
             }
+        }
+        // since our error reporter is a property we set later,
+        // make sure features it understands are also set.
+        if(featureId.equals(CONTINUE_AFTER_FATAL_ERROR)) {
+            fErrorReporter.setFeature(CONTINUE_AFTER_FATAL_ERROR, value);
         }
     } //setFeature(String, boolean)
 
