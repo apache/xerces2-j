@@ -201,8 +201,25 @@ public class XMLDTDScannerImpl
     /** Number of opened include sections. */
     private int fIncludeSectDepth;
 
+    // temporary variables
+
+    /** Array of 3 strings. */
+    private String[] fStrings = new String[3];
+
+    /** String. */
+    private XMLString fString = new XMLString();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
+
     /** Literal text. */
     private XMLString fLiteral = new XMLString();
+
+    /** Literal text. */
+    private XMLString fLiteral2 = new XMLString();
 
     /** Enumeration values. */
     private String[] fEnumeration = new String[5];
@@ -1039,7 +1056,10 @@ public class XMLDTDScannerImpl
 
             // default decl
             String defaultType = scanAttDefaultDecl(elName, name,
-                                                    type, fLiteral);
+                                                    type, 
+                                                    fLiteral, fLiteral2);
+            // REVISIT: Should we do anything with the non-normalized
+            //          default attribute value? -Ac
 
             // call handler
             if (fDTDHandler != null) {
@@ -1197,7 +1217,8 @@ public class XMLDTDScannerImpl
      */
     protected final String scanAttDefaultDecl(String elName, String atName,
                                               String type,
-                                              XMLString defaultVal)
+                                              XMLString defaultVal,
+                                              XMLString nonNormalizedDefaultVal)
         throws IOException, XNIException {
 
         String defaultType = null;
@@ -1220,7 +1241,7 @@ public class XMLDTDScannerImpl
             }
             // AttValue 
             boolean isVC = !fStandalone  &&  (fSeenExternalDTD || fSeenExternalPE) ;
-            scanAttributeValue(defaultVal, atName,
+            scanAttributeValue(defaultVal, nonNormalizedDefaultVal, atName,
                                fAttributes, 0, isVC);
         }
         return defaultType;
@@ -1354,10 +1375,8 @@ public class XMLDTDScannerImpl
         }
 
         // internal entity
-        String text = null;
         if (systemId == null) {
-            scanEntityValue(fLiteral);
-            text = fLiteral.toString();
+            scanEntityValue(fLiteral, fLiteral2);
         }
 
         // skip possible trailing space
@@ -1394,12 +1413,9 @@ public class XMLDTDScannerImpl
             }
         }
         else {
-            fEntityManager.addInternalEntity(name, text);
+            fEntityManager.addInternalEntity(name, fLiteral.toString());
             if (fDTDHandler != null) {
-                // REVISIT: Change API for internal entity
-                fStringBuffer.clear();
-                fStringBuffer.append(text);
-                fDTDHandler.internalEntityDecl(name, fStringBuffer);
+                fDTDHandler.internalEntityDecl(name, fLiteral, fLiteral2); 
             }
         }
 
@@ -1409,12 +1425,15 @@ public class XMLDTDScannerImpl
      * Scans an entity value.
      *
      * @param value The string to fill in with the value.
+     * @param nonNormalizedValue The string to fill in with the 
+     *                           non-normalized value.
      *
      * <strong>Note:</strong> This method uses fString, fStringBuffer (through
      * the use of scanCharReferenceValue), and fStringBuffer2, anything in them
      * at the time of calling is lost.
      */
-    protected final void scanEntityValue(XMLString value)
+    protected final void scanEntityValue(XMLString value, 
+                                         XMLString nonNormalizedValue)
         throws IOException, XNIException
     {
         int quote = fEntityScanner.scanChar();
@@ -1425,15 +1444,20 @@ public class XMLDTDScannerImpl
         int entityDepth = fEntityDepth;
 
         XMLString literal = fString;
+        XMLString literal2 = fString;
         if (fEntityScanner.scanLiteral(quote, fString) != quote) {
+            fStringBuffer.clear();
             fStringBuffer2.clear();
             do {
+                fStringBuffer.append(fString);
                 fStringBuffer2.append(fString);
                 if (fEntityScanner.skipChar('&')) {
                     if (fEntityScanner.skipChar('#')) {
-                        scanCharReferenceValue(fStringBuffer2);
+                        fStringBuffer2.append("&#");
+                        scanCharReferenceValue(fStringBuffer, fStringBuffer2);
                     }
                     else {
+                        fStringBuffer.append('&');
                         fStringBuffer2.append('&');
                         String eName = fEntityScanner.scanName();
                         if (eName == null) {
@@ -1441,6 +1465,7 @@ public class XMLDTDScannerImpl
                                              null);
                         }
                         else {
+                            fStringBuffer.append(eName);
                             fStringBuffer2.append(eName);
                         }
                         if (!fEntityScanner.skipChar(';')) {
@@ -1448,12 +1473,14 @@ public class XMLDTDScannerImpl
                                              new Object[]{eName});
                         }
                         else {
+                            fStringBuffer.append(';');
                             fStringBuffer2.append(';');
                         }
                     }
                 }
                 else if (fEntityScanner.skipChar('%')) {
                     while (true) {
+                        fStringBuffer2.append('%');
                         String peName = fEntityScanner.scanName();
                         if (peName == null) {
                             reportFatalError("NameRequiredInPEReference",
@@ -1463,11 +1490,18 @@ public class XMLDTDScannerImpl
                             reportFatalError("SemicolonRequiredInPEReference",
                                              new Object[]{peName});
                         }
-                        else if (scanningInternalSubset()) {
-                            reportFatalError("PEReferenceWithinMarkup",
-                                             new Object[]{peName});
+                        else {
+                            if (scanningInternalSubset()) {
+                                reportFatalError("PEReferenceWithinMarkup",
+                                                 new Object[]{peName});
+                            }
+                            fStringBuffer2.append(peName);
+                            fStringBuffer2.append(';');
                         }
                         startPE(peName, true);
+                        // REVISIT: [Q] Why do we skip spaces here? -Ac
+                        // REVISIT: This will make returning the non-
+                        //          normalized value harder. -Ac
                         fEntityScanner.skipSpaces();
                         if (!fEntityScanner.skipChar('%'))
                             break;
@@ -1487,18 +1521,23 @@ public class XMLDTDScannerImpl
                     // different entity than the one this literal started from,
                     // simply append the character to our buffer
                     else if (c != quote || entityDepth != fEntityDepth) {
-                        fStringBuffer2.append((char)fEntityScanner.scanChar());
+                        fStringBuffer.append((char)c);
+                        fStringBuffer2.append((char)c);
+                        fEntityScanner.scanChar();
                     }
                 }
             } while (fEntityScanner.scanLiteral(quote, fString) != quote);
+            fStringBuffer.append(fString);
             fStringBuffer2.append(fString);
-            literal = fStringBuffer2;
+            literal = fStringBuffer;
+            literal2 = fStringBuffer2;
         }
         value.setValues(literal);
+        nonNormalizedValue.setValues(literal2);
         if (!fEntityScanner.skipChar(quote)) {
             reportFatalError("CloseQuoteMissingInDecl", null);
         }
-    } // scanEntityValue(XMLString):void
+    } // scanEntityValue(XMLString,XMLString):void
 
     /**
      * Scans a notation declaration

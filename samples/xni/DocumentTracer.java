@@ -623,7 +623,8 @@ public class DocumentTracer
     } // endAttlist()
 
     /** Internal entity declaration. */
-    public void internalEntityDecl(String name, XMLString text)
+    public void internalEntityDecl(String name, XMLString text,
+                                   XMLString nonNormalizedText)
         throws XNIException {
 
         printIndent();
@@ -633,6 +634,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("text=");
         printQuotedString(text.ch, text.offset, text.length);
+        fOut.print(',');
+        fOut.print("nonNormalizedText=");
+        printQuotedString(nonNormalizedText.ch, nonNormalizedText.offset, 
+                          nonNormalizedText.length);
         fOut.println(')');
         fOut.flush();
 
@@ -945,6 +950,7 @@ public class DocumentTracer
                 attributes.getName(i, fQName);
                 String attrType = attributes.getType(i);
                 String attrValue = attributes.getValue(i);
+                String attrNonNormalizedValue = attributes.getNonNormalizedValue(i);
                 fOut.print("name=");
                 fOut.print('{');
                 fOut.print("prefix=");
@@ -965,6 +971,9 @@ public class DocumentTracer
                 fOut.print(',');
                 fOut.print("value=");
                 printQuotedString(attrValue);
+                fOut.print(',');
+                fOut.print("nonNormalizedValue=");
+                printQuotedString(attrNonNormalizedValue);
                 if (attributes.isSpecified(i) == false ) {
                    fOut.print("(default)");
                 }

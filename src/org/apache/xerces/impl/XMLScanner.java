@@ -161,18 +161,6 @@ public abstract class XMLScanner
     /** Entity depth. */
     protected int fEntityDepth;
 
-    /** String. */
-    protected XMLString fString = new XMLString();
-
-    /** String buffer. */
-    protected XMLStringBuffer fStringBuffer = new XMLStringBuffer();
-
-    /** String buffer. */
-    protected XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
-
-    /** Array of 3 strings. */
-    protected String[] fStrings = new String[3];
-
     /** Literal value of the last character refence scanned. */
     protected String fCharRefLiteral = null;
 
@@ -184,16 +172,6 @@ public abstract class XMLScanner
 
     /** Scanning attribute. */
     protected boolean fScanningAttribute;
-
-    // debugging
-
-    /** Debug attribute entities. */
-    protected static final boolean DEBUG_ATTR_ENTITIES = false;
-
-    /** Debug attribute normalization. */
-    protected static final boolean DEBUG_ATTR_NORMALIZATION = false;
-
-    // private data
 
     // symbols
 
@@ -220,6 +198,34 @@ public abstract class XMLScanner
 
     /** Symbol: "apos". */
     protected String fAposSymbol;
+
+    // debugging
+
+    /** Debug attribute entities. */
+    protected static final boolean DEBUG_ATTR_ENTITIES = false;
+
+    /** Debug attribute normalization. */
+    protected static final boolean DEBUG_ATTR_NORMALIZATION = false;
+
+    // temporary variables
+
+    // NOTE: These objects are private to help prevent accidental modification
+    //       of values by a subclass. If there were protected *and* the sub-
+    //       modified the values, it would be difficult to track down the real
+    //       cause of the bug. By making these private, we avoid this 
+    //       possibility.
+
+    /** String. */
+    private XMLString fString = new XMLString();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer3 = new XMLStringBuffer();
 
     //
     // XMLComponent methods
@@ -674,6 +680,8 @@ public abstract class XMLScanner
      * [10] AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"
      *
      * @param value The XMLString to fill in with the value.
+     * @param nonNormalizedValue The XMLString to fill in with the 
+     *                           non-normalized value.
      * @param atName The name of the attribute being parsed (for error msgs).
      * @param attributes The attributes list for the scanned attribute.
      * @param attrIndex The index of the attribute to use from the list.
@@ -683,7 +691,9 @@ public abstract class XMLScanner
      * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
      * at the time of calling is lost.
      **/
-    protected void scanAttributeValue(XMLString value, String atName,
+    protected void scanAttributeValue(XMLString value, 
+                                      XMLString nonNormalizedValue,
+                                      String atName,
                                       XMLAttributes attributes, int attrIndex,
                                       boolean checkEntities)
         throws IOException, XNIException
@@ -702,6 +712,8 @@ public abstract class XMLScanner
             System.out.println("** scanLiteral -> \""
                                + value.toString() + "\"");
         }
+        fStringBuffer2.clear();
+        fStringBuffer2.append(value);
         normalizeWhitespace(value);
         if (DEBUG_ATTR_NORMALIZATION) {
             System.out.println("** normalizeWhitespace -> \""
@@ -717,26 +729,28 @@ public abstract class XMLScanner
             if (DEBUG_ATTR_ENTITIES) {
                 System.out.println("*** set attribute offset: "+fAttributeOffset);
             }
-            fStringBuffer2.clear();
+            fStringBuffer.clear();
             do {
-                fStringBuffer2.append(value);
+                fStringBuffer.append(value);
                 fAttributeOffset += value.length;
                 if (DEBUG_ATTR_NORMALIZATION) {
                     System.out.println("** value2: \""
-                                       + fStringBuffer2.toString() + "\"");
+                                       + fStringBuffer.toString() + "\"");
                 }
                 if (DEBUG_ATTR_ENTITIES) {
                     System.out.println("*** increment attribute offset: "+fAttributeOffset);
                 }
                 if (c == '&') {
                     fEntityScanner.skipChar('&');
+                    fStringBuffer2.append('&');
                     if (fEntityScanner.skipChar('#')) {
-                        int ch = scanCharReferenceValue(fStringBuffer2);
+                        fStringBuffer2.append('#');
+                        int ch = scanCharReferenceValue(fStringBuffer, fStringBuffer2);
                         if (ch != -1) {
                             fAttributeOffset++;
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value3: \""
-                                                   + fStringBuffer2.toString()
+                                                   + fStringBuffer.toString()
                                                    + "\"");
                             }
                             if (DEBUG_ATTR_ENTITIES) {
@@ -749,12 +763,18 @@ public abstract class XMLScanner
                         if (entityName == null) {
                             reportFatalError("NameRequiredInReference", null);
                         }
+                        else {
+                            fStringBuffer2.append(entityName);
+                        }
                         if (!fEntityScanner.skipChar(';')) {
                             reportFatalError("SemicolonRequiredInReference",
                                              null);
                         }
+                        else {
+                            fStringBuffer2.append(';');
+                        }
                         if (entityName == fAmpSymbol) {
-                            fStringBuffer2.append('&');
+                            fStringBuffer.append('&');
                             if (fNotifyCharRefs) {
                                 notifyAttrCharRef(fAmpSymbol);
                             }
@@ -762,7 +782,7 @@ public abstract class XMLScanner
                             
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value5: \""
-                                                   + fStringBuffer2.toString()
+                                                   + fStringBuffer.toString()
                                                    + "\"");
                             }
                             if (DEBUG_ATTR_ENTITIES) {
@@ -770,7 +790,7 @@ public abstract class XMLScanner
                             }
                         }
                         else if (entityName == fAposSymbol) {
-                            fStringBuffer2.append('\'');
+                            fStringBuffer.append('\'');
                             if (fNotifyCharRefs) {
                                 notifyAttrCharRef(fAposSymbol);
                             }
@@ -778,7 +798,7 @@ public abstract class XMLScanner
                             
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value7: \""
-                                                   + fStringBuffer2.toString()
+                                                   + fStringBuffer.toString()
                                                    + "\"");
                             }
                             if (DEBUG_ATTR_ENTITIES) {
@@ -786,7 +806,7 @@ public abstract class XMLScanner
                             }
                         }
                         else if (entityName == fLtSymbol) {
-                            fStringBuffer2.append('<');
+                            fStringBuffer.append('<');
                             if (fNotifyCharRefs) {
                                 notifyAttrCharRef(fLtSymbol);
                             }
@@ -794,7 +814,7 @@ public abstract class XMLScanner
                             
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** value9: \""
-                                                   + fStringBuffer2.toString()
+                                                   + fStringBuffer.toString()
                                                    + "\"");
                             }
                             if (DEBUG_ATTR_ENTITIES) {
@@ -802,7 +822,7 @@ public abstract class XMLScanner
                             }
                         }
                         else if (entityName == fGtSymbol) {
-                            fStringBuffer2.append('>');
+                            fStringBuffer.append('>');
                             if (fNotifyCharRefs) {
                                 notifyAttrCharRef(fGtSymbol);
                             }
@@ -810,7 +830,7 @@ public abstract class XMLScanner
                             
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** valueB: \""
-                                                   + fStringBuffer2.toString()
+                                                   + fStringBuffer.toString()
                                                    + "\"");
                             }
                             if (DEBUG_ATTR_ENTITIES) {
@@ -818,7 +838,7 @@ public abstract class XMLScanner
                             }
                         }
                         else if (entityName == fQuotSymbol) {
-                            fStringBuffer2.append('"');
+                            fStringBuffer.append('"');
                             if (fNotifyCharRefs) {
                                 notifyAttrCharRef(fQuotSymbol);
                             }
@@ -826,7 +846,7 @@ public abstract class XMLScanner
                             
                             if (DEBUG_ATTR_NORMALIZATION) {
                                 System.out.println("** valueD: \""
-                                                   + fStringBuffer2.toString()
+                                                   + fStringBuffer.toString()
                                                    + "\"");
                             }
                             if (DEBUG_ATTR_ENTITIES) {
@@ -864,10 +884,12 @@ public abstract class XMLScanner
                                      new Object[] { null, atName });
                 }
                 else if (c == '%' || c == ']') {
-                    fStringBuffer2.append((char)fEntityScanner.scanChar());
+                    fEntityScanner.scanChar();
+                    fStringBuffer.append((char)c);
+                    fStringBuffer2.append((char)c);
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("** valueF: \""
-                                           + fStringBuffer2.toString() + "\"");
+                                           + fStringBuffer.toString() + "\"");
                     }
                 }
                 else if (c == '\r') {
@@ -876,20 +898,22 @@ public abstract class XMLScanner
                     // literal entity value. The character is normalized to
                     // #x20 and collapsed per the normal rules.
                     fEntityScanner.scanChar();
-                    fStringBuffer2.append(' ');
+                    fStringBuffer.append(' ');
+                    fStringBuffer.append((char)c);
                     fAttributeOffset++;
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("** valueG: \""
-                                           + fStringBuffer2.toString()
+                                           + fStringBuffer.toString()
                                            + "\"");
                     }
                 }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
-                    if (scanSurrogates(fStringBuffer)) {
-                        fStringBuffer2.append(fStringBuffer);
+                    if (scanSurrogates(fStringBuffer3)) {
+                        fStringBuffer.append(fStringBuffer3);
+                        fStringBuffer2.append(fStringBuffer3);
                         if (DEBUG_ATTR_NORMALIZATION) {
                             System.out.println("** valueI: \""
-                                               + fStringBuffer2.toString()
+                                               + fStringBuffer.toString()
                                                + "\"");
                         }
                     }
@@ -907,6 +931,7 @@ public abstract class XMLScanner
                         System.out.println("scanLiteral -> \"" +
                                            value.toString() + "\"");
                     }
+                    //fStringBuffer2.append(value);
                     normalizeWhitespace(value);
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("normalizeWhitespace -> \""
@@ -917,28 +942,31 @@ public abstract class XMLScanner
                     if (c != quote || entityDepth == fEntityDepth) {
                         break;
                     }
-                    fStringBuffer2.append(value);
+                    fStringBuffer.append(value);
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("** valueK: \""
-                                           + fStringBuffer2.toString()
+                                           + fStringBuffer.toString()
                                            + "\"");
                     }
-                    fStringBuffer2.append((char)fEntityScanner.scanChar());
+                    fEntityScanner.scanChar();
+                    fStringBuffer.append((char)c);
+                    fStringBuffer2.append((char)c);
                     fAttributeOffset += value.length + 1;
                     if (DEBUG_ATTR_NORMALIZATION) {
                         System.out.println("** valueL: \""
-                                           + fStringBuffer2.toString()
+                                           + fStringBuffer.toString()
                                            + "\"");
                     }
                 }
             } while (c != quote);
             fAttributeOffset += value.length;
-            fStringBuffer2.append(value);
+            fStringBuffer.append(value);
+            //fStringBuffer2.append(value);
             if (DEBUG_ATTR_NORMALIZATION) {
                 System.out.println("** valueN: \""
-                                   + fStringBuffer2.toString() + "\"");
+                                   + fStringBuffer.toString() + "\"");
             }
-            value.setValues(fStringBuffer2);
+            value.setValues(fStringBuffer);
             int attrEntityCount = fAttributeEntityStack.size();
             if (DEBUG_ATTR_ENTITIES) {
                 System.out.println("*** add remaining attribute entities: "
@@ -953,6 +981,7 @@ public abstract class XMLScanner
             }
             fScanningAttribute = false;
         }
+        nonNormalizedValue.setValues(fStringBuffer2);
 
         // quote
         int cquote = fEntityScanner.scanChar();
@@ -1193,17 +1222,19 @@ public abstract class XMLScanner
      * at the time of calling is lost.
      *
      * @param buf the character buffer to append chars to
+     * @param buf2 the character buffer to append non-normalized chars to
      *
      * @return the character value or (-1) on conversion failure
      */
-    protected int scanCharReferenceValue(XMLStringBuffer buf) 
+    protected int scanCharReferenceValue(XMLStringBuffer buf, XMLStringBuffer buf2) 
         throws IOException, XNIException {
 
         // scan hexadecimal value
         boolean hex = false;
         if (fEntityScanner.skipChar('x')) {
+            if (buf2 != null) { buf2.append('x'); }
             hex = true;
-            fStringBuffer.clear();
+            fStringBuffer3.clear();
             boolean digit = true;
             do {
                 int c = fEntityScanner.peekChar();
@@ -1211,22 +1242,24 @@ public abstract class XMLScanner
                         (c >= 'a' && c <= 'f') ||
                         (c >= 'A' && c <= 'F');
                 if (digit) {
+                    if (buf2 != null) { buf2.append((char)c); }
                     fEntityScanner.scanChar();
-                    fStringBuffer.append((char)c);
+                    fStringBuffer3.append((char)c);
                 }
             } while (digit);
         }
 
         // scan decimal value
         else {
-            fStringBuffer.clear();
+            fStringBuffer3.clear();
             boolean digit = true;
             do {
                 int c = fEntityScanner.peekChar();
                 digit = c >= '0' && c <= '9';
                 if (digit) {
+                    if (buf2 != null) { buf2.append((char)c); }
                     fEntityScanner.scanChar();
-                    fStringBuffer.append((char)c);
+                    fStringBuffer3.append((char)c);
                 }
             } while (digit);
         }
@@ -1235,11 +1268,12 @@ public abstract class XMLScanner
         if (!fEntityScanner.skipChar(';')) {
             reportFatalError("SemicolonRequiredInCharRef", null);
         }
+        if (buf2 != null) { buf2.append(';'); }
         
         // convert string to number
         int value = -1;
         try {
-            value = Integer.parseInt(fStringBuffer.toString(),
+            value = Integer.parseInt(fStringBuffer3.toString(),
                                      hex ? 16 : 10);
         }
         catch (NumberFormatException e) {
@@ -1264,7 +1298,7 @@ public abstract class XMLScanner
 
         // char refs notification code
         if (fNotifyCharRefs && value != -1) {
-            String literal = "#" + (hex ? "x" : "") + fStringBuffer.toString();
+            String literal = "#" + (hex ? "x" : "") + fStringBuffer3.toString();
             if (fScanningAttribute == true) {
                 fAttributeEntityStack.fAttributes.addAttributeEntity(
                     fAttributeEntityStack.fAttributeIndex,

@@ -285,7 +285,6 @@ public abstract class AbstractSAXParser
      * @param uri    The URI bound to the prefix.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
         throws XNIException {
@@ -311,7 +310,6 @@ public abstract class AbstractSAXParser
      * @param attributes The element attributes.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes) 
         throws XNIException {
@@ -392,7 +390,6 @@ public abstract class AbstractSAXParser
      * @param text The ignorable whitespace.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void ignorableWhitespace(XMLString text) throws XNIException {
 
@@ -419,7 +416,6 @@ public abstract class AbstractSAXParser
      * @param element The name of the element.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void endElement(QName element) throws XNIException {
 
@@ -450,7 +446,6 @@ public abstract class AbstractSAXParser
      * @param prefix The namespace prefix.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void endPrefixMapping(String prefix)  throws XNIException {
 
@@ -470,7 +465,6 @@ public abstract class AbstractSAXParser
      * The end of the document.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void endDocument() throws XNIException {
 
@@ -525,7 +519,6 @@ public abstract class AbstractSAXParser
      *                 internal parameter entities).
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
                             String baseSystemId, String encoding) 
@@ -565,7 +558,6 @@ public abstract class AbstractSAXParser
      * @param name The name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void endEntity(String name) throws XNIException {
 
@@ -655,7 +647,6 @@ public abstract class AbstractSAXParser
      * @param data   The data or null if none specified.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
         throws XNIException {
@@ -695,7 +686,6 @@ public abstract class AbstractSAXParser
      * @param contentModel The element content model.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void elementDecl(String name, String contentModel) 
         throws XNIException {
@@ -772,11 +762,15 @@ public abstract class AbstractSAXParser
      *             '%', whereas the name of a general entity is just the 
      *             entity name.
      * @param text The value of the entity.
+     * @param nonNormalizedText The non-normalized value of the entity. This
+     *             value contains the same sequence of characters that was in 
+     *             the internal entity declaration, without any entity
+     *             references expanded.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void internalEntityDecl(String name, XMLString text)
+    public void internalEntityDecl(String name, XMLString text,
+                                   XMLString nonNormalizedText)
         throws XNIException {
 
         try {
@@ -789,7 +783,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // internalEntityDecl(String,XMLString)
+    } // internalEntityDecl(String,XMLString,XMLString)
 
     /**
      * An external entity declaration.
@@ -803,7 +797,6 @@ public abstract class AbstractSAXParser
      * @param baseSystemId The baseSystem identifier of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId,
                                    String systemId, String baseSystemId) throws XNIException {
@@ -831,7 +824,6 @@ public abstract class AbstractSAXParser
      * @param notation The name of the notation.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId,
                                    String systemId, String notation)
@@ -860,7 +852,6 @@ public abstract class AbstractSAXParser
      *                 specified.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId)
         throws XNIException {
@@ -881,7 +872,6 @@ public abstract class AbstractSAXParser
      * The end of the DTD.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void endDTD() throws XNIException {
         fInDTD = false;

@@ -599,10 +599,15 @@ public class DTDGrammar
      *             '%', whereas the name of a general entity is just the 
      *             entity name.
      * @param text The value of the entity.
+     * @param nonNormalizedText The non-normalized value of the entity. This
+     *             value contains the same sequence of characters that was in 
+     *             the internal entity declaration, without any entity
+     *             references expanded.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void internalEntityDecl(String name, XMLString text)
+    public void internalEntityDecl(String name, XMLString text,
+                                   XMLString nonNormalizedText)
         throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
@@ -616,7 +621,7 @@ public class DTDGrammar
             setEntityDecl(entityIndex, entityDecl);
         }
 
-    } // internalEntityDecl(String,XMLString)
+    } // internalEntityDecl(String,XMLString,XMLString)
 
     /**
      * An external entity declaration.

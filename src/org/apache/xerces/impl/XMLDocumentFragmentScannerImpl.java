@@ -242,7 +242,22 @@ public class XMLDocumentFragmentScannerImpl
     /** Content dispatcher. */
     protected Dispatcher fContentDispatcher = createContentDispatcher();
 
-    // private data
+    // temporary variables
+
+    /** Array of 3 strings. */
+    private String[] fStrings = new String[3];
+
+    /** String. */
+    private XMLString fString = new XMLString();
+
+    /** String. */
+    private XMLString fString2 = new XMLString();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
     /** Element QName. */
     private QName fElementQName = new QName();
@@ -789,9 +804,11 @@ public class XMLDocumentFragmentScannerImpl
         }
         //REVISIT: one more case needs to be included: external PE and standalone is no
         boolean isVC =  fHasExternalDTD && !fStandalone;        
-        scanAttributeValue(fString, fAttributeQName.rawname, attributes,
+        scanAttributeValue(fString, fString2,
+                           fAttributeQName.rawname, attributes,
                            oldLen, isVC);
         attributes.setValue(oldLen, fString.toString());
+        attributes.setNonNormalizedValue(oldLen, fString2.toString());
         attributes.setSpecified(oldLen, true);
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
@@ -975,7 +992,7 @@ public class XMLDocumentFragmentScannerImpl
         throws IOException, XNIException {
 
         fStringBuffer2.clear();
-        int ch = scanCharReferenceValue(fStringBuffer2);
+        int ch = scanCharReferenceValue(fStringBuffer2, null);
         fMarkupDepth--;
         if (ch != -1) {
             // call handler

@@ -217,6 +217,17 @@ public class XMLDocumentScannerImpl
     /** Trailing miscellaneous section dispatcher. */
     protected Dispatcher fTrailingMiscDispatcher = new TrailingMiscDispatcher();
 
+    // temporary variables
+
+    /** Array of 3 strings. */
+    private String[] fStrings = new String[3];
+
+    /** String. */
+    private XMLString fString = new XMLString();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+
     //
     // Constructors
     //

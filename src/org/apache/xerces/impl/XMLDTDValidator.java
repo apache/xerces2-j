@@ -1400,19 +1400,24 @@ public class XMLDTDValidator
      *             '%', whereas the name of a general entity is just the 
      *             entity name.
      * @param text The value of the entity.
+     * @param nonNormalizedText The non-normalized value of the entity. This
+     *             value contains the same sequence of characters that was in 
+     *             the internal entity declaration, without any entity
+     *             references expanded.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void internalEntityDecl(String name, XMLString text) 
+    public void internalEntityDecl(String name, XMLString text,
+                                   XMLString nonNormalizedText) 
         throws XNIException {
 
         // call handlers
-        fDTDGrammar.internalEntityDecl(name, text);
+        fDTDGrammar.internalEntityDecl(name, text, nonNormalizedText);
         if (fDTDHandler != null) {
-            fDTDHandler.internalEntityDecl(name, text);
+            fDTDHandler.internalEntityDecl(name, text, nonNormalizedText);
         }
 
-    } // internalEntityDecl(String,XMLString)
+    } // internalEntityDecl(String,XMLString,XMLString)
 
     /**
      * An external entity declaration.
@@ -2122,6 +2127,7 @@ public class XMLDTDValidator
                 else {
                     if (leadingSpace || !spaceStart) {
                         eaten ++;
+                        /*** BUG #3512 ***
                         int entityCount = attributes.getEntityCount(index);
                         for (int j = 0;  j < entityCount; j++) {
                             int offset = attributes.getEntityOffset(index, j);
@@ -2139,6 +2145,7 @@ public class XMLDTDValidator
                             attributes.setEntityOffset(index, j, offset);
                             attributes.setEntityLength(index, j, length);
                         }
+                        /***/
                     }
                 }
 
@@ -2155,6 +2162,7 @@ public class XMLDTDValidator
         // check if the last appended character is a space.
         if (count > 0 && fBuffer.charAt(count-1) == ' ') {
             fBuffer.setLength(count-1);
+            /*** BUG #3512 ***
             int entityCount = attributes.getEntityCount(index);
             for (int j=0;  j < entityCount; j++) {
                 int offset = attributes.getEntityOffset(index, j);
@@ -2170,6 +2178,7 @@ public class XMLDTDValidator
                 attributes.setEntityOffset(index, j, offset);
                 attributes.setEntityLength(index, j, length);
             }
+            /***/
         }
         String newValue = fBuffer.toString();
         attributes.setValue(index, newValue);

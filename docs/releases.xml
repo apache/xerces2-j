@@ -4,6 +4,14 @@
  <release version='NOT YET RELEASED'>
   <desc>This is primarily a bug fix release.</desc>
   <changes>
+   <update>
+    <note>
+     Changed the XMLDTDHandler defined in XNI to add a non-normalized 
+     value parameter to the internal element declaration callback. Also
+     implemented the non-normalized value for attribute values.
+    </note>
+    <submitter name='Andy Clark'/>
+   </update>
    <fix>
     <note>
      Fixed bug in entity manager that would never resolve IANA encoding
