@@ -189,6 +189,11 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected final static short VALIDATE            = 0x1<<6;
     protected final static short PSVI                = 0x1<<7;
     protected final static short WELLFORMED          = 0x1<<8;
+    
+    protected final static short INFOSET_TRUE_PARAMS = NAMESPACES | COMMENTS | WELLFORMED;
+    protected final static short INFOSET_FALSE_PARAMS = ENTITIES | DTNORMALIZATION | CDATA;
+    protected final static short INFOSET_MASK = INFOSET_TRUE_PARAMS | INFOSET_FALSE_PARAMS;
+    
     // components
 
     /** Symbol table. */
@@ -578,9 +583,16 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             }
             else if (name.equals(Constants.DOM_WELLFORMED)) {
                 features = (short) (state ? features | WELLFORMED : features & ~WELLFORMED );
-            }            
-            else if (name.equals(Constants.DOM_INFOSET)
-                    || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+            }
+            else if (name.equals(Constants.DOM_INFOSET)) {
+                // Setting to false has no effect.
+                if (state) {
+                    features = (short) (features | INFOSET_TRUE_PARAMS);
+                    features = (short) (features & ~INFOSET_FALSE_PARAMS);
+                    setFeature(NORMALIZE_DATA, false);
+                }
+            }           
+            else if (name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
                     || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
@@ -594,7 +606,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
             }
-            else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+            else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+                    || name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
                 if (!state) { // false is not supported
                     String msg =
                         DOMMessageFormatter.formatMessage(
@@ -810,9 +823,11 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		}
 		else if (name.equals(Constants.DOM_WELLFORMED)) {
 			return (features & WELLFORMED) != 0 ? Boolean.TRUE : Boolean.FALSE;
-		}        
-		else if (  name.equals(Constants.DOM_INFOSET)
-				|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+		}
+		else if (name.equals(Constants.DOM_INFOSET)) {
+			return (features & INFOSET_MASK) == INFOSET_TRUE_PARAMS ? Boolean.TRUE : Boolean.FALSE;
+		}
+		else if (name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
 				|| name.equals(Constants.DOM_CANONICAL_FORM)
 				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
 				|| name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
@@ -904,8 +919,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 return true ;
             }//features whose parameter value can not be set to 'true'
             else if (
-                name.equals(Constants.DOM_INFOSET)
-                    || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+                name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
                     || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)                                     
