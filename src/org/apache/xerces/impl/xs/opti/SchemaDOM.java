@@ -149,26 +149,27 @@ public class SchemaDOM extends DefaultDocument {
         // escape characters if necessary
         if (!inCDATA) {   
             for (int i = text.offset; i < text.offset+text.length; ++i ) {
-                if (text.ch[i] == '&') {
+                char ch = text.ch[i];
+                if (ch == '&') {
                     fAnnotationBuffer.append("&amp;");
                 } 
-                else if (text.ch[i] == '<') {
+                else if (ch == '<') {
                     fAnnotationBuffer.append("&lt;");
                 }
                 // character sequence "]]>" cannot appear in content, 
                 // therefore we should escape '>'.
-                else if (text.ch[i] == '>') {
+                else if (ch == '>') {
                     fAnnotationBuffer.append("&gt;");
                 }
                 // If CR is part of the document's content, it
                 // must not be printed as a literal otherwise
                 // it would be normalized to LF when the document
                 // is reparsed.
-                else if (text.ch[i] == '\r') {
+                else if (ch == '\r') {
                     fAnnotationBuffer.append("&#xD;");
                 }
                 else {
-                    fAnnotationBuffer.append(text.ch[i]);
+                    fAnnotationBuffer.append(ch);
                 }
             }
         }
@@ -328,12 +329,16 @@ public class SchemaDOM extends DefaultDocument {
         // optimized for simplicity and the case that not many
         // namespaces are declared on this annotation...
         Vector namespaces = new Vector();
-        for(int i=0; i<attributes.getLength(); i++) {
+        for (int i = 0; i < attributes.getLength(); ++i) {
             String aValue = attributes.getValue(i);
             String aPrefix = attributes.getPrefix(i);
-            // if it's xmlns, must be a namespace decl
-            namespaces.addElement(aValue);
-            fAnnotationBuffer.append(attributes.getQName(i)).append("=\"").append(aValue).append("\" ");
+            String aQName = attributes.getQName(i);
+            // if it's xmlns:* or xmlns, must be a namespace decl
+            if (aPrefix == XMLSymbols.PREFIX_XMLNS || aQName == XMLSymbols.PREFIX_XMLNS) {
+                namespaces.addElement(aPrefix == XMLSymbols.PREFIX_XMLNS ? 
+                    attributes.getLocalName(i) : XMLSymbols.EMPTY_STRING);
+            }
+            fAnnotationBuffer.append(aQName).append("=\"").append(processAttValue(aValue)).append("\" ");
         }
         // now we have to look through currently in-scope namespaces to see what
         // wasn't declared here
@@ -341,12 +346,14 @@ public class SchemaDOM extends DefaultDocument {
         while(currPrefixes.hasMoreElements()) {
             String prefix = (String)currPrefixes.nextElement();
             String uri = namespaceContext.getURI(prefix);
-            if(!namespaces.contains(uri)) {
+            if (!namespaces.contains(prefix)) {
                 // have to declare this one
-                if(prefix == XMLSymbols.EMPTY_STRING) 
-                    fAnnotationBuffer.append("xmlns").append("=\"").append(uri).append("\" ");
-                else 
-                    fAnnotationBuffer.append("xmlns:").append(prefix).append("=\"").append(uri).append("\" ");
+                if(prefix == XMLSymbols.EMPTY_STRING) {
+                    fAnnotationBuffer.append("xmlns").append("=\"").append(processAttValue(uri)).append("\" ");
+                }
+                else {
+                    fAnnotationBuffer.append("xmlns:").append(prefix).append("=\"").append(processAttValue(uri)).append("\" ");
+                }
             }
         }
         fAnnotationBuffer.append(">\n");
@@ -361,16 +368,31 @@ public class SchemaDOM extends DefaultDocument {
     }
     
     private static String processAttValue(String original) {
+        final int length = original.length();
         // normally, nothing will happen
-        StringBuffer newVal = new StringBuffer(original.length());
-        for (int i = 0; i < original.length(); i++) {
+        for (int i = 0; i < length; ++i) {
+            char currChar = original.charAt(i);
+            if (currChar == '"' || currChar == '<' || currChar == '&' ||
+                currChar == 0x09 || currChar == 0x0A || currChar == 0x0D) {
+                return escapeAttValue(original, i);
+            }
+        }
+        return original;
+    }
+    
+    private static String escapeAttValue(String original, int from) {
+        int i;
+        final int length = original.length();
+        StringBuffer newVal = new StringBuffer(length);
+        newVal.append(original.substring(0, from));
+        for (i = from; i < length; ++i) {
             char currChar = original.charAt(i);
             if (currChar == '"') {
                 newVal.append("&quot;");
             } 
-            else if (currChar == '>') {
-                newVal.append("&gt;");
-            } 
+            else if (currChar == '<') {
+                newVal.append("&lt;");
+            }
             else if (currChar == '&') {
                 newVal.append("&amp;");
             }
@@ -392,5 +414,4 @@ public class SchemaDOM extends DefaultDocument {
         }
         return newVal.toString();
     }
-    
 }
