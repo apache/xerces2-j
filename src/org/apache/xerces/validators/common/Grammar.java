@@ -65,6 +65,19 @@ import  org.w3c.dom.Node;
 import  org.w3c.dom.Document;
 import  org.apache.xerces.validators.common.XMLContentModel;
 
+/**
+ * Embodies a grammar. Grammars live a GrammaPool table
+ * keyed on namespaces.
+ * A Grammar is a holder for a Grammar.
+ * When a Grammar is needed we populate a
+ * DOM representation ofstructure, and then
+ * we traverse this structure while building an
+ * internal array representation of Grammar.
+ * This Grammar are called from the XMLValidator which
+ * is the Validator of all kind.
+ * 
+ * @author Jeffrey Rodriguez
+ */
 public abstract class Grammar {
     private  String                fGrammarID       = null;
     private  Document              fGrammarDocument = null;
@@ -74,10 +87,19 @@ public abstract class Grammar {
     public Grammar( String grammarID ) {
         fGrammarID = grammarID;
     }
+    /**
+     * 
+     * @return                   String with name of grammar.
+     */
     public String whatGrammarAmI(){
         return fGrammarID;
     }
-    public arrayRepresentation getGrammarArrayRepresentation(){
+    /**
+     * getter class to obtain internal grammar representation.
+     * 
+     * @return               Grammar.arrayRepresentation
+     */
+    public ArrayRepresentation getGrammarArrayRepresentation(){
         return fGrammarArrayRepresentation;
     }
 
@@ -87,7 +109,15 @@ public abstract class Grammar {
     abstract public Document            getGrammarDocument();
 
 
-    public class arrayRepresentation {
+    /**
+     * This inner classes embodies the array representation
+     * of the Grammar ( either Schema, DTD, etc) as seen
+     * internally by the parser.
+     * 
+     * @author Jeffrey Rodriguez
+     * @see            XMLValidator- Validator of all kind
+     */
+    public class ArrayRepresentation {
         public int                    fElementCount = 0;    // Element list
         public int[][]                fElementType  = null; 
         public byte[][]               fElementDeclIsExternal = null;
