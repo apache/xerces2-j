@@ -2281,7 +2281,7 @@ public class XMLSchemaValidator
     Augmentations getEmptyAugs(Augmentations augs) {
         if (augs == null) {
             augs = fAugmentations;
-            augs.clear();
+            augs.removeAllItems();
         }
         augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
         fCurrentPSVI.reset();

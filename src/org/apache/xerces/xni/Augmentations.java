@@ -122,6 +122,6 @@ public interface Augmentations {
     /**
      * Remove all objects from the Augmentations structure.
      */
-    public void clear ();
+    public void removeAllItems ();
 
 }

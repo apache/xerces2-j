@@ -417,5 +417,13 @@ public interface XMLAttributes {
     public Augmentations getAugmentations(String qName);
 
 
+    /**
+     * Sets the augmentations of the attribute at the specified index.
+     * 
+     * @param attrIndex The attribute index.
+     * @param augs      The augmentations.
+     */
+    public void setAugmentations(int attrIndex, Augmentations augs);
+
 
 } // interface XMLAttributes

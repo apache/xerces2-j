@@ -190,7 +190,7 @@ public class XMLAttributesImpl
         }
 
         // clear augmentations
-        fAugmentations[index].clear();
+        fAugmentations[index].removeAllItems();
 
         // set values
         Attribute attribute = fAttributes[index];
@@ -654,6 +654,16 @@ public class XMLAttributesImpl
             return null;
         }
         return fAugmentations[attributeIndex];
+    }
+
+    /**
+     * Sets the augmentations of the attribute at the specified index.
+     * 
+     * @param attrIndex The attribute index.
+     * @param augs      The augmentations.
+     */
+    public void setAugmentations(int attrIndex, Augmentations augs) {
+        fAugmentations[attrIndex] = augs;
     }
 
     /**

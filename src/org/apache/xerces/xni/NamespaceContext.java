@@ -205,6 +205,9 @@ public interface NamespaceContext {
      *
      * <p>It is necessary to invoke this method before reusing the
      * Namespace support object for a new session.</p>
+     * 
+     * <p>Note that implementations of this method need to ensure that
+     * the declaration of the prefixes "xmlns" and "xml" are available.</p>
      */
     public void reset();
     

@@ -1169,6 +1169,16 @@ public class DOMNormalizer implements XMLDocumentHandler {
             // REVISIT: implement
             return null;
         }
+
+        /**
+         * Sets the augmentations of the attribute at the specified index.
+         * 
+         * @param attrIndex The attribute index.
+         * @param augs      The augmentations.
+         */
+        public void setAugmentations(int attrIndex, Augmentations augs) {
+            fAugmentations.setElementAt(augs, attrIndex);
+        }
     }
 
     // 
