@@ -217,6 +217,28 @@ catch (SAXException e) {
   </feature>
  </fcategory>
  <fcategory name='DOM Features'>
+  <feature name='http://apache.org/xml/features/dom/defer-node-expansion'
+           id="dom.defer-node-expansion">
+   <true>
+    Lazily expand the DOM nodes.
+   </true>
+   <false>
+    Fully expand the DOM nodes.
+   </false>
+   <default value='true'/>
+   <note>
+<!--
+    This feature only applies when the <link idref="properties"
+    anchor="document-class-name">http://apache.org/xml/properties/dom/document-class-name</link>
+    property is set to a value other than the name of the default document
+    factory.
+-->
+    When this feature is set to true, the DOM nodes in the returned document
+    are expanded as the tree is traversed. This allows the parser to return a
+    document faster than if the tree is fully expanded during parsing and
+    improves memory usage when the whole tree is not traversed.
+   </note>
+  </feature>
   <feature name='http://apache.org/xml/features/dom/create-entity-ref-nodes'
            id='dom.create-entity-ref-nodes'>
    <true>
@@ -240,10 +262,10 @@ catch (SAXException e) {
   <feature name='http://apache.org/xml/features/dom/include-ignorable-whitespace'
            id='dom.include-ignorable-whitespace'>
    <true>
-    Includes text nodes that can be considered "ignorable whitespace" in 
+    Include text nodes that can be considered "ignorable whitespace" in 
     the DOM tree.
    </true>
-   <false>Does not include ignorable whitespace in the DOM tree.</false>
+   <false>Do not include ignorable whitespace in the DOM tree.</false>
    <default value='true'/>
    <note>
     The only way that the parser can determine if text is ignorable 
