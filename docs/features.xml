@@ -303,11 +303,12 @@ catch (SAXException e) {
     <code>java.lang.String#intern(String):String</code> method.
    </true>
    <false>Names are not necessarily internalized.</false>
-   <default value='false'/>
+   <default value='true'/>
    <access parsing='read-only' not-parsing='read-write'/>
    <note>
     &ParserName; always internalizes all strings mentioned above
-    using the <code>String#intern()</code> method.
+    using the <code>String#intern()</code> method. This feature
+    can only be set to true.
    </note>
   </feature>
  </fcategory>
