@@ -121,6 +121,14 @@ import java.io.Reader;
  */
 public class XSDHandler {
 
+    /** Property identifier: error handler. */
+    protected static final String ERROR_HANDLER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
+
+    /** Property identifier: JAXP schema source. */
+    protected static final String JAXP_SCHEMA_SOURCE =
+        Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
+
     // data
 
     // different sorts of declarations; should make lookup and
@@ -515,29 +523,29 @@ public class XSDHandler {
         // If the context is instance, the validator would have already consulted the pool
         if ((sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace)) == null && referType == XSDDescription.CONTEXT_PREPARSE) {
             if (fGrammarPool != null) {
-            	grammarDescription = new SchemaGrammarDescription();
-            	grammarDescription.setContextType(referType);
-            	grammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
-            	grammarDescription.setLocationHints(new String[] {locationHint});
-            	sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(grammarDescription);
-             	if (sg != null) {
-             	    fGrammarBucket.putGrammar(sg);
-             	}
-	    }
-	}
-	if (sg == null) {
-	    grammarDescription = new SchemaGrammarDescription();
-	    grammarDescription.setContextType(referType);
-	    grammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
+                grammarDescription = new SchemaGrammarDescription();
+                grammarDescription.setContextType(referType);
+                grammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
+                grammarDescription.setLocationHints(new String[] {locationHint});
+                sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(grammarDescription);
+                if (sg != null) {
+                    fGrammarBucket.putGrammar(sg);
+                }
+            }
+        }
+        if (sg == null) {
+            grammarDescription = new SchemaGrammarDescription();
+            grammarDescription.setContextType(referType);
+            grammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
             grammarDescription.setLocationHints(new String[] {locationHint});
-	    sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace, grammarDescription);
+            sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace, grammarDescription);
             fGrammarBucket.putGrammar(sg);
-	}
-	// we got a grammar of the same namespace in the bucket, should ignore this one 
-	else if (referType == XSDDescription.CONTEXT_PREPARSE) {
+        }
+        // we got a grammar of the same namespace in the bucket, should ignore this one 
+        else if (referType == XSDDescription.CONTEXT_PREPARSE) {
             return null;
-	}
-	    
+        }
+            
         fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
 
         Vector dependencies = new Vector();
@@ -579,13 +587,13 @@ public class XSDHandler {
                 }
                 else {
                     if (fGrammarPool != null) {
-                    	fSchemaGrammarDescription.reset();
-                    	fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
-                    	sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(fSchemaGrammarDescription);
-                    	if (sg != null) {
-			    fGrammarBucket.putGrammar(sg);
-			    continue;
-			}
+                        fSchemaGrammarDescription.reset();
+                        fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
+                        sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(fSchemaGrammarDescription);
+                        if (sg != null) {
+                            fGrammarBucket.putGrammar(sg);
+                            continue;
+                        }
                     }
                 }
                 grammarDescription = new SchemaGrammarDescription();
@@ -1326,7 +1334,7 @@ public class XSDHandler {
         fLocationResolver.reset(entityResolver, externalSchemaLocation, externalNoNSSchemaLocation);
 
         try {
-            fSchemaParser.setProperty(XMLSchemaValidator.ERROR_REPORTER, fErrorReporter);
+            fSchemaParser.setProperty(ERROR_HANDLER, fErrorReporter.getErrorHandler());
         }
         catch (Exception e) {
         }
@@ -1400,8 +1408,7 @@ public class XSDHandler {
         } else if (componentType != Object.class) {
             // Not an Object[]
             throw new XMLConfigurationException(
-                XMLConfigurationException.NOT_SUPPORTED,
-                Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE);
+                XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
         }
 
         Object[] objArr = (Object[]) val;
@@ -1456,8 +1463,7 @@ public class XSDHandler {
             return new XMLInputSource(null, null, null, is, null);
         }
         throw new XMLConfigurationException(
-            XMLConfigurationException.NOT_SUPPORTED,
-            Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE);
+            XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
     }
 
     /**
@@ -1923,7 +1929,7 @@ public class XSDHandler {
     // used to identify a reference to a schema document
     // if the same document is referenced twice with the same key, then
     // we only need to parse it once.
-    private class XSDKey {
+    private static class XSDKey {
         String systemId;
         short  referType;
         String referNS;
