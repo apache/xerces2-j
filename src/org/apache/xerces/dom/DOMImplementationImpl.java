@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -188,11 +188,17 @@ public class DOMImplementationImpl
                                              throws DOMException
     {
     	if (doctype != null && doctype.getOwnerDocument() != null) {
-    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "DOM005 Wrong document");
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                   "DOM005 Wrong document");
         }
-        DocumentImpl doc = new DocumentImpl(doctype);
-        //((DocumentTypeImpl)doctype).ownerDocument = doc;
+        DocumentTypeImpl doctypeImpl;
+        try {
+            doctypeImpl = (DocumentTypeImpl) doctype;
+        } catch (ClassCastException e) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                   "DOM005 Wrong document");
+        }
+        DocumentImpl doc = new DocumentImpl(doctypeImpl);
         Element e = doc.createElementNS( namespaceURI, qualifiedName);
         doc.appendChild(e);
         return doc;

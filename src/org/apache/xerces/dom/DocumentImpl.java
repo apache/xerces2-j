@@ -249,7 +249,7 @@ public class DocumentImpl
         XMLCharacterProperties.initCharFlags();
     }
 
-    /** Experimental constructor. */
+    /** Constructor. */
     public DocumentImpl(boolean grammarAccess) {
         super(null);
         ownerDocument = this;
@@ -258,21 +258,23 @@ public class DocumentImpl
         XMLCharacterProperties.initCharFlags();
     }
 
-    // For DOM2: support.
-    // The createDocument factory method is in DOMImplementation.
-    public DocumentImpl(DocumentType doctype)
+    /**
+     * For DOM2 support.
+     * The createDocument factory method is in DOMImplementation.
+     */
+    public DocumentImpl(DocumentTypeImpl doctype)
     {
         this(doctype, false);
         // make sure the XMLCharacterProperties class is initilialized
         XMLCharacterProperties.initCharFlags();
     }
-    
-    /** Experimental constructor. */
-    public DocumentImpl(DocumentType doctype, boolean grammarAccess) {
+
+    /** For DOM2 support. */
+    public DocumentImpl(DocumentTypeImpl doctype, boolean grammarAccess) {
         this(grammarAccess);
-        this.docType = (DocumentTypeImpl)doctype;
-        if (this.docType != null) {
-            docType.ownerDocument = this;
+        if (doctype != null) {
+            doctype.ownerDocument = this;
+            appendChild(doctype);
         }
         // make sure the XMLCharacterProperties class is initilialized
         XMLCharacterProperties.initCharFlags();
