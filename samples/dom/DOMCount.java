@@ -85,6 +85,13 @@ public class DOMCount {
     private static final String
         DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
+    private static boolean setValidation    = false; //defaults
+    private static boolean setNameSpaces    = true;
+    private static boolean setSchemaSupport = true;
+    private static boolean setDeferredDOM   = true;
+
+
+
     //
     // Data
     //
@@ -101,6 +108,7 @@ public class DOMCount {
     /** Ignorable whitespace. */
     private long ignorableWhitespace;
 
+
     //
     // Public static methods
     //
@@ -113,6 +121,9 @@ public class DOMCount {
                 (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
             DOMCount counter = new DOMCount();
             long before = System.currentTimeMillis();
+            parser.setFeatures( new Features( setValidation, setNameSpaces, 
+                                    setSchemaSupport, setDeferredDOM ) );
+
             Document document = parser.parse(uri);
             counter.traverse(document);
             long after = System.currentTimeMillis();
@@ -230,53 +241,80 @@ public class DOMCount {
 
     /** Main program entry point. */
     public static void main(String argv[]) {
+        Arguments argopt = new Arguments();
+        argopt.setUsage( new String[] {
+        "usage: java dom.DOMCount (options) uri ...",
+                  "",
+                  "options:",
+                  "  -p name  Specify DOM parser wrapper by name.",
+                  "           Default parser: ",
+                  "  -n turn on  Namespace  - default",
+                  "  -v turn on  Validation - default",
+                  "  -s turn on  Schema support - default",
+                  "  -N turn off Namespace",
+                  "  -V turn off Validation",
+                  "  -S turn off Schema validation",
+                  "  -h       This help screen." } );
+
 
         // is there anything to do?
         if (argv.length == 0) {
-            printUsage();
+            argopt.printUsage();
             System.exit(1);
         }
 
         // vars
         String  parserName = DEFAULT_PARSER_NAME;
 
-        // check parameters
-        for (int i = 0; i < argv.length; i++) {
-            String arg = argv[i];
+        argopt.parseArgumentTokens(argv);
 
-            // options
-            if (arg.startsWith("-")) {
-                if (arg.equals("-p")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing parser name");
-                        System.exit(1);
-                    }
-                    parserName = argv[++i];
-                    continue;
-                }
-
-                if (arg.equals("-h")) {
-                    printUsage();
-                    System.exit(1);
-                }
+        int   c;
+        while ( (c =  argopt.getArguments()) != -1 ){
+            switch (c) {
+            case 'v':
+                setValidation = true;
+                break;
+            case 'V':
+                setValidation = false;
+                break;
+            case 'N':
+                setNameSpaces = false;
+                break;
+            case 'n':
+                setNameSpaces = true;
+                break;
+            case 'p':
+                parserName = argopt.getStringParameter();
+                break;
+            case 'd':
+                setDeferredDOM = true;
+                break;
+            case 'D':
+                setDeferredDOM = false;
+                break;
+            case 's':
+                System.out.println( "s" );
+                break;
+            case 'S':
+                System.out.println( "S" );
+                break;
+            case '?':
+            case 'h':
+            case '-':
+                argopt.printUsage();
+                System.exit(1);
+                break;
+            default:
+                break;
             }
+        }
 
-            // count uri
-            count(parserName, arg);
+        // count uri
+        
+        for( int j = 0; j<argopt.stringParameterLeft(); j++){
+               count(parserName, argopt.getStringParameter());
         }
 
     } // main(String[])
-
-    /** Prints the usage. */
-    private static void printUsage() {
-
-        System.err.println("usage: java dom.DOMCount (options) uri ...");
-        System.err.println();
-        System.err.println("options:");
-        System.err.println("  -p name  Specify DOM parser wrapper by name.");
-        System.err.println("           Default parser: "+DEFAULT_PARSER_NAME);
-        System.err.println("  -h       This help screen.");
-
-    } // printUsage()
 
 } // class DOMCount

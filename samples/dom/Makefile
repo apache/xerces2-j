@@ -1,6 +1,8 @@
 # Makefile for directory ./dom
 
 TARGETS=\
+	Arguments.class\
+	Features.class\
 	DOMAddLines.class\
 	DOMCount.class\
 	DOMFilter.class\

@@ -57,22 +57,44 @@
 
 package dom;
 
-import org.w3c.dom.Document;
+public class Features {
+    private boolean setValidation    = true;
+    private boolean setNameSpaces    = true;
+    private boolean setSchemaSupport = true;
+    private boolean setDeferredDOM   = true;
 
-/**
- * Encapsulates a DOM parser.
- *
- * @version
- */
-public interface DOMParserWrapper {
+    public Features(){
+    }
+    public Features( boolean validation, boolean namespace, boolean schemasupport, boolean deferredDOM ){
+           setValidationSet( validation );
+           setNamespaceSet( namespace );
+           setSchemasupportSet( schemasupport );
+           setDeferredDOMSet( deferredDOM );
+    }
 
-    //
-    // DOMParserWrapper methods
-    //
+    public void setValidationSet( boolean validation ){
+        setValidation = validation;
+    }
+    public void setNamespaceSet( boolean namespace ){
+        setNameSpaces = namespace;
+    }
+    public void setSchemasupportSet( boolean schemasupport ){
+        setSchemaSupport = schemasupport;
+    }
+    public void setDeferredDOMSet( boolean deferredDOM ){
+        setDeferredDOM = deferredDOM;
+    }
 
-    /** Parses the specified URI and returns the document. */
-    public Document parse(String uri) throws Exception;
-
-    public void setFeatures(Features feature );
-
-} // interface DOMParserWrapper
+    public boolean isValidationSet(){
+        return setValidation;
+    }
+    public boolean isNamespaceSet(){
+        return setNameSpaces;
+    }
+    public boolean isSchemasupportSet(){
+        return setSchemaSupport;
+    }
+    public boolean isDeferredDOMSet(){
+        return setDeferredDOM;
+    }
+}

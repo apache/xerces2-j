@@ -101,6 +101,7 @@ public class Arguments {
         int  theDash         = 0;
         int  lengthOfToken   = 0;
         char []bufferOfToken = null;
+        Object[] temp;
         for ( int i = 0; i<arguments.length; i++ ){
             bufferOfToken = arguments[i].toCharArray();
             lengthOfToken = bufferOfToken.length;
@@ -109,9 +110,34 @@ public class Arguments {
                     stackOfOptions.push( (Object ) new Integer(bufferOfToken[j] ));
                 }
             } else{
-                argumentList.addElement( arguments[i] ); 
+                argumentList.push( arguments[i] );
+                //argumentList.addElement( arguments[i] ); 
+         //       temp.addElement( arguments[i] );
             }
         }
+
+       //temp = argumentList.toArray();
+
+       //while( ! argumentList.isEmpty() ){
+         //  System.out.println( "remove" );
+          // argumentList.pop();
+      // }
+
+       //argumentList.removeAllElements();
+      // for( int j = temp.length -1 ; j>=0; j--){
+          //for( int j = 0; j < temp.length ; j++ )
+        //     System.out.println( "elem = " + temp[j] );
+          //   argumentList.push( temp[j] );
+       //}
+
+    //  for( int j = 0; j < argumentList.size() ; j++ ) {
+                                                    
+      //      System.out.println( "elem = " + (String )argumentList.elementAt( j) );
+       //}
+      
+
+
+        
     }
 
     /**
@@ -191,6 +217,10 @@ public class Arguments {
         tst.parseArgumentTokens(argv);
         while ( (c =  tst.getArguments()) != -1 ){
             switch (c) {
+            case 'e':
+                System.out.println( "e  = " + tst.getStringParameter() );
+                break;
+
             case 'v':
                 System.out.println( "v" );
                 break;
@@ -222,9 +252,6 @@ public class Arguments {
             case 'h':
             case '-':
                 tst.printUsage();
-                break;
-            case 'e':
-                System.out.println( "e  = " + tst.getStringParameter() );
                 break;
             default:
                 break;

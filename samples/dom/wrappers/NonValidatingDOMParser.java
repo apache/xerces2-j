@@ -58,6 +58,7 @@
 package dom.wrappers;
 
 import dom.DOMParserWrapper;
+import dom.Features;
 
 import org.w3c.dom.Document;
 
@@ -76,6 +77,9 @@ public class NonValidatingDOMParser
     //
     // Data
     //
+
+    Features feature = null;
+
 
     /** Parser. */
     org.apache.xerces.parsers.DOMParser parser = 
@@ -99,10 +103,27 @@ public class NonValidatingDOMParser
     /** Parses the specified URI and returns the document. */
     public Document parse(String uri) throws Exception {
 
+        try {
+            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+                             feature.isDeferredDOMSet() );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                             feature.isValidationSet());
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                             feature.isNamespaceSet() );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                             feature.isSchemasupportSet() );
+        } catch (SAXException e) {
+            System.out.println("error in setting up parser feature");
+        }
+
         parser.parse(uri);
         return parser.getDocument();
 
     } // parse(String):Document
+
+    public void setFeatures(Features fea ) {
+        feature = fea;
+    }
 
     //
     // ErrorHandler methods

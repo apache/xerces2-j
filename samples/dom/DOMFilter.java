@@ -85,6 +85,13 @@ public class DOMFilter {
     private static final String 
         DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
+    private static boolean setValidation    = false; //defaults
+    private static boolean setNameSpaces    = true;
+    private static boolean setSchemaSupport = true;
+    private static boolean setDeferredDOM   = true;
+
+
+
     //
     // Public static methods
     //
@@ -97,6 +104,9 @@ public class DOMFilter {
             // parse document
             DOMParserWrapper parser = 
                 (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
+            parser.setFeatures( new Features( setValidation, setNameSpaces, 
+                        setSchemaSupport, setDeferredDOM ) );
+
             Document document = parser.parse(uri);
 
             // get elements that match
@@ -218,9 +228,27 @@ public class DOMFilter {
     /** Main program entry point. */
     public static void main(String argv[]) {
 
+        Arguments argopt = new Arguments();
+        argopt.setUsage( new String[] 
+        { "usage: java dom.DOMFilter (options) uri ...","",
+        "options:",
+        "  -p name  Specify DOM parser wrapper by name.",
+        "           Default parser: "+DEFAULT_PARSER_NAME,
+        "  -e name  Specify element name to search for. Default is \"*\".",
+        "  -a name  Specify attribute name of specified elements.",
+        "  -n turn on  Namespace  - default",
+        "  -v turn on  Validation - default",
+        "  -s turn on  Schema support - default",
+        "  -d turn on  Deferred DOM - default",
+        "  -N turn off Namespace",
+        "  -V turn off Validation",
+        "  -S turn off Schema validation",
+        "  -D turn off Deferred DOM",
+        "  -h       This help screen." } );
+
         // is there anything to do?
         if (argv.length == 0) {
-            printUsage();
+            argopt.printUsage();
             System.exit(1);
         }
 
@@ -229,64 +257,67 @@ public class DOMFilter {
         String elementName   = "*"; // all elements
         String attributeName = null;
 
-        // check parameters
-        for (int i = 0; i < argv.length; i++) {
-            String arg = argv[i];
+        /////
 
-            // options
-            if (arg.startsWith("-")) {
-                if (arg.equals("-p")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing parser name");
-                        System.exit(1);
-                    }
-                    parserName = argv[++i];
-                    continue;
-                }
-
-                if (arg.equals("-e")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing element name");
-                        System.exit(1);
-                    }
-                    elementName = argv[++i];
-                    continue;
-                }
-
-                if (arg.equals("-a")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing attribute name");
-                        System.exit(1);
-                    }
-                    attributeName = argv[++i];
-                    continue;
-                }
-
-                if (arg.equals("-h")) {
-                    printUsage();
-                    System.exit(1);
-                }
+        int   c;
+        while ( (c =  argopt.getArguments()) != -1 ){
+            switch (c) {
+            case 'v':
+                setValidation = true;
+                break;
+            case 'V':
+                setValidation = false;
+                break;
+            case 'N':
+                setNameSpaces = false;
+                break;
+            case 'n':
+                setNameSpaces = true;
+                break;
+            case 'p':
+                parserName = argopt.getStringParameter();
+                break;
+            case 'd':
+                setDeferredDOM = true;
+                break;
+            case 'D':
+                setDeferredDOM = false;
+                break;
+            case 's':
+                System.out.println( "s" );
+                break;
+            case 'S':
+                System.out.println( "S" );
+                break;
+            case 'e':
+                elementName = argopt.getStringParameter();
+                break;
+            case 'a':
+                attributeName  = argopt.getStringParameter();
+                break;
+            case '?':
+            case 'h':
+            case '-':
+                argopt.printUsage();
+                System.exit(1);
+                break;
+            default:
+                break;
             }
-
-            // print uri
-            System.err.println(arg+':');
-            print(parserName, arg, elementName, attributeName);
         }
 
+        // count uri
+        
+        String argument = argopt.getStringParameter();
+        ////
+
+
+        // check parameters
+
+        // print uri
+         System.err.println(argument+':');
+            print(parserName, argument, elementName, attributeName);
+
     } // main(String[])
-
-    /** Prints the usage. */
-    private static void printUsage() {
-
-        System.err.println("usage: java dom.DOMFilter (options) uri ...");
-        System.err.println();
-        System.err.println("options:");
-        System.err.println("  -p name  Specify DOM parser wrapper by name.");
-        System.err.println("           Default parser: "+DEFAULT_PARSER_NAME);
-        System.err.println("  -e name  Specify element name to search for. Default is \"*\".");
-        System.err.println("  -a name  Specify attribute name of specified elements.");
-        System.err.println("  -h       This help screen.");
-
-    } // printUsage()
 
 } // class DOMFilter

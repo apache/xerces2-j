@@ -78,30 +78,39 @@ import org.apache.xerces.readers.MIME2Java;
  */
 public class DOMWriter {
 
-   //
-   // Constants
-   //
+    //
+    // Constants
+    //
 
-   /** Default parser name. */
-   private static final String 
-   DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
-   //
-   // Data
-   //
+    /** Default parser name. */
+    private static final String 
+    DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
-   /** Default Encoding */
-   private static  String
-   PRINTWRITER_ENCODING = "UTF8";
 
-   private static String MIME2JAVA_ENCODINGS[] =
+    private static boolean setValidation    = false; //defaults
+    private static boolean setNameSpaces    = true;
+    private static boolean setSchemaSupport = true;
+    private static boolean setDeferredDOM   = true;
+
+
+
+    //
+    // Data
+    //
+
+    /** Default Encoding */
+    private static  String
+    PRINTWRITER_ENCODING = "UTF8";
+
+    private static String MIME2JAVA_ENCODINGS[] =
     { "Default", "UTF-8", "US-ASCII", "ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", 
-      "ISO-8859-5", "ISO-8859-6", "ISO-8859-7", "ISO-8859-8", "ISO-8859-9", "ISO-2022-JP",
-      "SHIFT_JIS", "EUC-JP","GB2312", "BIG5", "EUC-KR", "ISO-2022-KR", "KOI8-R", "EBCDIC-CP-US", 
-      "EBCDIC-CP-CA", "EBCDIC-CP-NL", "EBCDIC-CP-DK", "EBCDIC-CP-NO", "EBCDIC-CP-FI", "EBCDIC-CP-SE",
-      "EBCDIC-CP-IT", "EBCDIC-CP-ES", "EBCDIC-CP-GB", "EBCDIC-CP-FR", "EBCDIC-CP-AR1", 
-      "EBCDIC-CP-HE", "EBCDIC-CP-CH", "EBCDIC-CP-ROECE","EBCDIC-CP-YU",  
-      "EBCDIC-CP-IS", "EBCDIC-CP-AR2", "UTF-16"
+        "ISO-8859-5", "ISO-8859-6", "ISO-8859-7", "ISO-8859-8", "ISO-8859-9", "ISO-2022-JP",
+        "SHIFT_JIS", "EUC-JP","GB2312", "BIG5", "EUC-KR", "ISO-2022-KR", "KOI8-R", "EBCDIC-CP-US", 
+        "EBCDIC-CP-CA", "EBCDIC-CP-NL", "EBCDIC-CP-DK", "EBCDIC-CP-NO", "EBCDIC-CP-FI", "EBCDIC-CP-SE",
+        "EBCDIC-CP-IT", "EBCDIC-CP-ES", "EBCDIC-CP-GB", "EBCDIC-CP-FR", "EBCDIC-CP-AR1", 
+        "EBCDIC-CP-HE", "EBCDIC-CP-CH", "EBCDIC-CP-ROECE","EBCDIC-CP-YU",  
+        "EBCDIC-CP-IS", "EBCDIC-CP-AR2", "UTF-16"
     };
 
 
@@ -133,353 +142,374 @@ public class DOMWriter {
       "MacUkraine", "SJIS", "Unicode", "UnicodeBig", "UnicodeLittle", "UTF8"};
 */
 
-   /** Print writer. */
-   protected PrintWriter out;
+    /** Print writer. */
+    protected PrintWriter out;
 
-   /** Canonical output. */
-   protected boolean canonical;
-
-
-   public DOMWriter(String encoding, boolean canonical)              
-   throws UnsupportedEncodingException {
-      out = new PrintWriter(new OutputStreamWriter(System.out, encoding));
-      this.canonical = canonical;
-   } // <init>(String,boolean)
-
-   //
-   // Constructors
-   //
-
-   /** Default constructor. */
-   public DOMWriter(boolean canonical) throws UnsupportedEncodingException {
-      this( getWriterEncoding(), canonical);
-   }
-
-   public static String getWriterEncoding( ) {
-      return (PRINTWRITER_ENCODING);
-   }// getWriterEncoding 
-
-   public static void  setWriterEncoding( String encoding ) {
-      if( encoding.equalsIgnoreCase( "DEFAULT" ) )
-         PRINTWRITER_ENCODING  = "UTF8";
-      else if( encoding.equalsIgnoreCase( "UTF-16" ) )
-         PRINTWRITER_ENCODING  = "Unicode";
-      else
-         PRINTWRITER_ENCODING = MIME2Java.convert( encoding ); 
-   }// setWriterEncoding 
+    /** Canonical output. */
+    protected boolean canonical;
 
 
-   public static boolean isValidJavaEncoding( String encoding ) {
-      for ( int i = 0; i < MIME2JAVA_ENCODINGS.length; i++ )
-         if ( encoding.equals( MIME2JAVA_ENCODINGS[i] ) )
-            return (true);
+    public DOMWriter(String encoding, boolean canonical)              
+    throws UnsupportedEncodingException {
+        out = new PrintWriter(new OutputStreamWriter(System.out, encoding));
+        this.canonical = canonical;
+    } // <init>(String,boolean)
 
-      return (false);
-   }// isValidJavaEncoding 
+    //
+    // Constructors
+    //
+
+    /** Default constructor. */
+    public DOMWriter(boolean canonical) throws UnsupportedEncodingException {
+        this( getWriterEncoding(), canonical);
+    }
+
+    public static String getWriterEncoding( ) {
+        return(PRINTWRITER_ENCODING);
+    }// getWriterEncoding 
+
+    public static void  setWriterEncoding( String encoding ) {
+        if ( encoding.equalsIgnoreCase( "DEFAULT" ) )
+            PRINTWRITER_ENCODING  = "UTF8";
+        else if ( encoding.equalsIgnoreCase( "UTF-16" ) )
+            PRINTWRITER_ENCODING  = "Unicode";
+        else
+            PRINTWRITER_ENCODING = MIME2Java.convert( encoding ); 
+    }// setWriterEncoding 
+
+
+    public static boolean isValidJavaEncoding( String encoding ) {
+        for ( int i = 0; i < MIME2JAVA_ENCODINGS.length; i++ )
+            if ( encoding.equals( MIME2JAVA_ENCODINGS[i] ) )
+                return(true);
+
+        return(false);
+    }// isValidJavaEncoding 
 
 
 
-   /** Prints the resulting document tree. */
-   public static void print(String parserWrapperName, String uri, 
-                            boolean canonical ) {
-      try {
-         DOMParserWrapper parser = 
-         (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
-         Document document = parser.parse(uri);
-         DOMWriter writer = new DOMWriter(canonical);
-         writer.print(document);
-      } catch ( Exception e ) {
-         //e.printStackTrace(System.err);
-      }
+    /** Prints the resulting document tree. */
+    public static void print(String parserWrapperName, String uri, 
+                             boolean canonical ) {
+        try {
+            DOMParserWrapper parser = 
+            (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
+            parser.setFeatures( new Features( setValidation, setNameSpaces, 
+                                              setSchemaSupport, setDeferredDOM ) );
 
-   } // print(String,String,boolean)
+            Document document = parser.parse(uri);
+            DOMWriter writer = new DOMWriter(canonical);
+            writer.print(document);
+        } catch ( Exception e ) {
+            //e.printStackTrace(System.err);
+        }
+
+    } // print(String,String,boolean)
 
 
-   /** Prints the specified node, recursively. */
-   public void print(Node node) {
+    /** Prints the specified node, recursively. */
+    public void print(Node node) {
 
-      // is there anything to do?
-      if ( node == null ) {
-         return;
-      }
+        // is there anything to do?
+        if ( node == null ) {
+            return;
+        }
 
-      int type = node.getNodeType();
-      switch ( type ) {
-         // print document
-         case Node.DOCUMENT_NODE: {
-               if ( !canonical ) {
-                  String  Encoding = this.getWriterEncoding();
-                  if( Encoding.equalsIgnoreCase( "DEFAULT" ) )
-                     Encoding = "UTF-8";
-                  else if( Encoding.equalsIgnoreCase( "Unicode" ) )
-                     Encoding = "UTF-16";
-                  else 
-                     Encoding = MIME2Java.reverse( Encoding );
+        int type = node.getNodeType();
+        switch ( type ) {
+        // print document
+        case Node.DOCUMENT_NODE: {
+                if ( !canonical ) {
+                    String  Encoding = this.getWriterEncoding();
+                    if ( Encoding.equalsIgnoreCase( "DEFAULT" ) )
+                        Encoding = "UTF-8";
+                    else if ( Encoding.equalsIgnoreCase( "Unicode" ) )
+                        Encoding = "UTF-16";
+                    else
+                        Encoding = MIME2Java.reverse( Encoding );
 
-                  out.println("<?xml version=\"1.0\" encoding=\""+
-                           Encoding + "\"?>");
-               }
-               print(((Document)node).getDocumentElement());
-               out.flush();
-               break;
+                    out.println("<?xml version=\"1.0\" encoding=\""+
+                                Encoding + "\"?>");
+                }
+                print(((Document)node).getDocumentElement());
+                out.flush();
+                break;
             }
 
             // print element with attributes
-         case Node.ELEMENT_NODE: {
-               out.print('<');
-               out.print(node.getNodeName());
-               Attr attrs[] = sortAttributes(node.getAttributes());
-               for ( int i = 0; i < attrs.length; i++ ) {
-                  Attr attr = attrs[i];
-                  out.print(' ');
-                  out.print(attr.getNodeName());
-                  out.print("=\"");
-                  out.print(normalize(attr.getNodeValue()));
-                  out.print('"');
-               }
-               out.print('>');
-               NodeList children = node.getChildNodes();
-               if ( children != null ) {
-                  int len = children.getLength();
-                  for ( int i = 0; i < len; i++ ) {
-                     print(children.item(i));
-                  }
-               }
-               break;
+        case Node.ELEMENT_NODE: {
+                out.print('<');
+                out.print(node.getNodeName());
+                Attr attrs[] = sortAttributes(node.getAttributes());
+                for ( int i = 0; i < attrs.length; i++ ) {
+                    Attr attr = attrs[i];
+                    out.print(' ');
+                    out.print(attr.getNodeName());
+                    out.print("=\"");
+                    out.print(normalize(attr.getNodeValue()));
+                    out.print('"');
+                }
+                out.print('>');
+                NodeList children = node.getChildNodes();
+                if ( children != null ) {
+                    int len = children.getLength();
+                    for ( int i = 0; i < len; i++ ) {
+                        print(children.item(i));
+                    }
+                }
+                break;
             }
 
             // handle entity reference nodes
-         case Node.ENTITY_REFERENCE_NODE: {
-               if ( canonical ) {
-                  NodeList children = node.getChildNodes();
-                  if ( children != null ) {
-                     int len = children.getLength();
-                     for ( int i = 0; i < len; i++ ) {
-                        print(children.item(i));
-                     }
-                  }
-               } else {
-                  out.print('&');
-                  out.print(node.getNodeName());
-                  out.print(';');
-               }
-               break;
+        case Node.ENTITY_REFERENCE_NODE: {
+                if ( canonical ) {
+                    NodeList children = node.getChildNodes();
+                    if ( children != null ) {
+                        int len = children.getLength();
+                        for ( int i = 0; i < len; i++ ) {
+                            print(children.item(i));
+                        }
+                    }
+                } else {
+                    out.print('&');
+                    out.print(node.getNodeName());
+                    out.print(';');
+                }
+                break;
             }
 
             // print cdata sections
-         case Node.CDATA_SECTION_NODE: {
-               if ( canonical ) {
-                  out.print(normalize(node.getNodeValue()));
-               } else {
-                  out.print("<![CDATA[");
-                  out.print(node.getNodeValue());
-                  out.print("]]>");
-               }
-               break;
+        case Node.CDATA_SECTION_NODE: {
+                if ( canonical ) {
+                    out.print(normalize(node.getNodeValue()));
+                } else {
+                    out.print("<![CDATA[");
+                    out.print(node.getNodeValue());
+                    out.print("]]>");
+                }
+                break;
             }
 
             // print text
-         case Node.TEXT_NODE: {
-               out.print(normalize(node.getNodeValue()));
-               break;
+        case Node.TEXT_NODE: {
+                out.print(normalize(node.getNodeValue()));
+                break;
             }
 
             // print processing instruction
-         case Node.PROCESSING_INSTRUCTION_NODE: {
-               out.print("<?");
-               out.print(node.getNodeName());
-               String data = node.getNodeValue();
-               if ( data != null && data.length() > 0 ) {
-                  out.print(' ');
-                  out.print(data);
-               }
-               out.print("?>");
-               break;
+        case Node.PROCESSING_INSTRUCTION_NODE: {
+                out.print("<?");
+                out.print(node.getNodeName());
+                String data = node.getNodeValue();
+                if ( data != null && data.length() > 0 ) {
+                    out.print(' ');
+                    out.print(data);
+                }
+                out.print("?>");
+                break;
             }
-      }
+        }
 
-      if ( type == Node.ELEMENT_NODE ) {
-         out.print("</");
-         out.print(node.getNodeName());
-         out.print('>');
-      }
+        if ( type == Node.ELEMENT_NODE ) {
+            out.print("</");
+            out.print(node.getNodeName());
+            out.print('>');
+        }
 
-      out.flush();
+        out.flush();
 
-   } // print(Node)
+    } // print(Node)
 
-   /** Returns a sorted list of attributes. */
-   protected Attr[] sortAttributes(NamedNodeMap attrs) {
+    /** Returns a sorted list of attributes. */
+    protected Attr[] sortAttributes(NamedNodeMap attrs) {
 
-      int len = (attrs != null) ? attrs.getLength() : 0;
-      Attr array[] = new Attr[len];
-      for ( int i = 0; i < len; i++ ) {
-         array[i] = (Attr)attrs.item(i);
-      }
-      for ( int i = 0; i < len - 1; i++ ) {
-         String name  = array[i].getNodeName();
-         int    index = i;
-         for ( int j = i + 1; j < len; j++ ) {
-            String curName = array[j].getNodeName();
-            if ( curName.compareTo(name) < 0 ) {
-               name  = curName;
-               index = j;
+        int len = (attrs != null) ? attrs.getLength() : 0;
+        Attr array[] = new Attr[len];
+        for ( int i = 0; i < len; i++ ) {
+            array[i] = (Attr)attrs.item(i);
+        }
+        for ( int i = 0; i < len - 1; i++ ) {
+            String name  = array[i].getNodeName();
+            int    index = i;
+            for ( int j = i + 1; j < len; j++ ) {
+                String curName = array[j].getNodeName();
+                if ( curName.compareTo(name) < 0 ) {
+                    name  = curName;
+                    index = j;
+                }
             }
-         }
-         if ( index != i ) {
-            Attr temp    = array[i];
-            array[i]     = array[index];
-            array[index] = temp;
-         }
-      }
-
-      return (array);
-
-   } // sortAttributes(NamedNodeMap):Attr[]
-
-
-   //
-   // Main
-   //
-
-   /** Main program entry point. */
-   public static void main(String argv[]) {
-
-      // is there anything to do?
-      if ( argv.length == 0 ) {
-         printUsage();
-         System.exit(1);
-      }
-
-      // vars
-      String  parserName = DEFAULT_PARSER_NAME;
-      boolean canonical  = false;
-      String  encoding   = "UTF8"; // default encoding
-
-      // check parameters
-      for ( int i = 0; i < argv.length; i++ ) {
-         String arg = argv[i];
-
-         // options
-         if ( arg.startsWith("-") ) {
-            if ( arg.equals("-p") ) {
-               if ( i == argv.length - 1 ) {
-                  System.err.println("error: missing parser name");
-                  System.exit(1);
-               }
-               parserName = argv[++i];
-               continue;
+            if ( index != i ) {
+                Attr temp    = array[i];
+                array[i]     = array[index];
+                array[index] = temp;
             }
+        }
 
-            if ( arg.equals("-c") ) {
-               canonical = true;
-               continue;
-            }
+        return(array);
 
-            if ( arg.equals("-h") ) {
-               printUsage();
-               System.exit(1);
-            }
+    } // sortAttributes(NamedNodeMap):Attr[]
 
-            if ( arg.equals("-e") ) {
-               if ( i == argv.length - 1 ) {
-                  System.err.println("error: missing encoding name");
-                  printValidJavaEncoding();
-                  System.exit(1);
-               } else {
-                  encoding = argv[++i];
-                  if ( isValidJavaEncoding( encoding ) )
+
+    //
+    // Main
+    //
+
+    /** Main program entry point. */
+    public static void main(String argv[]) {
+        Arguments argopt = new Arguments();
+        argopt.setUsage( new String[] {
+                             "usage: java dom.DOMWriter (options) uri ...","",
+                             "options:",
+                             "  -p name  Specify DOM parser wrapper by name.",
+                             "           Default parser: "+DEFAULT_PARSER_NAME,
+                             "  -c       Canonical XML output.",
+                             "  -n turn on  Namespace  - default",
+                             "  -v turn on  Validation - default",
+                             "  -s turn on  Schema support - default",
+                             "  -d turn on  Deferred DOM - default",
+                             "  -N turn off Namespace",
+                             "  -V turn off Validation",
+                             "  -S turn off Schema validation",
+                             "  -D turn off Deferred DOM",
+                             "  -h       This help screen.",
+                             "  -e       Output Java Encoding.",
+                             "           Default encoding: UTF-8"} );
+
+
+
+        // is there anything to do?
+        if ( argv.length == 0 ) {
+            argopt.printUsage();
+            System.exit(1);
+        }
+
+        // vars
+        String  parserName = DEFAULT_PARSER_NAME;
+        boolean canonical  = false;
+        String  encoding   = "UTF8"; // default encoding
+
+        argopt.parseArgumentTokens(argv);
+
+        int   c;
+        while ( (c =  argopt.getArguments()) != -1 ){
+            switch (c) {
+            case 'c':
+                canonical = true;
+                break;
+            case 'e':
+                encoding      = argopt.getStringParameter();
+                System.out.println(" encoding = " + encoding );
+                if ( encoding != null && isValidJavaEncoding( encoding ) )
                      setWriterEncoding( encoding );
-                  else {
+                else {
                      printValidJavaEncoding();
                      System.exit( 1 );
-                  }
-               }
-               continue;
+                     }
+                break;
+            case 'v':
+                setValidation = true;
+                break;
+            case 'V':
+                setValidation = false;
+                break;
+            case 'N':
+                setNameSpaces = false;
+                break;
+            case 'n':
+                setNameSpaces = true;
+                break;
+            case 'p':
+                parserName    = argopt.getStringParameter();
+                System.out.println( "parserNam =" + parserName );
+                break;
+            case 'd':
+                setDeferredDOM = true;
+                break;
+            case 'D':
+                setDeferredDOM = false;
+                break;
+            case 's':
+                System.out.println( "s" );
+                break;
+            case 'S':
+                System.out.println( "S" );
+                break;
+            case '?':
+            case 'h':
+            case '-':
+                argopt.printUsage();
+                System.exit(1);
+                break;
+            default:
+                break;
             }
+        }
 
-         }
-
-         // print uri
-         System.err.println(arg+':');
-         print(parserName, arg, canonical );
-         System.err.println();
-      }
-
-   } // main(String[])
+       // print uri
+       String argument = argopt.getStringParameter();
+       System.err.println(argument+':');
+       print(parserName, argument, canonical );
+       System.err.println();
+    } // main(String[])
 
 
-   /** Normalizes the given string. */
-   protected String normalize(String s) {
-      StringBuffer str = new StringBuffer();
+    /** Normalizes the given string. */
+    protected String normalize(String s) {
+        StringBuffer str = new StringBuffer();
 
-      int len = (s != null) ? s.length() : 0;
-      for ( int i = 0; i < len; i++ ) {
-         char ch = s.charAt(i);
-         switch ( ch ) {
+        int len = (s != null) ? s.length() : 0;
+        for ( int i = 0; i < len; i++ ) {
+            char ch = s.charAt(i);
+            switch ( ch ) {
             case '<': {
-                  str.append("&lt;");
-                  break;
-               }
+                    str.append("&lt;");
+                    break;
+                }
             case '>': {
-                  str.append("&gt;");
-                  break;
-               }
+                    str.append("&gt;");
+                    break;
+                }
             case '&': {
-                  str.append("&amp;");
-                  break;
-               }
+                    str.append("&amp;");
+                    break;
+                }
             case '"': {
-                  str.append("&quot;");
-                  break;
-               }
+                    str.append("&quot;");
+                    break;
+                }
             case '\r':
             case '\n': {
-                  if ( canonical ) {
-                     str.append("&#");
-                     str.append(Integer.toString(ch));
-                     str.append(';');
-                     break;
-                  }
-                  // else, default append char
-               }
+                    if ( canonical ) {
+                        str.append("&#");
+                        str.append(Integer.toString(ch));
+                        str.append(';');
+                        break;
+                    }
+                    // else, default append char
+                }
             default: {
-                  str.append(ch);
-               }
-         }
-      }
+                    str.append(ch);
+                }
+            }
+        }
 
-      return (str.toString());
+        return(str.toString());
 
-   } // normalize(String):String
+    } // normalize(String):String
 
-   /** Prints the usage. */
-   private static void printUsage() {
 
-      System.err.println("usage: java dom.DOMWriter (options) uri ...");
-      System.err.println();
-      System.err.println("options:");
-      System.err.println("  -p name  Specify DOM parser wrapper by name.");
-      System.err.println("           Default parser: "+DEFAULT_PARSER_NAME);
-      System.err.println("  -c       Canonical XML output.");
-      System.err.println("  -h       This help screen.");
-      System.err.println("  -e       Output Java Encoding.");
-      System.err.println("           Default encoding: UTF-8");
+    private static void printValidJavaEncoding() {
+        System.err.println( "    ENCODINGS:" );
+        System.err.print( "   " );
+        for ( int i = 0;
+            i < MIME2JAVA_ENCODINGS.length; i++) {
+            System.err.print( MIME2JAVA_ENCODINGS[i] + " " );
+            if ( (i % 7 ) == 0 ){
+                System.err.println();
+                System.err.print( "   " );
+            }
+        }
 
-   } // printUsage()
-
-   private static void printValidJavaEncoding() {
-      System.err.println( "    ENCODINGS:" );
-      System.err.print( "   " );
-      for( int i = 0;
-                     i < MIME2JAVA_ENCODINGS.length; i++) {
-         System.err.print( MIME2JAVA_ENCODINGS[i] + " " );
-      if( (i % 7 ) == 0 ){
-         System.err.println();
-         System.err.print( "   " );
-         }
-      }
-
-   } // printJavaEncoding()            
+    } // printJavaEncoding()            
 
 } 
