@@ -404,6 +404,7 @@ public class HTMLTableElementImpl
                     removeChild ( child );
                     return;
                 }
+                --index;
             }
             else
             if ( child instanceof HTMLTableSectionElementImpl )
