@@ -57,8 +57,10 @@
 
 package org.apache.xerces.impl;
 
+import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -174,48 +176,61 @@ public class XMLVersionDetector {
      *                  otherwise Constants.XML_VERSION_1_0 
 	 * @throws IOException
 	 */
-    public short determineDocVersion(XMLInputSource inputSource) throws IOException {
-        fEncoding = fEntityManager.setupCurrentEntity(fXMLSymbol, inputSource, false, true);
+	public short determineDocVersion(XMLInputSource inputSource) throws IOException {
+		fEncoding = fEntityManager.setupCurrentEntity(fXMLSymbol, inputSource, false, true);
 
-        // must assume 1.1 at this stage so that whitespace
-        // handling is correct in the XML decl...
-        fEntityManager.setScannerVersion(Constants.XML_VERSION_1_1);
-        XMLEntityScanner scanner = fEntityManager.getEntityScanner();
-        if(!scanner.skipString("<?xml"))  {
-            // definitely not a well-formed 1.1 doc!
-            return Constants.XML_VERSION_1_0;
-        }
-        if(!scanner.skipSpaces()) {
-            fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 5);
-            return Constants.XML_VERSION_1_0;
-        }
-        if(!scanner.skipString("version"))  {
-            fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 6);
-            return Constants.XML_VERSION_1_0;
-        }
-        scanner.skipSpaces();
-        if(scanner.scanChar() != '=') {
-            fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 13);
-            return Constants.XML_VERSION_1_0;
-        }
-        scanner.skipSpaces();
-        int quoteChar = scanner.scanChar();
-        EXPECTED_VERSION_STRING[14] = (char)quoteChar;
-        for (int versionPos=0; versionPos<XML11_VERSION.length; versionPos++) {
-            EXPECTED_VERSION_STRING[15+versionPos] = (char)scanner.scanChar();
-        } 
-        // REVISIT:  should we check whether this equals quoteChar? 
-        EXPECTED_VERSION_STRING[18] = (char)scanner.scanChar();
-        fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 19);
-        int matched = 0;
-        for(; matched<XML11_VERSION.length; matched++) {
-            if(EXPECTED_VERSION_STRING[15+matched] != XML11_VERSION[matched]) break;
-        }
-        if(matched == XML11_VERSION.length)
-            return Constants.XML_VERSION_1_1;
-        return Constants.XML_VERSION_1_0;
+		// must assume 1.1 at this stage so that whitespace
+		// handling is correct in the XML decl...
+		fEntityManager.setScannerVersion(Constants.XML_VERSION_1_1);
+		XMLEntityScanner scanner = fEntityManager.getEntityScanner();
+		try {
+			if (!scanner.skipString("<?xml")) {
+				// definitely not a well-formed 1.1 doc!
+				return Constants.XML_VERSION_1_0;
+			}
+			if (!scanner.skipSpaces()) {
+				fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 5);
+				return Constants.XML_VERSION_1_0;
+			}
+			if (!scanner.skipString("version")) {
+				fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 6);
+				return Constants.XML_VERSION_1_0;
+			}
+			scanner.skipSpaces();
+			if (scanner.scanChar() != '=') {
+				fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 13);
+				return Constants.XML_VERSION_1_0;
+			}
+			scanner.skipSpaces();
+			int quoteChar = scanner.scanChar();
+			EXPECTED_VERSION_STRING[14] = (char) quoteChar;
+			for (int versionPos = 0; versionPos < XML11_VERSION.length; versionPos++) {
+				EXPECTED_VERSION_STRING[15 + versionPos] = (char) scanner.scanChar();
+			}
+			// REVISIT:  should we check whether this equals quoteChar? 
+			EXPECTED_VERSION_STRING[18] = (char) scanner.scanChar();
+			fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 19);
+			int matched = 0;
+			for (; matched < XML11_VERSION.length; matched++) {
+				if (EXPECTED_VERSION_STRING[15 + matched] != XML11_VERSION[matched])
+					break;
+			}
+			if (matched == XML11_VERSION.length)
+				return Constants.XML_VERSION_1_1;
+			return Constants.XML_VERSION_1_0;
+			// premature end of file
+		}
+		catch (EOFException e) {
+			fErrorReporter.reportError(
+				XMLMessageFormatter.XML_DOMAIN,
+				"PrematureEOF",
+				null,
+				XMLErrorReporter.SEVERITY_FATAL_ERROR);
+			return Constants.XML_VERSION_1_0;
+			
+		}
 
-    }
+	}
 
     // This method prepends "length" chars from the char array,
     // from offset 0, to the manager's fCurrentEntity.ch.

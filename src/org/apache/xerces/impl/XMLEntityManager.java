@@ -1266,6 +1266,7 @@ public class XMLEntityManager
                 fEntities.put(key, value);
             }
         }
+        fEntityHandler = null;
 
     } // reset(XMLComponentManager)
 
