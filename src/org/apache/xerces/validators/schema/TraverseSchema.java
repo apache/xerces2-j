@@ -4512,7 +4512,6 @@ public class TraverseSchema implements
       }
  
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        System.out.println("here");
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.3:  Element occurrence range not a restriction of base element's range: element is " +  fStringPool.toString(localpart1));
       }
 
@@ -5045,6 +5044,10 @@ throws Exception {
     // Checks constraints for minOccurs, maxOccurs and expands content model 
     // accordingly
     private int handleOccurrences ( int index, Element particle) throws Exception {
+        
+        // if index is invalid, return
+        if (index < 0) 
+          return index;
         
         String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
         String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();    
