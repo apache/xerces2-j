@@ -242,15 +242,7 @@ public class DOMASBuilderImpl
     public ASModel parseASURI(String uri)
                               throws DOMASException, Exception {
         XMLInputSource source = new XMLInputSource(null, uri, null);
-        try {
-            return parseASInputSource(source);
-        }
-
-        catch (XNIException e) {
-            Exception ex = e.getException();
-            throw ex;
-        }
-
+        return parseASInputSource(source);
     }
 
     /**
