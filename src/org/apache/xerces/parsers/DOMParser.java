@@ -972,11 +972,16 @@ public class DOMParser
              fDocumentImpl.setEncoding(fStringPool.toString(encodingIndex));
              fDocumentImpl.setStandalone(standalone);
          }
-         else {              
+         else if (fDeferredDocumentImpl != null) {              
              fDeferredDocumentImpl.setVersion(fStringPool.toString(versionIndex));
              fDeferredDocumentImpl.setEncoding(fStringPool.toString(encodingIndex));
              fDeferredDocumentImpl.setStandalone(standalone);
          }
+         else{
+          //non xerces implementation
+         }
+         
+         
     }
 
     /** Text declaration. 
@@ -1001,7 +1006,7 @@ public class DOMParser
             }    
         }
        // full node expansion
-       else { 
+       else if (fDocumentImpl !=null){ 
             NamedNodeMap entities = fDocumentType.getEntities();
             if (entities!=null) {
                 EntityImpl entityNode = (EntityImpl)entities.getNamedItem(fCurrentElementNode.getNodeName());
@@ -1010,6 +1015,9 @@ public class DOMParser
                     entityNode.setEncoding(fStringPool.toString(encodingIndex));
                 }
             }
+        }
+        else {
+           //non xerces implementation
         }
     }
 
