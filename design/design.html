@@ -83,7 +83,6 @@
   <BLOCKQUOTE>
    <A name="XMLDocumentHandler"><DL class="interface">
      <DT>interface <SPAN class="interface-title">XMLDocumentHandler</SPAN>
-     <DD class="extends">      extends      <SPAN class="interface-title">XMLEntityHandler</SPAN>
      <DD class="methods">      methods:      <UL>
        <LI>
         <SPAN class="method-title">startDocument</SPAN>      (
@@ -120,6 +119,20 @@
         class="param-title">prefix</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">uri</SPAN>          )
+       <LI>
+        <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">publicId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">systemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">encoding</SPAN>          )
+       <LI>
+        <SPAN class="method-title">endEntity</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>          )
        <LI>
         <SPAN class="method-title">startElement</SPAN>      (   <SPAN
         class="class-title">QName</SPAN> <SPAN
@@ -180,7 +193,6 @@
   <BLOCKQUOTE>
    <A name="XMLDTDHandler"><DL class="interface">
      <DT>interface <SPAN class="interface-title">XMLDTDHandler</SPAN>
-     <DD class="extends">      extends      <SPAN class="interface-title">XMLEntityHandler</SPAN>
      <DD class="constants">      constants:      <UL>
        <LI>short <SPAN class="constant-title">CONDITIONAL_INCLUDE</SPAN>
        <LI>short <SPAN class="constant-title">CONDITIONAL_IGNORE</SPAN>
@@ -198,6 +210,20 @@
         class="param-title">target</SPAN>, <SPAN
         class="class-title">XMLString</SPAN> <SPAN
         class="param-title">data</SPAN>          )
+       <LI>
+        <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">publicId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">systemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">encoding</SPAN>          )
+       <LI>
+        <SPAN class="method-title">endEntity</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">name</SPAN>          )
        <LI>
         <SPAN class="method-title">startExternalSubset</SPAN>      (
         )
@@ -236,8 +262,7 @@
          <SPAN class="class-title">String</SPAN> <SPAN
         class="param-title">name</SPAN>, <SPAN
         class="class-title">XMLString</SPAN> <SPAN
-        class="param-title">text</SPAN>, boolean <SPAN
-        class="param-title">isPE</SPAN>          )
+        class="param-title">text</SPAN>          )
        <LI>
         <SPAN class="method-title">externalEntityDecl</SPAN>      (
          <SPAN class="class-title">String</SPAN> <SPAN
@@ -245,8 +270,7 @@
         class="class-title">String</SPAN> <SPAN
         class="param-title">publicId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
-        class="param-title">systemId</SPAN>, boolean <SPAN
-        class="param-title">isPE</SPAN>          )
+        class="param-title">systemId</SPAN>          )
        <LI>
         <SPAN class="method-title">unparsedEntityDecl</SPAN>      (
          <SPAN class="class-title">String</SPAN> <SPAN

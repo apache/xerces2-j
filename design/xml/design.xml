@@ -357,9 +357,6 @@
   </interface>
 
   <interface id='document-handler' name='XMLDocumentHandler'>
-   <extends>
-    <reference idref='entity-handler'/>
-   </extends>
    <method name='startDocument'>
     <throws>
      <reference idref='sax-exception'/>
@@ -417,6 +414,40 @@
      <reference idref='java-string'/>
     </param>
     <param name='uri'>
+     <reference idref='java-string'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='startEntity'>
+    <param name='name'>
+     <note>
+      The document has the pseudo-name of "[xml]", the DTD has the
+      pseudo-name of "[dtd]; parameter entity names start with '%';
+      and general entities are just specified by their name.
+     </note>
+     <reference idref='java-string'/>
+    </param>
+    <param name='publicId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='systemId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='encoding'>
+     <note>
+      The auto-detected encoding of the entity or null if not appropriate. 
+      The encoding name will be specified using the IANA encoding name.
+     </note>
+     <reference idref='java-string'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='endEntity'>
+    <param name='name'>
      <reference idref='java-string'/>
     </param>
     <throws>
@@ -512,9 +543,6 @@
   </interface>
 
   <interface id='dtd-handler' name='XMLDTDHandler'>
-   <extends>
-    <reference idref='entity-handler'/>
-   </extends>
    <constant name='CONDITIONAL_INCLUDE'>
     <primitive type='short'/>
    </constant>
@@ -540,6 +568,40 @@
     </param>
     <param name='data'>
      <reference idref='string'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='startEntity'>
+    <param name='name'>
+     <note>
+      The document has the pseudo-name of "[xml]", the DTD has the
+      pseudo-name of "[dtd]; parameter entity names start with '%';
+      and general entities are just specified by their name.
+     </note>
+     <reference idref='java-string'/>
+    </param>
+    <param name='publicId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='systemId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='encoding'>
+     <note>
+      The auto-detected encoding of the entity or null if not appropriate. 
+      The encoding name will be specified using the IANA encoding name.
+     </note>
+     <reference idref='java-string'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='endEntity'>
+    <param name='name'>
+     <reference idref='java-string'/>
     </param>
     <throws>
      <reference idref='sax-exception'/>
@@ -611,9 +673,6 @@
     <param name='text'>
      <reference idref='string'/>
     </param>
-    <param name='isPE'>
-     <primitive type='boolean'/>
-    </param>
     <throws>
      <reference idref='sax-exception'/>
     </throws>
@@ -627,9 +686,6 @@
     </param>
     <param name='systemId'>
      <reference idref='java-string'/>
-    </param>
-    <param name='isPE'>
-     <primitive type='boolean'/>
     </param>
     <throws>
      <reference idref='sax-exception'/>
