@@ -134,8 +134,8 @@ public class YearDV extends AbstractDateTimeDV {
      */
     protected String dateToString(int[] date) {
         StringBuffer message = new StringBuffer(5);
-        message.append(date[CY]);
-        message.append((char)date[utc]);
+        append(message, date[CY], 4);
+        append(message, (char)date[utc], 0);
         return message.toString();
     }
 

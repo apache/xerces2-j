@@ -124,14 +124,14 @@ public class TimeDV extends AbstractDateTimeDV {
      */
     protected String dateToString(int[] date) {
         StringBuffer message = new StringBuffer(16);
-        message.append(date[h]);
+        append(message, date[h], 2);
         message.append(':');
-        message.append(date[m]);
+        append(message, date[m], 2);
         message.append(':');
-        message.append(date[s]);
+        append(message, date[s], 2);
         message.append('.');
         message.append(date[ms]);
-        message.append((char)date[utc]);
+        append(message, (char)date[utc], 0);
         return message.toString();
     }
 

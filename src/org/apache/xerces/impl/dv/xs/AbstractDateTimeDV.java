@@ -690,21 +690,46 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
     protected String dateToString(int[] date) {
         StringBuffer message = new StringBuffer(25);
-        message.append(date[CY]);
+        append(message, date[CY], 4);
         message.append('-');
-        message.append(date[M]);
+        append(message, date[M], 2);
         message.append('-');
-        message.append(date[D]);
+        append(message, date[D], 2);
         message.append('T');
-        message.append(date[h]);
+        append(message, date[h], 2);
         message.append(':');
-        message.append(date[m]);
+        append(message, date[m], 2);
         message.append(':');
-        message.append(date[s]);
+        append(message, date[s], 2);
         message.append('.');
         message.append(date[ms]);
-        message.append((char)date[utc]);
+        append(message, (char)date[utc], 0);
         return message.toString();
+    }
+    
+    protected void append(StringBuffer message, int value, int nch) {
+        if (value < 0) {
+            message.append('-');
+            value = -value;
+        }
+        if (nch == 4) {
+            if (value < 10)
+                message.append("000");
+            else if (value < 100)
+                message.append("00");
+            else if (value < 1000)
+                message.append("0");
+            message.append(value);
+        }
+        else if (nch == 2) {
+            if (value < 10)
+                message.append('0');
+            message.append(value);
+        }
+        else {
+            if (value != 0)
+                message.append((char)value);
+        }
     }
 
     //

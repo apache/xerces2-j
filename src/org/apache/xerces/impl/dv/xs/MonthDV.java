@@ -185,8 +185,8 @@ public class MonthDV extends AbstractDateTimeDV {
         StringBuffer message = new StringBuffer(5);
         message.append('-');
         message.append('-');
-        message.append(date[M]);
-        message.append((char)date[utc]);
+        append(message, date[M], 2);
+        append(message, (char)date[utc], 0);
         return message.toString();
     }
 

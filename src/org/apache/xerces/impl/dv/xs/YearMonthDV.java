@@ -113,6 +113,15 @@ public class YearMonthDV extends AbstractDateTimeDV{
         return date;
     }
 
+    protected String dateToString(int[] date) {
+        StringBuffer message = new StringBuffer(25);
+        append(message, date[CY], 4);
+        message.append('-');
+        append(message, date[M], 2);
+        append(message, (char)date[utc], 0);
+        return message.toString();
+    }
+
 }
 
 
