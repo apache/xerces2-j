@@ -432,6 +432,17 @@ public abstract class NodeImpl
     }
 
     /**
+     * NON-DOM
+     * set the ownerDocument of this node
+     */
+    void setOwnerDocument(DocumentImpl doc) {
+        if (syncData) {
+            synchronizeData();
+        }
+	ownerDocument = doc;
+    }
+
+    /**
      * Obtain the DOM-tree parent of this node, or null if it is not
      * currently active in the DOM tree (perhaps because it has just been
      * created or removed). Note that Document, DocumentFragment, and

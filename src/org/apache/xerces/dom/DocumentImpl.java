@@ -796,6 +796,27 @@ public class DocumentImpl
 
     } // importNode(Node,boolean):Node
 
+    /**
+     * NON-DOM:
+     * Change the node's ownerDocument, and its subtree, to this Document
+     *
+     * @param source The node to move in to this document.
+     * @exception NOT_SUPPORTED_ERR DOMException, raised if the implementation
+     * cannot handle the request, such as when the source node comes from a
+     * different DOMImplementation
+     * @see DocumentImpl.importNode
+     **/
+    public void adoptNode(Node source) {
+	if (!(source instanceof NodeImpl)) {
+	    throw new DOMExceptionImpl(DOMException.NOT_SUPPORTED_ERR,
+		      "cannot move a node in from another DOM implementation");
+	}
+	Node parent = source.getParentNode();
+	if (parent != null) {
+	    parent.removeChild(source);
+	}
+	((NodeImpl)source).ownerDocument = this;
+    }
 
     // identifier maintenence
     /**

@@ -233,6 +233,21 @@ public abstract class NodeContainer
     } // cloneNode(boolean):Node
 
     /**
+     * NON-DOM
+     * set the ownerDocument of this node and its children
+     */
+    void setOwnerDocument(DocumentImpl doc) {
+        if (syncChildren) {
+            synchronizeChildren();
+        }
+	super.setOwnerDocument(doc);
+	for (Node child = getFirstChild();
+	     child != null; child = child.getNextSibling()) {
+	    ((NodeImpl) child).setOwnerDocument(doc);
+	}
+    }
+
+    /**
      * Test whether this node has any children. Convenience shorthand
      * for (Node.getFirstChild()!=null)
      */
@@ -829,12 +844,12 @@ public abstract class NodeContainer
                 synchronizeChildren();
             }
 
-    		// Recursively set kids
-    		for (NodeImpl mykid = firstChild;
-    			mykid != null;
-    			mykid = mykid.nextSibling) {
-    			if(!(mykid instanceof EntityReference)) {
-    				mykid.setReadOnly(readOnly,true);
+	    // Recursively set kids
+	    for (NodeImpl mykid = firstChild;
+		 mykid != null;
+		 mykid = mykid.nextSibling) {
+		if(!(mykid instanceof EntityReference)) {
+		    mykid.setReadOnly(readOnly,true);
                 }
             }
         }

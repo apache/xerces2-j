@@ -178,6 +178,16 @@ public class ElementImpl
 
     } // cloneNode(boolean):Node
 
+
+    /**
+     * NON-DOM
+     * set the ownerDocument of this node, its children, and its attributes
+     */
+    void setOwnerDocument(DocumentImpl doc) {
+	super.setOwnerDocument(doc);
+	attributes.setOwnerDocument(doc);
+    }
+
     //
     // Element methods
     //
