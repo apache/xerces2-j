@@ -92,7 +92,7 @@ import org.xml.sax.SAXParseException;
  *
  * @version $Id$
  */
-public abstract class XMLParser 
+public abstract class XMLParser
     implements XMLErrorReporter, XMLDocumentHandler.DTDHandler {
 
     //
@@ -350,27 +350,27 @@ public abstract class XMLParser
         return fEntityHandler;
     }
 
-    
+
     /**
-     * return the locale               
+     * return the locale
      *
      * @return the locale
      */
     public final Locale getfLocale() {
-        return fLocale; 
+        return fLocale;
     }
 
     /**
-     * return the XML Messages object               
+     * return the XML Messages object
      *
      * @return the parser's messages object
      */
     public final XMLMessageProvider getfgXMLMessages() {
-        return fgXMLMessages; 
+        return fgXMLMessages;
     }
 
     /**
-     * return the Implementation Messages object               
+     * return the Implementation Messages object
      *
      * @return the parser's implementation messages
      */
@@ -379,7 +379,7 @@ public abstract class XMLParser
     }
 
     /**
-     * return the Schema Messages object               
+     * return the Schema Messages object
      *
      * @return the parser's schema messages
      */
@@ -388,7 +388,7 @@ public abstract class XMLParser
     }
 
     /**
-     * return the Datatypes Messages object               
+     * return the Datatypes Messages object
      *
      * @return the parser's datatypes messages
      */
@@ -431,7 +431,7 @@ public abstract class XMLParser
      * @see #getValidation
      * @see #setFeature
      */
-    protected void setValidation(boolean validate) 
+    protected void setValidation(boolean validate)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/validation): parse is in progress.\n"+
@@ -453,7 +453,7 @@ public abstract class XMLParser
      *
      * @see #setValidation
      */
-    protected boolean getValidation() 
+    protected boolean getValidation()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getValidationEnabled();
     }
@@ -494,7 +494,7 @@ public abstract class XMLParser
      *
      * @see #setExternalGeneralEntities
      */
-    protected boolean getExternalGeneralEntities() 
+    protected boolean getExternalGeneralEntities()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return true;
     }
@@ -535,7 +535,7 @@ public abstract class XMLParser
      *
      * @see #setExternalParameterEntities
      */
-    protected boolean getExternalParameterEntities() 
+    protected boolean getExternalParameterEntities()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return true;
     }
@@ -553,7 +553,7 @@ public abstract class XMLParser
      * @see #getNamespaces
      * @see #setFeature
      */
-    protected void setNamespaces(boolean process) 
+    protected void setNamespaces(boolean process)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/namespaces): parse is in progress.\n"+
@@ -570,7 +570,7 @@ public abstract class XMLParser
      *
      * @see #setNamespaces
      */
-    protected boolean getNamespaces() 
+    protected boolean getNamespaces()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getNamespacesEnabled();
     }
@@ -590,7 +590,7 @@ public abstract class XMLParser
      * @see #getValidationSchema
      * @see #setFeature
      */
-    protected void setValidationSchema(boolean schema) 
+    protected void setValidationSchema(boolean schema)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
@@ -604,14 +604,14 @@ public abstract class XMLParser
      *
      * @see #setValidationSchema
      */
-    protected boolean getValidationSchema() 
+    protected boolean getValidationSchema()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getSchemaValidationEnabled();
     }
 
     /**
-     * Allows the user to turn full Schema constraint checking on/off.  
-     * Only takes effect if Schema validation is enabled.                  
+     * Allows the user to turn full Schema constraint checking on/off.
+     * Only takes effect if Schema validation is enabled.
      * If this feature is off, partial constraint checking is done.
      * <p>
      * This method is equivalent to the feature:
@@ -624,7 +624,7 @@ public abstract class XMLParser
      * @see #getValidationSchemaFullChecking
      * @see #setFeature
      */
-    protected void setValidationSchemaFullChecking(boolean schemaFullChecking) 
+    protected void setValidationSchemaFullChecking(boolean schemaFullChecking)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
@@ -639,7 +639,7 @@ public abstract class XMLParser
      * If this feature is set to true, DOM and SAX APIs will expose element content
      * that is normalized according to XML Schema REC.
      * Otherwise, element content will be exposed as required by the infoset.
-     * 
+     *
      * @param normalize
      */
     protected void setNormalizeContents(boolean normalize) {
@@ -650,24 +650,24 @@ public abstract class XMLParser
     }
 
     /**
-     * Allows the user to set a list of external XML Schemas (ex."http://example.com schema.xsd") 
+     * Allows the user to set a list of external XML Schemas (ex."http://example.com schema.xsd")
      * to be used by the parser.
      * If two schemas with the same targetNamespace appear in both
      * the list and a document, the one from the list will be picked up.
      * See XML Schema REC: http://www.w3.org/TR/xmlschema-1/#schema-loc
      * <P>
      * This method is equivalent to the property:
-     * <PRE>http://apache.org/xml/properties/validation/schema/external-schemaLocation</PRE>
-     * 
+     * <PRE>http://apache.org/xml/properties/schema/external-schemaLocation</PRE>
+     *
      * @param value  The list of schemas.
      * @exception SAXNotRecognizedException
      * @exception SAXNotSupportedException
      */
-    protected void setExternalSchemaLocation(Object value) 
+    protected void setExternalSchemaLocation(Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
-            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/schema/external-schema-location:  parse is in progress");
+            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/schema/external-schemaLocation:  parse is in progress");
         }
         fValidator.setExternalSchemas(value);
     }
@@ -678,21 +678,21 @@ public abstract class XMLParser
      * See XML Schema REC: http://www.w3.org/TR/xmlschema-1/#schema-loc
      * <P>
      * This method is equivalent to the property:
-     * <PRE>http://apache.org/xml/properties/validation/schema/external-noNamespaceSchemaLocation</PRE>
-     * 
+     * <PRE>http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation</PRE>
+     *
      * @param value  An XML Schema file name
      * @exception SAXNotRecognizedException
      * @exception SAXNotSupportedException
      */
-    protected void setExternalNoNamespaceSchemaLocation(Object value) 
+    protected void setExternalNoNamespaceSchemaLocation(Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
-            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/schema/external-noNamespaceSchemaLocation:  parse is in progress");
+            throw new SAXNotSupportedException("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation:  parse is in progress");
         }
         fValidator.setExternalNoNamespaceSchema(value);
     }
-    
+
     /**
      * Returns true if Schema support is turned on.
      *
@@ -720,7 +720,7 @@ public abstract class XMLParser
      * @see #getValidationDynamic
      * @see #setFeature
      */
-    protected void setValidationDynamic(boolean dynamic) 
+    protected void setValidationDynamic(boolean dynamic)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
@@ -740,7 +740,7 @@ public abstract class XMLParser
      *
      * @see #setValidationDynamic
      */
-    protected boolean getValidationDynamic() 
+    protected boolean getValidationDynamic()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getDynamicValidationEnabled();
     }
@@ -753,7 +753,7 @@ public abstract class XMLParser
     }
 
     /**
-     * Allows the parser to have the choice to load DTD grammar when 
+     * Allows the parser to have the choice to load DTD grammar when
      * validation is off.
      * <p>
      * This method is the equivalent to the feature:
@@ -767,7 +767,7 @@ public abstract class XMLParser
      * @see #getLoadDTDGrammar
      * @see #setFeature
      */
-    protected void setLoadDTDGrammar(boolean loadDTDGrammar) 
+    protected void setLoadDTDGrammar(boolean loadDTDGrammar)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
@@ -786,13 +786,13 @@ public abstract class XMLParser
      *
      * @see #setLoadDTDGrammar
      */
-    protected boolean getLoadDTDGrammar() 
+    protected boolean getLoadDTDGrammar()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getLoadDTDGrammar();
     }
 
     /**
-     * Allows the parser to have the choice to load the external DTD when 
+     * Allows the parser to have the choice to load the external DTD when
      * validation is off.
      * <p>
      * This method is the equivalent to the feature:
@@ -806,7 +806,7 @@ public abstract class XMLParser
      * @see #getLoadExternalDTD
      * @see #setFeature
      */
-    protected void setLoadExternalDTD(boolean loadExternalDTD) 
+    protected void setLoadExternalDTD(boolean loadExternalDTD)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
@@ -825,7 +825,7 @@ public abstract class XMLParser
      *
      * @see #setLoadExternalDTD
      */
-    protected boolean getLoadExternalDTD() 
+    protected boolean getLoadExternalDTD()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fScanner.getLoadExternalDTD();
     }
@@ -905,7 +905,7 @@ public abstract class XMLParser
      * @see #getAllowJavaEncodings
      * @see #setFeature
      */
-    protected void setAllowJavaEncodings(boolean allow) 
+    protected void setAllowJavaEncodings(boolean allow)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         fEntityHandler.setAllowJavaEncodings(allow);
     }
@@ -915,7 +915,7 @@ public abstract class XMLParser
      *
      * @see #setAllowJavaEncodings
      */
-    protected boolean getAllowJavaEncodings() 
+    protected boolean getAllowJavaEncodings()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fEntityHandler.getAllowJavaEncodings();
     }
@@ -945,7 +945,7 @@ public abstract class XMLParser
      *
      * @see #setContinueAfterFatalError
      */
-    protected boolean getContinueAfterFatalError() 
+    protected boolean getContinueAfterFatalError()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fContinueAfterFatalError;
     }
@@ -972,7 +972,7 @@ public abstract class XMLParser
      * @see #setProperty
      */
     /***
-    protected void setNamespaceSep(String separator) 
+    protected void setNamespaceSep(String separator)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         // REVISIT: Ask someone what it could possibly hurt to allow
         //          the application to change this in mid-parse.
@@ -989,7 +989,7 @@ public abstract class XMLParser
      * @see #setNamespaceSep
      */
     /***
-    protected String getNamespaceSep() 
+    protected String getNamespaceSep()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fNamespaceSep;
     }
@@ -1003,7 +1003,7 @@ public abstract class XMLParser
      *
      * @see #getProperty
      */
-    protected String getXMLString() 
+    protected String getXMLString()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         throw new SAXNotSupportedException("http://xml.org/sax/properties/xml-string");
     }
@@ -1463,7 +1463,7 @@ public abstract class XMLParser
      * @exception org.xml.sax.SAXException If there is any other
      *            problem fulfilling the request.
      */
-    public boolean getFeature(String featureId) 
+    public boolean getFeature(String featureId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
@@ -1636,7 +1636,7 @@ public abstract class XMLParser
         String property;
         if (propertyId.startsWith(SAX2_PROPERTIES_PREFIX)) {
             property = propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
-                                                
+
             //
             // http://xml.org/sax/properties/namespace-sep
             // Value type: String
@@ -1658,7 +1658,7 @@ public abstract class XMLParser
                 return;
             }
             /***/
-            
+
             //
             // http://xml.org/sax/properties/xml-string
             // Value type: String
@@ -1683,10 +1683,10 @@ public abstract class XMLParser
         // Xerces Properties
         //
 
-        
+
         if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
             property = propertyId.substring(XERCES_PROPERTIES_PREFIX.length());
-            
+
             if (property.equals("schema/external-schemaLocation")) {
                 setExternalSchemaLocation(value);
                 return;
@@ -1695,10 +1695,10 @@ public abstract class XMLParser
                 setExternalNoNamespaceSchemaLocation(value);
                 return;
             }
-                
+
 
         }
-        
+
 
         //
         // Not recognized
@@ -1723,7 +1723,7 @@ public abstract class XMLParser
      *            problem fulfilling the request.
      * @see org.xml.sax.XMLReader#getProperty
      */
-    public Object getProperty(String propertyId) 
+    public Object getProperty(String propertyId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
@@ -1768,7 +1768,7 @@ public abstract class XMLParser
         // Xerces Properties
         //
 
-       
+
         else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
             //
             // No properties defined yet that are common to all parsers.
@@ -1786,7 +1786,7 @@ public abstract class XMLParser
                 return fValidator.getExternalNoNamespaceSchema();
             }
         }
-       
+
 
         //
         // Not recognized
