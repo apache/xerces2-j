@@ -380,17 +380,15 @@ public class AttrImpl
         // Note that aggregate events are NOT dispatched here,
         // since we need to combine the remove and insert.
     	isSpecified(true);
-        if (newvalue != null) {
-            if(MUTATIONEVENTS && ownerDocument.mutationEvents) {
-                // if there are any event handlers create a real node
-                internalInsertBefore(ownerDocument.createTextNode(newvalue),
-                                     null, MUTATION_LOCAL);
-                hasStringValue(false);
-            } else {
-                // directly store the string
-                value = newvalue;
-                hasStringValue(true);
-            }
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents) {
+            // if there are any event handlers create a real node
+            internalInsertBefore(ownerDocument.createTextNode(newvalue),
+                                 null, MUTATION_LOCAL);
+            hasStringValue(false);
+        } else {
+            // directly store the string
+            value = newvalue;
+            hasStringValue(true);
         }
 		
     	changed(); // ***** Is this redundant?
