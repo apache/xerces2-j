@@ -98,7 +98,7 @@ public class AttrNSImpl
         this.name = qualifiedName;
 	// treat an empty string as a null
 	if (namespaceURI != null && !namespaceURI.equals("")) {
-	    this.namespaceURI =  namespaceURI;
+	    this.namespaceURI = namespaceURI;
 	} else {
 	    this.namespaceURI = null;
 	}
@@ -117,11 +117,11 @@ public class AttrNSImpl
     	                               "INVALID_CHARACTER_ERR");
         }
         
-	if (namespaceURI == null || namespaceURI.equals("")) {
+	if (this.namespaceURI == null) {
 	    if (prefix != null && prefix.equals("xml")) {
-		namespaceURI = "http://www.w3.org/XML/1998/namespace";
+		this.namespaceURI = "http://www.w3.org/XML/1998/namespace";
 	    } else if (qualifiedName.equals("xmlns")) {
-		namespaceURI = "http://www.w3.org/2000/xmlns/";
+		this.namespaceURI = "http://www.w3.org/2000/xmlns/";
 	    }
 	} else {
 	    if (prefix != null &&
