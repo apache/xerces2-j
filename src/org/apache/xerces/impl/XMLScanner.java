@@ -903,7 +903,7 @@ public abstract class XMLScanner
                 }
                 else if (c != -1 && isInvalidLiteral(c)) {
                     reportFatalError("InvalidCharInAttValue",
-									 new Object[] {Integer.toString(c, 16),atName,eleName});
+					new Object[] {eleName, atName, Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
                     if (entityDepth == fEntityDepth) {
                         fStringBuffer2.append((char)c);

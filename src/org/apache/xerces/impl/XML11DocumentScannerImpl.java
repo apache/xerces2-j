@@ -564,7 +564,7 @@ public class XML11DocumentScannerImpl
                 }
                 else if (c != -1 && XML11Char.isXML11Invalid(c)) {
                     reportFatalError("InvalidCharInAttValue",
-                                     new Object[] {Integer.toString(c, 16),atName,eleName});
+                                     new Object[] {eleName, atName, Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
                     if (entityDepth == fEntityDepth) {
                         fStringBuffer2.append((char)c);
