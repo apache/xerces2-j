@@ -1959,7 +1959,7 @@ public class XMLEntityManager
                              XMLResourceIdentifier entityLocation,
                              InputStream stream, Reader reader,
                              String encoding, boolean literal, boolean mayReadChunks, boolean isExternal) {
-            super(name,fInExternalSubset);
+            super(name,XMLEntityManager.this.fInExternalSubset);
             this.entityLocation = entityLocation;
             this.stream = stream;
             this.reader = reader;
