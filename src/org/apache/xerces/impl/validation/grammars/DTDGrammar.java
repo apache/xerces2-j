@@ -461,15 +461,15 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
 
       fSimpleType.clear();
       if ( defaultType != null ) {
-          if ( defaultType.equals( "FIXED") ) {
+          if ( defaultType.equals( "#FIXED") ) {
               fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_FIXED;
-          } else if ( defaultType.equals( "IMPLIED") ) {
+          } else if ( defaultType.equals( "#IMPLIED") ) {
               fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_IMPLIED;
-          } else if ( defaultType.equals( "REQUIRED") ) {
+          } else if ( defaultType.equals( "#REQUIRED") ) {
               fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_REQUIRED;
           }
          }
-      if ( DEBUG == true ) {
+      if ( DEBUG ) {
           System.out.println("defaultvalue = " + defaultValue.toString() );
       }
       fSimpleType.defaultValue      = defaultValue.length > 0 ?  defaultValue.toString() : null;
