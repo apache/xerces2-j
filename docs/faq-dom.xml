@@ -11,65 +11,7 @@
       </p>
     </a>
   </faq>
-  <faq title="Specifying non-Xerces DOM implementation">
-    <q>How do I supply my own implementation of the DOM?</q>
-    <a>
-      <p>
-	Use the
-    <link idref='properties' anchor="dom.document-class-name">http://apache.org/xml/properties/dom/document-class-name</link> property
- 	to register your own implementation of the 
-        <code>org.w3c.dom.Document</code> interface.</p>
-      <p>
-        Xerces provides the following implementations of the 
-	<code>org.w3c.dom.Document</code> interface:</p>
-      <ul>
-	<li><code>org.apache.xerces.dom.CoreDocumentImpl</code> --  
-	  supports DOM Level 2 Core Recommendation.</li>
-	<li><code>org.apache.xerces.dom.DocumentImpl</code> -- 
-	  supports DOM Level 2 Core, Mutation Events, Traversal and Ranges.</li>
-	<li><code>org.apache.xerces.dom.PSVIDocumentImpl</code> -- 
-	  provides access to the post schema validation infoset via DOM.</li>
-      </ul>
-      
-    </a>
-  </faq>
-
-  <faq title="Accessing the DOM Level 3 API">
-    <q>How do I access the DOM Level 3 functionality?</q>
-    <a>    <anchor name="dom3"/>
-    <p>
-	The DOM Level 3 functionality is not exposed in the regular 
-	Xerces distribution.
-	To get access to the DOM Level 3, you need either to extract source code from CVS or 
-	to download both Xerces source and tools distributions and 
-	build Xerces with the target <strong>jars-dom3</strong>. The build will generate 
-	the <code>dom3-xml-apis.jar</code> that includes the DOM Level 3 API and 
-	<code>dom3-xercesImpl.jar</code> that includes partial implementation of the API. 
-	The samples (i.e. <code>samples.dom.DOM3</code>) can be found in 
-	<code>xercesSamples.jar</code>.
-      </p> 
-      <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
-	  Implementation</link> page. 
-      </p>
-      <note>Always remove build directory (either manually or by 
-	executing build <code>clean</code> target)
-	before building specialized Xerces jars.
-      </note>
-    </a>
-  </faq>
-  
-   <faq title="Running DOM Level 3 samples with Sun JDK 1.4 and higher">
-    <q>How do I access run under Sun JDK 1.4 and higher?</q>
-    <a>    <anchor name="dom3-run"/>
-    <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
-    Endorsed Standards Override Mechanism</jump> to specify dom3-xml-apis.jar.
-    More complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CB">here</jump>.
-    </p>
-    </a>
-  </faq>
-
-
-  <faq title='Creating a DOM Parser'>
+  <faq title='Creating a DOM Parser with JAXP and DOM Level 3'>
     <q>How do I create a DOM parser?</q>
     <a>
       <p>
@@ -182,10 +124,109 @@ String str = writer.writeToString(document);</source>
     </a>
   </faq>
 
+  <faq title="Specifying non-Xerces DOM implementation">
+    <q>How do I supply my own implementation of the DOM?</q>
+    <a>
+      <p>
+	Use the
+    <link idref='properties' anchor="dom.document-class-name">http://apache.org/xml/properties/dom/document-class-name</link> property
+ 	to register your own implementation of the 
+        <code>org.w3c.dom.Document</code> interface.</p>
+      <p>
+        Xerces provides the following implementations of the 
+	<code>org.w3c.dom.Document</code> interface:</p>
+      <ul>
+	<li><code>org.apache.xerces.dom.CoreDocumentImpl</code> --  
+	  supports DOM Level 2 Core Recommendation.</li>
+	<li><code>org.apache.xerces.dom.DocumentImpl</code> -- 
+	  supports DOM Level 2 Core, Mutation Events, Traversal and Ranges.</li>
+	<li><code>org.apache.xerces.dom.PSVIDocumentImpl</code> -- 
+	  provides access to the post schema validation infoset via DOM.</li>
+      </ul>
+      
+    </a>
+  </faq>
+
+
+  <faq title="Accessing the DOM Level 3 API">
+    <q>How do I access the DOM Level 3 functionality?</q>
+    <a>    <anchor name="dom3"/>
+    <p>
+	The DOM Level 3 functionality is not exposed in the regular 
+	Xerces distribution.
+	To get access to the DOM Level 3, you need either to extract source code from CVS or 
+	to download both Xerces source and tools distributions and 
+	build Xerces with the target <strong>jars-dom3</strong>. The build will generate 
+	the <code>dom3-xml-apis.jar</code> that includes the DOM Level 3 API and 
+	<code>dom3-xercesImpl.jar</code> that includes partial implementation of the API. 
+	The samples (i.e. <code>samples.dom.DOM3</code>) can be found in 
+	<code>xercesSamples.jar</code>.
+      </p> 
+      <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
+	  Implementation</link> page. 
+      </p>
+      <note>Always remove build directory (either manually or by 
+	executing build <code>clean</code> target)
+	before building specialized Xerces jars.
+      </note>
+    </a>
+  </faq>
+  
+   <faq title="Running DOM Level 3 samples with Sun JDK 1.4 and higher">
+    <q>How do I access run under Sun JDK 1.4 and higher?</q>
+    <a>    <anchor name="dom3-run"/>
+    <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
+    Endorsed Standards Override Mechanism</jump> to specify dom3-xml-apis.jar.
+    More complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CB">here</jump>.
+    </p>
+    </a>
+  </faq>
+
+
+  <faq title="XML Schema API and DOM">
+  <q>How do I retrieve PSVI from the DOM</q>
+<a> <anchor name="xsdom"/>
+<p>By default Xerces does not store the PSVI information in the DOM tree. </p>
+<p>
+The following source shows you how to parse an XML document (using JAXP) and and retrieve PSVI (using <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>):
+<source>
+//<code>dbf</code> is JAXP DocumentBuilderFactory
+
+// all of the following features must be set:
+dbf.setNamespaceAware(true);
+dbf.setValidating(true);
+dbf.setAttribute("http://apache.org/xml/features/validation/schema", Boolean.TRUE);
+
+// you also must specify Xerces PSVI DOM implementation "org.apache.xerces.dom.PSVIDocumentImpl"
+dbf.setAttribute("http://apache.org/xml/properties/dom/document-class-name", "org.apache.xerces.dom.PSVIDocumentImpl");
+
+...            
+Document doc = db.parse(args[0]);
+if (doc.getDocumentElement().isSupported("psvi", "1.0")){              ElementPSVI psviElem = (ElementPSVI)doc.getDocumentElement();
+        XSElementDeclaration decl = psviElem.getElementDeclaration();
+        ...
+}</source>
+</p>
+<p>If you want to build the DOM tree in memory and be able to access the PSVI information you need to start by instantiating org.apache.xerces.dom.PSVIDocumentImpl or use DOM Level 3 API as shown in the following example:</p>
+<source>
+System.setProperty(DOMImplementationRegistry.PROPERTY,
+                "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
+   
+DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+
+DOMImplementation impl = (DOMImplementation) registry.getDOMImplementation("psvi");
+</source>
+
+The PSVI information will not be added or modified as you modify the tree in memory. Instead, you if you want to get updated PSVI information, you need validate your DOM in memory using <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Document3-normalizeDocument">normalizeDocument</jump> method as described in the <jump href="#xsrevalidate">next question</jump>.
+
+<p>You can find more information about how to use the XML Schema API <jump href="faq-xs.html">here</jump></p>
+</a>
+</faq>
 
   <faq title="Revalidation of DOM document in Memory">
+     
   	<q>How can I make sure that my DOM document in memory conforms to a schema?</q>
-  	<a>
+  	<a><anchor name="xsrevalidate"/>
   		<p>
   			DOM revalidation is supported via W3C DOM Level 3 Core
   			<em>Document.normalizeDocument()</em>.

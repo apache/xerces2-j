@@ -57,14 +57,12 @@
     <q>Does Xerces provide access to the post schema validation infoset (PSVI)?</q>
     <a>
       <p>
-	Xerces defines an <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>
-	for accessing and querying the post schema validation infoset (PSVI) defined in 
-	<jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
+	Xerces implements the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump> specification that defines an API for accessing and querying the post schema validation infoset (PSVI) as defined in <jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
 	  Contributions to the post-schema-validation infoset (Appendix C.2)</jump>. 
-	The interfaces defined in the <code>org.apache.xerces.xs</code> package allow 
-	developers to access the XML Schema components, which follow as a consequence 
-	of validation and/or assessment and also provide a means for accessing the
-	PSVI from a document instance.
+          This API also defines interfaces for loading XML schema documents. 
+</p>
+<p>For more information please refer to the <jump href="api.html#xml-schema-api-documentation">interfaces</jump>.
+ 
       </p>
     </a>
   </faq>
@@ -190,4 +188,42 @@ PSVIProvider psviProvider = (PSVIProvider)parser;</source>
     <a> <p>Please, refer to the <link idref='faq-grammars'>Examining Grammars</link> FAQ.</p>
     </a>
   </faq>
+
+ <faq title="Using XSLoader to get an XSModel">
+  <q>Can I parse and query XML Schema component in memory</q>
+  <a>
+   <p>
+       Yes, the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>
+       specification defines an interface called <code>XSLoader</code> which provides methods 
+       for loading XML Schema documents into an <code>XSModel</code>. The <code>XSImplementation</code>
+       interface provides a method to create an <code>XSLoader</code> using the 
+       <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Bootstrap">
+       DOM Level 3 Bootstraping mechanism</jump>. An application can get a reference to 
+       an <code>XSImplementation</code> using the <code>getDOMImplementation</code> method 
+       on the <code>DOMImplementationRegistry</code> object with the feature string "XS-Loader".
+       To create an <code>XSLoader</code> you need to do something like this:
+   </p>
+   <source>import org.w3c.dom.DOMImplementationRegistry;
+import org.apache.xerces.xs.XSImplementation;
+import org.apache.xerces.xs.XSLoader; 
+
+...
+   
+// Get DOM Implementation using DOM Registry
+System.setProperty(DOMImplementationRegistry.PROPERTY,
+    "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
+DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+
+XSImplementation impl = 
+    (XSImplementation) registry.getDOMImplementation("XS-Loader");
+
+XSLoader schemaLoader = impl.createXSLoader(null);
+
+...</source>
+   <p>
+       In order to get access to DOM Level 3 functionality in Xerces, see this 
+       <link idref="faq-dom" anchor="dom3">FAQ</link>.
+   </p>
+  </a>
+ </faq>
 </faqs>

@@ -376,37 +376,6 @@ DocumentBuilder builder = // JAXP factory invocation
   <q>Is there an alternative method for getting an XSModel?</q>
   <a>
    <p>
-       Yes, the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>
-       specification defines an interface called <code>XSLoader</code> which provides methods 
-       for loading XML Schema documents into an <code>XSModel</code>. The <code>XSImplementation</code>
-       interface provides a method to create an <code>XSLoader</code> using the 
-       <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Bootstrap">
-       DOM Level 3 Bootstraping mechanism</jump>. An application can get a reference to 
-       an <code>XSImplementation</code> using the <code>getDOMImplementation</code> method 
-       on the <code>DOMImplementationRegistry</code> object with the feature string "XS-Loader".
-       To create an <code>XSLoader</code> you need to do something like this:
-   </p>
-   <source>import org.w3c.dom.DOMImplementationRegistry;
-import org.apache.xerces.xs.XSImplementation;
-import org.apache.xerces.xs.XSLoader; 
-
-...
-   
-// Get DOM Implementation using DOM Registry
-System.setProperty(DOMImplementationRegistry.PROPERTY,
-    "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
-DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-
-XSImplementation impl = 
-    (XSImplementation) registry.getDOMImplementation("XS-Loader");
-
-XSLoader schemaLoader = impl.createXSLoader(null);
-
-...</source>
-   <p>
-       In order to get access to DOM Level 3 functionality in Xerces, see this 
-       <link idref="faq-dom" anchor="dom3">FAQ</link>.
-   </p>
-  </a>
+       Yes, for more information see <jump href="faq-xs.html">XML Schema FAQ</jump></p>  </a>
  </faq>
 </faqs>
