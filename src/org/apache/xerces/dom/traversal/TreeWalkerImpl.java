@@ -222,6 +222,14 @@ public class TreeWalkerImpl implements TreeWalker {
         // get the lastChild of result.
         Node lastChild  = getLastChild(result);
         
+        Node prev = lastChild ;
+        while (lastChild != null) {
+          prev = lastChild ;
+          lastChild = getLastChild(prev) ;
+        }
+
+        lastChild = prev ;
+        
         // if there is a lastChild which passes filters return it.
         if (lastChild != null) {
             fCurrentNode = lastChild;
