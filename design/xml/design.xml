@@ -2792,6 +2792,7 @@
    <constant name='MASK_VALID'>
     <primitive type='byte'/>
    </constant>
+   <!--
    <constant name='MASK_LETTER'>
     <primitive type='byte'/>
    </constant>
@@ -2804,6 +2805,7 @@
    <constant name='MASK_EXTENDER'>
     <primitive type='byte'/>
    </constant>
+   -->
    <constant name='MASK_SPACE'>
     <primitive type='byte'/>
    </constant>
@@ -2811,6 +2813,9 @@
     <primitive type='byte'/>
    </constant>
    <constant name='MASK_NAME'>
+    <primitive type='byte'/>
+   </constant>
+   <constant name='MASK_PUBID'>
     <primitive type='byte'/>
    </constant>
    <method name='isValid'>
@@ -2821,6 +2826,7 @@
      <primitive type='boolean'/>
     </returns>
    </method>
+   <!--
    <method name='isLetter'>
     <param name='c'>
      <primitive type='char'/>
@@ -2829,7 +2835,7 @@
      <primitive type='boolean'/>
     </returns>
    </method>
-   <method name='isCombiningChar'>
+   <method name='isCombining'>
     <param name='c'>
      <primitive type='char'/>
     </param>
@@ -2853,6 +2859,7 @@
      <primitive type='boolean'/>
     </returns>
    </method>
+   -->
    <method name='isSpace'>
     <param name='c'>
      <primitive type='char'/>
@@ -2870,6 +2877,14 @@
     </returns>
    </method>
    <method name='isName'>
+    <param name='c'>
+     <primitive type='char'/>
+    </param>
+    <returns>
+     <primitive type='boolean'/>
+    </returns>
+   </method>
+   <method name='isPubid'>
     <param name='c'>
      <primitive type='char'/>
     </param>
