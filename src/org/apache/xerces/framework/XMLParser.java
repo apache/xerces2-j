@@ -2018,12 +2018,15 @@ public abstract class XMLParser
         }
         if (!fCheckedForSchema) {
             fCheckedForSchema = true;
-            if (attrName == fStringPool.addSymbol("xmlns")) { // default namespacedecl
+            if (getValidation() == true && // default namespacedecl
+		attrName == fStringPool.addSymbol("xmlns")) {
                 fValidator = getSchemaValidator();
-					 String fs = fEntityHandler.expandSystemId(fStringPool.toString(attValue));
-			       InputSource is = fEntityResolver == null ? null : fEntityResolver.resolveEntity(null, fs);
-		        		if (is == null) {
-            			is = new InputSource(fs);
+		String fs =
+		 fEntityHandler.expandSystemId(fStringPool.toString(attValue));
+		InputSource is = fEntityResolver == null ?
+		    null : fEntityResolver.resolveEntity(null, fs);
+		if (is == null) {
+		    is = new InputSource(fs);
 						}
                 fSchemaValidator.loadSchema(is);
             }
