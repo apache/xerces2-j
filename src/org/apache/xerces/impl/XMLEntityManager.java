@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -83,6 +83,7 @@ import org.apache.xerces.util.XMLChar;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -469,16 +470,22 @@ public class XMLEntityManager
      *         This method will never return null.
      *
      * @throws IOException  Thrown on i/o error.
-     * @throws SAXException Thrown by entity resolver to signal an error.
+     * @throws XNIException Thrown by entity resolver to signal an error.
      */
     public XMLInputSource resolveEntity(String publicId, String systemId, 
                                         String baseSystemId)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
-            InputSource inputSource = fEntityResolver.resolveEntity(publicId, systemId);
+            InputSource inputSource;
+            try {
+                 inputSource = fEntityResolver.resolveEntity(publicId, systemId);
+            }
+            catch (SAXException e) {
+                throw new XNIException(e);
+            }
             if (inputSource != null) {
                 xmlInputSource = new XMLInputSource(inputSource);
                 xmlInputSource.setBaseSystemId(baseSystemId);
@@ -515,10 +522,10 @@ public class XMLEntityManager
      *                   value. 
      *
      * @throws IOException  Thrown on i/o error.
-     * @throws SAXException Thrown by entity handler to signal an error.
+     * @throws XNIException Thrown by entity handler to signal an error.
      */
     public void startEntity(String entityName, boolean literal) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // was entity declared?
         Entity entity = (Entity)fEntities.get(entityName);
@@ -620,10 +627,10 @@ public class XMLEntityManager
      * @param xmlInputSource The input source of the document entity.
      *
      * @throws IOException  Thrown on i/o error.
-     * @throws SAXException Thrown by entity handler to signal an error.
+     * @throws XNIException Thrown by entity handler to signal an error.
      */
     public void startDocumentEntity(XMLInputSource xmlInputSource) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
         final String entityName = fSymbolTable.addSymbol("[xml]");
         startEntity(entityName, xmlInputSource, false);
     } // startDocumentEntity(XMLInputSource)
@@ -635,10 +642,10 @@ public class XMLEntityManager
      * @param xmlInputSource The input source of the DTD entity.
      *
      * @throws IOException  Thrown on i/o error.
-     * @throws SAXException Thrown by entity handler to signal an error.
+     * @throws XNIException Thrown by entity handler to signal an error.
      */
     public void startDTDEntity(XMLInputSource xmlInputSource)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
         final String entityName = fSymbolTable.addSymbol("[dtd]");
         startEntity(entityName, xmlInputSource, false);
     } // startDTDEntity(XMLInputSource)
@@ -909,11 +916,11 @@ public class XMLEntityManager
      *                       literal value. 
      *
      * @throws IOException  Thrown on i/o error.
-     * @throws SAXException Thrown by entity handler to signal an error.
+     * @throws XNIException Thrown by entity handler to signal an error.
      */
     protected void startEntity(String name, 
                                XMLInputSource xmlInputSource, boolean literal) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // get information
         final String publicId = xmlInputSource.getPublicId();
@@ -995,9 +1002,9 @@ public class XMLEntityManager
     /**
      * Ends an entity.
      *
-     * @throws SAXException Thrown by entity handler to signal an error.
+     * @throws XNIException Thrown by entity handler to signal an error.
      */
-    protected void endEntity() throws SAXException {
+    protected void endEntity() throws XNIException {
 
         // call handler
         if (DEBUG_BUFFER) {
@@ -1105,7 +1112,7 @@ public class XMLEntityManager
      * @return Returns a reader.
      */
     protected Reader createReader(InputStream inputStream, String encoding)
-        throws IOException, SAXException {
+        throws IOException {
 
         // normalize encoding name
         if (encoding == null) {
@@ -1598,8 +1605,7 @@ public class XMLEntityManager
          *
          * @see org.apache.xerces.util.EncodingMap
          */
-        public void setEncoding(String encoding) 
-            throws IOException, SAXException {
+        public void setEncoding(String encoding) throws IOException {
 
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ setEncoding: "+encoding);
@@ -1646,10 +1652,8 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          */
-        public int peekChar() throws IOException, SAXException {
+        public int peekChar() throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(peekChar: ");
                 print();
@@ -1691,10 +1695,8 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          */
-        public int scanChar() throws IOException, SAXException {
+        public int scanChar() throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanChar: ");
                 print();
@@ -1753,13 +1755,11 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          *
          * @see org.apache.xerces.util.SymbolTable
          * @see org.apache.xerces.util.XMLChar#isName
          */
-        public String scanNmtoken() throws IOException, SAXException {
+        public String scanNmtoken() throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanNmtoken: ");
                 print();
@@ -1822,14 +1822,12 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          *
          * @see org.apache.xerces.util.SymbolTable
          * @see org.apache.xerces.util.XMLChar#isName
          * @see org.apache.xerces.util.XMLChar#isNameStart
          */
-        public String scanName() throws IOException, SAXException {
+        public String scanName() throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanName: ");
                 print();
@@ -1914,14 +1912,12 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          *
          * @see org.apache.xerces.util.SymbolTable
          * @see org.apache.xerces.util.XMLChar#isName
          * @see org.apache.xerces.util.XMLChar#isNameStart
          */
-        public boolean scanQName(QName qname) throws IOException, SAXException {
+        public boolean scanQName(QName qname) throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanQName, "+qname+": ");
                 print();
@@ -2048,11 +2044,8 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          */
-        public int scanContent(XMLString content) 
-            throws IOException, SAXException {
+        public int scanContent(XMLString content) throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanContent: ");
                 print();
@@ -2198,11 +2191,9 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          */
         public int scanLiteral(int quote, XMLString content)
-            throws IOException, SAXException {
+            throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanLiteral, '"+(char)quote+"': ");
                 print();
@@ -2355,11 +2346,9 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          */
         public boolean scanData(String delimiter, XMLString data)
-            throws IOException, SAXException {
+            throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanData: ");
                 print();
@@ -2518,10 +2507,8 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          */
-        public boolean skipChar(int c) throws IOException, SAXException {
+        public boolean skipChar(int c) throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(skipChar, '"+(char)c+"': ");
                 print();
@@ -2591,12 +2578,10 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          *
          * @see org.apache.xerces.util.XMLChar#isSpace
          */
-        public boolean skipSpaces() throws IOException, SAXException {
+        public boolean skipSpaces() throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(skipSpaces: ");
                 print();
@@ -2678,10 +2663,8 @@ public class XMLEntityManager
          *
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
-         * @throws SAXException Thrown by entity handler to signal an error
-         *                      when the end of an entity is reached.
          */
-        public boolean skipString(String s) throws IOException, SAXException {
+        public boolean skipString(String s) throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(skipString, \""+s+"\": ");
                 print();
@@ -2887,7 +2870,7 @@ public class XMLEntityManager
          *          load operation.
          */
         private final boolean load(int offset, boolean changeEntity) 
-            throws IOException, SAXException {
+            throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(load, "+offset+": ");
                 print();

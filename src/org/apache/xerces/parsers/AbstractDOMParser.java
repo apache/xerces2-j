@@ -64,6 +64,7 @@ import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.w3c.dom.Attr;
@@ -192,10 +193,10 @@ public abstract class AbstractDOMParser
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
 
         if (fInDocument && !fInDTD) {
             EntityReference entityRef = fDocument.createEntityReference(name);
@@ -210,9 +211,9 @@ public abstract class AbstractDOMParser
      * 
      * @param text The text in the comment.
      *
-     * @throws SAXException Thrown by application to signal an error.
+     * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
 
         Comment comment = fDocument.createComment(text.toString());
         fCurrentNode.appendChild(comment);
@@ -233,10 +234,10 @@ public abstract class AbstractDOMParser
      * @param target The target.
      * @param data   The data or null if none specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
 
         ProcessingInstruction pi = fDocument.createProcessingInstruction(target, data.toString());
         fCurrentNode.appendChild(pi);
@@ -254,10 +255,10 @@ public abstract class AbstractDOMParser
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *     
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
 
         fInDocument = true;
         fDocument = new DocumentImpl();
@@ -277,10 +278,10 @@ public abstract class AbstractDOMParser
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
         
         DocumentImpl docimpl = (DocumentImpl)fDocument;
         DocumentType doctype = docimpl.createDocumentType(rootElement, publicId, systemId);
@@ -296,10 +297,10 @@ public abstract class AbstractDOMParser
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         Element elementNode = element.prefix != null
                             ? fDocument.createElementNS(element.uri, element.rawname)
@@ -331,9 +332,9 @@ public abstract class AbstractDOMParser
      * 
      * @param text The content.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
 
         if (fInCDATASection) {
             CDATASection cdataSection = (CDATASection)fCurrentNode;
@@ -363,9 +364,9 @@ public abstract class AbstractDOMParser
      * 
      * @param text The ignorable whitespace.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
 
         Node child = fCurrentNode.getLastChild();
         if (child != null && child.getNodeType() == Node.TEXT_NODE) {
@@ -388,9 +389,9 @@ public abstract class AbstractDOMParser
      * 
      * @param element The name of the element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
 
         fCurrentNode = fCurrentNode.getParentNode();
 
@@ -402,17 +403,17 @@ public abstract class AbstractDOMParser
      * 
      * @param prefix The namespace prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix) throws XNIException {
     } // endPrefixMapping(String)
 
     /** 
      * The start of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws SAXException {
+    public void startCDATA() throws XNIException {
 
         fInCDATASection = true;
         CDATASection cdataSection = fDocument.createCDATASection("");
@@ -424,9 +425,9 @@ public abstract class AbstractDOMParser
     /**
      * The end of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws SAXException {
+    public void endCDATA() throws XNIException {
 
         fInCDATASection = false;
         fCurrentNode = fCurrentNode.getParentNode();
@@ -436,9 +437,9 @@ public abstract class AbstractDOMParser
     /**
      * The end of the document.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws SAXException {
+    public void endDocument() throws XNIException {
 
         // set DOM error checking back on
         if (fDocumentImpl != null) {
@@ -464,9 +465,9 @@ public abstract class AbstractDOMParser
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         if (fInDocument && !fInDTD) {
             fCurrentNode = fCurrentNode.getParentNode();

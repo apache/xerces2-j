@@ -69,6 +69,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -315,8 +316,9 @@ public abstract class BasicParserConfiguration
      * @exception org.xml.sax.SAXException Throws exception on SAX error.
      * @exception java.io.IOException Throws exception on i/o error.
      */
+    /***
     public void parse(String systemId)
-        throws SAXException, IOException {
+        throws XNIException, IOException {
 
         InputSource source = new InputSource(systemId);
         parse(source);
@@ -347,7 +349,7 @@ public abstract class BasicParserConfiguration
      * @exception java.io.IOException
      */
     public abstract void parse(InputSource inputSource) 
-        throws SAXException, IOException;
+        throws XNIException, IOException;
 
 
     public void setDocumentHandler(XMLDocumentHandler handler) {

@@ -65,6 +65,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.ContentHandler;
@@ -196,10 +197,10 @@ public abstract class AbstractSAXParser
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *     
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
 
         // get the locator
         Locator locator = null;
@@ -210,20 +211,25 @@ public abstract class AbstractSAXParser
             // ignore
         }
 
-        // SAX1
-        if (fDocumentHandler != null) {
-            if (locator != null) {
-                fDocumentHandler.setDocumentLocator(locator);
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                if (locator != null) {
+                    fDocumentHandler.setDocumentLocator(locator);
+                }
+                fDocumentHandler.startDocument();
             }
-            fDocumentHandler.startDocument();
-        }
 
-        // SAX2
-        if (fContentHandler != null) {
-            if (locator != null) {
-                fContentHandler.setDocumentLocator(locator);
+            // SAX2
+            if (fContentHandler != null) {
+                if (locator != null) {
+                    fContentHandler.setDocumentLocator(locator);
+                }
+                fContentHandler.startDocument();
             }
-            fContentHandler.startDocument();
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // startDocument(String,String)
@@ -237,16 +243,21 @@ public abstract class AbstractSAXParser
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement,
                             String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
         fInDTD = true;
 
-        // SAX2 extension
-        if (fLexicalHandler != null) {
-            fLexicalHandler.startDTD(rootElement, publicId, systemId);
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.startDTD(rootElement, publicId, systemId);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // doctypeDecl(String,String,String)
@@ -258,14 +269,20 @@ public abstract class AbstractSAXParser
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
-        throws SAXException {
+        throws XNIException {
 
-        // SAX2
-        if (fContentHandler != null) {
-            fContentHandler.startPrefixMapping(prefix, uri);
+        try {
+            // SAX2
+            if (fContentHandler != null) {
+                fContentHandler.startPrefixMapping(prefix, uri);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // startPrefixMapping(String prefix, String uri)
@@ -278,34 +295,40 @@ public abstract class AbstractSAXParser
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes) 
-        throws SAXException {
+        throws XNIException {
 
-        // SAX1
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element.rawname, attributes);
-        }
-
-        // SAX2
-        if (fContentHandler != null) {
-
-            if (!fNamespacePrefixes) {
-                // remove namespace declaration attributes
-                int len = attributes.getLength();
-                for (int i = len - 1; i >= 0; i--) {
-                    attributes.getName(i, fQName);
-                    if (fQName.rawname == fXmlnsSymbol ||
-                        fQName.prefix == fXmlnsSymbol) {
-                        attributes.removeAttributeAt(i);
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                fDocumentHandler.startElement(element.rawname, attributes);
+            }
+    
+            // SAX2
+            if (fContentHandler != null) {
+    
+                if (!fNamespacePrefixes) {
+                    // remove namespace declaration attributes
+                    int len = attributes.getLength();
+                    for (int i = len - 1; i >= 0; i--) {
+                        attributes.getName(i, fQName);
+                        if (fQName.rawname == fXmlnsSymbol ||
+                            fQName.prefix == fXmlnsSymbol) {
+                            attributes.removeAttributeAt(i);
+                        }
                     }
                 }
+    
+                String uri = element.uri != null ? element.uri : fEmptySymbol;
+                fContentHandler.startElement(uri, element.localpart,
+                                             element.rawname, attributes);
             }
-
-            String uri = element.uri != null ? element.uri : fEmptySymbol;
-            fContentHandler.startElement(uri, element.localpart,
-                                         element.rawname, attributes);
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // startElement(QName,XMLAttributes)
@@ -315,22 +338,28 @@ public abstract class AbstractSAXParser
      * 
      * @param text The content.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
 
         if (fInDTD) {
             return;
         }
 
-        // SAX1
-        if (fDocumentHandler != null) {
-            fDocumentHandler.characters(text.ch, text.offset, text.length);
-        }
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                fDocumentHandler.characters(text.ch, text.offset, text.length);
+            }
 
-        // SAX2
-        if (fContentHandler != null) {
-            fContentHandler.characters(text.ch, text.offset, text.length);
+            // SAX2
+            if (fContentHandler != null) {
+                fContentHandler.characters(text.ch, text.offset, text.length);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // characters(XMLString)
@@ -345,19 +374,24 @@ public abstract class AbstractSAXParser
      * 
      * @param text The ignorable whitespace.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) 
-        throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
 
-        // SAX1
-        if (fDocumentHandler != null) {
-            fDocumentHandler.ignorableWhitespace(text.ch, text.offset, text.length);
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                fDocumentHandler.ignorableWhitespace(text.ch, text.offset, text.length);
+            }
+
+            // SAX2
+            if (fContentHandler != null) {
+                fContentHandler.ignorableWhitespace(text.ch, text.offset, text.length);
+            }
         }
-
-        // SAX2
-        if (fContentHandler != null) {
-            fContentHandler.ignorableWhitespace(text.ch, text.offset, text.length);
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // ignorableWhitespace(XMLString)
@@ -367,20 +401,26 @@ public abstract class AbstractSAXParser
      * 
      * @param element The name of the element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
 
-        // SAX1
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(element.rawname);
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                fDocumentHandler.endElement(element.rawname);
+            }
+
+            // SAX2
+            if (fContentHandler != null) {
+                String uri = element.uri != null ? element.uri : fEmptySymbol;
+                fContentHandler.endElement(uri, element.localpart,
+                                           element.rawname);
+            }
         }
-
-        // SAX2
-        if (fContentHandler != null) {
-            String uri = element.uri != null ? element.uri : fEmptySymbol;
-            fContentHandler.endElement(uri, element.localpart,
-                                       element.rawname);
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // endElement(QName)
@@ -391,13 +431,19 @@ public abstract class AbstractSAXParser
      * 
      * @param prefix The namespace prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix)  throws XNIException {
 
-        // SAX2
-        if (fContentHandler != null) {
-            fContentHandler.endPrefixMapping(prefix);
+        try {
+            // SAX2
+            if (fContentHandler != null) {
+                fContentHandler.endPrefixMapping(prefix);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // endPrefixMapping(String)
@@ -405,18 +451,24 @@ public abstract class AbstractSAXParser
     /**
      * The end of the document.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void endDocument() throws SAXException {
+    public void endDocument() throws XNIException {
 
-        // SAX1
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endDocument();
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                fDocumentHandler.endDocument();
+            }
+
+            // SAX2
+            if (fContentHandler != null) {
+                fContentHandler.endDocument();
+            }
         }
-
-        // SAX2
-        if (fContentHandler != null) {
-            fContentHandler.endDocument();
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // endDocument()
@@ -454,13 +506,22 @@ public abstract class AbstractSAXParser
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
-        if (fLexicalHandler != null) {
-            fLexicalHandler.startEntity(name);
+                            String encoding) throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.startEntity(name);
+            }
         }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
     } // startEntity(String,String,String,String)
 
     /**
@@ -484,12 +545,21 @@ public abstract class AbstractSAXParser
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
-        if (fLexicalHandler != null) {
-            fLexicalHandler.endEntity(name);
+    public void endEntity(String name) throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.endEntity(name);
+            }
         }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
     } // endEntity(String)
 
     /**
@@ -497,13 +567,19 @@ public abstract class AbstractSAXParser
      * 
      * @param text The text in the comment.
      *
-     * @throws SAXException Thrown by application to signal an error.
+     * @throws XNIException Thrown by application to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
 
-        // SAX2 extension
-        if (fLexicalHandler != null) {
-            fLexicalHandler.comment(text.ch, 0, text.length);
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.comment(text.ch, 0, text.length);
+            }
+        }
+        catch (SAXException e) { 
+            throw new XNIException(e);
         }
 
     } // comment(XMLString)
@@ -522,10 +598,11 @@ public abstract class AbstractSAXParser
      * @param target The target.
      * @param data   The data or null if none specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
 
         //
         // REVISIT - I keep running into SAX apps that expect
@@ -533,15 +610,20 @@ public abstract class AbstractSAXParser
         //   to the comment for this method in the SAX API.
         //
 
-        // SAX1
-        if (fDocumentHandler != null) {
-            fDocumentHandler.processingInstruction(target,
-                                                   data.toString());
-        }
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                fDocumentHandler.processingInstruction(target,
+                                                       data.toString());
+            }
 
-        // SAX2
-        if (fContentHandler != null) {
-            fContentHandler.processingInstruction(target, data.toString());
+            // SAX2
+            if (fContentHandler != null) {
+                fContentHandler.processingInstruction(target, data.toString());
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // processingInstruction(String,XMLString)
@@ -556,14 +638,20 @@ public abstract class AbstractSAXParser
      * @param name         The name of the element.
      * @param contentModel The element content model.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void elementDecl(String name, String contentModel) 
-        throws SAXException {
+        throws XNIException {
 
-        // SAX2 extension
-        if (fDeclHandler != null) {
-            fDeclHandler.elementDecl(name, contentModel);
+        try {
+            // SAX2 extension
+            if (fDeclHandler != null) {
+                fDeclHandler.elementDecl(name, contentModel);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // elementDecl(String,String)
@@ -587,31 +675,37 @@ public abstract class AbstractSAXParser
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue)
-        throws SAXException {
+        throws XNIException {
 
-        // SAX2 extension
-        if (fDeclHandler != null) {
-            if (type.equals("NOTATION")) {
-                StringBuffer str = new StringBuffer();
-                str.append(type);
-                str.append(" (");
-                for (int i = 0; i < enumeration.length; i++) {
-                    str.append(enumeration[i]);
-                    if (i < enumeration.length - 1) {
-                        str.append('|');
+        try {
+            // SAX2 extension
+            if (fDeclHandler != null) {
+                if (type.equals("NOTATION")) {
+                    StringBuffer str = new StringBuffer();
+                    str.append(type);
+                    str.append(" (");
+                    for (int i = 0; i < enumeration.length; i++) {
+                        str.append(enumeration[i]);
+                        if (i < enumeration.length - 1) {
+                            str.append('|');
+                        }
                     }
+                    str.append(')');
+                    type = str.toString();
                 }
-                str.append(')');
-                type = str.toString();
+                String value = defaultValue.toString();
+                fDeclHandler.attributeDecl(elementName, attributeName,
+                                           type, defaultType, value);
             }
-            String value = defaultValue.toString();
-            fDeclHandler.attributeDecl(elementName, attributeName,
-                                       type, defaultType, value);
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // attributeDecl(String,String,String,String[],String,XMLString)
@@ -624,14 +718,20 @@ public abstract class AbstractSAXParser
      *             entity name.
      * @param text The value of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text)
-        throws SAXException {
+        throws XNIException {
 
-        // SAX2 extensions
-        if (fDeclHandler != null) {
-            fDeclHandler.internalEntityDecl(name, text.toString());
+        try {
+            // SAX2 extensions
+            if (fDeclHandler != null) {
+                fDeclHandler.internalEntityDecl(name, text.toString());
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // internalEntityDecl(String,XMLString)
@@ -646,14 +746,20 @@ public abstract class AbstractSAXParser
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId,
-                                   String systemId) throws SAXException {
+                                   String systemId) throws XNIException {
 
-        // SAX2 extension
-        if (fDeclHandler != null) {
-            fDeclHandler.externalEntityDecl(name, publicId, systemId);
+        try {
+            // SAX2 extension
+            if (fDeclHandler != null) {
+                fDeclHandler.externalEntityDecl(name, publicId, systemId);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // externalEntityDecl(String,String,String)
@@ -668,16 +774,22 @@ public abstract class AbstractSAXParser
      *                 specified.
      * @param notation The name of the notation.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId,
                                    String systemId, String notation)
-        throws SAXException {
+        throws XNIException {
 
-        // SAX2 extension
-        if (fDTDHandler != null) {
-            fDTDHandler.unparsedEntityDecl(name, publicId,
-                                           systemId, notation);
+        try {
+            // SAX2 extension
+            if (fDTDHandler != null) {
+                fDTDHandler.unparsedEntityDecl(name, publicId,
+                                               systemId, notation);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // unparsedEntityDecl(String,String,String,String)
@@ -691,14 +803,20 @@ public abstract class AbstractSAXParser
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
 
-        // SAX1 and SAX2
-        if (fDTDHandler != null) {
-            fDTDHandler.notationDecl(name, publicId, systemId);
+        try {
+            // SAX1 and SAX2
+            if (fDTDHandler != null) {
+                fDTDHandler.notationDecl(name, publicId, systemId);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // notationDecl(String,String,String)
@@ -706,14 +824,20 @@ public abstract class AbstractSAXParser
     /**
      * The end of the DTD.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
+     * @throws SAXException Thrown by SAX handler to signal an error.
      */
-    public void endDTD() throws SAXException {
+    public void endDTD() throws XNIException {
         fInDTD = false;
 
-        // SAX2 extension
-        if (fLexicalHandler != null) {
-            fLexicalHandler.endDTD();
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.endDTD();
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // endDTD()

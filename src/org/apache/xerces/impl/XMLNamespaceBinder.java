@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -333,10 +334,10 @@ public class XMLNamespaceBinder
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.startEntity(name, publicId, systemId, encoding);
         }
@@ -356,10 +357,10 @@ public class XMLNamespaceBinder
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void textDecl(String version, String encoding) 
-        throws SAXException {
+        throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.textDecl(version, encoding);
         }
@@ -368,10 +369,10 @@ public class XMLNamespaceBinder
     /**
      * The start of the document.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.startDocument(systemId, encoding);
         }
@@ -387,10 +388,10 @@ public class XMLNamespaceBinder
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void xmlDecl(String version, String encoding, String standalone)
-        throws SAXException {
+        throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.xmlDecl(version, encoding, standalone);
         }
@@ -405,11 +406,11 @@ public class XMLNamespaceBinder
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement, 
                             String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
         }
@@ -420,9 +421,9 @@ public class XMLNamespaceBinder
      * 
      * @param text The text in the comment.
      *
-     * @throws SAXException Thrown by application to signal an error.
+     * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.comment(text);
         }
@@ -442,10 +443,10 @@ public class XMLNamespaceBinder
      * @param target The target.
      * @param data   The data or null if none specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.processingInstruction(target, data);
         }
@@ -458,10 +459,10 @@ public class XMLNamespaceBinder
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
-        throws SAXException {
+        throws XNIException {
 
         // REVISIT: Should prefix mapping from previous stage in
         //          the pipeline affect the namespaces?
@@ -485,10 +486,10 @@ public class XMLNamespaceBinder
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         // add new namespace context
         fNamespaceSupport.pushContext();
@@ -567,10 +568,10 @@ public class XMLNamespaceBinder
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void emptyElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         startElement(element, attributes);
         endElement(element);
@@ -582,9 +583,9 @@ public class XMLNamespaceBinder
      * 
      * @param text The content.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.characters(text);
         }
@@ -600,9 +601,9 @@ public class XMLNamespaceBinder
      * 
      * @param text The ignorable whitespace.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.ignorableWhitespace(text);
         }
@@ -613,9 +614,9 @@ public class XMLNamespaceBinder
      * 
      * @param element The name of the element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
 
         // bind element
         element.uri = fNamespaceSupport.getURI(element.prefix);
@@ -645,9 +646,9 @@ public class XMLNamespaceBinder
      * 
      * @param prefix The namespace prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix) throws XNIException {
 
         // REVISIT: Should prefix mapping from previous stage in
         //          the pipeline affect the namespaces?
@@ -662,9 +663,9 @@ public class XMLNamespaceBinder
     /** 
      * The start of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws SAXException {
+    public void startCDATA() throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.startCDATA();
         }
@@ -673,9 +674,9 @@ public class XMLNamespaceBinder
     /**
      * The end of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws SAXException {
+    public void endCDATA() throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.endCDATA();
         }
@@ -684,9 +685,9 @@ public class XMLNamespaceBinder
     /**
      * The end of the document.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws SAXException {
+    public void endDocument() throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.endDocument();
         }
@@ -701,9 +702,9 @@ public class XMLNamespaceBinder
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.endEntity(name);
         }

@@ -63,6 +63,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.SAXException;
@@ -123,10 +124,10 @@ public abstract class AbstractXMLDocumentParser
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *     
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
     } // startDocument(String,String)
 
     /**
@@ -139,10 +140,10 @@ public abstract class AbstractXMLDocumentParser
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void xmlDecl(String version, String encoding, String standalone)
-        throws SAXException {
+        throws XNIException {
     } // xmlDecl(String,String,String)
 
     /**
@@ -154,10 +155,10 @@ public abstract class AbstractXMLDocumentParser
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
     } // doctypeDecl(String,String,String)
 
     /**
@@ -167,10 +168,10 @@ public abstract class AbstractXMLDocumentParser
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
-        throws SAXException {
+        throws XNIException {
     } // startPrefixMapping(String,String)
 
     /**
@@ -181,10 +182,10 @@ public abstract class AbstractXMLDocumentParser
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
     } // startElement(QName,XMLAttributes)
 
     /**
@@ -193,10 +194,10 @@ public abstract class AbstractXMLDocumentParser
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void emptyElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         startElement(element, attributes);
         endElement(element);
@@ -208,9 +209,9 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param text The content.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
     } // characters(XMLString)
 
     /**
@@ -223,9 +224,9 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param text The ignorable whitespace.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
     } // ignorableWhitespace(XMLString)
 
     /**
@@ -233,9 +234,9 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param element The name of the element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
     } // endElement(QName)
 
     /**
@@ -244,33 +245,33 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param prefix The namespace prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix) throws XNIException {
     } // endPrefixMapping(String)
 
     /** 
      * The start of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws SAXException {
+    public void startCDATA() throws XNIException {
     } // startCDATA()
 
     /**
      * The end of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws SAXException {
+    public void endCDATA() throws XNIException {
     } // endCDATA()
 
     /**
      * The end of the document.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws SAXException {
+    public void endDocument() throws XNIException {
     } // endDocument()
 
     //
@@ -287,7 +288,7 @@ public abstract class AbstractXMLDocumentParser
      * will be notified of the start of the document entity by calling the
      * startEntity method with the entity name "[xml]" <em>before</em> calling
      * the startDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * XNI API, the document entity is never reported, however.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the start of the DTD entity by calling the
@@ -307,10 +308,10 @@ public abstract class AbstractXMLDocumentParser
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
     } // startEntity(String,String,String,String)
 
     /**
@@ -327,9 +328,9 @@ public abstract class AbstractXMLDocumentParser
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws SAXException {
+    public void textDecl(String version, String encoding) throws XNIException {
     } // textDecl(String,String)
 
     /**
@@ -337,9 +338,9 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param text The text in the comment.
      *
-     * @throws SAXException Thrown by application to signal an error.
+     * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
     } // comment(XMLString)
 
     /**
@@ -356,10 +357,10 @@ public abstract class AbstractXMLDocumentParser
      * @param target The target.
      * @param data   The data or null if none specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
     } // processingInstruction(String,XMLString)
 
     /**
@@ -372,7 +373,7 @@ public abstract class AbstractXMLDocumentParser
      * will be notified of the end of the document entity by calling the
      * endEntity method with the entity name "[xml]" <em>after</em> calling
      * the endDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * XNI API, the document entity is never reported, however.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the end of the DTD entity by calling the
@@ -384,9 +385,9 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
     } // endEntity(String)
 
     //
@@ -396,9 +397,9 @@ public abstract class AbstractXMLDocumentParser
     /**
      * The start of the DTD.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws SAXException {
+    public void startDTD() throws XNIException {
         fInDTD = true;
     } // startDTD()
 
@@ -408,10 +409,10 @@ public abstract class AbstractXMLDocumentParser
      * @param name         The name of the element.
      * @param contentModel The element content model.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void elementDecl(String name, String contentModel)
-        throws SAXException {
+        throws XNIException {
     } // elementDecl(String,String)
 
     /**
@@ -420,9 +421,9 @@ public abstract class AbstractXMLDocumentParser
      * @param elementName The name of the element that this attribute
      *                    list is associated with.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws SAXException {
+    public void startAttlist(String elementName) throws XNIException {
     } // startAttlist(String)
 
     /**
@@ -444,20 +445,20 @@ public abstract class AbstractXMLDocumentParser
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue)
-        throws SAXException {
+        throws XNIException {
     } // attributeDecl(String,String,String,String[],String,XMLString)
 
     /**
      * The end of an attribute list.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws SAXException {
+    public void endAttlist() throws XNIException {
     } // endAttlist()
 
     /**
@@ -468,10 +469,10 @@ public abstract class AbstractXMLDocumentParser
      *             entity name.
      * @param text The value of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text) 
-        throws SAXException {
+        throws XNIException {
     } // internalEntityDecl(String,XMLString)
 
     /**
@@ -484,11 +485,11 @@ public abstract class AbstractXMLDocumentParser
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, 
                                    String publicId, String systemId) 
-        throws SAXException {
+        throws XNIException {
     } // externalEntityDecl(String,String,String)
 
     /**
@@ -501,11 +502,11 @@ public abstract class AbstractXMLDocumentParser
      *                 specified.
      * @param notation The name of the notation.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation) throws SAXException {
+                                   String notation) throws XNIException {
     } // unparsedEntityDecl(String,String,String,String)
 
     /**
@@ -517,10 +518,10 @@ public abstract class AbstractXMLDocumentParser
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
     } // notationDecl(String,String,String)
 
     /**
@@ -529,28 +530,28 @@ public abstract class AbstractXMLDocumentParser
      * @param type The type of the conditional section. This value will
      *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see CONDITIONAL_INCLUDE
      * @see CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws SAXException {
+    public void startConditional(short type) throws XNIException {
     } // startConditional(short)
 
     /**
      * The end of a conditional section.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws SAXException {
+    public void endConditional() throws XNIException {
     } // endConditional()
 
     /**
      * The end of the DTD.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws SAXException {
+    public void endDTD() throws XNIException {
         fInDTD = false;
     } // endDTD()
 
@@ -566,7 +567,7 @@ public abstract class AbstractXMLDocumentParser
      * @param elementName The name of the element.
      * @param type        The content model type.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_EMPTY
      * @see TYPE_ANY
@@ -574,7 +575,7 @@ public abstract class AbstractXMLDocumentParser
      * @see TYPE_CHILDREN
      */
     public void startContentModel(String elementName, short type)
-        throws SAXException {
+        throws XNIException {
     } // startContentModel(String,short)
 
     /**
@@ -588,11 +589,11 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param elementName The name of the referenced element. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_MIXED
      */
-    public void mixedElement(String elementName) throws SAXException {
+    public void mixedElement(String elementName) throws XNIException {
     } // mixedElement(elementName)
 
     /**
@@ -604,11 +605,11 @@ public abstract class AbstractXMLDocumentParser
      * <strong>Note:</strong> Children groups can be nested and have
      * associated occurrence counts.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenStartGroup() throws SAXException {
+    public void childrenStartGroup() throws XNIException {
     } // childrenStartGroup()
 
     /**
@@ -616,11 +617,11 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param elementName The name of the referenced element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenElement(String elementName) throws SAXException {
+    public void childrenElement(String elementName) throws XNIException {
     } // childrenElement(String)
 
     /**
@@ -632,13 +633,13 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param separator The type of children separator.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see SEPARATOR_CHOICE
      * @see SEPARATOR_SEQUENCE
      * @see TYPE_CHILDREN
      */
-    public void childrenSeparator(short separator) throws SAXException {
+    public void childrenSeparator(short separator) throws XNIException {
     } // childrenSeparator(short)
 
     /**
@@ -650,14 +651,14 @@ public abstract class AbstractXMLDocumentParser
      * @param occurrence The occurrence count for the last children element
      *                   or children group.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see OCCURS_ZERO_OR_ONE
      * @see OCCURS_ZERO_OR_MORE
      * @see OCCURS_ONE_OR_MORE
      * @see TYPE_CHILDREN
      */
-    public void childrenOccurrence(short occurrence) throws SAXException {
+    public void childrenOccurrence(short occurrence) throws XNIException {
     } // childrenOccurrence(short)
 
     /**
@@ -668,15 +669,15 @@ public abstract class AbstractXMLDocumentParser
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenEndGroup() throws SAXException {
+    public void childrenEndGroup() throws XNIException {
     } // childrenEndGroup()
 
     /**
      * The end of a content model.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endContentModel() throws SAXException {
+    public void endContentModel() throws XNIException {
     } // endContentModel()
 
     //

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -68,6 +68,7 @@ import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -249,8 +250,12 @@ public abstract class XMLScanner
         
         // sax features
         fValidation = componentManager.getFeature(VALIDATION);
-        fNotifyCharRefs = componentManager.getFeature(NOTIFY_CHAR_REFS);
- 
+        try {
+            fNotifyCharRefs = componentManager.getFeature(NOTIFY_CHAR_REFS);
+        }
+        catch (SAXException e) {
+            // ignore
+        }
 
     } // reset(XMLComponentManager)
 
@@ -326,7 +331,7 @@ public abstract class XMLScanner
      */
     protected void scanXMLDeclOrTextDecl(boolean scanningTextDecl,
                                          String[] pseudoAttributeValues) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // pseudo-attribute values
         String version = null;
@@ -470,7 +475,7 @@ public abstract class XMLScanner
      */
     public String scanPseudoAttribute(boolean scanningTextDecl, 
                                       XMLString value) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         String name = fEntityScanner.scanName();
         if (name == null) {
@@ -534,7 +539,7 @@ public abstract class XMLScanner
      * <strong>Note:</strong> This method uses fString, anything in it
      * at the time of calling is lost.
      */
-    protected void scanPI() throws IOException, SAXException {
+    protected void scanPI() throws IOException, XNIException {
 
         // target
         String target = fEntityScanner.scanName();
@@ -559,7 +564,7 @@ public abstract class XMLScanner
      * @param data The string to fill in with the data
      */
     protected void scanPIData(String target, XMLString data) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // check target
         if (target.length() == 3) {
@@ -621,7 +626,7 @@ public abstract class XMLScanner
      * @param text The buffer to fill in with the text.
      */
     protected void scanComment(XMLStringBuffer text)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // text
         // REVISIT: handle invalid character, eof
@@ -667,7 +672,7 @@ public abstract class XMLScanner
     protected void scanAttributeValue(XMLString value, String atName,
                                       XMLAttributes attributes, int attrIndex,
                                       boolean checkEntities)
-        throws IOException, SAXException
+        throws IOException, XNIException
     {
         // quote
         int quote = fEntityScanner.peekChar();
@@ -955,7 +960,7 @@ public abstract class XMLScanner
      */
     protected void scanExternalID(String[] identifiers,
                                   boolean optionalSystemId)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         String systemId = null;
         String publicId = null;
@@ -1032,7 +1037,7 @@ public abstract class XMLScanner
      * the time of calling is lost.
      */
     protected boolean scanPubidLiteral(XMLString literal)
-        throws IOException, SAXException
+        throws IOException, XNIException
     {
         int quote = fEntityScanner.scanChar();
         if (quote != '\'' && quote != '"') {
@@ -1114,10 +1119,10 @@ public abstract class XMLScanner
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
 
         // keep track of the entity depth
         fEntityDepth++;
@@ -1139,9 +1144,9 @@ public abstract class XMLScanner
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         // keep track of the entity depth
         fEntityDepth--;
@@ -1174,7 +1179,7 @@ public abstract class XMLScanner
      * @return the character value or (-1) on conversion failure
      */
     protected int scanCharReferenceValue(XMLStringBuffer buf) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // scan hexadecimal value
         boolean hex = false;
@@ -1268,7 +1273,7 @@ public abstract class XMLScanner
      * @returns True if it succeeded.
      */
     protected boolean scanSurrogates(XMLStringBuffer buf)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         int high = fEntityScanner.scanChar();
         int low = fEntityScanner.peekChar();
@@ -1302,7 +1307,7 @@ public abstract class XMLScanner
      * Convenience function used in all XML scanners.
      */
     protected void reportFatalError(String msgId, Object[] args)
-        throws SAXException {
+        throws XNIException {
         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                    msgId, args,
                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);

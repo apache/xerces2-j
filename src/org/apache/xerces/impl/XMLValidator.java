@@ -87,6 +87,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -667,10 +668,10 @@ public class XMLValidator
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *     
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -689,10 +690,10 @@ public class XMLValidator
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void xmlDecl(String version, String encoding, String standalone)
-        throws SAXException {
+        throws XNIException {
 
         // save standalone state
         fStandaloneIsYes = standalone != null && standalone.equals("yes");
@@ -713,10 +714,10 @@ public class XMLValidator
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
 
         // save root element state
         fRootElement.setValues(null, rootElement, rootElement, null);
@@ -735,10 +736,10 @@ public class XMLValidator
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -753,10 +754,10 @@ public class XMLValidator
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         handleStartElement(element, attributes, false);
 
@@ -768,10 +769,10 @@ public class XMLValidator
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void emptyElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         handleStartElement(element, attributes, true);
 
@@ -782,9 +783,9 @@ public class XMLValidator
      * 
      * @param text The content.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
 
         // ignored characters in DTD
         if (fInDTD) {
@@ -859,9 +860,9 @@ public class XMLValidator
      * 
      * @param text The ignorable whitespace.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -875,9 +876,9 @@ public class XMLValidator
      * 
      * @param element The name of the element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
 
         handleEndElement(element, false);
     
@@ -889,9 +890,9 @@ public class XMLValidator
      * 
      * @param prefix The namespace prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -903,9 +904,9 @@ public class XMLValidator
     /** 
      * The start of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws SAXException {
+    public void startCDATA() throws XNIException {
 
         if (fValidation && fInElementContent) {
             charDataInContent();
@@ -921,9 +922,9 @@ public class XMLValidator
     /**
      * The end of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws SAXException {
+    public void endCDATA() throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -935,9 +936,9 @@ public class XMLValidator
     /**
      * The end of the document.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws SAXException {
+    public void endDocument() throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -973,10 +974,10 @@ public class XMLValidator
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
         
         // call handlers
         if (fInDTD) {
@@ -1022,9 +1023,9 @@ public class XMLValidator
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws SAXException {
+    public void textDecl(String version, String encoding) throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -1046,9 +1047,9 @@ public class XMLValidator
      * 
      * @param text The text in the comment.
      *
-     * @throws SAXException Thrown by application to signal an error.
+     * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -1079,10 +1080,10 @@ public class XMLValidator
      * @param target The target.
      * @param data   The data or null if none specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -1114,9 +1115,9 @@ public class XMLValidator
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -1140,9 +1141,9 @@ public class XMLValidator
     /**
      * The start of the DTD.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws SAXException {
+    public void startDTD() throws XNIException {
 
         // initialize state
         fInDTD = true;
@@ -1169,10 +1170,10 @@ public class XMLValidator
      * @param name         The name of the element.
      * @param contentModel The element content model.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void elementDecl(String name, String contentModel)
-        throws SAXException {
+        throws XNIException {
 
         //check VC: Unique Element Declaration
         if (fValidation) {
@@ -1201,9 +1202,9 @@ public class XMLValidator
      * @param elementName The name of the element that this attribute
      *                    list is associated with.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws SAXException {
+    public void startAttlist(String elementName) throws XNIException {
         
         // call handlers
         fDTDGrammar.startAttlist(elementName);
@@ -1232,12 +1233,12 @@ public class XMLValidator
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue)
-        throws SAXException {
+        throws XNIException {
 
         if (type != fCDATASymbol) {
             normalizeDefaultAttrValue(defaultValue);
@@ -1382,9 +1383,9 @@ public class XMLValidator
     /**
      * The end of an attribute list.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws SAXException {
+    public void endAttlist() throws XNIException {
 
         // call handlers
         fDTDGrammar.endAttlist();
@@ -1402,10 +1403,10 @@ public class XMLValidator
      *             entity name.
      * @param text The value of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text) 
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         fDTDGrammar.internalEntityDecl(name, text);
@@ -1425,10 +1426,10 @@ public class XMLValidator
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId, 
-                                   String systemId) throws SAXException {
+                                   String systemId) throws XNIException {
 
         // call handlers
         fDTDGrammar.externalEntityDecl(name, publicId, systemId);
@@ -1448,11 +1449,11 @@ public class XMLValidator
      *                 specified.
      * @param notation The name of the notation.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation) throws SAXException {
+                                   String notation) throws XNIException {
 
         // VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
@@ -1476,10 +1477,10 @@ public class XMLValidator
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         fDTDGrammar.notationDecl(name, publicId, systemId);
@@ -1495,12 +1496,12 @@ public class XMLValidator
      * @param type The type of the conditional section. This value will
      *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see CONDITIONAL_INCLUDE
      * @see CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws SAXException {
+    public void startConditional(short type) throws XNIException {
 
         // set state
         fInDTDIgnore = type == XMLDTDHandler.CONDITIONAL_IGNORE;
@@ -1516,9 +1517,9 @@ public class XMLValidator
     /**
      * The end of a conditional section.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws SAXException {
+    public void endConditional() throws XNIException {
 
         // set state
         fInDTDIgnore = false;
@@ -1534,9 +1535,9 @@ public class XMLValidator
     /**
      * The end of the DTD.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws SAXException {
+    public void endDTD() throws XNIException {
 
         // set state
         fInDTD = false;
@@ -1604,7 +1605,7 @@ public class XMLValidator
      * @param elementName The name of the element.
      * @param type        The content model type.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_EMPTY
      * @see TYPE_ANY
@@ -1612,7 +1613,7 @@ public class XMLValidator
      * @see TYPE_CHILDREN
      */
     public void startContentModel(String elementName, short type)
-        throws SAXException {
+        throws XNIException {
 
         if (fValidation) {
             fDTDElementDeclName = elementName;
@@ -1638,11 +1639,11 @@ public class XMLValidator
      * 
      * @param elementName The name of the referenced element. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_MIXED
      */
-    public void mixedElement(String elementName) throws SAXException {
+    public void mixedElement(String elementName) throws XNIException {
 
         // check VC: No duplicate Types, in a single mixed-content declaration
         if (fValidation) {
@@ -1673,11 +1674,11 @@ public class XMLValidator
      * <strong>Note:</strong> Children groups can be nested and have
      * associated occurrence counts.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenStartGroup() throws SAXException {
+    public void childrenStartGroup() throws XNIException {
 
         // call handlers
         fDTDGrammar.childrenStartGroup();
@@ -1692,11 +1693,11 @@ public class XMLValidator
      * 
      * @param elementName The name of the referenced element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenElement(String elementName) throws SAXException {
+    public void childrenElement(String elementName) throws XNIException {
 
         // call handlers
         fDTDGrammar.childrenElement(elementName);
@@ -1715,13 +1716,13 @@ public class XMLValidator
      * 
      * @param separator The type of children separator.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see SEPARATOR_CHOICE
      * @see SEPARATOR_SEQUENCE
      * @see TYPE_CHILDREN
      */
-    public void childrenSeparator(short separator) throws SAXException {
+    public void childrenSeparator(short separator) throws XNIException {
 
         // call handlers
         fDTDGrammar.childrenSeparator(separator);
@@ -1740,14 +1741,14 @@ public class XMLValidator
      * @param occurrence The occurrence count for the last children element
      *                   or children group.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see OCCURS_ZERO_OR_ONE
      * @see OCCURS_ZERO_OR_MORE
      * @see OCCURS_ONE_OR_MORE
      * @see TYPE_CHILDREN
      */
-    public void childrenOccurrence(short occurrence) throws SAXException {
+    public void childrenOccurrence(short occurrence) throws XNIException {
 
         // call handlers
         fDTDGrammar.childrenOccurrence(occurrence);
@@ -1765,7 +1766,7 @@ public class XMLValidator
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenEndGroup() throws SAXException {
+    public void childrenEndGroup() throws XNIException {
 
         // call handlers
         fDTDGrammar.childrenEndGroup();
@@ -1778,9 +1779,9 @@ public class XMLValidator
     /**
      * The end of a content model.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endContentModel() throws SAXException {
+    public void endContentModel() throws XNIException {
 
         // call handlers
         fDTDGrammar.endContentModel();
@@ -1797,7 +1798,7 @@ public class XMLValidator
     /** Add default attributes and validate. */
     private void addDTDDefaultAttrsAndValidate(int elementIndex, 
                                                XMLAttributes attributes) 
-        throws SAXException {
+        throws XNIException {
 
         // is there anything to do?
         if (elementIndex == -1 || fCurrentGrammar == null) {
@@ -2000,7 +2001,7 @@ public class XMLValidator
      */
     private void validateDTDattribute(QName element, String attValue,
                                       XMLAttributeDecl attributeDecl) 
-        throws SAXException {
+        throws XNIException {
 
         switch (attributeDecl.simpleType.type) {
             case XMLSimpleType.TYPE_ENTITY: {                            
@@ -2282,7 +2283,7 @@ public class XMLValidator
     }
 
     /** Root element specified. */
-    private void rootElementSpecified(QName rootElement) throws SAXException {
+    private void rootElementSpecified(QName rootElement) throws XNIException {
         if (fValidation && fCurrentGrammarIsDTD) {
             String root1 = fRootElement.rawname;
             String root2 = rootElement.rawname;
@@ -2331,7 +2332,7 @@ public class XMLValidator
     private int checkContent(int elementIndex, 
                              QName[] children,
                              int childOffset, 
-                             int childCount) throws SAXException {
+                             int childCount) throws XNIException {
 
         fCurrentGrammar.getElementDecl(elementIndex, fTempElementDecl);
 
@@ -2559,7 +2560,7 @@ public class XMLValidator
 
     /** Handle element. */
     protected void handleStartElement(QName element, XMLAttributes attributes,
-                                      boolean isEmpty) throws SAXException {
+                                      boolean isEmpty) throws XNIException {
 
         // VC: Root Element Type
         // see if the root element's name matches the one in DoctypeDecl 
@@ -2666,7 +2667,7 @@ public class XMLValidator
 
     /** Handle end element. */
     protected void handleEndElement(QName element, boolean isEmpty)
-        throws SAXException {
+        throws XNIException {
 
         // decrease element depth
         fElementDepth--;

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -75,6 +75,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -327,7 +328,7 @@ public class XMLDocumentScanner
      * @returns True if scanning is not finished.
      */
     public boolean scanDocument(boolean complete) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // keep dispatching "events"
         do {
@@ -506,10 +507,10 @@ public class XMLDocumentScanner
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
 
         // keep track of this entity before fEntityDepth is increased
         if (fEntityDepth == fEntityStack.length) {
@@ -545,9 +546,9 @@ public class XMLDocumentScanner
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         super.endEntity(name);
 
@@ -593,7 +594,7 @@ public class XMLDocumentScanner
      *                         declaration.
      */
     protected void scanXMLDeclOrTextDecl(boolean scanningTextDecl) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // scan decl
         super.scanXMLDeclOrTextDecl(scanningTextDecl, fStrings);
@@ -635,7 +636,7 @@ public class XMLDocumentScanner
      * @param data The string to fill in with the data
      */
     protected void scanPIData(String target, XMLString data) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         super.scanPIData(target, data);
         fMarkupDepth--;
@@ -656,7 +657,7 @@ public class XMLDocumentScanner
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!--'
      */
-    protected void scanComment() throws IOException, SAXException {
+    protected void scanComment() throws IOException, XNIException {
 
         scanComment(fStringBuffer);
         fMarkupDepth--;
@@ -669,7 +670,7 @@ public class XMLDocumentScanner
     } // scanComment()
     
     /** Scans a doctype declaration. */
-    protected void scanDoctypeDecl() throws IOException, SAXException {
+    protected void scanDoctypeDecl() throws IOException, XNIException {
 
         // spaces
         if (!fEntityScanner.skipSpaces()) {
@@ -765,7 +766,7 @@ public class XMLDocumentScanner
      *          production [44].
      */
     protected boolean scanStartElement() 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElement()");
 
         // name
@@ -846,7 +847,7 @@ public class XMLDocumentScanner
      * @param attributes The attributes list for the scanned attribute.
      */
     protected void scanAttribute(XMLAttributes attributes) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanAttribute()");
 
         // name
@@ -892,7 +893,7 @@ public class XMLDocumentScanner
      *
      * @returns Returns the next character on the stream.
      */
-    protected int scanContent() throws IOException, SAXException {
+    protected int scanContent() throws IOException, XNIException {
 
         XMLString content = fString;
         int c = fEntityScanner.scanContent(content);
@@ -947,7 +948,7 @@ public class XMLDocumentScanner
      * @return True if CDATA is completely scanned.
      */
     protected boolean scanCDATASection(boolean complete) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
         
         // call handler
         if (fDocumentHandler != null) {
@@ -1025,7 +1026,7 @@ public class XMLDocumentScanner
      *
      * @returns The element depth.
      */
-    protected int scanEndElement() throws IOException, SAXException {
+    protected int scanEndElement() throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanEndElement()");
 
         // name
@@ -1062,7 +1063,7 @@ public class XMLDocumentScanner
      * </pre>
      */
     protected void scanCharReference() 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         fStringBuffer2.clear();
         int ch = scanCharReferenceValue(fStringBuffer2);
@@ -1087,10 +1088,10 @@ public class XMLDocumentScanner
      * Scans an entity reference.
      *
      * @throws IOException  Thrown if i/o error occurs.
-     * @throws SAXException Thrown if handler throws exception upon
+     * @throws XNIException Thrown if handler throws exception upon
      *                      notification.
      */
-    protected void scanEntityReference() throws IOException, SAXException {
+    protected void scanEntityReference() throws IOException, XNIException {
 
         // name
         String name = fEntityScanner.scanName();
@@ -1149,7 +1150,7 @@ public class XMLDocumentScanner
      * @param c
      * @param entity built-in name
      */
-    private void handleCharacter(char c, String entity) throws SAXException {
+    private void handleCharacter(char c, String entity) throws XNIException {
         if (fDocumentHandler != null) {
             if (fNotifyCharRefs) {
                 fDocumentHandler.startEntity(entity, null, null, null);
@@ -1178,12 +1179,12 @@ public class XMLDocumentScanner
      *
      * @returns The element depth.
      *
-     * @throws SAXException Thrown if the handler throws a SAX exception
+     * @throws XNIException Thrown if the handler throws a SAX exception
      *                      upon notification.
      *
      */
     protected int handleEndElement(QName element, boolean isEmpty) 
-        throws SAXException {
+        throws XNIException {
 
         fMarkupDepth--;
         // check that this element was opened in the same entity
@@ -1406,10 +1407,10 @@ public class XMLDocumentScanner
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
-         * @throws SAXException Thrown on parse error.
+         * @throws XNIException Thrown on parse error.
          */
         public boolean dispatch(boolean complete) 
-            throws IOException, SAXException;
+            throws IOException, XNIException;
 
     } // interface Dispatcher
 
@@ -1435,10 +1436,10 @@ public class XMLDocumentScanner
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
-         * @throws SAXException Thrown on parse error.
+         * @throws XNIException Thrown on parse error.
          */
         public boolean dispatch(boolean complete) 
-            throws IOException, SAXException {
+            throws IOException, XNIException {
 
             // next dispatcher is prolog regardless of whether there
             // is an XMLDecl in this document
@@ -1504,10 +1505,10 @@ public class XMLDocumentScanner
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
-         * @throws SAXException Thrown on parse error.
+         * @throws XNIException Thrown on parse error.
          */
         public boolean dispatch(boolean complete) 
-            throws IOException, SAXException {
+            throws IOException, XNIException {
 
             try {
                 boolean again;
@@ -1636,10 +1637,10 @@ public class XMLDocumentScanner
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
-         * @throws SAXException Thrown on parse error.
+         * @throws XNIException Thrown on parse error.
          */
         public boolean dispatch(boolean complete) 
-            throws IOException, SAXException {
+            throws IOException, XNIException {
 
             try {
                 boolean again;
@@ -1842,10 +1843,10 @@ public class XMLDocumentScanner
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
-         * @throws SAXException Thrown on parse error.
+         * @throws XNIException Thrown on parse error.
          */
         public boolean dispatch(boolean complete) 
-            throws IOException, SAXException {
+            throws IOException, XNIException {
 
             try {
                 boolean again;

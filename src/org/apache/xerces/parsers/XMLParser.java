@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,10 +57,13 @@
 
 package org.apache.xerces.parsers;
 
+import java.io.InputStream;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.EntityResolver;
@@ -149,7 +152,32 @@ public abstract class XMLParser {
      * @exception java.io.IOException Throws exception on i/o error.
      */
     public void parse(String systemId) throws SAXException, IOException {
-        parse(new InputSource(systemId));
+
+        // parse document
+        InputSource source = new InputSource(systemId);
+        try {
+            parse(source);
+        }
+
+        // close opened stream
+        finally {
+            try {
+                Reader reader = source.getCharacterStream();
+                if (reader != null) {
+                    reader.close();
+                }
+                else {
+                    InputStream is = source.getByteStream();
+                    if (is != null) {
+                        is.close();
+                    }
+                }
+            }
+            catch (IOException e) {
+                // ignore
+            }
+        }
+
     } // parse(String)
 
     /**
@@ -163,7 +191,22 @@ public abstract class XMLParser {
     public void parse(InputSource inputSource) 
         throws SAXException, IOException {
 
-        fConfiguration.parse(inputSource);
+        try {
+            fConfiguration.parse(inputSource);
+        }
+        catch (XNIException e) {
+            Exception ex = e.getException();
+            if (ex == null) {
+                throw new SAXException(e.getMessage());
+            }
+            if (ex instanceof SAXException) {
+                throw (SAXException)ex;
+            }
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            throw new SAXException(ex);
+        }
 
     } // parse(InputSource) 
 

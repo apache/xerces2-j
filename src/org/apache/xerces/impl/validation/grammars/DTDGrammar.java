@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -79,6 +79,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XNIException;
 
 import org.xml.sax.SAXException;
 
@@ -279,9 +280,9 @@ public class DTDGrammar
     /**
      * The start of the DTD.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws SAXException {
+    public void startDTD() throws XNIException {
         //Initialize stack
         fOpStack = null;
         fNodeIndexStack = null;
@@ -307,10 +308,10 @@ public class DTDGrammar
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId, 
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
 
         if (name.startsWith("%")) {
             // keep track of this entity before fEntityDepth is increased
@@ -330,9 +331,9 @@ public class DTDGrammar
 
     } // startEntity(String,String,String,String)
 
-    public void textDecl(String version, String encoding) throws SAXException {}
-    public void comment(XMLString text) throws SAXException {}
-    public void processingInstruction(String target, XMLString data) throws SAXException {}
+    public void textDecl(String version, String encoding) throws XNIException {}
+    public void comment(XMLString text) throws XNIException {}
+    public void processingInstruction(String target, XMLString data) throws XNIException {}
 
     /**
      * An element declaration.
@@ -340,10 +341,10 @@ public class DTDGrammar
      * @param name         The name of the element.
      * @param contentModel The element content model.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void elementDecl(String name, String contentModel)
-        throws SAXException {
+        throws XNIException {
 
         XMLElementDecl tmpElementDecl = (XMLElementDecl) fElementDeclTab.get(name) ;
 
@@ -424,9 +425,9 @@ public class DTDGrammar
      * @param elementName The name of the element that this attribute
      *                    list is associated with.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws SAXException {
+    public void startAttlist(String elementName) throws XNIException {
         // no-op
     } // startAttlist
 
@@ -449,12 +450,12 @@ public class DTDGrammar
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue) 
-        throws SAXException {
+        throws XNIException {
 
         if ( this.fElementDeclTab.containsKey( (String) elementName) ) {
             //if ElementDecl has already being created in the Grammar then remove from table, 
@@ -559,9 +560,9 @@ public class DTDGrammar
     /**
      * The end of an attribute list.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws SAXException {
+    public void endAttlist() throws XNIException {
         // no-op
     } // endAttlist()
 
@@ -573,10 +574,10 @@ public class DTDGrammar
      *             entity name.
      * @param text The value of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text)
-        throws SAXException {
+        throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
@@ -601,10 +602,10 @@ public class DTDGrammar
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId, 
-                                   String systemId) throws SAXException {
+                                   String systemId) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
@@ -630,11 +631,11 @@ public class DTDGrammar
      *                 specified.
      * @param notation The name of the notation.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId, 
                                    String systemId, String notation)
-        throws SAXException {
+        throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
@@ -658,10 +659,10 @@ public class DTDGrammar
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
 
         XMLNotationDecl  notationDecl = new XMLNotationDecl();
         notationDecl.setValues(name,publicId,systemId);
@@ -679,12 +680,12 @@ public class DTDGrammar
      * @param type The type of the conditional section. This value will
      *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see CONDITIONAL_INCLUDE
      * @see CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws SAXException {
+    public void startConditional(short type) throws XNIException {
         // no-op
     } // startConditional(short)
 
@@ -693,25 +694,25 @@ public class DTDGrammar
      *
      * @param text The ignored text.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
         // no-op
     } // characters(XMLString)
 
     /**
      * The end of a conditional section.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws SAXException {
+    public void endConditional() throws XNIException {
         // no-op
     } // endConditional()
 
     /**
      * The end of the DTD.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws SAXException {
+    public void endDTD() throws XNIException {
 
         // REVISIT: What is this for? -Ac
         /*
@@ -747,9 +748,9 @@ public class DTDGrammar
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         if (name.equals("[dtd]")) {
             fReadingExternalDTD = false;
@@ -773,7 +774,7 @@ public class DTDGrammar
      * @param elementName The name of the element.
      * @param type        The content model type.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_EMPTY
      * @see TYPE_ANY
@@ -781,7 +782,7 @@ public class DTDGrammar
      * @see TYPE_CHILDREN
      */
     public void startContentModel(String elementName, short type)
-        throws SAXException {
+        throws XNIException {
       
         XMLElementDecl elementDecl = (XMLElementDecl) this.fElementDeclTab.get( elementName);
         if ( elementDecl != null ) {
@@ -803,11 +804,11 @@ public class DTDGrammar
      * 
      * @param elementName The name of the referenced element. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_MIXED
      */
-    public void mixedElement(String elementName) throws SAXException {
+    public void mixedElement(String elementName) throws XNIException {
 
         if (fNodeIndexStack[fDepth] == -1 ) {
             fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
@@ -829,11 +830,11 @@ public class DTDGrammar
      * <strong>Note:</strong> Children groups can be nested and have
      * associated occurrence counts.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenStartGroup() throws SAXException {
+    public void childrenStartGroup() throws XNIException {
         fDepth++;
         initializeContentModelStack();
     } // childrenStartGroup()
@@ -843,11 +844,11 @@ public class DTDGrammar
      * 
      * @param elementName The name of the referenced element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenElement(String elementName) throws SAXException {
+    public void childrenElement(String elementName) throws XNIException {
         fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, elementName);
     } // childrenElement(String)
 
@@ -860,13 +861,13 @@ public class DTDGrammar
      * 
      * @param separator The type of children separator.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see SEPARATOR_CHOICE
      * @see SEPARATOR_SEQUENCE
      * @see TYPE_CHILDREN
      */
-    public void childrenSeparator(short separator) throws SAXException {
+    public void childrenSeparator(short separator) throws XNIException {
 
         if (fOpStack[fDepth] != XMLContentSpec.CONTENTSPECNODE_SEQ && separator == XMLDTDContentModelHandler.SEPARATOR_CHOICE ) {
             if (fPrevNodeIndexStack[fDepth] != -1) {
@@ -893,14 +894,14 @@ public class DTDGrammar
      * @param occurrence The occurrence count for the last children element
      *                   or children group.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      *
      * @see OCCURS_ZERO_OR_ONE
      * @see OCCURS_ZERO_OR_MORE
      * @see OCCURS_ONE_OR_MORE
      * @see TYPE_CHILDREN
      */
-    public void childrenOccurrence(short occurrence) throws SAXException {
+    public void childrenOccurrence(short occurrence) throws XNIException {
 
         if ( occurrence == XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE ) {
             fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE, fNodeIndexStack[fDepth], -1);
@@ -920,7 +921,7 @@ public class DTDGrammar
      *
      * @see TYPE_CHILDREN
      */
-    public void childrenEndGroup() throws SAXException {
+    public void childrenEndGroup() throws XNIException {
 
         if (fPrevNodeIndexStack[fDepth] != -1) {
             fNodeIndexStack[fDepth] = addContentSpecNode(fOpStack[fDepth], fPrevNodeIndexStack[fDepth], fNodeIndexStack[fDepth]);
@@ -933,9 +934,9 @@ public class DTDGrammar
     /**
      * The end of a content model.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endContentModel() throws SAXException {
+    public void endContentModel() throws XNIException {
         // no-op
     } // endContentModel()
 

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -73,6 +73,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -231,7 +232,7 @@ public class XMLDTDScanner
      * @return Whether there is more to parse or not.
      */
     public boolean scanDTD(boolean complete)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         if (fScannerState == SCANNER_STATE_TEXT_DECL) {
             fSeenExternalDTD = true;
@@ -269,7 +270,7 @@ public class XMLDTDScanner
      */
     public boolean scanDTDInternalSubset(boolean complete, boolean standalone,
                                          boolean hasExtDTD)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         if (fScannerState == SCANNER_STATE_TEXT_DECL) {
             // call handler
@@ -420,7 +421,7 @@ public class XMLDTDScanner
      * @param encoding
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
 
         super.startEntity(name, publicId, systemId, encoding);
 
@@ -450,8 +451,7 @@ public class XMLDTDScanner
      * 
      * @param name 
      */
-    public void endEntity(String name)
-        throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         super.endEntity(name);
 
@@ -535,7 +535,7 @@ public class XMLDTDScanner
      * @param literal Whether this is happening within a literal
      */
     protected void startPE(String name, boolean literal) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
         int depth = fPEDepth;
         if (fValidation && !fEntityManager.isDeclaredEntity("%"+name)) {
             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared", 
@@ -560,11 +560,11 @@ public class XMLDTDScanner
      *          or a another dispatcher.
      *
      * @throws IOException  Thrown on i/o error.
-     * @throws SAXException Thrown on parse error.
+     * @throws XNIException Thrown on parse error.
      *
      */
     protected final boolean scanTextDecl(boolean complete) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // scan XMLDecl
         if (fEntityScanner.skipString("<?xml")) {
@@ -620,7 +620,7 @@ public class XMLDTDScanner
      * @param data The string to fill in with the data
      */
     protected final void scanPIData(String target, XMLString data) 
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         super.scanPIData(target, data);
         fMarkUpDepth--;
@@ -641,7 +641,7 @@ public class XMLDTDScanner
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!--'
      */
-    protected final void scanComment() throws IOException, SAXException {
+    protected final void scanComment() throws IOException, XNIException {
 
         scanComment(fStringBuffer);
         fMarkUpDepth--;
@@ -657,13 +657,13 @@ public class XMLDTDScanner
      * Scans an element declaration
      * <p>
      * <pre>
-     * [45]    elementdecl    ::=    '<!ELEMENT' S Name S contentspec S? '>'
+     * [45]    elementdecl    ::=    '&lt;!ELEMENT' S Name S contentspec S? '>'
      * [46]    contentspec    ::=    'EMPTY' | 'ANY' | Mixed | children  
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!ELEMENT'
      */
-    protected final void scanElementDecl() throws IOException, SAXException {
+    protected final void scanElementDecl() throws IOException, XNIException {
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
@@ -765,7 +765,7 @@ public class XMLDTDScanner
      * <strong>Note:</strong> Called after scanning past '(#PCDATA'.
      */
     private final void scanMixed(String elName)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         String childName = null;
 
@@ -825,7 +825,7 @@ public class XMLDTDScanner
      * paranthesis.
      */
     private final void scanChildren(String elName)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         // call handler
         if (fDTDContentModelHandler != null) {
@@ -963,13 +963,13 @@ public class XMLDTDScanner
      * Scans an attlist declaration
      * <p>
      * <pre>
-     * [52]  AttlistDecl    ::=   '<!ATTLIST' S Name AttDef* S? '>' 
+     * [52]  AttlistDecl    ::=   '&lt;!ATTLIST' S Name AttDef* S? '>' 
      * [53]  AttDef         ::=   S Name S AttType S DefaultDecl 
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!ATTLIST'
      */
-    protected final void scanAttlistDecl() throws IOException, SAXException {
+    protected final void scanAttlistDecl() throws IOException, XNIException {
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
@@ -1078,7 +1078,7 @@ public class XMLDTDScanner
      * @param atName The attribute name this declaration is about.
      */
     private final String scanAttType(String elName, String atName)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         String type = null;
         fEnumerationCount = 0;
@@ -1189,7 +1189,7 @@ public class XMLDTDScanner
     protected final String scanAttDefaultDecl(String elName, String atName,
                                               String type,
                                               XMLString defaultVal)
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         String defaultType = null;
         fString.clear();
@@ -1223,8 +1223,8 @@ public class XMLDTDScanner
      * <p>
      * <pre>
      * [70]    EntityDecl  ::=    GEDecl | PEDecl 
-     * [71]    GEDecl      ::=    '<!ENTITY' S Name S EntityDef S? '>' 
-     * [72]    PEDecl      ::=    '<!ENTITY' S '%' S Name S PEDef S? '>' 
+     * [71]    GEDecl      ::=    '&lt;!ENTITY' S Name S EntityDef S? '>' 
+     * [72]    PEDecl      ::=    '&lt;!ENTITY' S '%' S Name S PEDef S? '>' 
      * [73]    EntityDef   ::=    EntityValue | (ExternalID NDataDecl?) 
      * [74]    PEDef       ::=    EntityValue | ExternalID 
      * [75]    ExternalID  ::=    'SYSTEM' S SystemLiteral 
@@ -1234,7 +1234,7 @@ public class XMLDTDScanner
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!ENTITY'
      */
-    private final void scanEntityDecl() throws IOException, SAXException {
+    private final void scanEntityDecl() throws IOException, XNIException {
 
         boolean isPEDecl = false;
         boolean sawPERef = false;
@@ -1402,7 +1402,7 @@ public class XMLDTDScanner
      * at the time of calling is lost.
      */
     protected final void scanEntityValue(XMLString value)
-        throws IOException, SAXException
+        throws IOException, XNIException
     {
         int quote = fEntityScanner.scanChar();
         if (quote != '\'' && quote != '"') {
@@ -1491,13 +1491,13 @@ public class XMLDTDScanner
      * Scans a notation declaration
      * <p>
      * <pre>
-     * [82] NotationDecl ::= '<!NOTATION' S Name S (ExternalID|PublicID) S? '>'
+     * [82] NotationDecl ::= '&lt;!NOTATION' S Name S (ExternalID|PublicID) S? '>'
      * [83]  PublicID    ::= 'PUBLIC' S PubidLiteral  
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!NOTATION'
      */
-    private final void scanNotationDecl() throws IOException, SAXException {
+    private final void scanNotationDecl() throws IOException, XNIException {
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
@@ -1553,15 +1553,15 @@ public class XMLDTDScanner
      * <p>
      * <pre>
      * [61] conditionalSect   ::= includeSect | ignoreSect  
-     * [62] includeSect       ::= '<![' S? 'INCLUDE' S? '[' extSubsetDecl ']]>'
-     * [63] ignoreSect   ::= '<![' S? 'IGNORE' S? '[' ignoreSectContents* ']]>'
-     * [64] ignoreSectContents ::= Ignore ('<![' ignoreSectContents ']]>' Ignore)* 
-     * [65] Ignore            ::=    Char* - (Char* ('<![' | ']]>') Char*)  
+     * [62] includeSect       ::= '&lt;![' S? 'INCLUDE' S? '[' extSubsetDecl ']]>'
+     * [63] ignoreSect   ::= '&lt;![' S? 'IGNORE' S? '[' ignoreSectContents* ']]>'
+     * [64] ignoreSectContents ::= Ignore ('&lt;![' ignoreSectContents ']]>' Ignore)* 
+     * [65] Ignore            ::=    Char* - (Char* ('&lt;![' | ']]>') Char*)  
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;![' */
     private final void scanConditionalSect()
-        throws IOException, SAXException {
+        throws IOException, XNIException {
 
         skipSeparator(false, !scanningInternalSubset());
         if (fEntityScanner.skipString("INCLUDE")) {
@@ -1665,11 +1665,11 @@ public class XMLDTDScanner
      * @returns True if there is more to scan.
      *
      * @throws IOException  Thrown on i/o error.
-     * @throws SAXException Thrown on parse error.
+     * @throws XNIException Thrown on parse error.
      *
      */
     protected final boolean scanDecls(boolean complete)
-            throws IOException, SAXException {
+            throws IOException, XNIException {
         
         skipSeparator(false, true);
         while (complete && fScannerState == SCANNER_STATE_MARKUP_DECL) {
@@ -1761,7 +1761,7 @@ public class XMLDTDScanner
      *         parameter entity was crossed.
      */
     private boolean skipSeparator(boolean spaceRequired, boolean lookForPERefs)
-        throws IOException, SAXException
+        throws IOException, XNIException
     {
         int depth = fPEDepth;
         boolean sawSpace = fEntityScanner.skipSpaces();

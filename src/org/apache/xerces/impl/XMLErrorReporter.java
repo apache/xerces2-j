@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -62,6 +62,7 @@ import java.util.Locale;
 
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.MessageFormatter;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -286,7 +287,7 @@ public class XMLErrorReporter
      * @see SEVERITY_FATAL_ERROR
      */
     public void reportError(String domain, String key, Object[] arguments, 
-                            short severity) throws SAXException {
+                            short severity) throws XNIException {
         reportError(fLocator, domain, key, arguments, severity);
     } // reportError(String,String,Object[],short)
 
@@ -306,7 +307,7 @@ public class XMLErrorReporter
      */
     public void reportError(Locator location,
                             String domain, String key, Object[] arguments, 
-                            short severity) throws SAXException {
+                            short severity) throws XNIException {
 
         // REVISIT: [Q] Should we do anything about invalid severity
         //              parameter? -Ac
@@ -326,24 +327,27 @@ public class XMLErrorReporter
         }
 
         // call error handler
-        switch (severity) {
-            case SEVERITY_WARNING: {
-                errorHandler.warning(spe);
-                break;
-            }
-            case SEVERITY_ERROR: {
-                errorHandler.error(spe);
-                break;
-            }
-            case SEVERITY_FATAL_ERROR: {
-                errorHandler.fatalError(spe);
-                if (!fContinueAfterFatalError) {
-                    // NOTE: In Xerces 1.x, SAX parse exception was wrapped
-                    //       again.
-                    throw spe;
+        try {
+            switch (severity) {
+                case SEVERITY_WARNING: {
+                    errorHandler.warning(spe);
+                    break;
                 }
-                break;
+                case SEVERITY_ERROR: {
+                    errorHandler.error(spe);
+                    break;
+                }
+                case SEVERITY_FATAL_ERROR: {
+                    errorHandler.fatalError(spe);
+                    if (!fContinueAfterFatalError) {
+                        throw new XNIException(spe);
+                    }
+                    break;
+                }
             }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
         }
 
     } // reportError(Locator,String,String,Object[],short)

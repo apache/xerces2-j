@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,6 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
 
 /**
  * This class allows various parser scanners to scan basic XML constructs
@@ -106,15 +105,13 @@ public abstract class XMLEntityScanner
      * @param encoding The IANA encoding name of the new encoding.
      *
      * @throws IOException  Thrown if the new encoding is not supported.                     
-     * @throws SAXException Thrown by error handler if encoding name is
-     *                      reported as invalid to signal an error.
      *
      * @see org.apache.xerces.util.EncodingMap
      * @see org.apache.xerces.util.XMLChar#isValidIANAEncoding
      * @see org.apache.xerces.util.XMLChar#isValidJavaEncoding
      */
     public abstract void setEncoding(String encoding) 
-        throws IOException, SAXException;
+        throws IOException;
 
     /** Returns true if the current entity being scanned is external. */
     public abstract boolean isExternal();
@@ -126,10 +123,8 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      */
-    public abstract int peekChar() throws IOException, SAXException;
+    public abstract int peekChar() throws IOException;
 
     /**
      * Returns the next character on the input.
@@ -138,10 +133,8 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      */
-    public abstract int scanChar() throws IOException, SAXException;
+    public abstract int scanChar() throws IOException;
 
     /**
      * Returns a string matching the NMTOKEN production appearing immediately
@@ -154,13 +147,11 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      *
      * @see org.apache.xerces.util.SymbolTable
      * @see org.apache.xerces.util.XMLChar#isName
      */
-    public abstract String scanNmtoken() throws IOException, SAXException;
+    public abstract String scanNmtoken() throws IOException;
 
     /**
      * Returns a string matching the Name production appearing immediately
@@ -173,14 +164,12 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      *
      * @see org.apache.xerces.util.SymbolTable
      * @see org.apache.xerces.util.XMLChar#isName
      * @see org.apache.xerces.util.XMLChar#isNameStart
      */
-    public abstract String scanName() throws IOException, SAXException;
+    public abstract String scanName() throws IOException;
     
     /**
      * Scans a qualified name from the input, setting the fields of the
@@ -199,15 +188,12 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      *
      * @see org.apache.xerces.util.SymbolTable
      * @see org.apache.xerces.util.XMLChar#isName
      * @see org.apache.xerces.util.XMLChar#isNameStart
      */
-    public abstract boolean scanQName(QName qname) 
-        throws IOException, SAXException;
+    public abstract boolean scanQName(QName qname) throws IOException;
 
     /**
      * Scans a range of parsed character data, setting the fields of the
@@ -234,11 +220,8 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      */
-    public abstract int scanContent(XMLString content) 
-        throws IOException, SAXException;
+    public abstract int scanContent(XMLString content) throws IOException;
 
     /**
      * Scans a range of attribute value data, setting the fields of the
@@ -267,11 +250,9 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      */
     public abstract int scanLiteral(int quote, XMLString content) 
-        throws IOException, SAXException;
+        throws IOException;
     
     /**
      * Scans a range of character data up to the specicied delimiter, 
@@ -302,11 +283,9 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      */
     public abstract boolean scanData(String delimiter, XMLString data) 
-        throws IOException, SAXException;
+        throws IOException;
 
     /**
      * Skips a character appearing immediately on the input.
@@ -320,10 +299,8 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      */
-    public abstract boolean skipChar(int c) throws IOException, SAXException;
+    public abstract boolean skipChar(int c) throws IOException;
 
     /**
      * Skips space characters appearing immediately on the input.
@@ -335,12 +312,10 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      *
      * @see org.apache.xerces.util.XMLChar#isSpace
      */
-    public abstract boolean skipSpaces() throws IOException, SAXException;
+    public abstract boolean skipSpaces() throws IOException;
 
     /**
      * Skips the specified string appearing immediately on the input.
@@ -354,10 +329,7 @@ public abstract class XMLEntityScanner
      *
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
-     * @throws SAXException Thrown by entity handler to signal an error
-     *                      when the end of an entity is reached.
      */
-    public abstract boolean skipString(String s) 
-        throws IOException, SAXException;
+    public abstract boolean skipString(String s) throws IOException;
 
 } // class XMLEntityScanner

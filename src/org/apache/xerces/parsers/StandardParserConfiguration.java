@@ -71,8 +71,8 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
-
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.XNIException;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -327,7 +327,7 @@ public class StandardParserConfiguration
         try {
             setLocale(Locale.getDefault());
         }
-        catch (SAXException e) {
+        catch (XNIException e) {
             // do nothing
             // REVISIT: What is the right thing to do? -Ac
         }
@@ -343,12 +343,10 @@ public class StandardParserConfiguration
      *
      * @param locale The locale object to use for localization of messages.
      *
-     * @exception SAXException An exception thrown if the parser does not
-     *                         support the specified locale.
-     *
-     * @see org.xml.sax.Parser
+     * @exception XNIException Thrown if the parser does not support the
+     *                         specified locale.
      */
-    public void setLocale(Locale locale) throws SAXException {
+    public void setLocale(Locale locale) throws XNIException {
         if (fErrorReporter == null) {
             if (fEntityManager == null) {
                 fEntityManager = createEntityManager();
@@ -373,14 +371,14 @@ public class StandardParserConfiguration
      *
      * @param source The input source.
      *
-     * @exception org.xml.sax.SAXException Throws exception on SAX error.
+     * @exception XNIException Throws exception on XNI error.
      * @exception java.io.IOException Throws exception on i/o error.
      */
-    public void parse(InputSource source) throws SAXException, IOException {
+    public void parse(InputSource source) throws XNIException, IOException {
 
         if (fParseInProgress) {
             // REVISIT - need to add new error message
-            throw new SAXException("FWK005 parse may not be called while parsing.");
+            throw new XNIException("FWK005 parse may not be called while parsing.");
         }
         fParseInProgress = true;
 
@@ -390,7 +388,7 @@ public class StandardParserConfiguration
             fEntityManager.startDocumentEntity(new XMLInputSource(source));
             fScanner.scanDocument(true);
         } 
-        catch (SAXException ex) {
+        catch (XNIException ex) {
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
@@ -403,7 +401,7 @@ public class StandardParserConfiguration
         catch (Exception ex) {
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
-            throw new org.xml.sax.SAXException(ex);
+            throw new XNIException(ex);
         }
         finally {
             fParseInProgress = false;

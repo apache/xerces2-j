@@ -63,6 +63,7 @@ import java.util.Locale;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XNIException;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -143,14 +144,14 @@ public interface XMLParserConfiguration
      * @param source The input source for the top-level of the
      *               XML document.
      *
-     * @exception SAXException Any SAX exception, possibly wrapping 
+     * @exception XNIException Any XNI exception, possibly wrapping 
      *                         another exception.
      * @exception IOException  An IO exception from the parser, possibly
      *                         from a byte stream or character stream
      *                         supplied by the parser.
      */
     public void parse(InputSource inputSource) 
-        throws SAXException, IOException;
+        throws XNIException, IOException;
 
     /**
      * Allows a parser to add parser specific features to be recognized
@@ -257,11 +258,9 @@ public interface XMLParserConfiguration
      *
      * @param locale The locale object to use for localization of messages.
      *
-     * @exception SAXException An exception thrown if the parser does not
-     *                         support the specified locale.
-     *
-     * @see org.xml.sax.Parser
+     * @exception XNIException Thrown if the parser does not support the
+     *                         specified locale.
      */
-    public void setLocale(Locale locale) throws SAXException;
+    public void setLocale(Locale locale) throws XNIException;
 
 } // interface ParserConfiguration
