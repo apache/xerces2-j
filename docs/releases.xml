@@ -8,6 +8,13 @@
    XNI parser configuration framework has been added in this release.
   </desc>
   <changes>
+   <fix>
+    <note>
+     Fixed bug in DTD grammar for mixed content models that was 
+     building the wrong validation content model.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </fix>
    <update>
     <note>
      Removed SAX dependency from XNI framework. Now the only

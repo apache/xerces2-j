@@ -398,7 +398,9 @@ public class DTDGrammar
 
         fElementDecl         = elementDecl; 
 
-        if (fDepth == 0 && fNodeIndexStack != null) {
+        if ((fDepth == 0 || 
+            (fDepth == 1 && elementDecl.type == XMLElementDecl.TYPE_MIXED)) &&
+            fNodeIndexStack != null) {
             if (elementDecl.type == XMLElementDecl.TYPE_MIXED) {
                 int pcdata = addUniqueLeafNode(null);
                 if (fNodeIndexStack[0] == -1) {
