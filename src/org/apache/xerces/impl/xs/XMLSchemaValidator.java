@@ -280,7 +280,7 @@ public class XMLSchemaValidator
      * in this wrapper object, so that we can get all errors (error codes) of
      * a specific element. This is useful for PSVI.
      */
-    class XSIErrorReporter {
+    protected static final class XSIErrorReporter {
 
         // the error reporter property
         XMLErrorReporter fErrorReporter;
@@ -625,38 +625,21 @@ public class XMLSchemaValidator
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
 
-        boolean emptyAug = false;
-
-        if (fNormalizeData) {
-            if (augs == null) {
-                emptyAug = true;
-                augs = fAugmentations;
-                augs.clear();
-            }
-            // get PSVI object
-            fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
-            if (fCurrentPSVI == null) {
-                fCurrentPSVI = fElemPSVI;
-                augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
-            }
-            else {
-                fCurrentPSVI.reset();
-            }
-        }
-        else {
-            fCurrentPSVI = fElemPSVI;
-        }
-
         handleCharacters(text);
         // call handlers
         if (fDocumentHandler != null) {
-            if (fNormalizeData && fUnionType) {
-                // for union types we can't normalize data
-                // thus we only need to send augs information if any;
-                // the normalized data for union will be send
-                // after normalization is performed (at the endElement())
-                if (!emptyAug) {
-                    fDocumentHandler.characters(fEmptyXMLStr, augs);
+            if (fNormalizeData) {
+               if (fUnionType) {
+                   // for union types we can't normalize data
+                   // thus we only need to send augs information if any;
+                   // the normalized data for union will be send
+                   // after normalization is performed (at the endElement())
+                   if (augs != null)
+                       fDocumentHandler.characters(fEmptyXMLStr, augs);
+                }
+                else {
+                    // otherwise pass the normalized string as the text
+                    fDocumentHandler.characters(fNormalizedStr, augs);
                 }
             } else {
                 fDocumentHandler.characters(text, augs);
@@ -800,29 +783,21 @@ public class XMLSchemaValidator
         //          handleCharacters(). We should be able to reuse some code
 
         boolean allWhiteSpace = true;
-        String normalizedStr = null;
-        if (augs == null) {
-            augs = fAugmentations;
-            augs.clear();
-        }
-        // get PSVI object
-        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
-        if (fCurrentPSVI == null) {
-            fCurrentPSVI = fElemPSVI;
-            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
-        }
-        else {
-            fCurrentPSVI.reset();
-        }
+        boolean normalizedStr = false;
 
         if (fNormalizeData) {
             // if whitespace == -1 skip normalization, because it is a complexType
             if (fWhiteSpace != -1 && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
                 // normalize data
-                int spaces = normalizeWhitespace(data, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
-                normalizedStr =  fNormalizedStr.toString();
-                fCurrentPSVI.fNormalizedValue = normalizedStr;
+                normalizeWhitespace(data, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
+                normalizedStr = true;
             }
+        }
+
+        if (normalizedStr) {
+            fBuffer.append(fNormalizedStr.ch, fNormalizedStr.offset, fNormalizedStr.length);
+        } else {
+            fBuffer.append(data);
         }
 
         boolean mixed = false;
@@ -854,21 +829,6 @@ public class XMLSchemaValidator
 
         // we saw first chunk of characters
         fFirstChunk = false;
-
-        // save normalized value for validation purposes
-        if (fNil) {
-            // if element was nil and there is some character data
-            // we should expose it to the user
-            // otherwise error does not make much sense
-            fCurrentPSVI.fNormalizedValue = null;
-            fBuffer.append(data);
-        }
-        if (normalizedStr != null) {
-            fBuffer.append(normalizedStr);
-        } else {
-            fBuffer.append(data);
-        }
-
 
         if (!allWhiteSpace) {
             fSawCharacters = true;
@@ -1031,9 +991,7 @@ public class XMLSchemaValidator
     private final XMLString fEmptyXMLStr = new XMLString(null, 0, -1);
     // temporary character buffer, and empty string buffer.
     private static final int BUFFER_SIZE = 20;
-    private char[] fCharBuffer =  new char[BUFFER_SIZE];
-    private final StringBuffer fNormalizedStr = new StringBuffer();
-    private final XMLString fXMLString = new XMLString(fCharBuffer, 0, -1);
+    private final XMLString fNormalizedStr = new XMLString();
     private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
     private boolean fTrailing = false;  // Previous chunk had a trailing space
     private short fWhiteSpace = -1;  //whiteSpace: preserve/replace/collapse
@@ -1319,35 +1277,19 @@ public class XMLSchemaValidator
         fSchemaLoader.reset();
 
         //reset XSDDescription
-        fXSDDescription.reset() ;
         fLocationPairs.clear();
         fNoNamespaceLocationArray.resize(0 , 2) ;
 
         // initialize state
         fCurrentElemDecl = null;
-        fNil = false;
-        fNotation = null;
-        fCurrentPSVI = null;
-        fCurrentType = null;
         fCurrentCM = null;
         fCurrCMState = null;
-        fBuffer.setLength(0);
-        fSawCharacters=false;
-        fSawChildren=false;
-        fValidationRoot = null;
         fSkipValidationDepth = -1;
         fPartialValidationDepth = -1;
         fElementDepth = -1;
         fChildCount = 0;
 
         // datatype normalization
-        fFirstChunk = true;
-        fTrailing = false;
-        fNormalizedStr.setLength(0);
-        fWhiteSpace = -1;
-        fUnionType = false;
-        fWhiteSpace = -1;
-        fAugmentations.clear();
         fEntityRef = false;
         fInCDATA = false;
 
@@ -1484,11 +1426,9 @@ public class XMLSchemaValidator
     // handle character contents
     void handleCharacters(XMLString text) {
 
-        fCurrentPSVI.fNormalizedValue = null;
         if (fSkipValidationDepth >= 0)
             return;
 
-        String normalizedStr = null;
         boolean allWhiteSpace = true;
 
         // find out if type is union, what is whitespace,
@@ -1498,27 +1438,13 @@ public class XMLSchemaValidator
             // if whitespace == -1 skip normalization, because it is a complexType
             if (fWhiteSpace != -1 && !fUnionType && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
                 // normalize data
-                int spaces = normalizeWhitespace(text, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
-                int length = fNormalizedStr.length();
-                if (length > 0) {
-                    if (!fFirstChunk && (fWhiteSpace==XSSimpleType.WS_COLLAPSE) ) {
-                        if (fTrailing) {
-                            // previous chunk ended on whitespace
-                            // insert whitespace
-                         fNormalizedStr.insert(0, ' ');
-                        } else if (spaces == 1 || spaces == 3) {
-                            // previous chunk ended on character,
-                            // this chunk starts with whitespace
-                            fNormalizedStr.insert(0, ' ');
-                        }
-                    }
-                }
-                normalizedStr = fNormalizedStr.toString();
-                fCurrentPSVI.fNormalizedValue = normalizedStr;
-                fTrailing = (spaces > 1)?true:false;
+                normalizeWhitespace(text, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
+                text = fNormalizedStr;
             }
         }
 
+        fBuffer.append(text.ch, text.offset, text.length);
+        
         boolean mixed = false;
         if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
               XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
@@ -1550,21 +1476,6 @@ public class XMLSchemaValidator
         // we saw first chunk of characters
         fFirstChunk = false;
 
-        // save normalized value for validation purposes
-        if (fNil) {
-            // if element was nil and there is some character data
-            // we should expose it to the user
-            // otherwise error does not make much sense
-            fCurrentPSVI.fNormalizedValue = null;
-            fBuffer.append(text.ch, text.offset, text.length);
-        }
-        if (normalizedStr != null) {
-            fBuffer.append(normalizedStr);
-        } else {
-            fBuffer.append(text.ch, text.offset, text.length);
-        }
-
-
         if (!allWhiteSpace) {
             fSawCharacters = true;
         }
@@ -1576,26 +1487,30 @@ public class XMLSchemaValidator
      * in XML Schema specifications.
      * @param value    The string to normalize.
      * @param collapse replace or collapse
-     * @returns 0 if no triming is done or if there is neither leading nor
-     *            trailing whitespace,
-     *          1 if there is only leading whitespace,
-     *          2 if there is only trailing whitespace,
-     *          3 if there is both leading and trailing whitespace.
      */
-    private int normalizeWhitespace( XMLString value, boolean collapse) {
+    private void normalizeWhitespace( XMLString value, boolean collapse) {
         boolean skipSpace = collapse;
         boolean sawNonWS = false;
         int leading = 0;
         int trailing = 0;
-        int c;
+        char c;
         int size = value.offset+value.length;
-        fNormalizedStr.setLength(0);
+        
+        // ensure the ch array is big enough
+        if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < value.length+1) {
+            fNormalizedStr.ch = new char[value.length+1];
+            fNormalizedStr.ch[0] = ' ';
+        }
+        // don't include the leading ' ' for now. might include it later.
+        fNormalizedStr.offset = 1;
+        fNormalizedStr.length = 1;
+        
         for (int i = value.offset; i < size; i++) {
             c = value.ch[i];
             if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
-                    fNormalizedStr.append(' ');
+                    fNormalizedStr.ch[fNormalizedStr.length++] = ' ';
                     skipSpace = collapse;
                 }
                 if (!sawNonWS) {
@@ -1604,16 +1519,15 @@ public class XMLSchemaValidator
                 }
             }
             else {
-                fNormalizedStr.append((char)c);
+                fNormalizedStr.ch[fNormalizedStr.length++] = c;
                 skipSpace = false;
                 sawNonWS = true;
             }
         }
         if (skipSpace) {
-            c = fNormalizedStr.length();
-            if ( c != 0) {
+            if ( fNormalizedStr.length > 1) {
                 // if we finished on a space trim it but also record it
-                fNormalizedStr.setLength (--c);
+                fNormalizedStr.length--;
                 trailing = 2;
             }
             else if (leading != 0 && !sawNonWS) {
@@ -1622,7 +1536,31 @@ public class XMLSchemaValidator
                 trailing = 2;
             }
         }
-        return collapse ? leading + trailing : 0;
+
+        // 0 if no triming is done or if there is neither leading nor
+        //   trailing whitespace,
+        // 1 if there is only leading whitespace,
+        // 2 if there is only trailing whitespace,
+        // 3 if there is both leading and trailing whitespace.
+        int spaces = collapse ? leading + trailing : 0;
+        if (fNormalizedStr.length > 1) {
+            if (!fFirstChunk && (fWhiteSpace==XSSimpleType.WS_COLLAPSE) ) {
+                if (fTrailing) {
+                    // previous chunk ended on whitespace
+                    // insert whitespace
+                    fNormalizedStr.offset = 0;
+                } else if (spaces == 1 || spaces == 3) {
+                    // previous chunk ended on character,
+                    // this chunk starts with whitespace
+                    fNormalizedStr.offset = 0;
+                }
+            }
+        }
+        
+        // The length includes the leading ' '. Now removing it.
+        fNormalizedStr.length -= fNormalizedStr.offset;
+        
+        fTrailing = (spaces > 1)?true:false;
     }
 
 
@@ -1631,15 +1569,22 @@ public class XMLSchemaValidator
         boolean sawNonWS = false;
         int leading = 0;
         int trailing = 0;
-        int c;
+        char c;
         int size = value.length();
-        fNormalizedStr.setLength(0);
+
+        // ensure the ch array is big enough
+        if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < size) {
+            fNormalizedStr.ch = new char[size];
+        }
+        fNormalizedStr.offset = 0;
+        fNormalizedStr.length = 0;
+
         for (int i = 0; i < size; i++) {
             c = value.charAt(i);
             if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
-                    fNormalizedStr.append(' ');
+                    fNormalizedStr.ch[fNormalizedStr.length++] = ' ';
                     skipSpace = collapse;
                 }
                 if (!sawNonWS) {
@@ -1648,16 +1593,15 @@ public class XMLSchemaValidator
                 }
             }
             else {
-                fNormalizedStr.append((char)c);
+                fNormalizedStr.ch[fNormalizedStr.length++] = c;
                 skipSpace = false;
                 sawNonWS = true;
             }
         }
         if (skipSpace) {
-            c = fNormalizedStr.length();
-            if ( c != 0) {
+            if (fNormalizedStr.length != 0) {
                 // if we finished on a space trim it but also record it
-                fNormalizedStr.setLength (--c);
+                fNormalizedStr.length--;
                 trailing = 2;
             }
             else if (leading != 0 && !sawNonWS) {
@@ -1752,7 +1696,8 @@ public class XMLSchemaValidator
         if (fNormalizeData) {
             // reset values
             fFirstChunk = true;
-            fUnionType  = false;
+            fTrailing = false;
+            fUnionType = false;
             fWhiteSpace = -1;
         }
 
@@ -1911,24 +1856,24 @@ public class XMLSchemaValidator
                 // find out if the content type is simple and if variety is union
                 // to be able to do character normalization
                 if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                        if (ctype.fXSSimpleType.getVariety() == XSSimpleType.VARIETY_UNION) {
-                            fUnionType = true;
-                        } else {
-                            try {
-                                fWhiteSpace = ctype.fXSSimpleType.getWhitespace();
-                            } catch (DatatypeException e){
-                                // do nothing
-                            }
+                    if (ctype.fXSSimpleType.getVariety() == XSSimpleType.VARIETY_UNION) {
+                        fUnionType = true;
+                    } else {
+                        try {
+                            fWhiteSpace = ctype.fXSSimpleType.getWhitespace();
+                        } catch (DatatypeException e){
+                            // do nothing
                         }
+                    }
                 }
             }
         }
-        // normalization
-        if (fNormalizeData && fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE ) {
+        // normalization: simple type
+        else if (fNormalizeData) {
             // if !union type
              XSSimpleType dv = (XSSimpleType)fCurrentType;
              if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
-                    fUnionType = true;
+                 fUnionType = true;
              } else {
                  try {
                     fWhiteSpace = dv.getWhitespace();
@@ -2184,14 +2129,6 @@ public class XMLSchemaValidator
 
         fDefaultValue = defaultValue;
 
-
-        // reset normalization values
-        if (fNormalizeData) {
-            fTrailing = false;
-            fUnionType = false;
-            fWhiteSpace = -1;
-        }
-
         return augs;
     } // handleEndElement(QName,boolean)*/
 
@@ -2423,7 +2360,7 @@ public class XMLSchemaValidator
                     else if (fTempQName.localpart == SchemaSymbols.XSI_TYPE)
                         attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_TYPE);
                     if (attrDecl != null) {
-                        processOneAttribute(element, attributes.getValue(index),
+                        processOneAttribute(element, attributes, index,
                                             attrDecl, null, attrPSVI);
                         continue;
                     }
@@ -2470,7 +2407,7 @@ public class XMLSchemaValidator
                 else if (fTempQName.localpart == SchemaSymbols.XSI_TYPE)
                     attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_TYPE);
                 if (attrDecl != null) {
-                    processOneAttribute(element, attributes.getValue(index),
+                    processOneAttribute(element, attributes, index,
                                         attrDecl, null, attrPSVI);
                     continue;
                 }
@@ -2553,7 +2490,7 @@ public class XMLSchemaValidator
                 }
             }
 
-            processOneAttribute(element, attributes.getValue(index),
+            processOneAttribute(element, attributes, index,
                                 currDecl, currUse, attrPSVI);
         } // end of for (all attributes)
 
@@ -2565,9 +2502,12 @@ public class XMLSchemaValidator
 
     } //processAttributes
 
-    void processOneAttribute(QName element, String attrValue,
+    void processOneAttribute(QName element, XMLAttributes attributes, int index,
                              XSAttributeDecl currDecl, XSAttributeUseImpl currUse,
                              AttributePSVImpl attrPSVI) {
+
+        String attrValue = attributes.getValue(index);
+        
         // Attribute Locally Valid
         // For an attribute information item to be locally valid with respect to an attribute declaration all of the following must be true:
         // 1 The declaration must not be absent (see Missing Sub-components (5.3) for how this can fail to be the case).
@@ -2588,6 +2528,9 @@ public class XMLSchemaValidator
         Object actualValue = null;
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
+            // store the normalized value
+            if (fNormalizeData)
+                attributes.setValue(index, fValidatedInfo.normalizedValue);
             // PSVI: attribute memberType
             attrPSVI.fMemberType = fValidatedInfo.memberType;
             // PSVI: element notation
@@ -2746,7 +2689,8 @@ public class XMLSchemaValidator
 
         if (fDoValidation) {
             String content = fBuffer.toString();
-
+            fValidatedInfo.normalizedValue = null;
+            
             // Element Locally Valid (Element)
             // 3.2.1 The element information item must have no character or element information item [children].
             if (fNil) {
@@ -2815,6 +2759,21 @@ public class XMLSchemaValidator
                     }
                 }
             }
+
+            if (fNormalizeData && fDocumentHandler != null && fUnionType) {
+                // for union types we need to send data because we delayed sending
+                // this data when we received it in the characters() call.
+                if (fValidatedInfo.normalizedValue != null)
+                   content = fValidatedInfo.normalizedValue;
+                int bufLen = content.length();
+                if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < bufLen) {
+                    fNormalizedStr.ch = new char[bufLen];
+                }
+                content.getChars(0, bufLen, fNormalizedStr.ch, 0);
+                fNormalizedStr.offset = 0;
+                fNormalizedStr.length = bufLen;
+                fDocumentHandler.characters(fNormalizedStr, null);
+            }
         } // if fDoValidation
 
         return defaultValue;
@@ -2823,19 +2782,6 @@ public class XMLSchemaValidator
     Object elementLocallyValidType(QName element, String textContent) {
         if (fCurrentType == null)
             return null;
-
-        if (fUnionType) {
-            // for union types we need to send data because we delayed sending this data
-            // when we received it in the characters() call.
-            // XMLString will inlude non-normalized value, PSVIElement will include
-            // normalized value
-            int bufLen = textContent.length();
-            if (bufLen >= BUFFER_SIZE) {
-                fCharBuffer = new char[bufLen*2];
-            }
-            textContent.getChars(0, bufLen, fCharBuffer, 0);
-            fXMLString.setValues(fCharBuffer, 0, bufLen);
-        }
 
         Object retValue = null;
         // Element Locally Valid (Type)
@@ -2849,7 +2795,6 @@ public class XMLSchemaValidator
             if (!fNil) {
                 XSSimpleType dv = (XSSimpleType)fCurrentType;
                 try {
-
                     if (!fNormalizeData || fUnionType) {
                         fValidationState.setNormalizationRequired(true);
                     }
@@ -2859,22 +2804,8 @@ public class XMLSchemaValidator
                     fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
                     // PSVI: memberType
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
-
-                    if (fDocumentHandler != null && fUnionType) {
-                        // send normalized values
-                        // at this point we should only rely on normalized value
-                        // available via PSVI
-                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
-                        fDocumentHandler.characters(fXMLString, fAugmentations);
-                    }
                 }
                 catch (InvalidDatatypeValueException e) {
-                    if (fDocumentHandler != null && fUnionType) {
-                        fCurrentPSVI.fNormalizedValue = null;
-                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
-                        fDocumentHandler.characters(fXMLString, fAugmentations);
-
-                    }
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, textContent});
                 }
@@ -2908,7 +2839,6 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 XSSimpleType dv = ctype.fXSSimpleType;
                 try {
-
                     if (!fNormalizeData || fUnionType) {
                         fValidationState.setNormalizationRequired(true);
                     }
@@ -2916,17 +2846,8 @@ public class XMLSchemaValidator
 
                     // PSVI: memberType
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
-
-                    if (fDocumentHandler != null && fUnionType) {
-                        fDocumentHandler.characters(fXMLString, fAugmentations);
-                    }
                 }
                 catch (InvalidDatatypeValueException e) {
-                    if (fDocumentHandler != null && fUnionType) {
-                        fCurrentPSVI.fNormalizedValue = null;
-                        fDocumentHandler.characters(fXMLString, fAugmentations);
-
-                    }
                     reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 }

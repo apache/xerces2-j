@@ -952,14 +952,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 if (fStorePSVI && attrPSVI != null) {
                     ((PSVIAttrNSImpl)attr).setPSVI(attrPSVI);
                 }
-                if (fNormalizeData) {
-                    // If validation is not attempted, the SchemaNormalizedValue will be null. 
-                    // We shouldn't take the normalized value in this case.
-                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.VALIDATION_FULL) {
-                        attrValue = attrPSVI.getSchemaNormalizedValue();
-                    }
-
-                }
                 
                 attr.setValue(attrValue);
                 el.setAttributeNode(attr);
@@ -1022,14 +1014,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 //          remove dependancy on *Impl class.
                 AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                 
-                if (fNormalizeData) {
-                    // If validation is not attempted, the SchemaNormalizedValue will be null. 
-                    // We shouldn't take the normalized value in this case.
-                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.VALIDATION_FULL) {
-                        attrValue = attrPSVI.getSchemaNormalizedValue();
-                    }
-
-                }
                 int attr = fDeferredDocumentImpl.setDeferredAttribute(el,
                                                     attributes.getQName(i),
                                                     attributes.getURI(i),
@@ -1106,18 +1090,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                     return;
                 }
 
-                String value = null;
-                // normalized value for element is stored in schema_normalize_value property
-                // of PSVI element.
-                if (fNormalizeData && augs != null) {
-                    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-                    if (elemPSVI != null) {
-                        value = elemPSVI.getSchemaNormalizedValue();
-                    } 
-                } 
-                if (value == null) {
-                     value = text.toString();
-                }
+                String value = text.toString();
                 Node child = fCurrentNode.getLastChild();
                 if (child != null && child.getNodeType() == Node.TEXT_NODE) {
                     // collect all the data into the string buffer. 
@@ -1164,19 +1137,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                     return;
                 }
 
-                String value = null;
-                // normalized value for element is stored in schema_normalize_value property
-                // of PSVI element.
-                if (fNormalizeData && augs != null) {
-                    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-                    if (elemPSVI != null) {
-                        value = elemPSVI.getSchemaNormalizedValue();
-                    } 
-                } 
-
-                if (value == null) {
-                     value = text.toString();
-                }
+                String value = text.toString();
                 int txt = fDeferredDocumentImpl.
                     createDeferredTextNode(value, false);
                 fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, txt);

@@ -426,15 +426,6 @@ public abstract class AbstractSAXParser
                 int len = attributes.getLength();
                 for (int i = len - 1; i >= 0; i--) {
                     attributes.getName(i, fQName);
-                    // change attribute value to normalized value
-                    // REVISIT: should this happen here? why not in schema validator?
-                    if (fNormalizeData) {
-                        AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
-                        if (attrPSVI != null &&
-                            attrPSVI.getValidationAttempted() == AttributePSVI.VALIDATION_FULL) {
-                            attributes.setValue(i, attrPSVI.getSchemaNormalizedValue());
-                        }
-                    }
 
                     if ((fQName.prefix != null && fQName.prefix.equals("xmlns")) || 
                         fQName.rawname.equals("xmlns")) {
@@ -493,33 +484,7 @@ public abstract class AbstractSAXParser
 
             // SAX2
             if (fContentHandler != null) {
-                String value = null;
-                // normalized value for element is stored in schema_normalize_value property
-                // of PSVI element.
-                // REVISIT: should this happen here? why not in schema validator?
-                // REVISIT: how to determine whether the value is trustable?
-                if (fNormalizeData && augs != null) {
-                    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-                    if (elemPSVI != null) {
-                        value = elemPSVI.getSchemaNormalizedValue();
-                    }
-                }
-
-                int length = 0;
-                if (value != null) {
-                     // if normalized value is available copy it into a temp buffer
-                     length = value.length();
-                     if (length >= BUFFER_SIZE) {
-                        fCharBuffer = new char[length*2];
-                     }
-                     value.getChars(0, length, fCharBuffer, 0);
-                }
-                if (value == null) {                
-                    fContentHandler.characters(text.ch, text.offset, text.length);
-                }
-                else {
-                    fContentHandler.characters(fCharBuffer, 0, length);
-                }
+                fContentHandler.characters(text.ch, text.offset, text.length);
             }
         }
         catch (SAXException e) {
