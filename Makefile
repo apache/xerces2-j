@@ -56,7 +56,7 @@ package_src: ./source/src/Makefile
 	${CP} docs/*.xml source/docs
 	${CP} docs/*.ent source/docs
 	${CP} LICENSE source
-	${RM} bin/build.xml
+	${RM} source/build.xml
 	$(MV) source xerces-${PRODUCTVERSION}
 	$(JAR) cvfM ${SRCZIPFILE} xerces-${PRODUCTVERSION} 
 	$(MV) xerces-${PRODUCTVERSION} source
