@@ -107,12 +107,15 @@ final class StringReader extends XMLEntityReader {
                                                   StringPool stringPool,
                                                   boolean addEnclosingSpaces)
     {
-        StringReader reader = fgFreeReaders;
-        if (reader == null) {
-            return new StringReader(entityHandler, errorReporter, sendCharDataAsCharArray, lineNumber, columnNumber,
-                                    stringHandle, stringPool, addEnclosingSpaces);
+        StringReader reader = null;
+        synchronized (StringReader.class) {
+            reader = fgFreeReaders;
+            if (reader == null) {
+                return new StringReader(entityHandler, errorReporter, sendCharDataAsCharArray, lineNumber, columnNumber,
+                                        stringHandle, stringPool, addEnclosingSpaces);
+            }
+            fgFreeReaders = reader.fNextFreeReader;
         }
-        fgFreeReaders = reader.fNextFreeReader;
         reader.init(entityHandler, errorReporter, sendCharDataAsCharArray, lineNumber, columnNumber,
                     stringHandle, stringPool, addEnclosingSpaces);
         return reader;
@@ -211,8 +214,10 @@ final class StringReader extends XMLEntityReader {
     //
     public XMLEntityHandler.EntityReader changeReaders() throws Exception {
         XMLEntityHandler.EntityReader nextReader = super.changeReaders();
-        fNextFreeReader = fgFreeReaders;
-        fgFreeReaders = this;
+        synchronized (StringReader.class) {
+            fNextFreeReader = fgFreeReaders;
+            fgFreeReaders = this;
+        }
         return nextReader;
     }
     //

@@ -287,7 +287,8 @@ public final class StringPool {
     public SymbolCache getSymbolCache() {
         return fSymbolCache;
     }
-    private static int fShuffleCount = 0;
+    //private static int fShuffleCount = 0;
+    private int fShuffleCount = 0;
     public void resetShuffleCount() {
         fShuffleCount = 0;
     }

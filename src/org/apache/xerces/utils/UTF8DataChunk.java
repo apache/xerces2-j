@@ -74,12 +74,15 @@ public class UTF8DataChunk implements StringPool.StringProducer {
     // Public constructor (factory)
     //
     public static UTF8DataChunk createChunk(StringPool stringPool, UTF8DataChunk prev) {
-        if (fgFreeChunks != null) {
-            UTF8DataChunk newChunk = fgFreeChunks;
-            fgFreeChunks = newChunk.fNextChunk;
-            newChunk.fNextChunk = null;
-            newChunk.init(stringPool, prev);
-            return newChunk;
+
+        synchronized (UTF8DataChunk.class) {
+            if (fgFreeChunks != null) {
+                UTF8DataChunk newChunk = fgFreeChunks;
+                fgFreeChunks = newChunk.fNextChunk;
+                newChunk.fNextChunk = null;
+                newChunk.init(stringPool, prev);
+                return newChunk;
+            }
         }
         UTF8DataChunk chunk = new UTF8DataChunk(stringPool, prev);
         return chunk;
@@ -565,10 +568,12 @@ public class UTF8DataChunk implements StringPool.StringProducer {
             fChunk = -1;
 //            fData = null;
             fPreviousChunk = null;
-            /*** Only keep one free chunk at a time! ***
-            fNextChunk = fgFreeChunks;
-            /***/
-            fgFreeChunks = this;
+            synchronized (UTF8DataChunk.class) {
+                /*** Only keep one free chunk at a time! ***
+                fNextChunk = fgFreeChunks;
+                /***/
+                fgFreeChunks = this;
+            }
         }
     }
     //

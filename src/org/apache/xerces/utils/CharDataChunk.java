@@ -89,11 +89,15 @@ public final class CharDataChunk implements StringPool.StringProducer {
      * @return The instance reused or created.
      */
     public static CharDataChunk createChunk(StringPool stringPool, CharDataChunk prev) {
-        CharDataChunk newChunk = fgFreeChunks;
-        if (newChunk != null) {
-            fgFreeChunks = newChunk.fNextChunk;
-        } else {
-            newChunk = new CharDataChunk();
+
+        CharDataChunk newChunk = null;
+        synchronized (CharDataChunk.class) {
+            newChunk = fgFreeChunks;
+            if (newChunk != null) {
+                fgFreeChunks = newChunk.fNextChunk;
+            } else {
+                newChunk = new CharDataChunk();
+            }
         }
         newChunk.fStringPool = stringPool;
         newChunk.fRefCount = 1;             // account for the reference we return to the caller
@@ -407,10 +411,12 @@ public final class CharDataChunk implements StringPool.StringProducer {
             fStringPool = null;
             fChunk = -1;
             fPreviousChunk = null;
-            /*** Only keep one free chunk at a time! ***
-            fNextChunk = fgFreeChunks;
-            /***/
-            fgFreeChunks = this;
+            synchronized (CharDataChunk.class) {
+                /*** Only keep one free chunk at a time! ***
+                fNextChunk = fgFreeChunks;
+                /***/
+                fgFreeChunks = this;
+            }
         }
     }
     //
