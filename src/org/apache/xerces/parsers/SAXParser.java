@@ -59,12 +59,13 @@ package org.apache.xerces.parsers;
 
 import java.io.IOException;
 
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.validation.GrammarPool;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -679,32 +680,8 @@ public class SAXParser
         // SAX2 Features
         //
 
-        if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
-            String feature = featureId.substring(SAX2_FEATURES_PREFIX.length());
-
-            /*
-            //
-            // http://xml.org/sax/features/normalize-text
-            //   Ensure that all consecutive text is returned in a single callback to
-            //   DocumentHandler.characters or DocumentHandler.ignorableWhitespace
-            //   (true) or explicitly do not require it (false).
-            //
-            if (feature.equals("normalize-text")) {
-                setNormalizeText(state);
-                return;
-            }
-            */
-            /*
-            //
-            // http://xml.org/sax/features/use-locator
-            //   Provide a Locator using the DocumentHandler.setDocumentLocator
-            //   callback (true), or explicitly do not provide one (false).
-            //
-            if (feature.equals("use-locator")) {
-                setUseLocator(state);
-                return;
-            }
-            */
+        if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
+            String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
 
             // http://xml.org/sax/features/namespace-prefixes
             //   controls the reporting of raw prefixed names and Namespace 
@@ -712,7 +689,7 @@ public class SAXParser
             //   (the default), raw prefixed names may optionally be reported, 
             //   and xmlns* attributes must not be reported.
             //
-            if (feature.equals("namespace-prefixes")) {
+            if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
                 fFeatures.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
                 return;
             }
@@ -720,7 +697,7 @@ public class SAXParser
             //   controls the use of java.lang.String#intern() for strings
             //   passed to SAX handlers.
             //
-            if (feature.equals("string-interning")) {
+            if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
                 if (state) {
                     throw new SAXNotSupportedException(
                         "PAR018 " + state + " state for feature \"" + featureId
@@ -776,32 +753,9 @@ public class SAXParser
         // SAX2 Features
         //
 
-        if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
+        if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature =
-                featureId.substring(SAX2_FEATURES_PREFIX.length());
-
-            /*
-            //
-            // http://xml.org/sax/features/normalize-text
-            //   Ensure that all consecutive text is returned in a single
-            //   callback to DocumentHandler.characters or
-            //   DocumentHandler.ignorableWhitespace (true) or explicitly do
-            //   not require it (false).
-            //
-            if (feature.equals("normalize-text")) {
-                return getNormalizeText();
-            }
-            */
-            /*
-            //
-            // http://xml.org/sax/features/use-locator
-            //   Provide a Locator using the DocumentHandler.setDocumentLocator
-            //   callback (true), or explicitly do not provide one (false).
-            //
-            if (feature.equals("use-locator")) {
-                return getUseLocator();
-            }
-            */
+                featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
 
             // http://xml.org/sax/features/namespace-prefixes
             //   controls the reporting of raw prefixed names and Namespace 
@@ -809,7 +763,7 @@ public class SAXParser
             //   (the default), raw prefixed names may optionally be reported, 
             //   and xmlns* attributes must not be reported.
             //
-            if (feature.equals("namespace-prefixes")) {
+            if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
                 Boolean state = (Boolean) fFeatures.get(featureId);
                 return state.booleanValue();
             }
@@ -817,7 +771,7 @@ public class SAXParser
             //   controls the use of java.lang.String#intern() for strings
             //   passed to SAX handlers.
             //
-            if (feature.equals("string-interning")) {
+            if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
                 return false;
             }
 
@@ -868,16 +822,16 @@ public class SAXParser
         // SAX2 core properties
         //
 
-        if (propertyId.startsWith(SAX2_PROPERTIES_PREFIX)) {
+        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
             String property =
-                propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
+                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
             //
             // http://xml.org/sax/properties/lexical-handler
             // Value type: org.xml.sax.ext.LexicalHandler
             // Access: read/write, pre-parse only
             //   Set the lexical event handler.
             //
-            if (property.equals("lexical-handler")) {
+            if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
                 try {
                     setLexicalHandler((LexicalHandler)value);
                 }
@@ -896,7 +850,7 @@ public class SAXParser
             // Access: read/write, pre-parse only
             //   Set the DTD declaration event handler.
             //
-            if (property.equals("declaration-handler")) {
+            if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
                 try {
                     setDeclHandler((DeclHandler)value);
                 }
@@ -920,7 +874,7 @@ public class SAXParser
             //   node, it should return null (this is a good way to check for
             //   availability before the parse begins).
             //
-            if (property.equals("dom-node")) {
+            if (property.equals(Constants.DOM_NODE_PROPERTY)) {
                 throw new SAXNotSupportedException(
                     "PAR013 Property \""+propertyId+"\" is read only."
                     +'\n'+propertyId
@@ -972,16 +926,16 @@ public class SAXParser
         // SAX2 core properties
         //
 
-        if (propertyId.startsWith(SAX2_PROPERTIES_PREFIX)) {
+        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
             String property =
-                propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
+                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
             //
             // http://xml.org/sax/properties/lexical-handler
             // Value type: org.xml.sax.ext.LexicalHandler
             // Access: read/write, pre-parse only
             //   Set the lexical event handler.
             //
-            if (property.equals("lexical-handler")) {
+            if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
                 return getLexicalHandler();
             }
             //
@@ -990,7 +944,7 @@ public class SAXParser
             // Access: read/write, pre-parse only
             //   Set the DTD declaration event handler.
             //
-            if (property.equals("declaration-handler")) {
+            if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
                 return getDeclHandler();
             }
             //
@@ -1003,7 +957,7 @@ public class SAXParser
             //   node, it should return null (this is a good way to check for
             //   availability before the parse begins).
             //
-            if (property.equals("dom-node")) {
+            if (property.equals(Constants.DOM_NODE_PROPERTY)) {
                 throw new SAXNotSupportedException(
                 "PAR014 Cannot getProperty(\""+propertyId
                 +"\". No DOM Tree exists.\n"+propertyId
