@@ -725,7 +725,7 @@ public class XMLSchemaValidator
         Augmentations modifiedAugs = handleEndElement(element, augs);
         // call handlers
         if (fDocumentHandler != null) {
-            if (fSchemaElementDefault || fDefaultValue == null) {
+            if (!fSchemaElementDefault || fDefaultValue == null) {
                 fDocumentHandler.endElement(element, modifiedAugs);
             } else {
                 fDocumentHandler.characters(fDefaultValue, null);
