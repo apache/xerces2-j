@@ -1542,25 +1542,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         int firstCheck = attrIndex;
         int lastCheck = -1;
         while (attlistIndex != -1) {
-            //int adChunk = attlistIndex >> CHUNK_SHIFT;
-            //int adIndex = attlistIndex & CHUNK_MASK;
             fGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
-            // TO DO: For ericye Debug only
-            /***
-            if (fTempAttDecl != null) {
-                XMLElementDecl element = new XMLElementDecl();
-                fGrammar.getElementDecl(elementIndex, element);
-                System.out.println("element: "+fStringPool.toString(element.name.localpart));
-                System.out.println("attlistIndex " + attlistIndex + "\n"+
-                    "attName : '"+fStringPool.toString(fTempAttDecl.name.localpart) + "'\n"
-                                   + "attType : "+fTempAttDecl.type + "\n"
-                                   + "attDefaultType : "+fTempAttDecl.defaultType + "\n"
-                                   + "attDefaultValue : '"+fTempAttDecl.defaultValue + "'\n"
-                                   + attrList.getLength() +"\n"
-                                   );
-            }
-            /***/
 
             int attPrefix = fTempAttDecl.name.prefix;
             int attName = fTempAttDecl.name.localpart;
@@ -2646,7 +2629,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 if (anotherSchemaURI != null) {
                     //before switch Grammar, set the elementIndex to be the template elementIndex of its type
                     if (contentSpecType != -1 
-                        && contentSpecType != XMLElementDecl.TYPE_SIMPLE
                         && contentSpecType != XMLElementDecl.TYPE_EMPTY ) {
                         TraverseSchema.ComplexTypeInfo typeInfo = ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
                         if (typeInfo != null) {

@@ -1507,61 +1507,62 @@ public class TraverseSchema implements
                 reportGenericSchemaError("derivedBy must be present when base is present in " 
                                          +SchemaSymbols.ELT_COMPLEXTYPE
                                          +" "+ typeName);
+                derivedBy = SchemaSymbols.ATTVAL_EXTENSION;
             }
-            else {
-                if (derivedBy.equals(SchemaSymbols.ATTVAL_EXTENSION)) {
-                    derivedByRestriction = false;
-                }
-                
-                String prefix = "";
-                String localpart = base;
-                int colonptr = base.indexOf(":");
-                if ( colonptr > 0) {
-                    prefix = base.substring(0,colonptr);
-                    localpart = base.substring(colonptr+1);
-                }
-                int localpartIndex = fStringPool.addSymbol(localpart);
-                String typeURI = resolvePrefixToURI(prefix);
-                
-                // check if the base type is from the same Schema;
-                if ( ! typeURI.equals(fTargetNSURIString) 
-                     && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
-                     && typeURI.length() != 0 )  /*REVISIT, !!!! a hack: for schema that has no target namespace, e.g. personal-schema.xml*/{
-                    baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
-                    if (baseTypeInfo == null) {
-                        baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
-                        if (baseTypeValidator == null) {
-                            //TO DO: report error here;
-                            System.out.println("Could not find base type " +localpart 
-                                               + " in schema " + typeURI);
-                        }
-                        else{
-                            baseIsSimpleSimple = true;
-                        }
+
+            if (derivedBy.equals(SchemaSymbols.ATTVAL_EXTENSION)) {
+                derivedByRestriction = false;
+            }
+
+            String prefix = "";
+            String localpart = base;
+            int colonptr = base.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = base.substring(0,colonptr);
+                localpart = base.substring(colonptr+1);
+            }
+            int localpartIndex = fStringPool.addSymbol(localpart);
+            String typeURI = resolvePrefixToURI(prefix);
+
+            // check if the base type is from the same Schema;
+            if ( ! typeURI.equals(fTargetNSURIString) 
+                 && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+                 && typeURI.length() != 0 )  /*REVISIT, !!!! a hack: for schema that has no target namespace, e.g. personal-schema.xml*/{
+                baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
+                if (baseTypeInfo == null) {
+                    baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
+                    if (baseTypeValidator == null) {
+                        //TO DO: report error here;
+                        System.out.println("Could not find base type " +localpart 
+                                           + " in schema " + typeURI);
+                    }
+                    else{
+                        baseIsSimpleSimple = true;
                     }
                 }
-                else {
-                
-                    fullBaseName = typeURI+","+localpart;
-                    
-                    // assume the base is a complexType and try to locate the base type first
-                    baseTypeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(fullBaseName);
+            }
+            else {
 
-                    // if not found, 2 possibilities: 1: ComplexType in question has not been compiled yet;
-                    //                                2: base is SimpleTYpe;
-                    if (baseTypeInfo == null) {
-                            baseTypeValidator = getDatatypeValidator(typeURI, localpart);
+                fullBaseName = typeURI+","+localpart;
 
-                        if (baseTypeValidator == null) {
-                            baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
+                // assume the base is a complexType and try to locate the base type first
+                baseTypeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(fullBaseName);
+
+                // if not found, 2 possibilities: 1: ComplexType in question has not been compiled yet;
+                //                                2: base is SimpleTYpe;
+                if (baseTypeInfo == null) {
+                    baseTypeValidator = getDatatypeValidator(typeURI, localpart);
+
+                    if (baseTypeValidator == null) {
+                        baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
+                        if (baseTypeNode != null) {
+                            baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
+                            baseTypeInfo = (ComplexTypeInfo)
+                            fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); //REVISIT: should it be fullBaseName;
+                        }
+                        else {
+                            baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                             if (baseTypeNode != null) {
-                                baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
-                                baseTypeInfo = (ComplexTypeInfo)
-                                fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); //REVISIT: should it be fullBaseName;
-                            }
-                            else {
-                                baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
-                                if (baseTypeNode != null) {
                                     baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
                                     simpleTypeValidator = baseTypeValidator = getDatatypeValidator(typeURI, localpart);
                                     if (simpleTypeValidator == null) {
@@ -1569,58 +1570,57 @@ public class TraverseSchema implements
                                     }
 
                                     baseIsSimpleSimple = true;
-                                }
-                                else {
-                                    // REVISIT: Localize
-                                    reportGenericSchemaError("Base type could not be found : " + base);
-                                }
+                            }
+                            else {
+                                // REVISIT: Localize
+                                reportGenericSchemaError("Base type could not be found : " + base);
                             }
                         }
-                        else {
-                            simpleTypeValidator = baseTypeValidator;
-                            baseIsSimpleSimple = true;
-                        }
-                    }
-                }
-                        //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
-                if (baseIsSimpleSimple && derivedByRestriction) {
-                    // REVISIT: Localize
-                    reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
-                }
-
-                //if  the base is a complexType
-                if (baseTypeInfo != null ) {
-
-                    //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
-                    //              5.11: Derivation Valid ( Restriction, Complex ) 1.2.1
-                    if (derivedByRestriction) {
-                        //REVISIT: check base Type's finalset does not include "restriction"
                     }
                     else {
-                        //REVISIT: check base Type's finalset doest not include "extension"
-                    }
-
-                    if ( baseTypeInfo.contentSpecHandle > -1) {
-                        if (derivedByRestriction) {
-                            //REVISIT: !!! really hairy staff to check the particle derivation OK in 5.10
-                            checkParticleDerivationOK(complexTypeDecl, baseTypeNode);
-                        }
-                        baseContentSpecHandle = baseTypeInfo.contentSpecHandle;
-                    }
-                    else if ( baseTypeInfo.datatypeValidator != null ) {
-                        baseTypeValidator = baseTypeInfo.datatypeValidator;
-                        baseIsComplexSimple = true;
+                        simpleTypeValidator = baseTypeValidator;
+                        baseIsSimpleSimple = true;
                     }
                 }
+            }
+            //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
+            if (baseIsSimpleSimple && derivedByRestriction) {
+                // REVISIT: Localize
+                reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
+            }
+
+            //if  the base is a complexType
+            if (baseTypeInfo != null ) {
 
                 //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
-                if (baseIsComplexSimple && !derivedByRestriction ) {
-                    // REVISIT: Localize
-                    reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
+                //              5.11: Derivation Valid ( Restriction, Complex ) 1.2.1
+                if (derivedByRestriction) {
+                    //REVISIT: check base Type's finalset does not include "restriction"
+                }
+                else {
+                    //REVISIT: check base Type's finalset doest not include "extension"
                 }
 
+                if ( baseTypeInfo.contentSpecHandle > -1) {
+                    if (derivedByRestriction) {
+                        //REVISIT: !!! really hairy staff to check the particle derivation OK in 5.10
+                        checkParticleDerivationOK(complexTypeDecl, baseTypeNode);
+                    }
+                    baseContentSpecHandle = baseTypeInfo.contentSpecHandle;
+                }
+                else if ( baseTypeInfo.datatypeValidator != null ) {
+                    baseTypeValidator = baseTypeInfo.datatypeValidator;
+                    baseIsComplexSimple = true;
+                }
+            }
 
-            } // END of if (derivedBy.length() == 0) {} else {}
+            //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
+            if (baseIsComplexSimple && !derivedByRestriction ) {
+                // REVISIT: Localize
+                reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
+            }
+
+
         } // END of if (base.length() > 0) {}
 
         // skip refinement and annotations
@@ -3106,6 +3106,9 @@ public class TraverseSchema implements
         // if element belongs to a simple type
         if (dv!=null) {
             contentSpecType = XMLElementDecl.TYPE_SIMPLE;
+            if (typeInfo == null) {
+                fromAnotherSchema = null; // not to switch schema in this case
+            }
         }
 
         //
