@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -96,7 +96,7 @@ import org.xml.sax.SAXParseException;
  *
  * @version $Id$
  */
-public final class XMLAttrList 
+public final class XMLAttrList
     implements AttributeList {
 
     //
@@ -160,7 +160,7 @@ public final class XMLAttrList
         fAttrCount = 0;
     }
 
-    public int addAttr(int attrName, int attValue, 
+    public int addAttr(int attrName, int attValue,
                        int attType, boolean specified, boolean search) throws Exception
     {
         fAttributeQName.setValues(-1, attrName, attrName);
@@ -178,8 +178,8 @@ public final class XMLAttrList
      * @return The index of this attribute; or -1 is <code>search</code> was <code>true</code>
      *         and <code>attrName</code> was already present.
      */
-    public int addAttr(QName attribute, 
-                       int attValue, int attType, 
+    public int addAttr(QName attribute,
+                       int attValue, int attType,
                        boolean specified, boolean search) throws Exception {
 
         int chunk;
@@ -188,8 +188,8 @@ public final class XMLAttrList
             chunk = fCurrentHandle >> CHUNK_SHIFT;
             index = fCurrentHandle & CHUNK_MASK;
             for (int attrIndex = fCurrentHandle; attrIndex < fAttrCount; attrIndex++) {
-                // REVISIT: Should this be localpart?
-                if (fStringPool.equalNames(fAttName[chunk][index], attribute.rawname)) {
+                if (fStringPool.equalNames(fAttURI[chunk][index], attribute.uri) &&
+                    fStringPool.equalNames(fAttLocalpart[chunk][index], attribute.localpart)) {
                     return -1;
                 }
                 if (++index == CHUNK_SIZE) {
@@ -270,7 +270,7 @@ public final class XMLAttrList
         int index = attrIndex & CHUNK_MASK;
         return fAttName[chunk][index];
     }
-    
+
     /** Sets the uri of the attribute. */
     public void setAttrURI(int attrIndex, int uri) {
         if (attrIndex < 0 || attrIndex >= fAttrCount)
@@ -383,7 +383,7 @@ public final class XMLAttrList
             fAttrCount = attrListHandle;
     }
 
-    /** 
+    /**
      * Get the first attribute in the attribute list.
      *
      * @param attrListHandle The attribute list handle.
