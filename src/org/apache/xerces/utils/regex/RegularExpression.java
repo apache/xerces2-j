@@ -1219,8 +1219,10 @@ public class RegularExpression implements java.io.Serializable {
             case Op.UNION:
                 for (int i = 0;  i < op.size();  i ++) {
                     int ret = this. matchCharArray (con, op.elementAt(i), offset, dx, opts);
-                    //System.err.println("UNION: "+i+", ret="+ret);
-                    if (ret >= 0)  return ret;
+                    if (DEBUG) {
+                        System.err.println("UNION: "+i+", ret="+ret);
+                    }
+                    if (ret == con.length )  return ret;
                 }
                 return -1;
 
@@ -1466,8 +1468,14 @@ public class RegularExpression implements java.io.Serializable {
         con.match = match;
 
         if (this.isSet(this.options, XMLSCHEMA_MODE)) {
+            if (DEBUG) {
+                System.err.println("target string="+target);
+            }
             int matchEnd = this. matchString (con, this.operations, con.start, 1, this.options);
-            //System.err.println("DEBUG: matchEnd="+matchEnd);
+            if (DEBUG) {
+                System.err.println("matchEnd="+matchEnd);
+                System.err.println("con.limit="+con.limit);
+            }
             if (matchEnd == con.limit) {
                 if (con.match != null) {
                     con.match.setBeginning(0, con.start);
@@ -1903,7 +1911,6 @@ public class RegularExpression implements java.io.Serializable {
                             break;
                         }
                     }
-
                     int ret = this. matchString (con, op.getChild(), offset, dx, opts);
                     if (id >= 0)  con.offsets[id] = -1;
                     if (ret >= 0)  return ret;
@@ -1931,8 +1938,10 @@ public class RegularExpression implements java.io.Serializable {
             case Op.UNION:
                 for (int i = 0;  i < op.size();  i ++) {
                     int ret = this. matchString (con, op.elementAt(i), offset, dx, opts);
-                    //System.err.println("UNION: "+i+", ret="+ret);
-                    if (ret >= 0)  return ret;
+                    if (DEBUG) {
+                        System.err.println("UNION: "+i+", ret="+ret);
+                    }
+                    if (ret == con.length )  return ret;
                 }
                 return -1;
 
@@ -2549,7 +2558,7 @@ public class RegularExpression implements java.io.Serializable {
                             break;
                         }
                     }
-
+                    
                     int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, opts);
                     if (id >= 0)  con.offsets[id] = -1;
                     if (ret >= 0)  return ret;
@@ -2577,8 +2586,10 @@ public class RegularExpression implements java.io.Serializable {
             case Op.UNION:
                 for (int i = 0;  i < op.size();  i ++) {
                     int ret = this. matchCharacterIterator (con, op.elementAt(i), offset, dx, opts);
-                    //System.err.println("UNION: "+i+", ret="+ret);
-                    if (ret >= 0)  return ret;
+                    if (DEBUG) {
+                        System.err.println("UNION: "+i+", ret="+ret);
+                    }
+                    if (ret == con.length)  return ret;
                 }
                 return -1;
 
