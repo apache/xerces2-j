@@ -319,7 +319,7 @@ public class XMLSchemaValidator
 
         // store error codes; starting position of the errors for each element;
         // number of element (depth); and whether to record error
-        Vector fErrors = new Vector(INITIAL_STACK_SIZE, INC_STACK_SIZE);
+        Vector fErrors = new Vector();
         int[] fContext = new int[INITIAL_STACK_SIZE];
         int fContextCount;
 
@@ -393,7 +393,9 @@ public class XMLSchemaValidator
         public void reportError(String domain, String key, Object[] arguments, short severity)
             throws XNIException {
             fErrorReporter.reportError(domain, key, arguments, severity);
-            fErrors.addElement(key);
+            if (fAugPSVI) {
+                fErrors.addElement(key);
+            }
         } // reportError(String,String,Object[],short)
 
         public void reportError(
@@ -404,7 +406,9 @@ public class XMLSchemaValidator
             short severity)
             throws XNIException {
             fErrorReporter.reportError(location, domain, key, arguments, severity);
-            fErrors.addElement(key);
+            if (fAugPSVI) {
+                fErrors.addElement(key);
+            }
         } // reportError(XMLLocator,String,String,Object[],short)
     }
 
