@@ -113,6 +113,13 @@ public class SchemaParserConfiguration extends StandardParserConfiguration {
             addComponent(fSchemaValidator);
         }
 
+        // add schema message formatter
+        if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+            XSMessageFormatter xmft = new XSMessageFormatter();
+            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+        }
+
+
     } // <init>(SymbolTable,GrammarPool)
 
     //
