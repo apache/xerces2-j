@@ -167,7 +167,7 @@
  <s2 title='Sample xni.Writer'>
   <p>
    A sample XNI writer. This sample program illustrates how to
-   take receive XMLDocumentHandler callbacks in order to print 
+   take received XMLDocumentHandler callbacks in order to print 
    a document that is parsed.
   </p>
   <s3 title='usage'>
@@ -200,16 +200,19 @@
   </s3>
  </s2>
 
-<anchor name='PSVIWriter'/>
+ <anchor name='PSVIWriter'/>
  <s2 title='Sample xni.PSVIWriter'>
   <p>
-   This is an example of a component that intercepts document handler events and gathers PSVI information. The PSVI output is written as XML.
-</p>
-<p>
+   This is an example of a component that converts XNI events for a document into
+   XNI events for that document's PSVI information.
+  </p>
+  <p>
    This class can <strong>NOT</strong> be run as a standalone
-   program. It is only an example of how to write a component. See <link anchor='PSVIParser'>xni.parser.PSVIParser</link>.
-</p>
-</s2>
+   program. It is only an example of how to write a component. See
+   <link anchor='PSVIConfiguration'>xni.parser.PSVIConfiguration</link> and
+   <link anchor='PSVIParser'>xni.parser.PSVIParser</link>.
+  </p>
+ </s2>
 
  <anchor name='XMLGrammarBuilder'/>
  <s2 title='Sample xni.XMLGrammarBuilder'>
@@ -380,10 +383,12 @@
   <source>java sax.Counter -p xni.parser.CSVParser document.xml</source>
  </s2>
 
-  <anchor name='PSVIConfiguration'/>
+ <anchor name='PSVIConfiguration'/>
  <s2 title='Sample xni.parser.PSVIConfiguration'>
   <p>
-   This example is a parser configuration that can output post schema validation infoset. The configuration infludes: DTD validator, Namespace binder, XML Schema validators and PSVIWriter component. 
+   This example is a parser configuration that can includes a post
+   schema validation infoset converter. The configuration includes:
+   DTD validator, Namespace binder, XML Schema validators and PSVIWriter component. 
   </p>
   <p>
    This class can <strong>NOT</strong> be run as a standalone
@@ -393,14 +398,17 @@
    samples that accept a parser configuration using the 
    <code>-p</code> option:
   </p>
-  <source>java xni.Counter -v -s -p xni.parser.PSVIConfiguration personal-schema.xml</source>
-   <note><link idref='features' anchor="validation">Validation</link> and <link idref='features' anchor="validation.schema">schema validation</link> features must be set to true to receive the correct PSVI output.</note>
+  <source>java xni.Writer -v -s -p xni.parser.PSVIConfiguration personal-schema.xml</source>
+   <note><link idref='features' anchor="validation">Validation</link>
+   and <link idref='features' anchor="validation.schema">schema validation</link>
+   features must be set to true to receive the correct PSVI output.</note>
  </s2>
 
-<anchor name='PSVIParser'/>
+ <anchor name='PSVIParser'/>
  <s2 title='Samples xni.parser.PSVIParser'>
   <p>
-   This parser class implements a SAX parser that outputs post schema validation infoset as XML.
+   This parser class implements a SAX parser that outputs events for
+   the post schema validation infoset of a document.
   </p>
   <p>
    This class can <strong>NOT</strong> be run as a standalone
@@ -410,10 +418,13 @@
    samples that accept a parser using the 
    <code>-p</code> option. For example:
   </p>
-  <source>java sax.Counter -v -s -p xni.parser.PSVIParser personal-schema.xml</source>
-  <note><link idref='features' anchor="validation">Validation</link> and <link idref='features' anchor="validation.schema">schema validation</link> features must be set to true to receive the correct PSVI output.</note>
+  <source>java sax.Writer -v -s -p xni.parser.PSVIParser personal-schema.xml</source>
+  <note><link idref='features' anchor="validation">Validation</link>
+  and <link idref='features' anchor="validation.schema">schema validation</link>
+  features must be set to true to receive the correct PSVI output.</note>
  </s2>
-<anchor name='xercesProperties'/>
+ 
+ <anchor name='xercesProperties'/>
  <s2 title='Sample xni/xerces.properties'>
     <p> When you create a Xerces parser, either directly using a native
     class like org.apache.xerces.parsers.DOMParser, or via a
