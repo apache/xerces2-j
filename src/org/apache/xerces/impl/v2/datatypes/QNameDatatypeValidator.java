@@ -120,7 +120,7 @@ public class QNameDatatypeValidator extends  AbstractStringValidator {
         return collator.compare( content, facetValue );
     }
 
-    protected static void setNCNameValidator (DatatypeValidator dv) {
+    public static void setNCNameValidator (DatatypeValidator dv) {
         // make a string validator for NCName
         if ( fgStrValidator == null) {
             fgStrValidator = dv;

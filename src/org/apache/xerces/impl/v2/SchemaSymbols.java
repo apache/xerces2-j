@@ -229,14 +229,6 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_YEAR              = "year";
     public static final String ATTVAL_YEARMONTH         = "yearMonth";
 
-    // from default value
-    public static final int FROM_DEFAULT  = 0x40000000;
-    public static final int REAL_VALUE    = 0x3fffffff;
-
-    // boolean true/false
-    public static final int BOOLEAN_FALSE = 0;
-    public static final int BOOLEAN_TRUE  = 1;
-
     // block/final values
     public static final int EMPTY_SET    = 0;
     public static final int EXTENSION    = 1;

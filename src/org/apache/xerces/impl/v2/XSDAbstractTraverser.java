@@ -78,8 +78,6 @@ abstract class XSDAbstractTraverser {
     protected XSAttributeChecker    fAttrChecker = null;
     protected XMLErrorReporter      fErrorReporter = null;
 
-    //REVISIT: should we add global fSchemaGrammar field
-
     XSDAbstractTraverser (XSDHandler handler,
                           XMLErrorReporter errorReporter,
                           XSAttributeChecker attrChecker) {        
@@ -100,11 +98,10 @@ abstract class XSDAbstractTraverser {
 
     // traver the annotation declaration
     // REVISIT: store annotation information for PSVI
-    int traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs) {
+    int traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs, boolean isGlobal) {
         // General Attribute Checking
-        // There is no difference between global or local annotation,
-        // so we assume it's always global.
-        Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, true);
+        Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal);
+        fAttrChecker.returnAttrArray(attrValues);
 
         for(Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
@@ -122,6 +119,7 @@ abstract class XSDAbstractTraverser {
             // There is no difference between global or local appinfo/documentation,
             // so we assume it's always global.
             attrValues = fAttrChecker.checkAttributes(child, true);
+            fAttrChecker.returnAttrArray(attrValues);
         }
 
         // REVISIT: an annotation index should be returned when we support PSVI
@@ -147,6 +145,6 @@ abstract class XSDAbstractTraverser {
     //         should call traverseAnnotationDecl() directly, and store the
     //         returned value.
     Element checkContent( Element elm, Element content, boolean isEmpty ) {
-        return null;
+        return content;
     }
 }

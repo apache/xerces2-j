@@ -101,10 +101,10 @@ public class SchemaGrammar {
     private String fElementDeclTypeNS[][];
     private int fElementDeclTypeDecl[][];
     private short fElementDeclMiscFlags[][];
-    private int fElementDeclBlockSet[][];
-    private int fElementDeclFinalSet[][];
+    private short fElementDeclBlockSet[][];
+    private short fElementDeclFinalSet[][];
     private String fElementDeclDefault[][];
-    private int fElementDeclSubGroupNS[][];
+    private String fElementDeclSubGroupNS[][];
     private int fElementDeclSubGroupIdx[][];
     private Vector fElementDeclUnique[][];
     private Vector fElementDeclKey[][];
@@ -161,18 +161,18 @@ public class SchemaGrammar {
         fSymbolTable = symbolTable;
 
         // element decl
-        fElementDeclName = new QName[INITIAL_CHUNK_COUNT][];
-        fElementDeclTypeNS = new String[INITIAL_CHUNK_COUNT][];
-        fElementDeclTypeDecl = new int[INITIAL_CHUNK_COUNT][];
-        fElementDeclMiscFlags = new short[INITIAL_CHUNK_COUNT][];
-        fElementDeclBlockSet = new int[INITIAL_CHUNK_COUNT][];
-        fElementDeclFinalSet = new int[INITIAL_CHUNK_COUNT][];
-        fElementDeclDefault = new String[INITIAL_CHUNK_COUNT][];
-        fElementDeclSubGroupNS = new int[INITIAL_CHUNK_COUNT][];
-        fElementDeclSubGroupIdx = new int[INITIAL_CHUNK_COUNT][];
-        fElementDeclUnique = new Vector[INITIAL_CHUNK_COUNT][];
-        fElementDeclKey = new Vector[INITIAL_CHUNK_COUNT][];
-        fElementDeclKeyRef = new Vector[INITIAL_CHUNK_COUNT][];
+        fElementDeclName = new QName[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclTypeNS = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclTypeDecl = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclMiscFlags = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclBlockSet = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclFinalSet = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclDefault = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclSubGroupNS = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclSubGroupIdx = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclUnique = new Vector[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclKey = new Vector[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclKeyRef = new Vector[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
 
         // attribute declarations
         fAttributeDeclName = new QName[INITIAL_CHUNK_COUNT][];
@@ -197,8 +197,8 @@ public class SchemaGrammar {
 
         //REVISIT: as temporary solution store complexTypes/simpleTypes as objects
         // Add XML Schema datatypes 
-        fTypeDeclQName = new QName[INITIAL_CHUNK_COUNT][];
-        fTypeDeclType = new XSType[INITIAL_CHUNK_COUNT][];
+        fTypeDeclQName = new QName[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fTypeDeclType = new XSType[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
 
     } // <init>(SymbolTable)
 
@@ -331,8 +331,6 @@ public class SchemaGrammar {
             topLevelTypeDecls.put(SchemaSymbols.ATTVAL_HEXBINARY, new Integer(typeIndex++));
             fTypeDeclType[0][typeIndex] = new NOTATIONDatatypeValidator(anySimpleType, null, false);
             topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NOTATION, new Integer(typeIndex++));
-            fTypeDeclType[0][typeIndex] = new QNameDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_QNAME, new Integer(typeIndex++));
             
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_REPLACE);
@@ -346,7 +344,8 @@ public class SchemaGrammar {
             topLevelTypeDecls.put(SchemaSymbols.ATTVAL_TOKEN, new Integer(typeIndex++));
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
-            facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
+            //REVISIT: won't run: regexparser, locale, resource bundle
+            //facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*");
             fTypeDeclType[0][typeIndex] = new StringDatatypeValidator(tokenDV, facets, false);
             topLevelTypeDecls.put(SchemaSymbols.ATTVAL_LANGUAGE, new Integer(typeIndex++));
             facets.clear();
@@ -361,6 +360,10 @@ public class SchemaGrammar {
             DatatypeValidator ncnameDV = new StringDatatypeValidator(nameDV, facets, false);
             fTypeDeclType[0][typeIndex] = ncnameDV;
             topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NCNAME, new Integer(typeIndex++));
+            DatatypeValidator qnameDV = new QNameDatatypeValidator(anySimpleType, null, false);
+            ((QNameDatatypeValidator)qnameDV).setNCNameValidator(ncnameDV);
+            fTypeDeclType[0][typeIndex] = qnameDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_QNAME, new Integer(typeIndex++));
             fTypeDeclType[0][typeIndex] = new IDDatatypeValidator(ncnameDV, null, false);
             topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ID, new Integer(typeIndex++));
             DatatypeValidator idrefDV = new IDREFDatatypeValidator(ncnameDV, null, false);
@@ -402,19 +405,6 @@ public class SchemaGrammar {
 
 
     /**
-     * getElementIndex
-     * 
-     * @param elementName
-     * 
-     * @return REVISIT: previously if failed returned false 
-     */
-    public int getElementIndex(String elementName) {
-        Integer elementIndex = (Integer)topLevelElemDecls.get(elementName);
-        return elementIndex == null ? -1 : elementIndex.intValue();
-    } // getElementDecl(int,XSElementDecl):XSElementDecl
-
-
-    /**
      * addElementDecl
      * 
      * @param name
@@ -428,13 +418,34 @@ public class SchemaGrammar {
         int elementIndex = fElementDeclCount++;
         int chunk = elementIndex >> CHUNK_SHIFT;
         int index = elementIndex & CHUNK_MASK;
-        fElementDeclName[chunk][index].setValues(element.fQName);
+        fElementDeclName[chunk][index] = new QName(element.fQName);
+        fElementDeclTypeNS[chunk][index] = element.fTypeNS;
+        fElementDeclTypeDecl[chunk][index] = element.fTypeIdx;
+        fElementDeclMiscFlags[chunk][index] = element.fElementMiscFlags;
+        fElementDeclBlockSet[chunk][index] = element.fBlock;
+        fElementDeclFinalSet[chunk][index] = element.fFinal;
+        fElementDeclDefault[chunk][index] = element.fDefault;
+        fElementDeclSubGroupNS[chunk][index] = element.fSubGroupNS;
+        fElementDeclSubGroupIdx[chunk][index] = element.fSubGroupIdx;
         //REVISIT: other fields
         
         topLevelElemDecls.put(element.fQName.localpart, new Integer(elementIndex));
         
         return elementIndex;
     }
+
+    /**
+     * getElementIndex
+     * 
+     * @param elementName
+     * 
+     * @return REVISIT: previously if failed returned false 
+     */
+    public int getElementIndex(String elementName) {
+        Integer elementIndex = (Integer)topLevelElemDecls.get(elementName);
+        return elementIndex == null ? -1 : elementIndex.intValue();
+    } // getElementDecl(int,XSElementDecl):XSElementDecl
+
 
     /**
      * getElementDecl
@@ -455,6 +466,14 @@ public class SchemaGrammar {
         int index = elementDeclIndex &  CHUNK_MASK;
 
         elementDecl.fQName.setValues(fElementDeclName[chunk][index]);
+        elementDecl.fTypeNS = fElementDeclTypeNS[chunk][index];
+        elementDecl.fTypeIdx = fElementDeclTypeDecl[chunk][index];
+        elementDecl.fElementMiscFlags = fElementDeclMiscFlags[chunk][index];
+        elementDecl.fBlock = fElementDeclBlockSet[chunk][index];
+        elementDecl.fFinal = fElementDeclFinalSet[chunk][index];
+        elementDecl.fDefault = fElementDeclDefault[chunk][index];
+        elementDecl.fSubGroupNS = fElementDeclSubGroupNS[chunk][index];
+        elementDecl.fSubGroupIdx = fElementDeclSubGroupIdx[chunk][index];
 
         // REVISIT: 
         // add code
@@ -480,6 +499,19 @@ public class SchemaGrammar {
 
 
     /**
+     * getAttributeIndex
+     * 
+     * @param attributeName
+     * 
+     * @return REVISIT: previously if failed returned false 
+     */
+    public int getAttributeIndex(String attributeName) {
+        Integer attributeIndex = (Integer)topLevelAttrDecls.get(attributeName);
+        return attributeIndex == null ? -1 : attributeIndex.intValue();
+    } // getAttributeIndex(String):int
+
+
+    /**
      * getAttributeDecl
      * 
      * @param attributeDeclIndex 
@@ -499,6 +531,19 @@ public class SchemaGrammar {
         //REVISIT: add code
 
         return attributeDecl;
+    } // getAttributeDecl
+
+    /**
+     * getAttributeDecl
+     * 
+     * @param attributeName 
+     * @param attributeDecl The values of this structure are set by this call.
+     * 
+     * @return REVISIT: previously if failed returned false
+     */
+    public XSAttributeDecl getAttributeDecl(String attributeName, XSAttributeDecl attributeDecl) {
+        int attributeDeclIndex = getAttributeIndex(attributeName);
+        return getAttributeDecl(attributeDeclIndex, attributeDecl);
     } // getAttributeDecl
 
     /**

@@ -141,6 +141,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         int typeIndex = traverseSimpleTypeDecl (elmNode, attrValues);
         if (nameAtt != null)
             fSimpleTypeNameStack.pop();
+        fAttrChecker.returnAttrArray(attrValues);
+
         return typeIndex;
     }
 
@@ -149,9 +151,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                  SchemaGrammar grammar) {
         fSchemaDoc = schemaDoc;
         fGrammar = grammar;
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true);
+        
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false);
+        int typeIndex = traverseSimpleTypeDecl (elmNode, attrValues);
+        fAttrChecker.returnAttrArray(attrValues);
 
-        return traverseSimpleTypeDecl (elmNode, attrValues);
+        return typeIndex;
     }
 
     private int traverseSimpleTypeDecl(Element simpleTypeDecl, Object[] attrValues) {
@@ -214,6 +219,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         // General Attribute Checking
         Object[] contentAttrs = fAttrChecker.checkAttributes(content, false);
+        // REVISIT: when to return the array
+        fAttrChecker.returnAttrArray(contentAttrs);
 
         //----------------------------------------------------------------------
         //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
@@ -248,7 +255,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             union = true;
             memberTypes = (Vector)contentAttrs[XSAttributeChecker.ATTIDX_MEMBERTYPES];
             //content.getAttribute( SchemaSymbols.ATT_MEMBERTYPES);
-            if (memberTypes != null && memberTypes.size() > 0) {
+            if (memberTypes != null) {
                 size = memberTypes.size();
             }
             else {
@@ -269,7 +276,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         DatatypeValidator baseValidator = null;
         int simpleTypeIndex = -1;
-        if (memberTypes == null || memberTypes.size() == 0) {
+        if (baseTypeQNameProperty == null && memberTypes == null) {
             //---------------------------
             //must 'see' <simpleType>
             //---------------------------
@@ -424,6 +431,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 if (content.getNodeType() == Node.ELEMENT_NODE) {
                     // General Attribute Checking
                     Object[] attrs = fAttrChecker.checkAttributes(content, false);
+                    // REVISIT: when to return the array
+                    fAttrChecker.returnAttrArray(attrs);
                     numFacets++;
                     facet = DOMUtil.getLocalName(content);
                     if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
@@ -537,7 +546,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if (flags != 0) {
                 fFacetData.put(DatatypeValidator.FACET_FIXED, new Short(flags));
             }
-            fPattern.setLength(0);
+            fPattern = null;
         }
         else if (list && content!=null) {
             // report error - must not have any children!

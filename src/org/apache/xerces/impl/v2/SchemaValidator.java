@@ -62,7 +62,10 @@ import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLInputSource;
 
+import java.io.IOException;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 
@@ -180,7 +183,10 @@ public class SchemaValidator
 
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
-
+    
+    /** Entity resolver */
+    protected XMLEntityResolver fEntityResolver;
+    
     // handlers
 
     /** Document handler. */
@@ -391,10 +397,21 @@ public class SchemaValidator
         // get needed components
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
+        fEntityResolver = (XMLEntityResolver)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ENTITY_RESOLVER_PROPERTY);
+        if (fEntityResolver == null)
+            fEntityResolver = new XMLEntityResolver() {
+                public XMLInputSource resolveEntity(String publicId, String systemId,
+                                                    String baseSystemId)
+                    throws XNIException, IOException {
+                    return new XMLInputSource(null, systemId, baseSystemId);
+                }
+            };
+
 
         fGrammarResolver = new XSGrammarResolver();
+        fGrammarResolver.putGrammar(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
         fSchemaHandler = new XSDHandler(fGrammarResolver, fErrorReporter,
-                                        null,//fEntityResolver,
+                                        fEntityResolver,
                                         fSymbolTable);
         
         fElementDepth = -1;
@@ -693,14 +710,21 @@ public class SchemaValidator
         //???handleEndElement(element, false);
         System.out.println("endElement: " + element.rawname);
         
-        SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempElementDecl.fTypeNS);
-        XSType elemType = grammar.getTypeDecl(fTempElementDecl.fTypeIdx);
-        if (elemType.getXSType() == XSType.SIMPLE_TYPE)
-            try {
-                ((DatatypeValidator)elemType).validate(fBuffer.toString(), null);
-            } catch (InvalidDatatypeValueException e) {
-                System.out.println("error: " + e.toString());
+        SchemaGrammar grammar = null;
+        if (fTempElementDecl.fTypeNS != null)
+            grammar = fGrammarResolver.getGrammar(fTempElementDecl.fTypeNS);
+        if (grammar != null) {
+            XSType elemType = grammar.getTypeDecl(fTempElementDecl.fTypeIdx);
+            if (elemType.getXSType() == XSType.SIMPLE_TYPE) {
+                try {
+                    DatatypeValidator dv = (DatatypeValidator)elemType;
+                    String content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
+                    dv.validate(content, null);
+                } catch (InvalidDatatypeValueException e) {
+                    System.out.println("error: " + e.toString());
+                }
             }
+       }
         
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
@@ -1222,7 +1246,8 @@ public class SchemaValidator
         }
         
         fSchemaGrammar = fGrammarResolver.getGrammar(element.uri);
-        fTempElementDecl = fSchemaGrammar.getElementDecl(element.localpart, fTempElementDecl);
+        if (fSchemaGrammar != null)
+            fTempElementDecl = fSchemaGrammar.getElementDecl(element.localpart, fTempElementDecl);
 
         fBuffer.setLength(0);
     }

@@ -373,7 +373,7 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
     private void checkContent( String content, Object state, boolean asBase )
     throws InvalidDatatypeValueException {
         // validate against parent type if any
-        if ( this.fBaseValidator != null ) {
+        if ( fBaseValidator instanceof AbstractStringValidator ) {
             // validate content as a base type
             ((AbstractStringValidator)fBaseValidator).checkContent(content, state, true);
         }

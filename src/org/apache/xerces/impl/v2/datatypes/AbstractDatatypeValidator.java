@@ -132,7 +132,7 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
         fLocale = locale;
     }
     public short getXSType (){
-        return XSType.DATATYPE_TYPE;
+        return XSType.SIMPLE_TYPE;
     }
 
     protected int fFinalSet = 0;

@@ -64,11 +64,11 @@ package org.apache.xerces.impl.v2;
  */
 public interface XSType {
 
-   public static final short COMPLEX_TYPE   = 0;
-   public static final short SIMPLE_TYPE    = 1;
-   public static final short ANY_TYPE       = 2;
-   public static final short ANYSIMPLE_TYPE = 3;
-   public static final short DATATYPE_TYPE  = 4;
+   public static final short COMPLEX_TYPE   = 1;
+   public static final short SIMPLE_TYPE    = 2;
+   public static final short UR_TYPE        = 4;
+   public static final short ANY_TYPE       = UR_TYPE | COMPLEX_TYPE;
+   public static final short ANYSIMPLE_TYPE = UR_TYPE | SIMPLE_TYPE;
 
    public short getXSType();
   

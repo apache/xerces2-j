@@ -94,9 +94,9 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
             return;
 
         // the type is NAME by default
-        // REVISIT:  as in IDDatatypeValidator, handle other types of AbstractStringValidator differently.
-        if (base != null && base instanceof AbstractStringValidator)
-            setTokenType(((AbstractStringValidator)base).fTokenType);
+        // REVISIT: how to set token type for id/idref derived types
+        if (base instanceof IDREFDatatypeValidator)
+            setTokenType(((IDREFDatatypeValidator)base).fTokenType);
         else
             setTokenType(SPECIAL_TOKEN_IDREFNAME);
     }

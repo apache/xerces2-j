@@ -82,7 +82,7 @@ import org.apache.xerces.validators.common.Grammar;
  * is present.
  *
  * Things need revisiting:
- * - Checking on non-schema namespace attributes
+ * - Whether to return non-schema attributes/values
  * - We need NamespaceScope to generate QName
  * - Do we need to update NamespaceScope and ErrorReporter when reset()?
  * - Should have the datatype validators return compiled value
@@ -129,29 +129,15 @@ public class XSAttributeChecker {
     public static final int ATTIDX_VERSION         = ATTIDX_COUNT++;
     public static final int ATTIDX_XPATH           = ATTIDX_COUNT++;
     public static final int ATTIDX_FROMDEFAULT     = ATTIDX_COUNT++;
-    public static final int ATTIDX_OTHERVALUES     = ATTIDX_COUNT++;
+    //public static final int ATTIDX_OTHERVALUES     = ATTIDX_COUNT++;
+    public static final int ATTIDX_ISRETURNED      = ATTIDX_COUNT++;
 
     // constants to return
-    private static Integer[] INTD_CONSTANTS   = {new Integer(0 | SchemaSymbols.FROM_DEFAULT),
-                                                 new Integer(1 | SchemaSymbols.FROM_DEFAULT),
-                                                 new Integer(2 | SchemaSymbols.FROM_DEFAULT)};
-    private static Integer INTD_ONE           = INTD_CONSTANTS[1];
-    private static Integer INTD_TRUE          = INTD_CONSTANTS[SchemaSymbols.BOOLEAN_TRUE];
-    private static Integer INTD_FALSE         = INTD_CONSTANTS[SchemaSymbols.BOOLEAN_FALSE];
-    private static Integer INTD_QUALIFIED     = INTD_CONSTANTS[SchemaSymbols.FORM_QUALIFIED];
-    private static Integer INTD_UNQUALIFIED   = INTD_CONSTANTS[SchemaSymbols.FORM_UNQUALIFIED];
-    private static Integer INTD_EMPTY_SET     = INTD_CONSTANTS[SchemaSymbols.EMPTY_SET];
-    private static Integer INTD_ANY_STRICT    = INTD_CONSTANTS[SchemaSymbols.ANY_STRICT];
-    private static Integer INTD_USE_OPTIONAL  = INTD_CONSTANTS[SchemaSymbols.USE_OPTIONAL];
-
-    // integer values
     private static Integer[] INT_CONSTANTS    = {new Integer(0),
                                                  new Integer(1),
                                                  new Integer(2)};
-    private static Integer INT_ZERO           = INT_CONSTANTS[1];
+    private static Integer INT_ZERO           = INT_CONSTANTS[0];
     private static Integer INT_ONE            = INT_CONSTANTS[1];
-    private static Integer INT_TRUE           = INT_CONSTANTS[SchemaSymbols.BOOLEAN_TRUE];
-    private static Integer INT_FALSE          = INT_CONSTANTS[SchemaSymbols.BOOLEAN_FALSE];
     private static Integer INT_QUALIFIED      = INT_CONSTANTS[SchemaSymbols.FORM_QUALIFIED];
     private static Integer INT_UNQUALIFIED    = INT_CONSTANTS[SchemaSymbols.FORM_UNQUALIFIED];
     private static Integer INT_EMPTY_SET      = INT_CONSTANTS[SchemaSymbols.EMPTY_SET];
@@ -164,7 +150,7 @@ public class XSAttributeChecker {
     private static Integer INT_WS_PRESERVE    = INT_CONSTANTS[SchemaSymbols.WS_PRESERVE];
     private static Integer INT_WS_REPLACE     = INT_CONSTANTS[SchemaSymbols.WS_REPLACE];
     private static Integer INT_WS_COLLAPSE    = INT_CONSTANTS[SchemaSymbols.WS_COLLAPSE];
-    private static Integer INT_UNBOUNDED      = INT_CONSTANTS[SchemaSymbols.OCCURRENCE_UNBOUNDED];
+    private static Integer INT_UNBOUNDED      = new Integer(SchemaSymbols.OCCURRENCE_UNBOUNDED);
 
     // the prefix to distinguish gloval vs. local; name vs. ref
     protected static String PRE_GLOBAL      = "G_";
@@ -288,11 +274,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_ABSTRACT_D]        =   new OneAttr(SchemaSymbols.ATT_ABSTRACT,
                                                         DT_BOOLEAN,
                                                         ATTIDX_ABSTRACT,
-                                                        INTD_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_ATTRIBUTE_FD_D]    =   new OneAttr(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT,
                                                         DT_FORM,
                                                         ATTIDX_AFORMDEFAULT,
-                                                        INTD_UNQUALIFIED);
+                                                        INT_UNQUALIFIED);
         allAttrs[ATT_BASE_R]            =   new OneAttr(SchemaSymbols.ATT_BASE,
                                                         DT_QNAME,
                                                         ATTIDX_BASE,
@@ -312,7 +298,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_BLOCK_D_D]         =   new OneAttr(SchemaSymbols.ATT_BLOCKDEFAULT,
                                                         DT_BLOCK,
                                                         ATTIDX_BLOCKDEFAULT,
-                                                        INTD_EMPTY_SET);
+                                                        INT_EMPTY_SET);
         allAttrs[ATT_DEFAULT_N]         =   new OneAttr(SchemaSymbols.ATT_DEFAULT,
                                                         DT_STRING,
                                                         ATTIDX_DEFAULT,
@@ -320,7 +306,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_ELEMENT_FD_D]      =   new OneAttr(SchemaSymbols.ATT_ELEMENTFORMDEFAULT,
                                                         DT_FORM,
                                                         ATTIDX_EFORMDEFAULT,
-                                                        INTD_UNQUALIFIED);
+                                                        INT_UNQUALIFIED);
         allAttrs[ATT_FINAL_N]           =   new OneAttr(SchemaSymbols.ATT_FINAL,
                                                         DT_FINAL,
                                                         ATTIDX_FINAL,
@@ -332,7 +318,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_FINAL_D_D]         =   new OneAttr(SchemaSymbols.ATT_FINALDEFAULT,
                                                         DT_FINAL,
                                                         ATTIDX_FINALDEFAULT,
-                                                        INTD_EMPTY_SET);
+                                                        INT_EMPTY_SET);
         allAttrs[ATT_FIXED_N]           =   new OneAttr(SchemaSymbols.ATT_FIXED,
                                                         DT_STRING,
                                                         ATTIDX_FIXED,
@@ -340,7 +326,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_FIXED_D]           =   new OneAttr(SchemaSymbols.ATT_FIXED,
                                                         DT_BOOLEAN,
                                                         ATTIDX_FIXED,
-                                                        INTD_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_FORM_N]            =   new OneAttr(SchemaSymbols.ATT_FORM,
                                                         DT_FORM,
                                                         ATTIDX_FORM,
@@ -356,11 +342,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_MAXOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS,
                                                         ATTIDX_MAXOCCURS,
-                                                        INTD_ONE);
+                                                        INT_ONE);
         allAttrs[ATT_MAXOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS1,
                                                         ATTIDX_MAXOCCURS,
-                                                        INTD_ONE);
+                                                        INT_ONE);
         allAttrs[ATT_MEMBER_T_N]        =   new OneAttr(SchemaSymbols.ATT_MEMBERTYPES,
                                                         DT_MEMBERTYPES,
                                                         ATTIDX_MEMBERTYPES,
@@ -368,15 +354,15 @@ public class XSAttributeChecker {
         allAttrs[ATT_MINOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_NONNEGINT,
                                                         ATTIDX_MINOCCURS,
-                                                        INTD_ONE);
+                                                        INT_ONE);
         allAttrs[ATT_MINOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_MINOCCURS1,
                                                         ATTIDX_MINOCCURS,
-                                                        INTD_ONE);
+                                                        INT_ONE);
         allAttrs[ATT_MIXED_D]           =   new OneAttr(SchemaSymbols.ATT_MIXED,
                                                         DT_BOOLEAN,
                                                         ATTIDX_MIXED,
-                                                        INTD_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_MIXED_N]           =   new OneAttr(SchemaSymbols.ATT_MIXED,
                                                         DT_BOOLEAN,
                                                         ATTIDX_MIXED,
@@ -396,11 +382,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_NILLABLE_D]        =   new OneAttr(SchemaSymbols.ATT_NILLABLE,
                                                         DT_BOOLEAN,
                                                         ATTIDX_NILLABLE,
-                                                        INTD_FALSE);
+                                                        Boolean.FALSE);
         allAttrs[ATT_PROCESS_C_D]       =   new OneAttr(SchemaSymbols.ATT_PROCESSCONTENTS,
                                                         DT_PROCESSCONTENTS,
                                                         ATTIDX_PROCESSCONTENTS,
-                                                        INTD_ANY_STRICT);
+                                                        INT_ANY_STRICT);
         allAttrs[ATT_PUBLIC_R]          =   new OneAttr(SchemaSymbols.ATT_PUBLIC,
                                                         DT_PUBLIC,
                                                         ATTIDX_PUBLIC,
@@ -444,7 +430,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_USE_D]             =   new OneAttr(SchemaSymbols.ATT_USE,
                                                         DT_USE,
                                                         ATTIDX_USE,
-                                                        INTD_USE_OPTIONAL);
+                                                        INT_USE_OPTIONAL);
         allAttrs[ATT_VALUE_NNI_N]       =   new OneAttr(SchemaSymbols.ATT_VALUE,
                                                         DT_NONNEGINT,
                                                         ATTIDX_VALUE,
@@ -988,11 +974,15 @@ public class XSAttributeChecker {
         fNonSchemaAttrs.clear();
     }
 
-    // check whether the specified element conforms to the attributes restriction
-    // @param: element    - which element to check
-    // @param: isGlobal   - whether a child of <schema> or <redefine>
-    // @return: Hashtable - list of attributes and values
-    //public Hashtable checkAttributes(Element element, boolean isGlobal) {
+    /**
+     * check whether the specified element conforms to the attributes restriction
+     * an array of attribute values is returned. the caller must call
+     * <code>returnAttrArray</code> to return that array.
+     * 
+     * @param: element    - which element to check
+     * @param: isGlobal   - whether a child of <schema> or <redefine>
+     * @return: Hashtable - list of attributes and values
+     */
     public Object[] checkAttributes(Element element, boolean isGlobal) {
         if (element == null)
             return null;
@@ -1027,8 +1017,8 @@ public class XSAttributeChecker {
         }
 
         //Hashtable attrValues = new Hashtable();
-        Object[] attrValues = new Object[ATTIDX_COUNT];
-        Hashtable otherValues = new Hashtable();
+        Object[] attrValues = getAvailableArray();
+        //Hashtable otherValues = new Hashtable();
         long fromDefault = 0;
         Hashtable attrList = oneEle.attrList;
 
@@ -1038,14 +1028,15 @@ public class XSAttributeChecker {
         for (int i = 0; i < attrs.length; i++) {
             sattr = attrs[i++];
             // get the attribute name/value
-            String attrName = DOMUtil.getLocalName(sattr);
+            //String attrName = DOMUtil.getLocalName(sattr);
+            String attrName = sattr.getName();
             String attrVal = DOMUtil.getValue(sattr);
 
             // skip anything starts with x/X m/M l/L
             // simply put their values in the return hashtable
             if (attrName.toLowerCase().startsWith("xml")) {
                 //attrValues.put(attrName, attrVal);
-                otherValues.put(attrName, attrVal);
+                //otherValues.put(attrName, attrVal);
                 continue;
             }
 
@@ -1064,7 +1055,7 @@ public class XSAttributeChecker {
                     // for attributes from other namespace
                     // store them in a list, and TRY to validate them after
                     // schema traversal (because it's "lax")
-                    otherValues.put(attrName, attrVal);
+                    //otherValues.put(attrName, attrVal);
                     String attrRName = attrURI + "," + attrName;
                     Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
                     if (values == null) {
@@ -1115,7 +1106,7 @@ public class XSAttributeChecker {
                     case DT_BOOLEAN:
                         retValue = attrVal.equals(SchemaSymbols.ATTVAL_TRUE) ||
                                    attrVal.equals(SchemaSymbols.ATTVAL_TRUE_1) ?
-                                   INT_TRUE : INT_FALSE;
+                                   Boolean.TRUE : Boolean.FALSE;
                         break;
                     case DT_NONNEGINT:
                         retValue = new Integer(attrVal);
@@ -1154,7 +1145,7 @@ public class XSAttributeChecker {
             // if the attribute didn't apprear, and
             // if the attribute is optional with default value, apply it
             if (oneAttr.dfltValue != null &&
-                DOMUtil.getAttr(element, oneAttr.name) != null) {
+                DOMUtil.getAttr(element, oneAttr.name) == null) {
                 //attrValues.put(oneAttr.name, oneAttr.dfltValue);
                 attrValues[oneAttr.valueIndex] = oneAttr.dfltValue;
                 fromDefault |= (1<<oneAttr.valueIndex);
@@ -1162,7 +1153,7 @@ public class XSAttributeChecker {
         }
 
         attrValues[ATTIDX_FROMDEFAULT] = new Long(fromDefault);
-        attrValues[ATTIDX_OTHERVALUES] = otherValues;
+        //attrValues[ATTIDX_OTHERVALUES] = otherValues;
 
         return attrValues;
     }
@@ -1397,11 +1388,11 @@ public class XSAttributeChecker {
         }
     }
 
-    // REVISIT: enable it later.
     // validate attriubtes from non-schema namespaces
-    /*public void checkNonSchemaAttributes(XSGrammarResolver grammarResolver) throws Exception {
+    public void checkNonSchemaAttributes(XSGrammarResolver grammarResolver) throws Exception {
         // for all attributes
         Enumeration enum = fNonSchemaAttrs.keys();
+        XSAttributeDecl tempAttrDecl = new XSAttributeDecl();
         while (enum.hasMoreElements()) {
             // get name, uri, localpart
             String attrRName = (String)enum.nextElement();
@@ -1412,10 +1403,13 @@ public class XSAttributeChecker {
             if (sGrammar == null)
                 continue;
             // and get the datatype validator, if there is one
-            XSAttributeDecl tempAttrDecl = sGrammar.getGlobalAttrDecl(attrLocal);
+            tempAttrDecl = sGrammar.getAttributeDecl(attrLocal, tempAttrDecl);
             if (tempAttrDecl == null)
                 continue;
-            DatatypeValidator dv = tempAttrDecl.datatypeValidator;
+            sGrammar = grammarResolver.getGrammar(tempAttrDecl.fTypeNS);
+            if (sGrammar == null)
+                continue;
+            DatatypeValidator dv = (DatatypeValidator)sGrammar.getTypeDecl(tempAttrDecl.fType);
             if (dv == null)
                 continue;
 
@@ -1438,10 +1432,11 @@ public class XSAttributeChecker {
                 }
             }
         }
-    }*/
+    }
 
     // normalize the string according to the whiteSpace facet
-    private String normalize(String content, short ws) {
+    // REVISIT: should move this to a util class/method
+    public static String normalize(String content, short ws) {
         int len = content == null ? 0 : content.length();
         if (len == 0 || ws == DatatypeValidator.PRESERVE)
             return content;
@@ -1497,7 +1492,64 @@ public class XSAttributeChecker {
             localpart = attrVal.substring(colonptr+1);
         }
         String uri = fSchemaHandler.resolvePrefixToURI(prefix);
+        //REVISIT: how to resolve prefix to uri
+        uri = SchemaSymbols.URI_SCHEMAFORSCHEMA;
         return new QName(prefix, localpart, attrVal, uri);
+    }
+
+    // the following part implements an attribute-value-array pool.
+    // when checkAttribute is called, it calls getAvailableArray to get
+    // an array from the pool; when the caller is done with the array,
+    // it calls returnAttrArray to return that array to the pool.
+    
+    // initial size of the array pool. 10 is big enough
+    static final int INIT_POOL_SIZE = 10;
+    // the incremental size of the array pool
+    static final int INC_POOL_SIZE  = 10;
+    // the array pool
+    Object[][] fArrayPool = new Object[INIT_POOL_SIZE][ATTIDX_COUNT];
+    // current position of the array pool (# of arrays not returned)
+    int fPoolPos = 0;
+    
+    // get the next available array
+    protected Object[] getAvailableArray() {
+        // if no array left in the pool, increase the pool size
+        if (fArrayPool.length == fPoolPos) {
+            // increase size
+            fArrayPool = new Object[fPoolPos+INC_POOL_SIZE][];
+            // initialize each *new* array
+            for (int i = fPoolPos; i < fArrayPool.length; i++)
+                fArrayPool[i] = new Object[ATTIDX_COUNT];
+        }
+        // get the next available one
+        Object[] retArray = fArrayPool[fPoolPos];
+        // clear it from the pool. this is for GC: if a caller forget to
+        // return the array, we want that array to be GCed.
+        fArrayPool[fPoolPos++] = null;
+        // to make sure that one array is not returned twice, we use
+        // the last entry to indicate whether an array is already returned
+        // now set it to false.
+        retArray[ATTIDX_ISRETURNED] = Boolean.FALSE;
+        
+        return retArray;
+    }
+    
+    // return an array back to the pool
+    public void returnAttrArray (Object[] attrArray) {
+        // if 1. the pool is full; 2. the array is null;
+        // 3. the array is of wrong size; 4. the array is already returned
+        // then we can't accept this array to be returned
+        if (fPoolPos == 0 ||
+            attrArray == null ||
+            attrArray.length != ATTIDX_COUNT ||
+            ((Boolean)attrArray[ATTIDX_ISRETURNED]).booleanValue()) {
+            return;
+        }
+        
+        // mark this array as returned
+        attrArray[ATTIDX_ISRETURNED] = Boolean.TRUE;
+        // and put it into the pool
+        fArrayPool[--fPoolPos] = attrArray;
     }
 }
 

@@ -90,9 +90,9 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
             return;
 
         // the type is NAME by default
-        // REVISIT:  should have special handling when base is a genuine IDDatatypeValidator
-        if (base != null && base instanceof AbstractStringValidator)
-            setTokenType(((AbstractStringValidator)base).fTokenType);
+        // REVISIT: how to set token type for id/idref derived types
+        if (base instanceof IDDatatypeValidator)
+            setTokenType(((IDDatatypeValidator)base).fTokenType);
         else
             setTokenType(SPECIAL_TOKEN_IDNAME);
     }

@@ -159,8 +159,10 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, true);
+        int elemIdx = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true);
+        fAttrChecker.returnAttrArray(attrValues);
 
-        return traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true);
+        return elemIdx;
     }
 
     /**
@@ -179,14 +181,14 @@ class XSDElementTraverser extends XSDAbstractTraverser{
                              SchemaGrammar grammar,
                              boolean isGlobal) {
 
-        Integer abstractAtt  = (Integer) attrValues[XSAttributeChecker.ATTIDX_ABSTRACT];
+        Boolean abstractAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_ABSTRACT];
         Integer blockAtt     = (Integer) attrValues[XSAttributeChecker.ATTIDX_BLOCK];
         String  defaultAtt   = (String)  attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
         Integer finalAtt     = (Integer) attrValues[XSAttributeChecker.ATTIDX_FINAL];
         String  fixedAtt     = (String)  attrValues[XSAttributeChecker.ATTIDX_FIXED];
         Integer formAtt      = (Integer) attrValues[XSAttributeChecker.ATTIDX_FORM];
         String  nameAtt      = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
-        Integer nillableAtt  = (Integer) attrValues[XSAttributeChecker.ATTIDX_NILLABLE];
+        Boolean nillableAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_NILLABLE];
         QName   refAtt       = (QName)   attrValues[XSAttributeChecker.ATTIDX_REF];
         QName   subGroupAtt  = (QName)   attrValues[XSAttributeChecker.ATTIDX_SUBSGROUP];
         QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
@@ -211,9 +213,9 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         short blockSet = blockAtt == null ? SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
         short finalSet = finalAtt == null ? SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
         short elementMiscFlags = 0;
-        if ((nillableAtt.intValue() & SchemaSymbols.REAL_VALUE) == SchemaSymbols.BOOLEAN_TRUE)
+        if (nillableAtt.booleanValue())
             elementMiscFlags |= XSElementDecl.NILLABLE;
-        if ((abstractAtt.intValue() & SchemaSymbols.REAL_VALUE) == SchemaSymbols.BOOLEAN_TRUE)
+        if (abstractAtt.booleanValue())
             elementMiscFlags |= XSElementDecl.ABSTRACT;
         // make the property of the element's value being fixed also appear in elementMiscFlags
         if (fixedAtt != null)
@@ -223,7 +225,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         Element child = DOMUtil.getFirstChildElement(elmDecl);
 
         if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-			traverseAnnotationDecl(child, attrValues);
+			traverseAnnotationDecl(child, attrValues, false);
             child = DOMUtil.getNextSiblingElement(child);
 		}
         if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION))
@@ -462,7 +464,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
             namespace = schemaDoc.fTargetNamespace;
         }
         else if (formAtt != null) {
-            if ((formAtt.intValue() & SchemaSymbols.REAL_VALUE) == SchemaSymbols.FORM_QUALIFIED)
+            if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                 namespace = schemaDoc.fTargetNamespace;
         } else if (schemaDoc.fAreLocalElementsQualified) {
             namespace = schemaDoc.fTargetNamespace;

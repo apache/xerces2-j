@@ -185,9 +185,6 @@ class XSDHandler {
     // the GrammarResolver
     private XSGrammarResolver fGrammarResolver;
 
-    // REVISIT:  old kind of DatatypeValidator...
-    private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
-
     //************ Traversers **********
     XSDAttributeGroupTraverser fAttributeGroupTraverser;
     XSDAttributeTraverser fAttributeTraverser;
@@ -211,10 +208,6 @@ class XSDHandler {
         fErrorReporter = errorReporter;
         fGrammarResolver = gResolver;
         fSymbolTable = symbolTable;
-        //REVISIT: get schema grammar instead of validator factory
-        //SchemaGrammar fGrammar4Schema = fGrammarResolver.getGrammar(SchemaSymbols.URI_SCHEMAFORSCHEMA);
-        fDatatypeRegistry = new DatatypeValidatorFactoryImpl();
-        fDatatypeRegistry.expandRegistryToFullSchemaSet();
         createTraversers();
     } // end constructor
 
@@ -226,6 +219,9 @@ class XSDHandler {
     // this object (i.e., clean the registries, etc.).
     SchemaGrammar parseSchema(String schemaNamespace,
                               String schemaHint) {
+
+        // reset all traversers and SchemaHandler
+        reset();
 
         // first phase:  construct trees.
         Document schemaRoot = getSchema(schemaNamespace, schemaHint);
@@ -248,8 +244,12 @@ class XSDHandler {
         // fifth phase:  handle derivation constraint checking
         // and UPA
 
-        // reset all traversers and SchemaHandler
-        reset();
+        //revisit: just for testing
+        SchemaGrammar sg = new SchemaGrammar(fSymbolTable);
+        fGrammarResolver.putGrammar("http://www.ara.com/base", sg);
+        Element root = (Element)DOMUtil.getRoot(schemaRoot);
+        Element child = DOMUtil.getFirstChildElement(root);
+        fElementTraverser.traverseGlobal(child, fRoot, sg);
 
         // and return.
         return fGrammarResolver.getGrammar(fRoot.fTargetNamespace);
@@ -272,6 +272,21 @@ class XSDHandler {
                                         XSDocumentInfo(schemaRoot);
         Vector dependencies = new Vector();
         Element rootNode = DOMUtil.getRoot(schemaRoot);
+        
+        Object[] schemaAttrs = fAttributeChecker.checkAttributes(rootNode, true);
+        currSchemaInfo.fAreLocalAttributesQualified =
+            ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+        currSchemaInfo.fAreLocalElementsQualified =
+            ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_EFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+        currSchemaInfo.fBlockDefault =
+            ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).intValue();
+        currSchemaInfo.fFinalDefault =
+            ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).intValue();
+        currSchemaInfo.fTargetNamespace =
+            (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
+        if (currSchemaInfo.fTargetNamespace == null)
+            currSchemaInfo.fTargetNamespace = EMPTY_STRING;
+            
         String schemaNamespace=EMPTY_STRING;
         String schemaHint=null;
         Document newSchemaRoot = null;
@@ -474,6 +489,10 @@ class XSDHandler {
     protected int getComponentDecl(XSDocumentInfo currSchema,
                                    int declType,
                                    QName declToTraverse) {
+        if (declToTraverse.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
+            return SchemaGrammar.SG_SchemaNS.getTypeIndex(declToTraverse.localpart);
+        }
+        
         String declKey = null;
         if (declToTraverse.uri != null) {
             declKey = declToTraverse.uri+","+declToTraverse.localpart;
@@ -537,6 +556,25 @@ class XSDHandler {
     } // getComponentDecl(XSDocumentInfo, int, QName):  int
 
     protected Object getDecl(String namespace, int declType, int declIndex) {
+        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(namespace);
+        if (sGrammar == null)
+            return null;
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            return null;
+        case ATTRIBUTEGROUP_TYPE :
+            return null;
+        case ELEMENT_TYPE :
+            return null;
+        case GROUP_TYPE :
+            return null;
+        case IDENTITYCONSTRAINT_TYPE :
+            return null;
+        case NOTATION_TYPE :
+            return null;
+        case TYPEDECL_TYPE :
+            return sGrammar.getTypeDecl(declIndex);
+        }
         return null;
     } // end getDecl
 
@@ -557,13 +595,18 @@ class XSDHandler {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
         try {
-            schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
+            schemaSource = fEntityResolver.resolveEntity("", schemaHint, null);
             if (schemaSource != null) {
                 DOMParser schemaParser = new DOMParser(fSymbolTable);
                 // set ErrorHandler and EntityResolver (doesn't seem that
                 // XMLErrorHandler or XMLEntityResolver will work with
                 // standard DOMParser...
-
+                //REVISIT: shouldn't we reuse the same domparser, instead of
+                //create a new one for each document?
+                //REVISIT: disable deferred dom expansion. there are bugs.
+                try {
+                    schemaParser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+                } catch (Exception e) {}
                 // set appropriate features
                 schemaParser.parse(schemaSource);
                 return schemaParser.getDocument();
@@ -572,6 +615,7 @@ class XSDHandler {
         }
         catch (IOException ex) {
             // REVISIT: report an error!
+            ex.printStackTrace();
         }
 
         return null;
@@ -580,6 +624,7 @@ class XSDHandler {
     // initialize all the traversers.
     // this should only need to be called once during the construction
     // of this object; it creates the traversers that will be used to
+
     // construct schemaGrammars.
     private void createTraversers() {
         fAttributeChecker = new XSAttributeChecker(this, fErrorReporter);
@@ -616,8 +661,6 @@ class XSDHandler {
         fDependencyMap.clear();
         fTraversed.removeAllElements();
         fRoot = null;
-
-        fDatatypeRegistry = null;
 
         // reset traversers
         fAttributeChecker.reset();
