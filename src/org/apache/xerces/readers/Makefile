@@ -13,8 +13,10 @@ include ../../../../../src/Makefile.incl
 TARGETS=\
 	AbstractCharReader.class\
 	CharReader.class\
+	DefaultReaderFactory.class\
 	EBCDICRecognizer.class\
 	MIME2Java.class\
+	StreamingCharReader.class\
 	StringReader.class\
 	UCSReader.class\
 	UCSRecognizer.class\

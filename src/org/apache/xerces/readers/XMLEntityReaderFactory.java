@@ -59,27 +59,55 @@ package org.apache.xerces.readers;
 
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.utils.StringPool;
+import org.xml.sax.InputSource;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 
 /**
- * This is the default class used to create readers.
+ * This is the factory interface used to create readers.
  *
  * @version
  */
-public class XMLEntityReaderFactory {
-    //
-    // Constants
-    //
-    private static final boolean USE_CHAR_READER_FOR_UTF8 = false;
-    private static final boolean USE_BYTE_READER_FOR_UTF8 = true;
+public interface XMLEntityReaderFactory {
+    /**
+     * Adds a recognizer.
+     *
+     * @param recognizer The XML recognizer to add.
+     */
+    public void addRecognizer(XMLDeclRecognizer recognizer);
 
     /**
-     * Constructor
+     * Set char data processing preference.
      */
-    public XMLEntityReaderFactory() {
-    }
+    public void setSendCharDataAsCharArray(boolean flag);
+
+    /**
+     *
+     */
+    public void setAllowJavaEncodingName(boolean flag);
+
+    /**
+     *
+     */
+    public boolean getAllowJavaEncodingName();
+
+    /**
+     * Create an entity reader for the source.
+     *
+     * @param source The input source.
+     * @param systemId The system identifier for the input.
+     * @param xmlDecl <code>true</code> if an XMLDecl may be present; otherwise
+     *                <code>false</code> if a TextDecl may be present.
+     * @param stringPool The string pool.
+     * @return The reader that will process the source.
+     * @exception java.lang.Exception
+     */
+    public XMLEntityHandler.EntityReader createReader(XMLEntityHandler entityHandler,
+                                                      XMLErrorReporter errorReporter,
+                                                      InputSource source,
+                                                      String systemId,
+                                                      boolean xmlDecl,
+                                                      StringPool stringPool) throws Exception;
 
     /**
      * Create an entity reader for a character stream.
@@ -97,10 +125,7 @@ public class XMLEntityReaderFactory {
                                                           XMLErrorReporter errorReporter,
                                                           boolean sendCharDataAsCharArray,
                                                           Reader reader,
-                                                          StringPool stringPool) throws Exception
-    {
-        return new CharReader(entityHandler, errorReporter, sendCharDataAsCharArray, reader, stringPool);
-    }
+                                                          StringPool stringPool) throws Exception;
 
     /**
      * Create an entity reader for a byte stream encoded in UTF-8.
@@ -118,18 +143,7 @@ public class XMLEntityReaderFactory {
                                                           XMLErrorReporter errorReporter,
                                                           boolean sendCharDataAsCharArray,
                                                           InputStream data,
-                                                          StringPool stringPool) throws Exception
-    {
-        XMLEntityHandler.EntityReader reader;
-        if (USE_CHAR_READER_FOR_UTF8) {
-            reader = new CharReader(entityHandler, errorReporter, sendCharDataAsCharArray, new InputStreamReader(data, "UTF8"), stringPool);
-        } else if (USE_BYTE_READER_FOR_UTF8) {
-            reader = new UTF8Reader(entityHandler, errorReporter, sendCharDataAsCharArray, data, stringPool);
-        } else {
-            reader = new UTF8CharReader(entityHandler, errorReporter, sendCharDataAsCharArray, data, stringPool);
-        }
-        return reader;
-    }
+                                                          StringPool stringPool) throws Exception;
 
     /**
      * Create an entity reader for data from a String.
@@ -155,9 +169,5 @@ public class XMLEntityReaderFactory {
                                                             int columnNumber,
                                                             int stringHandle,
                                                             StringPool stringPool,
-                                                            boolean addEnclosingSpaces) throws Exception
-    {
-        return StringReader.createStringReader(entityHandler, errorReporter, sendCharDataAsCharArray,
-                                               lineNumber, columnNumber, stringHandle, stringPool, addEnclosingSpaces);
-    }
+                                                            boolean addEnclosingSpaces) throws Exception;
 }

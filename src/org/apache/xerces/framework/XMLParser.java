@@ -70,6 +70,7 @@ import java.util.ResourceBundle;
 import java.util.Stack;
 import java.util.ListResourceBundle;
 
+import org.apache.xerces.readers.DefaultReaderFactory;
 import org.apache.xerces.readers.XMLDeclRecognizer;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.readers.XMLEntityReaderFactory;
@@ -249,7 +250,6 @@ public abstract class XMLParser
         fStringPool = new StringPool();
         fErrorReporter = this;
         fEntityHandler = this;
-        fReaderFactory = new XMLEntityReaderFactory();
 
         // set framework properties
         fScanner = new XMLDocumentScanner(/*XMLDocumentScanner.EventHandler*/this, fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
@@ -258,7 +258,7 @@ public abstract class XMLParser
         XMLCharacterProperties.initCharFlags();
         fAttrList = new XMLAttrList(fStringPool);
         fLocator = this;
-        XMLDeclRecognizer.registerDefaultRecognizers(fRecognizers);
+        fReaderFactory = new DefaultReaderFactory();
 
         // REVISIT - add all other instance variables...
 
@@ -392,6 +392,14 @@ public abstract class XMLParser
      */
     public final Locator getLocator() {
         return fLocator;
+    }
+
+    /**
+     * Set the reader factory.
+     */
+    public void setReaderFactory(XMLEntityReaderFactory readerFactory) {
+        fReaderFactory = readerFactory;
+        fReaderFactory.setSendCharDataAsCharArray(fSendCharDataAsCharArray);
     }
 
     // DTD callbacks
@@ -941,7 +949,7 @@ public abstract class XMLParser
      * @see #setFeature
      */
     protected void setAllowJavaEncodings(boolean allow) throws SAXException {
-        setAllowJavaEncodingName(allow);
+        fReaderFactory.setAllowJavaEncodingName(allow);
     }
 
     /**
@@ -950,7 +958,7 @@ public abstract class XMLParser
      * @see #setAllowJavaEncodings
      */
     protected boolean getAllowJavaEncodings() throws SAXException {
-        return getAllowJavaEncodingName();
+        return fReaderFactory.getAllowJavaEncodingName();
     }
 
     /**
@@ -1087,6 +1095,7 @@ public abstract class XMLParser
      */
     protected void setSendCharDataAsCharArray(boolean flag) {
         fSendCharDataAsCharArray = flag;
+        fReaderFactory.setSendCharDataAsCharArray(fSendCharDataAsCharArray);
     }
 
     //
@@ -2104,8 +2113,6 @@ public abstract class XMLParser
     //
     //
     //
-    private boolean fAllowJavaEncodingName = false;
-    private Stack fRecognizers = new Stack();
     private EntityResolver fResolver = null;
     private byte[] fEntityTypeStack = null;
     private int[] fEntityNameStack = null;
@@ -2141,19 +2148,6 @@ public abstract class XMLParser
         fNextReaderId = 0;
     }
 
-    /**
-     *
-     */
-    private void setAllowJavaEncodingName(boolean flag) {
-        fAllowJavaEncodingName = flag;
-    }
-    /**
-     *
-     */
-    private boolean getAllowJavaEncodingName() {
-        return fAllowJavaEncodingName;
-    }
-
     //
     //
     //
@@ -2171,7 +2165,7 @@ public abstract class XMLParser
      * @param recognizer The XML recognizer to add.
      */
     public void addRecognizer(XMLDeclRecognizer recognizer) {
-        fRecognizers.push(recognizer);
+        fReaderFactory.addRecognizer(recognizer);
     }
 
     /**
@@ -2261,29 +2255,6 @@ public abstract class XMLParser
     //
 
     /**
-     * Finds a recognizer that can handle the given input source.
-     *
-     * @param source  The input source to recognize.
-     * @param xmlDecl True if XML decl.
-     * @param data    The input data.
-     *
-     * @return Returns the recognizer that can handle the given input
-     *         source.
-     *
-     * @exception java.lang.Exception Throws exception on error.
-     */
-    private XMLEntityHandler.EntityReader callRecognizers(InputSource source, ChunkyByteArray data, boolean xmlDecl) throws Exception {
-        for (int i = fRecognizers.size() - 1; i >= 0; i--) {
-            XMLDeclRecognizer recognizer = (XMLDeclRecognizer)fRecognizers.elementAt(i);
-            XMLEntityHandler.EntityReader reader = recognizer.recognize(fReaderFactory, this, fErrorReporter, fSendCharDataAsCharArray, fStringPool, data, xmlDecl, fAllowJavaEncodingName);
-            if (reader != null) {
-                return reader;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Fixes a platform dependent filename to standard URI form.
      *
      * @param str The string to fix.
@@ -2349,8 +2320,38 @@ public abstract class XMLParser
         fSource = source;
         boolean xmlDecl = true; // xmlDecl if true, textDecl if false
         try {
-            createReader(xmlDecl);
+            fReader = fReaderFactory.createReader(fEntityHandler, fErrorReporter, source, fSystemId, xmlDecl, fStringPool);
+        } catch (MalformedURLException mu) {
+            fReader = null;
+            String errorSystemId = fSystemId;
+            sendEndEntityNotifications();
+            popReader();
+            popEntity();
+            Object[] args = { errorSystemId };
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
+                                        ImplementationMessages.IO0,
+                                        0,
+                                        args,
+                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+        } catch (FileNotFoundException fnf) {
+            fReader = null;
+            String errorSystemId = fSystemId;
+            sendEndEntityNotifications();
+            popReader();
+            popEntity();
+            Object[] args = { errorSystemId };
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
+                                        ImplementationMessages.IO0,
+                                        0,
+                                        args,
+                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
         } catch (java.io.UnsupportedEncodingException uee) {
+            fReader = null;
+            sendEndEntityNotifications();
+            popReader();
+            popEntity();
             String encoding = uee.getMessage();
             if (encoding == null) {
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -2376,12 +2377,9 @@ public abstract class XMLParser
                                            args,
                                            XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
             }
-            fReader = null;
-            sendReaderChangeNotifications();
-            return false;
         }
         sendReaderChangeNotifications();
-        return true;
+        return fReader != null;
     }
     /**
      * start reading from an external DTD subset
@@ -2571,8 +2569,38 @@ public abstract class XMLParser
         }
         boolean textDecl = false; // xmlDecl if true, textDecl if false
         try {
-            createReader(textDecl);
+            fReader = fReaderFactory.createReader(fEntityHandler, fErrorReporter, fSource, fSystemId, textDecl, fStringPool);
+        } catch (MalformedURLException mu) {
+            fReader = null;
+            String errorSystemId = fSystemId;
+            sendEndEntityNotifications();
+            popReader();
+            popEntity();
+            Object[] args = { errorSystemId };
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
+                                        ImplementationMessages.IO0,
+                                        0,
+                                        args,
+                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+        } catch (FileNotFoundException fnf) {
+            fReader = null;
+            String errorSystemId = fSystemId;
+            sendEndEntityNotifications();
+            popReader();
+            popEntity();
+            Object[] args = { errorSystemId };
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
+                                        ImplementationMessages.IO0,
+                                        0,
+                                        args,
+                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
         } catch (java.io.UnsupportedEncodingException uee) {
+            fReader = null;
+            sendEndEntityNotifications();
+            popReader();
+            popEntity();
             String encoding = uee.getMessage();
             if (encoding == null) {
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -2609,67 +2637,6 @@ public abstract class XMLParser
         if (readerId != fReaderId)
             parseTextDecl = false;
         return parseTextDecl;
-    }
-    private void createReader(boolean xmlDecl) throws Exception {
-        fReader = null;
-
-        // create reader from source's character stream
-        if (fSource.getCharacterStream() != null) {
-            fReader = fReaderFactory.createCharReader(this, fErrorReporter, fSendCharDataAsCharArray, fSource.getCharacterStream(), fStringPool);
-            return;
-        }
-
-        // create reader from source's byte stream
-        if (fSource.getEncoding() != null && fSource.getByteStream() != null) {
-            java.io.Reader reader = new InputStreamReader(fSource.getByteStream(), fSource.getEncoding());
-            fReader = fReaderFactory.createCharReader(this, fErrorReporter, fSendCharDataAsCharArray, reader, fStringPool);
-            return;
-        }
-
-        // create new input stream
-        InputStream is = fSource.getByteStream();
-        if (is == null) {
-
-            // create url and open the stream
-            try {
-                URL url = new URL(fSystemId);
-                is = url.openStream();
-            } catch (MalformedURLException mu) {
-                String errorSystemId = fSystemId;
-                sendEndEntityNotifications();
-                popReader();
-                popEntity();
-                Object[] args = { errorSystemId };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
-                                           ImplementationMessages.IO0,
-                                           0,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-                return;
-            } catch (FileNotFoundException fnf) {
-                String errorSystemId = fSystemId;
-                sendEndEntityNotifications();
-                popReader();
-                popEntity();
-                Object[] args = { errorSystemId };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
-                                           ImplementationMessages.IO0,
-                                           0,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-                return;
-            }
-        }
-
-        // create array and find recognizer
-        ChunkyByteArray data = new ChunkyByteArray(is);
-        XMLEntityHandler.EntityReader reader = callRecognizers(fSource, data, xmlDecl);
-        if (reader == null) {
-            reader = fReaderFactory.createUTF8Reader(this, fErrorReporter, fSendCharDataAsCharArray, data, fStringPool);
-        }
-        fReader = reader;
     }
 
     //
