@@ -1,12 +1,13 @@
 # Makefile for directory ./org/apache/xerces/impl
 
 TARGETS=\
+        Constants.class\
         Version.class\
-        XMLDTDScanner.class\
         XMLDocumentScanner.class\
         XMLEntityManager.class\
         XMLEntityScanner.class\
         XMLErrorReporter.class\
+        XMLScanner.class\
         XMLValidator.class
 
 DIRS = msg validation
