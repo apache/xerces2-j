@@ -86,22 +86,22 @@ public class UTF8 {
     /** Main program entry. */
     public static void main(String[] argv) throws Exception {
 
-        final int SIZE = 2048;
+        final int BLOCK_READ_SIZE = 2048;
 
         //
         // Test Java reference implementation of UTF-8 decoder
         //
 
         System.err.println("#");
-        System.err.println("# Testing Java decoder");
+        System.err.println("# Testing Java UTF-8 decoder");
         System.err.println("#");
 
         // test character by character
         try {
             InputStream stream = new UTF8Producer();
             Reader reader = new InputStreamReader(stream, "UTF8");
-            testCharByChar(reader);
-            System.err.println("PASS");
+            long time = testCharByChar(reader);
+            System.err.println("PASS ("+time+" ms)");
             reader.close();
         } 
         catch (IOException e) {
@@ -112,8 +112,8 @@ public class UTF8 {
         try {
             InputStream stream = new UTF8Producer();
             Reader reader = new InputStreamReader(stream, "UTF8");
-            testCharArray(reader, SIZE);
-            System.err.println("PASS");
+            long time = testCharArray(reader, BLOCK_READ_SIZE);
+            System.err.println("PASS ("+time+" ms)");
             reader.close();
         } 
         catch (IOException e) {
@@ -121,19 +121,19 @@ public class UTF8 {
         }
         
         //
-        // Test Java reference implementation of UTF-8 decoder
+        // Test custom implementation of UTF-8 decoder
         //
 
         System.err.println("#");
-        System.err.println("# Testing optimized UTF-8 decoder");
+        System.err.println("# Testing custom UTF-8 decoder");
         System.err.println("#");
 
         // test character by character
         try {
             InputStream stream = new UTF8Producer();
             Reader reader = new UTF8Reader(stream);
-            testCharByChar(reader);
-            System.err.println("PASS");
+            long time = testCharByChar(reader);
+            System.err.println("PASS ("+time+" ms)");
             reader.close();
         } 
         catch (IOException e) {
@@ -144,8 +144,8 @@ public class UTF8 {
         try {
             InputStream stream = new UTF8Producer();
             Reader reader = new UTF8Reader(stream);
-            testCharArray(reader, SIZE);
-            System.err.println("PASS");
+            long time = testCharArray(reader, BLOCK_READ_SIZE);
+            System.err.println("PASS ("+time+" ms)");
             reader.close();
         } 
         catch (IOException e) {
@@ -158,36 +158,38 @@ public class UTF8 {
     // Public static methods
     //
 
-    /** Tests a reader character by character. */
-    public static void testCharByChar(Reader reader) throws Exception {
+    /** This function tests the specified reader character by character. */
+    public static long testCharByChar(Reader reader) throws Exception {
+
+        long before = System.currentTimeMillis();
         System.err.println("# Testing character by character");
 
         System.err.println("testing 0x000000 -> 0x00007F");
         for (int i = 0; i < 0x0080; i++) {
             int c = reader.read();
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x000080 -> 0x0007FF");
         for (int i = 0x0080; i < 0x0800; i++) {
             int c = reader.read();
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x000800 -> 0x00D7FF");
         for (int i = 0x0800; i < 0xD800; i++) {
             int c = reader.read();
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x00E000 -> 0x00FFFF");
         for (int i = 0xE000; i < 0x010000; i++) {
             int c = reader.read();
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x010000 -> 0x110000");
@@ -203,24 +205,32 @@ public class UTF8 {
             // high surrogate
             int c = reader.read();
             if (c != hs) {
-                throw new IOException("expected high surrogate 0x"+Integer.toHexString(hs)+" but found 0x"+Integer.toHexString(c));
+                expectedChar("high surrogate", hs, c);
             }
             // low surrogate
             c = reader.read();
             if (c != ls) {
-                throw new IOException("expected low surrogate 0x"+Integer.toHexString(ls)+" but found 0x"+Integer.toHexString(c));
+                expectedChar("low surrogate", ls, c);
             }
         }
         System.err.println("checking EOF");
         int c = reader.read();
         if (c != -1) {
-            throw new IOException("Found extra character 0x"+Integer.toHexString(c));
+            extraChar(c);
         }
+        long after = System.currentTimeMillis();
 
-    } // testCharByChar(Reader)
+        return after - before;
 
-    /** Tests a reader using block reads of specified size. */
-    public static void testCharArray(Reader reader, int size) throws Exception {
+    } // testCharByChar(Reader):long
+
+    /**
+     * This function tests the given reader by performing block character
+     * reads of the specified size.
+     */
+    public static long testCharArray(Reader reader, int size) throws Exception {
+
+        long before = System.currentTimeMillis();
         System.err.println("# Testing character array of size "+size);
 
         char[] ch = new char[size];
@@ -235,7 +245,7 @@ public class UTF8 {
             }
             int c = ch[position++];
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x000080 -> 0x0007FF");
@@ -246,7 +256,7 @@ public class UTF8 {
             }
             int c = ch[position++];
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x000800 -> 0x00D7FF");
@@ -257,7 +267,7 @@ public class UTF8 {
             }
             int c = ch[position++];
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x00E000 -> 0x00FFFF");
@@ -268,7 +278,7 @@ public class UTF8 {
             }
             int c = ch[position++];
             if (c != i) {
-                throw new IOException("expected 0x"+Integer.toHexString(i)+" but found 0x"+Integer.toHexString(c));
+                expectedChar(null, i, c);
             }
         }
         System.err.println("testing 0x010000 -> 0x110000");
@@ -288,7 +298,7 @@ public class UTF8 {
             }
             int c = ch[position++];
             if (c != hs) {
-                throw new IOException("expected high surrogate 0x"+Integer.toHexString(hs)+" but found 0x"+Integer.toHexString(c));
+                expectedChar("high surrogate", hs, c);
             }
             // low surrogate
             if (position == count) {
@@ -297,7 +307,7 @@ public class UTF8 {
             }
             c = ch[position++];
             if (c != ls) {
-                throw new IOException("expected low surrogate 0x"+Integer.toHexString(ls)+" but found 0x"+Integer.toHexString(c));
+                expectedChar("low surrogate", ls, c);
             }
         }
         System.err.println("checking EOF");
@@ -306,28 +316,61 @@ public class UTF8 {
             position = 0;
         }
         if (count != -1) {
-            throw new IOException("Found extra character 0x"+Integer.toHexString(ch[position]));
+            extraChar(ch[position]);
         }
+        long after = System.currentTimeMillis();
 
-    } // testCharArray(Reader)
+        return after - before;
+
+    } // testCharArray(Reader):long
 
     //
     // Private static methods
     //
 
-    /** Loads a block of characters from a reader. */
+    /** Loads another block of characters from the reader. */
     private static int load(Reader reader, char[] ch) throws IOException {
         int count = reader.read(ch, 0, ch.length);
         return count;
-    }
+    } // load(Reader,char[]):int
+
+    /** Creates an I/O exception for expected character. */
+    private static void expectedChar(String prefix, int ec, int fc) throws IOException {
+        StringBuffer str = new StringBuffer();
+        str.append("expected ");
+        if (prefix != null) {
+            str.append(prefix);
+            str.append(' ');
+        }
+        str.append("0x");
+        str.append(Integer.toHexString(ec));
+        str.append(" but found 0x");
+        if (fc != -1) {
+            str.append(Integer.toHexString(fc));
+        }
+        else {
+            str.append("EOF");
+        }
+        String message = str.toString();
+        throw new IOException(message);
+    } // expectedChar(String,int,int)
+
+    /** Creates an I/O exception for extra character. */
+    private static void extraChar(int c) throws IOException {
+        StringBuffer str = new StringBuffer();
+        str.append("found extra character 0x");
+        str.append(Integer.toHexString(c));
+        String message = str.toString();
+        throw new IOException(message);
+    } // extraChar(int)
 
     //
     // Classes
     //
 
     /**
-     * This input stream produces a stream of bytes that contain all valid
-     * UTF-8 characters.
+     * This classes produces a stream of UTF-8 byte sequences for all 
+     * valid Unicode characters.
      *
      * @author Andy Clark, IBM
      */
@@ -338,10 +381,10 @@ public class UTF8 {
         // Data
         //
 
-        /** Current code point. */
+        /** The current code point. */
         private int fCodePoint;
 
-        /** Current byte. */
+        /** The current byte of the current code point. */
         private int fByte;
 
         //
