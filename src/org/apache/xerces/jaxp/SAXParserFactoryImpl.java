@@ -133,7 +133,7 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         if (features == null) {
             features = new Hashtable();
         }
-        features.put(name, new Boolean(value));
+        features.put(name, value ? Boolean.TRUE : Boolean.FALSE);
 
         // Test the feature by possibly throwing SAX exceptions
         try {
