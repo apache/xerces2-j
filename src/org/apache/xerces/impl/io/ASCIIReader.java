@@ -151,7 +151,7 @@ public class ASCIIReader
      */
     public int read() throws IOException {
         int b0 = fInputStream.read();
-        if (b0 > 0x80) {
+        if (b0 >= 0x80) {
             throw new IOException(fFormatter.formatMessage(fLocale, "InvalidASCII", new Object [] {Integer.toString(b0)}));
         }
         return b0;
@@ -178,8 +178,8 @@ public class ASCIIReader
         int count = fInputStream.read(fBuffer, 0, length);
         for (int i = 0; i < count; i++) {
             int b0 = fBuffer[i];
-            if (b0 > 0x80) {
-                throw new IOException(fFormatter.formatMessage(fLocale, "InvalidASCII", new Object [] {Integer.toString(b0)}));
+            if (b0 < 0) {
+                throw new IOException(fFormatter.formatMessage(fLocale, "InvalidASCII", new Object [] {Integer.toString(b0 & 0x0FF)}));
             }
             ch[offset + i] = (char)b0;
         }
