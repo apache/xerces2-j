@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004, 2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -328,10 +328,10 @@ public class DurationDV extends AbstractDateTimeDV {
             if (ch == '.')
                 dot = i;
             else if (ch > '9' || ch < '0')
-                throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+                throw new NumberFormatException("'" + buffer + "' has wrong format");
         }
         if (dot+1 == end) {
-            throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+            throw new NumberFormatException("'" + buffer + "' has wrong format");
         }
         return Double.parseDouble(buffer.substring(start, end));
     }

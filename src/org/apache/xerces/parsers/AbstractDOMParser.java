@@ -650,7 +650,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         if (fInDTD) {
             if (fInternalSubset != null && !fInDTDExternalSubset) {
                 fInternalSubset.append ("<?");
-                fInternalSubset.append (target.toString ());
+                fInternalSubset.append (target);
                 fInternalSubset.append (' ');
                 fInternalSubset.append (data.toString ());
                 fInternalSubset.append ("?>");

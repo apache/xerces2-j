@@ -100,7 +100,7 @@ public class XSCMLeaf
             strRet.append
             (
                 " (Pos:"
-                + new Integer(fPosition).toString()
+                + Integer.toString(fPosition)
                 + ")"
             );
         }

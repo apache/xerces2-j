@@ -508,10 +508,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		int i = start;
 		do {
 			digit = getDigit(buffer.charAt(i));
-			if ( digit < 0 ) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
-			if ( result < multmin ) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+			if ( digit < 0 ) throw new NumberFormatException("'" + buffer + "' has wrong format");
+			if ( result < multmin ) throw new NumberFormatException("'" + buffer + "' has wrong format");
 			result *= radix;
-			if ( result < limit + digit ) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+			if ( result < limit + digit ) throw new NumberFormatException("'" + buffer + "' has wrong format");
 			result -= digit;
 			
 		}while ( ++i < end );
@@ -541,17 +541,17 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		while (i < end)
 		{
 			digit = getDigit(buffer.charAt(i++));
-			if (digit < 0) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
-			if (result < multmin) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+			if (digit < 0) throw new NumberFormatException("'" + buffer + "' has wrong format");
+			if (result < multmin) throw new NumberFormatException("'" + buffer + "' has wrong format");
 			result *= radix;
-			if (result < limit + digit) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+			if (result < limit + digit) throw new NumberFormatException("'" + buffer + "' has wrong format");
 			result -= digit;
 		}
 		
 		if (negative)
 		{
 			if (i > 1) return result;
-			else throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+			else throw new NumberFormatException("'" + buffer + "' has wrong format");
 		}
 		return -result;
 		
@@ -782,14 +782,14 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			if (ch == '.')
 				dot = i;
 			else if (ch > '9' || ch < '0')
-				throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+				throw new NumberFormatException("'" + buffer + "' has wrong format");
 		}
 		if (dot == -1) {
 			if (start+2 != end)
-				throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+				throw new NumberFormatException("'" + buffer + "' has wrong format");
 		}
 		else if (start+2 != dot || dot+1 == end) {
-			throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+			throw new NumberFormatException("'" + buffer + "' has wrong format");
 		}
 		return Double.parseDouble(buffer.substring(start, end));
 	}
