@@ -977,7 +977,8 @@ public class XMLDTDScanner
             }
 
             // default decl
-            String defaultType = scanAttDefaultDecl(elName, name, fLiteral);
+            String defaultType = scanAttDefaultDecl(elName, name,
+                                                    type, fLiteral);
 
             // call handler
             if (fDTDHandler != null) {
@@ -1134,6 +1135,7 @@ public class XMLDTDScanner
      * @param defaultVal The string to fill in with the default value.
      */
     protected final String scanAttDefaultDecl(String elName, String atName,
+                                              String type,
                                               XMLString defaultVal)
         throws IOException, SAXException {
 
@@ -1157,7 +1159,8 @@ public class XMLDTDScanner
                 }
             }
             // AttValue 
-            scanAttributeValue(defaultVal, atName, fAttributes, 0);
+            scanAttributeValue(defaultVal, atName,
+                               fAttributes, 0, type.equals("CDATA"));
         }
         return defaultType;
 

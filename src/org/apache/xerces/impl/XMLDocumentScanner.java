@@ -860,8 +860,10 @@ public class XMLDocumentScanner
         // content
         attributes.addAttribute(fAttributeQName, fCDATASymbol, null);
 
+        // REVISIT: we need the type from the Grammar to do the correct value
+        // normalization
         scanAttributeValue(fString, fAttributeQName.rawname,
-                           attributes, attributes.getLength() - 1);
+                           attributes, attributes.getLength() - 1, true);
 
         attributes.setValue(attributes.getLength() - 1, fString.toString());
 

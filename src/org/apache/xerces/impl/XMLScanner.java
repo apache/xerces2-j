@@ -572,7 +572,8 @@ public abstract class XMLScanner
      * at the time of calling is lost.
      **/
     protected void scanAttributeValue(XMLString value, String atName,
-                                      XMLAttributes attributes, int attrIndex)
+                                      XMLAttributes attributes, int attrIndex,
+                                      boolean cdata)
         throws IOException, SAXException
     {
         // quote
@@ -585,6 +586,7 @@ public abstract class XMLScanner
         int entityDepth = fEntityDepth;
 
         int c = fEntityScanner.scanLiteral(quote, value);
+        normalizeWhitespace(value);
         if (c != quote) {
             fScanningAttribute = true;
             if (DEBUG_ATTR_ENTITIES) {
@@ -685,6 +687,7 @@ public abstract class XMLScanner
                 }
                 while (true) {
                     c = fEntityScanner.scanLiteral(quote, value);
+                    normalizeWhitespace(value);
                     if (c != quote || entityDepth == fEntityDepth) {
                         break;
                     }
@@ -708,6 +711,10 @@ public abstract class XMLScanner
             fScanningAttribute = false;
         }
 
+        if (!cdata) {
+            normalizeNonCDATAValue(value);
+        }
+
         // quote
         int cquote = fEntityScanner.scanChar();
         if (cquote != cquote) {
@@ -715,6 +722,75 @@ public abstract class XMLScanner
         }
     } // scanAttributeValue()
 
+    /**
+     * Normalize whitespace in an XMLString according to the rules of attribute
+     * value normalization - converting all whitespace characters to space
+     * characters.
+     *
+     * @param value The string to normalize.
+     */
+    protected void normalizeWhitespace(XMLString value) {
+        for (int i = value.offset; i < value.length; i++) {
+            int ch = value.ch[i];
+            if (ch == '\r' || ch == '\n' || ch == '\t') {
+                value.ch[i] = ' ';
+            }
+        }
+    }
+
+    /**
+     * Further normalize an attribute value according to the rules of attribute
+     * value normalization of attributes of type other than CDATA: triming
+     * space characters (0x20 only).
+     *
+     * @param value The string to normalize.
+     */
+    protected void normalizeNonCDATAValue(XMLString value) {
+        // trim leading spaces
+        while (value.length > 0 && value.ch[value.offset] == ' ') {
+            value.offset++;
+            value.length--;
+        }
+        // trim trailing spaces
+        while (value.length > 0 &&
+               value.ch[value.offset + value.length - 1] == ' ') {
+            value.length--;
+        }
+        // skip all non spaces
+        int index = value.offset;
+        while (index < value.offset + value.length && value.ch[index] != ' ') {
+            index++;
+        }
+        if (index == value.offset + value.length) {
+            // we only have one token, we're done
+            return;
+        }
+        fStringBuffer.clear();
+        do {
+            // copy what we have so far (including one space)
+            fStringBuffer.append(value.ch, value.offset,
+                                 index - value.offset + 1);
+            // shift to the end of this
+            value.length -= index - value.offset + 1;
+            value.offset = index + 1;
+
+            // skip all leading spaces
+            while (value.length > 0 && value.ch[value.offset] == ' ') {
+                value.offset++;
+                value.length--;
+            }
+            // skip all non spaces
+            index = value.offset;
+            while (index < value.offset + value.length &&
+                   value.ch[index] != ' ') {
+                index++;
+            }
+        } while (index < value.offset + value.length);
+
+        fStringBuffer.append(value.ch, value.offset, index - value.offset);
+
+        value.setValues(fStringBuffer);
+    }
 
     //
     // XMLEntityHandler methods
