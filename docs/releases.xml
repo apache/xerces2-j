@@ -28,22 +28,47 @@
     </add>
     <fix>
      <note>
-      Fixed a SAX conformance bug concerning skipped entities.
+      Fixed SAX conformance bugs including one concerning skipped entities.
      </note>
      <submitter name='Michael Glavassevich'/>
     </fix>
     <fix>
      <note>
+      Fixed numerous schema related bugs.
+     </note>
+     <submitter name='Mike Boos, Sandy Gao, Michael Glavassevich, Kohsuke Kawaguchi, Elena Litani'/>
+    </fix>
+    <fix>
+     <note>
       Fixed various DOM Level 3 bugs.
      </note>
-     <submitter name='Jonathan Au, Neil Delima, Michael Glavassevich, Naela Nissar, K. Venugopal'/>
+     <submitter name='Jonathan Au, Neil Delima, Michael Glavassevich, Naela Nissar, Ankit Pasricha, K. Venugopal'/>
     </fix>
+    <add>
+     <note>
+      Created two new parser configurations that support XML 1.1.
+     </note>
+     <submitter name='John Kim'/>
+    </add>
+    <update>
+     <note>
+      Improved scaling of the SymbolTable.
+     </note>
+     <submitter name='John Kim'/>
+    </update>
     <update>
      <note>
       Added support for EntityResolver2 and LSResourceResolver to XMLCatalogResolver.
      </note>
      <submitter name='Michael Glavassevich, John Kim'/>
     </update>
+    <fix>
+     <note>
+      Fixed a potential memory leak in the ObjectFactory classes which in some
+      circumstances allowed input streams to never be closed.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
     <fix>
      <note>
       Fixed a thread-safety bug concerning identity constraints which caused
