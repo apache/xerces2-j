@@ -83,7 +83,7 @@ class ParserForXMLSchema extends RegexParser {
     Token processDollar() throws ParseException {
         this.next();
         return Token.createChar('$');
-    }
+     }
     Token processLookahead() throws ParseException {
         throw ex("parser.process.1", this.offset);
     }
