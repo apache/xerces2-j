@@ -59,8 +59,7 @@ package dom.ids;
 
 import java.io.PrintWriter;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.w3c.dom.*;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -135,14 +134,38 @@ public class Test {
             el.setAttribute("id", "my.worker");
             el2 = doc.getElementById("my.worker");
             Assertion.assert(el2 == el);
-
+            
             el2 = doc.getElementById("one.worker");
             Assertion.assert(el2 == null);
-
             el.removeAttribute("id");
             el2 = doc.getElementById("my.worker");
             Assertion.assert(el2 == null);
         }
+
+        // find default id attribute and check its value
+        NodeList elementList = doc.getElementsByTagName("person");
+        Element testEmployee = (Element)elementList.item(1);
+        Attr id = testEmployee.getAttributeNode("id2");
+        Assertion.assert(id.getNodeValue().equals("id02"), "value == 'id02'");
+
+
+        Element elem = doc.getElementById("id02");
+        Assertion.assert(elem.getNodeName().equals("person"), "return by id 'id02'");
+        
+        // 
+        // remove default attribute and check on retrieval what its value
+        Attr removedAttr = testEmployee.removeAttributeNode(id);
+        String value = testEmployee.getAttribute("id2");
+        Assertion.assert(value.equals("default.id"), "value='default.id'");
+
+
+        elem = doc.getElementById("default.id");
+        Assertion.assert(elem !=null, "elem by id 'default.id'");
+
+
+        elem = doc.getElementById("id02");
+        Assertion.assert(elem ==null, "elem by id '02'");
+
         System.out.println("done.");
 
     } // test(Document)
@@ -155,11 +178,12 @@ public class Test {
     public static void main(String argv[]) {
 
         // is there anything to do?
-        if (argv.length == 0) {
+        /*if (argv.length == 0) {
             printUsage();
             System.exit(1);
-        }
+        } */
 
+        
         // variables
         Test test = new Test();
         ParserWrapper parser = null;
@@ -168,7 +192,9 @@ public class Test {
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean deferredDom = DEFAULT_DEFERRED_DOM;
-
+        
+        String inputfile="tests/dom/ids/input.xml";
+        
         // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
@@ -219,6 +245,7 @@ public class Test {
                     continue;
                 }
             }
+        }
 
             // use default parser?
             if (parser == null) {
@@ -231,7 +258,7 @@ public class Test {
                 catch (Exception e) {
                     System.err.println("error: Unable to instantiate parser ("
                                        + DEFAULT_PARSER_NAME + ")");
-                    continue;
+                    System.exit(1);
                 }
             }
 
@@ -282,7 +309,7 @@ public class Test {
             // parse file
             try {
                 Document document = null;
-                document = parser.parse(arg);
+                document = parser.parse(inputfile);
                 test.test(document);
             }
             catch (SAXParseException e) {
@@ -300,7 +327,7 @@ public class Test {
                 else
                   e.printStackTrace(System.err);
             }
-        }
+        
 
     } // main(String[])
 
