@@ -946,6 +946,11 @@ public class XMLDocumentScanner
         }
         fInMarkup = false;
         fElementDepth--;
+        // check that this element was opened in the same entity
+        if (fElementDepth < fEntityStack[fEntityDepth - 1]) {
+            reportFatalError("ElementEntityMismatch",
+                             new Object[]{fCurrentElement.rawname});
+        }
 
         // handle end element
         int depth = handleEndElement(fElementQName);
