@@ -74,7 +74,6 @@ import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.impl.validation.ValidationState;
@@ -117,7 +116,6 @@ abstract class XSDAbstractTraverser {
     protected XSDHandler            fSchemaHandler = null;
     protected SymbolTable           fSymbolTable = null;
     protected XSAttributeChecker    fAttrChecker = null;
-    protected XMLErrorReporter      fErrorReporter = null;
 
     // used to validate default/fixed attribute values
     ValidationState fValidationState = new ValidationState();
@@ -128,8 +126,7 @@ abstract class XSDAbstractTraverser {
         fAttrChecker = attrChecker;
     }
 
-    void reset(XMLErrorReporter errorReporter, SymbolTable symbolTable) {
-        fErrorReporter = errorReporter;
+    void reset(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
         fValidationState.setExtraChecking(false);
         fValidationState.setSymbolTable(symbolTable);
@@ -199,10 +196,7 @@ abstract class XSDAbstractTraverser {
             facet = DOMUtil.getLocalName(content);
             /*if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 Object[] args = {simpleTypeName};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           "ListUnionRestrictionError",
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                reportSchemaError("ListUnionRestrictionError", args);
             }*/
             if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
                 attrs = fAttrChecker.checkAttributes(content, false, schemaDoc, hasQName);
@@ -501,9 +495,11 @@ abstract class XSDAbstractTraverser {
     }
 
     void reportSchemaError (String key, Object[] args) {
-        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                   key, args,
-                                   XMLErrorReporter.SEVERITY_ERROR);
+        fSchemaHandler.reportSchemaError(key, args);
+    }
+
+    void reportSchemaError (String key, Object[] args, Element ele) {
+        fSchemaHandler.reportSchemaError(key, args, ele);
     }
 
     /**
@@ -541,10 +537,7 @@ abstract class XSDAbstractTraverser {
         if (isGroupChild && (!defaultMin || !defaultMax)) {
             Object[] args = new Object[]{parent.getAttribute(SchemaSymbols.ATT_NAME),
                 particleName};
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "MinMaxOnGroupChild",
-                                       args,
-                                       XMLErrorReporter.SEVERITY_ERROR);
+            reportSchemaError("MinMaxOnGroupChild", args);
             min = max = 1;
         }
 
@@ -572,10 +565,7 @@ abstract class XSDAbstractTraverser {
                     errorMsg = "BadMinMaxForGroupWithAll";
                 }
                 Object[] args = new Object [] {"minOccurs", Integer.toString(min)};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           errorMsg,
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                reportSchemaError(errorMsg, args);
                 min = 1;
             }
 
@@ -592,10 +582,7 @@ abstract class XSDAbstractTraverser {
                 }
 
                 Object[] args = new Object [] {"maxOccurs", Integer.toString(max)};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           errorMsg,
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                reportSchemaError(errorMsg, args);
                 max = 1;
             }
         }

@@ -69,7 +69,6 @@ import org.apache.xerces.impl.xs.XSAttributeUse;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;

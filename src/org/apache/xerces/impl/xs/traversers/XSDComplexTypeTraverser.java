@@ -60,7 +60,6 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;

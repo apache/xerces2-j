@@ -60,7 +60,6 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.validation.ValidationContext;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -457,8 +456,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         return element;
     }
 
-    void reset(XMLErrorReporter reporter, SymbolTable symbolTable) {
-        super.reset(reporter, symbolTable);
+    void reset(SymbolTable symbolTable) {
+        super.reset(symbolTable);
         fDeferTraversingLocalElements = true;
     } // reset()
 

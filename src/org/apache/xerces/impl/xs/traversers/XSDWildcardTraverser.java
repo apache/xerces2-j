@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
@@ -201,10 +200,7 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
             }
 
             if (child != null) {
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           "s4s-elt-must-match",
-                                           new Object[]{"wildcard", "(annotation?)"},
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                reportSchemaError("s4s-elt-must-match", new Object[]{"wildcard", "(annotation?)"});
             }
         }
 

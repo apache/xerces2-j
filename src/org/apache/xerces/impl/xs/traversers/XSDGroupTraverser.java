@@ -56,7 +56,6 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSParticleDecl;
@@ -183,19 +182,13 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             } else {
                 Object[] args = new Object [] { "group", childName};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           "GroupContentRestricted",
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                reportSchemaError("GroupContentRestricted", args);
             }
 
             if (l_elmChild != null &&
                 DOMUtil.getNextSiblingElement(l_elmChild) != null) {
                 Object[] args = new Object [] { "group", childName};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           "GroupContentRestricted",
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                reportSchemaError("GroupContentRestricted", args);
             }
 
             // add global group declaration to the grammar

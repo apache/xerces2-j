@@ -57,10 +57,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 
 import  org.apache.xerces.util.DOMUtil;
 import  org.w3c.dom.Element;

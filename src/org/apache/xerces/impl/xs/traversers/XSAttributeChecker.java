@@ -72,7 +72,6 @@ import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -969,9 +968,6 @@ public class XSAttributeChecker {
     // used to resolver namespace prefixes
     protected XSDHandler fSchemaHandler = null;
 
-    // used to store utility reference: error reproter. set via constructor.
-    protected XMLErrorReporter fErrorReporter = null;
-
     // used to store symbols.
     protected SymbolTable fSymbolTable = null;
 
@@ -983,8 +979,7 @@ public class XSAttributeChecker {
         fSchemaHandler = schemaHandler;
     }
 
-    public void reset(XMLErrorReporter er, SymbolTable symbolTable) {
-        fErrorReporter = er;
+    public void reset(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
         fNonSchemaAttrs.clear();
     }
@@ -1509,11 +1504,12 @@ public class XSAttributeChecker {
         return retValue;
     }
 
-    private void reportSchemaError(String key, Object args[]) {
-        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                   key,
-                                   args,
-                                   XMLErrorReporter.SEVERITY_ERROR);
+    void reportSchemaError(String key, Object args[]) {
+        fSchemaHandler.reportSchemaError(key, args);
+    }
+
+    void reportSchemaError (String key, Object[] args, Element ele) {
+        fSchemaHandler.reportSchemaError(key, args, ele);
     }
 
     // validate attriubtes from non-schema namespaces
