@@ -147,6 +147,7 @@ public class Grammar {
    private String[][] fEntityBaseSystemId = new String[INITIAL_CHUNK_COUNT][];
    private String[][] fEntityNotation = new String[INITIAL_CHUNK_COUNT][];
    private byte[][] fEntityIsPE = new byte[INITIAL_CHUNK_COUNT][];
+   private byte[][] fEntityInExternal = new byte[INITIAL_CHUNK_COUNT][];
 
    //Notation Tables
    private int fNotationCount = 0;
@@ -784,7 +785,8 @@ public class Grammar {
                             fEntitySystemId[chunk][index],
                             fEntityBaseSystemId[chunk][index],
                             fEntityNotation[chunk][index],
-                            fEntityIsPE[chunk][index] == 0 ? false : true );
+                            fEntityIsPE[chunk][index] == 0 ? false : true ,
+                            fEntityInExternal[chunk][index] == 0 ? false : true );
 
        return true;
    } // getEntityDecl
@@ -1046,6 +1048,7 @@ public class Grammar {
 
       ensureEntityDeclCapacity(chunk);
       fEntityIsPE[chunk][index] = 0;
+      fEntityInExternal[chunk][index] = 0;
 
       return fEntityCount++;
    }
@@ -1061,6 +1064,7 @@ public class Grammar {
        fEntityBaseSystemId[chunk][index] = entityDecl.baseSystemId;
        fEntityNotation[chunk][index] = entityDecl.notation;
        fEntityIsPE[chunk][index] = entityDecl.isPE ? (byte)1 : (byte)0;
+       fEntityInExternal[chunk][index] = entityDecl.inExternal ? (byte)1 : (byte)0;
    }
    
 
@@ -1464,6 +1468,7 @@ public class Grammar {
           fEntityBaseSystemId = resize(fEntityBaseSystemId, fEntityBaseSystemId.length * 2);
           fEntityNotation = resize(fEntityNotation, fEntityNotation.length * 2);
           fEntityIsPE = resize(fEntityIsPE, fEntityIsPE.length * 2);
+          fEntityInExternal = resize(fEntityInExternal, fEntityInExternal.length * 2);
       } catch (NullPointerException ex) {
          // ignore
       }
@@ -1474,6 +1479,7 @@ public class Grammar {
       fEntityBaseSystemId[chunk] = new String[CHUNK_SIZE];
       fEntityNotation[chunk] = new String[CHUNK_SIZE];
       fEntityIsPE[chunk] = new byte[CHUNK_SIZE];
+      fEntityInExternal[chunk] = new byte[CHUNK_SIZE];
       return true;
    }
    

@@ -85,6 +85,10 @@ public class XMLEntityDecl {
     /** isPE */
     public boolean isPE;
 
+    /** inExternal */
+    /** <strong>Note:</strong> flag of where the entity is defined, not whether it is a external entity */
+    public boolean inExternal;
+
     //
     // Methods
     //
@@ -99,13 +103,14 @@ public class XMLEntityDecl {
      * @param notation 
      * @param isPE 
      */
-    public void setValues(String name, String publicId, String systemId, String baseSystemId, String notation, boolean isPE) {
+    public void setValues(String name, String publicId, String systemId, String baseSystemId, String notation, boolean isPE, boolean inExternal) {
         this.name         = name;
         this.publicId     = publicId;
         this.systemId     = systemId;
         this.baseSystemId = baseSystemId;
         this.notation     = notation;
         this.isPE         = isPE;
+        this.inExternal   = inExternal;
     } // setValues
 
     /**
@@ -118,6 +123,7 @@ public class XMLEntityDecl {
        this.baseSystemId = null;
        this.notation     = null;
        this.isPE         = false;
+       this.inExternal   = false;
 
     } // clear
 

@@ -227,18 +227,9 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
     */
    public void startEntity(String name, String publicId, String systemId, 
                            String encoding) throws SAXException {
-      XMLEntityDecl  entityDecl = new XMLEntityDecl();
-      boolean isPE = name.startsWith("%");
-      entityDecl.setValues(name,publicId,systemId, null, null, isPE);
-      int entityIndex = getEntityDeclIndex(name);
-      if (entityIndex == -1) {
-        entityIndex = createEntityDecl();
-        setEntityDecl(entityIndex, entityDecl);
-      }
-      fEntityDeclTab.put( name, entityDecl );
 
-
-      if (name.equals("[dtd]")) {
+      if ( name.equals("[dtd]") || 
+           (name.startsWith("%") && systemId != null )) {
           fReadingExternalDTD = true;
       }
 
@@ -561,8 +552,9 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
    throws SAXException {
        XMLEntityDecl  entityDecl = new XMLEntityDecl();
        boolean isPE = name.startsWith("%");
+       boolean inExternal = fReadingExternalDTD;
 
-       entityDecl.setValues(name,null,null, null, null, isPE);
+       entityDecl.setValues(name,null,null, null, null, isPE, inExternal);
        int entityIndex = getEntityDeclIndex(name);
        if (entityIndex == -1) {
          entityIndex = createEntityDecl();
@@ -586,7 +578,10 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
    throws SAXException {
        XMLEntityDecl  entityDecl = new XMLEntityDecl();
        boolean isPE = name.startsWith("%");
-       entityDecl.setValues(name,publicId,systemId, null, null, isPE);
+       boolean inExternal = fReadingExternalDTD;
+       
+       entityDecl.setValues(name,publicId,systemId, null, null, isPE, inExternal);
+
        int entityIndex = getEntityDeclIndex(name);
        if (entityIndex == -1) {
          entityIndex = createEntityDecl();
@@ -610,7 +605,9 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
    throws SAXException {
        XMLEntityDecl  entityDecl = new XMLEntityDecl();
        boolean isPE = name.startsWith("%");
-       entityDecl.setValues(name,publicId,systemId, null, notation, isPE);
+       boolean inExternal = fReadingExternalDTD;
+
+       entityDecl.setValues(name,publicId,systemId, null, notation, isPE, inExternal);
        int entityIndex = getEntityDeclIndex(name);
        if (entityIndex == -1) {
          entityIndex = createEntityDecl();

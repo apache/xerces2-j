@@ -64,6 +64,7 @@ import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.XMLAttributeDecl;
 import org.apache.xerces.impl.validation.XMLElementDecl;
+import org.apache.xerces.impl.validation.XMLEntityDecl;
 import org.apache.xerces.impl.validation.XMLSimpleType ;
 import org.apache.xerces.impl.validation.grammars.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
@@ -198,6 +199,7 @@ public class XMLValidator
     /** temporary variables so that we create less objects */
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
     private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
+    private XMLEntityDecl fEntityDecl = new XMLEntityDecl();
     private QName fTempQName = new QName();
     private StringBuffer fDatatypeBuffer = new StringBuffer();
 
@@ -901,6 +903,21 @@ public class XMLValidator
             }
         }
         else {
+            // check VC: Standalone Document Declartion, entities references appear in the document.
+            if (fValidation && fCurrentGrammar != null) {
+                if (fStandaloneIsYes && !name.startsWith("[") ) {
+                    int entIndex = fCurrentGrammar.getEntityDeclIndex(name);
+                    if (entIndex > -1) {
+                        fCurrentGrammar.getEntityDecl(entIndex, fEntityDecl);
+                        if ( fEntityDecl.inExternal ) {
+                            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                        "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
+                                                        new Object[]{name}, XMLErrorReporter.SEVERITY_ERROR);
+                        }
+                    }
+                }
+            }
+
             if (fDocumentHandler != null) {
                 fDocumentHandler.startEntity(name, publicId, systemId, encoding);
             }
