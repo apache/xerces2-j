@@ -180,7 +180,7 @@ public interface XSConstants {
      */
     public static final short VC_FIXED                  = 2;
 
-    // Build-in types: primitive and derived
+    // Built-in types: primitive and derived
     /**
      * anySimpleType
      */

@@ -105,7 +105,7 @@ public interface XSLoader {
      * <code>LSInput</code>s. 
      * @param is  The list of <code>LSInput</code>s from which the XML 
      *   Schema documents are to be read. 
-     * @return An XSModel representing schema documents.
+     * @return An XSModel representing the schema documents.
      */
     public XSModel loadInputList(LSInputList is);
 
