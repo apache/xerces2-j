@@ -3400,7 +3400,8 @@ public class XMLSchemaValidator
             // REVISIT: we can improve performance by using hash codes, instead of
             // traversing global vector that could be quite large.
             int next = 0;
-            LOOP : for (int i = 0; i < fValues.size(); i = next) {
+            final int size = fValues.size();
+            LOOP : for (int i = 0; i < size; i = next) {
                 next = i + fFieldCount;
                 for (int j = 0; j < fFieldCount; j++) {
                     Object value1 = fLocalValues[j];
@@ -3417,17 +3418,42 @@ public class XMLSchemaValidator
         } // contains():boolean
 
         /**
-         * Returns true if this value store contains the specified
-         * values.
+         * Returns -1 if this value store contains the specified
+         * values, otherwise the index of the first field in the
+         * key sequence.
          */
-        public Object contains(Vector values) {
-            for (int i = 0; i < values.size(); i++) {
-                if (!fValues.contains(values.elementAt(i)))
-                    return values.elementAt(i);
-
+        public int contains(Vector values) {
+            
+            final int size1 = values.size();
+            if (fFieldCount <= 1) {
+                for (int i = 0; i < size1; ++i) {
+                    if (!fValues.contains(values.elementAt(i))) {
+                        return i;
+                    }
+                }
             }
-            return null;
-        } // contains(Vector):boolean
+            /** Handle n-tuples. **/
+            else {
+                final int size2 = fValues.size();
+                /** Iterate over each set of fields. **/
+                OUTER: for (int i = 0; i < size1; i += fFieldCount) {
+                    /** Check whether this set is contained in the value store. **/
+                    INNER: for (int j = 0; j < size2; j += fFieldCount) {
+                        for (int k = 0; k < fFieldCount; ++k) {
+                            final Object value1 = values.elementAt(i+k);
+                            final Object value2 = fValues.elementAt(j+k);
+                            if (value1 != value2 && !value1.equals(value2)) {
+                                continue INNER;
+                            }
+                        }
+                        continue OUTER;
+                    }
+                    return i;
+                }
+            }
+            return -1;
+            
+        } // contains(Vector):Object
 
         //
         // Protected methods
@@ -3458,6 +3484,26 @@ public class XMLSchemaValidator
             return fTempBuffer.toString();
 
         } // toString(Object[]):String
+        
+        /** Returns a string of the specified values. */
+        protected String toString(Vector values, int start, int length) {
+
+            // no values
+            if (length == 0) {
+                return "";
+            }
+
+            // construct value string
+            StringBuffer str = new StringBuffer();
+            for (int i = 0; i < length; i++) {
+                if (i > 0) {
+                    str.append(',');
+                }
+                str.append(values.elementAt(start + i));
+            }
+            return str.toString();
+
+        } // toString(Vector,int,int):String
 
         //
         // Object methods
@@ -3598,12 +3644,13 @@ public class XMLSchemaValidator
                 reportSchemaError(code, new Object[] { value });
                 return;
             }
-            Object value = fKeyValueStore.contains(fValues);
-            if (value != null) {
+            int errorIndex = fKeyValueStore.contains(fValues);
+            if (errorIndex != -1) {
                 String code = "KeyNotFound";
+                String values = toString(fValues, errorIndex, fFieldCount);
                 String element = fIdentityConstraint.getElementName();
                 String name = fIdentityConstraint.getName();
-                reportSchemaError(code, new Object[] { name, value.toString(), element });
+                reportSchemaError(code, new Object[] { name, values, element });
             }
 
         } // endDocumentFragment()
