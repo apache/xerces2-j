@@ -597,12 +597,17 @@ implements XMLComponent, XMLDocumentFilter {
         //  but XML applications are free to chunk characters into larger 
         //  groups as necessary or desirable"
         //  XSV outputs each character separately.
+        ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
         
         checkForChildren();
-        printIndentTag("<character>");
-        printElement("characterCode", text.toString());
-        printElement("elementContentWhitespace", "false");
-        printUnIndentTag("</character>");
+        if (elemPSVI != null) {
+            if (elemPSVI.schemaSpecified()){  // value was specified in the instance!
+                printIndentTag("<character>");
+                printElement("characterCode", text.toString());
+                printElement("elementContentWhitespace", "false");
+                printUnIndentTag("</character>");
+            }
+        }
 
         if (fDocumentHandler != null) {
             fDocumentHandler.characters(text,augs);
@@ -770,7 +775,7 @@ implements XMLComponent, XMLDocumentFilter {
     * default
     */
     public void printPSVIStartElement(Augmentations augs) {
-        ElementPSVI elemPSVI =(ElementPSVI)augs.getItem("ELEM_PSVI");
+        ElementPSVI elemPSVI =(ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
         if (elemPSVI != null) {
 
             // REVISIT: Should we store the values till end element call?
@@ -804,7 +809,7 @@ implements XMLComponent, XMLDocumentFilter {
     * default
     */
     public void printPSVIEndElement(Augmentations augs) {
-        ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEM_PSVI");
+        ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
         if (elemPSVI != null) {
 
 
@@ -847,13 +852,14 @@ implements XMLComponent, XMLDocumentFilter {
             }
             printElement("psv:nil", String.valueOf(elemPSVI.isNil()));
             printElement("psv:schemaNormalizedValue",elemPSVI.schemaNormalizedValue());
-            printElement("psv:schemaSpecified",String.valueOf(elemPSVI.schemaSpecified()));
+            String specified = elemPSVI.schemaSpecified()?"infoset":"schema";
+            printElement("psv:schemaSpecified",specified);
 
         }
     }
 
     public void printPSVIAttribute(Augmentations augs) {
-        AttributePSVI attrPSVI =(AttributePSVI)augs.getItem("ATTR_PSVI");
+        AttributePSVI attrPSVI =(AttributePSVI)augs.getItem(Constants.ATTRIBUTE_PSVI);
         if (attrPSVI !=null) {
 
             short validation = attrPSVI.getValidationAttempted();
@@ -1018,7 +1024,7 @@ implements XMLComponent, XMLDocumentFilter {
             if (!attrElement)
                 printIndentTag("<attributes>");
             
-            boolean psviAvailable =  (attributes.getAugmentations(i).getItem("ATTR_PSVI")!=null);
+            boolean psviAvailable =  (attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI)!=null);
 
             // REVISIT: in XSV attributes that are defaulted from XML Schema 
             // still appear as an item from XML Infoset and has the same properties
