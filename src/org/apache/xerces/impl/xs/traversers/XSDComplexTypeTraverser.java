@@ -400,17 +400,26 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         if ((type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)) {
 
             baseComplexType = (XSComplexTypeDecl)type;
-            if (baseComplexType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                throw new ComplexTypeRecoverableError("src-ct.2",
+            baseFinalSet = baseComplexType.getFinal();
+            // base is a CT with simple content (both restriction and extension are OK)
+            if (baseComplexType.getContentType() == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+                baseValidator = (XSSimpleType)baseComplexType.getSimpleType();
+            }
+            // base is a CT with mixed/emptiable content (only restriction is OK)
+            else if (fDerivedBy == XSConstants.DERIVATION_RESTRICTION &&
+                     baseComplexType.getContentType() == XSComplexTypeDecl.CONTENTTYPE_MIXED &&
+                     ((XSParticleDecl)baseComplexType.getParticle()).emptiable()) {
+            }
+            else {
+                throw new ComplexTypeRecoverableError("src-ct.2.1",
                                 new Object[]{fName}, simpleContent);
             }
-            baseFinalSet = baseComplexType.getFinal();
-            baseValidator = (XSSimpleType)baseComplexType.getSimpleType();
         }
         else {
             baseValidator = (XSSimpleType)type;
+            // base is a ST (only extension is OK)
             if (fDerivedBy == XSConstants.DERIVATION_RESTRICTION) {
-                throw new ComplexTypeRecoverableError("src-ct.2",
+                throw new ComplexTypeRecoverableError("src-ct.2.1",
                                 new Object[]{fName}, simpleContent);
             }
             baseFinalSet=baseValidator.getFinal();
@@ -466,7 +475,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 //check that this datatype validator is validly derived from the base
                 //according to derivation-ok-restriction 5.1.2.1
 
-                if (!XSConstraints.checkSimpleDerivationOk(dv, baseValidator,
+                if (baseValidator != null &&
+                    !XSConstraints.checkSimpleDerivationOk(dv, baseValidator,
                                                            baseValidator.getFinal())) {
                     throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.2.1",
                            new Object[]{fName},
@@ -476,6 +486,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
             }
 
+            // this only happens when restricting a mixed/emptiable CT
+            // but there is no <simpleType>, which is required
+            if (baseValidator == null) {
+                throw new ComplexTypeRecoverableError("src-ct.2.2",
+                                new Object[]{fName}, simpleContent);
+            }
+            
             // -----------------------------------------------------------------------
             // Traverse any facets
             // -----------------------------------------------------------------------
