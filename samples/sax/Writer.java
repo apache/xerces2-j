@@ -504,7 +504,7 @@ public class Writer
             getXMLVersion = fLocator.getClass().getMethod("getXMLVersion", new Class[]{});
             // If Locator implements Locator2, this method will exist.
             if (getXMLVersion != null) {
-                version = (String) getXMLVersion.invoke(fLocator, null);
+                version = (String) getXMLVersion.invoke(fLocator, (Object[]) null);
             }
         } 
         catch (Exception e) { 

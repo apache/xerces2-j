@@ -417,7 +417,7 @@ public class Writer {
             getXMLVersion = document.getClass().getMethod("getXmlVersion", new Class[]{});
             // If Document class implements DOM L3, this method will exist.
             if (getXMLVersion != null) {
-                version = (String) getXMLVersion.invoke(document, null);
+                version = (String) getXMLVersion.invoke(document, (Object[]) null);
             }
         } 
         catch (Exception e) { 
