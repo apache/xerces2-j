@@ -69,10 +69,14 @@ import java.util.PropertyResourceBundle;
  */
 public class DOMMessageFormatter {
 
+    public static final String DOM_DOMAIN = "http://www.w3.org/dom/DOMTR";
+    public static final String SERIALIZER_DOMAIN = "http://apache.org/xml/serializer";
+
     /**
      * Formats a message with the specified arguments using the given
      * locale information.
      * 
+     * @param domain    domain from which error string is to come.
      * @param key       The message key.
      * @param arguments The message replacement text arguments. The order
      *                  of the arguments must match that of the placeholders
@@ -83,10 +87,18 @@ public class DOMMessageFormatter {
      * @throws MissingResourceException Thrown if the message with the
      *                                  specified key cannot be found.
      */
-     public static String formatMessage(String key, Object[] arguments)
-        throws MissingResourceException {
+     public static String formatMessage(String domain, 
+            String key, Object[] arguments)
+            throws MissingResourceException {
         
-        ResourceBundle resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages");
+        ResourceBundle resourceBundle = null;
+        if(domain.equals(DOM_DOMAIN)) {
+            resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages");
+        } else if (domain.equals(SERIALIZER_DOMAIN)) {
+            resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages");
+        } else {
+            throw new MissingResourceException("Unknown domain" + domain, null, key);
+        }
         if (resourceBundle == null)
             throw new MissingResourceException("Property file not found!", "org.apache.xerces.impl.msg.DOMMessages", key);
 
