@@ -325,7 +325,7 @@ public class SchemaGrammar extends Grammar{
                       int enumeration, int attDefaultType, 
                       String attDefaultValue, DatatypeValidator dv){
         int attrDeclIndex = createAttributeDecl();
-        fTempAttributeDecl.name = attQName;
+        fTempAttributeDecl.name.setValues(attQName);
         fTempAttributeDecl.datatypeValidator = dv;
         fTempAttributeDecl.type = attType;
         fTempAttributeDecl.defaultType = attDefaultType;
@@ -343,6 +343,7 @@ public class SchemaGrammar extends Grammar{
         int attDefIndex = getFirstAttributeDeclIndex(elementIndex);
         while (attDefIndex != -1) {
             getAttributeDecl(attDefIndex, fTempAttributeDecl);
+
             if (fTempAttributeDecl.name.localpart == attribute.localpart &&
                 fTempAttributeDecl.name.uri == attribute.uri ) {
                 return attDefIndex;
@@ -350,7 +351,6 @@ public class SchemaGrammar extends Grammar{
             attDefIndex = getNextAttributeDeclIndex(attDefIndex);
         }
         return -1;
-
     } // getAttDef(int,QName)
 
     /**

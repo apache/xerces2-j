@@ -94,10 +94,10 @@ public final  class SchemaSymbols {
     public static final String ELT_LENGTH =  "length";
     public static final String ELT_MAXEXCLUSIVE =  "maxExclusive";
     public static final String ELT_MAXINCLUSIVE =  "maxInclusive";
-    public static final String ELT_MAXLENGTH =  "maxlength";
+    public static final String ELT_MAXLENGTH =  "maxLength";
     public static final String ELT_MINEXCLUSIVE =  "minExclusive";
     public static final String ELT_MININCLUSIVE =  "minInclusive";
-    public static final String ELT_MINLENGTH =  "minlength";
+    public static final String ELT_MINLENGTH =  "minLength";
     public static final String ELT_NOTATION =  "notation";
     public static final String ELT_PATTERN =  "pattern";
     public static final String ELT_PERIOD =  "period";

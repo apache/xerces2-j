@@ -1716,6 +1716,26 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // getAttDef(QName,QName)
 
+    /** Returns an attribute definition for an element type. */
+    private int getAttDefByElementIndex(int elementIndex, QName attribute) {
+        if (fGrammar != null && elementIndex > -1) {
+            if (elementIndex == -1) {
+                return -1;
+            }
+            int attDefIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
+            while (attDefIndex != -1) {
+                fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
+                if (fTempAttDecl.name.localpart == attribute.localpart &&
+                    fTempAttDecl.name.uri == attribute.uri ) {
+                    return attDefIndex;
+                }
+                attDefIndex = fGrammar.getNextAttributeDeclIndex(attDefIndex);
+            }
+        }
+        return -1;
+
+    } // getAttDef(QName,QName)
+
     // validation
 
     /** Root element specified. */
@@ -2231,11 +2251,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                             break;
                         }
                         baseTypeInfo = baseTypeInfo.baseComplexTypeInfo;
-
                     }
                 }
                 //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
-                if (element.uri == -1) {
+                if (element.uri == -1 && elementIndex == -1) {
                     elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
                     // REVISIT:
                     // this is a hack to handle the situation where namespace prefix "" is bound to nothing, and there
@@ -2257,7 +2276,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 fGrammar.getElementDecl(elementIndex, fTempElementDecl);
                 System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
                                    + fStringPool.toString(fTempElementDecl.name.localpart)
-                                   +"' \n its ContentType:" + fStringPool.toString(fTempElementDecl.type)
+                                   +"' \n its ContentType:" + fTempElementDecl.type
                                    +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n");
             }
         }
@@ -2324,7 +2343,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                          attrList.getAttrLocalpart(index),
                                          attrList.getAttrName(index),
                                          attrList.getAttrURI(index) );
-                    int attDefIndex = getAttDef(element, fTempQName);
+                    int attDefIndex = getAttDefByElementIndex(elementIndex, fTempQName);
                     if (fTempQName.uri != fXsiURI)
                     if (attDefIndex == -1) {
                         // REVISIT - cache the elem/attr tuple so that we only give
@@ -2415,7 +2434,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fCurrentElementIndex = elementIndex;
         fCurrentContentSpecType = contentSpecType;
 
-        if (fValidating && contentSpecType == fDATATYPESymbol) {
+        if (fValidating && contentSpecType == XMLElementDecl.TYPE_SIMPLE) {
             fBufferDatatype = true;
             fDatatypeBuffer.setLength(0);
         }
