@@ -128,6 +128,12 @@ public final class  HexBin {
        return true;
    }
 
+    public static boolean isHex( String isValidString ){
+      return( isArrayByteHex( isValidString.getBytes()));
+  }
+
+
+
     /**
      * array of byte to encode
      * 
