@@ -1395,6 +1395,9 @@ public class XMLDTDScanner
         if (quote != '\'' && quote != '"') {
             reportFatalError("OpenQuoteMissingInDecl", null);
         }
+        // store at which depth of entities we start
+        int entityDepth = fEntityDepth;
+
         XMLString literal = fString;
         if (fEntityScanner.scanLiteral(quote, fString) != quote) {
             fStringBuffer2.clear();
@@ -1454,7 +1457,10 @@ public class XMLDTDScanner
                                          new Object[]{Integer.toHexString(c)});
                         fEntityScanner.scanChar();
                     }
-                    else if (c != quote) {
+                    // if it's not the delimiting quote or if it is but from a
+                    // different entity than the one this literal started from,
+                    // simply append the character to our buffer
+                    else if (c != quote || entityDepth != fEntityDepth) {
                         fStringBuffer2.append((char)fEntityScanner.scanChar());
                     }
                 }
