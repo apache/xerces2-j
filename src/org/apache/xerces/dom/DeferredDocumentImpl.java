@@ -817,7 +817,7 @@ public class DeferredDocumentImpl
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
         int type = getChunkIndex(fNodeType, chunk, index);
-        if (type != Node.TEXT_NODE) {
+        if (type != Node.TEXT_NODE && type != Node.CDATA_SECTION_NODE) {
             clearChunkIndex(fNodeType, chunk, index);
         }
 
@@ -1024,13 +1024,14 @@ public class DeferredDocumentImpl
             int prevSib = getRealPrevSibling(nodeIndex);
             if (prevSib != -1 &&
                 getNodeType(prevSib, false) == Node.TEXT_NODE) {
-                fStrChunks.addElement(value);
+                // append data that is stored in fNodeValue
+                fBufferStr.append(value);                
                 do {
+                    // go in reverse order: find last child, then
+                    // its previous sibling, etc
                     chunk = prevSib >> CHUNK_SHIFT;
                     index = prevSib & CHUNK_MASK;
                     value = getChunkValue(fNodeValue, chunk, index);
-                    // NOTE: This has to be done backwards because the
-                    //       children are placed backwards.
                     fStrChunks.addElement(value);
                     prevSib = getChunkIndex(fNodePrevSib, chunk, index);
                     if (prevSib == -1) {
@@ -1039,6 +1040,8 @@ public class DeferredDocumentImpl
                 } while (getNodeType(prevSib, false) == Node.TEXT_NODE);
                 
                 int chunkCount = fStrChunks.size();
+
+                // add to the buffer in the correct order.
                 for (int i = chunkCount - 1; i >= 0; i--) {                                                               
                     fBufferStr.append((String)fStrChunks.elementAt(i));
                 }
@@ -1050,19 +1053,21 @@ public class DeferredDocumentImpl
             }
         }
         else if (type == Node.CDATA_SECTION_NODE) {
-            // merge in any related pieces that may be stored as children
+            // append data that is stored in fNodeValue
+            fBufferStr.append(value);
+            // find if any other data stored in children
             int child = getLastChild(nodeIndex, false);
-            if (child != -1) {
-                fStrChunks.addElement(value);
-                do {
-                    chunk = child >> CHUNK_SHIFT;
+            if (child !=-1) {
+                while (child !=-1) {
+                    // go in reverse order: find last child, then
+                    // its previous sibling, etc
+                   chunk = child >> CHUNK_SHIFT;
                     index = child & CHUNK_MASK;
                     value = getChunkValue(fNodeValue, chunk, index);
-                    // NOTE: This has to be done backwards because the
-                    //       children are placed backwards.
                     fStrChunks.addElement(value);
                     child = getChunkIndex(fNodePrevSib, chunk, index);
-                } while (child != -1);
+                }
+                // add to the buffer in the correct order.
                 for (int i=fStrChunks.size()-1; i>=0; i--) {                                                               
                      fBufferStr.append((String)fStrChunks.elementAt(i));
                 }
