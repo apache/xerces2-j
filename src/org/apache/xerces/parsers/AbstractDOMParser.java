@@ -68,8 +68,10 @@ import org.apache.xerces.dom.EntityImpl;
 import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.NotationImpl;
-import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.dom.ProcessingInstructionImpl;
+import org.apache.xerces.dom.PSVIAttrNSImpl;
+import org.apache.xerces.dom.PSVIElementNSImpl;
+import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.impl.Constants;
 // id types
 import org.apache.xerces.xni.psvi.AttributePSVI;
@@ -197,6 +199,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
     protected static final String CORE_DOCUMENT_CLASS_NAME =
         "org.apache.xerces.dom.CoreDocumentImpl";
 
+    protected static final String PSVI_DOCUMENT_CLASS_NAME =
+        "org.apache.xerces.dom.PSVIDocumentImpl";
+    
     // debugging
 
     private static final boolean DEBUG_EVENTS = false;
@@ -234,6 +239,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
 
     /** The default Xerces document implementation, if used. */
     protected CoreDocumentImpl fDocumentImpl;
+    
+    /** Whether to store PSVI information in DOM tree. */
+    protected boolean fStorePSVI;
 
     /** The document class name to use. */
     protected String  fDocumentClassName;
@@ -438,6 +446,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         // reset dom information
         fDocument = null;
         fDocumentImpl = null;
+        fStorePSVI = false;
         fDocumentType = null;
         fDocumentTypeIndex = -1;
         fDeferredDocumentImpl = null;
@@ -766,6 +775,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                         Class.forName(CORE_DOCUMENT_CLASS_NAME);
                     if (defaultDocClass.isAssignableFrom(documentClass)) {
                         fDocumentImpl = (CoreDocumentImpl)fDocument;
+
+                        Class psviDocClass = Class.forName(PSVI_DOCUMENT_CLASS_NAME);
+                        if (psviDocClass.isAssignableFrom(documentClass)) {
+                            fStorePSVI = true;
+                        }
+                        
                         // REVISIT: when DOM Level 3 is REC rely on
                         //          Document.support instead of specific class
                         // set DOM error checking off
@@ -927,6 +942,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 //          When PSVI and XML Schema component interfaces are finalized
                 //          remove dependancy on *Impl class.
                 AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                if (fStorePSVI && attrPSVI != null) {
+                    ((PSVIAttrNSImpl)attr).setPSVI(attrPSVI);
+                }
                 if (fNormalizeData) {
                     // If validation is not attempted, the SchemaNormalizedValue will be null. 
                     // We shouldn't take the normalized value in this case.
@@ -1216,6 +1234,14 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             System.out.println("==>endElement ("+element.rawname+")");
         }
         if (!fDeferNodeExpansion) {
+            
+            // REVISIT: Should this happen after we call the filter?
+            if (fStorePSVI && augs != null) {
+                ElementPSVI elementPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+                if (elementPSVI != null) {
+                    ((PSVIElementNSImpl)fCurrentNode).setPSVI(elementPSVI);
+                }
+            }
             
             if (fDOMFilter != null) {            
                 if (fFilterReject) {
