@@ -2,10 +2,10 @@
 
 <!-- ===================================================================
 
-   Build file for Xerces
+Build file for Xerces-Java
 
 Notes:
-   This is a build file for use with the Jakarta Ant java build tool.
+   This is a build file for use with the Jakarta Ant build tool.
 
 Installation Instructions:
    To install Ant on your system, you need to checkout the
@@ -21,6 +21,9 @@ Build Instructions:
      java org.apache.tools.ant.Main <target>
 
    on the directory where this file is located with the target you want.
+   There is also a batch file called "build.bat" to invoke Ant from a
+   Windows command line shell. On the UNIX platform, use "build.sh" shell
+   script to invoke Ant.
 
 Most useful targets:
 
@@ -34,58 +37,100 @@ Note:
 
   In order to regenerate the web site, you must have the "xml-site" and "xml-xerces"
   CVS modules checked-out in the same directory, or this won't work. for example
-  
+
     xml.apache.org/xml-site
     xml.apache.org/xml-xerces
     ...
-    
+
   Have fun!
-  
+
 Authors:
   Stefano Mazzocchi <stefano@apache.org>
+  Anupam Bagchi     <abagchi@apache.org>
 
 Copyright:
-  Copyright (c) 1999 The Apache Software Foundation.
+  Copyright (c) 2000 The Apache Software Foundation.
 
    $Id$
 
 ==================================================================== -->
 
-<project default="package" basedir=".">
+<project default="usage" basedir=".">
 
   <target name="init">
     <property name="name" value="xerces"/>
-    <property name="Name" value="Xerces"/>
-    <property name="version" value="1.0.2"/>
-    <property name="year" value="1999"/>
+    <property name="Name" value="Xerces-J"/>
+    <property name="version" value="1.0.4"/>
+    <property name="version_postfix" value="_1_0_4"/>
+    <property name="year" value="1999-2000"/>
+	<property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
+	<echo message= "---------------- ${Name} ${version} [${year}] ---------------"/>
     <property name="build.compiler" value="classic"/>
     <property name="debug" value="off"/>
+    <property name="optimize" value="on"/>
+    <property name="deprecation" value="off"/>
 
     <property name="src.dir" value="./src"/>
     <property name="docs.dir" value="./docs"/>
     <property name="data.dir" value="./data"/>
     <property name="samples.dir" value="./samples"/>
+    <property name="tools.dir" value="./tools"/>
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
-    <property name="version.file" value="???"/>
-
-    <property name="site.book" value="${docs.dir}/site-book.xml"/>
-    <property name="site.dir" value="../../xml-site/sources/${name}"/>
-    <property name="site.docs" value="../../xml-site/targets/${name}"/>
+    <property name="version.file" value="org/apache/xerces/framework/Version.java"/>
 
     <property name="packages" value="org.*"/>
 
-    <property name="style" value="../../xml-site/style/"/>
     <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
+    <property name="doc.generator.package" value="${tools.dir}/stylebook-1.0-b2.jar"/>
+    <property name="doc.style" value="${tools.dir}/style-apachexml.jar"/>
 
     <property name="build.dir" value="./build"/>
-    <property name="build.src" value="./build/src"/>
-    <property name="build.dest" value="./build/classes"/>
-    <property name="build.docs" value="./build/docs/html"/>
-    <property name="build.samples" value="./build/samples"/>
-    <property name="build.javadocs" value="./build/javadocs"/>
+    <property name="build.src" value="${build.dir}/src"/>
+    <property name="build.dest" value="${build.dir}/classes"/>
+    <property name="build.docs" value="${build.dir}/docs/html"/>
+    <property name="build.samples" value="${build.dir}/samples"/>
+    <property name="build.data" value="${build.dir}/data"/>
+    <property name="build.javadocs" value="${build.dir}/docs/apiDocs"/>
 
-    <property name="dist.dir" value="./dist"/>
+    <property name="distsrc.dir" value="${build.dir}/${Name}-src${version_postfix}"/>
+    <property name="distbin.dir" value="${build.dir}/${Name}-bin${version_postfix}"/>
+
+    <filter token="year" value="${year}"/>
+    <filter token="version" value="${version}"/>
+    <filter token="date" value="${TODAY}"/>
+    <filter token="log" value="true"/>
+    <filter token="verbose" value="true"/>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Help on usage                                                       -->
+  <!-- =================================================================== -->
+  <target name="usage">
+    <echo message=""/>
+    <echo message=""/>
+    <echo message="${Name} Build instructions"/>
+    <echo message="-------------------------------------------------------------"/>
+    <echo message=""/>
+    <echo message=" available targets are:"/>
+    <echo message=""/>
+    <echo message="   compile  --> compiles the source code"/>
+    <echo message="   jar      --> generates the xerces.jar file"/>
+    <echo message="   samples  --> compiles the samples source code"/>
+    <echo message="   sampjar  --> generates the xercesSamples.jar file"/>
+    <echo message="   docs     --> generates the HTML documentation"/>
+    <echo message="   javadocs --> generates the API documentation (needs Java 1.2 or higher)"/>
+    <echo message="   pack-src --> generates the source distributions of Xerces-Java (zip and tar.gz)"/>
+    <echo message="   pack-bin --> generates the binary distributions of Xerces-Java (zip and tar.gz)"/>
+    <echo message="   test     --> runs a sanity test on the sample files"/>
+    <echo message="   clean    --> cleans up all generated files and directories"/>
+    <echo message="   usage    --> provides help on using the build tool (default)"/>
+    <echo message=""/>
+    <echo message=" See comments inside the build.xml file for more details."/>
+    <echo message="-------------------------------------------------------------"/>
+    <echo message=""/>
+    <echo message=""/>
   </target>
 
   <!-- =================================================================== -->
@@ -104,10 +149,15 @@ Copyright:
     <mkdir dir="${build.dest}"/>
 
     <!-- copy src files -->
-    <copydir src="${src.dir}" dest="${build.src}" excludes="Makefile Makefile.incl classfiles_updated"/>
+    <copydir src="${src.dir}" dest="${build.src}"
+             excludes="**/Makefile **/Makefile.incl **/classfiles_updated **/CVS* **/*#*
+                       **/DatatypeValidatorFactory.java **/SchemaImporter.java
+                       **/RevalidatingDOMParser.java **/DatatypeContentModel.java
+                       **/TraverseSchema.java **/ComplexTypeInfo.java **/DTDImporter.java "/>
+	<deltree dir="${build.src}/whiteboard"/>
 
     <!-- substitute tokens as needed -->
-    <!-- <replace file="${build.src}/${version.file}" token="@@version@@" value="${version}"/> -->
+    <replace file="${build.src}/${version.file}" token="@@version@@" value="${version}"/>
     <!-- <replace file="${build.src}/${version.file}" token="@@year@@" value="${year}"/> -->
   </target>
 
@@ -115,108 +165,198 @@ Copyright:
   <!-- Compiles the source directory                                       -->
   <!-- =================================================================== -->
   <target name="compile" depends="prepare-src">
-    <javac srcdir="${build.src}" destdir="${build.dest}" debug="${debug}">
-      <exclude name="**/DatatypeValidatorFactory.java"/>
-      <exclude name="**/SchemaImporter.java"/>
-      <exclude name="**/RevalidatingDOMParser.java"/>
-      <exclude name="**/DatatypeContentModel.java"/>
-      <exclude name="**/TraverseSchema.java"/>
-      <exclude name="**/ComplexTypeInfo.java"/>
-      <exclude name="**/DTDImporter.java"/>
-    </javac>
+    <javac srcdir="${build.src}"
+    	   destdir="${build.dest}"
+    	   debug="${debug}"
+	       deprecation="${deprecation}"
+	       optimize="${optimize}" />
   </target>
 
   <!-- =================================================================== -->
   <!-- Creates the class package                                           -->
   <!-- =================================================================== -->
-  <target name="package" depends="compile">
-    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}" includes="org/**, javax/**"/>
+  <target name="jar" depends="compile">
+    <jar jarfile="${build.dir}/${name}.jar"
+         basedir="${build.dest}"
+         includes="org/**, javax/**"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Compiles the samples                                                -->
   <!-- =================================================================== -->
-  <target name="samples" depends="package">
+  <target name="samples" depends="jar">
     <mkdir dir="${build.samples}"/>
-    <copydir src="${samples.dir}" dest="${build.samples}" excludes="Makefile"/>
-    <javac srcdir="${build.samples}" destdir="${build.dest}" classpath="${build.dir}/${name}.jar" debug="${debug}"/>
+    <copydir src="${samples.dir}" dest="${build.samples}" excludes="**/Makefile"/>
+    <javac srcdir="${build.samples}"
+           destdir="${build.dest}"
+           classpath="${build.dir}/${name}.jar"
+           debug="${debug}"/>
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the samples package                                           -->
+  <!-- Creates the samples package                                         -->
   <!-- =================================================================== -->
-  <target name="samples-package" depends="samples">
-    <jar jarfile="${build.dir}/${name}Samples.jar" basedir="${build.dest}" includes="dom/**,sax/**,ui/**"/>
+  <target name="sampjar" depends="samples">
+    <jar jarfile="${build.dir}/${name}Samples.jar"
+         basedir="${build.dest}"
+         includes="dom/**,sax/**,ui/**"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Prepares the docs                                                   -->
+  <!-- =================================================================== -->
+  <target name="prepare-docs" depends="init">
+    <mkdir dir="${build.docs}"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Generate HTML docs                                                  -->
   <!-- =================================================================== -->
-  <target name="docs" depends="prepare">
-    <mkdir dir="${build.docs}"/>
-    <java classname="${doc.generator}" args="targetDirectory=${build.docs} ${docs.book} ${style}"/>
+  <target name="docs" depends="prepare, prepare-docs">
+	<echo message="Building docs for ${Name} ${version} ..." />
+    <java fork="yes"
+          classpath="${java.class.path}:${doc.generator.package}"
+          classname="${doc.generator}"
+          args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
   </target>
-  
-  <!-- =================================================================== -->
-  <!-- Creates the web site                                                -->
-  <!-- =================================================================== -->
-  <target name="site" depends="init">
-    <mkdir dir="${site.docs}"/>
-    <java classname="${doc.generator}" args="targetDirectory=${site.docs} ${site.book} ${style}"/>
-  </target>  
-  
+
   <!-- =================================================================== -->
   <!-- Creates the API documentation                                       -->
   <!-- =================================================================== -->
   <target name="javadocs" depends="prepare-src">
     <mkdir dir="${build.javadocs}"/>
-    <javadoc2 packagenames="${packages}"
-              sourcepath="${build.src}"
-              destdir="${build.javadocs}"
-              author="true"
-              version="true"
-              use="true"
-              windowtitle="${Name} API"
-              doctitle="${Name}"
-              bottom="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."
-    />
+    <javadoc packagenames="${packages}"
+             sourcepath="${build.src}"
+             destdir="${build.javadocs}"
+             author="true"
+             version="true"
+             use="true"
+             windowtitle="${Name} API"
+             doctitle="${Name}"
+             bottom="${copyright}" />
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the distribution                                            -->
+  <!-- Prepares the source distribution                                    -->
   <!-- =================================================================== -->
-  <target name="dist" depends="package, docs, javadocs, samples-package">
-    <mkdir dir="${dist.dir}"/>
-    <mkdir dir="${dist.dir}/bin"/>
-    <mkdir dir="${dist.dir}/src"/>
-    <mkdir dir="${dist.dir}/data"/>
-    <mkdir dir="${dist.dir}/docs"/>
-    <mkdir dir="${dist.dir}/docs/apiDocs"/>
-    <mkdir dir="${dist.dir}/samples"/>
+  <target name="pack-src" depends="init">
+    <echo message="Building the source distribution files (zip,tar)"/>
+    <mkdir dir="${distsrc.dir}"/>
+    <mkdir dir="${distsrc.dir}/src"/>
+    <mkdir dir="${distsrc.dir}/data"/>
+    <mkdir dir="${distsrc.dir}/docs"/>
+    <mkdir dir="${distsrc.dir}/samples"/>
 
-    <copydir src="${build.src}" dest="${dist.dir}/src"/>
-    <copydir src="${docs.dir}" dest="${dist.dir}/docs"/>
-    <copydir src="${build.docs}" dest="${dist.dir}/docs/html"/>
-    <copydir src="${build.javadocs}" dest="${dist.dir}/docs/apiDocs"/>
-    <copydir src="${build.samples}" dest="${dist.dir}/samples"/>
-    <copydir src="${data.dir}" dest="${dist.dir}/data"/>
+    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/*.#*" includes="org/**"/>
+    <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/*.#*"/>
+    <copydir src="${docs.dir}" dest="${distsrc.dir}/docs"
+             excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"/>
+    <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
 
-    <copyfile src="${build.dir}/${name}.jar" dest="${dist.dir}/${name}.jar"/>
-    <copyfile src="${build.dir}/${name}Samples.jar" dest="${dist.dir}/${name}Samples.jar"/>
-    <copyfile src="README" dest="${dist.dir}/README"/>
-    <copyfile src="Readme.html" dest="${dist.dir}/Readme.html"/>
-    <copyfile src="STATUS" dest="${dist.dir}/STATUS"/>
-    <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
+    <copyfile src="LICENSE" dest="${distsrc.dir}/LICENSE"/>
+    <copyfile src="README" dest="${distsrc.dir}/README"/>
+    <copyfile src="Readme.html" dest="${distsrc.dir}/Readme.html"/>
+    <copyfile src="STATUS" dest="${distsrc.dir}/STATUS"/>
+    <copyfile src="build.xml" dest="${distsrc.dir}/build.xml"/>
+    <copyfile src="${basedir}/build.sh" dest="${distsrc.dir}/build.sh" />
+    <chmod src="${distsrc.dir}/build.sh" perm="ugo+rx" />
+    <copyfile src="${basedir}/build.bat" dest="${distsrc.dir}/build.bat" />
 
-    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}" includes="bin/**,build.xml,data/**,docs/**,README,Readme.html,samples/**,src/**,STATUS,xerces.jar,xercesSamples.jar"/>
+    <zip zipfile="${build.dir}/${Name}-src${version_postfix}.zip" basedir="${build.dir}"
+         includes="${Name}-src${version_postfix}/**"/>
+    <tar tarfile="${build.dir}/${Name}-src${version_postfix}.tar" basedir="${build.dir}"
+         includes="${Name}-src${version_postfix}/**"/>
+    <gzip zipfile="${build.dir}/${Name}-src${version_postfix}.tar.gz"
+          src="${build.dir}/${Name}-src${version_postfix}.tar" />
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Prepares the binary distribution                                    -->
+  <!-- =================================================================== -->
+  <target name="pack-bin" depends="jar, sampjar, javadocs, docs">
+
+    <echo message="Building the binary distribution files (zip,tar)"/>
+    <mkdir dir="${distbin.dir}"/>
+    <mkdir dir="${distbin.dir}/data"/>
+    <mkdir dir="${distbin.dir}/docs"/>
+    <mkdir dir="${distbin.dir}/docs/html"/>
+    <mkdir dir="${distbin.dir}/docs/apiDocs"/>
+
+    <copydir src="${data.dir}" dest="${distbin.dir}/data" excludes="**/CVS*, **/*.#*"/>
+    <copydir src="${build.docs}" dest="${distbin.dir}/docs/html"/>
+    <copydir src="${build.javadocs}" dest="${distbin.dir}/docs/apiDocs"/>
+
+    <copyfile src="${build.dir}/${name}.jar" dest="${distbin.dir}/${name}.jar"/>
+    <copyfile src="${build.dir}/${name}Samples.jar" dest="${distbin.dir}/${name}Samples.jar"/>
+
+    <copyfile src="LICENSE" dest="${distbin.dir}/LICENSE"/>
+    <copyfile src="Readme.html" dest="${distbin.dir}/Readme.html"/>
+
+    <zip zipfile="${build.dir}/${Name}-bin${version_postfix}.zip" basedir="${build.dir}"
+         includes="${Name}-bin${version_postfix}/**"/>
+    <tar tarfile="${build.dir}/${Name}-bin${version_postfix}.tar" basedir="${build.dir}"
+         includes="${Name}-bin${version_postfix}/**"/>
+    <gzip zipfile="${build.dir}/${Name}-bin${version_postfix}.tar.gz"
+          src="${build.dir}/${Name}-bin${version_postfix}.tar" />
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Do a sanity test using xercesSamples.jar                            -->
+  <!-- =================================================================== -->
+  <target name="test" depends="sampjar">
+	<echo message="Performing sanity test for ${Name} ${version} ..." />
+	<echo message="Running SAXCount ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="sax.SAXCount"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running SAXWriter ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="sax.SAXWriter"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running DOMCount ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="dom.DOMCount"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running DOMWriter ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="dom.DOMWriter"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running DOMFilter ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="dom.DOMFilter"
+          args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
+    <!-- The following are samples but not command-line applications.
+	<echo message="Running IteratorView ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="dom.traversal.IteratorView"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running TreeWalkerView ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="dom.traversal.TreeWalkerView"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running TreeViewer ..." />
+    <java fork="no"
+          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="dom.TreeViewer"
+          args="${data.dir}/personal.xml"/>
+     -->
   </target>
 
   <!-- =================================================================== -->
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
   <target name="clean" depends="init">
+    <delete file="${name}.jar"/>
+    <delete file="${name}Samples.jar"/>
     <deltree dir="${build.dir}"/>
-    <deltree dir="${dist.dir}"/>
   </target>
 
 </project>
