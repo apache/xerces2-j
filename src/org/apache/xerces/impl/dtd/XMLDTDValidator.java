@@ -678,14 +678,18 @@ public class XMLDTDValidator
             }
         }
         fDocLocation = locator;
-        // REVISIT: in DTD validator we need to be able to update namespace context
-        //          thus we need to upcast.
-        if (fNamespaceSupport != null) {
-            fNamespaceSupport.reset();
+        // REVISIT: xni.NamespaceSupport should be read/write, since some
+        //          components might want or need to modify the namespace information
+        // 
+        if (namespaceContext instanceof NamespaceSupport) {
+            fNamespaceSupport = (NamespaceSupport)namespaceContext;
         }
         else {
+            // REVISIT: this is a hack for the case user inserts component before
+            //          DTD validator
             fNamespaceSupport = new NamespaceSupport();
         }
+
         if (fDocumentHandler != null) {
             fDocumentHandler.startDocument(locator, encoding, fNamespaceSupport, augs);
         }
