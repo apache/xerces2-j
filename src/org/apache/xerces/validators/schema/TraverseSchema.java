@@ -426,8 +426,8 @@ public class TraverseSchema implements
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
 
-    private EntityResolver	fEntityResolver = null;
-	
+    private EntityResolver  fEntityResolver = null;
+    
    // REVISIT: maybe need to be moved into SchemaGrammar class
     public class ComplexTypeInfo {
         public String typeName;
@@ -493,11 +493,11 @@ public class TraverseSchema implements
                            GrammarResolver grammarResolver,
                            XMLErrorReporter errorReporter,
                            String schemaURL,
-				   EntityResolver entityResolver
+                   EntityResolver entityResolver
                            ) throws Exception {
         fErrorReporter = errorReporter;
         fCurrentSchemaURL = schemaURL;
-	fEntityResolver = entityResolver;
+    fEntityResolver = entityResolver;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
@@ -788,8 +788,8 @@ public class TraverseSchema implements
         //TO DO: !!!!! location needs to be resolved first.
 
  
-	String location = includeDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
-		
+    String location = includeDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+        
          // expand it before passing it to the parser
          InputSource source = null;
          if (fEntityResolver != null) {
@@ -800,11 +800,11 @@ public class TraverseSchema implements
             source = new InputSource(location);
          }
          else {
-         	// create a string for uniqueness of this included schema in fIncludeLocations
-         	if (source.getPublicId () != null)
-         		location = source.getPublicId ();
-         	
-         	location += (',' + source.getSystemId ());
+            // create a string for uniqueness of this included schema in fIncludeLocations
+            if (source.getPublicId () != null)
+                location = source.getPublicId ();
+            
+            location += (',' + source.getSystemId ());
          }
 
         if (fIncludeLocations.contains((Object)location)) {
@@ -952,7 +952,7 @@ public class TraverseSchema implements
     }
 
     private void traverseImport(Element importDecl)  throws Exception {
- 	String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+    String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
         // expand it before passing it to the parser
          InputSource source = null;
          if (fEntityResolver != null) {
@@ -963,11 +963,11 @@ public class TraverseSchema implements
             source = new InputSource(location);
          }
          else {
-         	// create a string for uniqueness of this imported schema in fImportLocations
-         	if (source.getPublicId () != null)
-         		location = source.getPublicId ();
-         	
-         	location += (',' + source.getSystemId ());
+            // create a string for uniqueness of this imported schema in fImportLocations
+            if (source.getPublicId () != null)
+                location = source.getPublicId ();
+            
+            location += (',' + source.getSystemId ());
          }
 
          if (fImportLocations.contains((Object)location)) {
@@ -975,12 +975,12 @@ public class TraverseSchema implements
         }
         fImportLocations.addElement((Object)location);
 
- 	String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
-	SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
-		
-	if (importedGrammar == null) {
-		importedGrammar = new SchemaGrammar();
-	}
+    String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
+    SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
+        
+    if (importedGrammar == null) {
+        importedGrammar = new SchemaGrammar();
+    }
 
         DOMParser parser = new DOMParser() {
             public void ignorableWhitespace(char ch[], int start, int length) {}
@@ -1189,14 +1189,12 @@ public class TraverseSchema implements
            if( newValidator == null ) { // not previously registered
                boolean  derivedByList = 
                     varietyProperty.equals( SchemaSymbols.ATTVAL_LIST ) ? true:false;
-
                fDatatypeRegistry.createDatatypeValidator( nameOfType, baseValidator,
                               facetData, derivedByList ); 
               
                }
             
            } catch (Exception e) {
-               //e.printStackTrace(System.err);
                reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
            }
         return fStringPool.addSymbol(nameOfType);
@@ -2505,7 +2503,7 @@ public class TraverseSchema implements
                             dv = getDatatypeValidator(typeURI, localpart);
                         }else {
                             // REVISIT: Localize
-                            reportGenericSchemaError("simpleType not found : " + localpart);
+                            reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+localpart+")");
                         }
                     }
                 }
@@ -2521,7 +2519,7 @@ public class TraverseSchema implements
                         dv = getDatatypeValidator(typeURI, localpart);
                     }else {
                         // REVISIT: Localize
-                        reportGenericSchemaError("simpleType not found : " + localpart);
+                        reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+ localpart+")");
                     }
                 }
 
