@@ -63,6 +63,7 @@ import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
+import org.apache.xerces.validators.common.GrammarResolver;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
@@ -153,6 +154,7 @@ public final class XMLDocumentScanner {
     // NOTE: Used by old implementation of scanElementType method. -Ac
     private StringPool.CharArrayRange fCurrentElementCharArrayRange = null;
     /***/
+    GrammarResolver fGrammarResolver = null;
     XMLDTDScanner fDTDScanner = null;
     boolean fNamespacesEnabled = false;
     boolean fValidationEnabled = false;
@@ -287,6 +289,11 @@ public final class XMLDocumentScanner {
      */
     public void setEventHandler(XMLDocumentScanner.EventHandler eventHandler) {
         fEventHandler = eventHandler;
+    }
+
+    /** Sets the grammar resolver. */
+    public void setGrammarResolver(GrammarResolver resolver) {
+        fGrammarResolver = resolver;
     }
 
     /**
@@ -2101,6 +2108,7 @@ public final class XMLDocumentScanner {
         else {
             fDTDScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
         }
+        fDTDScanner.setGrammarResolver(fGrammarResolver);
         // REVISIT: What about standalone?
         if (fDTDScanner.scanDoctypeDecl()) {
             if (fDTDScanner.getReadingExternalEntity()) {
