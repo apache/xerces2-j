@@ -90,9 +90,15 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
 
+    private static final boolean DEBUG=false;
+
+    private static XSParticleDecl fErrorContent=null;
+
     private class ComplexTypeRecoverableError extends Exception {
+
       ComplexTypeRecoverableError() {super();}
       ComplexTypeRecoverableError(String s) {super(s);}
+      
     }
 
     /**
@@ -180,7 +186,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
               //
               // EMPTY complexType with complexContent
               //
-              processComplexContent(child, complexType, null, mixedAtt.booleanValue(),
+              processComplexContent(child, complexType, mixedAtt.booleanValue(),
                                     schemaDoc, grammar);
             }
             else if (DOMUtil.getLocalName(child).equals
@@ -201,23 +207,25 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
               // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
               // Note that it's possible that only attributes are specified.
               //
-              processComplexContent(child, complexType, null, mixedAtt.booleanValue(),
+              processComplexContent(child, complexType, mixedAtt.booleanValue(),
                                     schemaDoc, grammar);
             }
+
        }
        catch (ComplexTypeRecoverableError e) {
-         String message = e.getMessage();
-         System.out.println(message);
-         //handleComplexTypeError(message,typeNameIndex,typeInfo);
+         handleComplexTypeError(e.getMessage(),complexType);
        }
 
+       if (DEBUG) {
+         System.out.println(complexType.toString());
+       }
        return complexType;
 
 
     }
 
     private void processComplexContent(Element complexContentChild,
-                                 XSComplexTypeDecl typeInfo, QName baseName,
+                                 XSComplexTypeDecl typeInfo, 
                                  boolean isMixed,
                                  XSDocumentInfo schemaDoc, SchemaGrammar grammar)
                                  throws ComplexTypeRecoverableError {
@@ -256,47 +264,20 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                   PROCESSING_ALL_GP);
                attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
            }
-           else if (isAttrOrAttrGroup(complexContentChild)) {
-               attrNode = complexContentChild;
-           }
            else {
-               throw new ComplexTypeRecoverableError(
-                "Invalid child '"+ childName +"' in the complex type");
+               // Should be attributes here - will check below...
+               attrNode = complexContentChild;
            }
        }
 
        typeInfo.fParticle = particle;
 
        // -----------------------------------------------------------------------
-       // Merge in information from base, if it exists - TO BE DONE
-       // -----------------------------------------------------------------------
-
-       // -----------------------------------------------------------------------
        // Set the content type
        // -----------------------------------------------------------------------
 
        if (isMixed) {
-
-           // if there are no children, detect an error
-           // See the definition of content type in Structures 3.4.1
-           // This is commented out for now, until I get a clarification from schema WG
-           // LM.
-
-           if (typeInfo.fParticle == null) {
-             //throw new ComplexTypeRecoverableError("Type '" + typeName + "': The content of a mixed complexType must not be empty");
-
-             // for "mixed" complex type with empty content
-             // we add an optional leaf node to the content model
-             // with empty namespace and -1 name (which won't match any element)
-             // so that the result content model is emptible and only match
-             // with cdata
-
-             // TO BE DONE
-
-           }
-
-           else
-             typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+           typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
        }
        else if (typeInfo.fParticle == null)
            typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_EMPTY;
@@ -305,20 +286,34 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
 
        // -------------------------------------------------------------
-       // REVISIT - to we need to add a template element for the type?
+       // Now, process attributes 
        // -------------------------------------------------------------
+       if (attrNode != null) {
+           if (!isAttrOrAttrGroup(attrNode)) {
+              throw new ComplexTypeRecoverableError("Invalid child " + 
+              attrNode.getLocalName() + " in complexType " + typeInfo.fName);
+           }
+           traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,schemaDoc,grammar);
+       }
 
        // -------------------------------------------------------------
-       // Now, check attributes and handle - TO BE DONE
+       // REVISIT - do we need to add a template element for the type?
        // -------------------------------------------------------------
 
 
     } // end processComplexContent
 
 
-    private boolean isAttrOrAttrGroup(Element child) {
-       // REVISIT - TO BE DONE
-       return false;
+    private boolean isAttrOrAttrGroup(Element e)
+    {
+        String elementName = e.getLocalName();
+
+        if (elementName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
+            elementName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ||
+            elementName.equals(SchemaSymbols.ELT_ANYATTRIBUTE))
+          return true;
+        else
+          return false;
     }
 
     private void traverseSimpleContentDecl(Element simpleContentDecl,
@@ -349,6 +344,44 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         return typeName;
     }
 
+
+    private void handleComplexTypeError(String message, 
+                                        XSComplexTypeDecl typeInfo) {
+
+        String typeName = typeInfo.fName; 
+        if (message != null) {
+            reportGenericSchemaError("ComplexType '" + typeName + "': " + message);
+        }
+
+        //
+        //  Mock up the typeInfo structure so that there won't be problems during
+        //  validation
+        //
+        typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+        typeInfo.fParticle = getErrorContent(); 
+
+        // REVISIT - do we need to create a template element?
+
+        return;
+
+    }
+
+    private static XSParticleDecl getErrorContent() {
+      if (fErrorContent==null) {
+        fErrorContent = new XSParticleDecl();
+        fErrorContent.fType = XSParticleDecl.PARTICLE_SEQUENCE;
+        XSParticleDecl particle = new XSParticleDecl();
+        XSWildcardDecl wildcard = new XSWildcardDecl();
+        wildcard.fProcessContents = XSWildcardDecl.WILDCARD_SKIP;
+        particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
+        particle.fValue = wildcard;
+        particle.fMinOccurs = 0;
+        particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+        fErrorContent.fValue = particle; 
+        fErrorContent.fOtherValue = null;
+      }
+      return fErrorContent;
+    }
 
     // HELP FUNCTIONS:
     //
