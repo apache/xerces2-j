@@ -230,7 +230,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         boolean valid=false; 
         DatatypeValidator currentDV = null;
         while ( (fValidatorsSize-1) > index++ ) {  //check content against each validator in Union     
-            currentDV =  (DatatypeValidator)this.fBaseValidators.get(index);
+            currentDV =  (DatatypeValidator)this.fBaseValidators.elementAt(index);
             if ( valid ) {//content is valid
                 break;
             }
