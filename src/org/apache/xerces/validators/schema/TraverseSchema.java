@@ -1076,7 +1076,7 @@ public class TraverseSchema implements
         fIncludeLocations.addElement((Object)location);
 
         DOMParser parser = new IgnoreWhitespaceParser();
-        parser.setEntityResolver( new Resolver() );
+        parser.setEntityResolver( (fEntityResolver != null)? (fEntityResolver):(new Resolver()) );
         parser.setErrorHandler(  new ErrorHandler()
             {
                 public void fatalError(SAXParseException ex) throws SAXException {
@@ -1392,7 +1392,7 @@ public class TraverseSchema implements
         }
 
         DOMParser parser = new IgnoreWhitespaceParser();
-        parser.setEntityResolver( new Resolver() );
+        parser.setEntityResolver( (fEntityResolver != null)? (fEntityResolver):(new Resolver()) );
         parser.setErrorHandler(  new ErrorHandler() );
 
         try {
@@ -2045,8 +2045,8 @@ public class TraverseSchema implements
         }
 
          DOMParser parser = new IgnoreWhitespaceParser();
-         parser.setEntityResolver( new Resolver() );
-         parser.setErrorHandler(  new ErrorHandler()
+         parser.setEntityResolver( (fEntityResolver != null)? (fEntityResolver):(new Resolver()) );
+         parser.setErrorHandler( new ErrorHandler  ()
             {
                 public void fatalError(SAXParseException ex) throws SAXException {
                     StringBuffer str = new StringBuffer();
@@ -2067,8 +2067,8 @@ public class TraverseSchema implements
                                str.toString()+":"+message);
                         throw ex;
                     }
-                }
-            });
+                } 
+            }); 
 
          try {
              parser.setFeature("http://xml.org/sax/features/validation", false);
@@ -8786,7 +8786,7 @@ throws Exception {
         }
 
         DOMParser parser = new IgnoreWhitespaceParser();
-        parser.setEntityResolver( new Resolver() );
+        parser.setEntityResolver( (fEntityResolver != null)? (fEntityResolver):(new Resolver()) );
         parser.setErrorHandler(  new ErrorHandler() );
 
         try {
