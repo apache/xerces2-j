@@ -65,7 +65,7 @@ package org.apache.xerces.impl.v2.datatypes;
  * @author Jeffrey Rodriguez
  * @version $Id$
  */
-public class InvalidDatatypeFacetException extends XMLException {
+public class InvalidDatatypeFacetException extends XSDatatypeException {
     private int majorCode = -1;
     private int minorCode  = -1;
 
