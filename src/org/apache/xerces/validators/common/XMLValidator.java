@@ -530,6 +530,9 @@ public final class XMLValidator
       fSchemaValidationFullChecking = flag;
    }
 
+   //Properties on the parser to allow the user to specify
+   //XML schemas externaly
+   //
    public void setExternalSchemas(Object value){
        fExternalSchemas = (String)value;
    }
@@ -537,6 +540,12 @@ public final class XMLValidator
        fExternalNoNamespaceSchema = (String)value;
    }
    
+   public String getExternalSchemas(){
+       return fExternalSchemas;
+   }
+   public String getExternalNoNamespaceSchema(){
+       return fExternalNoNamespaceSchema;
+   }
 
    /** Returns true if full Schema checking is on. */
    public boolean getSchemaFullCheckingEnabled() {
@@ -2466,8 +2475,7 @@ public final class XMLValidator
 
       fNamespacesScope.increaseDepth();
 
-
-      if (fAttrListHandle != -1) {
+      if (fAttrListHandle != -1 || !fSeenRootElement) {
          int index = attrList.getFirstAttr(fAttrListHandle);
          while (index != -1) {
             int attName = attrList.getAttrName(index);

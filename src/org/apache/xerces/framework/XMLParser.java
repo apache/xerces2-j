@@ -1743,13 +1743,25 @@ public abstract class XMLParser
         // Xerces Properties
         //
 
-        /*
+       
         else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
             //
             // No properties defined yet that are common to all parsers.
             //
+
+            String property = propertyId.substring(XERCES_PROPERTIES_PREFIX.length());
+            //
+            // http://apache.org/xml/features/validation/schema
+            //   Lets the user turn Schema validation support on/off.
+            //
+            if (property.equals("schema/external-schemaLocation")) {
+                return fValidator.getExternalSchemas();
+            }
+            if (property.equals("schema/external-noNamespaceSchemaLocation")) {
+                return fValidator.getExternalNoNamespaceSchema();
+            }
         }
-        */
+       
 
         //
         // Not recognized
