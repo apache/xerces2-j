@@ -88,9 +88,9 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         String uName = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
         UniqueOrKey uniqueOrKey = null;
         if(DOMUtil.getLocalName(uElem).equals(SchemaSymbols.ELT_UNIQUE)) {
-            uniqueOrKey = new UniqueOrKey(uName, IdentityConstraint.UNIQUE);
+            uniqueOrKey = new UniqueOrKey(uName, element.fName, IdentityConstraint.UNIQUE);
         } else {
-            uniqueOrKey = new UniqueOrKey(uName, IdentityConstraint.KEY);
+            uniqueOrKey = new UniqueOrKey(uName, element.fName, IdentityConstraint.KEY);
         }
         // it's XSDElementTraverser's job to ensure that there's no
         // duplication (or if there is that restriction is involved

@@ -91,12 +91,12 @@ public interface ValueStore {
      *              is used to ensure that each field only adds a value
      *              once within a selection scope.
      */
-    public void addValue(Field field, IDValue value) throws Exception;
+    public void addValue(Field field, IDValue value);
 
     /* report an error if a nillable element is being keyed on.
      * the implementor must check that a <key> really is present, not a <unique> or <keyref>.
      * @param:  id:  the IdentityConstraint that has matched.
      */
-    public void reportNilError(IdentityConstraint id) throws Exception;
+    public void reportNilError(IdentityConstraint id);
 
 } // interface ValueStore

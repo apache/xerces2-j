@@ -91,8 +91,8 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
 
         // General Attribute Checking on sElem
-        Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc);
         sElem = checkContent( sElem, icElemAttrs, schemaDoc);
+        Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc);
 
         if(!sElem.getLocalName().equals(SchemaSymbols.ELT_SELECTOR)) {
             // REVISIT: localize
@@ -104,7 +104,11 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
         }
 
-        String sText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]).trim();
+        String sText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]);
+        if(sText == null) // was an error!
+            return;
+        sText = sText.trim();
+
         Selector.XPath sXpath = null;
         try {
             sXpath = new Selector.XPath(sText, fSymbolTable,
@@ -141,7 +145,10 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             if (fieldChild != null) {
                 reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
             }
-            String fText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]).trim();
+            String fText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]);
+            if(fText == null) // error!
+                return;
+            fText = fText.trim();
             try {
                 Field.XPath fXpath = new Field.XPath(fText, fSymbolTable,
                                                      schemaDoc.fNamespaceSupport);

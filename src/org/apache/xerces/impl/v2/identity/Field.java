@@ -209,7 +209,7 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(String content, DatatypeValidator val, boolean isNil) throws Exception {
+        protected void matched(String content, DatatypeValidator val, boolean isNil) {
             super.matched(content, val, isNil);
             if(isNil) {
                 fStore.reportNilError(fIdentityConstraint);

@@ -61,6 +61,7 @@ import org.apache.xerces.impl.v2.SchemaGrammar;
 import org.apache.xerces.impl.v2.xpath.*;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.v2.XSElementDecl;
@@ -205,7 +206,8 @@ public class Selector {
     
         public void startDocumentFragment(NamespaceContext context, SymbolTable symbolTable)
             throws Exception {
-            super.startDocumentFragment(context, symbolTable);
+            super.startDocumentFragment(symbolTable);
+            //super.startDocumentFragment(context, symbolTable);
             fElementDepth = 0;
             fMatchedDepth = -1;
         } // startDocumentFragment(SymbolTable)
@@ -217,14 +219,13 @@ public class Selector {
          * 
          * @param element    The name of the element.
          * @param attributes The element attributes.
-         * @param elemIndex:  index of the element holding these attributes
          * @param grammar:  the SchemaGrammar that all this is being validated by
          *
          * @throws SAXException Thrown by handler to signal an error.
          */
         public void startElement(QName element, XMLAttributes attributes, 
-                                 int elemIndex, SchemaGrammar grammar) throws Exception {
-            super.startElement(element, attributes, elemIndex, grammar);
+                                 SchemaGrammar grammar) throws XNIException {
+            super.startElement(element, attributes, grammar);
             fElementDepth++;
     
             // activate the fields, if selector is matched
@@ -235,13 +236,13 @@ public class Selector {
                 for (int i = 0; i < count; i++) {
                     Field field = fIdentityConstraint.getFieldAt(i);
                     XPathMatcher matcher = fFieldActivator.activateField(field);
-                    matcher.startElement(element, attributes, elemIndex, grammar);
+                    matcher.startElement(element, attributes, grammar);
                 }
             }
     
         } // startElement(QName,XMLAttrList,int)
     
-        public void endElement(QName element, XSElementDecl eDecl, SchemaGrammar grammar) throws Exception {
+        public void endElement(QName element, XSElementDecl eDecl, SchemaGrammar grammar) {
             super.endElement(element, eDecl, grammar);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;

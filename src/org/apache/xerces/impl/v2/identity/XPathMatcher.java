@@ -67,6 +67,7 @@ import org.apache.xerces.impl.v2.xpath.*;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
@@ -151,7 +152,9 @@ public class XPathMatcher {
     protected SymbolTable fSymbolTable;
 
     /** Namespace scope. */
+    /*** REVISIT:  do we need this?  -NG
     protected NamespaceContext fNamespacesScope;
+    */
 
     // the Identity constraint we're the matcher for.  Only
     // used for selectors!  
@@ -231,7 +234,7 @@ public class XPathMatcher {
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(String content, DatatypeValidator val, boolean isNil) throws Exception {
+    protected void matched(String content, DatatypeValidator val, boolean isNil) throws XNIException {
         if (DEBUG_METHODS3) {
             System.out.println(toString()+"#matched(\""+normalize(content)+"\")");
         }
@@ -249,9 +252,8 @@ public class XPathMatcher {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocumentFragment(NamespaceContext context,
-                                      SymbolTable symbolTable) 
-        throws Exception {
+    public void startDocumentFragment(SymbolTable symbolTable) 
+        throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#startDocumentFragment("+
                                //"stringPool="+stringPool+','+
@@ -268,7 +270,9 @@ public class XPathMatcher {
         }
 
         // keep values
+        /****
         fNamespacesScope = context;
+        */
         fSymbolTable = symbolTable;
 
     } // startDocumentFragment(NamespaceContext)
@@ -286,8 +290,8 @@ public class XPathMatcher {
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes, 
-                             int eIndex, SchemaGrammar grammar) 
-        throws Exception {
+                             SchemaGrammar grammar) 
+        throws XNIException {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#startElement("+
                                "element={"+element+"},"+
@@ -444,7 +448,7 @@ public class XPathMatcher {
 
     /** Character content. */
     public void characters(XMLString text) 
-        throws Exception {
+        throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#characters("+
                                "text="+normalize(text.toString())+
@@ -475,7 +479,7 @@ public class XPathMatcher {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element, XSElementDecl eDecl, SchemaGrammar grammar) throws Exception {
+    public void endElement(QName element, XSElementDecl eDecl, SchemaGrammar grammar) {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
@@ -524,7 +528,7 @@ public class XPathMatcher {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endDocumentFragment() throws Exception {
+    public void endDocumentFragment() throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#endDocumentFragment()");
         }
@@ -614,7 +618,7 @@ public class XPathMatcher {
     
     /** Main program. */
     /***
-    public static void main(String[] argv) throws Exception {
+    public static void main(String[] argv) throws XNIException {
 
         if (DEBUG_ANY) {
             for (int i = 0; i < argv.length; i++) {
@@ -623,19 +627,19 @@ public class XPathMatcher {
                 final XPathMatcher matcher = new XPathMatcher(xpath, true);
                 org.apache.xerces.parsers.SAXParser parser = 
                     new org.apache.xerces.parsers.SAXParser(symbols) {
-                    public void startDocument() throws Exception {
+                    public void startDocument() throws XNIException {
                         matcher.startDocumentFragment(symbols, null);
                     }
-                    public void startElement(QName element, XMLAttrList attributes, int handle) throws Exception {
+                    public void startElement(QName element, XMLAttrList attributes, int handle) throws XNIException {
                         matcher.startElement(element, attributes, handle);
                     }
-                    public void characters(char[] ch, int offset, int length) throws Exception {
+                    public void characters(char[] ch, int offset, int length) throws XNIException {
                         matcher.characters(ch, offset, length);
                     }
-                    public void endElement(QName element) throws Exception {
+                    public void endElement(QName element) throws XNIException {
                         matcher.endElement(element);
                     }
-                    public void endDocument() throws Exception {
+                    public void endDocument() throws XNIException {
                         matcher.endDocumentFragment();
                     }
                 };

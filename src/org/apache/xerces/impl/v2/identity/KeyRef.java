@@ -78,8 +78,8 @@ public class KeyRef
     //
 
     /** Constructs a keyref with the specified name. */
-    public KeyRef(String identityConstraintName, UniqueOrKey key) {
-        super(identityConstraintName);
+    public KeyRef(String identityConstraintName, String elemName, UniqueOrKey key) {
+        super(identityConstraintName, elemName);
         fKey = key;
         type = KEYREF;
     } // <init>(String,String,String)

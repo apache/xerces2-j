@@ -88,6 +88,9 @@ public abstract class IdentityConstraint {
     /** Identity constraint name. */
     protected String fIdentityConstraintName;
 
+    /** name of owning element */
+    protected String fElementName;
+
     /** Selector. */
     protected Selector fSelector;
 
@@ -102,8 +105,9 @@ public abstract class IdentityConstraint {
     //
 
     /** Default constructor. */
-    protected IdentityConstraint(String identityConstraintName) {
+    protected IdentityConstraint(String identityConstraintName, String elemName) {
         fIdentityConstraintName = identityConstraintName;
+        fElementName = elemName;
     } // <init>(String,String)
 
     //
@@ -148,6 +152,11 @@ public abstract class IdentityConstraint {
     public Field getFieldAt(int index) {
         return fFields[index];
     } // getFieldAt(int):Field
+
+    // get the name of the owning element
+    public String getElementName () {
+        return fElementName;
+    } // getElementName(): String
 
     //
     // Object methods

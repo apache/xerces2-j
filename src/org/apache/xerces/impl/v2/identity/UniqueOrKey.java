@@ -81,8 +81,8 @@ public class UniqueOrKey
     //
 
     /** Constructs a unique or a key identity constraint. */
-    public UniqueOrKey(String identityConstraintName, short type) {
-        super(identityConstraintName);
+    public UniqueOrKey(String identityConstraintName, String elemName, short type) {
+        super(identityConstraintName, elemName);
         this.type = type;
     } // <init>(String,String)
 

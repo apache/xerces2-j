@@ -81,8 +81,7 @@ public interface FieldActivator {
      *
      * @param identityConstraint The identity constraint.
      */
-    public void startValueScopeFor(IdentityConstraint identityConstraint)
-        throws Exception;
+    public void startValueScopeFor(IdentityConstraint identityConstraint);
 
     /** 
      * Request to activate the specified field. This method returns the
@@ -92,14 +91,13 @@ public interface FieldActivator {
      *
      * @param field The field to activate.
      */
-    public XPathMatcher activateField(Field field) throws Exception;
+    public XPathMatcher activateField(Field field);
 
     /**
      * Ends the value scope for the specified identity constraint.
      *
      * @param identityConstraint The identity constraint.
      */
-    public void endValueScopeFor(IdentityConstraint identityConstraint)
-        throws Exception;
+    public void endValueScopeFor(IdentityConstraint identityConstraint);
 
 } // interface FieldActivator
