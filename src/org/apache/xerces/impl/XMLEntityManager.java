@@ -597,6 +597,8 @@ public class XMLEntityManager
         fEntities.clear();
         fEntityStack.removeAllElements();
 
+        fCurrentEntity = null;
+
         // DEBUG
         if (DEBUG_ENTITIES) {
             addInternalEntity("text", "Hello, World.");
