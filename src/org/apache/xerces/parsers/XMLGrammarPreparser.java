@@ -192,7 +192,7 @@ public class XMLGrammarPreparser {
                 String loaderName = (String)KNOWN_LOADERS.get(grammarType);
                 try {
                     ClassLoader cl = ObjectFactory.findClassLoader();
-                    XMLGrammarLoader gl = (XMLGrammarLoader)(ObjectFactory.newInstance(loaderName, cl));
+                    XMLGrammarLoader gl = (XMLGrammarLoader)(ObjectFactory.newInstance(loaderName, cl, true));
                     fLoaders.put(grammarType, gl);
                 } catch (Exception e) {
                     return false;

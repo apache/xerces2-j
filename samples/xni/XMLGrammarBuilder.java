@@ -153,7 +153,7 @@ public class XMLGrammarBuilder {
             // create parser
             try {
                 ClassLoader cl = ObjectFactory.findClassLoader();
-                parserConfiguration = (XMLParserConfiguration)ObjectFactory.newInstance(parserName, cl);
+                parserConfiguration = (XMLParserConfiguration)ObjectFactory.newInstance(parserName, cl, true);
             }
             catch (Exception e) {
                 parserConfiguration = null;
