@@ -33,7 +33,7 @@
 						<br/>
     Possible &quot;status&quot; values are:</dt>
 					<dd>
-						<b>approved</b> - there appears to be a clear consensus<br/>
+						<span style="background-color:aquamarine"><b>approved</b> - there appears to be a clear consensus</span><br/>
 						<b>tooQuiet</b> - there may be a consensus, but there hasn't been enough 
     input to be sure <br/>
 						<b>hardnessConflict</b> - there is conflict over whether this is a hard or 
@@ -41,7 +41,7 @@
 							<br/>
     vetoConflict</b> - there is a conflict over whether this proposed requirement 
     is a requirement at all<br/>
-						<b>rejected</b> - the proposed requirement appears to be dead<br/>
+						<span style="background-color:silver"><b>rejected</b> - the proposed requirement appears to be dead</span><br/>
 						<b>unevaluated</b> - editor hasn't finished reviewing input
 					</dd>
 				</dl>
@@ -71,6 +71,13 @@
 		<h2>Requirements by Number</h2>
 		<xsl:for-each select="/requirementCatalog/requirements/req">
 			<a href="#req.{@id}">
+				<xsl:attribute name="style">
+				<xsl:choose>
+					<xsl:when test="@status='rejected'">background-color:silver</xsl:when>
+					<xsl:when test="@status='approved'">background-color:aquamarine</xsl:when>
+					<xsl:otherwise>background-color:snow</xsl:otherwise>
+				</xsl:choose>
+				</xsl:attribute>
 				<xsl:value-of select="@id"/>
 			</a>&nbsp;	&nbsp;
 			<xsl:value-of select="substring(def,1,120)"/>
@@ -101,6 +108,13 @@
 	<xsl:template match="req">
 		<xsl:variable name="reqId" select="@id"/>
 		<tr>
+			<xsl:attribute name="bgcolor">
+				<xsl:choose>
+					<xsl:when test="@status='rejected'">silver</xsl:when>
+					<xsl:when test="@status='approved'">aquamarine</xsl:when>
+					<xsl:otherwise>snow</xsl:otherwise>
+				</xsl:choose>
+			</xsl:attribute>
 			<td valign="top">
 				<p>
 					<a>

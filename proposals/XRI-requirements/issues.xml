@@ -2,7 +2,7 @@
 <!-- edited with XML Spy v3.0 (http://www.xmlspy.com) by Edward Staub (private) -->
 <?xml-stylesheet type="text/xsl" href="issues.xsl"?>
 <!DOCTYPE requirementCatalog SYSTEM "issues.dtd">
-<requirementCatalog date="4 September 2000" version="1.5">
+<requirementCatalog date="15 September 2000" version="1.5">
 	<!-- Checked apache general list through messages 2091 through 2375 -->
 	<!-- Checked apache xerces-j-dev list messages 1160 through 1380 -->
 	<categories>
@@ -18,7 +18,7 @@
 		<req id="1" status="approved" strength="hard" cat="Quality">
 			<def>The code shall be maintainable and simple to read.</def>
 			<seeAlso id="5"/>
-			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+			<voteSet opened="26-Aug-00" closed="15-Sept-00">
 				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1">
 					<voteComment>+1 on intent.  But how can this be a "shall" when there is not a measure
 for maintainability or simplicity.  Are there specific criteria that we
@@ -37,6 +37,11 @@ everybody's criteria is this, then it works.
 </voteComment>
 				</vote>
 				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+				<vote voter="Assaf Arkin" email="arkin@arkin.exoffice.com" vote="+1"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Edwin Goei" email="Edwin.Goei@eng.sun.com" vote="+1"/>
 			</voteSet>
 			<refs>
 				<ref set="gen" id="2091"> Above all, this is the primary goal        for any openly developed project as without the ability to read the        code, it's impossible for people to contribute and get involved.</ref>
@@ -52,7 +57,7 @@ everybody's criteria is this, then it works.
 against the other Java based parsers out there).
 </def>
 			<seeAlso id="3"/>
-			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+			<voteSet opened="26-Aug-00" closed="15-Sept-00">
 				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1">
 					<voteComment>I assume that the comparison would be some basket of scenarios, so
 that being efficient with large documents could offset a slightly
@@ -62,6 +67,11 @@ greater initial load size.</voteComment>
 				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
 				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
 				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+				<vote voter="Assaf Arkin" email="arkin@arkin.exoffice.com" vote="+1"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+0"/>
+				<vote voter="Edwin Goei" email="Edwin.Goei@eng.sun.com" vote="+1"/>
 			</voteSet>
 			<refs>
 				<ref set="gen" id="2091">This means small distribution size (JAR file)        and small memory footprint.</ref>
@@ -87,7 +97,7 @@ greater initial load size.</voteComment>
 			</def>
 			<seeAlso id="2"/>
 			<seeAlso id="13"/>
-			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+			<voteSet opened="26-Aug-00" closed="15-Sept-00">
 				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1">
 					<voteComment>If this type of surgery is possible, then it should help
 requirement 2 since loading unused classes could be avoided.
@@ -97,6 +107,11 @@ requirement 2 since loading unused classes could be avoided.
 				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
 				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
 				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+				<vote voter="Assaf Arkin" email="arkin@arkin.exoffice.com" vote="+1"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Edwin Goei" email="Edwin.Goei@eng.sun.com" vote="+1"/>
 			</voteSet>
 			<refs>
 				<ref set="gen" id="2091">It should be possible to build a parser as a set of Jar files        so that a smaller parser can be assembled which fits the need of a        particular implementation. For example, in TV sets do you really need        validation?</ref>
@@ -121,45 +136,71 @@ requirement 2 since loading unused classes could be avoided.
 				<ref set="gen" id="2091"/>
 			</refs>
 		</req>
-				<req id="6" status="rejected" strength="soft" cat="Memory">
+		<req id="6" status="rejected" strength="soft" cat="Memory">
 			<def>The parser should have the smallest possible distribution (JAR) size.</def>
 			<seeAlso id="3"/>
 			<edReqNote>The votes below were votes to remove this requirement.  Its concerns are addressed elsewhere.</edReqNote>
-			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+			<voteSet opened="26-Aug-00" closed="15-Sept-00">
 				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1 to remove"/>
 				<vote voter="Chris Laprun" email="chris.laprun@nist.gov" vote="+1 to remove"/>
 				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1 to remove"/>
 				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1 to remove"/>
 				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1 to remove"/>
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1 to remove"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1 to remove"/>
+				<vote voter="Assaf Arkin" email="arkin@arkin.exoffice.com" vote="+1 to remove"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1 to remove"/>
+				<vote voter="Edwin Goei" email="Edwin.Goei@eng.sun.com" vote="+1 to remove"/>
 			</voteSet>
 			<refs>
 				<ref set="gen" id="2091">This means small distribution size (JAR file)        and small memory footprint.  </ref>
 				<ref set="gen" id="2093">These two requirements [small memory footprint, small jar size -ed] are in direct conflict.   </ref>
 			</refs>
 		</req>
-
 		<req id="7" status="approved" strength="soft" cat="Quality">
 			<def>The design of the parser should be documented, with diagrams where they are more expressive than text.</def>
-			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+			<voteSet opened="26-Aug-00" closed="15-Sept-00">
 				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+0"/>
 				<vote voter="Chris Laprun" email="chris.laprun@nist.gov" vote="+1"/>
 				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
 				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
 				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+				<vote voter="Assaf Arkin" email="arkin@arkin.exoffice.com" vote="+1"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Edwin Goei" email="Edwin.Goei@eng.sun.com" vote="+1"/>
 			</voteSet>
 			<refs>
 				<ref set="gen" id="2104">... would benefit greatly from requirements and design documentation; most especially some diagrams. I find that a dozen or so good diagrams often do a better job of  conveying the design and, perhaps more importantly, the design approach or  philosophy, than written documents.  </ref>
 			</refs>
 		</req>
-		<req id="8" strength="soft" cat="Other">
+		<req id="8" status="rejected" strength="soft" cat="Other">
 			<def>The parser should have the characteristics needed for it to be included in the JDK.</def>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1 to remove"/>
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1 to remove"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1 to remove"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+0"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1 to remove"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1 to remove"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2108"/>
 			</refs>
 		</req>
-		<req id="9" strength="soft" cat="Quality">
+		<req id="9" strength="soft" status="rejected" cat="Quality">
 			<def>The parser should be upwardly compatible with Xerces.</def>
-			<edReqNote>This needs refinement.</edReqNote>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="0"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+0"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="0"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2110">Whatever happened to making things upgrade compatiable. </ref>
 			</refs>
@@ -175,6 +216,15 @@ requirement 2 since loading unused classes could be avoided.
 		</req>
 		<req id="11" strength="soft" cat="Other">
 			<def>Development should be coordinated with xerces-c.</def>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="0"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+0"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="-1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="-1 (non-committer)"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2133">I'd also like to see this be coordinated with the xerces-c developers ... it would be  nice to keep the two parsers in sync so that changes to one parser and  relatively easy to implement in the other. 		 </ref>
 				<ref set="gen" id="2144">I disagree...</ref>
@@ -300,38 +350,83 @@ requirement 2 since loading unused classes could be avoided.
 				<ref set="gen" id="2242"/>
 			</refs>
 		</req>
-		<req id="23" strength="soft" cat="Speed">
-			<def> No significant speed penalty should be invoked for unused features, notably validation. When not validating, the parser should run almost as fast as a non-validating parser. </def>
+		<req id="23" status="approved" strength="soft" cat="Speed">
+			<def> No significant speed penalty should be invoked for unused features, notably validation. When not validating, the parser should run almost as fast (within 5%) as a non-validating parser. </def>
 			<seeAlso id="10"/>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="0"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+0"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+			</voteSet>
 			<refs/>
 		</req>
-		<req id="24" strength="soft" cat="Speed">
+		<req id="24" status="approved" strength="soft" cat="Speed">
 			<def> The parser should provide best-of-breed performance across all JIT's (not just Hotspot). Such performance
 shall not come at the expense of requirement 5.</def>
 			<seeAlso id="5"/>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="xdev" id="1317">-1 (on JDK 1.1)</ref>
 				<ref set="xdev" id="1323">Fast enough to not notice that a parse happened for most data (10 lines to  10K).  To expand on that, when I have Ant read it's data from build.xml, I  shouldn't notice. If I send a bit of form encoded XML data to a server, and  then get some back, it shouldn't be appreciable considering the connection  cost. </ref>
 			</refs>
 		</req>
-		<req id="25" strength="soft" cat="Speed">
+		<req id="25" strength="soft" status="approved" cat="Speed">
 			<def> The parser should support grammar caching and precompilation. </def>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2242"/>
 				<ref set="gen" id="2261"/>
 			</refs>
 		</req>
 		<!--		<req id="27" strength="soft" cat="Speed"> 			<def> The parser should provide mid to upper range validation performance across all JVMs. </def> 			<refs> 				<ref set="gen" id="2242"/> 			</refs> 		</req> -->
-		<req id="28" strength="soft" cat="Features">
+		<req id="28" status="approved" strength="soft" cat="Features">
 			<def> Xerces Native API.  The parser should provide a reasonable core API (fast!) upon which to layer other API's.  Examples of such API's include SAX2, DOM, and JDOM. </def>
 			<seeAlso id="10"/>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="+1"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2207"/>
 				<ref set="gen" id="2221">JDOM is an important up and coming API that already has established a large and rapidly growing groundswell of support and in the  developer community.</ref>
 			</refs>
 		</req>
-		<req id="29" strength="soft" cat="Other">
+		<req id="29" strength="soft" status="approved" cat="Other">
 			<def> The project should produce testcases for both conformance and benchmarking.  </def>
+			<voteSet opened="07-Sept-00" closed="15-Sept-00">
+				<vote voter="Jeffrey Rodriguez" email="jeffreyr_97@hotmail.com" vote="0"/>
+				<vote voter="Eric Ye" email="ericye@locus.apache.org" vote="+1"/>
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+				<vote voter="Arnaud Le Hors" email="lehors@us.ibm.com" vote="+0"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2242"/>
 			</refs>

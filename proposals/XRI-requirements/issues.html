@@ -1,11 +1,11 @@
 <!-- saved from url=(0022)http://internet.e-mail -->
 <html xmlns:fo="http://www.w3.org/1999/XSL/Format">
 <head>
-<title>Proposed Xerces2 Requirements -  4 September 2000</title>
+<title>Proposed Xerces2 Requirements -  15 September 2000</title>
 </head>
 <body bgcolor="#FFFFFF">
 <h1>Proposed Xerces2 Requirements</h1>
-<h4>Date: 4 September 2000<br>
+<h4>Date: 15 September 2000<br>
   Editors: &nbsp;&nbsp;<a href="mailto:estaub@mediaone.net">Ed Staub</a>&nbsp;&nbsp;<a href="mailto:twleung@sauria.com">Ted Leung</a>
 </h4>
 <hr>
@@ -24,7 +24,8 @@
 <br>
     Possible "status" values are:</dt>
 <dd>
-<b>approved</b> - there appears to be a clear consensus<br>
+<span style="background-color:aquamarine"><b>approved</b> - there appears to be a clear consensus</span>
+<br>
 <b>tooQuiet</b> - there may be a consensus, but there hasn't been enough 
     input to be sure <br>
 <b>hardnessConflict</b> - there is conflict over whether this is a hard or 
@@ -32,148 +33,149 @@
 <br>
     vetoConflict</b> - there is a conflict over whether this proposed requirement 
     is a requirement at all<br>
-<b>rejected</b> - the proposed requirement appears to be dead<br>
+<span style="background-color:silver"><b>rejected</b> - the proposed requirement appears to be dead</span>
+<br>
 <b>unevaluated</b> - editor hasn't finished reviewing input
 					</dd>
 </dl>
 <hr>
 <h2>Requirements by Number</h2>
-<a href="#req.1">1</a>
+<a href="#req.1" style="background-color:aquamarine">1</a>
 			&nbsp;	&nbsp;
 			The code shall be maintainable and simple to read.<br>
-<a href="#req.2">2</a>
+<a href="#req.2" style="background-color:aquamarine">2</a>
 			&nbsp;	&nbsp;
 			The parser should have a competitive memory footprint (competitive
 against the other Java based parsers out there).
 <br>
-<a href="#req.3">3</a>
+<a href="#req.3" style="background-color:aquamarine">3</a>
 			&nbsp;	&nbsp;
 			The parser shall be designed so as to allow deployment of minimal subsets suitable for low-end, memory-constrained appli...<br>
-<a href="#req.4">4</a>
+<a href="#req.4" style="background-color:aquamarine">4</a>
 			&nbsp;	&nbsp;
 			The parser shall run well on all virutal machines and 			shall not be optimized toward a particular virtual machine.<br>
-<a href="#req.5">5</a>
+<a href="#req.5" style="background-color:aquamarine">5</a>
 			&nbsp;	&nbsp;
 			Optimizations that interfere with readability,        modularity, or size should be shunned.  <br>
 <br>
-<a href="#req.6">6</a>
+<a href="#req.6" style="background-color:silver">6</a>
 			&nbsp;	&nbsp;
 			The parser should have the smallest possible distribution (JAR) size.<br>
-<a href="#req.7">7</a>
+<a href="#req.7" style="background-color:aquamarine">7</a>
 			&nbsp;	&nbsp;
 			The design of the parser should be documented, with diagrams where they are more expressive than text.<br>
-<a href="#req.8">8</a>
+<a href="#req.8" style="background-color:silver">8</a>
 			&nbsp;	&nbsp;
 			The parser should have the characteristics needed for it to be included in the JDK.<br>
-<a href="#req.9">9</a>
+<a href="#req.9" style="background-color:silver">9</a>
 			&nbsp;	&nbsp;
 			The parser should be upwardly compatible with Xerces.<br>
-<a href="#req.10">10</a>
+<a href="#req.10" style="background-color:aquamarine">10</a>
 			&nbsp;	&nbsp;
 			The parser shall be cleanly modular.<br>
 <br>
-<a href="#req.11">11</a>
+<a href="#req.11" style="background-color:snow">11</a>
 			&nbsp;	&nbsp;
 			Development should be coordinated with xerces-c.<br>
-<a href="#req.12">12</a>
+<a href="#req.12" style="background-color:aquamarine">12</a>
 			&nbsp;	&nbsp;
 			The parser shall support SAX2.<br>
-<a href="#req.13a">13a</a>
+<a href="#req.13a" style="background-color:snow">13a</a>
 			&nbsp;	&nbsp;
 			
 				Read-only, memory conservative, high performance DOM subset. In some  ways, this is optional, since the alternative...<br>
-<a href="#req.13b">13b</a>
+<a href="#req.13b" style="background-color:snow">13b</a>
 			&nbsp;	&nbsp;
 			
 				parse-next function, with added control over buffer size.  <br>
-<a href="#req.13c">13c</a>
+<a href="#req.13c" style="background-color:snow">13c</a>
 			&nbsp;	&nbsp;
 			
 				Some sort of way to tell if a SAX char buffer is going to be  overwritten, so data doesn't have to be copied until ...<br>
-<a href="#req.13d">13d</a>
+<a href="#req.13d" style="background-color:snow">13d</a>
 			&nbsp;	&nbsp;
 			
 				Serialization support, as is currently in Assaf's classes.  <br>
-<a href="#req.13e">13e</a>
+<a href="#req.13e" style="background-color:snow">13e</a>
 			&nbsp;	&nbsp;
 			
 				Schema data-type support, which will be needed for XSLT2, and Xalan 2.0  extensions. <br>
-<a href="#req.13f">13f</a>
+<a href="#req.13f" style="background-color:snow">13f</a>
 			&nbsp;	&nbsp;
 			
 				Small core footprint for standalone, compiled stylesheet capability, for  use on small devices. This would need to ...<br>
-<a href="#req.14">14</a>
+<a href="#req.14" style="background-color:aquamarine">14</a>
 			&nbsp;	&nbsp;
 			The parser shall validate XML 1.0.<br>
-<a href="#req.15">15</a>
+<a href="#req.15" style="background-color:aquamarine">15</a>
 			&nbsp;	&nbsp;
 			 The parser shall support namespaces.<br>
 <br>
-<a href="#req.16">16</a>
+<a href="#req.16" style="background-color:aquamarine">16</a>
 			&nbsp;	&nbsp;
 			 The parser shall support DOM Level 2. <br>
-<a href="#req.18">18</a>
+<a href="#req.18" style="background-color:aquamarine">18</a>
 			&nbsp;	&nbsp;
 			 The parser shall support XML Schema. <br>
-<a href="#req.19">19</a>
+<a href="#req.19" style="background-color:aquamarine">19</a>
 			&nbsp;	&nbsp;
 			 The parser shall support XPath. <br>
-<a href="#req.20">20</a>
+<a href="#req.20" style="background-color:snow">20</a>
 			&nbsp;	&nbsp;
 			 The parser should support XInclude. <br>
 <br>
-<a href="#req.21">21</a>
+<a href="#req.21" style="background-color:snow">21</a>
 			&nbsp;	&nbsp;
 			 The parser should support write validation of a DOM tree or revalidation. <br>
-<a href="#req.22">22</a>
+<a href="#req.22" style="background-color:snow">22</a>
 			&nbsp;	&nbsp;
 			 The parser shall support grammar access for both DTD and Schema. <br>
-<a href="#req.23">23</a>
+<a href="#req.23" style="background-color:aquamarine">23</a>
 			&nbsp;	&nbsp;
 			 No significant speed penalty should be invoked for unused features, notably validation. When not validating, the parser...<br>
-<a href="#req.24">24</a>
+<a href="#req.24" style="background-color:aquamarine">24</a>
 			&nbsp;	&nbsp;
 			 The parser should provide best-of-breed performance across all JIT's (not just Hotspot). Such performance
 shall not com...<br>
-<a href="#req.25">25</a>
+<a href="#req.25" style="background-color:aquamarine">25</a>
 			&nbsp;	&nbsp;
 			 The parser should support grammar caching and precompilation. <br>
 <br>
-<a href="#req.28">28</a>
+<a href="#req.28" style="background-color:aquamarine">28</a>
 			&nbsp;	&nbsp;
 			 Xerces Native API.  The parser should provide a reasonable core API (fast!) upon which to layer other API's.  Examples ...<br>
-<a href="#req.29">29</a>
+<a href="#req.29" style="background-color:aquamarine">29</a>
 			&nbsp;	&nbsp;
 			 The project should produce testcases for both conformance and benchmarking.  <br>
-<a href="#req.30">30</a>
+<a href="#req.30" style="background-color:silver">30</a>
 			&nbsp;	&nbsp;
 			 The parse shall support SAX 1 <br>
 <br>
-<a href="#req.31">31</a>
+<a href="#req.31" style="background-color:snow">31</a>
 			&nbsp;	&nbsp;
 			 The core parser should not directly support any tree model. <br>
-<a href="#req.32">32</a>
+<a href="#req.32" style="background-color:silver">32</a>
 			&nbsp;	&nbsp;
 			 The parser shall support Java 1.1 <br>
-<a href="#req.33">33</a>
+<a href="#req.33" style="background-color:snow">33</a>
 			&nbsp;	&nbsp;
 			 The parser should support loading and validating only certainrequested portions of a document -- a useful feature  when...<br>
-<a href="#req.34">34</a>
+<a href="#req.34" style="background-color:snow">34</a>
 			&nbsp;	&nbsp;
 			 The parser shall support the XML  Information Set. <br>
-<a href="#req.35">35</a>
+<a href="#req.35" style="background-color:snow">35</a>
 			&nbsp;	&nbsp;
 			 The parser should support pull model parsing. <br>
 <br>
-<a href="#req.37">37</a>
+<a href="#req.37" style="background-color:snow">37</a>
 			&nbsp;	&nbsp;
 			 The DOM should emit events to interested listeners when changes are made to the DOM <br>
-<a href="#req.38">38</a>
+<a href="#req.38" style="background-color:snow">38</a>
 			&nbsp;	&nbsp;
 			 The parser should support 
 					RELAX
 				. <br>
-<a href="#req.39">39</a>
+<a href="#req.39" style="background-color:snow">39</a>
 			&nbsp;	&nbsp;
 			 The parser should allow for automatic detection of compressed/encrypted documents. <br>
 <hr>
@@ -197,7 +199,7 @@ shall not com...<br>
 <h3>
 <a name="#cat.{.}"></a>Architecture</h3>
 <table border="1" width="95%">
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.3"></a><b>3.</b>
@@ -234,7 +236,7 @@ shall not com...<br>
 		&nbsp;&nbsp;
 	</p>
 <b><i>Voted</i></b>
-		 on from 26-Aug-00 to 4-Sept-00.  Votes:
+		 on from 26-Aug-00 to 15-Sept-00.  Votes:
 	<ul>
 <li>
 <a href="mailto:CurtA@techie.com">Curt Arnold</a>
@@ -255,6 +257,21 @@ requirement 2 since loading unused classes could be avoided.
 			: +1</li>
 <li>
 <a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+<li>
+<a href="mailto:arkin@arkin.exoffice.com">Assaf Arkin</a>
+			: +1</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:Edwin.Goei@eng.sun.com">Edwin Goei</a>
 			: +1</li>
 </ul>
 <b><i>References</i></b>
@@ -315,7 +332,7 @@ requirement 2 since loading unused classes could be avoided.
 <h3>
 <a name="#cat.{.}"></a>Standards</h3>
 <table border="1" width="95%">
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.12"></a><b>12.</b>
@@ -357,7 +374,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.14"></a><b>14.</b>
@@ -385,7 +402,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.15"></a><b>15.</b>
@@ -413,7 +430,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.18"></a><b>18.</b>
@@ -450,7 +467,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.19"></a><b>19.</b>
@@ -525,7 +542,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.20"></a><b>20.</b>
@@ -571,7 +588,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.22"></a><b>22.</b>
@@ -604,7 +621,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="silver">
 <td valign="top">
 <p>
 <a name="req.30"></a><b>30.</b>
@@ -650,7 +667,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="silver">
 <td valign="top">
 <p>
 <a name="req.32"></a><b>32.</b>
@@ -718,7 +735,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.34"></a><b>34.</b>
@@ -759,7 +776,7 @@ requirement 2 since loading unused classes could be avoided.
 <h3>
 <a name="#cat.{.}"></a>Features</h3>
 <table border="1" width="95%">
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.13a"></a><b>13a.</b>
@@ -797,7 +814,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.13b"></a><b>13b.</b>
@@ -835,7 +852,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.13c"></a><b>13c.</b>
@@ -873,7 +890,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.13d"></a><b>13d.</b>
@@ -911,7 +928,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.13e"></a><b>13e.</b>
@@ -949,7 +966,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.13f"></a><b>13f.</b>
@@ -987,7 +1004,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.16"></a><b>16.</b>
@@ -1015,7 +1032,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.21"></a><b>21.</b>
@@ -1043,13 +1060,13 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.28"></a><b>28.</b>
 <br>
         &nbsp;&nbsp;soft<br>
-        &nbsp;&nbsp;unevaluated</p>
+        &nbsp;&nbsp;approved</p>
 </td><td valign="top">
 <p>
 <b>
@@ -1062,6 +1079,31 @@ requirement 2 since loading unused classes could be avoided.
 		<a href="#req.10">10</a>
 		&nbsp;&nbsp;
 	</p>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +1</li>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +1</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: +1</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+</ul>
 <b><i>References</i></b>
 <br>
 <p>
@@ -1085,7 +1127,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.31"></a><b>31.</b>
@@ -1213,7 +1255,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.33"></a><b>33.</b>
@@ -1243,7 +1285,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.35"></a><b>35.</b>
@@ -1307,7 +1349,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.37"></a><b>37.</b>
@@ -1337,7 +1379,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.38"></a><b>38.</b>
@@ -1356,7 +1398,7 @@ requirement 2 since loading unused classes could be avoided.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.39"></a><b>39.</b>
@@ -1377,7 +1419,7 @@ requirement 2 since loading unused classes could be avoided.
 <h3>
 <a name="#cat.{.}"></a>Memory</h3>
 <table border="1" width="95%">
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.2"></a><b>2.</b>
@@ -1399,7 +1441,7 @@ against the other Java based parsers out there).
 		&nbsp;&nbsp;
 	</p>
 <b><i>Voted</i></b>
-		 on from 26-Aug-00 to 4-Sept-00.  Votes:
+		 on from 26-Aug-00 to 15-Sept-00.  Votes:
 	<ul>
 <li>
 <a href="mailto:CurtA@techie.com">Curt Arnold</a>
@@ -1420,6 +1462,21 @@ greater initial load size.</voteComment>
 			: +1</li>
 <li>
 <a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+<li>
+<a href="mailto:arkin@arkin.exoffice.com">Assaf Arkin</a>
+			: +1</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +0</li>
+<li>
+<a href="mailto:Edwin.Goei@eng.sun.com">Edwin Goei</a>
 			: +1</li>
 </ul>
 <b><i>References</i></b>
@@ -1463,7 +1520,7 @@ greater initial load size.</voteComment>
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="silver">
 <td valign="top">
 <p>
 <a name="req.6"></a><b>6.</b>
@@ -1483,7 +1540,7 @@ greater initial load size.</voteComment>
 		&nbsp;&nbsp;
 	</p>
 <b><i>Voted</i></b>
-		 on from 26-Aug-00 to 4-Sept-00.  Votes:
+		 on from 26-Aug-00 to 15-Sept-00.  Votes:
 	<ul>
 <li>
 <a href="mailto:CurtA@techie.com">Curt Arnold</a>
@@ -1499,6 +1556,21 @@ greater initial load size.</voteComment>
 			: +1 to remove</li>
 <li>
 <a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:arkin@arkin.exoffice.com">Assaf Arkin</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:Edwin.Goei@eng.sun.com">Edwin Goei</a>
 			: +1 to remove</li>
 </ul>
 <blockquote>
@@ -1530,7 +1602,7 @@ greater initial load size.</voteComment>
 <h3>
 <a name="#cat.{.}"></a>Speed</h3>
 <table border="1" width="95%">
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.4"></a><b>4.</b>
@@ -1580,17 +1652,17 @@ greater initial load size.</voteComment>
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.23"></a><b>23.</b>
 <br>
         &nbsp;&nbsp;soft<br>
-        &nbsp;&nbsp;unevaluated</p>
+        &nbsp;&nbsp;approved</p>
 </td><td valign="top">
 <p>
 <b>
-<def> No significant speed penalty should be invoked for unused features, notably validation. When not validating, the parser should run almost as fast as a non-validating parser. </def>
+<def> No significant speed penalty should be invoked for unused features, notably validation. When not validating, the parser should run almost as fast (within 5%) as a non-validating parser. </def>
 </b>
 </p>
 <blockquote>
@@ -1599,16 +1671,41 @@ greater initial load size.</voteComment>
 		<a href="#req.10">10</a>
 		&nbsp;&nbsp;
 	</p>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: 0</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +0</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +1</li>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +1</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: +1</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+</ul>
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.24"></a><b>24.</b>
 <br>
         &nbsp;&nbsp;soft<br>
-        &nbsp;&nbsp;unevaluated</p>
+        &nbsp;&nbsp;approved</p>
 </td><td valign="top">
 <p>
 <b>
@@ -1622,6 +1719,31 @@ shall not come at the expense of requirement 5.</def>
 		<a href="#req.5">5</a>
 		&nbsp;&nbsp;
 	</p>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +1</li>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +1</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: +1</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+</ul>
 <b><i>References</i></b>
 <br>
 <p>"<ref set="xdev" id="1317">-1 (on JDK 1.1)</ref>"<br>
@@ -1649,13 +1771,13 @@ shall not come at the expense of requirement 5.</def>
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.25"></a><b>25.</b>
 <br>
         &nbsp;&nbsp;soft<br>
-        &nbsp;&nbsp;unevaluated</p>
+        &nbsp;&nbsp;approved</p>
 </td><td valign="top">
 <p>
 <b>
@@ -1663,6 +1785,31 @@ shall not come at the expense of requirement 5.</def>
 </b>
 </p>
 <blockquote>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +1</li>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +1</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: +1</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+</ul>
 <b><i>References</i></b>
 <br>
 <p>
@@ -1690,7 +1837,7 @@ shall not come at the expense of requirement 5.</def>
 <h3>
 <a name="#cat.{.}"></a>Quality</h3>
 <table border="1" width="95%">
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.1"></a><b>1.</b>
@@ -1710,7 +1857,7 @@ shall not come at the expense of requirement 5.</def>
 		&nbsp;&nbsp;
 	</p>
 <b><i>Voted</i></b>
-		 on from 26-Aug-00 to 4-Sept-00.  Votes:
+		 on from 26-Aug-00 to 15-Sept-00.  Votes:
 	<ul>
 <li>
 <a href="mailto:CurtA@techie.com">Curt Arnold</a>
@@ -1741,6 +1888,21 @@ everybody's criteria is this, then it works.
 </li>
 <li>
 <a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+<li>
+<a href="mailto:arkin@arkin.exoffice.com">Assaf Arkin</a>
+			: +1</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:Edwin.Goei@eng.sun.com">Edwin Goei</a>
 			: +1</li>
 </ul>
 <b><i>References</i></b>
@@ -1802,7 +1964,7 @@ everybody's criteria is this, then it works.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.5"></a><b>5.</b>
@@ -1835,7 +1997,7 @@ everybody's criteria is this, then it works.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.7"></a><b>7.</b>
@@ -1850,7 +2012,7 @@ everybody's criteria is this, then it works.
 </p>
 <blockquote>
 <b><i>Voted</i></b>
-		 on from 26-Aug-00 to 4-Sept-00.  Votes:
+		 on from 26-Aug-00 to 15-Sept-00.  Votes:
 	<ul>
 <li>
 <a href="mailto:CurtA@techie.com">Curt Arnold</a>
@@ -1867,6 +2029,21 @@ everybody's criteria is this, then it works.
 <li>
 <a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
 			: +1</li>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+<li>
+<a href="mailto:arkin@arkin.exoffice.com">Assaf Arkin</a>
+			: +1</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:Edwin.Goei@eng.sun.com">Edwin Goei</a>
+			: +1</li>
 </ul>
 <b><i>References</i></b>
 <br>
@@ -1882,13 +2059,13 @@ everybody's criteria is this, then it works.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="silver">
 <td valign="top">
 <p>
 <a name="req.9"></a><b>9.</b>
 <br>
         &nbsp;&nbsp;soft<br>
-        &nbsp;&nbsp;unevaluated</p>
+        &nbsp;&nbsp;rejected</p>
 </td><td valign="top">
 <p>
 <b>
@@ -1896,8 +2073,31 @@ everybody's criteria is this, then it works.
 </b>
 </p>
 <blockquote>
-<blockquote>
-<i>Ed:</i>This needs refinement.</blockquote>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: 0</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +1</li>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +0</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: 0</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+</ul>
 <b><i>References</i></b>
 <br>
 <p>"<ref set="gen" id="2110">Whatever happened to making things upgrade compatiable. </ref>"<br>
@@ -1912,7 +2112,7 @@ everybody's criteria is this, then it works.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.10"></a><b>10.</b>
@@ -1971,13 +2171,13 @@ everybody's criteria is this, then it works.
 <h3>
 <a name="#cat.{.}"></a>Other</h3>
 <table border="1" width="95%">
-<tr>
+<tr bgcolor="silver">
 <td valign="top">
 <p>
 <a name="req.8"></a><b>8.</b>
 <br>
         &nbsp;&nbsp;soft<br>
-        &nbsp;&nbsp;unevaluated</p>
+        &nbsp;&nbsp;rejected</p>
 </td><td valign="top">
 <p>
 <b>
@@ -1985,6 +2185,31 @@ everybody's criteria is this, then it works.
 </b>
 </p>
 <blockquote>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +0</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1 to remove</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+</ul>
 <b><i>References</i></b>
 <br>
 <p>
@@ -1999,7 +2224,7 @@ everybody's criteria is this, then it works.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="snow">
 <td valign="top">
 <p>
 <a name="req.11"></a><b>11.</b>
@@ -2013,6 +2238,31 @@ everybody's criteria is this, then it works.
 </b>
 </p>
 <blockquote>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: 0</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +1</li>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +0</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: -1</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: -1 (non-committer)</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +1</li>
+</ul>
 <b><i>References</i></b>
 <br>
 <p>"<ref set="gen" id="2133">I'd also like to see this be coordinated with the xerces-c developers ... it would be  nice to keep the two parsers in sync so that changes to one parser and  relatively easy to implement in the other. 		 </ref>"<br>
@@ -2099,13 +2349,13 @@ everybody's criteria is this, then it works.
 </blockquote>
 </td>
 </tr>
-<tr>
+<tr bgcolor="aquamarine">
 <td valign="top">
 <p>
 <a name="req.29"></a><b>29.</b>
 <br>
         &nbsp;&nbsp;soft<br>
-        &nbsp;&nbsp;unevaluated</p>
+        &nbsp;&nbsp;approved</p>
 </td><td valign="top">
 <p>
 <b>
@@ -2113,6 +2363,31 @@ everybody's criteria is this, then it works.
 </b>
 </p>
 <blockquote>
+<b><i>Voted</i></b>
+		 on from 07-Sept-00 to 15-Sept-00.  Votes:
+	<ul>
+<li>
+<a href="mailto:jeffreyr_97@hotmail.com">Jeffrey Rodriguez</a>
+			: 0</li>
+<li>
+<a href="mailto:ericye@locus.apache.org">Eric Ye</a>
+			: +1</li>
+<li>
+<a href="mailto:CurtA@techie.com">Curt Arnold</a>
+			: +1</li>
+<li>
+<a href="mailto:duncan@x180.com">James Duncan Davidson</a>
+			: +1</li>
+<li>
+<a href="mailto:twleung@sauria.com">Ted Leung</a>
+			: +1</li>
+<li>
+<a href="mailto:mhk@dia.dk">Mikael Helbo Kjaer</a>
+			: +1</li>
+<li>
+<a href="mailto:lehors@us.ibm.com">Arnaud Le Hors</a>
+			: +0</li>
+</ul>
 <b><i>References</i></b>
 <br>
 <p>
