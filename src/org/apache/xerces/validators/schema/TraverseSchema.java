@@ -5881,9 +5881,9 @@ throws Exception {
         			}
         			QName referredAttQName = new QName(-1,referredAttName,referredAttName,uriIndex);
 
-	                	int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
-						XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
-						fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
+	                int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
+                    XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
+					fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
 
                     boolean updated = false;
 
@@ -5899,11 +5899,11 @@ throws Exception {
                        (attValueAndUseType & useDigits))
                     {
                         if(referredAttrDecl.defaultType != XMLAttributeDecl.USE_TYPE_PROHIBITED) {
-                            referredAttrDecl.defaultType |= useDigits;
-                            referredAttrDecl.defaultType ^= useDigits; // clear the use
-                        referredAttrDecl.defaultType |= (attValueAndUseType & useDigits);
-                        updated = true;
-					}
+                                referredAttrDecl.defaultType |= useDigits;
+                                referredAttrDecl.defaultType ^= useDigits; // clear the use
+                            referredAttrDecl.defaultType |= (attValueAndUseType & useDigits);
+                            updated = true;
+					    }
 					}
 
                     if(fixedStr.length() > 0) {
@@ -5913,8 +5913,8 @@ throws Exception {
                             referredAttrDecl.defaultType |= XMLAttributeDecl.VALUE_CONSTRAINT_FIXED;
                             referredAttrDecl.defaultValue = fixedStr;
                             updated = true;
-					}
-			}
+					    }
+                    }
 
                     if(updated) {
                         fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
@@ -6069,6 +6069,8 @@ throws Exception {
             fTempAttributeDecl.list = attIsList;
             if (attValueConstraint != -1 ) {
                 fTempAttributeDecl.defaultValue = fStringPool.toString(attValueConstraint);
+            } else {
+                fTempAttributeDecl.defaultValue = null;
             }
             fAttributeDeclRegistry.put(attNameStr, new XMLAttributeDecl(fTempAttributeDecl));
         }
@@ -6090,7 +6092,6 @@ throws Exception {
                }
                typeInfo.setContainsAttrTypeID();
             }
-
             fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
                                       attQName, attType,
                                       dataTypeSymbol, attValueAndUseType,
