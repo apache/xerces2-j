@@ -1445,9 +1445,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 if (!cdata || required || attValue != -1) {
                     int i = attrList.getFirstAttr(firstCheck);
                     while (i != -1 && (lastCheck == -1 || i <= lastCheck)) {
-                        //if (fStringPool.equalNames(attrList.getAttrName(i), attName)) {
-                        if ( fStringPool.equalNames(attrList.getAttrLocalpart(i), attName)
-                             && fStringPool.equalNames(attrList.getAttrURI(i), fTempAttDecl.name.uri) ) {
+
+                        if ( (fGrammarIsDTDGrammar && (attrList.getAttrName(i) == fTempAttDecl.name.rawname)) ||
+                             (  fStringPool.equalNames(attrList.getAttrLocalpart(i), attName)
+                                && fStringPool.equalNames(attrList.getAttrURI(i), fTempAttDecl.name.uri) ) ) {
+
                             if (validationEnabled && attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) {
                                 int alistValue = attrList.getAttValue(i);
                                 if (alistValue != attValue &&
