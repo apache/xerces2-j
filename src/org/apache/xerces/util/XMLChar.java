@@ -534,6 +534,23 @@ public class XMLChar {
         return true;
     } // isValidName(String):boolean
     
+
+    /*
+     * from the namespace rec
+     * [4] NCName ::= (Letter | '_') (NCNameChar)*
+     */
+    /**
+     * Check to see if a string is a valid NCName according to [4]
+     * from the XML Namespaces 1.0 Recommendation
+     *
+     * @param name string to check
+     * @return true if name is a valid NCName
+     */
+    public static boolean isValidNCName(String name) {
+        //REVISIT: implement this method!!
+        return true;
+    }
+
     /*
      * [7] Nmtoken ::= (NameChar)+
      */
