@@ -1263,35 +1263,44 @@ public class XMLDTDScanner
                                  null);
             }
             scanLiteral(fLiteral, false);
-            // REVISIT: report error if whitespace after literal is missing
             publicId = fLiteral.toString();
-        }
-
-        // system id
-        String systemId = null;
-        if (publicId != null || fEntityScanner.skipString("SYSTEM")) {
-            // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
                 reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
                                  null);
             }
-            scanLiteral(fLiteral, false);
-            // REVISIT: report error if whitespace after literal is missing
-            systemId = fLiteral.toString();
         }
 
-        // NDATA
+        // system id
+        String systemId = null;
         String notation = null;
-        if (systemId != null && !isPEDecl && fEntityScanner.skipString("NDATA")) {
+        if (publicId != null || fEntityScanner.skipString("SYSTEM")) {
             // spaces
-            if (!skipSeparator(true, !scanningInternalSubset())) {
-                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
-                                 new Object[]{name});
+            if (publicId == null
+                && !skipSeparator(true, !scanningInternalSubset())) {
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
+                                 null);
             }
-            notation = fEntityScanner.scanName();
-            if (notation == null) {
-                reportFatalError("MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL",
-                                 new Object[]{name});
+            scanLiteral(fLiteral, false);
+            systemId = fLiteral.toString();
+            if (!isPEDecl) {
+                // NDATA
+                if (!skipSeparator(true, !scanningInternalSubset())) {
+                    reportFatalError("MSG_SPACE_REQUIRED_AFTER_SYSTEMLITERAL_IN_EXTERNALID",
+                                     null);
+                }
+
+                if (fEntityScanner.skipString("NDATA")) {
+                    // spaces
+                    if (!skipSeparator(true, !scanningInternalSubset())) {
+                        reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
+                                         new Object[]{name});
+                    }
+                    notation = fEntityScanner.scanName();
+                    if (notation == null) {
+                        reportFatalError("MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL",
+                                         new Object[]{name});
+                    }
+                }
             }
         }
 
