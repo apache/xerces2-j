@@ -440,6 +440,13 @@ public class SchemaGrammar extends Grammar{
             return -1;
         }
         int attDefIndex = getFirstAttributeDeclIndex(elementIndex);
+        return findAttributeDecl(attDefIndex, attribute);
+
+    } // getAttributeDeclIndex (int,QName)
+
+    public int findAttributeDecl(int attListHead, QName attribute) {
+
+        int attDefIndex = attListHead;                                  
         while (attDefIndex != -1) {
             getAttributeDecl(attDefIndex, fTempAttributeDecl);
             if (fTempAttributeDecl.name.localpart == attribute.localpart &&
@@ -449,8 +456,8 @@ public class SchemaGrammar extends Grammar{
             attDefIndex = getNextAttributeDeclIndex(attDefIndex);
         }
         return -1;
-    } // getAttributeDeclIndex (int,QName)
-
+     }
+         
     /**
      *@return the new contentSpec Index
      */
