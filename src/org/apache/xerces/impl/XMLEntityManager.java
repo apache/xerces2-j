@@ -369,7 +369,6 @@ public class XMLEntityManager
 
         // was entity declared?
         Entity entity = (Entity)fEntities.get(entityName);
-        boolean external = entity.isExternal();
         if (entity == null) {
             if (fStandalone && entityName.startsWith("%")) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -394,15 +393,19 @@ public class XMLEntityManager
         }
 
         // is entity recursive?
+        boolean external = entity.isExternal();
         int size = fEntityStack.size();
-        for (int i = size - 1; i >= 0; i--) {
-            Entity activeEntity = (Entity)fEntityStack.elementAt(i);
+        for (int i = size; i >= 0; i--) {
+            Entity activeEntity = i == size
+                                ? fCurrentEntity
+                                : (Entity)fEntityStack.elementAt(i);
             if (activeEntity.name == entityName) {
                 String path = entityName;
                 for (int j = i + 1; j < size; j++) {
                     activeEntity = (Entity)fEntityStack.elementAt(j);
                     path = path + " -> " + activeEntity.name;
                 }
+                path = path + " -> " + fCurrentEntity.name;
                 path = path + " -> " + entityName;
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "RecursiveReference",
@@ -524,8 +527,12 @@ public class XMLEntityManager
         // xerces properties
         final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
         fEntityResolver = (EntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
+        
         final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
+
+        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
         // initialize state
         fStandalone = false;
@@ -580,6 +587,10 @@ public class XMLEntityManager
             }
             if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
                 fSymbolTable = (SymbolTable)value;
+                return;
+            }
+            if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {
+                fErrorReporter = (XMLErrorReporter)value;
                 return;
             }
         }
@@ -1407,7 +1418,7 @@ public class XMLEntityManager
             if (DEBUG_PRINT) {
                 System.out.print("(scanQName, "+qname+": ");
                 print();
-                System.out.println(" -> true");
+                System.out.println();
             }
 
             int offset = fCurrentEntity.position;
