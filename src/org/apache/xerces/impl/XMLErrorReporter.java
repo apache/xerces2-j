@@ -185,6 +185,10 @@ public class XMLErrorReporter
         //              there is no associated ID declared, the error
         //              could report the location information of the
         //              reference. -Ac
+        //
+        // NOTE: I added another reportError method that allows the
+        //       caller to specify the location of the error being
+        //       reported. -Ac
 
         fMessageFormatters = new Hashtable();
         fLocator = locator;
@@ -257,6 +261,26 @@ public class XMLErrorReporter
      */
     public void reportError(String domain, String key, Object[] arguments, 
                             short severity) throws SAXException {
+        reportError(fLocator, domain, key, arguments, severity);
+    } // reportError(String,String,Object[],short)
+
+    /**
+     * Reports an error at a specific location.
+     * 
+     * @param location  The error location.
+     * @param domain    The error domain.
+     * @param key       The key of the error message.
+     * @param arguments The replacement arguments for the error message,
+     *                  if needed.
+     * @param severity  The severity of the error.
+     *
+     * @see SEVERITY_WARNING
+     * @see SEVERITY_ERROR
+     * @see SEVERITY_FATAL_ERROR
+     */
+    public void reportError(Locator location,
+                            String domain, String key, Object[] arguments, 
+                            short severity) throws SAXException {
 
         // REVISIT: [Q] Should we do anything about invalid severity
         //              parameter? -Ac
@@ -264,7 +288,7 @@ public class XMLErrorReporter
         // format error message and create parse exception
         MessageFormatter messageFormatter = getMessageFormatter(domain);
         String message = messageFormatter.formatMessage(fLocale, key, arguments);
-        SAXParseException spe = new SAXParseException(message, fLocator);
+        SAXParseException spe = new SAXParseException(message, location);
 
         // get error handler
         ErrorHandler errorHandler = fErrorHandler;
@@ -296,7 +320,7 @@ public class XMLErrorReporter
             }
         }
 
-    } // reportError(String,String,Object,short)
+    } // reportError(Locator,String,String,Object[],short)
 
     //
     // XMLComponent methods

@@ -68,8 +68,9 @@ import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
-//import org.apache.xerces.impl.validation.validators.XMLDTDValidator;
+
 import org.apache.xerces.util.SymbolTable;
+
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -145,18 +146,21 @@ public abstract class XMLDocumentParser
     //
 
     /**
-     * Default Constructor.
-     * Creates an XMLDocumentParser with its own SymbolTable and GrammarPool. 
+     * Constructs a document parser using the default symbol table
+     * and grammar pool.
      */
     protected XMLDocumentParser() {
         this(new SymbolTable(), new GrammarPool());
     } // <init>()
 
     /**
-     * Constructor allowing to specify the SymbolTable and GrammarPool to use
+     * Constructor allowing to specify the symbol table and grammar pool 
+     * to use. The symbol table and grammar pool are specified together
+     * because the grammars contained in the grammar pool must use the
+     * symbols from the specified symbol table.
      * 
-     * @param symbolTable 
-     * @param grammarPool 
+     * @param symbolTable The symbol table.
+     * @param grammarPool The grammar pool.
      */
     protected XMLDocumentParser(SymbolTable symbolTable,
                                 GrammarPool grammarPool) {
@@ -180,11 +184,11 @@ public abstract class XMLDocumentParser
         final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
         fProperties.put(GRAMMAR_POOL, fGrammarPool);
 
-        fScanner = new XMLDocumentScanner();
+        fScanner = createDocumentScanner();
         final String DOCUMENT_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
         fProperties.put(DOCUMENT_SCANNER, fScanner);
 
-        fDTDScanner = new XMLDTDScanner();
+        fDTDScanner = createDTDScanner();
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fProperties.put(DTD_SCANNER, fDTDScanner);
 
@@ -195,12 +199,6 @@ public abstract class XMLDocumentParser
         fDatatypeValidatorFactory = createDatatypeValidatorFactory();
         final String DATATYPE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
         fProperties.put(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
-
-        /***
-        fDatatypeValidatorFactory = new DatatypeValidatorFactory();
-        final String DATATYE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYE_VALIDATOR_FACTORY_PROPERTY;
-        fProperties.put(DATATYE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
-        /***/
 
     } // <init>(SymbolTable,GrammarPool)
 
@@ -218,28 +216,17 @@ public abstract class XMLDocumentParser
 
 
         // setup document pipeline
-        /***/
         fScanner.setDocumentHandler(fValidator);
         fValidator.setDocumentHandler(this);
-        /***
-        fScanner.setDocumentHandler(this);
-        /***/
 
         // setup dtd pipeline
-        /***/
         fDTDScanner.setDTDHandler(fValidator);
         fValidator.setDTDHandler(this);
-        /***
-        fDTDScanner.setDTDHandler(this);
-        /***/
 
         // setup dtd content model pipeline
         /***/
         fDTDScanner.setDTDContentModelHandler(fValidator);
         fValidator.setDTDContentModelHandler(this);
-        /***
-        fDTDScanner.setDTDContentModelHandler(this);
-        /***/
 
         // reset every component
         fScanner.reset(this);
@@ -249,14 +236,33 @@ public abstract class XMLDocumentParser
     } // reset()
 
     //
-    // XMLComponentManager methods
+    // XMLReader methods
     //
 
     /**
-     * setFeature
-     * 
-     * @param featureId 
-     * @param state 
+     * Set the state of a feature.
+     * <p>
+     * The feature name is any fully-qualified URI.  It is
+     * possible for an XMLReader to recognize a feature name but
+     * to be unable to set its value; this is especially true
+     * in the case of an adapter for a SAX1 {@link org.xml.sax.Parser Parser},
+     * which has no way of affecting whether the underlying parser is
+     * validating, for example.
+     * <p>
+     * Some feature values may be immutable or mutable only 
+     * in specific contexts, such as before, during, or after 
+     * a parse.
+     *
+     * @param name The feature name, which is a fully-qualified URI.
+     * @param state The requested state of the feature (true or false).
+     *
+     * @exception org.xml.sax.SAXNotRecognizedException When the
+     *            XMLReader does not recognize the feature name.
+     * @exception org.xml.sax.SAXNotSupportedException When the
+     *            XMLReader recognizes the feature name but 
+     *            cannot set the requested value.
+     *
+     * @see #getFeature
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -268,13 +274,34 @@ public abstract class XMLDocumentParser
         fDTDScanner.setFeature(featureId, state);
         fValidator.setFeature(featureId, state);
 
-    } // setFeature
+    } // setFeature(String,boolean)
 
     /**
-     * setProperty
-     * 
-     * @param propertyId 
-     * @param value 
+     * Set the value of a property.
+     * <p>
+     * The property name is any fully-qualified URI.  It is
+     * possible for an XMLReader to recognize a property name but
+     * to be unable to set its value; this is especially true
+     * in the case of an adapter for a SAX1 {@link org.xml.sax.Parser
+     * Parser}.
+     * <p>
+     * Some property values may be immutable or mutable only 
+     * in specific contexts, such as before, during, or after 
+     * a parse.
+     * <p>
+     * This method is also the standard mechanism for setting
+     * extended handlers.
+     *
+     * @param name The property name, which is a fully-qualified URI.
+     * @param state The requested value for the property.
+     *
+     * @exception org.xml.sax.SAXNotRecognizedException When the
+     *            XMLReader does not recognize the property name.
+     * @exception org.xml.sax.SAXNotSupportedException When the
+     *            XMLReader recognizes the property name but 
+     *            cannot set the requested value.
+     *
+     * @see #getProperty
      */
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -286,7 +313,7 @@ public abstract class XMLDocumentParser
         fDTDScanner.setProperty(propertyId, value);
         fValidator.setProperty(propertyId, value);
 
-    } // setProperty
+    } // setProperty(String,Object)
 
     /**
      * Parses the specified input source.
@@ -301,8 +328,7 @@ public abstract class XMLDocumentParser
 
         if (fParseInProgress) {
             // REVISIT - need to add new error message
-            throw new SAXException(
-                              "FWK005 parse may not be called while parsing.");
+            throw new SAXException("FWK005 parse may not be called while parsing.");
         }
 
         try {
@@ -311,17 +337,20 @@ public abstract class XMLDocumentParser
             fEntityManager.startDocumentEntity(new XMLInputSource(source));
             fScanner.scanDocument(true);
             fParseInProgress = false;
-        } catch (SAXException ex) {
+        } 
+        catch (SAXException ex) {
             fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
-        } catch (IOException ex) {
+        } 
+        catch (IOException ex) {
             fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
-        } catch (Exception ex) {
+        } 
+        catch (Exception ex) {
             fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
@@ -999,6 +1028,18 @@ public abstract class XMLDocumentParser
     //
     // Protected methods
     //
+
+    // factory methods
+
+    /** Create a document scanner. */
+    protected XMLDocumentScanner createDocumentScanner() {
+        return new XMLDocumentScanner();
+    } // createDocumentScanner():XMLDocumentScanner
+
+    /** Create a DTD scanner. */
+    protected XMLDTDScanner createDTDScanner() {
+        return new XMLDTDScanner();
+    } // createDTDScanner():XMLDTDScanner
 
     /** Create a validator. */
     protected XMLValidator createValidator() {

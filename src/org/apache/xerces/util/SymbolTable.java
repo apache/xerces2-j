@@ -112,22 +112,23 @@ public class SymbolTable {
     }
 
     //
-    // Methods
+    // Public methods
     //
 
     /**
-     * addSymbol
+     * Adds the specified symbol to the symbol table and returns a
+     * reference to the unique symbol. If the symbol already exists, 
+     * the previous symbol reference is returned instead, in order
+     * guarantee that symbol references remain unique.
      * 
-     * @param symbol 
-     * 
-     * @return 
+     * @param symbol The new symbol.
      */
     public String addSymbol(String symbol) {
 
         // search for identical symbol
         int bucket = hash(symbol) % TABLE_SIZE;
+        int length = symbol.length();
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
-            int length = symbol.length();
             if (length == entry.characters.length) {
                 for (int i = 0; i < length; i++) {
                     if (symbol.charAt(i) != entry.characters[i]) {
@@ -146,13 +147,14 @@ public class SymbolTable {
     } // addSymbol(String):String
 
     /**
-     * addSymbol
+     * Adds the specified symbol to the symbol table and returns a
+     * reference to the unique symbol. If the symbol already exists, 
+     * the previous symbol reference is returned instead, in order
+     * guarantee that symbol references remain unique.
      * 
-     * @param buffer 
-     * @param offset 
-     * @param length 
-     * 
-     * @return 
+     * @param buffer The buffer containing the new symbol.
+     * @param offset The offset into the buffer of the new symbol.
+     * @param length The length of the new symbol in the buffer.
      */
     public String addSymbol(char[] buffer, int offset, int length) {
 
@@ -185,14 +187,15 @@ public class SymbolTable {
      * @param symbol The symbol to hash.
      */
     public int hash(String symbol) {
+
         int code = 0;
         int length = symbol.length();
         for (int i = 0; i < length; i++) {
             code = code * 37 + symbol.charAt(i);
         }
         return code & 0x7FFFFFF;
-    }
 
+    } // hash(String):int
 
     /**
      * Returns a hashcode value for the specified symbol information. 
@@ -206,12 +209,67 @@ public class SymbolTable {
      * @param length The length of the symbol.
      */
     public int hash(char[] buffer, int offset, int length) {
+
         int code = 0;
         for (int i = 0; i < length; i++) {
             code = code * 37 + buffer[offset + i];
         }
         return code & 0x7FFFFFF;
-    }
+
+    } // hash(char[],int,int):int
+
+    /** 
+     * Returns true if the symbol table already contains the specified
+     * symbol.
+     *
+     * @param symbol The symbol to look for.
+     */
+    public boolean containsSymbol(String symbol) {
+        
+        // search for identical symbol
+        int bucket = hash(symbol) % TABLE_SIZE;
+        int length = symbol.length();
+        OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+            if (length == entry.characters.length) {
+                for (int i = 0; i < length; i++) {
+                    if (symbol.charAt(i) != entry.characters[i]) {
+                        continue OUTER;
+                    }
+                }
+                return true;
+            }
+        }
+
+        return false;
+
+    } // containsSymbol(String):boolean
+
+    /** 
+     * Returns true if the symbol table already contains the specified
+     * symbol.
+     *
+     * @param buffer The buffer containing the symbol to look for.
+     * @param offset The offset into the buffer.
+     * @param length The length of the symbol in the buffer.
+     */
+    public boolean containsSymbol(char[] buffer, int offset, int length) {
+
+        // search for identical symbol
+        int bucket = hash(buffer, offset, length) % TABLE_SIZE;
+        OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+            if (length == entry.characters.length) {
+                for (int i = 0; i < length; i++) {
+                    if (buffer[offset + i] != entry.characters[i]) {
+                        continue OUTER;
+                    }
+                }
+                return true;
+            }
+        }
+
+        return false;
+
+    } // containsSymbol(char[],int,int):boolean
 
     //
     // Classes

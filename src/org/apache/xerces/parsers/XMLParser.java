@@ -186,11 +186,11 @@ public abstract class XMLParser
         final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fProperties.put(SYMBOL_TABLE, fSymbolTable);
 
-        fEntityManager = new XMLEntityManager();
+        fEntityManager = createEntityManager();
         final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
         fProperties.put(ENTITY_MANAGER, fEntityManager);
 
-        fErrorReporter = new XMLErrorReporter( fEntityManager.getEntityScanner() );
+        fErrorReporter = createErrorReporter( fEntityManager.getEntityScanner() );
         final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
         fProperties.put(ERROR_REPORTER, fErrorReporter);
 
@@ -445,7 +445,7 @@ public abstract class XMLParser
     } // reset()
 
     /**
-     * Check a feature. If feature is know and supported, this method simply
+     * Check a feature. If feature is known and supported, this method simply
      * returns. Otherwise, the appropriate exception is thrown.
      *
      * @param featureId The unique identifier (URI) of the feature.
@@ -555,7 +555,7 @@ public abstract class XMLParser
     } // checkFeature(String)
 
     /**
-     * Check a property. If the property is know and supported, this method
+     * Check a property. If the property is known and supported, this method
      * simply returns. Otherwise, the appropriate exception is thrown.
      *
      * @param propertyId The unique identifier (URI) of the property
@@ -653,5 +653,17 @@ public abstract class XMLParser
         throw new SAXNotRecognizedException(propertyId);
 
     } // checkProperty(String)
+
+    // factory methods
+
+    /** Creates an entity manager. */
+    protected XMLEntityManager createEntityManager() {
+        return new XMLEntityManager();
+    } // createEntityManager():XMLEntityManager
+
+    /** Creates an error reporter. */
+    protected XMLErrorReporter createErrorReporter(Locator locator) {
+        return new XMLErrorReporter(locator);
+    } // createErrorReporter(Locator):XMLErrorReporter
 
 } // class XMLParser
