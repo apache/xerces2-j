@@ -64,7 +64,7 @@ class EventReporter implements EventListener
 {
     boolean silent=false; // Toggle this to mask reports you don't care about
     int count=0;
-    String[] phasename={"?","BUBBLING","CAPTURING","AT_TARGET","?"};
+    String[] phasename={"?","CAPTURING","AT_TARGET","BUBBLING","?"};
 
 
     public void on()
