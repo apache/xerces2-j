@@ -61,6 +61,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
+import org.apache.xerces.util.XMLManipulator;
 
 /**
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,15 +57,23 @@
 
 package org.apache.xerces.impl.v2;
 
+import org.apache.xerces.impl.v2.datatypes.*;
+
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.util.SymbolTable;
-import GrammarResolver?;
+import org.apache.xerces.util.XMLManipulator;
+//import GrammarResolver;???
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+
+import java.util.Hashtable;
+import java.util.Vector;
 
 // The purpose of this class is to co-ordinate the construction of a
 // grammar object corresponding to a schema.  To do this, it must be
@@ -94,10 +102,10 @@ class XSDHandler {
 
     // These tables correspond to the symbol spaces defined in the
     // spec.
-    // They are keyed with a QName (that is, String("URI,localpart) and 
-    // their values are nodes corresponding to the given name's decl.  
+    // They are keyed with a QName (that is, String("URI,localpart) and
+    // their values are nodes corresponding to the given name's decl.
     // By asking the node for its ownerDocument and looking in
-    // XSDocumentInfoRegistry we can easily get the corresponding 
+    // XSDocumentInfoRegistry we can easily get the corresponding
     // XSDocumentInfo object.
     private Hashtable fUnparsedAttributeRegistry = new Hashtable();
     private Hashtable fUnparsedAttributeGroupRegistry = new Hashtable();
@@ -109,9 +117,9 @@ class XSDHandler {
 
     // this is keyed with a documentNode (or the schemaRoot nodes
     // contained in the XSDocumentInfo objects) and its value is the
-    // XSDocumentInfo object corresponding to that document.  
-    // Basically, the function of this registry is to be a link 
-    // between the nodes we fetch from calls to the fUnparsed* 
+    // XSDocumentInfo object corresponding to that document.
+    // Basically, the function of this registry is to be a link
+    // between the nodes we fetch from calls to the fUnparsed*
     // arrays and the XSDocumentInfos they live in.
     private Hashtable fXSDocumentInfoRegistry = new Hashtable();
 
@@ -126,11 +134,11 @@ class XSDHandler {
     private Vector fTraversed = new Vector();
 
     // the primary XSDocumentInfo we were called to parse
-    private XSDocumentInfo fRoot = null; 
+    private XSDocumentInfo fRoot = null;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
-    
+
     // the XMLEntityResolver
     private XMLEntityResolver fEntityResolver;
 
@@ -143,22 +151,22 @@ class XSDHandler {
     // REVISIT:  old kind of DatatypeValidator...
     private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
 
-    //************ Traversers ********** 
+    //************ Traversers **********
     XSDAttributeGroupTraverser fAttributeGroupTraverser;
     XSDAttributeTraverser fAttributeTraverser;
     XSDComplexTypeTraverser fComplexTypeTraverser;
-    XXSDElementTraverser fElementTraverser;
+    XSDElementTraverser fElementTraverser;
     XSDGroupTraverser fGroupTraverser;
     XSDNotationTraverser fNotationTraverser;
     XSDSimpleTypeTraverser fSimpleTypeTraverser;
     XSDWildcardTraverser fWildCardTraverser;
 
     // Constructors
-    
+
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
-    XSDHandler (GrammarResolver gResolver, 
+    XSDHandler (GrammarResolver gResolver,
             XMLErrorReporter errorReporter,
             XMLEntityResolver entityResolver,
             SymbolTable symbolTable) {
@@ -184,7 +192,7 @@ class XSDHandler {
         Document schemaRoot = getSchema(schemaNamespace, schemaHint);
         fRoot = constructTrees(schemaRoot);
 
-        // second phase:  fill global registries.  
+        // second phase:  fill global registries.
         buildGlobalNameRegistries();
 
         // third phase:  call traversers
@@ -199,8 +207,8 @@ class XSDHandler {
         // reset all traversers and SchemaHandler
         reset();
 
-        // and return.  
-        return fGrammarResolver.get(fRoot.fTargetNamespace)); 
+        // and return.
+        return fGrammarResolver.get(fRoot.fTargetNamespace);
     } // end parseSchema
 
     // may wish to have setter methods for ErrorHandler,
@@ -218,14 +226,14 @@ class XSDHandler {
         XSDocumentInfo currSchemaInfo = new
             XSDocumentInfo(schemaRoot);
         Vector dependencies = new Vector();
-        Element rootNode = XMLManipulator.getRoot(schemaInfo);
+        Element rootNode = XMLManipulator.getRoot(schemaRoot);
         String schemaNamespace;
         String schemaHint;
         Document newSchemaRoot = null;
-        forElement child =
-                XMLManipulator.getFirstChild(rootNode);
+        for (Element child =
+                XMLManipulator.getFirstChildElement(rootNode);
                 child != null;
-                child = XMLManipulator.getNextSibling(child)) {
+                child = XMLManipulator.getNextSiblingElement(child)) {
             String localName = XMLManipulator.getLocalName(child);
             if(localName.equals(SchemaSymbols.ELT_ANNOTATION))
                 continue;
@@ -239,7 +247,7 @@ class XSDHandler {
                 // make sure TNS is right (don't care about redef contents
                 // yet).
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
-            } else
+            } else {
                 // no more possibility of schema references in well-formed
                 // schema...
                 break;
@@ -252,7 +260,7 @@ class XSDHandler {
             }
             dependencies.addElement(newSchemaInfo);
             newSchemaRoot = null;
-        } 
+        }
         fDependencyMap.put(currSchemaInfo, dependencies);
     } // end constructTrees
 
@@ -273,14 +281,14 @@ class XSDHandler {
     // Beginning at the first schema processing was requested for
     // (fRoot), this method
     // examines each child (global schema information item) of each
-    // schema document (and of each <redefine> element) 
+    // schema document (and of each <redefine> element)
     // corresponding to an XSDocumentInfo object.  If the
     // readOnly field on that node has not been set, it calls an
     // appropriate traverser to traverse it.  Once all global decls in
     // an XSDocumentInfo object have been traversed, it marks that object
     // as traversed (or hidden) in order to avoid infinite loops.  It completes
     // when it has visited all XSDocumentInfo objects in the
-    // DependencyMap and marked them as traversed.  
+    // DependencyMap and marked them as traversed.
     protected void traverseSchemas() {
     } // end traverseSchemas
 
@@ -300,19 +308,19 @@ class XSDHandler {
     // This method returns whatever the traverser it called returned;
     // since this will depend on the type of the traverser in
     // question, this needs to be an Object.
-    protected Object callTraverser(XSDocumentInfo currSchema, 
-            int declType, 
+    protected Object callTraverser(XSDocumentInfo currSchema,
+            int declType,
             QName declToTraverse) {
     } // end callTraverser
 
     // Since ID constraints can occur in local elements, unless we
     // wish to completely traverse all our DOM trees looking for ID
     // constraints while we're building our global name registries,
-    // which seems terribly inefficient, we need to resolve keyrefs 
+    // which seems terribly inefficient, we need to resolve keyrefs
     // after all parsing is complete.  This we can simply do by running through
     // fIdentityConstraintRegistry and calling traverseKeyRef on all
     // of the KeyRef nodes.  This unfortunately removes this knowledge
-    // from the elementTraverser class (which must ignore keyrefs), 
+    // from the elementTraverser class (which must ignore keyrefs),
     // but there seems to be no efficient way around this...
     protected void resolveKeyRefs() {
     } // end resolveKeyRefs
@@ -328,8 +336,8 @@ class XSDHandler {
         XMLInputSource schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
         if(schemaSource != null) {
             DOMParser schemaParser = new DOMParser(fSymbolTable);
-            // set ErrorHandler and EntityResolver (doesn't seem that 
-            // XMLErrorHandler or XMLEntityResolver will work with 
+            // set ErrorHandler and EntityResolver (doesn't seem that
+            // XMLErrorHandler or XMLEntityResolver will work with
             // standard DOMParser...
 
             // set appropriate features
@@ -337,8 +345,8 @@ class XSDHandler {
             return schemaParser.getDocument();
         }
     } // getSchema(String, String):  Document
-            
-    // initialize all the traversers.  
+
+    // initialize all the traversers.
     private void createTraversers() {
         fAttributeChecker = new
             XSDAttributeChecker(fDatatypeRegistry, fErrorReporter);
@@ -362,7 +370,7 @@ class XSDHandler {
 
     // this method clears all the global structs of this object
     // (except those passed in via the constructor).
-    reset() {
+    void reset() {
         fUnparsedAttributeRegistry.clear();
         fUnparsedAttributeGroupRegistry.clear();
         fUnparsedElementRegistry.clear();
@@ -372,9 +380,9 @@ class XSDHandler {
         fUnparsedTypeRegistry.clear();
 
         fXSDocumentInfoRegistry.clear();
-        fDependencyMap.clear(); 
+        fDependencyMap.clear();
         fTraversed.removeAllElements();
-        fRoot = null; 
+        fRoot = null;
 
     fDatatypeRegistry = null;
 
