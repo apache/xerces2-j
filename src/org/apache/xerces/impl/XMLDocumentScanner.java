@@ -593,6 +593,11 @@ public class XMLDocumentScanner
             }
         }
 
+        // set encoding on reader
+        if (encoding != null) {
+            fEntityScanner.setEncoding(encoding);
+        }
+
     } // scanXMLDeclOrTextDecl(boolean)
 
     /**

@@ -88,7 +88,7 @@ public class UTF8Reader
     protected byte[] fBuffer;
 
     /** Surrogate character. */
-    private int fSurrogate;
+    private int fSurrogate = -1;
 
     /** Buffer offset to start reading from. */
     private int fOffset;

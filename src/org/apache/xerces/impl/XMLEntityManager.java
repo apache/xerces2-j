@@ -141,6 +141,9 @@ public class XMLEntityManager
     /** Debug some basic entities. */
     private static final boolean DEBUG_ENTITIES = false;
 
+    /** Debug switching readers for encodings. */
+    private static final boolean DEBUG_ENCODINGS = false;
+
     //
     // Data
     //
@@ -820,6 +823,9 @@ public class XMLEntityManager
                 encoding = getEncodingName(b4, count);
 
                 // push back the characters we read
+                if (DEBUG_ENCODINGS) {
+                    System.out.println("$$$ wrapping input stream in PushbackInputStream");
+                }
                 PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
                 pbstream.unread(b4, 0, count);
                 stream = pbstream;
@@ -833,9 +839,13 @@ public class XMLEntityManager
             // create reader from input stream
             reader = createReader(stream, encoding);
 
-            // REVISIT: Activate this reader once I've updated the
-            //          entity scanner. -Ac
-            //reader = new OneCharReader(reader);
+            // read one character at a time so we don't jump too far
+            // ahead, converting characters from the byte stream in
+            // the wrong encoding
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ wrapping reader in OneCharReader");
+            }
+            reader = new OneCharReader(reader);
         }
 
         // push entity on stack
@@ -969,18 +979,34 @@ public class XMLEntityManager
         if (ianaEncoding == null) {
             ianaEncoding = "UTF-8";
         }
-        ianaEncoding = ianaEncoding.toUpperCase();
 
         // try to use an optimized reader
-        if (ianaEncoding.equals("UTF-8")) {
+        String IANAEncoding = ianaEncoding.toUpperCase();
+        if (IANAEncoding.equals("UTF-8")) {
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ creating UTF8Reader");
+            }
             return new UTF8Reader(inputStream, fBufferSize);
         }
-        if (ianaEncoding.equals("US-ASCII")) {
+        if (IANAEncoding.equals("US-ASCII")) {
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ creating ASCIIReader");
+            }
             return new ASCIIReader(inputStream, fBufferSize);
         }
 
         // try to use a Java reader
         String javaEncoding = EncodingMap.getIANA2JavaMapping(ianaEncoding);
+        if (javaEncoding == null) {
+            javaEncoding = ianaEncoding;
+        }
+        if (DEBUG_ENCODINGS) {
+            System.out.print("$$$ creating Java InputStreamReader: encoding="+javaEncoding);
+            if (javaEncoding == ianaEncoding) {
+                System.out.print(" (IANA encoding)");
+            }
+            System.out.println();
+        }
         return new InputStreamReader(inputStream, javaEncoding);
 
     } // createReader(InputStream,String):
@@ -1402,7 +1428,13 @@ public class XMLEntityManager
          * @see org.apache.xerces.util.EncodingMap
          */
         public void setEncoding(String encoding) throws IOException {
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ setEncoding: "+encoding);
+            }
             if (fCurrentEntity.stream != null) {
+                if (DEBUG_ENCODINGS) {
+                    System.out.println("$$$ creating new reader");
+                }
                 fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding);
             }
         } // setEncoding(String)
@@ -2497,8 +2529,11 @@ public class XMLEntityManager
         // Data
         //
 
+        /** Seen first character. */
+        private boolean fSeenFirstChar;
+
         /** True if we've seen the end of the first markup. */
-        private boolean seenEndOfMarkup;
+        private boolean fSeenEndOfMarkup;
 
         //
         // Constructors
@@ -2519,14 +2554,27 @@ public class XMLEntityManager
             // swap out this inefficient reader because we've
             // already passed the first piece of markup and
             // the encoding was not set
-            if (seenEndOfMarkup) {
+            if (fSeenEndOfMarkup) {
+                if (DEBUG_ENCODINGS) {
+                    System.out.println("$$$ seen end of markup in OneCharReader");
+                }
                 fCurrentEntity.reader = super.in;
                 return fCurrentEntity.reader.read();
             }
 
             // read character and look for end of markup
             int c = in.read();
-            seenEndOfMarkup = c == '>';
+            if (!fSeenFirstChar) {
+                fSeenFirstChar = true;
+                fSeenEndOfMarkup = c != '<';
+            }
+            else {
+                fSeenEndOfMarkup = c == '>';
+            }
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ read() -> '"+(char)c+"' (end of markup: "+fSeenEndOfMarkup+')');
+                System.out.flush();
+            }
             return c;
 
         } // read():int
@@ -2541,7 +2589,7 @@ public class XMLEntityManager
             // handle end of file
             int c = read();
             if (c == -1) {
-                return 0;
+                return -1;
             }
 
             // return the 1 character
