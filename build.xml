@@ -644,7 +644,6 @@ Copyright:
           classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
           classname="thread.Test"
           failOnError="yes">
-           <arg value="-dom"/>
            <arg value="-threads"/>
            <arg value="20"/>
            <arg value="-time"/>
