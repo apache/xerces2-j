@@ -388,6 +388,8 @@ public class XMLDTDScanner
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
 
+        super.startEntity(name, publicId, systemId, encoding);
+
         if (name.equals("[dtd]")) {
             // call handler
             if (fDTDHandler != null && fStartDTDCalled == false) {
@@ -416,6 +418,8 @@ public class XMLDTDScanner
      */
     public void endEntity(String name)
         throws SAXException {
+
+        super.endEntity(name);
 
         if (name.equals("[dtd]")) {
             fScannerState = SCANNER_STATE_END_OF_INPUT;
