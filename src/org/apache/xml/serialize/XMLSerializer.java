@@ -108,7 +108,7 @@ import org.xml.sax.Attributes;
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  */
-public final class XMLSerializer
+public class XMLSerializer
     extends BaseMarkupSerializer
 {
 
