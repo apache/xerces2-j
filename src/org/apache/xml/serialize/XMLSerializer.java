@@ -1413,6 +1413,8 @@ extends BaseMarkupSerializer {
 		 	    //If a NamespaceURI is not declared for the current
 		 	    //node's prefix, raise a fatal error.
 		 	    String prefix = child.getPrefix();
+                prefix = (prefix == null || 
+                        prefix.length() == 0) ? XMLSymbols.EMPTY_STRING : fSymbolTable.addSymbol(prefix);
 		 	    if (fNSBinder.getURI(prefix) == null && prefix != null) {
 					fatalError("The replacement text of the entity node '" 
 								+ node.getNodeName()  
@@ -1429,6 +1431,8 @@ extends BaseMarkupSerializer {
 					for (int i = 0; i< attrs.getLength(); i++ ) {
 						
 				 	    String attrPrefix = attrs.item(i).getPrefix();
+                        attrPrefix = (attrPrefix == null || 
+                                attrPrefix.length() == 0) ? XMLSymbols.EMPTY_STRING : fSymbolTable.addSymbol(attrPrefix);
 				 	    if (fNSBinder.getURI(attrPrefix) == null && attrPrefix != null) {
 							fatalError("The replacement text of the entity node '" 
 										+ node.getNodeName()  
