@@ -1198,6 +1198,26 @@ public final class XMLDTDScanner {
         }
         if (dataok) {
             fSystemLiteral = fEntityReader.addString(offset, fEntityReader.currentOffset() - offset);
+
+            //
+            // ndw@nwalsh.com
+            // An fSystemLiteral value from an entity declaration may be
+            // a relative URI. If so, it's important that we make it
+            // absolute with respect to the context of the document that
+            // we are currently reading. If we don't, the XMLParser will
+            // make it absolute with respect to the point of *reference*,
+            // before attempting to read it. That's definitely wrong.
+            //
+
+            String litSystemId = fStringPool.toString(fSystemLiteral);
+            String absSystemId = fEntityHandler.expandSystemId(litSystemId);
+            if (!absSystemId.equals(litSystemId)) {
+                  // REVISIT - Is it kosher to touch fStringPool directly?
+                  // Is there a better way? fEntityReader doesn't seem to
+                  // have an addString method that takes a literal string.
+                fSystemLiteral = fStringPool.addString(absSystemId);
+               }
+
             if (fragment) {
                 // NOTE: RECOVERABLE ERROR
                 Object[] args = { fStringPool.toString(fSystemLiteral) };
