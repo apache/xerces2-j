@@ -61,7 +61,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
-import org.apache.xerces.util.XMLManipulator;
+import org.apache.xerces.util.DOMUtil;
 
 /**
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all
@@ -106,9 +106,9 @@ abstract class XSDAbstractTraverser {
         // so we assume it's always global.
         Hashtable attrValues = fAttrChecker.checkAttributes(annotationDecl, true);
 
-        for(Element child = XMLManipulator.getFirstChildElement(annotationDecl);
+        for(Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
-            child = XMLManipulator.getNextSiblingElement(child)) {
+            child = DOMUtil.getNextSiblingElement(child)) {
             String name = child.getLocalName();
 
             // the only valid children of "annotation" are

@@ -61,7 +61,7 @@ import java.util.*;
 import org.w3c.dom.*;
 import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.util.XMLManipulator;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 /*import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.GrammarResolver;
@@ -942,10 +942,10 @@ public class XSAttributeChecker {
 
         // if the parent is xs:appInfo or xs:documentation,
         // then skip the validation, and return am empty list
-        Element parent = XMLManipulator.getParent(element);
+        Element parent = DOMUtil.getParent(element);
         if (parent != null) {
-            String pUri = XMLManipulator.getNamespaceURI(parent);
-            String pName = XMLManipulator.getLocalName(parent);
+            String pUri = DOMUtil.getNamespaceURI(parent);
+            String pName = DOMUtil.getLocalName(parent);
             if (pUri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
                 (pName.equals(SchemaSymbols.ELT_APPINFO) ||
                  pName.equals(SchemaSymbols.ELT_DOCUMENTATION))) {
@@ -953,8 +953,8 @@ public class XSAttributeChecker {
             }
         }
 
-        String uri = XMLManipulator.getNamespaceURI(element);
-        String elName = XMLManipulator.getLocalName(element), name;
+        String uri = DOMUtil.getNamespaceURI(element);
+        String elName = DOMUtil.getLocalName(element), name;
 
         if (uri == null || !uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
             reportSchemaError("Con3X3ElementSchemaURI", new Object[] {elName});
@@ -968,7 +968,7 @@ public class XSAttributeChecker {
             name = PRE_GLOBAL + elName;
         }
         else {
-            if (XMLManipulator.getAttr(element, SchemaSymbols.ATT_REF) == null)
+            if (DOMUtil.getAttr(element, SchemaSymbols.ATT_REF) == null)
                 name = PRE_LOC_NAME + elName;
             else
                 name = PRE_LOC_REF + elName;
@@ -986,13 +986,13 @@ public class XSAttributeChecker {
         Hashtable attrList = oneEle.attrList;
 
         // traverse all attributes
-        Attr[] attrs = XMLManipulator.getAttrs(element);
+        Attr[] attrs = DOMUtil.getAttrs(element);
         Attr sattr = null;
         for (int i = 0; i < attrs.length; i++) {
             sattr = attrs[i++];
             // get the attribute name/value
-            String attrName = XMLManipulator.getLocalName(sattr);
-            String attrVal = XMLManipulator.getValue(sattr);
+            String attrName = DOMUtil.getLocalName(sattr);
+            String attrVal = DOMUtil.getValue(sattr);
 
             // skip anything starts with x/X m/M l/L
             // simply put their values in the return hashtable
@@ -1003,7 +1003,7 @@ public class XSAttributeChecker {
 
             // for attributes with namespace prefix
             //
-            String attrURI = XMLManipulator.getNamespaceURI(sattr);
+            String attrURI = DOMUtil.getNamespaceURI(sattr);
             if (attrURI != null && attrURI.length() != 0) {
                 // attributes with schema namespace are not allowed
                 // and not allowed on "document" and "appInfo"
@@ -1100,7 +1100,7 @@ public class XSAttributeChecker {
             OneAttr oneAttr = reqAttrs[i];
 
             // if the attribute appreared, skip to the next one
-            if (XMLManipulator.getAttr(element, oneAttr.name) != null)
+            if (DOMUtil.getAttr(element, oneAttr.name) != null)
                 continue;
 
             // if the attribute is required, report an error

@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.util.XMLManipulator;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.v2.datatypes.NOTATIONDatatypeValidator;
 import org.apache.xerces.impl.v2.datatypes.UnionDatatypeValidator;
 import org.apache.xerces.impl.v2.datatypes.ListDatatypeValidator;
@@ -151,7 +151,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
     private String traverseSimpleTypeDecl(Element simpleTypeDecl) {
 
-        String nameProperty  =  XMLManipulator.getAttrValue(simpleTypeDecl, SchemaSymbols.ATT_NAME);
+        String nameProperty  =  DOMUtil.getAttrValue(simpleTypeDecl, SchemaSymbols.ATT_NAME);
         String qualifiedName = nameProperty;
 
 
@@ -195,11 +195,11 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // REVISIT!
         // update _final_ registry
         //----------------------------------------------------------
-        Attr finalAttr = XMLManipulator.getAttr(simpleTypeDecl, SchemaSymbols.ATT_FINAL); 
+        Attr finalAttr = DOMUtil.getAttr(simpleTypeDecl, SchemaSymbols.ATT_FINAL); 
         int finalProperty = 0;
 
         if (finalAttr != null)
-            finalProperty = parseFinalSet(XMLManipulator.getValue( finalAttr));
+            finalProperty = parseFinalSet(DOMUtil.getValue( finalAttr));
         else
             finalProperty = parseFinalSet(null);
 
@@ -218,7 +218,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         //----------------------------------------------------------------------
         //annotation?,(list|restriction|union)
         //----------------------------------------------------------------------
-        Element content = XMLManipulator.getFirstChildElement(simpleTypeDecl);
+        Element content = DOMUtil.getFirstChildElement(simpleTypeDecl);
         content = checkContent(simpleTypeDecl, content, false);
         if (content == null) {
             return resetSimpleTypeNameStack(fSchemaHandler.EMPTY_STRING);
@@ -230,7 +230,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         //----------------------------------------------------------------------
         //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
         //----------------------------------------------------------------------
-        String varietyProperty =  XMLManipulator.getLocalName(content);  //content.getLocalName();
+        String varietyProperty =  DOMUtil.getLocalName(content);  //content.getLocalName();
         String baseTypeQNameProperty = null;
         Vector dTValidators = null;
         int size = 0;
@@ -241,7 +241,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         int numOfTypes = 0; //list/restriction = 1, union = "+"
 
         if (varietyProperty.equals(SchemaSymbols.ELT_LIST)) { //traverse List
-            baseTypeQNameProperty =  XMLManipulator.getAttrValue(content,  SchemaSymbols.ATT_ITEMTYPE);//content.getAttribute( SchemaSymbols.ATT_ITEMTYPE );
+            baseTypeQNameProperty =  DOMUtil.getAttrValue(content,  SchemaSymbols.ATT_ITEMTYPE);//content.getAttribute( SchemaSymbols.ATT_ITEMTYPE );
             list = true;
             if (fListName.length() != 0) { // parent is <list> datatype
                 reportCosListOfAtomic();
@@ -252,13 +252,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
         else if (varietyProperty.equals(SchemaSymbols.ELT_RESTRICTION)) { //traverse Restriction
-            baseTypeQNameProperty =  XMLManipulator.getAttrValue(content, SchemaSymbols.ATT_BASE); 
+            baseTypeQNameProperty =  DOMUtil.getAttrValue(content, SchemaSymbols.ATT_BASE); 
             //content.getAttribute( SchemaSymbols.ATT_BASE );
             restriction= true;
         }
         else if (varietyProperty.equals(SchemaSymbols.ELT_UNION)) { //traverse union
             union = true;
-            baseTypeQNameProperty = XMLManipulator.getAttrValue(content, SchemaSymbols.ATT_MEMBERTYPES);
+            baseTypeQNameProperty = DOMUtil.getAttrValue(content, SchemaSymbols.ATT_MEMBERTYPES);
             //content.getAttribute( SchemaSymbols.ATT_MEMBERTYPES);
             if (baseTypeQNameProperty.length() != 0) {
                 unionMembers = new StringTokenizer( baseTypeQNameProperty );
@@ -275,7 +275,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             //          new Object [] { varietyProperty });
             //          return fSchemaHandler.EMPTY_STRING;
         }
-        if (XMLManipulator.getNextSiblingElement(content) != null) {
+        if (DOMUtil.getNextSiblingElement(content) != null) {
             // REVISIT: Localize
             reportGenericSchemaError("error in content of simpleType");
         }
@@ -288,14 +288,14 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             //---------------------------
 
             //content = {annotation?,simpleType?...}
-            content = XMLManipulator.getFirstChildElement(content);
+            content = DOMUtil.getFirstChildElement(content);
 
             //check content (annotation?, ...)
             content = checkContent(simpleTypeDecl, content, false);
             if (content == null) {
                 return resetSimpleTypeNameStack(fSchemaHandler.EMPTY_STRING);
             }
-            if (XMLManipulator.getLocalName(content).equals( SchemaSymbols.ELT_SIMPLETYPE )) {
+            if (DOMUtil.getLocalName(content).equals( SchemaSymbols.ELT_SIMPLETYPE )) {
                 simpleTypeName = traverse(content, fSchemaDoc, fGrammar);
                 if (!simpleTypeName.equals(fSchemaHandler.EMPTY_STRING)) {
                     baseValidator=fSchemaHandler.getSimpleTypeValidator(simpleTypeName); 
@@ -373,10 +373,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // <base!=empty)->[facets]
         // ------------------------------------------
         if (baseTypeQNameProperty.length() == 0) {
-            content = XMLManipulator.getNextSiblingElement( content );
+            content = DOMUtil.getNextSiblingElement( content );
         }
         else {
-            content = XMLManipulator.getFirstChildElement(content);
+            content = DOMUtil.getFirstChildElement(content);
         }
 
         // ------------------------------------------
@@ -407,7 +407,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     //                      simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
                     return fSchemaHandler.EMPTY_STRING;
                 }
-                content   = XMLManipulator.getNextSiblingElement( content );
+                content   = DOMUtil.getNextSiblingElement( content );
             }
         } // end - traverse Union
 
@@ -433,10 +433,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     // General Attribute Checking
                     fAttributes = fAttrChecker.checkAttributes(content, false);
                     numFacets++;
-                    facet = XMLManipulator.getLocalName(content);
+                    facet = DOMUtil.getLocalName(content);
                     if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
                         numEnumerationLiterals++;
-                        String enumVal =  XMLManipulator.getAttrValue(content, SchemaSymbols.ATT_VALUE);
+                        String enumVal =  DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE);
                         String localName;
                         if (baseValidator instanceof NOTATIONDatatypeValidator) {
                             String prefix = "";
@@ -462,7 +462,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                             enumVal=nameProperty;
                         }
                         enumData.addElement(enumVal);
-                        checkContent(simpleTypeDecl, XMLManipulator.getFirstChildElement( content ), true);
+                        checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
                     }
                     else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                         //REVISIT:      
@@ -472,15 +472,15 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
                         if (fPattern == null) {
                             //REVISIT: size of buffer
-                            fPattern = new StringBuffer (XMLManipulator.getAttrValue( content, SchemaSymbols.ATT_VALUE ));
+                            fPattern = new StringBuffer (DOMUtil.getAttrValue( content, SchemaSymbols.ATT_VALUE ));
                         }
                         else {
                             // ---------------------------------------------
                             //datatypes: 5.2.4 pattern: src-multiple-pattern
                             // ---------------------------------------------
                             fPattern.append("|");
-                            fPattern.append(XMLManipulator.getAttrValue(content, SchemaSymbols.ATT_VALUE ));
-                            checkContent(simpleTypeDecl, XMLManipulator.getFirstChildElement( content ), true);
+                            fPattern.append(DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE ));
+                            checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
                         }
                     }
                     else {
@@ -526,10 +526,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                                 flags |= DatatypeValidator.FACET_WHITESPACE;
                             }
                         }
-                        checkContent(simpleTypeDecl, XMLManipulator.getFirstChildElement( content ), true);
+                        checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
                     }
                 }
-                content = XMLManipulator.getNextSiblingElement(content);
+                content = DOMUtil.getNextSiblingElement(content);
             }
             if (numEnumerationLiterals > 0) {
                 fFacetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
@@ -643,8 +643,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             baseRefContext == SchemaSymbols.RESTRICTION) {
             //REVISIT
             //reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-            //                  new Object [] { XMLManipulator.getAttrValue(elm, SchemaSymbols.ATT_BASE),
-            //                      XMLManipulator.getAttrValue(elm, SchemaSymbols.ATT_NAME)});
+            //                  new Object [] { DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE),
+            //                      DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME)});
             return null;
         }
         baseValidator = fSchemaHandler.getDatatypeValidator(uri, localpart);
@@ -659,8 +659,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (baseValidator == null) {
             //REVISIT
             //reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-            //                  new Object [] { XMLManipulator.getAttrValue(elm, SchemaSymbols.ATT_BASE ),
-            //                      XMLManipulator.getAttrValue(elm,SchemaSymbols.ATT_NAME)});
+            //                  new Object [] { DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE ),
+            //                      DOMUtil.getAttrValue(elm,SchemaSymbols.ATT_NAME)});
         }
         else {
             finalValue =

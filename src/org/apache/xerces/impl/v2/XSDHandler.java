@@ -65,7 +65,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLManipulator;
+import org.apache.xerces.util.DOMUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Attr;
@@ -253,15 +253,15 @@ class XSDHandler {
         XSDocumentInfo currSchemaInfo = new
                                         XSDocumentInfo(schemaRoot);
         Vector dependencies = new Vector();
-        Element rootNode = XMLManipulator.getRoot(schemaRoot);
+        Element rootNode = DOMUtil.getRoot(schemaRoot);
         String schemaNamespace=EMPTY_STRING;        
         String schemaHint=null;
         Document newSchemaRoot = null;
         for (Element child =
-             XMLManipulator.getFirstChildElement(rootNode);
+             DOMUtil.getFirstChildElement(rootNode);
             child != null;
-            child = XMLManipulator.getNextSiblingElement(child)) {
-            String localName = XMLManipulator.getLocalName(child);
+            child = DOMUtil.getNextSiblingElement(child)) {
+            String localName = DOMUtil.getLocalName(child);
             if (localName.equals(SchemaSymbols.ELT_ANNOTATION))
                 continue;
             else if (localName.equals(SchemaSymbols.ELT_IMPORT)) {
@@ -316,85 +316,85 @@ class XSDHandler {
             XSDocumentInfo currSchemaDoc =
                 (XSDocumentInfo)schemasToProcess.pop();
             Document currDoc = currSchemaDoc.fSchemaDoc;
-            if(XMLManipulator.isHidden(currDoc)) {
+            if(DOMUtil.isHidden(currDoc)) {
                 // must have processed this already!
                 continue;
             }
-            Element currRoot = XMLManipulator.getRoot(currDoc);
+            Element currRoot = DOMUtil.getRoot(currDoc);
 
             // process this schema's global decls
             boolean dependenciesCanOccur = true;
             for(Element globalComp =
-                    XMLManipulator.getFirstChildElement(currRoot);
+                    DOMUtil.getFirstChildElement(currRoot);
                     globalComp != null;
-                    globalComp = XMLManipulator.getNextSiblingElement(globalComp)){
+                    globalComp = DOMUtil.getNextSiblingElement(globalComp)){
                 // this loop makes sure the <schema> element ordering is
                 // also valid.
-                if(XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     //skip it; traverse it later
                     continue;
-                } else if(XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
-                        XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
+                } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
+                        DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
                     if(!dependenciesCanOccur) {
                         // REVISIT:  schema element ordreing violation
                     }
                     // we've dealt with this; mark as traversed
-                    XMLManipulator.setHidden(globalComp);
-                } else if(XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
+                    DOMUtil.setHidden(globalComp);
+                } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
                     if(!dependenciesCanOccur) {
                         // REVISIT:  schema element ordreing violation
                     }
-                    for(Element redefineComp = XMLManipulator.getFirstChildElement(globalComp);
+                    for(Element redefineComp = DOMUtil.getFirstChildElement(globalComp);
                             redefineComp != null;
-                            redefineComp = XMLManipulator.getNextSiblingElement(redefineComp)) {
-                        String lName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            redefineComp = DOMUtil.getNextSiblingElement(redefineComp)) {
+                        String lName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
                         if(lName.length() == 0) // an error we'll catch later
                             continue;
                         String qName = currSchemaDoc.fTargetNamespace +","+lName;
-                        String componentType = XMLManipulator.getLocalName(globalComp);
+                        String componentType = DOMUtil.getLocalName(redefineComp);
                         if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                             checkForDuplicateNames(qName, fUnparsedAttributeGroupRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
                             // and all we need to do is error-check+rename our kkids:
                             // REVISIT!!!
-//                            renameRedefiningComponents(SchemaSymbols.ELT_ATTRIBUTEGROUP), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_ATTRIBUTEGROUP), 
 //                                lName, targetLName);
                         } else if((componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) ||
                                 (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE))) {
                             checkForDuplicateNames(qName, fUnparsedTypeRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
                             // and all we need to do is error-check+rename our kkids:
                             // REVISIT!!!
                             if(componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-//                            renameRedefiningComponents(SchemaSymbols.ELT_COMPLEXTYPE), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_COMPLEXTYPE), 
 //                                lName, targetLName);
                             } else { // must be simpleType
-//                            renameRedefiningComponents(SchemaSymbols.ELT_SIMPLETYPE), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_SIMPLETYPE), 
 //                                lName, targetLName);
                             }
                         } else if(componentType.equals(SchemaSymbols.ELT_GROUP)) {
                             checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
                             // and all we need to do is error-check+rename our kkids:
                             // REVISIT!!!
-//                            renameRedefiningComponents(SchemaSymbols.ELT_GROUP), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_GROUP), 
 //                                lName, targetLName);
                         } else {
                             // REVISIT:  report schema element ordering error
                         }
                     } // end march through <redefine> children
                     // and now set as traversed
-                    XMLManipulator.setHidden(globalComp);
+                    DOMUtil.setHidden(globalComp);
                 } else {
                     dependenciesCanOccur = false;
-                    String lName = XMLManipulator.getAttrValue(globalComp, SchemaSymbols.ATT_NAME); 
+                    String lName = DOMUtil.getAttrValue(globalComp, SchemaSymbols.ATT_NAME); 
                     if(lName.length() == 0) // an error we'll catch later
                         continue;
                     String qName = currSchemaDoc.fTargetNamespace +","+lName;
-                    String componentType = XMLManipulator.getLocalName(globalComp);
+                    String componentType = DOMUtil.getLocalName(globalComp);
                     if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                         checkForDuplicateNames(qName, fUnparsedAttributeRegistry, globalComp, currSchemaDoc);
                     } else if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
@@ -415,7 +415,7 @@ class XSDHandler {
             } // end for
 
             // now we're done with this one!
-            XMLManipulator.setHidden(currDoc);
+            DOMUtil.setHidden(currDoc);
             // now add the schemas this guy depends on
             Vector currSchemaDepends = (Vector)fDependencyMap.get(currSchemaDoc);
             for(int i = 0; i < currSchemaDepends.size(); i++) {
@@ -608,7 +608,7 @@ class XSDHandler {
             registry.put(qName, currComp);
         } else {
             Element collidingElem = (Element)objElem;
-            XSDocumentInfo redefinedSchema = (XSDocumentInfo)(fRedefine2XSDMap.get(XMLManipulator.getParent(collidingElem)));
+            XSDocumentInfo redefinedSchema = (XSDocumentInfo)(fRedefine2XSDMap.get(DOMUtil.getParent(collidingElem)));
             if(redefinedSchema == currSchema) { // object comp. okay here
                 // now have to do some renaming...
                 String newName = qName.substring(qName.lastIndexOf(','));
@@ -643,6 +643,14 @@ class XSDHandler {
         return null;
     }
 
-
+    // the purpose of this method is to take the component of the
+    // specified type and rename references to itself so that they
+    // refer to the object being redefined.  It takes special care of
+    // <group>s and <attributeGroup>s to ensure that information
+    // relating to implicit restrictions is preserved for those
+    // traversers.  
+    private void renameRedefiningComponents(Element component, String componentType, 
+            String oldName, String newName) {
+    } // renameRedefiningComponents(Element, String, String, String):void
 
 } // XSDHandler

@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.util.NamespaceSupport;
-import org.apache.xerces.util.XMLManipulator;
+import org.apache.xerces.util.DOMUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
@@ -96,7 +96,7 @@ class XSDocumentInfo {
 
     XSDocumentInfo (Document schemaDoc) {
         fSchemaDoc = schemaDoc;
-        Element root = XMLManipulator.getRoot(schemaDoc);
+        Element root = DOMUtil.getRoot(schemaDoc);
 
         // assign attributes appropriately according to
         // generalAttrCheck as applied to root.
