@@ -9,6 +9,13 @@
   <changes>
    <fix>
     <note>
+     The parser no longer wraps RuntimeException with XNIException
+     in the parse method.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
+   <fix>
+    <note>
      Added missing default attribute values in the DOM and fixed 
      double entity value bug in deferred DOM.
     </note>

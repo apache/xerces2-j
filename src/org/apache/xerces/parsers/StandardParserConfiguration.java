@@ -494,6 +494,11 @@ public class StandardParserConfiguration
                     ex.printStackTrace();
                 throw ex;
             } 
+            catch (RuntimeException ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw ex;
+            }
             catch (Exception ex) {
                 if (PRINT_EXCEPTION_STACK_TRACE)
                     ex.printStackTrace();
@@ -514,6 +519,11 @@ public class StandardParserConfiguration
                 ex.printStackTrace();
             throw ex;
         } 
+        catch (RuntimeException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        }
         catch (Exception ex) {
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
