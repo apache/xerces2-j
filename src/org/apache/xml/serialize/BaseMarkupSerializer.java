@@ -170,7 +170,7 @@ public abstract class BaseMarkupSerializer
 {
 
     // DOM L3 implementation
-    protected short features;
+    protected short features = 0xFFFFFFFF;
     protected DOMErrorHandler fDOMErrorHandler;
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
     protected LSSerializerFilter fDOMFilter;
@@ -1449,39 +1449,39 @@ public abstract class BaseMarkupSerializer
                 && index + 2 < length
                 && text.charAt(index + 1) == ']'
                 && text.charAt(index + 2) == '>') { // check for ']]>'
-                if (fDOMErrorHandler != null){
-                // REVISIT: this means that if DOM Error handler is not registered we don't report any
-                // fatal errors and might serialize not wellformed document
-                if ((features & DOMSerializerImpl.SPLITCDATA) == 0 && 
-                    (features & DOMSerializerImpl.WELLFORMED) == 0) {
-                    // issue fatal error
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.SERIALIZER_DOMAIN,
-                            "EndingCDATA",
-                            null);
-                    modifyDOMError(
-                        msg,
-                        DOMError.SEVERITY_FATAL_ERROR,
-                        fCurrentNode);
-                    boolean continueProcess =
+                if (fDOMErrorHandler != null) {
+                    // REVISIT: this means that if DOM Error handler is not registered we don't report any
+                    // fatal errors and might serialize not wellformed document
+                    if ((features & DOMSerializerImpl.SPLITCDATA) == 0
+                        && (features & DOMSerializerImpl.WELLFORMED) == 0) {
+                        // issue fatal error
+                        String msg =
+                            DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.SERIALIZER_DOMAIN,
+                                "EndingCDATA",
+                                null);
+                        modifyDOMError(
+                            msg,
+                            DOMError.SEVERITY_FATAL_ERROR,
+                            fCurrentNode);
+                        boolean continueProcess =
+                            fDOMErrorHandler.handleError(fDOMError);
+                        if (!continueProcess) {
+                            throw new IOException();
+                        }
+                    } else {
+                        // issue warning
+                        String msg =
+                            DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.SERIALIZER_DOMAIN,
+                                "SplittingCDATA",
+                                null);
+                        modifyDOMError(
+                            msg,
+                            DOMError.SEVERITY_WARNING,
+                            fCurrentNode);
                         fDOMErrorHandler.handleError(fDOMError);
-                    if (!continueProcess) {
-                        throw new IOException();
                     }
-                } else {
-                    // issue warning
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.SERIALIZER_DOMAIN,
-                            "SplittingCDATA",
-                            null);
-                    modifyDOMError(
-                        msg,
-                        DOMError.SEVERITY_WARNING,
-                        fCurrentNode);
-                    fDOMErrorHandler.handleError(fDOMError);
-                }
                 }
                 // split CDATA section
                 _printer.printText("]]]]><![CDATA[>");
