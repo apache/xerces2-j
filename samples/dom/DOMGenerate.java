@@ -57,7 +57,7 @@
 
 
 
-//package dom;
+package dom;
 import  org.w3c.dom.*;
 import  org.apache.xerces.dom.DocumentImpl;
 import  org.apache.xerces.dom.DOMImplementationImpl;
