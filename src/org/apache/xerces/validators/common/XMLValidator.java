@@ -3025,22 +3025,24 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     /** Returns an attribute definition for an element type. */
     private int getAttDef(QName element, QName attribute) {
-        int scope = fCurrentScope;
-        if (element.uri > -1) {
-            scope = TOP_LEVEL_SCOPE;
-        }
-        int elementIndex = fGrammar.getElementDeclIndex(element.localpart,scope);
-        if (elementIndex == -1) {
-            return -1;
-        }
-        int attDefIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
-        while (attDefIndex != -1) {
-            fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
-            if (fTempAttDecl.name.localpart == attribute.localpart &&
-                fTempAttDecl.name.uri == attribute.uri ) {
-                return attDefIndex;
+        if (fGrammar != null) {
+            int scope = fCurrentScope;
+            if (element.uri > -1) {
+                scope = TOP_LEVEL_SCOPE;
             }
-            attDefIndex = fGrammar.getNextAttributeDeclIndex(attDefIndex);
+            int elementIndex = fGrammar.getElementDeclIndex(element.localpart,scope);
+            if (elementIndex == -1) {
+                return -1;
+            }
+            int attDefIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
+            while (attDefIndex != -1) {
+                fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
+                if (fTempAttDecl.name.localpart == attribute.localpart &&
+                    fTempAttDecl.name.uri == attribute.uri ) {
+                    return attDefIndex;
+                }
+                attDefIndex = fGrammar.getNextAttributeDeclIndex(attDefIndex);
+            }
         }
         return -1;
 
@@ -3627,6 +3629,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
                 // here, we validate every "user-defined" attributes
                 int _xmlns = fStringPool.addSymbol("xmlns");
+
                 if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns) 
                 if (fValidating) {
                     fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
