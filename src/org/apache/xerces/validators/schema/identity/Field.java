@@ -149,13 +149,12 @@ public class Field {
 
         /** Constructs a field XPath expression. */
         public XPath(String xpath, StringPool stringPool,
-                     NamespacesScope context, int targetNamespace) 
-            throws XPathException {
+                     NamespacesScope context) throws XPathException {
             // NOTE: We have to prefix the field XPath with "./" in
             //       order to handle selectors such as "@attr" that 
             //       select the attribute because the fields could be
             //       relative to the selector element. -Ac
-            super("./"+xpath, stringPool, context, targetNamespace);
+            super("./"+xpath, stringPool, context);
         } // <init>(String,StringPool,NamespacesScope)
 
     } // class XPath

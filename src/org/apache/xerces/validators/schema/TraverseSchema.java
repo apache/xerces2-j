@@ -4370,7 +4370,7 @@ public class TraverseSchema implements
             //          implied assumption that the URI for unqualified
             //          steps is equal to the target namespace). -Ac
             sxpath = new Selector.XPath(stext, fStringPool, 
-                                        fNamespacesScope, fTargetNSURI);
+                                        fNamespacesScope);
             Selector selector = new Selector(sxpath, ic);
             if (DEBUG_IDENTITY_CONSTRAINTS) {
                 System.out.println("<IC>:   selector: "+selector);
@@ -4403,7 +4403,7 @@ public class TraverseSchema implements
                 //          implied assumption that the URI for unqualified
                 //          steps is equal to the target namespace). -Ac
                 Field.XPath fxpath = new Field.XPath(ftext, fStringPool, 
-                                                     fNamespacesScope, fTargetNSURI);
+                                                     fNamespacesScope);
                 // REVISIT: Get datatype validator. -Ac
                 DatatypeValidator validator = getDatatypeValidatorFor(parent, sxpath, fxpath);
                 if (DEBUG_IC_DATATYPES) {
@@ -4462,7 +4462,7 @@ public class TraverseSchema implements
                     }
                     if (index == -1) {
                         // REVISIT: Add message. -Ac
-                        reportGenericSchemaError("no such element "+fStringPool.toString(nodeTest.name.localpart));
+                        reportGenericSchemaError("no such element \""+fStringPool.toString(nodeTest.name.rawname)+'"');
                         return null;
                     }
                     edeclIndex = index;
@@ -4498,7 +4498,7 @@ public class TraverseSchema implements
                     int adeclIndex = fSchemaGrammar.getAttributeDeclIndex(edeclIndex, nodeTest.name);
                     if (adeclIndex == -1) {
                         // REVISIT: Add message. -Ac
-                        reportGenericSchemaError("no such attribute "+fStringPool.toString(nodeTest.name.localpart));
+                        reportGenericSchemaError("no such attribute \""+fStringPool.toString(nodeTest.name.rawname)+'"');
                     }
                     XMLAttributeDecl adecl = new XMLAttributeDecl();
                     fSchemaGrammar.getAttributeDecl(adeclIndex, adecl);
@@ -4512,7 +4512,7 @@ public class TraverseSchema implements
                     }
                     if (index == -1) {
                         // REVISIT: Add message. -Ac
-                        reportGenericSchemaError("no such element "+fStringPool.toString(nodeTest.name.localpart));
+                        reportGenericSchemaError("no such element \""+fStringPool.toString(nodeTest.name.rawname)+'"');
                         return null;
                     }
                     edeclIndex = index;
