@@ -346,7 +346,7 @@ public final class XMLValidator
    private boolean fNeedValidationOff = false;
 
    //Schema Normalization
-    private boolean DEBUG_NORMALIZATION = false;
+    private static final boolean DEBUG_NORMALIZATION = false;
     private DatatypeValidator fCurrentDV = null; //current datatype validator
     private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
     private boolean fTrailing = false;  // Previous chunk had a trailing space
@@ -1406,8 +1406,7 @@ public final class XMLValidator
          if (fValidating ) {
             try {
                     this.fValIDRef.validate( null, this.fValidateIDRef ); //Do final IDREF validation round  
-               this.fValIDRefs.validate( null, this.fValidateIDRef );
-
+                    this.fValIDRefs.validate( null, this.fValidateIDRef );
                     this.fValID.validate( null, this.fResetID );//Reset ID, IDREF, IDREFS validators here
                     this.fValIDRef.validate(null, this.fResetIDRef );
                     this.fValIDRefs.validate(null, this.fResetID );
@@ -1415,8 +1414,8 @@ public final class XMLValidator
             } catch ( InvalidDatatypeValueException ex ) {
                reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
                                           ex.getMessage() ); 
-                }
             }
+         }
          return;
       }
 
@@ -1837,15 +1836,14 @@ public final class XMLValidator
 
    /** Reset pool. */
    private void poolReset() {
-        //System.out.println("We reset" );
         if (fValidating) { // - el
-      try {
-         this.fValID.validate( null, this.fResetID );
-         this.fValIDRef.validate(null, this.fResetIDRef );
-         this.fValIDRefs.validate(null, this.fResetIDRef );
+            try {
+                this.fValID.validate( null, this.fResetID );
+                this.fValIDRef.validate(null, this.fResetIDRef );
+                this.fValIDRefs.validate(null, this.fResetIDRef );
             } catch (InvalidDatatypeValueException ex) { //should use error reporter
-         System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
-      }
+                System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
+            }
         }
    } // poolReset()
 
@@ -2073,7 +2071,7 @@ public final class XMLValidator
                                              XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                }
             } else if (attValue != -1) {
-               if (validationEnabled && standalone )
+               if (validationEnabled && standalone ) {
                   if ( fGrammarIsDTDGrammar 
                        && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
 
@@ -2086,10 +2084,13 @@ public final class XMLValidator
                                                 args,
                                                 XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                   }
-               if (attType == fIDREFSymbol) {
-                  this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
-               } else if (attType == fIDREFSSymbol) {
-                  this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+               }
+               if (validationEnabled) {
+                   if (attType == fIDREFSymbol) {
+                       this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                   } else if (attType == fIDREFSSymbol) {
+                       this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                   }
                }
                if (attrIndex == -1) {
                   attrIndex = attrList.startAttrList();
@@ -2220,7 +2221,7 @@ public final class XMLValidator
                                              XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                }
             } else if (attValue != -1) {
-               if (validationEnabled && standalone )
+               if (validationEnabled && standalone ){
                   if ( fGrammarIsDTDGrammar 
                        && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
 
@@ -2233,10 +2234,14 @@ public final class XMLValidator
                                                 args,
                                                 XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                   }
-               if (attType == fIDREFSymbol) {
-                  this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
-               } else if (attType == fIDREFSSymbol) {
-                  this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+               }
+               if (validationEnabled) {
+                    if (attType == fIDREFSymbol) {
+                        this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                    }
+                    else if (attType == fIDREFSSymbol) {
+                        this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                    }
                }
                if (attrIndex == -1) {
                   attrIndex = attrList.startAttrList();
@@ -3504,9 +3509,6 @@ public final class XMLValidator
                }
             }
             try {
-               //this.fIdDefs = (Hashtable) fValID.validate( value, null );
-               //System.out.println("this.fIdDefs = " + this.fIdDefs );
-
                this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
                fValIDRef.validate( value, this.fStoreIDRef ); //just in case we called id after IDREF
             } catch ( InvalidDatatypeValueException ex ) {
