@@ -58,6 +58,7 @@
 package org.apache.xerces.framework;
 
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.utils.ChunkyCharArray;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
@@ -2169,6 +2170,10 @@ public final class XMLDocumentScanner {
                 fDTDScanner.scanDecls(true);
             }
             // REVISIT: What about validation and checking stuff?
+        }
+        //VC_NOTATION_DECLARED
+        if (fValidationEnabled) {
+            ((DefaultEntityHandler)fEntityHandler).checkRequiredNotations();
         }
         /***/
         fScanningDTD = false;

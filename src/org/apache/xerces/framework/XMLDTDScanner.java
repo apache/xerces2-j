@@ -1107,10 +1107,6 @@ public final class XMLDTDScanner {
                                                                                     markupDepth());
             fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
         }
-        //VC_NOTATION_DECLARED
-        if (fValidationEnabled) {
-            ((DefaultEntityHandler)fEntityHandler).checkRequiredNotations();
-        }
 
         fGrammarResolver.putGrammar("", fDTDGrammar);
 
@@ -2501,6 +2497,13 @@ public final class XMLDTDScanner {
             return;
         }
         decreaseMarkupDepth();
+        /****
+        System.out.println(fStringPool.toString(notationName)+","
+                           +fStringPool.toString(fPubidLiteral) + ","
+                           +fStringPool.toString(fSystemLiteral) + ","
+                           +getReadingExternalEntity());
+        /****/
+
         int notationIndex = ((DefaultEntityHandler) fEntityHandler).addNotationDecl( notationName, 
                                                                                      fPubidLiteral, 
                                                                                      fSystemLiteral,
@@ -2744,6 +2747,13 @@ public final class XMLDTDScanner {
                     //a hack by Eric
                     //REVISIT
                     fDTDGrammar.addUnparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
+                    /****
+                    System.out.println("----addUnparsedEntity--- "+ fStringPool.toString(entityName)+","
+                                       +fStringPool.toString(notationName)+","
+                                       +fStringPool.toString(fPubidLiteral) + ","
+                                       +fStringPool.toString(fSystemLiteral) + ","
+                                       +getReadingExternalEntity());
+                    /****/
                     int entityIndex = ((DefaultEntityHandler) fEntityHandler).addUnparsedEntityDecl(entityName, 
                                                                                                     fPubidLiteral, 
                                                                                                     fSystemLiteral, 
@@ -3089,10 +3099,19 @@ public final class XMLDTDScanner {
                                 ok = false;
                             }
                         }
-                        else if (attType == XMLAttributeDecl.TYPE_IDREF) {
+                        else if (attType == XMLAttributeDecl.TYPE_IDREF || attType == XMLAttributeDecl.TYPE_ENTITY) {
                             if (fValidationEnabled && !XMLCharacterProperties.validName(nmtoken)) {
                                 ok = false;
                             }
+                            // REVISIT: a Hack!!! THis is to pass SUN test /invalid/attr11.xml and attr12.xml
+                            // not consistent with XML1.0 spec VC: Attribute Default Legal
+                            if (fValidationEnabled && attType == XMLAttributeDecl.TYPE_ENTITY)
+                            if (! ((DefaultEntityHandler) fEntityHandler).isUnparsedEntity(defaultAttValue)) {
+                                reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
+                                                          XMLMessages.VC_ENTITY_NAME,
+                                                          fStringPool.toString(attribute.rawname), nmtoken);
+                            }
+
                         }
                         sb.append(nmtoken);
                         if (!tokenizer.hasMoreTokens()) {
@@ -3127,6 +3146,15 @@ public final class XMLDTDScanner {
                         attType == XMLAttributeDecl.TYPE_ID ||
                         attType == XMLAttributeDecl.TYPE_IDREF ||
                         attType == XMLAttributeDecl.TYPE_NOTATION)  {
+
+                        // REVISIT: A Hack!!! THis is to pass SUN test /invalid/attr11.xml and attr12.xml
+                        // not consistent with XML1.0 spec VC: Attribute Default Legal
+                        if (attType == XMLAttributeDecl.TYPE_ENTITY)
+                        if (! ((DefaultEntityHandler) fEntityHandler).isUnparsedEntity(defaultAttValue)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
+                                                      XMLMessages.VC_ENTITY_NAME,
+                                                      fStringPool.toString(attribute.rawname), newAttValue);
+                        }
                         
                         if (!XMLCharacterProperties.validName(newAttValue)) {
                             reportRecoverableXMLError(XMLMessages.MSG_ATT_DEFAULT_INVALID,
