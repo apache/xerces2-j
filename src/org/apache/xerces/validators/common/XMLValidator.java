@@ -2297,7 +2297,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                 }
                 //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
+                /****
                 if ( element.uri == -1 && elementIndex == -1 
+                     && fNamespacesScope != null 
                      && fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING) != -1 ) {
                     elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
                     // REVISIT:
@@ -2305,6 +2307,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     // is a "noNamespaceSchemaLocation" specified, and element 
                     element.uri = StringPool.EMPTY_STRING;
                 }
+                /****/
 
                 /****/
                 if (elementIndex == -1)
