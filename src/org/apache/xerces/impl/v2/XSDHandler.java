@@ -258,6 +258,7 @@ class XSDHandler {
         fRoot = constructTrees(schemaRoot);
         if(fRoot == null) {
             // REVISIT:  something went wrong; print error about no schema found
+            fElementTraverser.reportGenericSchemaError("Could not locate a schema document!");
             return null;
         }
         fDoc2XSDocumentMap.put(schemaRoot, fRoot);
@@ -295,17 +296,12 @@ class XSDHandler {
     // depends on.
     protected XSDocumentInfo constructTrees(Document schemaRoot) {
         if(schemaRoot == null) return null;
-        XSDocumentInfo currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker);
-        // we need to add all namespace into the symbol table
-        // REVISIT: either move this code into the constructor of XSDocumentInfo
-        //          or move the initialization code out of the constructor
-        if (currSchemaInfo.fTargetNamespace == null) {
-            currSchemaInfo.fTargetNamespace = EMPTY_STRING;
-        } else {
-            currSchemaInfo.fTargetNamespace = fSymbolTable.addSymbol(currSchemaInfo.fTargetNamespace);
+        XSDocumentInfo currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable);
+        SchemaGrammar sg = null;
+        if((sg = fGrammarResolver.getGrammar(currSchemaInfo.fTargetNamespace)) == null) {
+            sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
+            fGrammarResolver.putGrammar(sg);
         }
-        SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
-        fGrammarResolver.putGrammar(sg);
 
         Vector dependencies = new Vector();
         dependencies.add(currSchemaInfo);
@@ -694,17 +690,22 @@ class XSDHandler {
             switch (declType) {
             case ATTRIBUTE_TYPE :
                 retObj = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                break;
             case ATTRIBUTEGROUP_TYPE :
                 retObj = fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                break;
             case ELEMENT_TYPE :
                 retObj = fElementTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                break;
             case GROUP_TYPE :
                 retObj = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                break;
             case IDENTITYCONSTRAINT_TYPE :
                 // identity constraints should have been parsed already...
                 retObj = null;
             case NOTATION_TYPE :
                 retObj = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
+                break;
             case TYPEDECL_TYPE :
                 if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
                     retObj = fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
@@ -1151,10 +1152,11 @@ class XSDHandler {
         // if it's visible already than so must be its children
     } // setSchemasVisible(XSDocumentInfo): void
 
-    /******* only for testing!  ******
+    /******* only for testing!  ******/
     public static void main (String args[]) throws Exception {
         DefaultHandler handler = new DefaultHandler();
-        XSDHandler me = new XSDHandler(new XSGrammarResolver(), new XMLErrorReporter(), new EntityResolverWrapper(new org.apache.xerces.impl.v2.XSDHandler.DummyResolver()), new SymbolTable());
+        XSDHandler me = new XSDHandler(new XSGrammarResolver());
+        me.reset(new XMLErrorReporter(), new EntityResolverWrapper(new org.apache.xerces.impl.v2.XSDHandler.DummyResolver()), new SymbolTable());
         me.parseSchema(args[0], args[1]);
         Enumeration types = me.fUnparsedTypeRegistry.keys();
         String name = null;
