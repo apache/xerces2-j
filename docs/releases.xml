@@ -6,6 +6,13 @@
    <strong>TODO</strong>
   </desc>
   <changes>
+   <fix>
+    <note>
+     Fixed bug in SAX parser that was not forwarding external entity
+     declarations in the DTD.
+    </note>
+    <submitter name='Neeraj Bajaj' email='Neeraj.Bajaj@sun.com'/>
+   </fix>
    <add>
     <note>
      Separated the XMLDocumentScannerImpl class so that it derives

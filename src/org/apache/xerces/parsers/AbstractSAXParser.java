@@ -800,12 +800,13 @@ public abstract class AbstractSAXParser
      * @param publicId The public identifier of the entity or null if the
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
+     * @param baseSystemId The baseSystem identifier of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
      * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId,
-                                   String systemId) throws XNIException {
+                                   String systemId, String baseSystemId) throws XNIException {
 
         try {
             // SAX2 extension
@@ -817,7 +818,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // externalEntityDecl(String,String,String)
+    } // externalEntityDecl(String,String,String,String)
 
     /**
      * An unparsed entity declaration.
