@@ -68,8 +68,20 @@ public class Version {
     // Data
     //
 
-    /** Version string. */
+    /** Version string. 
+     * @deprecated  getVersion() should be used instead.  */
     public static String fVersion = "@@VERSION@@";
+
+    private static final String fImmutableVersion = "@@VERSION@@";
+
+    // public methods
+
+    /* Print out the version information.
+     * @return the version of the parser.
+     */
+    public String getVersion() {
+        return fImmutableVersion;
+    } // getVersion():  String
 
     //
     // MAIN
