@@ -32,6 +32,11 @@
       </note>
       <submitter name="Neil Graham, Henry Zongaro"/>
     </fix>
+    <update>
+      <note>Improved management of ID attributes in the DOM so that
+        Document.getElementByID is more reliable.</note>
+      <submitter name='Arnaud  Le Hors'/>
+    </update>
   </changes>
  </release>
  <release version='Xerces 2.0.1'>
