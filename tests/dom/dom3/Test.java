@@ -487,7 +487,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
             
             String compare1 = "Home Address: 1900 Dallas Road (East) City: Dallas. California. USA  PO #5668";
             Assertion.verify(((TextImpl)ls.item(0)).getWholeText().equals(compare1), "Compare1");
-            String compare2 = "Address: 1900 Dallas Road (East) City: Dallas. California. USA  PO #5668";
+            String compare2 = "Home Address: 1900 Dallas Road (East) City: Dallas. California. USA  PO #5668";
             Assertion.verify(((TextImpl)ls.item(1)).getWholeText().equals(compare2), "Compare2");
             
 

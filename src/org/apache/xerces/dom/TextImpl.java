@@ -141,9 +141,7 @@ public class TextImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-        if (nextSibling == null) {
-            return data;
-        }
+     
         if (fBufferStr == null){
             fBufferStr = new StringBuffer();
         }
@@ -153,26 +151,56 @@ public class TextImpl
         if (data != null && data.length() != 0) {
             fBufferStr.append(data);
         }
-        getWholeText(nextSibling, fBufferStr);
-        return fBufferStr.toString();
+        
+        //concatenate text of logically adjacent text nodes to the left of this node in the tree
+        getWholeTextBackward(this.getPreviousSibling(), fBufferStr, this.getParentNode());
+        String temp = fBufferStr.toString();
+      
+        //clear buffer
+        fBufferStr.setLength(0);
+        
+        //concatenate text of logically adjacent text nodes to the right of this node in the tree
+        getWholeTextForward(this.getNextSibling(), fBufferStr, this.getParentNode());
+        
+        return temp + fBufferStr.toString();
     
     }
+    
+    /**
+     * internal method taking a StringBuffer in parameter and inserts the 
+     * text content at the start of the buffer
+     * 
+     * @param buf
+     */
+    protected void insertTextContent(StringBuffer buf) throws DOMException {
+         String content = getNodeValue();
+         if (content != null) {
+             buf.insert(0, content);
+         }
+     }
 
     /**
-     * Concatenates the text of all logically-adjacent text nodes
-     * 
+     * Concatenates the text of all logically-adjacent text nodes to the 
+     * right of this node
      * @param node
      * @param buffer
+     * @param parent 
      * @return true - if execution was stopped because the type of node
      *         other than EntityRef, Text, CDATA is encountered, otherwise
      *         return false
      */
-    private boolean getWholeText(Node node, StringBuffer buffer){
-        String text;
+    private boolean getWholeTextForward(Node node, StringBuffer buffer, Node parent){
+    	// boolean to indicate whether node is a child of an entity reference
+    	boolean inEntRef = false;
+    	
+    	if (parent!=null) {
+    		inEntRef = parent.getNodeType()==Node.ENTITY_REFERENCE_NODE;
+    	}
+    	
         while (node != null) {
             short type = node.getNodeType();
             if (type == Node.ENTITY_REFERENCE_NODE) {
-                if (getWholeText(node.getFirstChild(), buffer)){
+                if (getWholeTextForward(node.getFirstChild(), buffer, node)){
                     return true;
                 }
             }
@@ -186,6 +214,62 @@ public class TextImpl
 
             node = node.getNextSibling();
         }
+       
+        // if the parent node is an entity reference node, must 
+        // check nodes to the right of the parent entity reference node for logically adjacent
+        // text nodes
+        if (inEntRef) {
+            getWholeTextForward(parent.getNextSibling(), buffer, parent.getParentNode());
+        		return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Concatenates the text of all logically-adjacent text nodes to the left of 
+     * the node
+     * @param node
+     * @param buffer
+     * @param parent
+     * @return true - if execution was stopped because the type of node
+     *         other than EntityRef, Text, CDATA is encountered, otherwise
+     *         return false
+     */
+    private boolean getWholeTextBackward(Node node, StringBuffer buffer, Node parent){
+    	
+    	// boolean to indicate whether node is a child of an entity reference
+    	boolean inEntRef = false;
+    	if (parent!=null) {
+    		inEntRef = parent.getNodeType()==Node.ENTITY_REFERENCE_NODE;
+    	}
+    	
+        while (node != null) {
+            short type = node.getNodeType();
+            if (type == Node.ENTITY_REFERENCE_NODE) {
+                if (getWholeTextBackward(node.getLastChild(), buffer, node)){
+                    return true;
+                }
+            }
+            else if (type == Node.TEXT_NODE || 
+                     type == Node.CDATA_SECTION_NODE) {
+                ((TextImpl)node).insertTextContent(buffer);
+            }
+            else {
+                return true; 
+            }
+
+            node = node.getPreviousSibling();
+        }
+        
+        // if the parent node is an entity reference node, must 
+        // check nodes to the left of the parent entity reference node for logically adjacent
+        // text nodes
+        if (inEntRef) {
+        	getWholeTextBackward(parent.getPreviousSibling(), buffer, parent.getParentNode());
+            return true;
+        }
+        
         return false;
     }
 
@@ -262,6 +346,8 @@ public class TextImpl
                     || (prev.getNodeType() == Node.ENTITY_REFERENCE_NODE && hasTextOnlyChildren(prev))) {
                 parent.removeChild(prev);
                 prev = currentNode;
+            } else {
+                break;
             }
             prev = prev.getPreviousSibling();
         }
@@ -278,6 +364,8 @@ public class TextImpl
                     || (next.getNodeType() == Node.ENTITY_REFERENCE_NODE && hasTextOnlyChildren(next))) {
                 parent.removeChild(next);
                 next = currentNode;
+            } else {
+                break;
             }
             next = next.getNextSibling();
         }
