@@ -431,7 +431,12 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
         else if (propertyId.equals(ENTITY_RESOLVER)){
             fEntityManager.setProperty(ENTITY_RESOLVER, state);
         }
-
+        else if (propertyId.equals(ERROR_REPORTER)){
+            fErrorReporter = (XMLErrorReporter)state;
+            if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+            	fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
+            }
+        }
     } // setProperty(String, Object)
 
     /**
