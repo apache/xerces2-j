@@ -1359,7 +1359,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             if (fFilterReject) {
                 return;
             }
-            setCharacterData (false);
+            if (fCreateCDATANodes) {
+                setCharacterData (false);
+            }
         }
     } // startCDATA()
     
