@@ -60,43 +60,33 @@ package org.apache.xerces.impl.dtd;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dtd.models.ContentModelValidator;
+import org.apache.xerces.impl.dv.DTDDVFactory;
+import org.apache.xerces.impl.dv.DatatypeValidator;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.ValidationState;
-import org.apache.xerces.impl.msg.XMLMessageFormatter;
-
-import org.apache.xerces.impl.validation.EntityState;
-import org.apache.xerces.impl.dtd.models.ContentModelValidator;
-import org.apache.xerces.impl.dv.DatatypeValidator;
-import org.apache.xerces.impl.dv.DTDDVFactory;
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
-
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.StringTokenizer;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 
 /**
  * The DTD validator. The validator implements a document
@@ -273,7 +263,7 @@ public class XMLDTDValidator
     protected XMLResourceIdentifier fDocLocation;
 
     /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = null;
+    protected NamespaceContext fNamespaceContext = null;
 
     /** Datatype validator factory. */
     protected DTDDVFactory fDatatypeValidatorFactory;
@@ -685,20 +675,10 @@ public class XMLDTDValidator
             }
         }
         fDocLocation = locator;
-        // REVISIT: xni.NamespaceSupport should be read/write, since some
-        //          components might want or need to modify the namespace information
-        // 
-        if (namespaceContext instanceof NamespaceSupport) {
-            fNamespaceSupport = (NamespaceSupport)namespaceContext;
-        }
-        else {
-            // REVISIT: this is a hack for the case user inserts component before
-            //          DTD validator
-            fNamespaceSupport = new NamespaceSupport();
-        }
-
+        fNamespaceContext = namespaceContext;
+   
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding, fNamespaceSupport, augs);
+            fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
         }
 
     } // startDocument(XMLLocator,String)
@@ -774,25 +754,6 @@ public class XMLDTDValidator
 
     } // doctypeDecl(String,String,String, Augmentations)
 
-    /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.     
-     * @param augs   Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-    throws XNIException {
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
-        }
-
-    } // startPrefixMapping(String,String)
 
     /**
      * The start of an element.
@@ -936,24 +897,6 @@ public class XMLDTDValidator
         handleEndElement(element,  augs, false);
 
     } // endElement(QName)
-
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix, augs);
-        }
-
-    } // endPrefixMapping(String)
 
     /** 
      * The start of a CDATA section. 

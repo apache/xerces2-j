@@ -57,8 +57,10 @@
 
 package org.apache.xerces.util;
 
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+
 import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.util.XMLSymbols;
 
 /**
  * Namespace support for XML document handlers. This class doesn't 
@@ -70,8 +72,7 @@ import org.apache.xerces.util.XMLSymbols;
  *
  * @version $Id$
  */
-public class NamespaceSupport 
-    implements NamespaceContext {
+public class NamespaceSupport implements NamespaceContext {
 
     //
     // Data
@@ -106,7 +107,9 @@ public class NamespaceSupport
 
     /** The current context. */
     protected int fCurrentContext;
-
+    
+    protected String[] fPrefixes = new String[16];
+    
     //
     // Constructors
     //
@@ -121,32 +124,23 @@ public class NamespaceSupport
      */
     public NamespaceSupport(NamespaceContext context) {
         pushContext();
-        while (context != null) {
-            int count = context.getDeclaredPrefixCount();
-            for (int i = 0; i < count; i++) {
-                String prefix = context.getDeclaredPrefixAt(i);
-                String uri = getURI(prefix);
-                if (uri == null) {
-                    uri = context.getURI(prefix);
-                    declarePrefix(prefix, uri);
-                }
-            }
-            context = context.getParentContext();
+        // copy declaration in the context
+        Enumeration enum = context.getAllPrefixes();
+        while (enum.hasMoreElements()){
+            String prefix = (String)enum.nextElement();
+            String uri = context.getURI(prefix);
+            declarePrefix(prefix, uri);
         }
-    } // <init>(NamespaceContext)
+      } // <init>(NamespaceContext)
+
 
     //
     // Public methods
     //
-
-    // context management
     
-    /**
-     * Reset this Namespace support object for reuse.
-     *
-     * <p>It is necessary to invoke this method before reusing the
-     * Namespace support object for a new session.</p>
-     */
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#reset()
+	 */
     public void reset() {
 
         // reset namespace and context info
@@ -164,20 +158,10 @@ public class NamespaceSupport
 
     } // reset(SymbolTable)
 
-    /**
-     * Start a new Namespace context.
-     * <p>
-     * Normally, you should push a new context at the beginning
-     * of each XML element: the new context will automatically inherit
-     * the declarations of its parent context, but it will also keep
-     * track of which declarations were made within this context.
-     * <p>
-     * The Namespace support object always starts with a base context
-     * already in force: in this context, only the "xml" prefix is
-     * declared.
-     *
-     * @see #popContext
-     */
+
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#pushContext()
+	 */
     public void pushContext() {
 
         // extend the array, if necessary
@@ -193,49 +177,17 @@ public class NamespaceSupport
     } // pushContext()
 
 
-    /**
-     * Revert to the previous Namespace context.
-     * <p>
-     * Normally, you should pop the context at the end of each
-     * XML element.  After popping the context, all Namespace prefix
-     * mappings that were previously in force are restored.
-     * <p>
-     * You must not attempt to declare additional Namespace
-     * prefixes after popping a context, unless you push another
-     * context first.
-     *
-     * @see #pushContext
-     */
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#popContext()
+	 */
     public void popContext() {
         fNamespaceSize = fContext[fCurrentContext--];
     } // popContext()
 
-    // operations within a context.
-
-    /**
-     * Declare a Namespace prefix.
-     * <p>
-     * This method declares a prefix in the current Namespace
-     * context; the prefix will remain in force until this context
-     * is popped, unless it is shadowed in a descendant context.
-     * <p>
-     * To declare a default Namespace, use the empty string.  The
-     * prefix must not be "xml" or "xmlns".
-     * <p>
-     * Note that you must <em>not</em> declare a prefix after
-     * you've pushed and popped another Namespace.
-     *
-     * @param prefix The prefix to declare, or null for the empty
-     *        string.
-     * @param uri The Namespace URI to associate with the prefix.
-     *
-     * @return true if the prefix was legal, false otherwise
-     *
-     * @see #getURI
-     * @see #getDeclaredPrefixAt
-     */
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#declarePrefix(String, String)
+	 */
     public boolean declarePrefix(String prefix, String uri) {
-
         // ignore "xml" and "xmlns" prefixes
         if (prefix == XMLSymbols.PREFIX_XML || prefix == XMLSymbols.PREFIX_XMLNS) {
             return false;
@@ -270,21 +222,11 @@ public class NamespaceSupport
 
     } // declarePrefix(String,String):boolean
 
-    /**
-     * Look up a prefix and get the currently-mapped Namespace URI.
-     * <p>
-     * This method looks up the prefix in the current context.
-     * Use the empty string ("") for the default Namespace.
-     *
-     * @param prefix The prefix to look up.
-     *
-     * @return The associated Namespace URI, or null if the prefix
-     *         is undeclared in this context.
-     *
-     * @see #getDeclaredPrefixAt
-     */
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#getURI(String)
+	 */
     public String getURI(String prefix) {
-
+        
         // find prefix in current context
         for (int i = fNamespaceSize; i > 0; i -= 2) {
             if (fNamespace[i - 2] == prefix) {
@@ -298,19 +240,9 @@ public class NamespaceSupport
     } // getURI(String):String
 
 
-
-    /**
-     * Look up a namespace URI and get one of the mapped prefix.
-     * <p>
-     * This method looks up the namespace URI in the current context.
-     *
-     * @param uri The namespace URI to look up.
-     *
-     * @return one of the associated prefixes, or null if the uri
-     *         does not map to any prefix.
-     *
-     * @see #getPrefix
-     */
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#getPrefix(String)
+	 */
     public String getPrefix(String uri) {
 
         // find uri in current context
@@ -324,146 +256,81 @@ public class NamespaceSupport
         // uri not found
         return null;
 
-    } // getURI(String):String
+    } // getPrefix(String):String
 
 
-    /**
-     * Return a count of all prefixes currently declared, including
-     * the default prefix if bound.
-     */
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#getDeclaredPrefixCount()
+	 */
     public int getDeclaredPrefixCount() {
         return (fNamespaceSize - fContext[fCurrentContext]) / 2;
     } // getDeclaredPrefixCount():int
 
-    /** 
-     * Returns the prefix at the specified index in the current context.
-     */
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#getDeclaredPrefixAt(int)
+	 */
     public String getDeclaredPrefixAt(int index) {
         return fNamespace[fContext[fCurrentContext] + index * 2];
     } // getDeclaredPrefixAt(int):String
 
-    /**
-     * Returns the parent namespace context or null if there is no
-     * parent context. The total depth of the namespace contexts 
-     * matches the element depth in the document.
-     * <p>
-     * <strong>Note:</strong> This method <em>may</em> return the same 
-     * NamespaceContext object reference. The caller is responsible for
-     * saving the declared prefix mappings before calling this method.
-     */
-    public NamespaceContext getParentContext() {
-        if (fCurrentContext == 1) {
-            return null;
+	/**
+	 * @see org.apache.xerces.xni.NamespaceContext#getAllPrefixes()
+	 */
+	public Enumeration getAllPrefixes() {
+        int count = 0;
+        if (fPrefixes.length < (fNamespace.length/2)) {
+            // resize prefix array          
+            String[] prefixes = new String[fNamespaceSize];
+            fPrefixes = prefixes;
         }
-        return new Context(fCurrentContext - 1);
-    } // getParentContext():NamespaceContext
-
-    //
-    // Classes
-    //
-
-    /**
-     * Namespace context information. The current context is always
-     * handled directly by the NamespaceSupport class. This class is
-     * used when a user queries the parent context.
-     *
-     * @author Andy Clark, IBM
-     */
-    final class Context 
-        implements NamespaceContext {
+        String prefix = null;
+        boolean unique = true;
+        for (int i = 2; i < (fNamespaceSize-2); i += 2) {
+            prefix = fNamespace[i + 2];            
+            for (int k=0;k<count;k++){
+                if (fPrefixes[k]==prefix){
+                    unique = false;
+                    break;
+                }               
+            }
+            if (unique){
+                fPrefixes[count++] = prefix;
+            }
+            unique = true;
+        }
+		return new Prefixes(fPrefixes, count);
+	}
     
-        //
-        // Data
-        //
+    final class Prefixes implements Enumeration {
+        private String[] prefixes;
+        private int counter = 0;
+        private int size = 0;
+               
+		/**
+		 * Constructor for Prefixes.
+		 */
+		public Prefixes(String [] prefixes, int size) {
+			this.prefixes = prefixes;
+            this.size = size;
+		}
 
-        /** The current context. */
-        private int fCurrentContext;
+       /**
+		 * @see java.util.Enumeration#hasMoreElements()
+		 */
+		public boolean hasMoreElements() {           
+			return (counter< size);
+		}
 
-        //
-        // Constructors
-        //
-
-        /** 
-         * Constructs a new context. Once constructed, this object will
-         * be re-used when the application calls <code>getParentContext</code.
-         */
-        public Context(int currentContext) {
-            setCurrentContext(currentContext);
-        } // <init>(int)
-
-        //
-        // Public methods
-        //
-
-        /** Sets the current context. */
-        public void setCurrentContext(int currentContext) {
-            fCurrentContext = currentContext;
-        } // setCurrentContext(int)
-
-        //
-        // NamespaceContext methods
-        //
-
-        /**
-         * Look up a prefix and get the currently-mapped Namespace URI.
-         * <p>
-         * This method looks up the prefix in the current context.
-         * Use the empty string ("") for the default Namespace.
-         *
-         * @param prefix The prefix to look up.
-         *
-         * @return The associated Namespace URI, or null if the prefix
-         *         is undeclared in this context.
-         *
-         * @see #getPrefix
-         */
-        public String getURI(String prefix) {
-
-            // find prefix in current context
-            for (int i = fNamespaceSize; i > 0; i -= 2) {
-                if (fNamespace[i - 2] == prefix) {
-                    return fNamespace[i - 1];
-                }
+		/**
+		 * @see java.util.Enumeration#nextElement()
+		 */
+		public Object nextElement() {
+            if (counter< size){
+                return fPrefixes[counter++];
             }
+			throw new NoSuchElementException("Illegal access to Namespace prefixes enumeration.");
+		}
 
-            // prefix not found
-            return null;
-
-        } // getURI(String):String
-
-        /**
-         * Return a count of all prefixes currently declared, including
-         * the default prefix if bound.
-         */
-        public int getDeclaredPrefixCount() {
-            return (fNamespaceSize - fContext[fCurrentContext]) / 2;
-        } // getDeclaredPrefixCount():int
-
-        /** 
-         * Returns the prefix at the specified index in the current context.
-         */
-        public String getDeclaredPrefixAt(int index) {
-            return fNamespace[fContext[fCurrentContext] + index * 2];
-        } // getDeclaredPrefixAt(int):String
-
-        /**
-         * Returns the parent namespace context or null if there is no
-         * parent context. The total depth of the namespace contexts 
-         * matches the element depth in the document.
-         * <p>
-         * <strong>Note:</strong> This method <em>may</em> return the same 
-         * NamespaceContext object reference. The caller is responsible for
-         * saving the declared prefix mappings before calling this method.
-         */
-        public NamespaceContext getParentContext() {
-            if (fCurrentContext == 1) {
-                return null;
-            }
-            setCurrentContext(fCurrentContext - 1);
-            return this;
-        } // getParentContext():NamespaceContext
-
-    } // class Context
-
+}
 
 } // class NamespaceSupport

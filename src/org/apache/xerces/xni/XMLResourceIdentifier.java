@@ -66,16 +66,29 @@ package org.apache.xerces.xni;
  */
 
 public interface XMLResourceIdentifier {
+    
+    /** Sets the public identifier. */
+    public void setPublicId(String publicId);
 
     /** Returns the public identifier. */
     public String getPublicId();
-
+    
+    /** Sets the expanded system identifier. */
+    public void setExpandedSystemId(String systemId);
+    
     /** Returns the expanded system identifier. */
     public String getExpandedSystemId();
-
+    
+    /** Sets the literal system identifier. */
+    public void setLiteralSystemId(String systemId);
+     
     /** Returns the literal system identifier. */
     public String getLiteralSystemId();
-
+    
+    /** Setsthe base URI against which the literal SystemId is to be 
+        resolved.*/
+    public void setBaseSystemId(String systemId); 
+    
     /** <p> Returns the base URI against which the literal SystemId is to be 
         resolved. </p> */
     public String getBaseSystemId();

@@ -186,6 +186,9 @@ public abstract class AbstractSAXParser
 
     /** Document handler. */
     protected DocumentHandler fDocumentHandler;
+    
+    /** Namespace context */
+    protected NamespaceContext fNamespaceContext;
 
     /** DTD handler. */
     protected org.xml.sax.DTDHandler fDTDHandler;
@@ -263,7 +266,8 @@ public abstract class AbstractSAXParser
     public void startDocument(XMLLocator locator, String encoding, 
                               NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
-
+        
+        fNamespaceContext = namespaceContext;
         try {
             // SAX1
             if (fDocumentHandler != null) {
@@ -373,32 +377,7 @@ public abstract class AbstractSAXParser
 
     } // endEntity(String)
 
-    /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-        throws XNIException {
-
-        try {
-            // SAX2
-            if (fContentHandler != null) {
-                fContentHandler.startPrefixMapping(prefix, uri);
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // startPrefixMapping(String prefix, String uri)
-
-    /**
+     /**
      * The start of an element. If the document specifies the start element
      * by using an empty tag, then the startElement method will immediately
      * be followed by the endElement method, with no intervening methods.
@@ -423,6 +402,10 @@ public abstract class AbstractSAXParser
 
             // SAX2
             if (fContentHandler != null) {
+                
+                // send prefix mapping events
+                startNamespaceMapping();
+                
                 fAugmentations = augs;
 
                 int len = attributes.getLength();
@@ -551,6 +534,7 @@ public abstract class AbstractSAXParser
                 String localpart = fNamespaces ? element.localpart : "";
                 fContentHandler.endElement(uri, localpart,
                                            element.rawname);
+                endNamespaceMapping();
             }
         }
         catch (SAXException e) {
@@ -558,29 +542,6 @@ public abstract class AbstractSAXParser
         }
 
     } // endElement(QName)
-
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs)  throws XNIException {
-
-        try {
-            // SAX2
-            if (fContentHandler != null) {
-                fContentHandler.endPrefixMapping(prefix);
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // endPrefixMapping(String)
 
         /**
      * The start of a CDATA section.
@@ -1855,6 +1816,31 @@ public abstract class AbstractSAXParser
         return fLexicalHandler;
     } // getLexicalHandler():LexicalHandler
 
+	/**
+	 * Send startPrefixMapping events
+	 */
+	protected final void startNamespaceMapping() throws SAXException{
+		int count = fNamespaceContext.getDeclaredPrefixCount();
+		if (count > 0) {
+			String prefix = null;
+			for (int i = 0; i < count; i++) {
+				prefix = fNamespaceContext.getDeclaredPrefixAt(i);
+				fContentHandler.startPrefixMapping(prefix, 
+                fNamespaceContext.getURI(prefix));
+			}
+		}
+	}
+    /**
+     * Send endPrefixMapping events
+     */
+	protected final void endNamespaceMapping() throws SAXException {
+		int count = fNamespaceContext.getDeclaredPrefixCount();
+		if (count > 0) {
+			for (int i = 0; i < count; i++) {
+		        fContentHandler.endPrefixMapping(fNamespaceContext.getDeclaredPrefixAt(i));
+			}
+		}
+	}
     //
     // XMLDocumentParser methods
     //

@@ -68,7 +68,6 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;

@@ -196,20 +196,6 @@ public abstract class AbstractXMLDocumentParser
     } // doctypeDecl(String,String,String)
 
     /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-        throws XNIException {
-    } // startPrefixMapping(String,String)
-
-    /**
      * The start of an element. If the document specifies the start element
      * by using an empty tag, then the startElement method will immediately
      * be followed by the endElement method, with no intervening methods.
@@ -278,18 +264,6 @@ public abstract class AbstractXMLDocumentParser
      */
     public void endElement(QName element, Augmentations augs) throws XNIException {
     } // endElement(QName)
-
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
-    } // endPrefixMapping(String)
 
     /** 
      * The start of a CDATA section. 

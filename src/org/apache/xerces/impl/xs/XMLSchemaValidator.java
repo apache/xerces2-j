@@ -663,29 +663,6 @@ public class XMLSchemaValidator
     } // doctypeDecl(String,String,String)
 
     /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-    throws XNIException {
-        if (DEBUG) {
-            System.out.println("startPrefixMapping("+prefix+","+uri+")");
-        }
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
-        }
-
-    } // startPrefixMapping(String,String)
-
-    /**
      * The start of an element.
      *
      * @param element    The name of the element.
@@ -816,28 +793,7 @@ public class XMLSchemaValidator
         }
     } // endElement(QName, Augmentations)
 
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
-
-        if (DEBUG) {
-            System.out.println("endPrefixMapping("+prefix+")");
-        }
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix, augs);
-        }
-
-    } // endPrefixMapping(String)
-
-    /**
+     /**
      * The start of a CDATA section.
      *
      * @param augs     Additional information that may include infoset augmentations

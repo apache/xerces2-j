@@ -109,4 +109,42 @@ public class SimpleLocator implements XMLLocator {
     public String getBaseSystemId() {
         return null;
     }
+	/**
+	 * @see org.apache.xerces.xni.XMLLocator#setColumnNumber(int)
+	 */
+	public void setColumnNumber(int col) {
+        this.column = col;
+    }
+
+	/**
+	 * @see org.apache.xerces.xni.XMLLocator#setLineNumber(int)
+	 */
+	public void setLineNumber(int line) {
+        this.line = line;
+    }
+
+	/**
+	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setBaseSystemId(String)
+	 */
+	public void setBaseSystemId(String systemId) {}
+
+	/**
+	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setExpandedSystemId(String)
+	 */
+	public void setExpandedSystemId(String systemId) {
+        esid = systemId;
+    }
+
+	/**
+	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setLiteralSystemId(String)
+	 */
+	public void setLiteralSystemId(String systemId) {
+        lsid = systemId;
+    }
+
+	/**
+	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setPublicId(String)
+	 */
+	public void setPublicId(String publicId) {}
+
 }

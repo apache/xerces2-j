@@ -300,10 +300,6 @@ extends XMLDocumentScannerImpl {
                 if (fBindNamespaces) {
                     int count = fNamespaceContext.getDeclaredPrefixCount();
 
-                    for (int i = count - 1; i >= 0; i--) {
-                        String prefix = fNamespaceContext.getDeclaredPrefixAt(i);
-                        fDocumentHandler.endPrefixMapping(prefix, null);
-                    }
                     fNamespaceContext.popContext();
                 }
                 //pop the element off the stack..
@@ -469,10 +465,6 @@ extends XMLDocumentScannerImpl {
                 // bind namespace attribute to a namespace
                 attributes.setURI(oldLen, fNamespaceContext.getURI(XMLSymbols.PREFIX_XMLNS));
 
-                // call handler
-                if (fDocumentHandler != null) {
-                    fDocumentHandler.startPrefixMapping(prefix, uri, null);
-                }
             }
             else {
                 // attempt to bind attribute
@@ -542,11 +534,6 @@ extends XMLDocumentScannerImpl {
 
             fDocumentHandler.endElement(fElementQName, null);
             if (fBindNamespaces) {
-                int count = fNamespaceContext.getDeclaredPrefixCount();
-                for (int i = count - 1; i >= 0; i--) {
-                    String prefix = fNamespaceContext.getDeclaredPrefixAt(i);
-                    fDocumentHandler.endPrefixMapping(prefix, null);
-                }
                 fNamespaceContext.popContext();
             }
 

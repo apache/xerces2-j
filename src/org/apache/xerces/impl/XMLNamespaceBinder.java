@@ -170,11 +170,6 @@ public class XMLNamespaceBinder
 
     protected XMLDocumentSource fDocumentSource;
 
-    // namespaces
-
-    /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
-
     // settings
 
     /** Only pass start and end prefix mapping events. */
@@ -196,28 +191,11 @@ public class XMLNamespaceBinder
 
     /** Default constructor. */
     public XMLNamespaceBinder() {
-        this(null);
     } // <init>()
-
-    /**
-     * Constructs a namespace binder that shares the specified namespace
-     * context during each parse.
-     *
-     * @param namespaceContext The shared context.
-     */
-    public XMLNamespaceBinder(NamespaceContext namespaceContext) {
-        fNamespaceContext = namespaceContext;
-    } // <init>(NamespaceContext)
-
 
     //
     // Public methods
     //
-
-    /** Returns the current namespace context. */
-    public NamespaceContext getNamespaceContext() {
-        return fNamespaceSupport;
-    } // getNamespaceContext():NamespaceContext
 
     // settings
 
@@ -275,22 +253,6 @@ public class XMLNamespaceBinder
         // Xerces properties
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-
-        fNamespaceSupport.reset();
-
-        // use shared context
-        NamespaceContext context = fNamespaceContext;
-        while (context != null) {
-            int count = context.getDeclaredPrefixCount();
-            for (int i = 0; i < count; i++) {
-                String prefix = context.getDeclaredPrefixAt(i);
-                if (fNamespaceSupport.getURI(prefix) == null) {
-                    String uri = context.getURI(prefix);
-                    fNamespaceSupport.declarePrefix(prefix, uri);
-                }
-            }
-            context = context.getParentContext();
-        }
 
     } // reset(XMLComponentManager)
 
@@ -493,16 +455,15 @@ public class XMLNamespaceBinder
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, 
-                              NamespaceContext namespaceContext, Augmentations augs)
-        throws XNIException {
-        // REVISIT: in the namespace binder we should be able to modify the namespace
-        //          context object, thus for now we are dropping the namespaceContext
-        //          Not sure this is a correct behaviour....
-        if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.startDocument(locator, encoding, fNamespaceSupport, augs);
-        }
-    } // startDocument(XMLLocator,String)
+	public void startDocument(XMLLocator locator, String encoding,
+                                NamespaceContext namespaceContext, Augmentations augs)
+		                      throws XNIException {
+		fNamespaceContext = namespaceContext;
+
+		if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
+			fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
+		}
+	} // startDocument(XMLLocator,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -582,28 +543,6 @@ public class XMLNamespaceBinder
         }
     } // processingInstruction(String,XMLString)
 
-    /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-        throws XNIException {
-
-        // REVISIT: Should prefix mapping from previous stage in
-        //          the pipeline affect the namespaces?
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
-        }
-
-    } // startPrefixMapping(String,String)
 
     /**
      * Binds the namespaces. This method will handle calling the
@@ -708,27 +647,6 @@ public class XMLNamespaceBinder
     } // endElement(QName)
 
     /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
-
-        // REVISIT: Should prefix mapping from previous stage in
-        //          the pipeline affect the namespaces?
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix, augs);
-        }
-
-    } // endPrefixMapping(String)
-
-    /**
      * The start of a CDATA section.
      * @param augs     Additional information that may include infoset augmentations
      *
@@ -792,7 +710,7 @@ public class XMLNamespaceBinder
                                       boolean isEmpty) throws XNIException {
 
         // add new namespace context
-        fNamespaceSupport.pushContext();
+        fNamespaceContext.pushContext();
 
         if (element.prefix == XMLSymbols.PREFIX_XMLNS) {
             fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
@@ -867,19 +785,15 @@ public class XMLNamespaceBinder
                 }
 
                 // declare prefix in context
-                fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
+                fNamespaceContext.declarePrefix(prefix, uri.length() != 0 ? uri : null);
 
-                // call handler
-                if (fDocumentHandler != null) {
-                    fDocumentHandler.startPrefixMapping(prefix, uri, augs);
-                }
             }
         }
 
         // bind the element
         String prefix = element.prefix != null
                       ? element.prefix : XMLSymbols.EMPTY_STRING;
-        element.uri = fNamespaceSupport.getURI(prefix);
+        element.uri = fNamespaceContext.getURI(prefix);
         if (element.prefix == null && element.uri != null) {
             element.prefix = XMLSymbols.EMPTY_STRING;
         }
@@ -897,11 +811,11 @@ public class XMLNamespaceBinder
                            ? fAttributeQName.prefix : XMLSymbols.EMPTY_STRING;
             String arawname = fAttributeQName.rawname;
             if (arawname == XMLSymbols.PREFIX_XMLNS) {
-                fAttributeQName.uri = fNamespaceSupport.getURI(XMLSymbols.PREFIX_XMLNS);
+                fAttributeQName.uri = fNamespaceContext.getURI(XMLSymbols.PREFIX_XMLNS);
                 attributes.setName(i, fAttributeQName);
             }
             else if (aprefix != XMLSymbols.EMPTY_STRING) {
-                fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
+                fAttributeQName.uri = fNamespaceContext.getURI(aprefix);
                 if (fAttributeQName.uri == null) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "AttributePrefixUnbound",
@@ -949,7 +863,7 @@ public class XMLNamespaceBinder
 
         // bind element
         String eprefix = element.prefix != null ? element.prefix : XMLSymbols.EMPTY_STRING;
-        element.uri = fNamespaceSupport.getURI(eprefix);
+        element.uri = fNamespaceContext.getURI(eprefix);
         if (element.uri != null) {
             element.prefix = eprefix;
         }
@@ -961,17 +875,8 @@ public class XMLNamespaceBinder
             }
         }
 
-        // end prefix mappings
-        if (fDocumentHandler != null) {
-            int count = fNamespaceSupport.getDeclaredPrefixCount();
-            for (int i = count - 1; i >= 0; i--) {
-                String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
-                fDocumentHandler.endPrefixMapping(prefix, augs);
-            }
-        }
-
         // pop context
-        fNamespaceSupport.popContext();
+        fNamespaceContext.popContext();
 
     } // handleEndElement(QName,boolean)
 

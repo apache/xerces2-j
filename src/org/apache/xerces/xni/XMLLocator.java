@@ -71,10 +71,16 @@ public interface XMLLocator  extends XMLResourceIdentifier {
     //
     // XMLLocator methods
     //
+    
+    /** Sets the line number. */
+    public void setLineNumber(int line);
 
     /** Returns the line number. */
     public int getLineNumber();
-
+  
+    /** Sets the column number. */
+    public void setColumnNumber(int col);
+  
     /** Returns the column number. */
     public int getColumnNumber();
 

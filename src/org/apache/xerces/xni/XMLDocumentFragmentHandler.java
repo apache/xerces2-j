@@ -196,21 +196,6 @@ public interface XMLDocumentFragmentHandler {
         throws XNIException;
 
     /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     * @param augmentations Additional information that may include infoset
-     *                      augmentations.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri,
-                                   Augmentations augmentations)
-        throws XNIException;
-
-    /**
      * The start of an element.
      * 
      * @param element    The name of the element.
@@ -276,19 +261,6 @@ public interface XMLDocumentFragmentHandler {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endElement(QName element, Augmentations augmentations) 
-        throws XNIException;
-
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param augmentations Additional information that may include infoset
-     *                      augmentations.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augmentations) 
         throws XNIException;
 
     /** 

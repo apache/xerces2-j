@@ -173,11 +173,11 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
     // Update PSVI information in the tree
     protected boolean fPSVI = false;
 
-    /** stores namespaces in scope */
-    protected final NamespaceSupport fNamespaceContext = new NamespaceSupport();
+    /** The namespace context of this document: stores namespaces in scope */
+    protected final NamespaceContext fNamespaceContext = new NamespaceSupport();
 
-    /** stores all namespace bindings on the current element */
-    protected final NamespaceSupport fLocalNSBinder = new NamespaceSupport();
+    /** Stores all namespace bindings on the current element */
+    protected final NamespaceContext fLocalNSBinder = new NamespaceSupport();
 
     /** list of attributes */
     protected final Vector fAttributeList = new Vector(5,10);
@@ -612,9 +612,6 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                             fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
                             fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, value);
 
-                            if (fValidationHandler != null) {
-                                fValidationHandler.startPrefixMapping(XMLSymbols.EMPTY_STRING, value, null);
-                            }
                             removeDefault (attr, attributes);
                             continue;
                         }
@@ -1216,21 +1213,6 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
     }
 
     /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     *               
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-        throws XNIException{
-    }
-
-    /**
      * The start of an element.
      * 
      * @param element    The name of the element.
@@ -1387,19 +1369,6 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                 }
             }
         }
-    }
-
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     *               
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException{
     }
 
     /**

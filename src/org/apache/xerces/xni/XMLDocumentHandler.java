@@ -174,20 +174,6 @@ public interface XMLDocumentHandler {
         throws XNIException;
 
     /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * @deprecated Use <code>xni.NamespaceContext</code> in <code>startDocument()</code>.
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     *               
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-        throws XNIException;
-
-    /**
      * The start of an element.
      * 
      * @param element    The name of the element.
@@ -306,18 +292,6 @@ public interface XMLDocumentHandler {
      *                   Thrown by handler to signal an error.
      */
     public void endElement(QName element, Augmentations augs) throws XNIException;
-
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     * 
-     * @param prefix The namespace prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     * @deprecated Use <code>xni.NamespaceContext</code> in <code>startDocument()</code>.             
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException;
 
     /**
      * The start of a CDATA section.

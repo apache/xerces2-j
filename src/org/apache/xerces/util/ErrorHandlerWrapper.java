@@ -244,12 +244,18 @@ public class ErrorHandlerWrapper
         final int fLineNumber = exception.getLineNumber();
         final int fColumnNumber = exception.getColumnNumber();
         XMLLocator location = new XMLLocator() {
+            public void setPublicId(String id) {}
             public String getPublicId() { return fPublicId; }
+            public void setExpandedSystemId( String id) {}
             public String getExpandedSystemId() { return fExpandedSystemId; }
+            public void setBaseSystemId(String id) {}
             public String getBaseSystemId() { return null; }
+            public void setLiteralSystemId(String id) {}
             public String getLiteralSystemId() { return null; }
             public int getColumnNumber() { return fColumnNumber; }
+            public void setColumnNumber(int col) {}
             public int getLineNumber() { return fLineNumber; }
+            public void setLineNumber(int line) {}
         };
         return new XMLParseException(location, exception.getMessage(),
                                      exception.getException());

@@ -57,20 +57,14 @@
 
 package org.apache.xerces.impl.dtd;
 
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
-
 import org.apache.xerces.util.XMLSymbols;
-
-import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
 
 
 /**
@@ -113,7 +107,7 @@ public class XMLNSDTDValidator
                                       Augmentations augs) throws XNIException {
         
         // add new namespace context
-        fNamespaceSupport.pushContext();
+        fNamespaceContext.pushContext();
 
         if (element.prefix == XMLSymbols.PREFIX_XMLNS) {
             fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
@@ -184,19 +178,14 @@ public class XMLNSDTDValidator
                 }
 
                 // declare prefix in context
-                fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
-
-                // call handler
-                if (fDocumentHandler != null) {
-                    fDocumentHandler.startPrefixMapping(prefix, uri, augs);
-                }
+                fNamespaceContext.declarePrefix(prefix, uri.length() != 0 ? uri : null);
             }
         }
 
         // bind the element
         String prefix = element.prefix != null
                       ? element.prefix : XMLSymbols.EMPTY_STRING;
-        element.uri = fNamespaceSupport.getURI(prefix);
+        element.uri = fNamespaceContext.getURI(prefix);
         if (element.prefix == null && element.uri != null) {
             element.prefix = XMLSymbols.EMPTY_STRING;
         }
@@ -214,11 +203,11 @@ public class XMLNSDTDValidator
                            ? fAttributeQName.prefix : XMLSymbols.EMPTY_STRING;
             String arawname = fAttributeQName.rawname;
             if (arawname == XMLSymbols.PREFIX_XMLNS) {
-                fAttributeQName.uri = fNamespaceSupport.getURI(XMLSymbols.PREFIX_XMLNS);
+                fAttributeQName.uri = fNamespaceContext.getURI(XMLSymbols.PREFIX_XMLNS);
                 attributes.setName(i, fAttributeQName);
             }
             else if (aprefix != XMLSymbols.EMPTY_STRING) {
-                fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
+                fAttributeQName.uri = fNamespaceContext.getURI(aprefix);
                 if (fAttributeQName.uri == null) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "AttributePrefixUnbound",
@@ -257,7 +246,7 @@ public class XMLNSDTDValidator
 
         // bind element
         String eprefix = element.prefix != null ? element.prefix : XMLSymbols.EMPTY_STRING;
-        element.uri = fNamespaceSupport.getURI(eprefix);
+        element.uri = fNamespaceContext.getURI(eprefix);
         if (element.uri != null) {
             element.prefix = eprefix;
         }
@@ -269,17 +258,8 @@ public class XMLNSDTDValidator
             }
         }
 
-        // end prefix mappings
-        if (fDocumentHandler != null) {
-            int count = fNamespaceSupport.getDeclaredPrefixCount();
-            for (int i = count - 1; i >= 0; i--) {
-                String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
-                fDocumentHandler.endPrefixMapping(prefix, augs);
-            }
-        }
-
         // pop context
-        fNamespaceSupport.popContext();
+        fNamespaceContext.popContext();
 
     } // endNamespaceScope(QName,boolean)
     

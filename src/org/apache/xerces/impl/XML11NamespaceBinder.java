@@ -106,20 +106,7 @@ public class XML11NamespaceBinder extends XMLNamespaceBinder {
 
     /** Default constructor. */
     public XML11NamespaceBinder() {
-        this(null);
     } // <init>()
-
-    /**
-     * Constructs a namespace binder that shares the specified namespace
-     * context during each parse.
-     *
-     * @param namespaceContext The shared context.
-     */
-    public XML11NamespaceBinder(NamespaceContext namespaceContext) {
-        super(namespaceContext);
-    } // <init>(NamespaceContext)
-
-
     //
     // Public methods
     //
