@@ -1059,8 +1059,10 @@ public class XMLDocumentScanner
         else if (name == fAposSymbol) {
             handleCharacter('\'');
         }
-        
         // start general entity
+        else if (fEntityManager.isUnparsedEntity(name)) {
+            reportFatalError("ReferenceToUnparsedEntity", new Object[]{name});
+        }
         else {
             fEntityManager.startEntity(name, false);
         }
