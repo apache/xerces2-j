@@ -186,7 +186,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         // (list|restriction|union)
         if (child == null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
+            reportSchemaError("s4s-elt-must-match.2", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
             return errorType(name, schemaDoc.fTargetNamespace, XSConstants.DERIVATION_RESTRICTION);
         }
 
@@ -207,14 +207,14 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             union = true;
         }
         else {
-            reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
+            reportSchemaError("s4s-elt-must-match.1", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))", varietyProperty}, simpleTypeDecl);
             return errorType(name, schemaDoc.fTargetNamespace, XSConstants.DERIVATION_RESTRICTION);
         }
 
         // nothing should follow this element
         Element nextChild = DOMUtil.getNextSiblingElement(child);
         if (nextChild != null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, nextChild);
+            reportSchemaError("s4s-elt-must-match.1", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))", DOMUtil.getLocalName(nextChild)}, nextChild);
         }
         
         // General Attribute Checking: get base/item/member types
@@ -282,7 +282,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if (restriction || list) {
                 // it's an error for both "base" and "simpleType" to appear
                 if (baseTypeName != null) {
-                    reportSchemaError(list ? "src-simple-type.3" : "src-simple-type.2", null, content);
+                    reportSchemaError(list ? "src-simple-type.3.a" : "src-simple-type.2.a", null, content);
                 }
                 else {
                     // traver this child to get the base type
@@ -315,7 +315,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
         else if ((restriction || list) && baseTypeName == null) {
             // it's an error if neither "base" nor "simpleType" appears
-            reportSchemaError("src-simple-type.2", null, child);
+			reportSchemaError(list ? "src-simple-type.3.b" : "src-simple-type.2.b", null, child);
             // base can't be found, skip the facets.
             skipFacets = true;
             baseValidator = SchemaGrammar.fAnySimpleType;
@@ -340,9 +340,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
 
         // item type of list types can't have list content
-        if (list && isListDatatype(baseValidator)) {
-            reportSchemaError("cos-list-of-atomic", new Object[]{name}, child);
-        }
+		if (list && isListDatatype(baseValidator)) {
+			reportSchemaError("cos-st-restricts.2.1", new Object[]{name, baseValidator.getName()}, child);
+		}
         
         // create the simple type based on the "base" type
         XSSimpleType newDecl = null;
@@ -377,13 +377,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // now element should appear after this point
         if (content != null) {
             if (restriction) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_RESTRICTION, "(annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern)*))"}, content);
+                reportSchemaError("s4s-elt-must-match.1", new Object[]{SchemaSymbols.ELT_RESTRICTION, "(annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern)*))", DOMUtil.getLocalName(content)}, content);
             }
             else if (list) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType?))"}, content);
+                reportSchemaError("s4s-elt-must-match.1", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType?))", DOMUtil.getLocalName(content)}, content);
             }
             else if (union) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_UNION, "(annotation?, (simpleType*))"}, content);
+                reportSchemaError("s4s-elt-must-match.1", new Object[]{SchemaSymbols.ELT_UNION, "(annotation?, (simpleType*))", DOMUtil.getLocalName(content)}, content);
             }
         }
         
@@ -417,18 +417,18 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     checkBuiltIn(refName, schemaDoc.fTargetNamespace)) {
                     return null;
                 }
-                reportSchemaError("cos-st-restricts.1.1", new Object[]{baseTypeStr.rawname}, elm);
+                reportSchemaError("cos-st-restricts.1.1", new Object[]{baseTypeStr.rawname, refName}, elm);
                 return SchemaGrammar.fAnySimpleType;
             }
             if ((baseType.getFinal() & baseRefContext) != 0) {
-                if (baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
-                    reportSchemaError("st-props-correct.3", new Object[]{baseTypeStr.rawname}, elm);
+				if (baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
+                    reportSchemaError("st-props-correct.3", new Object[]{refName, baseTypeStr.rawname}, elm);
                 }
                 else if (baseRefContext == XSConstants.DERIVATION_LIST) {
-                    reportSchemaError("cos-st-restricts.2.3.1.1", new Object[]{baseTypeStr.rawname}, elm);
+                    reportSchemaError("cos-st-restricts.2.3.1.1", new Object[]{baseTypeStr.rawname, refName}, elm);
                 }
                 else if (baseRefContext == XSConstants.DERIVATION_UNION) {
-                    reportSchemaError("cos-st-restricts.3.3.1.1", new Object[]{baseTypeStr.rawname}, elm);
+                    reportSchemaError("cos-st-restricts.3.3.1.1", new Object[]{baseTypeStr.rawname, refName}, elm);
                 }
             }
         }

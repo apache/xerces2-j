@@ -430,8 +430,8 @@ public class XSConstraints {
                   if (derivedParticle==null && (!(baseParticle==null ||
                                                baseParticle.emptiable()))) {
                     reportSchemaError(errorReporter,ctLocators[j],
-                                      "derivation-ok-restriction.5.2.2",
-                                      new Object[]{types[j].fName});
+                                      "derivation-ok-restriction.5.3.2",
+                                      new Object[]{types[j].fName, types[j].fBaseType.getName()});
                   }
                   else if (derivedParticle!=null &&
                            baseParticle!=null) 
@@ -446,7 +446,7 @@ public class XSConstraints {
                                         e.getKey(),
                                         e.getArgs());
                       reportSchemaError(errorReporter, ctLocators[j],
-                                        "derivation-ok-restriction.5.3.2",
+                                        "derivation-ok-restriction.5.4.2",
                                         new Object[]{types[j].fName});
                     }
                 }
@@ -549,7 +549,7 @@ public class XSConstraints {
           if (elem.fType != existingElem.fType) {
             // Types are not the same 
             throw new XMLSchemaException("cos-element-consistent", 
-                      new Object[] {type.fName, name});
+                      new Object[] {type.fName, elem.fName});
 
           }
         }
@@ -581,9 +581,11 @@ public class XSConstraints {
 
        // Check for empty particles.   If either base or derived particle is empty,
        // (and the other isn't) it's an error.
-       if ((dParticle.isEmpty() && !bParticle.emptiable()) ||
-          (!dParticle.isEmpty() && bParticle.isEmpty())) {
-         throw new XMLSchemaException("cos-particle-restrict", null);
+       if (dParticle.isEmpty() && !bParticle.emptiable()) {
+         throw new XMLSchemaException("cos-particle-restrict.a", null);
+       }
+       else if (!dParticle.isEmpty() && bParticle.isEmpty()) {
+         throw new XMLSchemaException("cos-particle-restrict.b", null);
        }
 
        //
@@ -1029,9 +1031,9 @@ public class XSConstraints {
       //
       // Check nillable
       //
-      if (! (bElement.getNillable() || !dElement.getNillable())) {
+      if (!bElement.getNillable() && dElement.getNillable()) {
         throw new XMLSchemaException("rcase-NameAndTypeOK.2",
-                                      new Object[]{dElement.fName});
+                                     new Object[]{dElement.fName});
       }
 
       //
@@ -1039,7 +1041,12 @@ public class XSConstraints {
       //
       if (!checkOccurrenceRange(dMin, dMax, bMin, bMax)) {
         throw new XMLSchemaException("rcase-NameAndTypeOK.3",
-                                      new Object[]{dElement.fName});
+                                      new Object[]{
+                                        dElement.fName,
+                                        Integer.toString(dMin),
+                                        dMax==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(dMax),
+                                        Integer.toString(bMin),
+                                        bMax==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(bMax)});
       }
 
       //
@@ -1048,8 +1055,8 @@ public class XSConstraints {
       if (bElement.getConstraintType() == XSConstants.VC_FIXED) {
          // derived one has to have a fixed value
          if (dElement.getConstraintType() != XSConstants.VC_FIXED) {
-            throw new XMLSchemaException("rcase-NameAndTypeOK.4",
-                                      new Object[]{dElement.fName});
+            throw new XMLSchemaException("rcase-NameAndTypeOK.4.a",
+                                         new Object[]{dElement.fName, bElement.fDefault.stringValue()});
          }
 
          // get simple type
@@ -1062,8 +1069,10 @@ public class XSConstraints {
          // if there is no simple type, then compare based on string
          if (!isSimple && !bElement.fDefault.normalizedValue.equals(dElement.fDefault.normalizedValue) ||
              isSimple && !bElement.fDefault.actualValue.equals(dElement.fDefault.actualValue)) {
-            throw new XMLSchemaException("rcase-NameAndTypeOK.4",
-                                      new Object[]{dElement.fName});
+            throw new XMLSchemaException("rcase-NameAndTypeOK.4.b",
+                                         new Object[]{dElement.fName,
+                                                      dElement.fDefault.stringValue(),
+                                                      bElement.fDefault.stringValue()});
          }
       }
 
@@ -1089,7 +1098,7 @@ public class XSConstraints {
       if (!checkTypeDerivationOk(dElement.fType, bElement.fType,
                                  (short)(XSConstants.DERIVATION_EXTENSION|XSConstants.DERIVATION_LIST|XSConstants.DERIVATION_UNION))) {
           throw new XMLSchemaException("rcase-NameAndTypeOK.7",
-                                  new Object[]{dElement.fName});
+                                  new Object[]{dElement.fName, dElement.fType.getName(), bElement.fType.getName()});
       }
 
     }
@@ -1120,7 +1129,12 @@ public class XSConstraints {
       // check Occurrence ranges
       if (checkWCOccurrence && !checkOccurrenceRange(min1,max1,min2,max2)) {
         throw new XMLSchemaException("rcase-NSCompat.2",
-                                  new Object[]{elem.fName});
+                                  new Object[]{
+                                  	elem.fName,
+                                  	Integer.toString(min1),
+                                  	max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                  	Integer.toString(min2),
+                                  	max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       // check wildcard allows namespace of element
@@ -1137,16 +1151,22 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-NSSubset.2",null);
+        throw new XMLSchemaException("rcase-NSSubset.2", new Object[]{
+                                     Integer.toString(min1),
+                                     max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                     Integer.toString(min2),
+                                     max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       // check wildcard subset
       if (!dWildcard.isSubsetOf(bWildcard)) {
-         throw new XMLSchemaException("rcase-NSSubset.1",null);
+         throw new XMLSchemaException("rcase-NSSubset.1", null);
       }
 
       if (dWildcard.weakerProcessContents(bWildcard)) {
-          throw new XMLSchemaException("rcase-NSSubset.3",null);
+          throw new XMLSchemaException("rcase-NSSubset.3",
+                                       new Object[]{dWildcard.getProcessContentsAsString(),
+                                                    bWildcard.getProcessContentsAsString()});
       }
 
     }
@@ -1161,7 +1181,11 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (checkWCOccurrence && !checkOccurrenceRange(min1,max1,min2,max2)) {
-         throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.2", null);
+         throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.2", new Object[]{
+                                        Integer.toString(min1),
+                                        max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                        Integer.toString(min2),
+                                        max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       // Check that each member of the group is a valid restriction of the wildcard
@@ -1173,6 +1197,8 @@ public class XSConstraints {
 
         }
       }
+      // REVISIT: should we really just ignore original cause of this error?
+      //          how can we report it?
       catch (XMLSchemaException e) {
          throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.1", null);
       }
@@ -1187,7 +1213,11 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-Recurse.1", null);
+        throw new XMLSchemaException("rcase-Recurse.1", new Object[]{
+                                       Integer.toString(min1),
+                                       max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                       Integer.toString(min2),
+                                       max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       int count1= dChildren.size();
@@ -1231,7 +1261,11 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-RecurseUnordered.1", null);
+        throw new XMLSchemaException("rcase-RecurseUnordered.1", new Object[]{
+                                       Integer.toString(min1),
+                                       max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                       Integer.toString(min2),
+                                       max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       int count1= dChildren.size();
@@ -1278,7 +1312,11 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-RecurseLax.1", null);
+        throw new XMLSchemaException("rcase-RecurseLax.1", new Object[]{
+                                       Integer.toString(min1),
+                                       max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                       Integer.toString(min2),
+                                       max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       int count1= dChildren.size();
@@ -1327,7 +1365,11 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-MapAndSum.2", null);
+        throw new XMLSchemaException("rcase-MapAndSum.2",
+                                     new Object[]{Integer.toString(min1),
+                                        max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                        Integer.toString(min2),
+                                        max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       int count1 = dChildren.size();

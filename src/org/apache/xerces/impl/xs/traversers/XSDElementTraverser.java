@@ -200,7 +200,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 // 2.1 One of ref or name must be present, but not both.
                 // 2.2 If ref is present, then all of <complexType>, <simpleType>, <key>, <keyref>, <unique>, nillable, default, fixed, form, block and type must be absent, i.e. only minOccurs, maxOccurs, id are allowed in addition to ref, along with <annotation>.
                 if (child != null) {
-                    reportSchemaError("src-element.2.2", new Object[]{refAtt}, child);
+                    reportSchemaError("src-element.2.2", new Object[]{refAtt.rawname, DOMUtil.getLocalName(child)}, child);
                 }
             } else {
                 element = null;
@@ -426,7 +426,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // element
         if (child != null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, (unique | key | keyref)*))"}, child);
+            reportSchemaError("s4s-elt-must-match.1", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, (unique | key | keyref)*))", DOMUtil.getLocalName(child)}, child);
         }
 
         // Step 4: check 3.3.3 constraints
@@ -465,14 +465,14 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             }
         }
 
-        // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
+        // 4 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
            if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
                 reportSchemaError ("e-props-correct.4", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart}, elmDecl);
            }
         }
 
-        // 4 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}.
+        // 5 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}.
         if (element.fDefault != null) {
             if ((elementType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE &&
                  ((XSSimpleType)elementType).isIDType()) ||

@@ -127,7 +127,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 }
 
                 if (child != null) {
-                    reportSchemaError("src-attribute.3.2", new Object[]{refAtt}, child);
+                    reportSchemaError("src-attribute.3.2", new Object[]{refAtt.rawname}, child);
                 }
                 // for error reporting
                 nameAtt = refAtt.localpart;
@@ -183,7 +183,11 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         if (defaultAtt != null && attrUse != null) {
             // 2 if there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in String Valid (3.14.4).
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
-            if (!checkDefaultValid(attrUse)) {
+            try {
+                checkDefaultValid(attrUse);
+            }
+            catch (InvalidDatatypeValueException ide) {
+                reportSchemaError (ide.getKey(), ide.getArgs(), attrDecl);
                 reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, defaultAtt}, attrDecl);
             }
 
@@ -199,7 +203,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attrUse.fConstraintType != XSConstants.VC_NONE) {
                 if (attrUse.fConstraintType != XSConstants.VC_FIXED ||
                     !attrUse.fAttrDecl.getValInfo().actualValue.equals(attrUse.fDefault.actualValue)) {
-                    reportSchemaError ("au-props-correct.2", new Object[]{nameAtt}, attrDecl);
+                    reportSchemaError ("au-props-correct.2", new Object[]{nameAtt, attrUse.fAttrDecl.getValInfo().stringValue()}, attrDecl);
                 }
             }
         }
@@ -342,7 +346,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // element
         if (child != null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{nameAtt, "(annotation?, (simpleType?))"}, child);
+            reportSchemaError("s4s-elt-must-match.1", new Object[]{nameAtt, "(annotation?, (simpleType?))", DOMUtil.getLocalName(child)}, child);
         }
 
         // Step 4: check 3.2.3 constraints
@@ -378,9 +382,13 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // 2 if there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in String Valid (3.14.4).
         if (attDefault != null) {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
-            if (!checkDefaultValid(attribute)) {
-                reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, attDefault.normalizedValue}, attrDecl);
-            }
+			try {
+				checkDefaultValid(attribute);
+			}
+			catch (InvalidDatatypeValueException ide) {
+				reportSchemaError (ide.getKey(), ide.getArgs(), attrDecl);
+				reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, attDefault.normalizedValue}, attrDecl);
+			}
         }
 
         // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}.
@@ -411,38 +419,20 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         return attribute;
     }
 
-    // return whether the constraint value is valid for the given type
-    boolean checkDefaultValid(XSAttributeDecl attribute) {
-
-        boolean ret = true;
-
-        try {
-            // validate the original lexical rep, and set the actual value
-            ((XSSimpleType)attribute.getTypeDefinition()).validate(attribute.getValInfo().normalizedValue, fValidationState, attribute.getValInfo());
-            // validate the canonical lexical rep
-            ((XSSimpleType)attribute.getTypeDefinition()).validate(attribute.getValInfo().stringValue(), fValidationState, attribute.getValInfo());
-        } catch (InvalidDatatypeValueException ide) {
-            ret = false;
-        }
-
-        return ret;
+	// throws an error if the constraint value is invalid for the given type
+    void checkDefaultValid(XSAttributeDecl attribute) throws InvalidDatatypeValueException {
+        // validate the original lexical rep, and set the actual value
+        ((XSSimpleType)attribute.getTypeDefinition()).validate(attribute.getValInfo().normalizedValue, fValidationState, attribute.getValInfo());
+        // validate the canonical lexical rep
+        ((XSSimpleType)attribute.getTypeDefinition()).validate(attribute.getValInfo().stringValue(), fValidationState, attribute.getValInfo());
     }
 
-    // return whether the constraint value is valid for the given type
-    boolean checkDefaultValid(XSAttributeUseImpl attrUse) {
-
-        boolean ret = true;
-
-        try {
-            // validate the original lexical rep, and set the actual value
-            ((XSSimpleType)attrUse.fAttrDecl.getTypeDefinition()).validate(attrUse.fDefault.normalizedValue, fValidationState, attrUse.fDefault);
-            // validate the canonical lexical rep
-            ((XSSimpleType)attrUse.fAttrDecl.getTypeDefinition()).validate(attrUse.fDefault.stringValue(), fValidationState, attrUse.fDefault);
-        } catch (InvalidDatatypeValueException ide) {
-            ret = false;
-        }
-
-        return ret;
+    // throws an error if the constraint value is invalid for the given type
+    void checkDefaultValid(XSAttributeUseImpl attrUse) throws InvalidDatatypeValueException {
+         // validate the original lexical rep, and set the actual value
+        ((XSSimpleType)attrUse.fAttrDecl.getTypeDefinition()).validate(attrUse.fDefault.normalizedValue, fValidationState, attrUse.fDefault);
+        // validate the canonical lexical rep
+        ((XSSimpleType)attrUse.fAttrDecl.getTypeDefinition()).validate(attrUse.fDefault.stringValue(), fValidationState, attrUse.fDefault);
     }
 
 }

@@ -820,14 +820,14 @@ public class XSDHandler {
                 else if (DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
                          DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
                     if (!dependenciesCanOccur) {
-                        reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)}, globalComp);
+                        reportSchemaError("s4s-elt-invalid-content.3", new Object [] {DOMUtil.getLocalName(globalComp)}, globalComp);
                     }
                     // we've dealt with this; mark as traversed
                     DOMUtil.setHidden(globalComp);
                 }
                 else if (DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
                     if (!dependenciesCanOccur) {
-                        reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)}, globalComp);
+                        reportSchemaError("s4s-elt-invalid-content.3", new Object [] {DOMUtil.getLocalName(globalComp)}, globalComp);
                     }
                     for (Element redefineComp = DOMUtil.getFirstChildElement(globalComp);
                         redefineComp != null;
@@ -980,7 +980,7 @@ public class XSDHandler {
                         //    fElementTraverser.traverseAnnotationDecl(redefinedComp, null, true, currSchemaDoc);
                         //}
                         else {
-                            reportSchemaError("src-redefine", new Object [] {componentType}, redefinedComp);
+                            reportSchemaError("s4s-elt-must-match.1", new Object [] {DOMUtil.getLocalName(globalComp), "(annotation | (simpleType | complexType | group | attributeGroup))*", redefinedComponentType}, redefinedComp);
                         }
                     } // end march through <redefine> children
                     currSchemaDoc.restoreNSSupport();
@@ -1010,7 +1010,7 @@ public class XSDHandler {
                     fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc);
                 }
                 else {
-                    reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)}, globalComp);
+                    reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
                 }
             } // end for
 
@@ -1106,7 +1106,7 @@ public class XSDHandler {
             // cannot get to this schema from the one containing the requesting decl
             if (currSchema.needReportTNSError(declToTraverse.uri)) {
                 String code = declToTraverse.uri == null ? "src-resolve.4.1" : "src-resolve.4.2";
-                reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
+                reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri, declToTraverse.rawname}, elmNode);
             }
             return null;
         }
@@ -1194,7 +1194,7 @@ public class XSDHandler {
         if (schemaWithDecl == null) {
             // cannot get to this schema from the one containing the requesting decl
             String code = declToTraverse.uri == null ? "src-resolve.4.1" : "src-resolve.4.2";
-            reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
+            reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri, declToTraverse.rawname}, elmNode);
             return null;
         }
         // a component is hidden, meaning either it's traversed, or being traversed.
@@ -1359,11 +1359,6 @@ public class XSDHandler {
         fKeyrefNamespaceContext[fKeyrefStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // storeKeyref (Element, XSDocumentInfo, XSElementDecl): void
 
-    private static final String[] DOC_ERROR_CODES = {
-        "src-include.0", "src-redefine.0", "src-import.0", "schema_reference.4",
-        "schema_reference.4", "schema_reference.4", "schema_reference.4", "schema_reference.4"
-    };
-    
     // This method is responsible for schema resolution.  If it finds
     // a schema document that the XMLEntityResolver resolves to with
     // the given namespace and hint, it returns it.  It returns true
@@ -1378,12 +1373,12 @@ public class XSDHandler {
         }
         catch (IOException ex) {
             if (mustResolve) {
-                reportSchemaError(DOC_ERROR_CODES[desc.getContextType()],
+                reportSchemaError("schema_reference.4",
                                   new Object[]{desc.getLocationHints()[0]},
                                   referElement); 
             }
             else {
-                reportSchemaWarning(DOC_ERROR_CODES[desc.getContextType()],
+                reportSchemaWarning("schema_reference.4",
                                     new Object[]{desc.getLocationHints()[0]},
                                     referElement);
             }
@@ -1432,7 +1427,7 @@ public class XSDHandler {
                 }
                 fSchemaParser.parse(schemaSource);
                 schemaDoc = fSchemaParser.getDocument();
- 			                
+
                 // now we need to store the mapping information from system id
                 // to the document. also from the document to the system id.
                 if (key != null)
@@ -1452,15 +1447,17 @@ public class XSDHandler {
         // either an error occured (exception), or empty input source was
         // returned, we need to report an error or a warning
         if (mustResolve) {
-            reportSchemaError(DOC_ERROR_CODES[referType],
-                              new Object[]{schemaSource.getSystemId()},
-                              referElement); 
-        }
-        else if (hasInput) {
-            reportSchemaWarning(DOC_ERROR_CODES[referType],
-                                new Object[]{schemaSource.getSystemId()},
-                                referElement); 
-        }
+            if (hasInput) {
+                reportSchemaError("schema_reference.4",
+                                  new Object[]{schemaSource.getSystemId()},
+                                  referElement); 
+			}
+			else {
+                reportSchemaError("schema_reference.4",
+                                  new Object[]{schemaSource == null ? "" : schemaSource.getSystemId()},
+                                  referElement); 
+			}
+		}
 
         fLastSchemaWasDuplicate = false;
         return null;
@@ -1727,7 +1724,7 @@ public class XSDHandler {
                     }
                     else {
                         // error that redefined element in wrong schema
-                        reportSchemaError("src-redefine.1", new Object [] {qName}, currComp);
+                        reportSchemaError("sch-props-correct.2", new Object [] {qName}, currComp);
                     }
                 }
             }
@@ -1747,11 +1744,10 @@ public class XSDHandler {
     private void renameRedefiningComponents(XSDocumentInfo currSchema,
                                             Element child, String componentType,
                                             String oldName, String newName) {
-
         if (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
-                reportSchemaError("src-redefine.5", null, child);
+                reportSchemaError("src-redefine.5.a.a", null, child);
             }
             else {
                 String grandKidName = grandKid.getLocalName();
@@ -1760,10 +1756,10 @@ public class XSDHandler {
                     grandKidName = grandKid.getLocalName();
                 }
                 if (grandKid == null) {
-                    reportSchemaError("src-redefine.5", null, child);
+                    reportSchemaError("src-redefine.5.a.a", null, child);
                 }
                 else if (!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
-                    reportSchemaError("src-redefine.5", null, child);
+                    reportSchemaError("src-redefine.5.a.b", new Object[]{grandKidName}, child);
                 }
                 else {
                     Object[] attrs = fAttributeChecker.checkAttributes(grandKid, false, currSchema);
@@ -1771,7 +1767,11 @@ public class XSDHandler {
                     if (derivedBase == null ||
                         derivedBase.uri != currSchema.fTargetNamespace ||
                         !derivedBase.localpart.equals(oldName)) {
-                        reportSchemaError("src-redefine.5", null, child);
+                        reportSchemaError("src-redefine.5.a.c",
+                                          new Object[]{grandKidName,
+                                                       (currSchema.fTargetNamespace==null?"":currSchema.fTargetNamespace)
+                                                       + "," + oldName},
+                                          child);
                     }
                     else {
                         // now we have to do the renaming...
@@ -1789,20 +1789,20 @@ public class XSDHandler {
         else if (componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
-                reportSchemaError("src-redefine.5", null, child);
+                reportSchemaError("src-redefine.5.b.a", null, child);
             }
             else {
                 if (grandKid.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
                     grandKid = DOMUtil.getNextSiblingElement(grandKid);
                 }
                 if (grandKid == null) {
-                    reportSchemaError("src-redefine.5", null, child);
+                    reportSchemaError("src-redefine.5.b.a", null, child);
                 }
                 else {
                     // have to go one more level down; let another pass worry whether complexType is valid.
                     Element greatGrandKid = DOMUtil.getFirstChildElement(grandKid);
                     if (greatGrandKid == null) {
-                        reportSchemaError("src-redefine.5", null, grandKid);
+                        reportSchemaError("src-redefine.5.b.b", null, grandKid);
                     }
                     else {
                         String greatGrandKidName = greatGrandKid.getLocalName();
@@ -1811,11 +1811,11 @@ public class XSDHandler {
                             greatGrandKidName = greatGrandKid.getLocalName();
                         }
                         if (greatGrandKid == null) {
-                            reportSchemaError("src-redefine.5", null, grandKid);
+                            reportSchemaError("src-redefine.5.b.b", null, grandKid);
                         }
                         else if (!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
                                  !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
-                            reportSchemaError("src-redefine.5", null, greatGrandKid);
+                            reportSchemaError("src-redefine.5.b.c", new Object[]{greatGrandKidName}, greatGrandKid);
                         }
                         else {
                             Object[] attrs = fAttributeChecker.checkAttributes(greatGrandKid, false, currSchema);
@@ -1823,7 +1823,11 @@ public class XSDHandler {
                             if (derivedBase == null ||
                                 derivedBase.uri != currSchema.fTargetNamespace ||
                                 !derivedBase.localpart.equals(oldName)) {
-                                reportSchemaError("src-redefine.5", null, greatGrandKid);
+                                reportSchemaError("src-redefine.5.b.d",
+                                                  new Object[]{greatGrandKidName,
+                                                               (currSchema.fTargetNamespace==null?"":currSchema.fTargetNamespace)
+                                                               + "," + oldName},
+                                                  greatGrandKid);
                             }
                             else {
                                 // now we have to do the renaming...

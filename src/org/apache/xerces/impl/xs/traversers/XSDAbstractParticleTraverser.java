@@ -122,8 +122,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL, enclosingCT);
             }
             else {
-                Object[] args = {"all", "(annotation?, element*)"};
-                reportSchemaError("s4s-elt-must-match", args, child);
+                Object[] args = {"all", "(annotation?, element*)", DOMUtil.getLocalName(child)};
+                reportSchemaError("s4s-elt-must-match.1", args, child);
             }
 
             if (particle != null)
@@ -277,12 +277,12 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             else {
                 Object [] args;
                 if (choice) {
-                    args = new Object[]{"choice", "(annotation?, (element | group | choice | sequence | any)*)"};
+                    args = new Object[]{"choice", "(annotation?, (element | group | choice | sequence | any)*)", DOMUtil.getLocalName(child)};
                 }
                 else {
-                    args = new Object[]{"sequence", "(annotation?, (element | group | choice | sequence | any)*)"};
+                    args = new Object[]{"sequence", "(annotation?, (element | group | choice | sequence | any)*)", DOMUtil.getLocalName(child)};
                 }
-                reportSchemaError("s4s-elt-must-match", args, child);
+                reportSchemaError("s4s-elt-must-match.1", args, child);
             }
 
             if (particle != null)

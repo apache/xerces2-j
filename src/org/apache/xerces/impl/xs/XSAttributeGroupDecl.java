@@ -159,11 +159,20 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         }
     }
 
-    // Check that the attributes in this group validly restrict those from a base group
-    // If an error is found, the error code is returned.
-    public String validRestrictionOf(XSAttributeGroupDecl baseGroup) {
+    /**
+     * Check that the attributes in this group validly restrict those from a base group.
+     * If an error is found, an Object[] is returned. This contains the arguments for the error message
+     * describing the error. The last element in the array (at index arr.length - 1) is the the error code.
+     * Returns null if there is no error.
+     * 
+     * REVISIT: is there a better way of returning the appropriate information for the error?
+     * 
+     * @param typeName the name of the type containing this attribute group, used for error reporting purposes
+     * @param baseGroup the XSAttributeGroupDecl that is the base we are checking against
+     */
+    public Object[] validRestrictionOf(String typeName, XSAttributeGroupDecl baseGroup) {
 
-        String errorCode = null;
+        Object[] errorArgs = null;
         XSAttributeUseImpl attrUse = null;
         XSAttributeDecl attrDecl = null;
         XSAttributeUseImpl baseAttrUse = null;
@@ -184,8 +193,10 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
 
                 if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED &&
                     attrUse.fUse != SchemaSymbols.USE_REQUIRED) {
-                    errorCode = "derivation-ok-restriction.2.1.1";
-                    return errorCode;
+                    errorArgs = new Object[]{typeName, attrDecl.fName,
+                    	                     attrUse.fUse == SchemaSymbols.USE_OPTIONAL ? SchemaSymbols.ATTVAL_OPTIONAL : SchemaSymbols.ATTVAL_PROHIBITED,
+                                             "derivation-ok-restriction.2.1.1"};
+                    return errorArgs;
                 }
 
                 // if this attribute is prohibited in the derived type, don't
@@ -201,8 +212,9 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
                 if (! XSConstraints.checkSimpleDerivationOk(attrDecl.fType,
                                                             baseAttrDecl.fType,
                                                             baseAttrDecl.fType.getFinal()) ) {
-                    errorCode="derivation-ok-restriction.2.1.2";
-                    return errorCode;
+					errorArgs = new Object[]{typeName, attrDecl.fName, attrDecl.fType.getName(),
+						                     baseAttrDecl.fType.getName(), "derivation-ok-restriction.2.1.2"};
+					return errorArgs;
                 }
 
 
@@ -217,8 +229,9 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
                 if (baseConsType == XSConstants.VC_FIXED) {
 
                     if (thisConstType != XSConstants.VC_FIXED) {
-                        errorCode="derivation-ok-restriction.2.1.3";
-                        return errorCode;
+						errorArgs = new Object[]{typeName, attrDecl.fName,
+												 "derivation-ok-restriction.2.1.3.a"};
+						return errorArgs;
                     } else {
                         // check the values are the same.
                         ValidatedInfo baseFixedValue=(baseAttrUse.fDefault!=null ?
@@ -226,8 +239,9 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
                         ValidatedInfo thisFixedValue=(attrUse.fDefault!=null ?
                                                       attrUse.fDefault: attrDecl.fDefault);
                         if (!baseFixedValue.actualValue.equals(thisFixedValue.actualValue)) {
-                            errorCode="derivation-ok-restriction.2.1.3";
-                            return errorCode;
+							errorArgs = new Object[]{typeName, attrDecl.fName, thisFixedValue.stringValue(),
+													 baseFixedValue.stringValue(), "derivation-ok-restriction.2.1.3.b"};
+							return errorArgs;
                         }
 
                     }
@@ -236,15 +250,19 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
             } else {
                 // No matching attribute in base - there should be a matching wildcard
 
-
                 //
                 // derivation-ok-restriction.  Constraint 2.2
                 //
-                if (baseGroup.fAttributeWC == null ||
-                    (!baseGroup.fAttributeWC.allowNamespace(attrDecl.fTargetNamespace))) {
-
-                    errorCode = "derivation-ok-restriction.2.2";
-                    return errorCode;
+                if (baseGroup.fAttributeWC == null) {
+					errorArgs = new Object[]{typeName, attrDecl.fName,
+											 "derivation-ok-restriction.2.2.a"};
+					return errorArgs;
+                }
+                else if (!baseGroup.fAttributeWC.allowNamespace(attrDecl.fTargetNamespace)) {
+					errorArgs = new Object[]{typeName, attrDecl.fName,
+                                             attrDecl.fTargetNamespace==null?"":attrDecl.fTargetNamespace,
+											 "derivation-ok-restriction.2.2.b"};
+					return errorArgs;
                 }
             }
         }
@@ -265,8 +283,9 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
                 XSAttributeUseImpl thisAttrUse = getAttributeUse(
                                                             baseAttrDecl.fTargetNamespace,baseAttrDecl.fName);
                 if (thisAttrUse == null) {
-                    errorCode = "derivation-ok-restriction.3";
-                    return errorCode;
+					errorArgs = new Object[]{typeName, baseAttrUse.fAttrDecl.fName,
+											 "derivation-ok-restriction.3"};
+					return errorArgs;
                 }
             }
         }
@@ -278,16 +297,19 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         //
         if (fAttributeWC != null) {
             if (baseGroup.fAttributeWC == null) {
-                errorCode = "derivation-ok-restriction.4.1";
-                return errorCode;
+				errorArgs = new Object[]{typeName, "derivation-ok-restriction.4.1"};
+				return errorArgs;
             }
             if (! fAttributeWC.isSubsetOf(baseGroup.fAttributeWC)) {
-                errorCode="derivation-ok-restriction.4.2";
-                return errorCode;
+				errorArgs = new Object[]{typeName, "derivation-ok-restriction.4.2"};
+				return errorArgs;
             }
             if (fAttributeWC.weakerProcessContents(baseGroup.fAttributeWC)) {
-                errorCode="derivation-ok-restriction.4.3";
-                return errorCode;
+				errorArgs = new Object[]{typeName,
+										 fAttributeWC.getProcessContentsAsString(),
+										 baseGroup.fAttributeWC.getProcessContentsAsString(),
+										 "derivation-ok-restriction.4.3"};
+				return errorArgs;
             }
         }
 

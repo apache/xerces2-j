@@ -122,8 +122,8 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             }
 
             if (child != null) {
-                Object[] args = new Object [] {refAttr, DOMUtil.getLocalName(child)};
-                reportSchemaError("src-attribute_group", args, child);
+                Object[] args = new Object [] {refAttr.rawname, "(annotation?)", DOMUtil.getLocalName(child)};
+                reportSchemaError("s4s-elt-must-match.1", args, child);
             }
          } // if
 
@@ -169,8 +169,8 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         Element nextNode = traverseAttrsAndAttrGrps(child, attrGrp, schemaDoc, grammar, null);
         if (nextNode!=null) {
             // An invalid element was found...
-            Object[] args = new Object [] {nameAttr, DOMUtil.getLocalName(nextNode)};
-            reportSchemaError("src-attribute_group", args, nextNode);
+            Object[] args = new Object [] {nameAttr, "(annotation?, ((attribute | attributeGroup)*, anyAttribute?))", DOMUtil.getLocalName(nextNode)};
+            reportSchemaError("s4s-elt-must-match.1", args, nextNode);
         } 
  
         // Remove prohibited attributes from the set
@@ -182,9 +182,10 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
                 new QName(XMLSymbols.EMPTY_STRING, nameAttr, nameAttr, schemaDoc.fTargetNamespace), 
                 schemaDoc, elmNode); 
         if(redefinedAttrGrp != null) {
-            String err = attrGrp.validRestrictionOf(redefinedAttrGrp);
-            if (err != null) {
-                reportSchemaError("src-redefine.7.2.2", new Object [] {nameAttr, err}, child);
+            Object[] errArgs = attrGrp.validRestrictionOf(nameAttr, redefinedAttrGrp);
+            if (errArgs != null) {
+                reportSchemaError((String)errArgs[errArgs.length-1], errArgs, child);            	
+                reportSchemaError("src-redefine.7.2.2", new Object [] {nameAttr, errArgs[errArgs.length-1]}, child);
             }
         }
 

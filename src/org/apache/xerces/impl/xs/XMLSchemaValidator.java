@@ -1205,7 +1205,6 @@ public class XMLSchemaValidator
 
     /** Default constructor. */
     public XMLSchemaValidator() {
-
         fGrammarBucket = new XSGrammarBucket();
         fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
         // initialize the schema loader
@@ -1943,7 +1942,7 @@ public class XMLSchemaValidator
         if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
             if (ctype.getAbstract()) {
-                reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
+                reportSchemaError("cvc-type.2", new Object[]{element.rawname});
             }
             if (fNormalizeData) {
                 // find out if the content type is simple and if variety is union
@@ -2409,7 +2408,7 @@ public class XMLSchemaValidator
             if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
                 block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
             if (!XSConstraints.checkTypeDerivationOk(type, fCurrentType, block))
-                reportSchemaError("cvc-elt.4.3", new Object[]{element.rawname, xsiType});
+                reportSchemaError("cvc-elt.4.3", new Object[]{element.rawname, xsiType, fCurrentType.getName()});
         }
 
         return type;
@@ -2519,7 +2518,7 @@ public class XMLSchemaValidator
 
             // simple type doesn't allow any other attributes
             if (isSimple) {
-                reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname});
+                reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname, fTempQName.rawname});
                 continue;
             }
 
@@ -2650,7 +2649,7 @@ public class XMLSchemaValidator
         }
         catch (InvalidDatatypeValueException idve) {
             reportSchemaError(idve.getKey(), idve.getArgs());
-            reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+            reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue, attDV.getName()});
         }
 
         // get the value constraint from use or decl
@@ -2658,7 +2657,7 @@ public class XMLSchemaValidator
         if (actualValue != null &&
             currDecl.getConstraintType() == XSConstants.VC_FIXED) {
             if (!actualValue.equals(currDecl.fDefault.actualValue)){
-                reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+                reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue, currDecl.fDefault.stringValue()});
             }
         }
 
@@ -2666,7 +2665,7 @@ public class XMLSchemaValidator
         if (actualValue != null &&
             currUse != null && currUse.fConstraintType == XSConstants.VC_FIXED) {
             if (!actualValue.equals(currUse.fDefault.actualValue)){
-                reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+                reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue, currUse.fDefault.stringValue()});
             }
         }
         if (fAugPSVI) {

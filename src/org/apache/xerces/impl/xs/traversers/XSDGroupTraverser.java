@@ -117,7 +117,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             child = DOMUtil.getNextSiblingElement(child);
         }
         if (child != null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{"group (local)", "(annotation?)"}, elmNode);
+            reportSchemaError("s4s-elt-must-match.1", new Object[]{"group (local)", "(annotation?)", DOMUtil.getLocalName(elmNode)}, elmNode);
         }
 
         int minOccurs = minAttr.intValue();
@@ -166,7 +166,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         if (l_elmChild == null) {
-            reportSchemaError("s4s-elt-must-match",
+        	reportSchemaError("s4s-elt-must-match.2",
                               new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
                               elmNode);
         } else {
@@ -179,7 +179,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
 
             if (l_elmChild == null) {
-                reportSchemaError("s4s-elt-must-match",
+				reportSchemaError("s4s-elt-must-match.2",
                                   new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
                                   elmNode);
             } else if (childName.equals(SchemaSymbols.ELT_ALL)) {
@@ -189,15 +189,16 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             } else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, null);
             } else {
-                reportSchemaError("s4s-elt-must-match",
-                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+				reportSchemaError("s4s-elt-must-match.1",
+                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))", DOMUtil.getLocalName(l_elmChild)},
                                   l_elmChild);
             }
 
             if (l_elmChild != null &&
                 DOMUtil.getNextSiblingElement(l_elmChild) != null) {
-                reportSchemaError("s4s-elt-must-match",
-                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+				reportSchemaError("s4s-elt-must-match.1",
+                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))",
+                                               DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(l_elmChild))},
                                   DOMUtil.getNextSiblingElement(l_elmChild));
             }
 

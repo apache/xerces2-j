@@ -587,10 +587,22 @@ public class XSWildcardDecl implements XSWildcard {
 
     /**
      * {process contents} One of skip, lax or strict. Valid constants values
-     * are: SKIP_PROCESS, LAX_PROCESS, STRING_PROCESS.
+     * are: PC_SKIP, PC_LAX, PC_STRICT.
      */
     public short getProcessContents() {
         return fProcessContents;
+    }
+
+    /**
+     * String valid of {process contents}. One of "skip", "lax" or "strict".
+     */
+    public String getProcessContentsAsString() {
+        switch (fProcessContents) {
+            case XSWildcardDecl.PC_SKIP: return "skip";
+            case XSWildcardDecl.PC_LAX: return "lax";
+            case XSWildcardDecl.PC_STRICT: return "strict";
+            default: return "invalid value";
+        }
     }
 
     /**

@@ -86,7 +86,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         // check for <annotation> and get selector
         Element sElem = DOMUtil.getFirstChildElement(icElem);
         if(sElem == null) {
-            reportSchemaError("s4s-elt-must-match",
+            reportSchemaError("s4s-elt-must-match.2",
                               new Object[]{"identity constraint", "(annotation?, selector, field+)"},
                               icElem);
             return;
@@ -100,14 +100,14 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
         // if no more children report an error
         if(sElem == null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"}, icElem);
+            reportSchemaError("s4s-elt-must-match.2", new Object[]{"identity constraint", "(annotation?, selector, field+)"}, icElem);
             return;
         }
         Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc);
         
         // if more than one annotation report an error
         if(!DOMUtil.getLocalName(sElem).equals(SchemaSymbols.ELT_SELECTOR)) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"}, sElem);
+            reportSchemaError("s4s-elt-must-match.1", new Object[]{"identity constraint", "(annotation?, selector, field+)", SchemaSymbols.ELT_SELECTOR}, sElem);
         }
         // and make sure <selector>'s content is fine:
         Element selChild = DOMUtil.getFirstChildElement(sElem);
@@ -119,10 +119,10 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 selChild = DOMUtil.getNextSiblingElement(selChild);
             }
             else {
-                reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"}, selChild);
+                reportSchemaError("s4s-elt-must-match.1", new Object[]{SchemaSymbols.ELT_SELECTOR, "(annotation?)", DOMUtil.getLocalName(selChild)}, selChild);
             }
             if (selChild != null) {
-                reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]}, selChild);
+                reportSchemaError("s4s-elt-must-match.1", new Object [] {SchemaSymbols.ELT_SELECTOR, "(annotation?)", DOMUtil.getLocalName(selChild)}, selChild);
             }
         }
 
@@ -153,14 +153,14 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         // get fields
         Element fElem = DOMUtil.getNextSiblingElement(sElem);
         if(fElem == null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"}, sElem);
+            reportSchemaError("s4s-elt-must-match.2", new Object[]{"identity constraint", "(annotation?, selector, field+)"}, sElem);
         }
         while (fElem != null) {
             // General Attribute Checking
             attrValues = fAttrChecker.checkAttributes(fElem, false, schemaDoc);
 
             if(!DOMUtil.getLocalName(fElem).equals(SchemaSymbols.ELT_FIELD))
-                reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"}, fElem);
+                reportSchemaError("s4s-elt-must-match.1", new Object[]{"identity constraint", "(annotation?, selector, field+)", SchemaSymbols.ELT_FIELD}, fElem);
             
             // and make sure <field>'s content is fine:
             Element fieldChild = DOMUtil.getFirstChildElement(fElem);
@@ -172,7 +172,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 }
             }
             if (fieldChild != null) {
-                reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]}, fieldChild);
+                reportSchemaError("s4s-elt-must-match.1", new Object [] {SchemaSymbols.ELT_FIELD, "(annotation?)", DOMUtil.getLocalName(fieldChild)}, fieldChild);
             }
             String fText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]);
             if(fText == null) {

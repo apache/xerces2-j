@@ -1199,7 +1199,7 @@ public class XSAttributeChecker {
                 }
             } catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("s4s-att-invalid-value",
-                                   new Object[] {elName, attrName, ide.getKey()},
+                                   new Object[] {elName, attrName, ide.getMessage()},
                                    element);
                 if (oneAttr.dfltValue != null)
                     //attrValues.put(attrName, oneAttr.dfltValue);
@@ -1608,7 +1608,7 @@ public class XSAttributeChecker {
                     dv.validate((String)values.elementAt(i+1), null, null);
                 } catch(InvalidDatatypeValueException ide) {
                     reportSchemaError ("s4s-att-invalid-value",
-                                       new Object[] {elName, attrName, ide.getKey()},
+                                       new Object[] {elName, attrName, ide.getMessage()},
                                        null);
                 }
             }

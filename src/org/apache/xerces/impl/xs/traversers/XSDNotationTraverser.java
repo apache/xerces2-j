@@ -124,8 +124,8 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             }
         }
         if (content!=null){
-             Object[] args = new Object [] {SchemaSymbols.ELT_NOTATION, "(annotation?)"};
-             reportSchemaError("s4s-elt-must-match", args, content);
+             Object[] args = new Object [] {SchemaSymbols.ELT_NOTATION, "(annotation?)", DOMUtil.getLocalName(content)};
+             reportSchemaError("s4s-elt-must-match.1", args, content);
 
         }
         grammar.addGlobalNotationDecl(notation);

@@ -68,6 +68,7 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
@@ -148,7 +149,7 @@ abstract class XSDAbstractTraverser {
             // "appinfo" and "documentation"
             if (!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
                   (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
-                reportSchemaError("src-annotation", null, child);
+                reportSchemaError("src-annotation", new Object[]{name}, child);
             }
 
             // General Attribute Checking
@@ -225,7 +226,7 @@ abstract class XSDAbstractTraverser {
                          child = DOMUtil.getNextSiblingElement(child);
                      }
                      if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                         reportSchemaError("s4s-elt-must-match", new Object[]{"enumeration", "(annotation?)"}, child);
+                         reportSchemaError("s4s-elt-must-match.1", new Object[]{"enumeration", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                      }
                }
             }
@@ -248,7 +249,7 @@ abstract class XSDAbstractTraverser {
                              child = DOMUtil.getNextSiblingElement(child);
                          }
                          if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                             reportSchemaError("s4s-elt-must-match", new Object[]{"pattern", "(annotation?)"}, child);
+                             reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                          }
                    }
                 }
@@ -341,7 +342,7 @@ abstract class XSDAbstractTraverser {
                         child = DOMUtil.getNextSiblingElement(child);
                     }
                     if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        reportSchemaError("s4s-elt-must-match", new Object[]{facet, "(annotation?)"}, child);
+                        reportSchemaError("s4s-elt-must-match.1", new Object[]{facet, "(annotation?)", DOMUtil.getLocalName(child)}, child);
                     }
                 }
             }
@@ -512,7 +513,7 @@ abstract class XSDAbstractTraverser {
             ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
             ((XSSimpleType)typeDecl).getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
             if ((((XSSimpleType)typeDecl).getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0) {
-                reportSchemaError("enumeration-required-notation", new Object[]{refName}, elem);
+            	reportSchemaError("enumeration-required-notation", new Object[]{typeDecl.getName(), refName, DOMUtil.getLocalName(elem)}, elem);
             }
         }
     }
@@ -561,7 +562,8 @@ abstract class XSDAbstractTraverser {
         // minOccurs and maxOccurs must be one.
         if (processingAllEl) {
             if (max != 1) {
-                reportSchemaError("cos-all-limited.2", null, parent);
+                reportSchemaError("cos-all-limited.2", new Object[]{new Integer(max),
+                	              ((XSElementDecl)particle.fValue).getName()}, parent);
                 max = 1;
                 if (min > 1)
                     min = 1;
