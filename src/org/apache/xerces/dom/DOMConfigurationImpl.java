@@ -70,7 +70,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
-import org.apache.xerces.util.DOMResourceResolverWrapper;
+import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.util.ObjectFactory;
@@ -644,7 +644,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
                 if (value instanceof DOMResourceResolver) {
                     try {
-                        setEntityResolver(new DOMResourceResolverWrapper((DOMResourceResolver) value));
+                        setEntityResolver(new DOMEntityResolverWrapper((DOMResourceResolver) value));
                     }
                     catch (XMLConfigurationException e) {}
                 }
@@ -828,8 +828,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		}
 		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
 			XMLEntityResolver entityResolver = getEntityResolver();
-			if (entityResolver != null && entityResolver instanceof DOMResourceResolverWrapper) {
-				return ((DOMResourceResolverWrapper) entityResolver).getEntityResolver();
+			if (entityResolver != null && entityResolver instanceof DOMEntityResolverWrapper) {
+				return ((DOMEntityResolverWrapper) entityResolver).getEntityResolver();
 			}
 			return null;
 		}

@@ -63,8 +63,8 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import org.w3c.dom.ls.DOMEntityResolver;
-import org.w3c.dom.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMResourceResolver;
+import org.w3c.dom.ls.DOMInput;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -74,7 +74,7 @@ import java.io.Reader;
 /**
  * This class wraps DOM entity resolver to XNI entity resolver.
  *
- * @see DOMEntityResolver
+ * @see DOMResourceResolver
  *
  * @author Gopal Sharma, SUN MicroSystems Inc.
  * @author Elena Litani, IBM 
@@ -88,7 +88,7 @@ public class DOMEntityResolverWrapper
     //
 
     /** The DOM entity resolver. */
-    protected DOMEntityResolver fEntityResolver;
+    protected DOMResourceResolver fEntityResolver;
 
     //
     // Constructors
@@ -98,23 +98,23 @@ public class DOMEntityResolverWrapper
     public DOMEntityResolverWrapper() {}
 
     /** Wraps the specified DOM entity resolver. */
-    public DOMEntityResolverWrapper(DOMEntityResolver entityResolver) {
+    public DOMEntityResolverWrapper(DOMResourceResolver entityResolver) {
         setEntityResolver(entityResolver);
-    } // DOMEntityResolver
+    } // DOMResourceResolver
 
     //
     // Public methods
     //
 
     /** Sets the DOM entity resolver. */
-    public void setEntityResolver(DOMEntityResolver entityResolver) {
+    public void setEntityResolver(DOMResourceResolver entityResolver) {
         fEntityResolver = entityResolver;
-    } // setEntityResolver(DOMEntityResolver)
+    } // setEntityResolver(DOMResourceResolver)
 
     /** Returns the DOM entity resolver. */
-    public DOMEntityResolver getEntityResolver() {
+    public DOMResourceResolver getEntityResolver() {
         return fEntityResolver;
-    } // getEntityResolver():DOMEntityResolver
+    } // getEntityResolver():DOMResourceResolver
 
     //
     // XMLEntityResolver methods
@@ -135,10 +135,10 @@ public class DOMEntityResolverWrapper
         // resolve entity using DOM entity resolver
         if (fEntityResolver != null) {
             try {
-                DOMInputSource inputSource = 
+                DOMInput inputSource =
 		    resourceIdentifier == null ?
-                    fEntityResolver.resolveEntity(null, null, null) : 
-                    fEntityResolver.resolveEntity(resourceIdentifier.getPublicId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getBaseSystemId());
+                    fEntityResolver.resolveResource(null, null, null) :
+                    fEntityResolver.resolveResource(resourceIdentifier.getPublicId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getBaseSystemId());
                 if (inputSource != null) {
                     String publicId = inputSource.getPublicId();
                     String systemId = inputSource.getSystemId();

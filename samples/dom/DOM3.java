@@ -1,4 +1,3 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
@@ -65,18 +64,20 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.Document;
-import org.w3c.dom.ls.DOMBuilder;
-import org.w3c.dom.ls.DOMBuilderFilter;
+import org.w3c.dom.ls.DOMParser;
+import org.w3c.dom.ls.DOMParserFilter;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMSerializer;
 import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.ls.DOMOutput;
+import org.apache.xerces.dom.DOMOutputImpl;
 
 /**
  * This sample program illustrates how to use DOM L3 
  * DOMBuilder, DOMBuilderFilter DOMWriter and other DOM L3 functionality
  * to preparse, revalidate and safe document.
  */
-public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
+public class DOM3 implements DOMErrorHandler, DOMParserFilter {
 
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
@@ -87,7 +88,7 @@ public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
     /** Default Schema validation support (false). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = false;
 
-    static DOMBuilder builder;
+    static DOMParser builder;
     public static void main( String[] argv) {
 
         if (argv.length == 0) {
@@ -104,10 +105,10 @@ public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
                 DOMImplementationRegistry.newInstance();
 
             DOMImplementationLS impl = 
-                (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
+                (DOMImplementationLS)registry.getDOMImplementation("LS");
 
             // create DOMBuilder
-            builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, null);
+            builder = impl.createDOMParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
             
             DOMConfiguration config = builder.getConfig();
 
@@ -115,7 +116,7 @@ public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
             DOMErrorHandler errorHandler = new DOM3();
             
             // create filter
-            DOMBuilderFilter filter = new DOM3();
+            DOMParserFilter filter = new DOM3();
             
             builder.setFilter(filter);
 
@@ -158,7 +159,7 @@ public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
 
 
             // create DOMWriter
-            DOMWriter domWriter = impl.createDOMWriter();
+            DOMSerializer domWriter = impl.createDOMSerializer();
             
             System.out.println("Serializing document... ");
             config = domWriter.getConfig();
@@ -166,8 +167,10 @@ public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
             //config.setParameter("validate",errorHandler);
 
             // serialize document to standard output
-            domWriter.writeNode(System.out, doc);
-
+            //domWriter.writeNode(System.out, doc);
+            DOMOutput dOut = new DOMOutputImpl();
+            dOut.setByteStream(System.out);
+            domWriter.write(doc,dOut);
 
         } catch ( Exception ex ) {
             ex.printStackTrace();
@@ -197,24 +200,24 @@ public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
 
     }
 	/**
-	 * @see org.w3c.dom.ls.DOMBuilderFilter#acceptNode(Node)
+	 * @see org.w3c.dom.ls.DOMParserFilter#acceptNode(Node)
 	 */
 	public short acceptNode(Node enode) {
         return NodeFilter.FILTER_ACCEPT;
 	}
 
 	/**
-	 * @see org.w3c.dom.ls.DOMBuilderFilter#getWhatToShow()
+	 * @see org.w3c.dom.ls.DOMParserFilter#getWhatToShow()
 	 */
 	public int getWhatToShow() {
 		return NodeFilter.SHOW_ELEMENT;
 	}
 
 	/**
-	 * @see org.w3c.dom.ls.DOMBuilderFilter#startElement(Element)
+	 * @see org.w3c.dom.ls.DOMParserFilter#startElement(Element)
 	 */
 	public short startElement(Element elt) {
-		return DOMBuilderFilter.FILTER_ACCEPT;
+		return DOMParserFilter.FILTER_ACCEPT;
 	}
 
 }

@@ -13,7 +13,7 @@
 package org.w3c.dom.ls;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.DOMConfiguration;
+import org.apache.xerces.dom3.DOMConfiguration;
 import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
 

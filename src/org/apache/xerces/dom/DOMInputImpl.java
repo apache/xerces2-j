@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,33 +57,33 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMInput;
 
 import java.io.Reader;
 import java.io.InputStream;
 
 /**
- * This Class <code>DOMInputSourceImpl</code> represents a single input source for an XML entity. 
- * <p> This Class allows an application to encapsulate information about 
- * an input source in a single object, which may include a public 
- * identifier, a system identifier, a byte stream (possibly with a specified 
- * encoding), and/or a character stream. 
- * <p> The exact definitions of a byte stream and a character stream are 
- * binding dependent. 
- * <p> There are two places that the application will deliver this input 
- * source to the parser: as the argument to the <code>parse</code> method, 
- * or as the return value of the <code>DOMEntityResolver.resolveEntity</code>
- *  method. 
- * <p> The <code>DOMBuilder</code> will use the <code>DOMInputSource</code> 
- * object to determine how to read XML input. If there is a character stream 
- * available, the parser will read that stream directly; if not, the parser 
- * will use a byte stream, if available; if neither a character stream nor a 
- * byte stream is available, the parser will attempt to open a URI 
- * connection to the resource identified by the system identifier. 
- * <p> An <code>DOMInputSource</code> object belongs to the application: the 
- * parser shall never modify it in any way (it may modify a copy if 
- * necessary).  Eventhough all attributes in this interface are writable the 
- * DOM implementation is expected to never mutate a DOMInputSource. 
+ * This Class <code>DOMInputImpl</code> represents a single input source for an XML entity.
+ * <p> This Class allows an application to encapsulate information about
+ * an input source in a single object, which may include a public
+ * identifier, a system identifier, a byte stream (possibly with a specified
+ * encoding), and/or a character stream.
+ * <p> The exact definitions of a byte stream and a character stream are
+ * binding dependent.
+ * <p> There are two places that the application will deliver this input
+ * source to the parser: as the argument to the <code>parse</code> method,
+ * or as the return value of the <code>DOMResourceResolver.resolveEntity</code>
+ *  method.
+ * <p> The <code>DOMParser</code> will use the <code>DOMInput</code>
+ * object to determine how to read XML input. If there is a character stream
+ * available, the parser will read that stream directly; if not, the parser
+ * will use a byte stream, if available; if neither a character stream nor a
+ * byte stream is available, the parser will attempt to open a URI
+ * connection to the resource identified by the system identifier.
+ * <p> An <code>DOMInput</code> object belongs to the application: the
+ * parser shall never modify it in any way (it may modify a copy if
+ * necessary).  Eventhough all attributes in this interface are writable the
+ * DOM implementation is expected to never mutate a DOMInput.
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
 and Save Specification</a>.
  *
@@ -92,12 +92,12 @@ and Save Specification</a>.
  * @version $Id$
  */
 
-// REVISIT: 
+// REVISIT:
 // 1. it should be possible to do the following
-// DOMInputSourceImpl extends XMLInputSource implements DOMInputSource
+// DOMInputImpl extends XMLInputSource implements DOMInput
 // 2. we probably need only the default constructor.  -- el
 
-public class DOMInputSourceImpl implements DOMInputSource {
+public class DOMInputImpl implements DOMInput {
 
 	//
 	// Data
@@ -106,21 +106,23 @@ public class DOMInputSourceImpl implements DOMInputSource {
 	protected String fPublicId = null;
 	protected String fSystemId = null;
 	protected String fBaseSystemId = null;
-	
+
 	protected InputStream fByteStream = null;
 	protected Reader fCharStream	= null;
 	protected String fData = null;
-	
+
 	protected String fEncoding = null;
 
-   /** 
-     * Default Constructor, constructs an input source 
+        protected boolean fCertified = false;
+
+   /**
+     * Default Constructor, constructs an input source
      *
      *
      */
-     public DOMInputSourceImpl() {} 	
+     public DOMInputImpl() {}
 
-   /** 
+   /**
      * Constructs an input source from just the public and system
      * identifiers, leaving resolution of the entity and opening of
      * the input stream up to the caller.
@@ -135,15 +137,15 @@ public class DOMInputSourceImpl implements DOMInputSource {
      *                     always be set to the fully expanded URI of the
      *                     base system identifier, if possible.
      */
- 
-    public DOMInputSourceImpl(String publicId, String systemId,  
+
+    public DOMInputImpl(String publicId, String systemId,
                           String baseSystemId) {
-		
+
 		fPublicId = publicId;
 		fSystemId = systemId;
 		fBaseSystemId = baseSystemId;
 
-    } // DOMInputSourceImpl(String,String,String)
+    } // DOMInputImpl(String,String,String)
 
     /**
      * Constructs an input source from a byte stream.
@@ -161,17 +163,17 @@ public class DOMInputSourceImpl implements DOMInputSource {
      * @param encoding     The encoding of the byte stream, if known.
      */
 
-    public DOMInputSourceImpl(String publicId, String systemId,  
+    public DOMInputImpl(String publicId, String systemId,
                           String baseSystemId, InputStream byteStream,
                           String encoding) {
-		
+
 		fPublicId = publicId;
 		fSystemId = systemId;
 		fBaseSystemId = baseSystemId;
 		fByteStream = byteStream;
 		fEncoding = encoding;
 
-    } // DOMInputSourceImpl(String,String,String,InputStream,String)
+    } // DOMInputImpl(String,String,String,InputStream,String)
 
    /**
      * Constructs an input source from a character stream.
@@ -190,17 +192,17 @@ public class DOMInputSourceImpl implements DOMInputSource {
      *                     used by the reader, if known.
      */
 
-     public DOMInputSourceImpl(String publicId, String systemId,  
+     public DOMInputImpl(String publicId, String systemId,
                           String baseSystemId, Reader charStream,
                           String encoding) {
-		
+
 		fPublicId = publicId;
 		fSystemId = systemId;
 		fBaseSystemId = baseSystemId;
 		fCharStream = charStream;
 		fEncoding = encoding;
 
-     } // DOMInputSourceImpl(String,String,String,Reader,String)
+     } // DOMInputImpl(String,String,String,Reader,String)
 
    /**
      * Constructs an input source from a String.
@@ -219,7 +221,7 @@ public class DOMInputSourceImpl implements DOMInputSource {
      *                     used by the reader, if known.
      */
 
-     public DOMInputSourceImpl(String publicId, String systemId,  
+     public DOMInputImpl(String publicId, String systemId,
                           String baseSystemId, String data,
                           String encoding) {
                 fPublicId = publicId;
@@ -227,31 +229,31 @@ public class DOMInputSourceImpl implements DOMInputSource {
 		fBaseSystemId = baseSystemId;
 		fData = data;
 		fEncoding = encoding;
-     } // DOMInputSourceImpl(String,String,String,String,String)
+     } // DOMInputImpl(String,String,String,String,String)
 
    /**
-     * An attribute of a language-binding dependent type that represents a 
+     * An attribute of a language-binding dependent type that represents a
      * stream of bytes.
-     * <br>The parser will ignore this if there is also a character stream 
-     * specified, but it will use a byte stream in preference to opening a 
+     * <br>The parser will ignore this if there is also a character stream
+     * specified, but it will use a byte stream in preference to opening a
      * URI connection itself.
-     * <br>If the application knows the character encoding of the byte stream, 
-     * it should set the encoding property. Setting the encoding in this way 
+     * <br>If the application knows the character encoding of the byte stream,
+     * it should set the encoding property. Setting the encoding in this way
      * will override any encoding specified in the XML declaration itself.
      */
 
-    public InputStream getByteStream(){ 
+    public InputStream getByteStream(){
 	return fByteStream;
-    } 
+    }
 
     /**
-     * An attribute of a language-binding dependent type that represents a 
+     * An attribute of a language-binding dependent type that represents a
      * stream of bytes.
-     * <br>The parser will ignore this if there is also a character stream 
-     * specified, but it will use a byte stream in preference to opening a 
+     * <br>The parser will ignore this if there is also a character stream
+     * specified, but it will use a byte stream in preference to opening a
      * URI connection itself.
-     * <br>If the application knows the character encoding of the byte stream, 
-     * it should set the encoding property. Setting the encoding in this way 
+     * <br>If the application knows the character encoding of the byte stream,
+     * it should set the encoding property. Setting the encoding in this way
      * will override any encoding specified in the XML declaration itself.
      */
 
@@ -260,22 +262,22 @@ public class DOMInputSourceImpl implements DOMInputSource {
      }
 
     /**
-     *  An attribute of a language-binding dependent type that represents a 
-     * stream of 16-bit units. Application must encode the stream using 
-     * UTF-16 (defined in  and Amendment 1 of ). 
-     * <br>If a character stream is specified, the parser will ignore any byte 
-     * stream and will not attempt to open a URI connection to the system 
+     *  An attribute of a language-binding dependent type that represents a
+     * stream of 16-bit units. Application must encode the stream using
+     * UTF-16 (defined in  and Amendment 1 of ).
+     * <br>If a character stream is specified, the parser will ignore any byte
+     * stream and will not attempt to open a URI connection to the system
      * identifier.
      */
     public Reader getCharacterStream(){
 	return fCharStream;
     }
     /**
-     *  An attribute of a language-binding dependent type that represents a 
-     * stream of 16-bit units. Application must encode the stream using 
-     * UTF-16 (defined in  and Amendment 1 of ). 
-     * <br>If a character stream is specified, the parser will ignore any byte 
-     * stream and will not attempt to open a URI connection to the system 
+     *  An attribute of a language-binding dependent type that represents a
+     * stream of 16-bit units. Application must encode the stream using
+     * UTF-16 (defined in  and Amendment 1 of ).
+     * <br>If a character stream is specified, the parser will ignore any byte
+     * stream and will not attempt to open a URI connection to the system
      * identifier.
      */
 
@@ -284,10 +286,10 @@ public class DOMInputSourceImpl implements DOMInputSource {
      }
 
     /**
-     * A string attribute that represents a sequence of 16 bit units (utf-16 
+     * A string attribute that represents a sequence of 16 bit units (utf-16
      * encoded characters).
-     * <br>If string data is available in the input source, the parser will 
-     * ignore the character stream and the byte stream and will not attempt 
+     * <br>If string data is available in the input source, the parser will
+     * ignore the character stream and the byte stream and will not attempt
      * to open a URI connection to the system identifier.
      */
     public String getStringData(){
@@ -295,25 +297,25 @@ public class DOMInputSourceImpl implements DOMInputSource {
     }
 
    /**
-     * A string attribute that represents a sequence of 16 bit units (utf-16 
+     * A string attribute that represents a sequence of 16 bit units (utf-16
      * encoded characters).
-     * <br>If string data is available in the input source, the parser will 
-     * ignore the character stream and the byte stream and will not attempt 
+     * <br>If string data is available in the input source, the parser will
+     * ignore the character stream and the byte stream and will not attempt
      * to open a URI connection to the system identifier.
      */
-    
+
      public void setStringData(String stringData){
 		fData = stringData;
      }
 
     /**
-     *  The character encoding, if known. The encoding must be a string 
-     * acceptable for an XML encoding declaration ( section 4.3.3 "Character 
-     * Encoding in Entities"). 
-     * <br>This attribute has no effect when the application provides a 
-     * character stream. For other sources of input, an encoding specified 
-     * by means of this attribute will override any encoding specified in 
-     * the XML claration or the Text Declaration, or an encoding obtained 
+     *  The character encoding, if known. The encoding must be a string
+     * acceptable for an XML encoding declaration ( section 4.3.3 "Character
+     * Encoding in Entities").
+     * <br>This attribute has no effect when the application provides a
+     * character stream. For other sources of input, an encoding specified
+     * by means of this attribute will override any encoding specified in
+     * the XML claration or the Text Declaration, or an encoding obtained
      * from a higher level protocol, such as HTTP .
      */
 
@@ -322,13 +324,13 @@ public class DOMInputSourceImpl implements DOMInputSource {
     }
 
     /**
-     *  The character encoding, if known. The encoding must be a string 
-     * acceptable for an XML encoding declaration ( section 4.3.3 "Character 
-     * Encoding in Entities"). 
-     * <br>This attribute has no effect when the application provides a 
-     * character stream. For other sources of input, an encoding specified 
-     * by means of this attribute will override any encoding specified in 
-     * the XML claration or the Text Declaration, or an encoding obtained 
+     *  The character encoding, if known. The encoding must be a string
+     * acceptable for an XML encoding declaration ( section 4.3.3 "Character
+     * Encoding in Entities").
+     * <br>This attribute has no effect when the application provides a
+     * character stream. For other sources of input, an encoding specified
+     * by means of this attribute will override any encoding specified in
+     * the XML claration or the Text Declaration, or an encoding obtained
      * from a higher level protocol, such as HTTP .
      */
     public void setEncoding(String encoding){
@@ -336,16 +338,16 @@ public class DOMInputSourceImpl implements DOMInputSource {
     }
 
     /**
-     * The public identifier for this input source. The public identifier is 
-     * always optional: if the application writer includes one, it will be 
+     * The public identifier for this input source. The public identifier is
+     * always optional: if the application writer includes one, it will be
      * provided as part of the location information.
      */
     public String getPublicId(){
 	return fPublicId;
     }
     /**
-     * The public identifier for this input source. The public identifier is 
-     * always optional: if the application writer includes one, it will be 
+     * The public identifier for this input source. The public identifier is
+     * always optional: if the application writer includes one, it will be
      * provided as part of the location information.
      */
     public void setPublicId(String publicId){
@@ -353,34 +355,34 @@ public class DOMInputSourceImpl implements DOMInputSource {
     }
 
     /**
-     * The system identifier, a URI reference , for this input source. The 
-     * system identifier is optional if there is a byte stream or a 
-     * character stream, but it is still useful to provide one, since the 
-     * application can use it to resolve relative URIs and can include it in 
-     * error messages and warnings (the parser will attempt to fetch the 
-     * ressource identifier by the URI reference only if there is no byte 
+     * The system identifier, a URI reference , for this input source. The
+     * system identifier is optional if there is a byte stream or a
+     * character stream, but it is still useful to provide one, since the
+     * application can use it to resolve relative URIs and can include it in
+     * error messages and warnings (the parser will attempt to fetch the
+     * ressource identifier by the URI reference only if there is no byte
      * stream or character stream specified).
-     * <br>If the application knows the character encoding of the object 
-     * pointed to by the system identifier, it can register the encoding by 
+     * <br>If the application knows the character encoding of the object
+     * pointed to by the system identifier, it can register the encoding by
      * setting the encoding attribute.
-     * <br>If the system ID is a relative URI reference (see section 5 in ), 
+     * <br>If the system ID is a relative URI reference (see section 5 in ),
      * the behavior is implementation dependent.
      */
     public String getSystemId(){
 	return fSystemId;
     }
     /**
-     * The system identifier, a URI reference , for this input source. The 
-     * system identifier is optional if there is a byte stream or a 
-     * character stream, but it is still useful to provide one, since the 
-     * application can use it to resolve relative URIs and can include it in 
-     * error messages and warnings (the parser will attempt to fetch the 
-     * ressource identifier by the URI reference only if there is no byte 
+     * The system identifier, a URI reference , for this input source. The
+     * system identifier is optional if there is a byte stream or a
+     * character stream, but it is still useful to provide one, since the
+     * application can use it to resolve relative URIs and can include it in
+     * error messages and warnings (the parser will attempt to fetch the
+     * ressource identifier by the URI reference only if there is no byte
      * stream or character stream specified).
-     * <br>If the application knows the character encoding of the object 
-     * pointed to by the system identifier, it can register the encoding by 
+     * <br>If the application knows the character encoding of the object
+     * pointed to by the system identifier, it can register the encoding by
      * setting the encoding attribute.
-     * <br>If the system ID is a relative URI reference (see section 5 in ), 
+     * <br>If the system ID is a relative URI reference (see section 5 in ),
      * the behavior is implementation dependent.
      */
     public void setSystemId(String systemId){
@@ -388,20 +390,39 @@ public class DOMInputSourceImpl implements DOMInputSource {
     }
 
     /**
-     *  The base URI to be used (see section 5.1.4 in ) for resolving relative 
-     * URIs to absolute URIs. If the baseURI is itself a relative URI, the 
-     * behavior is implementation dependent. 
+     *  The base URI to be used (see section 5.1.4 in ) for resolving relative
+     * URIs to absolute URIs. If the baseURI is itself a relative URI, the
+     * behavior is implementation dependent.
      */
     public String getBaseURI(){
-	return fBaseSystemId;	
+	return fBaseSystemId;
     }
     /**
-     *  The base URI to be used (see section 5.1.4 in ) for resolving relative 
-     * URIs to absolute URIs. If the baseURI is itself a relative URI, the 
-     * behavior is implementation dependent. 
+     *  The base URI to be used (see section 5.1.4 in ) for resolving relative
+     * URIs to absolute URIs. If the baseURI is itself a relative URI, the
+     * behavior is implementation dependent.
      */
     public void setBaseURI(String baseURI){
 	fBaseSystemId = baseURI;
     }
 
-}// class DOMInputSourceImpl
+    /**
+      *  If set to true, assume that the input is certified (see section 2.13
+      * in [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>]) when
+      * parsing [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>].
+      */
+    public boolean getCertified(){
+      return fCertified;
+    }
+
+    /**
+      *  If set to true, assume that the input is certified (see section 2.13
+      * in [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>]) when
+      * parsing [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>].
+      */
+
+    public void setCertified(boolean certified){
+      fCertified = certified;
+    }
+
+}// class DOMInputImpl

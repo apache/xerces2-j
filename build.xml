@@ -1104,7 +1104,7 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/CoreDocumentImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>  
-    <replace file="${build.src}/org/apache/xerces/parsers/DOMBuilderImpl.java"  
+    <replace file="${build.src}/org/apache/xerces/parsers/DOMParserImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
     <replace file="${build.src}/org/apache/xerces/parsers/AbstractDOMParser.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>                                   
@@ -1114,13 +1114,13 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xml/serialize/BaseMarkupSerializer.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xml/serialize/DOMWriterImpl.java"  
+    <replace file="${build.src}/org/apache/xml/serialize/DOMSerializerImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
     <replace file="${build.src}/org/apache/xml/serialize/XML11Serializer.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
-    <replace file="${build.src}/org/w3c/dom/ls/DOMWriter.java"  
+    <replace file="${build.src}/org/w3c/dom/ls/DOMSerializer.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/w3c/dom/ls/DOMBuilder.java"  
+    <replace file="${build.src}/org/w3c/dom/ls/DOMParser.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultNode.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
@@ -1171,7 +1171,6 @@ Copyright:
    <replace file="${build.samples}/dom/ASBuilder.java"  
              token="org.apache.xerces.dom3.DOMConfiguration" value="org.w3c.dom.DOMConfiguration"/>
  
-
    <xjavac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/classes:${build.dir}/dom3-${jar.parser}:${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.apis}"

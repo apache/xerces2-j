@@ -79,22 +79,22 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.ls.DOMBuilder;
-import org.w3c.dom.ls.DOMEntityResolver;
+import org.w3c.dom.ls.DOMParser;
+import org.w3c.dom.ls.DOMResourceResolver;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.DOMInputSource;
-import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.DOMSerializer;
 
 import dom.util.Assertion;
 
 /**
  * The program tests vacarious DOM Level 3 functionality
  */
-public class Test implements DOMErrorHandler, DOMEntityResolver{
+public class Test implements DOMErrorHandler, DOMResourceResolver{
     
     static int errorCounter = 0;
     static DOMErrorHandler errorHandler = new Test();
-    static DOMEntityResolver resolver = new Test();
+    static DOMResourceResolver resolver = new Test();
     
     public static void main( String[] argv) {
         try {
@@ -103,14 +103,14 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
             System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMImplementationSourceImpl");
 
             
-            DOMImplementationLS impl = (DOMImplementationLS)DOMImplementationRegistry.newInstance().getDOMImplementation("LS-Load");
+            DOMImplementationLS impl = (DOMImplementationLS)DOMImplementationRegistry.newInstance().getDOMImplementation("LS");
 
             Assertion.verify(impl!=null, "domImplementation != null");
 
-            DOMBuilder builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, 
+            DOMParser builder = impl.createDOMParser(DOMImplementationLS.MODE_SYNCHRONOUS,
                                                        null);
 
-            DOMWriter writer = impl.createDOMWriter();
+            DOMSerializer writer = impl.createDOMSerializer();
             DOMConfiguration config = writer.getConfig();
             config.setParameter("namespaces",(namespaces)?Boolean.TRUE:Boolean.FALSE);
             config.setParameter("validate",Boolean.FALSE);
@@ -421,7 +421,7 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 writer.getConfig().setParameter("namespaces", Boolean.TRUE);
                 String xmlData = writer.writeToString(doc);
                 Reader r = new StringReader(xmlData);
-                DOMInputSource in = impl.createDOMInputSource();
+                DOMInput in = impl.createDOMInput();
                 in.setCharacterStream(r);
                 doc = builder.parse(in);
 
@@ -675,12 +675,12 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
 	/**
 	 * @see org.w3c.dom.ls.DOMEntityResolver#resolveEntity(String, String, String)
 	 */
-	public DOMInputSource resolveEntity(String publicId, String systemId, String baseURI) {
+	public DOMInput resolveResource(String publicId, String systemId, String baseURI) {
 		try {
 			DOMImplementationLS impl =
 				(DOMImplementationLS) DOMImplementationRegistry.newInstance().getDOMImplementation(
-					"LS-Load");
-			DOMInputSource source = impl.createDOMInputSource();
+					"LS");
+			DOMInput source = impl.createDOMInput();
 			if (systemId.equals("personal.xsd")) {
 				source.setSystemId("data/personal.xsd");
 			}

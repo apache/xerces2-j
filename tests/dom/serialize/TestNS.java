@@ -59,7 +59,8 @@ package dom.serialize;
 import  org.w3c.dom.*;
 
 import org.apache.xerces.dom.*;
-import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMSerializer;
+import org.w3c.dom.ls.DOMOutput;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.apache.xerces.parsers.*;
 import org.apache.xml.serialize.*;
@@ -70,7 +71,7 @@ import java.io.*;
  * This class is testing namespace algorithm during serialization.
  * The class takes as a parameter xml document, parses it using the DOM parser.
  * By default it will perform modifications to the tree, and then serialize
- * the document using DOMWriter.
+ * the document using DOMSerializer.
  * 
  * @author Elena Litani, IBM
  * @version $Id$
@@ -81,6 +82,7 @@ public class TestNS {
 
             System.out.println("DOM Serializer test for namespace algorithm.");
             DOMParser parser = new DOMParser();
+            DOMOutput dOut = new DOMOutputImpl();
 
             if (argv.length == 0) {
                 printUsage();
@@ -364,7 +366,7 @@ public class TestNS {
 
                 
                 // create DOM Serializer
-                DOMWriter writer = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createDOMWriter();
+                DOMSerializer writer = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createDOMSerializer();
                 
 
                 // Serializer that ouputs tree in not pretty print format
@@ -374,14 +376,16 @@ public class TestNS {
                     //serializer.asDOMSerializer();
                     //serializer.serialize((Document)core);
                     //writer.setFeature("entities",true);
-                    writer.writeNode(System.out, core);
+                    //writer.writeNode(System.out, core);
+                      writer.write(core,dOut);
                 } else {
 
                     System.out.println("Serializing output to output.xml...");
                     //XMLSerializer toFile = new XMLSerializer (new FileWriter("output.xml"), format);
                     //toFile.asDOMSerializer();
                     //toFile.serialize((Document)core);
-                    writer.writeNode(new FileOutputStream("output.xml"), core);
+                    dOut.setByteStream(new FileOutputStream("output.xml"));
+                    writer.write(core,dOut);
                 }
 
                 /** Test SAX Serializer 

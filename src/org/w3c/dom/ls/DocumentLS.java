@@ -16,12 +16,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
 
 /**
- * DOM Level 3 WD Experimental:
- * The DOM Level 3 specification is at the stage 
- * of Working Draft, which represents work in 
- * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
- *
  *  The <code>DocumentLS</code> interface provides a mechanism by which the 
  * content of a document can be serialized, or replaced with the DOM tree 
  * produced when loading a URI, or parsing a string. 
@@ -29,15 +23,14 @@ import org.w3c.dom.DOMException;
  * is that an instance of the <code>DocumentLS</code> interface can be 
  * obtained by using binding-specific casting methods on an instance of the 
  * <code>Document</code> interface, or by using the method 
- * <code>Node.getFeature</code> with parameter values <code>"LS-Load"</code> 
- * and <code>"3.0"</code> (respectively) on an <code>Document</code>, if the 
- * <code>Document</code> supports the feature <code>"Core"</code> version 
- * <code>"3.0"</code> defined in [<a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022'>DOM Level 3 Core</a>]
+ * <code>Node.getFeature</code> with parameter values 
+ * <code>"DocumentLS"</code> and <code>"3.0"</code> (respectively) on an 
+ * <code>Document</code>, if the <code>Document</code> supports the feature 
+ * <code>"Core"</code> version <code>"3.0"</code> defined in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>DOM Level 3 Core</a>]
  *  
- * <p> This interface is optional. If supported, implementations are must 
- * support version <code>"3.0"</code> of the feature 
- * <code>"LS-DocumentLS"</code>. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
+ * <p> This interface is optional. If supported, implementations must support 
+ * version <code>"3.0"</code> of the feature <code>"DocumentLS"</code>. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DocumentLS {
@@ -46,12 +39,7 @@ public interface DocumentLS {
      * synchronous or asynchronous. When the async attribute is set to 
      * <code>true</code> the load method returns control to the caller 
      * before the document has completed loading. The default value of this 
-     * attribute is <code>true</code>.  Should the DOM spec define the 
-     * default value of this attribute? What if implementing both async and 
-     * sync IO is impractical in some systems?  2001-09-14. default is 
-     * <code>false</code> but we need to check with Mozilla and IE.  
-     * 2003-01-24. Checked with IE and Mozilla, default is <code>true</code>
-     * . 
+     * attribute is <code>true</code>. 
      */
     public boolean getAsync();
     /**
@@ -59,12 +47,7 @@ public interface DocumentLS {
      * synchronous or asynchronous. When the async attribute is set to 
      * <code>true</code> the load method returns control to the caller 
      * before the document has completed loading. The default value of this 
-     * attribute is <code>true</code>.  Should the DOM spec define the 
-     * default value of this attribute? What if implementing both async and 
-     * sync IO is impractical in some systems?  2001-09-14. default is 
-     * <code>false</code> but we need to check with Mozilla and IE.  
-     * 2003-01-24. Checked with IE and Mozilla, default is <code>true</code>
-     * . 
+     * attribute is <code>true</code>. 
      * @exception DOMException
      *   NOT_SUPPORTED_ERR: Raised if the implementation doesn't support the 
      *   mode the attribute is being set to.
@@ -84,25 +67,34 @@ public interface DocumentLS {
      * Replaces the content of the document with the result of parsing the 
      * given URI. Invoking this method will either block the caller or 
      * return to the caller immediately depending on the value of the async 
-     * attribute. Once the document is fully loaded the document will fire a 
-     * "load" event that the caller can register as a listener for. If an 
-     * error occurs the document will fire an "error" event so that the 
-     * caller knows that the load failed (see <code>ParseErrorEvent</code>). 
-     * If this method is called on a document that is currently loading, the 
-     * current load is interrupted and the new URI load is initiated.
-     * <br>When invoking this method the features used in the 
-     * <code>DOMBuilder</code> interface are assumed to have their default 
-     * values with the exception that the feature "entities" is "false".
+     * attribute. Once the document is fully loaded a "load" event (as 
+     * defined in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331'>DOM Level 3 Events</a>]
+     * , except that the <code>Event.targetNode</code> will be the document, 
+     * not an element) will be dispatched on the document. If an error 
+     * occurs, an implementation dependent "error" event will be dispatched 
+     * on the document. If this method is called on a document that is 
+     * currently loading, the current load is interrupted and the new URI 
+     * load is initiated. 
+     * <br> When invoking this method the parameters used in the 
+     * <code>DOMParser</code> interface are assumed to have their default 
+     * values with the exception that the parameters <code>"entities"</code>
+     * , <code>"normalize-characters"</code>, 
+     * <code>"check-character-normalization"</code> are set to 
+     * <code>"false"</code>. 
+     * <br> The result of a call to this method is the same the result of a 
+     * call to <code>DOMParser.parseWithContext</code> with an input stream 
+     * referencing the URI that was passed to this call, the document as the 
+     * context node, and the action <code>ACTION_REPLACE_CHILDREN</code>. 
      * @param uri The URI reference for the XML file to be loaded. If this is 
      *   a relative URI, the base URI used by the implementation is 
      *   implementation dependent.
      * @return If async is set to <code>true</code> <code>load</code> returns 
      *   <code>true</code> if the document load was successfully initiated. 
-     *   If an error occurred when initiating the document load 
+     *   If an error occurred when initiating the document load, 
      *   <code>load</code> returns <code>false</code>.If async is set to 
      *   <code>false</code> <code>load</code> returns <code>true</code> if 
      *   the document was successfully loaded and parsed. If an error 
-     *   occurred when either loading or parsing the URI <code>load</code> 
+     *   occurred when either loading or parsing the URI, <code>load</code> 
      *   returns <code>false</code>.
      */
     public boolean load(String uri);
@@ -110,10 +102,14 @@ public interface DocumentLS {
     /**
      *  Replace the content of the document with the result of parsing the 
      * input string, this method is always synchronous. This method always 
-     * parses from a DOMString, which means the data is always UTF16. All 
+     * parses from a DOMString, which means the data is always UTF-16. All 
      * other encoding information is ignored. 
-     * <br>The features used in the <code>DOMBuilder</code> interface are 
+     * <br> The parameters used in the <code>DOMParser</code> interface are 
      * assumed to have their default values when invoking this method.
+     * <br> The result of a call to this method is the same the result of a 
+     * call to <code>DOMParser.parseWithContext</code> with an input stream 
+     * containing the string passed to this call, the document as the 
+     * context node, and the action <code>ACTION_REPLACE_CHILDREN</code>. 
      * @param source A string containing an XML document.
      * @return <code>true</code> if parsing the input string succeeded 
      *   without errors, otherwise <code>false</code>.
@@ -123,18 +119,21 @@ public interface DocumentLS {
     /**
      * Save the document or the given node and all its descendants to a string 
      * (i.e. serialize the document or node). 
-     * <br>The features used in the <code>DOMWriter</code> interface are 
+     * <br>The parameters used in the <code>DOMSerializer</code> interface are 
      * assumed to have their default values when invoking this method. 
-     * @param snode Specifies what to serialize, if this parameter is 
+     * <br> The result of a call to this method is the same the result of a 
+     * call to <code>DOMSerializer.writeToString</code> with the document as 
+     * the node to write. 
+     * @param node Specifies what to serialize, if this parameter is 
      *   <code>null</code> the whole document is serialized, if it's 
      *   non-null the given node is serialized.
      * @return The serialized document or <code>null</code> in case an error 
-     *   occured.
+     *   occurred.
      * @exception DOMException
      *   WRONG_DOCUMENT_ERR: Raised if the node passed in as the node 
      *   parameter is from an other document.
      */
-    public String saveXML(Node snode)
+    public String saveXML(Node node)
                           throws DOMException;
 
 }
