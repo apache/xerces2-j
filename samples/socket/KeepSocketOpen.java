@@ -57,6 +57,7 @@
 
 package socket;
 
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.InputStream;
@@ -103,6 +104,28 @@ import org.xml.sax.SAXParseException;
  * remains open, a separate input stream is created to "wrap" an
  * incoming document and make it appear as if it were a standalone
  * input stream.
+ * <p>
+ * To use this sample, enter any number of filenames of XML documents
+ * as parameters to the program. For example:
+ * <pre>
+ * java socket.KeepSocketOpen doc1.xml doc2.xml doc3.xml
+ * </pre>
+ * <p>
+ * This program will create a server and client thread that communicate
+ * on a specified port number on the "localhost" address. When the client
+ * connects to the server, the server sends each XML document specified
+ * on the command line to the client in sequence, wrapping each document
+ * in a WrappedOutputStream. The client uses a WrappedInputStream to
+ * read the data and pass it to the parser.
+ * <p>
+ * <strong>Note:</strong> Do not send any XML documents with associated
+ * grammars to the client. In other words, don't send any documents
+ * that contain a DOCTYPE line that references an external DTD because
+ * the client will not be able to resolve the location of the DTD and 
+ * an error will be issued by the client.
+ *
+ * @see socket.io.WrappedInputStream
+ * @see socket.io.WrappedOutputStream
  *
  * @author Andy Clark, IBM
  *
@@ -181,6 +204,7 @@ public class KeepSocketOpen {
         public Server(int port, String[] filenames, boolean verbose) 
             throws IOException {
             super(port);
+            System.out.println("Server: Created.");
             fFilenames = filenames;
             fVerbose = verbose;
             fBuffer = new byte[1024];
@@ -193,7 +217,7 @@ public class KeepSocketOpen {
         /** Runs the server. */
         public void run() {
 
-            System.out.println("Server: Started.");
+            System.out.println("Server: Running.");
             final Random random = new Random(System.currentTimeMillis());
             try {
 
@@ -272,6 +296,9 @@ public class KeepSocketOpen {
         /** Socket. */
         private Socket fServerSocket;
 
+        /** Wrapped input stream. */
+        private WrappedInputStream fWrappedInputStream;
+
         /** Verbose mode. */
         private boolean fVerbose;
 
@@ -280,6 +307,23 @@ public class KeepSocketOpen {
 
         /** Parser. */
         private SAXParser fParser;
+
+        // parse data
+
+        /** Number of elements. */
+        private int fElementCount;
+
+        /** Number of attributes. */
+        private int fAttributeCount;
+
+        /** Number of ignorable whitespace. */
+        private int fIgnorableWhitespaceCount;
+
+        /** Number of characters. */
+        private int fCharactersCount;
+
+        /** Time at start of parse. */
+        private long fTimeBefore;
 
         //
         // Constructors
@@ -302,6 +346,7 @@ public class KeepSocketOpen {
          */
         public Client(String address, int port, boolean verbose) 
             throws IOException {
+            System.out.println("Client: Created.");
             fServerSocket = new Socket(address, port);
             fVerbose = verbose;
             fBuffer = new byte[1024];
@@ -314,7 +359,7 @@ public class KeepSocketOpen {
         /** Runs the client. */
         public void run() {
 
-            System.out.println("Client: Started.");
+            System.out.println("Client: Running.");
             try {
                 // get input stream
                 final InputStream serverStream = fServerSocket.getInputStream();
@@ -323,13 +368,14 @@ public class KeepSocketOpen {
                 while (!Thread.interrupted()) {
                     // wrap input stream
                     if (fVerbose) System.out.println("Client: Wrapping input stream.");
-                    InputStream wrappedIn = new WrappedInputStream(serverStream);
-                    InputStream in = new InputStreamReporter(wrappedIn);
+                    fWrappedInputStream = new WrappedInputStream(serverStream);
+                    InputStream in = new InputStreamReporter(fWrappedInputStream);
 
                     // parse file
-                    if (fVerbose) System.out.println("Client: Parsing file.");
+                    if (fVerbose) System.out.println("Client: Parsing XML document.");
                     InputSource source = new InputSource(in);
                     fParser.parse(source);
+                    fWrappedInputStream = null;
 
                     // close stream
                     if (fVerbose) System.out.println("Client: Closing input stream.");
@@ -342,6 +388,9 @@ public class KeepSocketOpen {
                 fServerSocket.close();
 
             }
+            catch (EOFException e) {
+                // server closed connection; ignore
+            }
             catch (Exception e) {
                 System.out.println("Client ERROR: "+e.getMessage());
             }
@@ -353,21 +402,47 @@ public class KeepSocketOpen {
         // DocumentHandler methods
         //
 
+        /** Start document. */
+        public void startDocument() {
+            fElementCount = 0;
+            fAttributeCount = 0;
+            fIgnorableWhitespaceCount = 0;
+            fCharactersCount = 0;
+            fTimeBefore = System.currentTimeMillis();
+        } // startDocument()
+
         /** Start element. */
         public void startElement(String name, AttributeList attrs) {
-
-            System.out.println("Client: ("+name);
-            int length = attrs != null ? attrs.getLength() : 0;
-            for (int i = 0; i < length; i++) {
-                System.out.println("Client: A"+attrs.getName(i)+' '+attrs.getValue(i));
-            }
-
+            fElementCount++;
+            fAttributeCount += attrs != null ? attrs.getLength() : 0;
         } // startElement(String,AttributeList)
 
-        /** End element. */
-        public void endElement(String name) {
-            System.out.println("Client: )"+name);
-        } // endElement(String)
+        /** Ignorable whitespace. */
+        public void ignorableWhitespace(char[] ch, int offset, int length) {
+            fIgnorableWhitespaceCount += length;
+        } // ignorableWhitespace(char[],int,int)
+
+        /** Characters. */
+        public void characters(char[] ch, int offset, int length) {
+            fCharactersCount += length;
+        } // characters(char[],int,int)
+
+        /** End document. */
+        public void endDocument() {
+            long timeAfter = System.currentTimeMillis();
+            System.out.print("Client: ");
+            System.out.print(timeAfter - fTimeBefore);
+            System.out.print(" ms (");
+            System.out.print(fElementCount);
+            System.out.print(" elems, ");
+            System.out.print(fAttributeCount);
+            System.out.print(" attrs, ");
+            System.out.print(fIgnorableWhitespaceCount);
+            System.out.print(" spaces, ");
+            System.out.print(fCharactersCount);
+            System.out.print(" chars)");
+            System.out.println();
+        } // endDocument()
 
         //
         // ErrorHandler methods
@@ -386,41 +461,72 @@ public class KeepSocketOpen {
         /** Fatal error. */
         public void fatalError(SAXParseException e) throws SAXException {
             System.out.println("Client: [fatal error] "+e.getMessage());
+            // on fatal error, skip to end of stream and end parse
+            try {
+                fWrappedInputStream.close();
+            }
+            catch (IOException ioe) {
+                // ignore
+            }
+            throw e;
         } // fatalError(SAXParseException)
 
         //
         // Classes
         //
 
+        /**
+         * This class reports the actual number of bytes read at the
+         * end of "stream".
+         *
+         * @author Andy Clark, IBM
+         */
         class InputStreamReporter
             extends FilterInputStream {
 
-            private long total;
+            //
+            // Data
+            //
 
+            /** Total bytes read. */
+            private long fTotal;
+
+            //
+            // Constructors
+            //
+
+            /** Constructs a reporter from the specified input stream. */
             public InputStreamReporter(InputStream stream) {
                 super(stream);
-            }
+            } // <init>(InputStream)
 
+            //
+            // InputStream methods
+            //
+
+            /** Reads a single byte. */
             public int read() throws IOException {
                 int b = super.in.read();
                 if (b == -1) {
-                    System.out.println("Client: Read "+total+" byte(s) total.");
+                    System.out.println("Client: Read "+fTotal+" byte(s) total.");
                     return -1;
                 }
-                total++;
+                fTotal++;
                 return b;
-            }
+            } // read():int
 
-            public int read(byte[] b, int offset, int length) throws IOException {
+            /** Reads a block of bytes. */
+            public int read(byte[] b, int offset, int length) 
+                throws IOException {
                 int count = super.in.read(b, offset, length);
                 if (count == -1) {
-                    System.out.println("Client: Read "+total+" byte(s) total.");
+                    System.out.println("Client: Read "+fTotal+" byte(s) total.");
                     return -1;
                 }
-                total += count;
+                fTotal += count;
                 if (Client.this.fVerbose) System.out.println("Client: Actually read "+count+" byte(s).");
                 return count;
-            }
+            } // read(byte[],int,int):int
 
         } // class InputStreamReporter
 
