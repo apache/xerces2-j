@@ -61,8 +61,8 @@ import org.apache.xerces.dom.DocumentImpl;
 
 import org.w3c.dom.*;
 import org.w3c.dom.Element;
-import org.w3c.dom.range.*;
-import org.w3c.dom.range.RangeException;
+import org.w3c.dom.ranges.*;
+import org.w3c.dom.ranges.RangeException;
 
 import java.io.*;
 import dom.DOMWriter;
