@@ -826,7 +826,7 @@ NamespacesScope.NamespacesHandler {
       //if (fElementDepth >= 0) {
       if (fValidating) {
          // push current length onto stack
-         if (fElementChildrenOffsetStack.length < fElementDepth) {
+         if (fElementChildrenOffsetStack.length <= fElementDepth) {
             int newarray[] = new int[fElementChildrenOffsetStack.length * 2];
             System.arraycopy(fElementChildrenOffsetStack, 0, newarray, 0, fElementChildrenOffsetStack.length);
             fElementChildrenOffsetStack = newarray;
