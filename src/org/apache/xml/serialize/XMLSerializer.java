@@ -107,9 +107,12 @@ import org.apache.xerces.xni.NamespaceContext;
  * used, make sure the writer uses the same encoding (if applies)
  * as specified in the output format.
  * <p>
- * The serializer supports both DOM and SAX. DOM serializing is done
- * by calling {@link #serialize} and SAX serializing is done by firing
- * SAX events and using the serializer as a document handler.
+ * The serializer supports both DOM and SAX. SAX serializing is done by firing
+ * SAX events and using the serializer as a document handler. DOM serializing is done
+ * by calling {@link #serialize(Document)} or by using DOM Level 3  
+ * {@link org.apache.xerces.dom3.ls.DOMWriter} and
+ * serializing with {@link org.apache.xerces.dom3.ls.DOMWriter#writeNode}, 
+ * {@link org.apache.xerces.dom3.ls.DOMWriter#writeToString}.
  * <p>
  * If an I/O exception occurs while serializing, the serializer
  * will not throw an exception directly, but only throw it
@@ -121,12 +124,10 @@ import org.apache.xerces.xni.NamespaceContext;
  * boundaries, indent lines, and serialize elements on separate
  * lines. Line terminators will be regarded as spaces, and
  * spaces at beginning of line will be stripped.
- *
- *
- * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
- * @author Elena Litani, IBM
+ * @author Elena Litani IBM
+ * @version $Revision$ $Date$
  * @see Serializer
  */
 public class XMLSerializer
@@ -143,20 +144,13 @@ implements DOMWriter {
     // data
     //
 
-    protected static final NamespaceSupport fNamespaceSupport = new NamespaceSupport();
-    protected static final SymbolTable fSymbolTable = new SymbolTable();    
+    protected final NamespaceSupport fNamespaceSupport = new NamespaceSupport();
+    protected final SymbolTable fSymbolTable = new SymbolTable();    
     protected String fEmptySymbol;
     protected String fXmlSymbol;
     protected String fXmlnsSymbol;
     // is node dom level 1 node?
     protected boolean fDOML1 = false;
-    // serialized attributes list
-    int[] fSerializedAttributes = new int[2];
-    // local declarations
-    int[] fLocalNSDecls         = new int[2];
-    int fLocalNSCount = 0;
-    int fSerializedCount = 0;
-
     // counter for new prefix names
     protected int fNamespaceCounter = 1;
 
@@ -663,8 +657,6 @@ implements DOMWriter {
         String uri;
 
 
-        fLocalNSCount = 0;
-        fSerializedCount = 0;
         // add new namespace context
         fNamespaceSupport.pushContext();
         if (DEBUG) {
@@ -1136,7 +1128,9 @@ implements DOMWriter {
     }
 
 
-    // *****************************
+    // 
+    // DOM Level 3 implementation
+    //
 
     private void initFeatures() {
         fFeatures.put("normalize-characters",new Boolean(false));
@@ -1429,8 +1423,6 @@ implements DOMWriter {
         super.reset();
         fNamespaceSupport.reset(fSymbolTable);
         fNamespaceCounter = 1;
-        fLocalNSCount = 0;
-        fSerializedCount = 0;
         fXmlSymbol = fSymbolTable.addSymbol("xml");
         fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
         fEmptySymbol=fSymbolTable.addSymbol("");

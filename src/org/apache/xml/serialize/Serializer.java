@@ -75,22 +75,18 @@ import org.xml.sax.ContentHandler;
  * serializers, and static methods for serializing DOM documents.
  * <p>
  * To serialize a document using SAX events, create a compatible serializer
- * using {@link #makeSAXSerializer} and pass it around as a {@link
- * DocumentHandler}. If an I/O error occurs while serializing, it will
+ * and pass it around as a {@link
+ * org.xml.sax.DocumentHandler}. If an I/O error occurs while serializing, it will
  * be thrown by {@link DocumentHandler#endDocument}. The SAX serializer
- * may also be used as {@link DTDHandler}, {@link DeclHandler} and
- * {@link LexicalHandler}.
+ * may also be used as {@link org.xml.sax.DTDHandler}, {@link org.xml.sax.DeclHandler} and
+ * {@link org.xml.sax.LexicalHandler}.
  * <p>
  * To serialize a DOM document or DOM element, create a compatible
- * serializer using {@link #makeSerializer} and call it's {@link
- * #serialize(Document)} or {@link #serialize(Element)} methods.
+ * serializer and call it's {@link
+ * DOMSerializer#serialize(Document)} or {@link DOMSerializer#serialize(Element)} methods.
  * Both methods would produce a full XML document, to serizlie only
  * the portion of the document use {@link OutputFormat#setOmitXMLDeclaration}
  * and specify no document type.
- * <p>
- * The convenience method {@link #serialize(Document,Writer,OutputFormat)}
- * creates a serializer and calls {@link #serizlie(Document)} on that
- * serialized.
  * <p>
  * The {@link OutputFormat} dictates what underlying serialized is used
  * to serialize the document based on the specified method. If the output
