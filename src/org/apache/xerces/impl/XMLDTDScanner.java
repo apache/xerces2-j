@@ -528,7 +528,7 @@ public class XMLDTDScanner
     protected void startPE(String name, boolean literal) 
         throws IOException, SAXException {
         int depth = fPEDepth;
-        if (fValidation && !fEntityManager.isDeclaredEntity(name)) {
+        if (fValidation && !fEntityManager.isDeclaredEntity("%"+name)) {
             reportFatalError("EntityNotDeclared", new Object[]{name});
         }
         fEntityManager.startEntity(fSymbolTable.addSymbol("%" + name),
