@@ -56,17 +56,13 @@ package org.apache.xerces.util;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.PumpStreamHandler;
-import org.apache.tools.ant.taskdefs.Execute;
-import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.taskdefs.Javac;
 
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.ByteArrayOutputStream;
 import java.lang.StringBuffer;
+import java.util.Properties;
+import java.util.Locale;
 
 /**
  * The implementation of the javac compiler for IBM JDK 1.4
@@ -90,29 +86,16 @@ public class XJavac extends Javac {
     public void execute() throws BuildException {
         if(JavaEnvUtils.getJavaVersion().equals(JavaEnvUtils.JAVA_1_4)) {
             // maybe the right one; check vendor:
-            // by running "java -version" in the shell:
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            ByteArrayOutputStream bErr = new ByteArrayOutputStream();
-            PumpStreamHandler pH = new PumpStreamHandler(bOut, bErr);
-            Execute exe = new Execute(pH);
-            String javaExecutablePath = JavaEnvUtils.getJreExecutable("java");
-            String versionOption = "-version";
-            exe.setCommandline(new String[] {javaExecutablePath, versionOption});
-            exe.setVMLauncher(false);
+            // by checking system properties:
+            Properties props = null;
             try {
-                if(exe.execute() != 0) {
-                    throw new BuildException("unable to determine java version!");
-                }
-            } catch (IOException e) {
-                throw new BuildException("Something went wrong while invoking java while " +
-                        "attempting to determine its version; error:  " + e.getMessage());
+                props = System.getProperties();
+            } catch (Exception e) {
+                throw new BuildException("unable to determine java vendor because could not access system properties!");
             }
-            // safe to say the version string will be in the platform's
-            // default encoding.  Try both stdout and stderr to be safe:
-            String bOutStr = bOut.toString();
-            String bErrStr = bErr.toString();
-            if(bErrStr.indexOf("IBM") > -1 ||
-                    bOutStr.indexOf("IBM") > -1) {
+            // this is supposed to be provided by all JVM's from time immemorial
+            String vendor = ((String)props.get("java.vendor")).toUpperCase(Locale.ENGLISH);
+            if(vendor.indexOf("IBM") >= 0){
                 // we're on an IBM 1.4; fiddle with the bootclasspath.
                 Path bcp = createBootclasspath();
                 String javaHome = System.getProperty("java.home");
@@ -145,6 +128,16 @@ public class XJavac extends Javac {
                 bcp.createPathElement().setPath(bcpMember.toString());
                 bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/oldcertpath.jar");
                 bcp.createPathElement().setPath(bcpMember.toString());
+                setBootclasspath(bcp);
+            }
+            // need to do special things for Sun too...
+            else if(vendor.indexOf("SUN") >= 0){
+                // we're on an SUN 1.4; fiddle with the bootclasspath.
+                Path bcp = createBootclasspath();
+                String bcpMember = "./tools/xml-apis.jar";
+                bcp.createPathElement().setPath(bcpMember);
+                String currBCP = (String)props.get("sun.boot.class.path");
+                bcp.createPathElement().setPath(currBCP);
                 setBootclasspath(bcp);
             }
         }
