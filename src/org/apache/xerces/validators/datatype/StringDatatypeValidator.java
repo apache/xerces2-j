@@ -383,7 +383,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             //System.out.println("value = '" + content +"'."  );
             if ( regex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
-                     "' does not match regular expression facet'" + fPattern + "'." );
+                     "' does not match regular expression facet '" + fPattern + "'." );
         }
 
     }
