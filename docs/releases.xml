@@ -15,6 +15,7 @@
 	   <li>Added JAXP to build, updated JAXP files [lehors]</li>
            <li>Added a DOM from scratch and Serializer sample [jeffreyr]</li>
            <li>Fixed NodeImpl supports nullpointer bug in Samples [lehors]</li>
+           <li>Fixed a bug in clonning default attribute</li>
         </ul>
     </s2>
     <s2 title='May 19, 2000'>
