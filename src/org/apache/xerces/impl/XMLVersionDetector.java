@@ -84,8 +84,6 @@ public class XMLVersionDetector {
     //
 
     private final static char[] XML11_VERSION = new char[]{'1', '.', '1'};
-    private final static char [] EXPECTED_VERSION_STRING = {'<', '?', 'x', 'm', 'l', ' ', 'v', 'e', 'r', 's', 
-                    'i', 'o', 'n', '=', ' ', ' ', ' ', ' ', ' '};
 
 
     // property identifiers
@@ -125,6 +123,9 @@ public class XMLVersionDetector {
 
     private XMLString fVersionNum = new XMLString();
 
+    private final char [] fExpectedVersionString = {'<', '?', 'x', 'm', 'l', ' ', 'v', 'e', 'r', 's', 
+                    'i', 'o', 'n', '=', ' ', ' ', ' ', ' ', ' '};
+
     /**
      * 
      * 
@@ -140,8 +141,8 @@ public class XMLVersionDetector {
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
         fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
-        for(int i=14; i<EXPECTED_VERSION_STRING.length; i++ )
-            EXPECTED_VERSION_STRING[i] = ' ';
+        for(int i=14; i<fExpectedVersionString.length; i++ )
+            fExpectedVersionString[i] = ' ';
     } // reset(XMLComponentManager)
 
 	/**
@@ -189,30 +190,30 @@ public class XMLVersionDetector {
 				return Constants.XML_VERSION_1_0;
 			}
 			if (!scanner.skipSpaces()) {
-				fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 5);
+				fixupCurrentEntity(fEntityManager, fExpectedVersionString, 5);
 				return Constants.XML_VERSION_1_0;
 			}
 			if (!scanner.skipString("version")) {
-				fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 6);
+				fixupCurrentEntity(fEntityManager, fExpectedVersionString, 6);
 				return Constants.XML_VERSION_1_0;
 			}
 			scanner.skipSpaces();
 			if (scanner.scanChar() != '=') {
-				fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 13);
+				fixupCurrentEntity(fEntityManager, fExpectedVersionString, 13);
 				return Constants.XML_VERSION_1_0;
 			}
 			scanner.skipSpaces();
 			int quoteChar = scanner.scanChar();
-			EXPECTED_VERSION_STRING[14] = (char) quoteChar;
+			fExpectedVersionString[14] = (char) quoteChar;
 			for (int versionPos = 0; versionPos < XML11_VERSION.length; versionPos++) {
-				EXPECTED_VERSION_STRING[15 + versionPos] = (char) scanner.scanChar();
+				fExpectedVersionString[15 + versionPos] = (char) scanner.scanChar();
 			}
 			// REVISIT:  should we check whether this equals quoteChar? 
-			EXPECTED_VERSION_STRING[18] = (char) scanner.scanChar();
-			fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 19);
+			fExpectedVersionString[18] = (char) scanner.scanChar();
+			fixupCurrentEntity(fEntityManager, fExpectedVersionString, 19);
 			int matched = 0;
 			for (; matched < XML11_VERSION.length; matched++) {
-				if (EXPECTED_VERSION_STRING[15 + matched] != XML11_VERSION[matched])
+				if (fExpectedVersionString[15 + matched] != XML11_VERSION[matched])
 					break;
 			}
 			if (matched == XML11_VERSION.length)
