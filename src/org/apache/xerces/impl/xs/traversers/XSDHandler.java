@@ -511,6 +511,7 @@ public class XSDHandler {
         
         XSDocumentInfo currSchemaInfo = null;
         try {
+            // note that attributes are freed at end of traverseSchemas()
             currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable);
         } catch (XMLSchemaException se) {
             reportSchemaError(ELE_ERROR_CODES[referType],
@@ -618,16 +619,30 @@ public class XSDHandler {
                 refType = XSDDescription.CONTEXT_IMPORT;
                 // have to handle some validation here too!
                 // call XSAttributeChecker to fill in attrs
-                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
-                schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
-                schemaNamespace = (String)includeAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
+                Object[] importAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
+                schemaHint = (String)importAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
+                schemaNamespace = (String)importAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
                 if (schemaNamespace != null)
                     schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
                 // a document can't import another document with the same namespace
                 if (schemaNamespace == currSchemaInfo.fTargetNamespace) {
                     reportSchemaError("src-import.1.1", new Object [] {schemaNamespace}, child);
                 }
-                fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
+
+                // check contents and process optional annotations
+                Element importChild = DOMUtil.getFirstChildElement(child);
+                if(importChild != null ) {
+                    String importComponentType = DOMUtil.getLocalName(importChild);
+                    if (importComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                        fElementTraverser.traverseAnnotationDecl(importChild, importAttrs, true, currSchemaInfo);
+                    } else {
+                        reportSchemaError("src-import", new Object [] {importComponentType}, importChild);
+                    }
+                    if(DOMUtil.getNextSiblingElement(importChild) != null) {
+                        reportSchemaError("src-import", new Object [] {importComponentType}, importChild);
+                    }
+                }
+                fAttributeChecker.returnAttrArray(importAttrs, currSchemaInfo);
                 
                 // if this namespace has been imported by this document,
                 // ignore the <import> statement
@@ -677,6 +692,35 @@ public class XSDHandler {
                 // store the namespace decls of the redefine element
                 if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
                     fRedefine2NSSupport.put(child, new SchemaNamespaceSupport(currSchemaInfo.fNamespaceSupport));
+                }
+
+                // check annotations.  Must do this here to avoid having to
+                // re-parse attributes later
+                if(localName.equals(SchemaSymbols.ELT_INCLUDE)) {
+                    Element includeChild = DOMUtil.getFirstChildElement(child);
+                    if(includeChild != null ) {
+                        String includeComponentType = DOMUtil.getLocalName(includeChild);
+                        if (includeComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                            fElementTraverser.traverseAnnotationDecl(includeChild, includeAttrs, true, currSchemaInfo);
+                        } else {
+                            reportSchemaError("src-include", new Object [] {includeComponentType}, includeChild);
+                        }
+                        if(DOMUtil.getNextSiblingElement(includeChild) != null) {
+                            reportSchemaError("src-include", new Object [] {includeComponentType}, includeChild);
+                        }
+                    }
+                }
+                else {
+                    for (Element redefinedChild = DOMUtil.getFirstChildElement(child);
+                            redefinedChild != null;
+                            redefinedChild = DOMUtil.getNextSiblingElement(redefinedChild)) {
+                        String redefinedComponentType = DOMUtil.getLocalName(redefinedChild);
+                        if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                            fElementTraverser.traverseAnnotationDecl(redefinedChild, includeAttrs, true, currSchemaInfo);
+                            DOMUtil.setHidden(redefinedChild);
+                        } 
+                        // catch all other content errors later
+                    }
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // schemaLocation is required on <include> and <redefine>
@@ -892,14 +936,14 @@ public class XSDHandler {
         schemasToProcess.push(fRoot);
         while (!schemasToProcess.empty()) {
             XSDocumentInfo currSchemaDoc =
-            (XSDocumentInfo)schemasToProcess.pop();
+                (XSDocumentInfo)schemasToProcess.pop();
             Document currDoc = currSchemaDoc.fSchemaDoc;
             SchemaGrammar currSG = fGrammarBucket.getGrammar(currSchemaDoc.fTargetNamespace);
             if (DOMUtil.isHidden(currDoc)) {
                 // must have processed this already!
                 continue;
             }
-            Element currRoot = DOMUtil.getRoot(currDoc);
+            Element currRoot = DOMUtil.getRoot(currDoc); 
 
             // traverse this schema's global decls
             for (Element globalComp =
@@ -930,11 +974,11 @@ public class XSDHandler {
                         else if (redefinedComponentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                             fSimpleTypeTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
                         }
-                        else if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                            // REVISIT:  according to 3.13.2 the PSVI needs the parent's attributes;
-                            // thus this should be done in buildGlobalNameRegistries not here...
-                            fElementTraverser.traverseAnnotationDecl(redefinedComp, null, true, currSchemaDoc);
-                        }
+                        // annotations will have been processed already; this is now
+                        // unnecessary
+                        //else if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                        //    fElementTraverser.traverseAnnotationDecl(redefinedComp, null, true, currSchemaDoc);
+                        //}
                         else {
                             reportSchemaError("src-redefine", new Object [] {componentType}, redefinedComp);
                         }
@@ -963,9 +1007,7 @@ public class XSDHandler {
                     fSimpleTypeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
                 }
                 else if (componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    // REVISIT:  according to 3.13.2 the PSVI needs the parent's attributes;
-                    // thus this should be done in buildGlobalNameRegistries not here...
-                    fElementTraverser.traverseAnnotationDecl(globalComp, null, true, currSchemaDoc);
+                    fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc);
                 }
                 else {
                     reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)}, globalComp);
@@ -973,6 +1015,7 @@ public class XSDHandler {
             } // end for
 
             // now we're done with this one!
+            currSchemaDoc.returnSchemaAttrs();
             DOMUtil.setHidden(currDoc);
             // now add the schemas this guy depends on
             Vector currSchemaDepends = (Vector)fDependencyMap.get(currSchemaDoc);

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -136,7 +136,8 @@ public class XSAttributeChecker {
     public static final int ATTIDX_NAME            = ATTIDX_COUNT++;
     public static final int ATTIDX_NAMESPACE       = ATTIDX_COUNT++;
     public static final int ATTIDX_NAMESPACE_LIST  = ATTIDX_COUNT++;
-    public static final int ATTIDX_NILLABLE        = ATTIDX_COUNT++;
+    public static final int ATTIDX_NILLABLE        = ATTIDX_COUNT++; 
+    public static final int ATTIDX_NONSCHEMA       = ATTIDX_COUNT++;
     public static final int ATTIDX_PROCESSCONTENTS = ATTIDX_COUNT++;
     public static final int ATTIDX_PUBLIC          = ATTIDX_COUNT++;
     public static final int ATTIDX_REF             = ATTIDX_COUNT++;
@@ -1108,9 +1109,14 @@ public class XSAttributeChecker {
             String attrVal = DOMUtil.getValue(sattr);
 
             // skip anything starts with x/X m/M l/L
-            // simply put their values in the return hashtable
+            // add this to the list of "non-schema" attributes
             if (attrName.toLowerCase(Locale.ENGLISH).startsWith("xml")) {
-                //attrValues.put(attrName, attrVal);
+                if(attrValues[ATTIDX_NONSCHEMA] == null) {
+                    // these are usually small
+                    attrValues[ATTIDX_NONSCHEMA] = new Vector(4,2);
+                }
+                ((Vector)attrValues[ATTIDX_NONSCHEMA]).addElement(attrName);
+                ((Vector)attrValues[ATTIDX_NONSCHEMA]).addElement(attrVal);
                 //otherValues.put(attrName, attrVal);
                 continue;
             }
@@ -1126,23 +1132,30 @@ public class XSAttributeChecker {
                     reportSchemaError ("s4s-att-not-allowed", new Object[] {elName, attrName}, element);
                 }
                 else {
+                    if(attrValues[ATTIDX_NONSCHEMA] == null) {
+                        // these are usually small
+                        attrValues[ATTIDX_NONSCHEMA] = new Vector(4,2);
+                    }
+                    ((Vector)attrValues[ATTIDX_NONSCHEMA]).addElement(attrName);
+                    ((Vector)attrValues[ATTIDX_NONSCHEMA]).addElement(attrVal);
                     // for attributes from other namespace
                     // store them in a list, and TRY to validate them after
                     // schema traversal (because it's "lax")
                     //otherValues.put(attrName, attrVal);
-                    String attrRName = attrURI + "," + attrName;
-                    Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
-                    if (values == null) {
-                        values = new Vector();
-                        values.addElement(attrName);
-                        values.addElement(elName);
-                        values.addElement(attrVal);
-                        fNonSchemaAttrs.put(attrRName, values);
-                    }
-                    else {
-                        values.addElement(elName);
-                        values.addElement(attrVal);
-                    }
+                    // REVISIT:  actually use this some day...
+                    // String attrRName = attrURI + "," + attrName;
+                    // Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
+                    // if (values == null) {
+                        // values = new Vector();
+                        // values.addElement(attrName);
+                        // values.addElement(elName);
+                        // values.addElement(attrVal);
+                        // fNonSchemaAttrs.put(attrRName, values);
+                    // }
+                    // else {
+                        // values.addElement(elName);
+                        // values.addElement(attrVal);
+                    // }
                 }
                 continue;
             }
@@ -1707,6 +1720,9 @@ public class XSAttributeChecker {
 
         // mark this array as returned
         attrArray[ATTIDX_ISRETURNED] = Boolean.TRUE;
+        // better clear nonschema vector 
+        if(attrArray[ATTIDX_NONSCHEMA] != null) 
+            ((Vector)attrArray[ATTIDX_NONSCHEMA]).clear();
         // and put it into the pool
         fArrayPool[--fPoolPos] = attrArray;
     }

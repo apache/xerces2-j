@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,6 +112,16 @@ class XSDocumentInfo {
 
     SymbolTable fSymbolTable = null;
 
+    // attribute checker to which we'll return the attributes 
+    // once we've been told that we're done with them
+    protected XSAttributeChecker fAttrChecker;
+
+    // array of objects on the schema's root element.  This is null
+    // once returnSchemaAttrs has been called.
+    protected Object [] fSchemaAttrs;
+
+    // note that the caller must ensure to call returnSchemaAttrs()
+    // to avoid memory leaks!
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable)
                     throws XMLSchemaException {
         fSchemaDoc = schemaDoc;
@@ -120,26 +130,27 @@ class XSDocumentInfo {
         fIsChameleonSchema = false;
 
         fSymbolTable = symbolTable;
+        fAttrChecker = attrChecker;
 
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
-            Object[] schemaAttrs = attrChecker.checkAttributes(root, true, this);
+            fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
             // schemaAttrs == null means it's not an <xsd:schema> element
             // throw an exception, but we don't know the document systemId,
             // so we leave that to the caller.
-            if (schemaAttrs == null) {
+            if (fSchemaAttrs == null) {
                 throw new XMLSchemaException(null, null);
             }
             fAreLocalAttributesQualified =
-                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
             fAreLocalElementsQualified =
-                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_EFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_EFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
             fBlockDefault =
-                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).shortValue();
+                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).shortValue();
             fFinalDefault =
-                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
+                ((XInt)fSchemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
             fTargetNamespace =
-                (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
+                (String)fSchemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
             if (fTargetNamespace != null)
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 
@@ -150,7 +161,9 @@ class XSDocumentInfo {
             fValidationContext.setSymbolTable(symbolTable);
             // pass null as the schema document, so that the namespace
             // context is not popped.
-            attrChecker.returnAttrArray(schemaAttrs, null);
+
+            // don't return the attribute array yet!
+            //attrChecker.returnAttrArray(schemaAttrs, null);
         }
     }
 
@@ -196,6 +209,18 @@ class XSDocumentInfo {
             return false;
         fReportedTNS.addElement(uri);
         return true;
+    }
+
+    // return the attributes on the schema element itself:
+    Object [] getSchemaAttrs () {
+        return fSchemaAttrs;
+    }
+
+    // deallocate the storage set aside for the schema element's
+    // attributes
+    void returnSchemaAttrs () {
+        fAttrChecker.returnAttrArray (fSchemaAttrs, null);
+        fSchemaAttrs = null;
     }
     
 } // XSDocumentInfo
