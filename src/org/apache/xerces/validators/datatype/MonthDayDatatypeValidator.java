@@ -1,8 +1,9 @@
+
 /*
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,89 +50,78 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-
-/**
- * @version $Id$
- * @author  Elena Litani
- * @author  Jeffrey Rodriguez
-*/
-
-
-
 package org.apache.xerces.validators.datatype;
+
 import java.util.Hashtable;
-import org.apache.xerces.validators.datatype.DatatypeValidator;
 
+/* $Id$ */
+public class MonthDayDatatypeValidator extends DateTimeValidator {
 
-public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
+    //size without time zone: --MM-DD    
+    private final static int MONTHDAY_SIZE = 7;
 
-    protected Hashtable fFacets; // Hashtable of Facets Strings.
-    protected DatatypeValidator fBaseValidator = null; // formerly private in every class!
-
-     /**
-     * Checks that "content" string is valid
-     * datatype.
-     * If invalid a Datatype validation exception is thrown.
-     *
-     * @param content A string containing the content to be validated
-     * @param derivedBylist
-     *                Flag which is true when type
-     *                is derived by list otherwise it
-     *                it is derived by extension.
-     *
-     * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
-     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
-     */
-    abstract public Object validate(String content, Object state) throws InvalidDatatypeValueException;
-    
-    abstract public Object clone() throws CloneNotSupportedException ;
-
-
-    /**
-     * returns the datatype facet if any is set as a
-     * Hashtable
-     *
-     * @return
-     */
-    public Hashtable getFacets() {
-        //REVISIT: do we really need getFacets? 
-        return fFacets;  
-    }
-    
-    /**
-     * default value for whiteSpace facet is collapse
-     * this function is overwritten in StringDatatypeValidator
-     */
-    public short getWSFacet (){
-        return DatatypeValidator.COLLAPSE;
+    public  MonthDayDatatypeValidator() throws InvalidDatatypeFacetException{
+        super();
     }
 
-    // returns the base datatypeValidator of the current validator.
-    public DatatypeValidator getBaseValidator() {
-        return fBaseValidator;
+    public  MonthDayDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+                                        boolean derivedByList ) throws InvalidDatatypeFacetException {
+        super(base, facets, derivedByList);
     }
 
-    /**
-     * Compares content in the Domain value vs. lexical
-     * value.
-     * e.g. If type is a float then 1.0 may be equivalent
-     * to 1 even tough both are lexically different.
-     *
-     * @param value1
-     * @param valu2
-     * @return
+    /** 
+     * Parses, validates and computes normalized version of gMonthDay object
+     * 
+     * @param str    The lexical representation of gMonthDay object --MM-DD
+     *               with possible time zone Z or (-),(+)hh:mm
+     * @param date   uninitialized date object
+     * @return normalized date representation
+     * @exception Exception Invalid lexical representation
      */
-    public int compare(String value1, String value2) {
-        return value1.compareTo(value2);
+    protected int[] parse(String str, int[] date) throws Exception{
+
+        resetBuffer(str);
+
+        //create structure to hold an object
+        if ( date== null ) {
+            date=new int[TOTAL_SIZE];
+        }
+        date = resetDateObj(date);
+
+        //initialize 
+        date[CY]=YEAR;
+
+        date[M]=parseInt(fStart+2,fStart+4);
+        fStart+=5;
+
+        date[D]=parseInt(fStart, fStart+2);
+
+        if ( MONTHDAY_SIZE<fEnd ) {
+            int sign = findUTCSign(MONTHDAY_SIZE, fEnd);
+            if ( sign<0 ) {
+                throw new Exception ("Error in month parsing");
+            }
+            else {
+                date = getTimeZone(date, sign);
+            }
+        }
+        //validate and normalize
+        if ( !validateDateTime(date) ) {
+            //REVISIT: error message?
+            throw new Exception ();
+        }
+        else if ( date[utc]!=0 && date[utc]!='Z' ) {
+            date=normalize(date);
+        }
+        return date;
     }
 
 
 }
+

@@ -175,7 +175,8 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fRegistry.put("binary",            new BinaryDatatypeValidator());
                 fRegistry.put("uriReference",      new URIReferenceDatatypeValidator());
                 fRegistry.put("QName",             new QNameDatatypeValidator()); 
-                
+                fRegistry.put("duration",          new DurationDatatypeValidator());
+                               
                 
                 // need to check if the registry has been "DTD" initilized --ericye
                 // since we share the same instance of DTD attribute validators across the board,
@@ -187,7 +188,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 Hashtable facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_WHITESPACE, "replace");
                 createDatatypeValidator("CDATA", new StringDatatypeValidator(), facets, false);
-
 
                 facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_WHITESPACE, "collapse");
@@ -275,51 +275,40 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createDatatypeValidator("positiveInteger",
                                         getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
+                facets = new Hashtable();
+                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
+                createDatatypeValidator("dateTime", new DateTimeDatatypeValidator(), facets, false);
 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_DURATION, "P0Y" );
-                facets.put(SchemaSymbols.ELT_PERIOD,   "P0Y" );
-                createDatatypeValidator("timeInstant", 
-                                        getDatatypeValidator( "recurringDuration"),facets, false );
+                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
+                createDatatypeValidator("time", new TimeDatatypeValidator(), facets, false);
 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_DURATION, "P0Y" );
-                //            facets.put(SchemaSymbols.ELT_PERIOD,   "PY24H" ); Bug -- WORK TODO
-                createDatatypeValidator("time", 
-                                        getDatatypeValidator( "recurringDuration"), facets, false );
-
+                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)-(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
+                createDatatypeValidator("date", new DateDatatypeValidator(), facets, false);
+                
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PERIOD,   "P0Y" );
-                createDatatypeValidator("timePeriod", 
-                                        getDatatypeValidator( "recurringDuration"), facets, false );
-
-
+                facets.put(SchemaSymbols.ELT_PATTERN,"--(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
+                createDatatypeValidator("gMonthDay", new MonthDayDatatypeValidator(), facets, false);
+                
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_DURATION, "PT24H" );
-                createDatatypeValidator("date",
-                                        getDatatypeValidator( "timePeriod"), facets, false );
+                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
+                createDatatypeValidator("gYearMonth", new YearMonthDatatypeValidator(), facets, false);
+                
+                facets = new Hashtable();
+                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
+                createDatatypeValidator("gYear", new YearDatatypeValidator(), facets, false);
 
 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_DURATION, "P1M" );
-                createDatatypeValidator("month",
-                                        getDatatypeValidator( "timePeriod"), facets, false );
-
+                facets.put(SchemaSymbols.ELT_PATTERN,"--(\\d\\d)--(Z)?");
+                createDatatypeValidator("gMonth", new MonthDatatypeValidator(), facets, false);
+                
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_DURATION, "P1Y" );
-                createDatatypeValidator("year", 
-                                        getDatatypeValidator( "timePeriod"), facets, false );
+                facets.put(SchemaSymbols.ELT_PATTERN,"---(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
+                createDatatypeValidator("gDay", new DayDatatypeValidator(), facets, false);
 
-                facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_DURATION, "P100Y" );
-                createDatatypeValidator("century", 
-                                        getDatatypeValidator( "timePeriod"), facets, false );
 
-                facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PERIOD, "P1Y" );
-                facets.put(SchemaSymbols.ELT_DURATION, "PT24H" );
-                createDatatypeValidator("recurringDate",
-                                        getDatatypeValidator( "recurringDuration"),facets, false );
                 fRegistryExpanded = true;
             } catch (InvalidDatatypeFacetException ex) {
                 ex.printStackTrace();
