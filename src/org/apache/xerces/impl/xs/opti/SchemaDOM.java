@@ -46,6 +46,7 @@ public class SchemaDOM extends DefaultDocument {
     int currLoc;
     int nextFreeLoc;
     boolean hidden;
+    boolean inCDATA;
 
     // for annotation support:
     StringBuffer fAnnotationBuffer = null;
@@ -144,15 +145,35 @@ public class SchemaDOM extends DefaultDocument {
     
     // note that this will only be called within appinfo/documentation
     void characters(XMLString text ) {
-        // need to handle &s and <s
-        for(int i=text.offset; i<text.offset+text.length; i++ ) {
-            if(text.ch[i] == '&') {
-                fAnnotationBuffer.append("&amp;");
-            } else if (text.ch[i] == '<') {
-                fAnnotationBuffer.append("&lt;");
-            } else {
-                fAnnotationBuffer.append(text.ch[i]);
+        
+        // escape characters if necessary
+        if (!inCDATA) {   
+            for (int i = text.offset; i < text.offset+text.length; ++i ) {
+                if (text.ch[i] == '&') {
+                    fAnnotationBuffer.append("&amp;");
+                } 
+                else if (text.ch[i] == '<') {
+                    fAnnotationBuffer.append("&lt;");
+                }
+                // character sequence "]]>" cannot appear in content, 
+                // therefore we should escape '>'.
+                else if (text.ch[i] == '>') {
+                    fAnnotationBuffer.append("&gt;");
+                }
+                // If CR is part of the document's content, it
+                // must not be printed as a literal otherwise
+                // it would be normalized to LF when the document
+                // is reparsed.
+                else if (text.ch[i] == '\r') {
+                    fAnnotationBuffer.append("&#xD;");
+                }
+                else {
+                    fAnnotationBuffer.append(text.ch[i]);
+                }
             }
+        }
+        else {
+            fAnnotationBuffer.append(text.ch, text.offset, text.length);
         }
     }
 
@@ -193,11 +214,13 @@ public class SchemaDOM extends DefaultDocument {
     }
 
     void startAnnotationCDATA() {
+        inCDATA = true;
         fAnnotationBuffer.append("<![CDATA[");
     }
     
     void endAnnotationCDATA() {
         fAnnotationBuffer.append("]]>");
+        inCDATA = false;
     }
     
     private void resizeRelations() {
@@ -228,6 +251,7 @@ public class SchemaDOM extends DefaultDocument {
         parent.rawname = "DOCUMENT_NODE";
         currLoc = 0;
         nextFreeLoc = 1;
+        inCDATA = false;
         for (int i=0; i<relationsRowResizeFactor; i++) {
             relations[i] = new NodeImpl[relationsColResizeFactor];
         }
@@ -328,10 +352,10 @@ public class SchemaDOM extends DefaultDocument {
         fAnnotationBuffer.append(">\n");
     }
     void startAnnotationElement(QName elemName, XMLAttributes attributes) {
-        fAnnotationBuffer.append("<").append(elemName.rawname).append(" ");
+        fAnnotationBuffer.append("<").append(elemName.rawname);
         for(int i=0; i<attributes.getLength(); i++) {
             String aValue = attributes.getValue(i);
-            fAnnotationBuffer.append(" ").append(attributes.getQName(i)).append("=\"").append(processAttValue(aValue)).append("\" ");
+            fAnnotationBuffer.append(" ").append(attributes.getQName(i)).append("=\"").append(processAttValue(aValue)).append("\"");
         }
         fAnnotationBuffer.append(">");
     }
@@ -339,18 +363,34 @@ public class SchemaDOM extends DefaultDocument {
     private static String processAttValue(String original) {
         // normally, nothing will happen
         StringBuffer newVal = new StringBuffer(original.length());
-        for(int i=0; i<original.length(); i++) {
+        for (int i = 0; i < original.length(); i++) {
             char currChar = original.charAt(i);
-            if(currChar == '"') {
+            if (currChar == '"') {
                 newVal.append("&quot;");
-            } else if (currChar == '>') {
+            } 
+            else if (currChar == '>') {
                 newVal.append("&gt;");
-            } else if (currChar == '&') {
+            } 
+            else if (currChar == '&') {
                 newVal.append("&amp;");
-            } else {
+            }
+            // Must escape 0x09, 0x0A and 0x0D if they appear in attribute
+            // value so that they may be round-tripped. They would otherwise
+            // be transformed to a 0x20 during attribute value normalization.
+            else if (currChar == 0x09) {
+                newVal.append("&#x9;");
+            }
+            else if (currChar == 0x0A) {
+                newVal.append("&#xA;");
+            }
+            else if (currChar == 0x0D) {
+                newVal.append("&#xD;");
+            }
+            else {
                 newVal.append(currChar);
             }
         }
         return newVal.toString();
     }
+    
 }
