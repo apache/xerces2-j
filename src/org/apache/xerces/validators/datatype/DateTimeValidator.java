@@ -434,6 +434,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      * @return 
      */
     protected short compareOrder (int[] date1, int[] date2) {
+        
         for ( int i=0;i<TOTAL_SIZE;i++ ) {
             if ( date1[i]<date2[i] ) {
                 return LESS_THAN;
@@ -456,16 +457,28 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      * @exception Exception
      */
     protected  void getTime (int start, int end, int[] data) throws RuntimeException{
+        
+        int stop = start+2;
+        
         //get hours (hh)
-        data[h]=parseInt(start,start+2);
+        data[h]=parseInt(start,stop);
 
         //get minutes (mm)
-        start+=3;
-        data[m]=parseInt(start,start+2);
+
+        if (fBuffer.charAt(stop++)!=':') {
+                throw new RuntimeException("Error in parsing time zone" );
+        }
+        start = stop;
+        stop = stop+2;
+        data[m]=parseInt(start,stop);
 
         //get seconds (ss)
-        start+=3;                
-        data[s]=parseInt(start,start+2);
+        if (fBuffer.charAt(stop++)!=':') {
+                throw new RuntimeException("Error in parsing time zone" );
+        }
+        start = stop;
+        stop = stop+2;               
+        data[s]=parseInt(start,stop);
 
         //get miliseconds (ms)
         int milisec = indexOf(start, end, '.');
@@ -489,7 +502,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
         }
 
-        //parse UTC time zone (hh:mm) or (hh)
+        //parse UTC time zone (hh:mm)        
         if ( sign>0 ) {
             getTimeZone(data,sign);
         }
@@ -595,15 +608,19 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             }
             return;
         }
-        if ( sign<=(fEnd-3) ) {
-            
+        if ( sign<=(fEnd-6) ) {
+             
             //parse [hh]
-            timeZone[hh]=parseInt(++sign, sign+2);
-            sign+=3;
+            int stop = ++sign+2;
+            timeZone[hh]=parseInt(sign, stop);
+            if (fBuffer.charAt(stop++)!=':') {
+                throw new RuntimeException("Error in parsing time zone" );
+            }            
             
             //parse [ss]
-            timeZone[mm]=parseInt(sign, sign+2);
-            if ( sign+2!=fEnd ) {
+            timeZone[mm]=parseInt(stop, stop+2);
+            
+            if ( stop+2!=fEnd ) {
                 throw new RuntimeException("Error in parsing time zone");
             }
             
@@ -793,6 +810,10 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      */
     protected  void normalize (int[] date) {
 
+        // REVISIT: we have common code in addDuration() for durations
+        //          should consider reorganizing it.
+        //
+
         //add minutes (from time zone)
         int negate = 1;
         if (date[utc]=='+') {
@@ -805,8 +826,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         int temp = date[m] + negate*timeZone[mm];
         int carry = fQuotient (temp, 60);
         date[m]= mod(temp, 60, carry);
-        //revisit? negative value
-
+        
         if ( DEBUG ) {
             System.out.println("==>carry: " + carry);
         }
@@ -819,13 +839,15 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             System.out.println("==>carry: " + carry);
         }
 
-        //REVISIT: remove common code
-        //add days
         date[D]=date[D]+carry;
 
         while ( true ) {
             temp=maxDayInMonthFor(date[CY], date[M]);
-            if ( date[D]>temp ) {
+            if (date[D]<1) {
+                date[D] = date[D] + maxDayInMonthFor(date[CY], date[M]-1);
+                carry=-1;
+            }
+            else if ( date[D]>temp ) {
                 date[D]=date[D]-temp;
                 carry=1;
             }
@@ -836,7 +858,6 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             date[M]=modulo(temp, 1, 13);
             date[CY]=date[CY]+fQuotient(temp, 1, 13);
         }
-
         date[utc]='Z';  
     }
 
@@ -941,24 +962,19 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     protected String dateToString(int[] date) {
         message.setLength(0);
-        int negate = 1;
-        if ( date[CY]<0 ) {
-            message.append('-');
-            negate=-1;
-        }
-        message.append(negate * date[CY]);
+        message.append(date[CY]);
         message.append('-');
-        message.append(negate * date[M]);
+        message.append(date[M]);
         message.append('-');
-        message.append(negate * date[D]);
+        message.append(date[D]);
         message.append('T');
-        message.append(negate * date[h]);
+        message.append(date[h]);
         message.append(':');
-        message.append(negate * date[m]);
+        message.append(date[m]);
         message.append(':');
-        message.append(negate * date[s]);
+        message.append(date[s]);
         message.append('.');
-        message.append(negate * date[ms]);
+        message.append(date[ms]);
         message.append((char)date[utc]);
         return message.toString();
     }
