@@ -265,7 +265,7 @@ public class Test {
                     try {
                         System.out.println("surroundNode="+surroundNode);
                         range.surroundContents(surroundNode);
-                    } catch (org.w3c.dom.range.RangeException e) {
+                    } catch (org.w3c.dom.ranges.RangeException e) {
                         System.out.println(e);
                     }
                    String result = toString(document);
