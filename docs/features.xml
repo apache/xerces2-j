@@ -70,18 +70,20 @@ catch (SAXException e) {
   </feature>
   <feature name='http://xml.org/sax/features/validation' 
            id='validation'>
-   <true>Validate the document.</true>
-   <false>Do not validate the document.</false>
+   <true>Validate the document and report validity errors.</true>
+   <false>Do not report validity errors.</false>
    <default value='false'/>
    <access parsing='read-only' not-parsing='read-write'/>
    <note>
     If this feature is set to true, the document must specify 
-    a grammar. If this feature is set to false, the document 
-    may specify a grammar and that grammar will be parsed but 
-    no validation of the document contents will be performed.
+    a grammar. By default, validation will occur against DTD. For more information, please, refer to the  <link idref='faq-pcfp'>FAQ</link>.
+    If this feature is set to false, and document specifies a grammar 
+    that grammar might be parsed but no validation of the document contents 
+    will be performed.
    </note>
    <see idref='validation.dynamic'/>
    <see idref='namespaces'/>
+   <see idref='nonvalidating.load-external-dtd'/>
   </feature>
   <feature name='http://apache.org/xml/features/validation/dynamic'
            id='validation.dynamic'>
@@ -98,15 +100,13 @@ catch (SAXException e) {
   </feature>
   <feature name='http://apache.org/xml/features/validation/schema'
            id='validation.schema'>
-   <true>Report XML Schema validation errors.</true>
-   <false>Do not report XML Schema validation errors.</false>
-   <default value='true'/>
+   <true>Turn on XML Schema validation by inserting XML Schema validator in the pipeline.
+   </true>
+   <false>Do not report validation errors against XML Schema.</false>
+   <default value='false'/>   
    <access parsing='read-only' not-parsing='read-write'/>
-   <note>
-     The meaning of this feature is not finalized. Please refer
-     to FAQ <link idref='faq-pcfp'>Parser configuration, Features
-     and Properties FAQs</link>.
-   </note>
+   <note> Validation errors will only be reported if <link anchor="validation">validation feature</link> is set to true. For more information, please, refer to the <link idref='faq-pcfp'>FAQ</link>
+   </note>  
    <see idref='validation'/>
    <see idref='validation.dynamic'/>
    <see idref='namespaces'/>

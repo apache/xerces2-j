@@ -1,73 +1,60 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
-<faqs title='Parser Configuration, Features and Properties FAQs'>
- <faq title='Validation Components'>
+<faqs title='Parser Configuration and Validation'>
+ <faq title='Validation and infoset augmentation'>
   <q>What's the result of having a DTD validator or XML Schema validator in the pipeline?</q>
   <a>
    <p>
-    If a validator is included in the pipeline, assessment is
+    If a validator is included in the pipeline, the assessment is
     done, whether the validation feature is set to true or false.
-    Currently, validation only enables the validation constraint error reporting. The validation feature does not control the infoset augmentation: if a validator is included in the pipeline the parser will augment the infoset according to the grammar specified for the instance document. This behaviour may be revisited/changed in the future.
+    The validation feature only enables the validation constraint error reporting and it does not control the infoset augmentation: if a validator is included in the pipeline the parser will augment the infoset according to the grammar specified for the instance document. 
    </p>
   </a>
  </faq>
+
  <faq title='Default Parser Configuration'>
   <q>What validation behavior do I expect from the default parser configuration?</q>
   <a>
    <p>
-    The default configuration includes both DTD validator and XML
-    schema validator, so it's capable of validating an instance
-    against both kinds of grammars.  But this could bring some
-    performance hit for those applications that only process XML
-    documents with DTD.  If you care about performance, and only
-    use DTD, please use DTD configuration instead.
+    The default configuration (StandardParserConfiguration) includes DTD validator and Namespace binder. Thus, the <link idref='features' anchor="validation">validation feature</link> will enable validation against DTD only.
+To allow validation against XML Schemas you must turn on the <link idref='features' anchor="validation">validation feature</link> and the <link idref='features' anchor="validation.schema">schema feature</link>, and XML Schema Validator will be inserted in the pipeline. 
+If you've created your own configuration which does not extend StandardParserConfiguration, you must make sure that your configuration inserts all needed validators in the pipeline.
    </p>
   </a>
  </faq>
+
  <faq title='Validation Features'>
   <q>What happens if I set both validation and schema validation features on?</q>
   <a>
    <p>
-     If only one of DTD validation and XML Schema validator
-     is present in the pipeline, then we only consider the
-     feature corresponding to this validator, and ignore the
-     other one.
-   </p>
-   <p>
-     If both validators are present in the pipeline, then
+     If both validators are present in the pipeline (this is the default behavior), then
    </p>
    <ul>
     <li>if the instance document has only a DTD grammar
         (DOCTYPE before the root element), then only DTD
         validation errors are reported;</li>
     <li>if the instance document has only XML Schema grammars,
-        then only XML Schema validation errors are reported
-        (we consider an instance document to have a XML Schema
-         grammar if either xsi:schemaLocation or
-         xsi:noNamespaceSchemaLocation attribute is present
-         on the root element. This might change after we
-         support grammar caching);</li>
+        then only XML Schema validation errors are reported</li>
     <li>if the instance document has both DTD and XML Schema
         grammars, validation errors for both DTD and XML
         Schema are reported;</li>
     <li>if no grammar can be found for the instance document,
-        then XML Schema validation errors are reported.</li>
+        the last validator in the pipeline will report validation errors.
+    </li>
    </ul>
    <p>
-     NOTE: The above is the current interpretation of the
-           validation features.  It may change in future
-           Xerces releases.
+     An application may choose to create the configuration that does not have DTD validator but has XML Schema validator. This will turn Xerces into non-compliant processor according to XML 1.0 and XML Schema specifications, thus the validation/augmentation outcome is undefined.
    </p>
+
   </a>
- </faq>
- <faq title='External Schema Location Properties'>
-  <q>Where are the two schema location properties introduced in Xerces 1?</q>
+</faq>
+<faq title='Validation against specific schema language'>
+  <q>How can I tell the parser to validate against XML Schema and do not report DTD validation errors?</q>
   <a>
    <p>
-     External schema location properties are not currently
-     supported in Xerces 2.  We're examining how to support
-     this for the next Schema release.
-    </p>
-  </a>
+     Currently it is impossible. We hope that JAXP 1.2 will provide this capability via the schema language property. Otherwise, we might introduce Xerces language property that will allow specifying the language against which validation will occur.
+   </p>
+   </a>
  </faq>
+
 </faqs>

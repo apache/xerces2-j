@@ -74,9 +74,25 @@
      <jump href='javadocs/xni/org/apache/xerces/xni/parser/package-summary.html'>Parser
      Configuration</jump>
     </li>
+    <li>
+     <jump href='javadocs/xni/org/apache/xerces/xni/psvi/package-summary.html'>PSVI interfaces</jump>
+    </li>
    </ul>
   </ul>
  </s2>
+<s2 title='DOM Level 3 API'>
+  <p>Includes DOM Level 3 Working Draft APIs:</p>
+  <ul>
+    <li><jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/">Abstract Schema and Load and Save</jump>
+    </li>
+    <li><jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/">DOM Level 3 Core</jump>
+    </li>
+   </ul>
+  <p>
+  Those APIs are unstable and may change:
+  <jump href='javadocs/dom3-api/index.html'>org.apache.xerces.dom3</jump> 
+</p>
+</s2>
  <s2 title='Xerces2 Implementation Documentation'>
   <p>
    For maintainers and developers of the Xerces2 reference

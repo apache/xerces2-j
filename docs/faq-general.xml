@@ -20,6 +20,36 @@
    </p>
   </a>
  </faq>
+ 
+ 
+ <faq title='DOM Level 3 Implementation'>
+  <q>How can I get access to DOM Level 3 implementation?</q>
+  <a>
+   <p>DOM Level 3 interfaces are located in org.apache.xerces.dom3 package. Xerces provides implementation for: DOMWriter, DOMBuilder, DOMASBuilder (that allows to preparse XML Schemas). Xerces also includes several features from Core.
+   </p>
+  <note>DOM Level 3 interfaces are unstable: the specification is a working draft. For more information, please, refer to <link idref="api">DOM Level 3 API</link> </note>
+  </a>
+ </faq>
+
+<faq title='IDs and XML Schemas'>
+  <q>Why getElementById() does not always work for documents validated against XML Schemas?</q>
+  <a>
+   <p>According to XML Schema specification, an instance document might have
+more than one <jump href="http://www.w3.org/TR/xmlschema-1/#key-vr">validation root</jump> and <jump href="http://www.w3.org/TR/xmlschema-1/#cvc-id">ID/IDREFS</jump> must be unique only within validation root, meaning that a document may have identical ids. In this case, the output of getElementById() is unspecified. On the other hand, if document root is a validation root of the document, getElementById() should work as expected.
+    </p>
+  </a>
+ </faq>
+ 
+<faq title='PSVI'>
+  <q>How do I get access to PSVI?</q>
+  <a>
+   <p>Xerces provides a sample component PSVIWriter that intercepts document handler events and collects PSVI information. For more information read <link idref="samples-xni">samples documentation</link> on how to use xni.parser.PSVIParser and xni.parser.PSVIConfiguration.
+    </p>
+<note>Xerces only produces light-weight  PSVI.</note>
+  </a>
+ </faq>
+ 
+
  <faq title='International Encodings'>
   <q>What international encodings are supported by &ParserName;?</q>
   <a>

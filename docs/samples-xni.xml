@@ -17,6 +17,7 @@
    <li><link anchor='Counter'>xni.Counter</link></li>
    <li><link anchor='DocumentTracer'>xni.DocumentTracer</link></li>
    <li><link anchor='Writer'>xni.Writer</link></li>
+   <li><link anchor='PSVIWriter'>xni.PSVIWriter</link></li>
   </ul>
   <ul>
    <li><link anchor='PassThroughFilter'>xni.PassThroughFilter</link></li>
@@ -37,6 +38,8 @@
   <ul>
    <li><link anchor='CSVConfiguration'>xni.parser.CSVConfiguration</link></li>
    <li><link anchor='CSVParser'>xni.parser.CSVParser</link></li>
+   <li><link anchor='PSVIConfiguration'>xni.parser.PSVIConfiguration</link></li>
+   <li><link anchor='PSVIParser'>xni.parser.PSVIParser</link></li>
   </ul>
   <p>
    Most of the XNI samples have a command line option that allows the
@@ -191,6 +194,19 @@
    </table>
   </s3>
  </s2>
+
+<anchor name='PSVIWriter'/>
+ <s2 title='Sample xni.PSVIWriter'>
+  <p>
+   This is an example of a component that intercepts document handler events and gathers PSVI information. The PSVI output is written as XML.
+</p>
+<p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a component. See <link anchor='PSVIParser'>xni.parser.PSVIParser</link>.
+</p>
+</s2>
+
+
  <anchor name='PassThroughFilter'/>
  <s2 title='Sample xni.PassThroughFilter'>
   <p>
@@ -311,5 +327,39 @@
    <code>-p</code> option. For example:
   </p>
   <source>java sax.Counter -p xni.parser.CSVParser document.xml</source>
+ </s2>
+
+  <anchor name='PSVIConfiguration'/>
+ <s2 title='Sample xni.parser.PSVIConfiguration'>
+  <p>
+   This example is a parser configuration that can output post schema validation infoset. The configuration infludes: DTD validator, Namespace binder, XML Schema validators and PSVIWriter component. 
+  </p>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a parser
+   configuration using XNI. You can use this parser configuration
+   by specifying the fully qualified class name to all of the XNI
+   samples that accept a parser configuration using the 
+   <code>-p</code> option:
+  </p>
+  <source>java xni.Counter -v -s -p xni.parser.PSVIConfiguration personal-schema.xml</source>
+   <note><link idref='features' anchor="validation">Validation</link> and <link idref='features' anchor="validation.schema">schema validation</link> features must be set to true to receive the correct PSVI output.</note>
+ </s2>
+
+<anchor name='PSVIParser'/>
+ <s2 title='Samples xni.parser.PSVIParser'>
+  <p>
+   This parser class implements a SAX parser that outputs post schema validation infoset as XML.
+  </p>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a parser
+   using XNI. You can use this parser
+   by specifying the fully qualified class name to all of the SAX
+   samples that accept a parser using the 
+   <code>-p</code> option. For example:
+  </p>
+  <source>java sax.Counter -v -s -p xni.parser.PSVIParser personal-schema.xml</source>
+  <note><link idref='features' anchor="validation">Validation</link> and <link idref='features' anchor="validation.schema">schema validation</link> features must be set to true to receive the correct PSVI output.</note>
  </s2>
 </s1>

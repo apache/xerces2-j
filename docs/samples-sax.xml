@@ -16,11 +16,11 @@
   </ul>
   <p>
    Most of the SAX parser samples have a command line option that
-   allows the user to specify a different DOM parser to use. In
+   allows the user to specify a different parser to use. In
    order to supply another SAX parser besides the default Xerces
    <code>SAXParser</code>, the parser must implement either the
    <code>org.xml.sax.Parser</code> or <code>org.xml.sax.XMLReader</code>
-   interfaces.
+   interfaces. You may specify xni.parser.PSVIParser if you want Xerces to output PSVI.
   </p>
   <note>
    JAXP could be used instead but this feature is not implemented 

@@ -57,6 +57,7 @@
     is the most important handler interface in the Xerces Native
     Interface.
    </p>
+<!-- REVISIT: this info is already available in http://xml.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Methods</th></tr>
     <tr>
@@ -233,6 +234,8 @@
      </td>
     </tr>
    </table>
+-->
+
   </s3>
   <anchor name='document-fragment-handler'/>
   <s3 title='Interface XMLDocumentFragmentHandler'>
@@ -242,6 +245,8 @@
     fragment but is not required to be used by a compliant XNI
     parser component or configuration.
    </p>
+
+<!-- REVISIT: see http://xml.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Methods</th></tr>
     <tr>
@@ -396,6 +401,7 @@
      </td>
     </tr>
    </table>
+-->
   </s3>
   <p>
    Besides the handler interfaces there are several related 
@@ -414,6 +420,9 @@
     a catch block for this exception at the top level so that XNI 
     exceptions do not "leak" out to the application code.
    </p>
+
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+
    <table>
     <tr><th>Constructors</th></tr>
     <tr><td><code>public XNIException(String message);</code></td></tr>
@@ -430,6 +439,8 @@
     <tr><th>Methods</th></tr>
     <tr><td><code>public Exception getException();</code></td></tr>
    </table>
+
+-->
   </s3>
   <anchor name='locator'/>
   <s3 title='Interface XMLLocator'>
@@ -452,7 +463,9 @@
     implementation <em>does</em> provide a locator to registered
     handlers.
    </p>
-   <table>
+   
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<table>
     <tr><th>Methods</th></tr>
     <tr><td><code>public String getPublicId();</code></td></tr>
     <tr><td><code>public String getSystemId();</code></td></tr>
@@ -460,6 +473,7 @@
     <tr><td><code>public int getLineNumber();</code></td></tr>
     <tr><td><code>public int getColumnNumber();</code></td></tr>
    </table>
+-->
   </s3>
   <anchor name='qname'/>
   <s3 title='Class QName'>
@@ -474,6 +488,8 @@
     are required to copy the references contained in the object if
     the data is to be used beyond the scope of the method call.
    </p>
+
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Fields</th></tr>
     <tr><td><code>public String prefix;</code></td></tr>
@@ -515,6 +531,7 @@
     </tr>
     <tr><td><code>public void clear();</code></td></tr>
    </table>
+-->
   </s3>
   <anchor name='attributes'/>
   <s3 title='Interface XMLAttributes'>
@@ -534,6 +551,8 @@
     also be stored because the offsets and lengths of entities in
     the attribute have no meaning for the normalized value.
    </p>
+
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Methods</th></tr>
     <tr>
@@ -720,6 +739,9 @@
      </td>
     </tr>
    </table>
+
+-->
+
   </s3>
   <anchor name='string'/>
   <s3 title='Class XMLString'>
@@ -742,6 +764,8 @@
     character array directly as that could adversely affect the
     operation of the caller.
    </p>
+
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Fields</th></tr>
     <tr><td><code>public char[] ch;</code></td></tr>
@@ -780,6 +804,7 @@
     </tr>
     <tr><td><code>public void clear();</code></td></tr>
    </table>
+-->
   </s3>
   <anchor name='namespace-context'/>
   <s3 title='Interface NamespaceContext'>
@@ -788,7 +813,9 @@
     object is passed to the first method of the
     <code>XMLDocumentFragmentHandler</code> interface.
    </p>
-   <table>
+
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html   
+<table>
     <tr><th>Constants</th></tr>
     <tr><td><code>public static final String XMLNS;</code></td></tr>
     <tr><td><code>public String getURI(String prefix);</code></td></tr>
@@ -805,6 +832,8 @@
      </td>
     </tr>
    </table>
+-->
+
   </s3>
  </s2>
  <s2 title='DTD Information'>
@@ -821,6 +850,8 @@
     declarations. The implementor of this interface can also be
     informed of characters within an ignored conditional section.
    </p>
+
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Constants</th></tr>
     <tr>
@@ -1008,6 +1039,8 @@
      </td>
     </tr>
    </table>
+-->
+
   </s3>
   <s3 title='Interface XMLDTDContentModelHandler'>
    <p>
@@ -1019,6 +1052,8 @@
     know boundaries of entities when used as part of an element's 
     content model.
    </p>
+
+<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Constants</th></tr>
     <tr>
@@ -1128,6 +1163,9 @@
      </td>
     </tr>
    </table>
+
+-->
+
   </s3>
  </s2>
  <s2 title='Examples'>
