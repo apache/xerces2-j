@@ -122,6 +122,9 @@ public class DFAContentModel
     /** The element map size. */
     private int fElemMapSize = 0;
 
+    /** Boolean to allow DTDs to validate even with namespace support. */
+    private boolean fDTD;
+
     /**
      * The string index for the 'end of content' string that we add to
      * the string pool. This is used as the special name of an element
@@ -237,6 +240,22 @@ public class DFAContentModel
    // public DFAContentModel(StringPool stringPool, 
    public DFAContentModel( CMNode syntaxTree, 
                            int leafCount) throws CMException {
+       this(syntaxTree, leafCount, false);
+   }
+
+    /**
+     * Constructs a DFA content model.
+     *
+     * @param stringPool    The string pool.
+     * @param syntaxTree    The syntax tree of the content model.
+     * @param leafCount     The number of leaves.
+     *
+     * @exception CMException Thrown if DMA can't be built.
+     */
+
+   // public DFAContentModel(StringPool stringPool, 
+   public DFAContentModel( CMNode syntaxTree, 
+                           int leafCount, boolean dtd) throws CMException {
 
         // Store away our index and pools in members
         //fStringPool = stringPool;
@@ -262,6 +281,7 @@ public class DFAContentModel
         fEpsilonIndex = EPSILON;
         fEOCIndex     = EOC;
 
+        fDTD = dtd;
 
         //
         //  Ok, so lets grind through the building of the DFA. This method
@@ -353,6 +373,7 @@ public class DFAContentModel
         {
             // Get the current element index out
             final QName curElem = children[offset + childIndex];
+            //System.out.println("children["+(offset+childIndex)+"]: "+curElem);
 
             // Look up this child in our element map
             int elemIndex = 0;
@@ -360,9 +381,17 @@ public class DFAContentModel
             {
                 int type = fElemMapType[elemIndex];
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                    if (fElemMap[elemIndex].uri==curElem.uri
-                         && fElemMap[elemIndex].localpart == curElem.localpart)
-                        break;
+                    //System.out.println("fElemMap["+elemIndex+"]: "+fElemMap[elemIndex]);
+                    if (fDTD) {
+                        if (fElemMap[elemIndex].rawname == curElem.rawname) {
+                            break;
+                        }
+                    }
+                    else {
+                        if (fElemMap[elemIndex].uri==curElem.uri
+                             && fElemMap[elemIndex].localpart == curElem.localpart)
+                            break;
+                    }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                     int uri = fElemMap[elemIndex].uri;
@@ -792,14 +821,26 @@ public class DFAContentModel
             int inIndex = 0;
             for (; inIndex < fElemMapSize; inIndex++)
             {
-                if (fElemMap[inIndex].uri == element.uri &&
-                    fElemMap[inIndex].localpart == element.localpart)
-                    break;
+                if (fDTD) {
+                    if (fElemMap[inIndex].rawname == element.rawname) {
+                        break;
+                    }
+                }
+                else {
+                    if (fElemMap[inIndex].uri == element.uri &&
+                        fElemMap[inIndex].localpart == element.localpart)
+                        break;
+                }
             }
 
             // If it was not in the list, then add it, if not the EOC node
             if (inIndex == fElemMapSize) {
-                fElemMap[fElemMapSize].setValues(element);
+                //if (fDTD) {
+                //    fElemMap[fElemMapSize].setValues(-1, element.rawname, element.rawname, -1);
+                //}
+                //else {
+                    fElemMap[fElemMapSize].setValues(element);
+                //}
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
                 fElemMapSize++;
             }
@@ -896,9 +937,16 @@ public class DFAContentModel
                         //
                         final QName leaf = fLeafList[leafIndex].getElement();
                         final QName element = fElemMap[elemIndex];
-                        if (leaf.uri == element.uri &&
-                            leaf.localpart == element.localpart)
-                            newSet.union(fFollowList[leafIndex]);
+                        if (fDTD) {
+                            if (leaf.rawname == element.rawname) {
+                                newSet.union(fFollowList[leafIndex]);
+                            }
+                        }
+                        else {
+                            if (leaf.uri == element.uri &&
+                                leaf.localpart == element.localpart)
+                                newSet.union(fFollowList[leafIndex]);
+                        }
                     }
                 }
 

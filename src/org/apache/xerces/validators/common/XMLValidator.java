@@ -1765,6 +1765,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     private void switchGrammar(int newGrammarNameSpaceIndex) {
         Grammar tempGrammar = fGrammarResolver.getGrammar(fStringPool.toString(newGrammarNameSpaceIndex));
         if (tempGrammar == null) {
+            // Assume that this is a case were namespaces are being
+            // used with a DTD grammar.
+            tempGrammar = fGrammarResolver.getGrammar("");
+            //System.out.println("XMLValidator: tempGrammar="+tempGrammar);
+        }
+        if (tempGrammar == null) {
             System.out.println(fStringPool.toString(newGrammarNameSpaceIndex) + " grammar not found");
             //TO DO report error here
         }

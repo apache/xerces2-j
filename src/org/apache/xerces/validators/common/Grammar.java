@@ -99,7 +99,7 @@ implements XMLContentSpec.Provider {
     // element decl tables
 
     private int fElementDeclCount = 0;
-    private int fElementDeclNameIndex[][] = new int[INITIAL_CHUNK_COUNT][];
+    private QName fElementDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
     private int fElementDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
     private DatatypeValidator fElementDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
     private int fElementDeclContentSpecIndex[][] = new int[INITIAL_CHUNK_COUNT][];
@@ -171,12 +171,7 @@ implements XMLContentSpec.Provider {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
 
-        //elementDecl.name.clear();
-        elementDecl.name.prefix = -1;
-        elementDecl.name.rawname = -1;
-
-        elementDecl.name.localpart          = fElementDeclNameIndex[chunk][index];               
-        elementDecl.name.uri                = 0; // ""
+        elementDecl.name.setValues(fElementDeclName[chunk][index]);
         if (fElementDeclType[chunk][index] == -1) {
             elementDecl.type                    = -1;
             elementDecl.list = false;
@@ -263,7 +258,7 @@ implements XMLContentSpec.Provider {
                 contentSpecTree(contentSpecIndex, contentSpec, children);
                 contentModel = new MixedContentModel(children.qname,
                                                      children.type,
-                                                     0, children.length);
+                                                     0, children.length, isDTD());
             }catch(  CMException ex ){
                 ex.printStackTrace();
             }
@@ -301,11 +296,7 @@ implements XMLContentSpec.Provider {
         int chunk = attributeDeclIndex >> CHUNK_SHIFT;
         int index = attributeDeclIndex & CHUNK_MASK;
 
-        //attributeDecl.name.setValues(fAttributeDeclName[chunk][index]);
-        attributeDecl.name.prefix = fAttributeDeclName[chunk][index].prefix;
-        attributeDecl.name.localpart =  fAttributeDeclName[chunk][index].localpart;
-        attributeDecl.name.rawname = fAttributeDeclName[chunk][index].rawname;
-        attributeDecl.name.uri = fAttributeDeclName[chunk][index].uri;
+        attributeDecl.name.setValues(fAttributeDeclName[chunk][index]);
 
         if (fAttributeDeclType[chunk][index] == -1) {
             
@@ -336,7 +327,7 @@ implements XMLContentSpec.Provider {
         int chunk = fElementDeclCount >> CHUNK_SHIFT;
         int index = fElementDeclCount & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
-        fElementDeclNameIndex[chunk][index]               = -1; 
+        fElementDeclName[chunk][index]               = new QName(); 
         fElementDeclType[chunk][index]                    = -1;  
         fElementDeclDatatypeValidator[chunk][index]       = null;
         fElementDeclContentSpecIndex[chunk][index] = -1;
@@ -354,7 +345,7 @@ implements XMLContentSpec.Provider {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
 
-        fElementDeclNameIndex[chunk][index]               = elementDecl.name.localpart;
+        fElementDeclName[chunk][index].setValues(elementDecl.name);
         fElementDeclType[chunk][index]                    = elementDecl.type;
         if (elementDecl.list) {
             fElementDeclType[chunk][index] |= LIST_FLAG;
@@ -425,12 +416,6 @@ implements XMLContentSpec.Provider {
         int attrIndex = attributeDeclIndex &  CHUNK_MASK; 
 
         fAttributeDeclName[attrChunk][attrIndex].setValues(attributeDecl.name);
-        /****
-        fAttributeDeclName[chunk][index].prefix = attributeDecl.name.prefix ;
-        fAttributeDeclName[chunk][index].localpart = attributeDecl.name.localpart  ;
-        fAttributeDeclName[chunk][index].rawname = attributeDecl.name.rawname ;
-        fAttributeDeclName[chunk][index].uri = attributeDecl.name.uri;
-        /****/
 
         fAttributeDeclType[attrChunk][attrIndex]  =  attributeDecl.type;
         if (attributeDecl.list) {
@@ -467,7 +452,21 @@ implements XMLContentSpec.Provider {
 
     }
 
+    protected boolean isDTD() {
+        return false;
+    }
+
     // debugging
+
+    public void printElements(org.apache.xerces.utils.StringPool pool) {
+        int elementDeclIndex = 0;
+        XMLElementDecl elementDecl = new XMLElementDecl();
+        while (getElementDecl(elementDeclIndex++, elementDecl)) {
+            System.out.println("element decl: "+elementDecl.name+
+                               ", "+pool.toString(elementDecl.name.rawname)+
+                               ", "+XMLContentSpec.toString(this, pool, elementDecl.contentSpecIndex));
+        }
+    }
 
     public void printAttributes(int elementDeclIndex) {
         int attributeDeclIndex = getFirstAttributeDeclIndex(elementDeclIndex);
@@ -540,8 +539,8 @@ implements XMLContentSpec.Provider {
             //  simple content model.
             //
 
-            fQName1.setValues(-1, contentSpec.value, -1, contentSpec.otherValue);
-            return new SimpleContentModel(fQName1, null, contentSpec.type);
+            fQName1.setValues(-1, contentSpec.value, contentSpec.value, contentSpec.otherValue);
+            return new SimpleContentModel(fQName1, null, contentSpec.type, isDTD());
         } 
         else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
@@ -561,9 +560,9 @@ implements XMLContentSpec.Provider {
                 //  Its a simple choice or sequence, so we can do a simple
                 //  content model for it.
                 //
-                fQName1.setValues(-1, contentSpecLeft.value, -1, contentSpecLeft.otherValue);
-                fQName2.setValues(-1, contentSpecRight.value, -1, contentSpecRight.otherValue);
-                return new SimpleContentModel(fQName1, fQName2, contentSpec.type);
+                fQName1.setValues(-1, contentSpecLeft.value, contentSpecLeft.value, contentSpecLeft.otherValue);
+                fQName2.setValues(-1, contentSpecRight.value, contentSpecRight.value, contentSpecRight.otherValue);
+                return new SimpleContentModel(fQName1, fQName2, contentSpec.type, isDTD());
             }
         } 
         else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
@@ -583,8 +582,8 @@ implements XMLContentSpec.Provider {
                 //  will check for this repetition. We pass -1 for the unused
                 //  right node.
                 //
-                fQName1.setValues(-1, contentSpecLeft.value, -1, contentSpecLeft.otherValue);
-                return new SimpleContentModel(fQName1, null, contentSpec.type);
+                fQName1.setValues(-1, contentSpecLeft.value, contentSpecLeft.value, contentSpecLeft.otherValue);
+                return new SimpleContentModel(fQName1, null, contentSpec.type, isDTD());
             }
         } 
         else {
@@ -602,7 +601,7 @@ implements XMLContentSpec.Provider {
         CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
 
         // REVISIT: has to be fLeafCount because we convert x+ to x,x*, one more leaf
-        return new DFAContentModel(  cmn, fLeafCount);
+        return new DFAContentModel(  cmn, fLeafCount, isDTD());
     }
 
     private void printSyntaxTree(CMNode cmn){
@@ -681,7 +680,7 @@ implements XMLContentSpec.Provider {
             //  storing it. This makes the positions zero based since we
             //  store first and then increment.
             //
-            fQName1.setValues(-1, contentSpec.value, -1, contentSpec.otherValue);
+            fQName1.setValues(-1, contentSpec.value, contentSpec.value, contentSpec.otherValue);
             nodeRet = new CMLeaf(fQName1, fLeafCount++);
         } 
         else {
@@ -755,7 +754,7 @@ implements XMLContentSpec.Provider {
             }
 
             // save values and return length
-            children.qname[children.length] = new QName(-1, contentSpec.value, -1, contentSpec.otherValue);
+            children.qname[children.length] = new QName(-1, contentSpec.value, contentSpec.value, contentSpec.otherValue);
             children.type[children.length] = contentSpec.type;
             children.length++;
             return;
@@ -792,9 +791,9 @@ implements XMLContentSpec.Provider {
 
     private boolean ensureElementDeclCapacity(int chunk) {
         try {
-            return fElementDeclNameIndex[chunk][0] == 0;
+            return fElementDeclName[chunk][0] == null;
         } catch (ArrayIndexOutOfBoundsException ex) {
-            fElementDeclNameIndex = resize(fElementDeclNameIndex, fElementDeclNameIndex.length * 2);
+            fElementDeclName = resize(fElementDeclName, fElementDeclName.length * 2);
             fElementDeclType = resize(fElementDeclType, fElementDeclType.length * 2);
             fElementDeclDatatypeValidator = resize(fElementDeclDatatypeValidator, fElementDeclDatatypeValidator.length * 2);
             fElementDeclContentSpecIndex = resize(fElementDeclContentSpecIndex, fElementDeclContentSpecIndex.length * 2);
@@ -804,7 +803,7 @@ implements XMLContentSpec.Provider {
         } catch (NullPointerException ex) {
             // ignore
         }
-        fElementDeclNameIndex[chunk] = new int[CHUNK_SIZE];
+        fElementDeclName[chunk] = new QName[CHUNK_SIZE];
         fElementDeclType[chunk] = new int[CHUNK_SIZE];
         fElementDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
         fElementDeclContentSpecIndex[chunk] = new int[CHUNK_SIZE];

@@ -102,6 +102,9 @@ public class MixedContentModel
      */
     private boolean fOrdered;
 
+    /** Boolean to allow DTDs to validate even with namespace support. */
+    private boolean fDTD;
+
     //
     // Constructors
     //
@@ -117,7 +120,7 @@ public class MixedContentModel
     public MixedContentModel(QName childList[],
                              int childListType[],
                              int offset, int length) throws CMException {
-        this(childList, childListType, offset, length, false);
+        this(childList, childListType, offset, length, false, false);
     }
 
     /**
@@ -133,6 +136,23 @@ public class MixedContentModel
                              int childListType[],
                              int offset, int length,
                              boolean ordered) throws CMException {
+        this(childList, childListType, offset, length, ordered, false);
+    }
+
+    /**
+     * Constructs a mixed content model.
+     *
+     * @param count The child count.
+     * @param childList The list of allowed children.
+     * @param ordered True if content must be ordered.
+     *
+     * @exception CMException Thrown if content model can't be built.
+     */
+    public MixedContentModel(QName childList[],
+                             int childListType[],
+                             int offset, int length,
+                             boolean ordered,
+                             boolean dtd) throws CMException {
 
         // Make our own copy now, which is exactly the right size
         fCount = length;
@@ -144,8 +164,8 @@ public class MixedContentModel
         }
         fOrdered = ordered;
 
-    } // <init>(int,QName[],boolean)
-
+    } // <init>(QName[],int[],int,int,boolean,boolean)
+    
     //
     // XMLContentModel methods
     //
@@ -191,9 +211,16 @@ public class MixedContentModel
                 // element must match
                 int type = fChildrenType[inIndex];
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                    if (fChildren[inIndex].uri != children[offset + outIndex].uri &&
-                        fChildren[inIndex].localpart != children[offset + outIndex].localpart) {
-                        return outIndex;
+                    if (fDTD) {
+                        if (fChildren[inIndex].rawname != children[offset + outIndex].rawname) {
+                            return outIndex;
+                        }
+                    }
+                    else {
+                        if (fChildren[inIndex].uri != children[offset + outIndex].uri &&
+                            fChildren[inIndex].localpart != children[offset + outIndex].localpart) {
+                            return outIndex;
+                        }
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
@@ -235,9 +262,16 @@ public class MixedContentModel
                 {
                     int type = fChildrenType[inIndex];
                     if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                        if (curChild.uri == fChildren[inIndex].uri &&
-                            curChild.localpart == fChildren[inIndex].localpart)
-                            break;
+                        if (fDTD) {
+                            if (curChild.rawname == fChildren[inIndex].rawname) {
+                                break;
+                            }
+                        }
+                        else {
+                            if (curChild.uri == fChildren[inIndex].uri &&
+                                curChild.localpart == fChildren[inIndex].localpart)
+                                break;
+                        }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                         int uri = fChildren[inIndex].uri;

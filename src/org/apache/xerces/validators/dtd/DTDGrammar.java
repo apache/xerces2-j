@@ -240,6 +240,7 @@ public class DTDGrammar
         doctypeDecl.setAttribute("systemId", fStringPool.toString(systemId));
         fCurrentElement.appendChild(doctypeDecl);
 
+        //fRootElementQName.setValues(-1, rootElement.rawname, -1, -1);
         fRootElementQName.setValues(rootElement);
 
     } // doctypeDecl(QName,int,int);
@@ -352,9 +353,35 @@ public class DTDGrammar
 
     } // addElementDecl(QName,int,int):int
 
+    /***
+    public int getElementDeclIndex(int localpartIndex, int scopeIndex) {
+        //System.out.println("getElementDeclIndex: "+localpartIndex+", "+scopeIndex);
+        return super.getElementDeclIndex(localpartIndex, scopeIndex);
+    }
+
+    public int getElementDeclIndex(int uriIndex, int localpartIndex, int scopeIndex) {
+        //System.out.println("!!! getElementDeclIndex: "+uriIndex+", "+localpartIndex+", "+scopeIndex);
+        return super.getElementDeclIndex(localpartIndex, -1);
+    }
+    
+    public int getElementDeclIndex(QName element, int scopeIndex) {
+        //System.out.println("getElementDeclIndex: "+element+", "+scopeIndex);
+        return super.getElementDeclIndex(element.rawname, -1);
+    }
+
+    /***/
     public void setElementDeclDTD(int elementDeclIndex, XMLElementDecl elementDecl) {
         super.setElementDecl(elementDeclIndex, elementDecl);
     }
+
+    private XMLContentSpec fTempContentSpec = new XMLContentSpec();
+
+    /***
+    public void setContentSpecLeaf(int contentSpecIndex, QName elementName) {
+        fTempContentSpec.setValues(XMLContentSpec.CONTENTSPECNODE_LEAF, elementName.rawname, -1);
+        super.setContentSpec(contentSpecIndex, fTempContentSpec);
+    }
+    /***/
 
     public void setElementDeclIsExternal(int elementDeclIndex, boolean  isExternal) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
@@ -853,6 +880,10 @@ public class DTDGrammar
      * Called when the internal subset is completely scanned.
      */
     public void internalSubset(int internalSubset) throws Exception {
+    }
+
+    protected boolean isDTD() {
+        return true;
     }
 
     //
