@@ -1867,9 +1867,9 @@ public abstract class BaseMarkupSerializer
      */
     protected DOMError modifyDOMError(String message, short severity, Node node){
             fDOMError.reset();
-            fDOMError.setMessage(message);
-            fDOMError.setSeverity(severity);
-            fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, node, null));
+            fDOMError.fMessage = message;
+            fDOMError.fSeverity = severity;
+            fDOMError.fLocator = new DOMLocatorImpl(-1, -1, -1, node, null);
             return fDOMError;
         
     }
