@@ -69,7 +69,7 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
@@ -260,6 +260,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     private Object fMinExclusive;
     private Object fMinInclusive;
 
+    // optional annotations
+    private XSObjectList fAnnotations = null;
+
     private short fPatternType = SPECIAL_PATTERN_NONE;
 
     // for fundamental facets
@@ -293,14 +296,17 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         this.fBounded = bounded;
         this.fFinite = finite;
         this.fNumeric = numeric;
+        fAnnotations = null;
     }
 
     //Create a new simple type for restriction.
-    protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, String uri, short finalSet, boolean isImmutable) {
+    protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, String uri, short finalSet, boolean isImmutable,
+                XSObjectList annotations) {
         fBase = base;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
+        fAnnotations = annotations;
 
         fVariety = fBase.fVariety;
         fValidationDV = fBase.fValidationDV;
@@ -340,11 +346,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     //Create a new simple type for list.
-    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl itemType, boolean isImmutable) {
+    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl itemType, boolean isImmutable,
+                XSObjectList annotations) {
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
+        fAnnotations = annotations;
 
         fVariety = VARIETY_LIST;
         fItemType = (XSSimpleTypeDecl)itemType;
@@ -359,11 +367,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     //Create a new simple type for union.
-    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl[] memberTypes) {
+    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl[] memberTypes,
+                XSObjectList annotations) {
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
+        fAnnotations = annotations;
 
         fVariety = VARIETY_UNION;
         fMemberTypes = memberTypes;
@@ -383,13 +393,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     //set values for restriction.
-    protected XSSimpleTypeDecl setRestrictionValues(XSSimpleTypeDecl base, String name, String uri, short finalSet) {
+    protected XSSimpleTypeDecl setRestrictionValues(XSSimpleTypeDecl base, String name, String uri, short finalSet, 
+                XSObjectList annotations) {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
         fBase = base;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
+        fAnnotations = annotations;
 
         fVariety = fBase.fVariety;
         fValidationDV = fBase.fValidationDV;
@@ -429,13 +441,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     //set values for list.
-    protected XSSimpleTypeDecl setListValues(String name, String uri, short finalSet, XSSimpleTypeDecl itemType) {
+    protected XSSimpleTypeDecl setListValues(String name, String uri, short finalSet, XSSimpleTypeDecl itemType,
+                XSObjectList annotations) {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
+        fAnnotations = annotations;
 
         fVariety = VARIETY_LIST;
         fItemType = (XSSimpleTypeDecl)itemType;
@@ -450,13 +464,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     //set values for union.
-    protected XSSimpleTypeDecl setUnionValues(String name, String uri, short finalSet, XSSimpleTypeDecl[] memberTypes) {
+    protected XSSimpleTypeDecl setUnionValues(String name, String uri, short finalSet, XSSimpleTypeDecl[] memberTypes,
+                XSObjectList annotations) {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
         fFinalSet = finalSet;
+        fAnnotations = annotations;
 
         fVariety = VARIETY_UNION;
         fMemberTypes = memberTypes;
@@ -1900,9 +1916,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return new StringListImpl(strs, size);
     }
 
-    public XSAnnotation getAnnotation() {
+    public XSObjectList getAnnotations() {
         // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotations;
     }
 
     private void caclFundamentalFacets() {
@@ -2276,6 +2292,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fMinInclusive = null;
 
         fPatternType = SPECIAL_PATTERN_NONE;
+        fAnnotations = null;
 
         // REVISIT: reset for fundamental facets
     }
@@ -2293,5 +2310,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     public String toString() {
         return this.fTargetNamespace+"," +this.fTypeName;
     }
+
 } // class XSSimpleTypeDecl
 
