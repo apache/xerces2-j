@@ -325,8 +325,7 @@ public abstract class XMLScanner
             }
             fEntityScanner.skipSpaces();
         }
-        if ((scanningTextDecl && state != STATE_DONE) ||
-            !(state == STATE_STANDALONE || state == STATE_DONE)) {
+        if (scanningTextDecl && state != STATE_DONE) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                        "MorePseudoAttributes", 
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
