@@ -1814,6 +1814,7 @@ public final class XMLDTDScanner {
                 catch (ArrayIndexOutOfBoundsException ae) {
                     int[] newArray = new int[valueSeen.length*2];
                     System.arraycopy(valueSeen,0,newArray,0,valueSeen.length);
+                    valueSeen = newArray;
                     valueSeen[valueCount] = valueIndex;
                 }
                 valueCount++;
