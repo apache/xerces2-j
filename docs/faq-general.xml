@@ -100,8 +100,8 @@ and xni.parser.PSVIConfiguration.
       <li>Latin 0 EBCDIC</li>
       <li>EBCDIC Arabic (ebcdic-cp-ar1)</li>
      </ul>
-     <note>UCS-4 is not yet supported, but it is hoped that support will be available soon.</note>
    </ul>
+   <note>UCS-4 is not yet supported, but it is hoped that support will be available soon.</note>
   </a>
  </faq>
 </faqs>
