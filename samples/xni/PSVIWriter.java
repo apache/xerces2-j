@@ -844,13 +844,10 @@ implements XMLComponent, XMLDocumentFilter {
                 printElement("psv:validity","invalid");
             }
             //revisit
-            Enumeration errorCode = elemPSVI.getErrorCodes();
+            StringList errorCode = elemPSVI.getErrorCodes();
             if (errorCode != null) {
-                fErrorBuffer.append(errorCode.nextElement());
-                
-                while (errorCode.hasMoreElements()) {
-                    fErrorBuffer.append(" ");
-                    fErrorBuffer.append(errorCode.nextElement());
+                for (int i=0;i<errorCode.getLength();i++) {
+                    fErrorBuffer.append(errorCode.item(i));
                 }
                 printElement("psv:schemaErrorCode",fErrorBuffer.toString());
                 fErrorBuffer.setLength(0);
@@ -891,17 +888,14 @@ implements XMLComponent, XMLDocumentFilter {
                 printElement("psv:validity","invalid");
             }
 
-            //REVISIT
-            Enumeration errorCode = attrPSVI.getErrorCodes();
+            StringList errorCode = attrPSVI.getErrorCodes();
             if (errorCode == null) {
                 printElement("psv:schemaErrorCode","");
             }
             else {
-                fErrorBuffer.append(errorCode.nextElement());
-                while(errorCode.hasMoreElements()) {
-                    fErrorBuffer.append(" ");
-                    fErrorBuffer.append(errorCode.nextElement());
-                }
+                for (int i=0;i<errorCode.getLength();i++) {
+                    fErrorBuffer.append(errorCode.item(i));
+                }                
                 printElement("psv:schemaErrorCode",fErrorBuffer.toString());
                 fErrorBuffer.setLength(0);
 
