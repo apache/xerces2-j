@@ -149,6 +149,9 @@ public class Counter
     /** Number of characters of tags. */
     protected long fTagCharacters;
 
+    /** Number of other content characters for the "tagginess" calculation. */
+    protected long fOtherCharacters;
+
     //
     // Constructors
     //
@@ -188,7 +191,7 @@ public class Counter
         out.print(" chars)");
         if (tagginess) {
             out.print(' ');
-            long totalCharacters = fTagCharacters 
+            long totalCharacters = fTagCharacters + fOtherCharacters
                                  + fCharacters + fIgnorableWhitespace;
             long tagValue = fTagCharacters * 100 / totalCharacters;
             out.print(tagValue);
@@ -212,6 +215,7 @@ public class Counter
         fCharacters          = 0;
         fIgnorableWhitespace = 0;
         fTagCharacters       = 0;
+        fOtherCharacters     = 0;
 
     } // startDocument(String,String)
 
@@ -230,6 +234,7 @@ public class Counter
                 fTagCharacters += attrs.getName(i).length();
                 fTagCharacters++; // '='
                 fTagCharacters++; // open quote
+                fOtherCharacters += attrs.getValue(i).length();
                 fTagCharacters++; // close quote
             }
         }
@@ -252,6 +257,7 @@ public class Counter
                 fTagCharacters += attrs.getName(i).length();
                 fTagCharacters++; // '='
                 fTagCharacters++; // open quote
+                fOtherCharacters += attrs.getValue(i).length();
                 fTagCharacters++; // close quote
             }
         }
@@ -281,6 +287,7 @@ public class Counter
         fTagCharacters += target.length();
         if (data.length > 0) {
             fTagCharacters++; // space
+            fOtherCharacters += data.length;
         }
         fTagCharacters += 2; // "?>"
     } // processingInstruction(String,XMLString)
