@@ -110,8 +110,6 @@ public class DocumentBuilderImpl extends DocumentBuilder {
 
         // Validation
         validating = dbf.isValidating();
-        String validation = "http://xml.org/sax/features/validation";
-        domParser.setFeature(validation, validating);
 
         // If validating, provide a default ErrorHandler that prints
         // validation errors with a warning telling the user to set an
@@ -120,7 +118,7 @@ public class DocumentBuilderImpl extends DocumentBuilder {
             setErrorHandler(new DefaultValidationErrorHandler());
         }
 
-        // "namespaceAware" ==  SAX Namespaces feature
+        // "namespaceAware" == SAX Namespaces feature
         namespaceAware = dbf.isNamespaceAware();
         domParser.setFeature("http://xml.org/sax/features/namespaces",
                              namespaceAware);
@@ -155,26 +153,43 @@ public class DocumentBuilderImpl extends DocumentBuilder {
     private void setDocumentBuilderFactoryAttributes(Hashtable dbfAttrs)
         throws SAXNotSupportedException, SAXNotRecognizedException
     {
-        if (dbfAttrs != null) {
-            for (Enumeration e = dbfAttrs.keys(); e.hasMoreElements();) {
-                String name = (String)e.nextElement();
-                Object val = dbfAttrs.get(name);
-                if (val instanceof Boolean) {
-                    // Assume feature
-                    domParser.setFeature(name, ((Boolean)val).booleanValue());
-                } else {
-                    // Assume property
-                    if (JAXP_SCHEMA_LANGUAGE.equals(name)
-                            && W3C_XML_SCHEMA.equals(val)) {
-                        // Translate JAXP schemaLanguage property to Xerces
-                        // validation feature
+        if (dbfAttrs == null) {
+            // Nothing to do
+            return;
+        }
+
+        for (Enumeration e = dbfAttrs.keys(); e.hasMoreElements();) {
+            String name = (String)e.nextElement();
+            Object val = dbfAttrs.get(name);
+            if (val instanceof Boolean) {
+                // Assume feature
+                domParser.setFeature(name, ((Boolean)val).booleanValue());
+            } else {
+                // Assume property
+
+                if (JAXP_SCHEMA_LANGUAGE.equals(name)) {
+                    if ("DTD".equals(val)) {
+                        domParser.setFeature(
+                            Constants.SAX_FEATURE_PREFIX +
+                            Constants.VALIDATION_FEATURE, validating);
                         domParser.setFeature(
                             Constants.XERCES_FEATURE_PREFIX +
-                            Constants.SCHEMA_VALIDATION_FEATURE, true);
+                            Constants.SCHEMA_VALIDATION_FEATURE, false);
+                    } else if (W3C_XML_SCHEMA.equals(val)) {
+                        domParser.setFeature(
+                            Constants.SAX_FEATURE_PREFIX +
+                            Constants.VALIDATION_FEATURE, false);
+                        domParser.setFeature(
+                            Constants.XERCES_FEATURE_PREFIX +
+                            Constants.SCHEMA_VALIDATION_FEATURE,
+                            validating);
                     } else {
-                        // Assume it's a Xerces property
+                        // In case Xerces parser supports other values
                         domParser.setProperty(name, val);
                     }
+                } else {
+                    // Assume Xerces property
+                    domParser.setProperty(name, val);
                 }
             }
         }

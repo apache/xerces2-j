@@ -91,6 +91,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
 
     private boolean validating = false;
     private boolean namespaceAware = false;
+    private String schemaLanguage = "DTD";
     
     /**
      * Create a SAX parser with the associated features
@@ -111,17 +112,16 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
 
         // Validation
         validating = spf.isValidating();
-        String validation = "http://xml.org/sax/features/validation";
 
         // If validating, provide a default ErrorHandler that prints
         // validation errors with a warning telling the user to set an
-        // ErrorHandler.  Note: this does not handle all cases.
+        // ErrorHandler.
         if (validating) {
             xmlReader.setErrorHandler(new DefaultValidationErrorHandler());
         }
 
-        // Allow SAX parser to use a different ErrorHandler if it wants to
-        xmlReader.setFeature(validation, validating);
+        xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
+                             Constants.VALIDATION_FEATURE, validating);
 
         // "namespaceAware" == SAX Namespaces feature
         // Note: there is a compatibility problem here with default values:
@@ -194,13 +194,26 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public void setProperty(String name, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        if (DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE.equals(name)
-                && DocumentBuilderImpl.W3C_XML_SCHEMA.equals(value)) {
-            // Translate JAXP schemaLanguage property to Xerces
-            // validation feature
-            xmlReader.setFeature(
-                Constants.XERCES_FEATURE_PREFIX +
-                Constants.SCHEMA_VALIDATION_FEATURE, true);
+        if (DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE.equals(name)) {
+            // JAXP 1.2 support
+            if (DocumentBuilderImpl.W3C_XML_SCHEMA.equals(value)) {
+                schemaLanguage = DocumentBuilderImpl.W3C_XML_SCHEMA;
+                xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
+                                     Constants.VALIDATION_FEATURE, false);
+                xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
+                                     Constants.SCHEMA_VALIDATION_FEATURE,
+                                     validating);
+            } else if ("DTD".equals(value)) {
+                schemaLanguage = "DTD";
+                xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
+                                     Constants.VALIDATION_FEATURE, validating);
+                xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
+                                     Constants.SCHEMA_VALIDATION_FEATURE,
+                                     false);
+            } else {
+                throw new SAXNotSupportedException(
+                    "Unsupported schema language");
+            }
         } else {
             xmlReader.setProperty(name, value);
         }
@@ -213,6 +226,11 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public Object getProperty(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        return xmlReader.getProperty(name);
+        if (DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE.equals(name)) {
+            // JAXP 1.2 support
+            return schemaLanguage;
+        } else {
+            return xmlReader.getProperty(name);
+        }
     }
 }

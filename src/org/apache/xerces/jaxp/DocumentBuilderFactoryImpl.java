@@ -78,7 +78,13 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     private Hashtable attributes;
 
     public DocumentBuilderFactoryImpl() {
-   	 
+        // Set the default schema language to DTD
+        try {
+            setAttribute(DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE, "DTD");
+        } catch (IllegalArgumentException x) {
+            // Assume this is b/c parser does not support this feature and
+            // so we just ignore it
+        }
     }
 
     /**
@@ -125,8 +131,15 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     public Object getAttribute(String name)
         throws IllegalArgumentException
     {
-        DOMParser domParser = null;
+        // See if it's in the attributes Hashtable
+        if (attributes != null) {
+            Object val = attributes.get(name);
+            if (val != null) {
+                return val;
+            }
+        }
 
+        DOMParser domParser = null;
         try {
             // We create a dummy DocumentBuilderImpl in case the attribute
             // name is not one that is in the attributes hashtable.
