@@ -69,6 +69,7 @@ import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.ParserConfigurationSettings;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
@@ -202,9 +203,13 @@ public class XIncludeHandler
     protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
-    /** Property identifier: grammar pool . */
+    /** Property identifier: entity resolver. */
     protected static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+
+    /** property identifier: security manager. */
+    protected static final String SECURITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES =
@@ -214,12 +219,11 @@ public class XIncludeHandler
     private static final Boolean[] FEATURE_DEFAULTS = { Boolean.TRUE };
 
     /** Recognized properties. */
-
     private static final String[] RECOGNIZED_PROPERTIES =
-        { ERROR_REPORTER, ENTITY_RESOLVER };
+        { ERROR_REPORTER, ENTITY_RESOLVER, SECURITY_MANAGER };
 
     /** Property defaults. */
-    private static final Object[] PROPERTY_DEFAULTS = { null, null };
+    private static final Object[] PROPERTY_DEFAULTS = { null, null, null };
 
     // instance variables
 
@@ -247,6 +251,7 @@ public class XIncludeHandler
     protected XIncludeNamespaceSupport fNamespaceContext;
     protected XMLErrorReporter fErrorReporter;
     protected XMLEntityResolver fEntityResolver;
+    protected SecurityManager fSecurityManager;
 
     // these are needed for XML Base processing
     protected XMLResourceIdentifier fCurrentBaseURI;
@@ -353,6 +358,7 @@ public class XIncludeHandler
         catch (XMLConfigurationException e) {
         }
 
+        // Get error reporter.
         try {
             XMLErrorReporter value =
                 (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
@@ -367,6 +373,7 @@ public class XIncludeHandler
             fErrorReporter = null;
         }
 
+        // Get entity resolver.
         try {
             XMLEntityResolver value =
                 (XMLEntityResolver)componentManager.getProperty(
@@ -381,6 +388,23 @@ public class XIncludeHandler
         }
         catch (XMLConfigurationException e) {
             fEntityResolver = null;
+        }
+		
+        // Get security manager.
+        try {
+            SecurityManager value =
+                (SecurityManager)componentManager.getProperty(
+                    SECURITY_MANAGER);
+
+            if (value != null) {
+                fSecurityManager = value;
+                if (fChildConfig != null) {
+                    fChildConfig.setProperty(SECURITY_MANAGER, value);
+                }
+            }
+        }
+        catch (XMLConfigurationException e) {
+            fSecurityManager = null;
         }
 
         fSettings = new ParserConfigurationSettings();
@@ -461,6 +485,13 @@ public class XIncludeHandler
                 fChildConfig.setProperty(propertyId, value);
             }
         }
+        if (propertyId.equals(SECURITY_MANAGER)) {
+            fSecurityManager = (SecurityManager)value;
+            if (fChildConfig != null) {
+                fChildConfig.setProperty(propertyId, value);
+            }
+        }        
+        
     } // setProperty(String,Object)
 
     /** 
@@ -1171,8 +1202,11 @@ public class XIncludeHandler
                         ObjectFactory.findClassLoader(),
                         true);
 
-                // use the same error reporter
-                fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
+                // use the same error reporter, entity resolver, and security manager.
+                if (fErrorReporter != null) fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
+                if (fEntityResolver != null) fChildConfig.setProperty(ENTITY_RESOLVER, fEntityResolver);
+                if (fSecurityManager != null) fChildConfig.setProperty(SECURITY_MANAGER, fSecurityManager);                
+                
                 // use the same namespace context
                 fChildConfig.setProperty(
                     Constants.XERCES_PROPERTY_PREFIX
