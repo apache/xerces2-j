@@ -651,4 +651,103 @@ Copyright:
     <delete dir="${build.dir}"/>
   </target>
 
+  <!-- =================================================================== -->
+  <!-- Creates the DTD-only implementation class package                                           -->
+  <!-- =================================================================== -->
+  <target name="dtdjar" depends="dtdcompile">
+    <jar jarfile="${build.dir}/${jar.parser}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="org/apache/**, META-INF/**"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the DTD-only source directory                                       -->
+  <!-- =================================================================== -->
+  <target name="dtdcompile" depends="dtdprepare-src">
+    <copy todir="${build.dest}">
+      <fileset dir="${build.src}"
+        includes="**/*.res, **/*.properties">
+      </fileset>
+    </copy>
+
+    <javac srcdir="${build.src}"
+           destdir="${build.dest}"
+           debug="${debug}"
+           deprecation="${deprecation}"
+           optimize="${optimize}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Compiles the DTD-only source code                                            -->
+  <!-- =================================================================== -->
+  <target name="dtdprepare-src" depends="prepare">
+    <!-- create directories -->
+    <mkdir dir="${build.src}"/>
+    <mkdir dir="${build.dest}"/>
+    <mkdir dir="${build.dest}/META-INF"/>
+    <mkdir dir="${build.dest}/META-INF/services"/>
+
+    <copy file="${src.dir}/org/apache/xerces/jaxp/javax.xml.parsers.DocumentBuilderFactory"
+      tofile="${build.dest}/META-INF/services/javax.xml.parsers.DocumentBuilderFactory"/>
+
+    <copy file="${src.dir}/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory"
+      tofile="${build.dest}/META-INF/services/javax.xml.parsers.SAXParserFactory"/>
+
+    <copy file="${src.dir}/org/apache/xerces/parsers/org.xml.sax.driver"
+      tofile="${build.dest}/META-INF/services/org.xml.sax.driver"/>
+
+    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration"
+      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
+
+    <!-- copy src files -->
+    <copy todir="${build.src}">
+        <fileset 
+            dir="${src.dir}"
+            includes="**/Makefile, **/Makefile.incl, javax/**, org/**" 
+            excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
+                       **/SchemaImporter.java **/RevalidatingDOMParser.java
+                       **/DatatypeContentModel.java **/ComplexTypeInfo.java
+                       **/DTDImporter.java 
+                       **/v1/** **/v2/**
+                        **/RevalidatingDOMParser.java 
+                        org/apache/xerces/impl/xs/**
+                        org/apache/xerces/impl/dv/xs/**
+                        org/apache/xerces/impl/xs/identity/**
+                        org/apache/xerces/impl/xs/traversers/**
+                        org/apache/xerces/impl/xs/models/**
+                        org/apache/xerces/impl/xs/util/**
+                        org/apache/xerces/impl/xs/dom/**
+                        org/apache/xerces/impl/xpath/**
+                        org/apache/xerces/impl/xpath/regex/**
+                        org/apache/xerces/impl/dv/XS*.java
+                        org/apache/xerces/impl/dv/Schema*.java
+                        org/apache/xerces/impl/dv/ValidatedInfo.java
+                        org/apache/xerces/impl/msg/XMLSchema**
+                        org/apache/xerces/impl/validation/XMLGrammarPoolImpl.java
+                        org/apache/xerces/parsers/DOMASBuilderImpl.java
+                        org/apache/xerces/parsers/StandardParserConfiguration.java
+                        org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
+                        org/apache/xerces/parsers/CachingParserPool.java
+                        org/apache/xerces/dom/ASModelImpl.java
+                        org/apache/xerces/dom/ASDOMImplementationImpl.java
+           ">
+        </fileset>
+    </copy>
+    
+    <!-- substitute tokens as needed -->
+    <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
+             token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds xercesImpl (DTD-only), xmlParserAPIs and sample jar files                             -->
+  <!-- =================================================================== -->
+  <target name="dtdjars" depends="dtdjar, sampjar, apijar">
+  </target>
+
+
 </project>
