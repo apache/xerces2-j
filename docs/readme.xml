@@ -50,11 +50,11 @@
     and Range</jump> Recommendations
    </li>
    <li>
-    <jump href='http://www.megginson.com/SAX/'>Simple API for XML</jump>
+    <jump href='http://sax.sourceforge.net/'>Simple API for XML</jump>
     (SAX) 2.0
-    <jump href='http://www.megginson.com/SAX/Java/sax2.zip'>Core</jump>,
+    <jump href='http://prdownloads.sourceforge.net/sax/sax2-r2pre2.jar'>Core</jump>,
     and
-    <jump href='http://www.megginson.com/Software/sax2-ext-1.0.zip'>Extension</jump>
+    <jump href='http://prdownloads.sourceforge.net/sax/sax2-ext-1.0.zip'>Extension</jump>
    </li>
    <li>
     <jump href='http://java.sun.com/xml/xml_jaxp.html'>Java APIs for 
