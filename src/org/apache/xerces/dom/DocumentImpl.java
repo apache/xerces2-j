@@ -155,8 +155,7 @@ public class DocumentImpl
     /** Experimental constructor. */
     public DocumentImpl(boolean grammarAccess) {
         super(null,null,null);
-        // REVISIT: Documents don't have owner documents. -Ac
-        ownerDocument = this;
+        ownerDocument = null;
         allowGrammarAccess = grammarAccess;
     }
 
