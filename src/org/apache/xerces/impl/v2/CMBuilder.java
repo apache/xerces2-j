@@ -108,20 +108,20 @@ public class CMBuilder {
         //if (cmValidator != null)
         //    return cmValidator;
         
-        if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED && 
-            particle == null) {
-            // create special content model for mixed with no element content
-            cmValidator = new XSMixedCM();
-        }
-        else {
         
-        
-        particle = expandParticleTree( (XSParticleDecl)particle);
+        if (particle != null)
+            particle = expandParticleTree( (XSParticleDecl)particle);
+
         // REVISIT: should we expand?? or throw away the expanded tree??
         //typeDecl.fParticle
 
         // And create the content model according to the spec type
-        if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+
+        if (particle == null) {
+            // create special content model for no element content
+            cmValidator = new XSEmptyCM();
+        }
+        else if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                //
               // Create a child model as
               // per the element-only case              
@@ -139,7 +139,6 @@ public class CMBuilder {
         else {
             throw new RuntimeException("Unknown content type for a element decl "
                                        + "in getElementContentModelValidator() in Grammar class");
-        }
         }
         // Add the new model to the content model for this element
         typeDecl.fCMValidator = cmValidator;
@@ -179,11 +178,18 @@ public class CMBuilder {
 
             //REVISIT: look at uri and switch grammar if necessary
             left =  expandParticleTree( (XSParticleDecl)left);
+            if (right != null) 
+                right =  expandParticleTree( (XSParticleDecl)right);
+            
+            // At this point, by expanding the particle tree, we may have a null left or right
+            if (left==null && right==null) 
+                return null;
+          
+            if (left == null)
+                return expandContentModel((XSParticleDecl)right, minOccurs, maxOccurs);
 
             if (right == null)
                 return expandContentModel((XSParticleDecl)left, minOccurs, maxOccurs);
-
-            right =  expandParticleTree( (XSParticleDecl)right);
 
             // When checking Unique Particle Attribution, we always create new
             // new node to store different name for different groups
@@ -195,6 +201,9 @@ public class CMBuilder {
             particle.fValue = left;
             particle.fOtherValue = right;
             return expandContentModel((XSParticleDecl)particle, minOccurs, maxOccurs);
+        }
+        else if (type == XSParticleDecl.PARTICLE_EMPTY) {
+            return null;
         }
         else {
             // When checking Unique Particle Attribution, we have to rename
