@@ -169,6 +169,18 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (attribute.fType instanceof IDDatatypeValidator) {
                 reportSchemaError ("a-props-correct.3", new Object[]{nameAtt});
             }
+
+            // check 3.5.6 constraint
+            // Attribute Use Correct
+            // 2 If the {attribute declaration} has a fixed {value constraint}, then if the attribute use itself has a {value constraint}, it must also be fixed and its value must match that of the {attribute declaration}'s {value constraint}.
+            if (attrUse.fAttrDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE &&
+                attrUse.fConstraintType != XSAttributeDecl.NO_CONSTRAINT) {
+                if (attrUse.fConstraintType != XSAttributeDecl.FIXED_VALUE ||
+                    attrUse.fAttrDecl.fType.compare((String)attrUse.fAttrDecl.fDefault,
+                                                    (String)attrUse.fDefault) != 0) {
+                    reportSchemaError ("au-props-correct.2", new Object[]{nameAtt});
+                }
+            }
         }
 
         return attrUse;
