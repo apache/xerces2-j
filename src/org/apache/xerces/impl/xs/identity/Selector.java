@@ -250,10 +250,11 @@ public class Selector {
             super.startElement(element, attributes);
             fElementDepth++;
             // activate the fields, if selector is matched
-            int matched = isMatched();
+            //int matched = isMatched();
 
-            if ((fMatchedDepth == -1 && ((matched & MATCHED) == MATCHED)) ||
-                    ((matched & MATCHED_DESCENDANT) == MATCHED_DESCENDANT)) {
+            if (isMatched()) {
+/*            (fMatchedDepth == -1 && ((matched & MATCHED) == MATCHED)) ||
+                    ((matched & MATCHED_DESCENDANT) == MATCHED_DESCENDANT)) { */
                 fMatchedDepth = fElementDepth;
                 fFieldActivator.startValueScopeFor(fIdentityConstraint, fInitialDepth);
                 int count = fIdentityConstraint.getFieldCount();

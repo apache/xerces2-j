@@ -172,13 +172,16 @@ public class XPathMatcher {
      * Returns value of first member of fMatched that
      * is nonzero.  
      */
-    public int isMatched() {
+    public boolean isMatched() {
         // xpath has been matched if any one of the members of the union have matched.
-        for (int i=0; i < fLocationPaths.length; i++)
-            if (((fMatched[i] & MATCHED) == MATCHED) && 
-                    ((fMatched[i] & MATCHED_DESCENDANT_PREVIOUS) != MATCHED_DESCENDANT_PREVIOUS)) 
-                return fMatched[i];
-        return 0;
+        for (int i=0; i < fLocationPaths.length; i++) 
+            if (((fMatched[i] & MATCHED) == MATCHED) 
+                    && ((fMatched[i] & MATCHED_DESCENDANT_PREVIOUS) != MATCHED_DESCENDANT_PREVIOUS) 
+                    && ((fNoMatchDepth[i] == 0)
+                    || ((fMatched[i] & MATCHED_DESCENDANT) == MATCHED_DESCENDANT))) 
+                return true;
+
+        return false;
     } // isMatched():int
 
     //
