@@ -206,7 +206,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Compiles the samples                                                -->
   <!-- =================================================================== -->
-  <target name="samples" depends="jar">
+  <target name="samples" depends="compile">
     <mkdir dir="${build.samples}"/>
     <copy todir="${build.samples}" >
         <fileset dir="${samples.dir}" />
