@@ -98,58 +98,25 @@ implements DOMImplementation, DOMImplementationLS {
     // Data
     //
 
+
+    DOMRevalidationHandler fDOMRevalidator = null;
+
+    boolean free = true;
+
     // static
 
     /** Dom implementation singleton. */
     static CoreDOMImplementationImpl singleton = new CoreDOMImplementationImpl();
     
-    DOMRevalidationHandler fDOMRevalidator = null;
-
-    boolean free = true;
 
     //
     // Public methods
     //
 
     /** NON-DOM: Obtain and return the single shared object */
-    static DOMImplementation getDOMImplementation() {
+    public static DOMImplementation getDOMImplementation() {
         return singleton;
     }  
-
-
-    /** NON-DOM */
-    synchronized DOMRevalidationHandler getValidator (String schemaType){
-        // REVISIT: implement a pool of validators to avoid long
-        //          waiting for several threads
-        //          implement retrieving grammar based on schemaType
-        if (fDOMRevalidator == null) {
-            fDOMRevalidator = new XMLSchemaValidator();
-        }
-        while (!isFree()) {
-            try { 
-                wait();
-            }
-            catch (InterruptedException e){
-                return new XMLSchemaValidator();
-            }
-        }
-        free = false;
-        return fDOMRevalidator;        
-    }
-
-    synchronized void releaseValidator(String schemaType){
-        // REVISIT: implement releasing grammar base on the schema type
-        notifyAll();
-        free = true;
-
-    }
-
-
-
-
-    final synchronized boolean isFree(){
-        return free;
-    }
 
 
     //
@@ -278,6 +245,46 @@ implements DOMImplementation, DOMImplementationLS {
     public DOMInputSource createDOMInputSource() {
         return new DOMInputSourceImpl();
     }
+
+
+
+    //
+    // Protected methods
+    //
+    /** NON-DOM */
+    synchronized DOMRevalidationHandler getValidator (String schemaType){
+        // REVISIT: implement a pool of validators to avoid long
+        //          waiting for several threads
+        //          implement retrieving grammar based on schemaType
+        if (fDOMRevalidator == null) {
+            fDOMRevalidator = new XMLSchemaValidator();
+        }
+        while (!isFree()) {
+            try { 
+                wait();
+            }
+            catch (InterruptedException e){
+                return new XMLSchemaValidator();
+            }
+        }
+        free = false;
+        return fDOMRevalidator;        
+    }
+    
+    /** NON-DOM */
+    synchronized void releaseValidator(String schemaType){
+        // REVISIT: implement releasing grammar base on the schema type
+        notifyAll();
+        free = true;
+
+    }
+    
+    /** NON-DOM */
+    final synchronized boolean isFree(){
+        return free;
+    }
+
+
 
 
 } // class DOMImplementationImpl
