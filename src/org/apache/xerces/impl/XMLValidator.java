@@ -2736,7 +2736,7 @@ public class XMLValidator
 
     /** Factory method for creating a DTD grammar. */
     protected DTDGrammar createDTDGrammar() {
-        return new DTDGrammar();
+        return new DTDGrammar(fSymbolTable);
     } // createDTDGrammar():DTDGrammar
 
 } // class XMLValidator

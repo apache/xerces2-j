@@ -59,14 +59,15 @@ package org.apache.xerces.impl.validation.grammars;
 
 import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.GrammarPool;
-
-import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.validation.XMLContentSpec;
 import org.apache.xerces.impl.validation.DatatypeValidator;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.impl.validation.XMLAttributeDecl;
 import org.apache.xerces.impl.validation.ContentModelValidator;
 import org.apache.xerces.impl.validation.XMLElementDecl;
+import org.apache.xerces.util.SymbolTable;
+
+import org.apache.xerces.xni.QName;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -139,28 +140,10 @@ public class SchemaGrammar
     // Constructors
     //
 
-    /**
-     * 
-     */
-    public SchemaGrammar() {
-    }
-
-    /**
-     * 
-     * 
-     * @param grammarDocument 
-     */
-    public SchemaGrammar(Document grammarDocument) {
-    }
-
-    /**
-     * 
-     * 
-     * @param grammarDocument 
-     * @param grammarPool 
-     */
-    public SchemaGrammar(Document grammarDocument, GrammarPool grammarPool) {
-    }
+    /** Default constructor. */
+    public SchemaGrammar(SymbolTable symbolTable) {
+        super(symbolTable);
+    } // <init>(SymbolTable)
 
     //
     // Public methods

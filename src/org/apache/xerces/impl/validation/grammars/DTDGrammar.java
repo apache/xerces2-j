@@ -73,6 +73,8 @@ import org.apache.xerces.impl.validation.XMLSimpleType;
 import org.apache.xerces.impl.validation.XMLContentSpec;
 import org.apache.xerces.impl.validation.DatatypeValidator;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
+import org.apache.xerces.util.SymbolTable;
+
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
@@ -206,9 +208,10 @@ public class DTDGrammar
     //
 
     /** Default constructor. */
-    public DTDGrammar() {
+    public DTDGrammar(SymbolTable symbolTable) {
+        super(symbolTable);
         setTargetNamespace("");
-    } // <init>()
+    } // <init>(SymbolTable)
 
     //
     // Public methods

@@ -153,6 +153,14 @@ public abstract class XMLDocumentParser
         this(new SymbolTable(), new GrammarPool());
     } // <init>()
 
+    /** 
+     * Constructs a document parser using the specified symbol table
+     * and a default grammar pool.
+     */
+    protected XMLDocumentParser(SymbolTable symbolTable) {
+        this(symbolTable, new GrammarPool());
+    } // <init>(SymbolTable)
+
     /**
      * Constructor allowing to specify the symbol table and grammar pool 
      * to use. The symbol table and grammar pool are specified together

@@ -133,9 +133,6 @@ public class XMLDTDScanner
     /** fErrorReporter */
     protected XMLErrorReporter fErrorReporter;
 
-    /** fGrammarPool */
-    protected GrammarPool fGrammarPool;
-
     /** fDTDHandler */
     protected XMLDTDHandler fDTDHandler;
 
@@ -330,9 +327,6 @@ public class XMLDTDScanner
 
 
         // Xerces properties
-        fGrammarPool = (GrammarPool)
-            componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
-                                         + Constants.GRAMMAR_POOL_PROPERTY);
         fErrorReporter = (XMLErrorReporter)
             componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
                                          + Constants.ERROR_REPORTER_PROPERTY);
@@ -375,16 +369,6 @@ public class XMLDTDScanner
         throws SAXNotRecognizedException, SAXNotSupportedException {
         
         super.setProperty(propertyId, value);
-
-        // Xerces properties
-        if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property =
-               propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.GRAMMAR_POOL_PROPERTY)) {
-                fGrammarPool = (GrammarPool)value;
-            }
-            return;
-        }
 
     } // setProperty
 

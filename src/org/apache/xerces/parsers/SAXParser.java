@@ -92,8 +92,7 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class SAXParser
     extends XMLDocumentParser
-    implements XMLDTDHandler, // XNI
-               Parser, XMLReader // SAX1, SAX2
+    implements Parser, XMLReader // SAX1, SAX2
     {
 
     //

@@ -109,14 +109,11 @@ public class NamespaceSupport
 
     // symbols
 
-    /** Symbol: "". */
-    private String fEmptySymbol;
-
     /** Symbol: "xml". */
-    private String fXmlSymbol;
+    protected String fXmlSymbol;
 
     /** Symbol: "xmlns". */
-    private String fXmlnsSymbol;
+    protected String fXmlnsSymbol;
 
     //
     // Constructors
@@ -125,6 +122,25 @@ public class NamespaceSupport
     /** Default constructor. */
     public NamespaceSupport() {
     } // <init>()
+
+    /** 
+     * Constructs a namespace context object and initializes it with
+     * the prefixes declared in the specified context.
+     */
+    public NamespaceSupport(NamespaceContext context) {
+        while (context != null) {
+            int count = context.getDeclaredPrefixCount();
+            for (int i = 0; i < count; i++) {
+                String prefix = context.getDeclaredPrefixAt(i);
+                String uri = getURI(prefix);
+                if (uri == null) {
+                    uri = context.getURI(prefix);
+                    declarePrefix(prefix, uri);
+                }
+            }
+            context = context.getParentContext();
+        }
+    } // <init>(NamespaceContext)
 
     //
     // Public methods
@@ -141,7 +157,6 @@ public class NamespaceSupport
     public void reset(SymbolTable symbolTable) {
 
         // save symbols
-        fEmptySymbol = symbolTable.addSymbol("");
         fXmlSymbol = symbolTable.addSymbol("xml");
         fXmlnsSymbol = symbolTable.addSymbol("xmlns");
 

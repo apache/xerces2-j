@@ -57,9 +57,9 @@
 
 package org.apache.xerces.impl.validation;
 
-import java.util.Hashtable;
 import java.lang.Integer;
-import org.apache.xerces.xni.QName;
+import java.util.Hashtable;
+
 import org.apache.xerces.impl.validation.XMLAttributeDecl;
 import org.apache.xerces.impl.validation.XMLNotationDecl;
 import org.apache.xerces.impl.validation.XMLEntityDecl;
@@ -72,6 +72,9 @@ import org.apache.xerces.impl.validation.models.CMBinOp;
 import org.apache.xerces.impl.validation.models.DFAContentModel;
 import org.apache.xerces.impl.validation.models.MixedContentModel;
 import org.apache.xerces.impl.validation.models.SimpleContentModel;
+import org.apache.xerces.util.SymbolTable;
+
+import org.apache.xerces.xni.QName;
 
 /**
  * A generic grammar for use in validating XML documents. The Grammar
@@ -126,6 +129,9 @@ public abstract class Grammar {
     //
     // Data
     //
+
+    /** Symbol table. */
+    private SymbolTable fSymbolTable;
 
     /** Target namespace of grammar. */
     private String fTargetNamespace;
@@ -254,8 +260,9 @@ public abstract class Grammar {
     //
 
     /** Default constructor. */
-    protected Grammar() {
-    } // <init>()
+    protected Grammar(SymbolTable symbolTable) {
+        fSymbolTable = symbolTable;
+    } // <init>(SymbolTable)
 
     //
     // Public methods
@@ -263,6 +270,11 @@ public abstract class Grammar {
 
     /** Returns true if this grammar is namespace aware. */
     public abstract boolean isNamespaceAware();
+
+    /** Returns the symbol table. */
+    public SymbolTable getSymbolTable() {
+        return fSymbolTable;
+    } // getSymbolTable():SymbolTable
 
     /** Returns this grammar's target namespace. */
     public String getTargetNamespace() {
