@@ -186,7 +186,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected final static short COMMENTS            = 0x1<<5;
     protected final static short VALIDATE            = 0x1<<6;
     protected final static short PSVI                = 0x1<<7;
-
+    protected final static short WELLFORMED          = 0x1<<8;
     // components
 
     /** Symbol table. */
@@ -284,6 +284,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         features |= COMMENTS;
         features |= CDATA;
         features |= SPLITCDATA;
+        features |= WELLFORMED;
         
         if (symbolTable == null) {
             symbolTable = new SymbolTable();
@@ -573,6 +574,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 features = (short) (state ? features | VALIDATE : features & ~VALIDATE);
 
             }
+            else if (name.equals(Constants.DOM_WELLFORMED)) {
+                features = (short) (state ? features | WELLFORMED : features & ~WELLFORMED);
+            }            
             else if (name.equals(Constants.DOM_INFOSET)
                     || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
@@ -586,15 +590,14 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
             }
-            else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-                        || name.equals(Constants.DOM_WELLFORMED)) {
+            else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
                 if (!state) { // false is not supported
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
                             "FEATURE_NOT_SUPPORTED",
                             new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                   throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
 
             }
@@ -781,20 +784,16 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
 		if (name.equals(Constants.DOM_COMMENTS)) {
 			return ((features & COMMENTS) != 0) ? Boolean.TRUE : Boolean.FALSE;
-
 		}
 		else if (name.equals(Constants.DOM_NAMESPACES)) {
 			return (features & NAMESPACES) != 0 ? Boolean.TRUE : Boolean.FALSE;
-
 		}
 		else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
 			// REVISIT: datatype-normalization only takes effect if validation is on
 			return (features & DTNORMALIZATION) != 0 ? Boolean.TRUE : Boolean.FALSE;
-
 		}
 		else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
 			return (features & CDATA) != 0 ? Boolean.TRUE : Boolean.FALSE;
-
 		}
 		else if (name.equals(Constants.DOM_ENTITIES)) {
 			return (features & ENTITIES) != 0 ? Boolean.TRUE : Boolean.FALSE;
@@ -805,6 +804,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (name.equals(Constants.DOM_VALIDATE)) {
 			return (features & VALIDATE) != 0 ? Boolean.TRUE : Boolean.FALSE;
 		}
+		else if (name.equals(Constants.DOM_WELLFORMED)) {
+			return (features & WELLFORMED) != 0 ? Boolean.TRUE : Boolean.FALSE;
+		}        
 		else if (name.equals(Constants.DOM_INFOSET)
 				|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
 				|| name.equals(Constants.DOM_CANONICAL_FORM)
@@ -822,11 +824,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
 			return Boolean.TRUE;    
-		}//well formed ness is always true
-        else if (name.equals(Constants.DOM_WELLFORMED)) {
-            return Boolean.TRUE ;
-        }
-        
+		}        
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
             return fErrorHandlerWrapper.getErrorHandler();
 		}
@@ -865,16 +863,17 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      * canSetParameter
      */
 	public boolean canSetParameter(String name, Object state) {
-        //parameters whose value can be set to either 'true' or 'false'
+        //features whose parameter value can be set either 'true' or 'false'
 		if (name.equals(Constants.DOM_COMMENTS)
 			|| name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
 			|| name.equals(Constants.DOM_CDATA_SECTIONS)
 			|| name.equals(Constants.DOM_ENTITIES)
 			|| name.equals(Constants.DOM_SPLIT_CDATA)
 			|| name.equals(Constants.DOM_NAMESPACES)
-			|| name.equals(Constants.DOM_VALIDATE)) {
+			|| name.equals(Constants.DOM_VALIDATE)
+            || name.equals(Constants.DOM_WELLFORMED)) {
 			return (state instanceof Boolean) ? true : false;
-		}//parameter whose 'true' value can not be set.
+		}//features whose parameter value can not be set to 'true'
 		else if (
 			name.equals(Constants.DOM_INFOSET)
 				|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
@@ -885,7 +884,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 				return (state.equals(Boolean.TRUE)) ? false : true;
 			}
 			return false;
-		} //parameter whose 'false' value can not be set.
+		}//features whose parameter value can not be set to 'true'
 		else if ( name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
                 || name.equals(SEND_PSVI)
