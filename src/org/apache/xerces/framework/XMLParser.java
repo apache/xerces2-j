@@ -207,7 +207,7 @@ public abstract class XMLParser
     private boolean fSeenRootElement = false;
     private boolean fStandaloneDocument = false;
     private int fCDATASymbol = -1;
-    protected boolean fNamespacesEnabled = true;
+    protected boolean fNamespacesEnabled = false;
     private boolean fSendCharDataAsCharArray = false;
     private boolean fValidating = false;
     private boolean fScanningDTD = false;
@@ -825,7 +825,7 @@ public abstract class XMLParser
      * This method is the equivalent to the feature:
      * <pre>
      * http://xml.org/sax/features/namespaces
-     * </pre>
+     * <pre>
      *
      * @param process True to process namespaces; false to not process.
      *
