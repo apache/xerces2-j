@@ -57,9 +57,16 @@
 package xinclude;
 
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import org.apache.xerces.parsers.XIncludeParserConfiguration;
 import org.apache.xerces.xni.XNIException;
@@ -96,103 +103,126 @@ public class Test implements XMLErrorHandler {
     protected static final String ERROR_HANDLER =
         "http://apache.org/xml/properties/internal/error-handler";
 
-    protected static PrintWriter log = null;
-    protected static boolean useLog = false;
-    protected static String logFile = null;
-
     // this array contains whether the test number NN (contained in file testNN.xml)
     // is meant to be a pass or fail test
     // true means the test should pass
+    private static final int NUM_TESTS = 41;
     private static boolean[] TEST_RESULTS = new boolean[] {
         // one value for each test
         true, true, true, true, true, true, false, true, false, true, // 10
         false, false, false, false, true, true, true, false, true, true, // 20
         true, false, true, false, false, false, true, true, false, true, // 30
-        true, false, true, };
+        true, false, true, true, true, true, true, true, false, false, // 40
+        true, };
 
     public static void main(String[] args) {
+        Test tester = new Test();
+        boolean testsSpecified = false;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].charAt(0) == '-' && args[i].length() > 1) {
+                switch (args[i].charAt(1)) {
+                    case 'g' :
+                        tester.fGenerate = true;
+                        break;
+                    case 'h' :
+                        printUsage();
+                        return;
+                    case 'f' :
+                        if (args.length > i + 1
+                            && args[i + 1].charAt(0) != '-') {
+                            try {
+                                Integer.parseInt(args[i + 1]);
+                                // if it parses as an integer, we'll assume it's a test number
+                                tester.setLogFile(System.err);
+                            }
+                            catch (NumberFormatException e) {
+                                // if it doesn't parse as an integer,
+                                // we assume it's the log file name
+                                try {
+                                    tester.setLogFile(
+                                        new PrintStream(
+                                            new FileOutputStream(args[i++])));
+                                }
+                                catch (IOException ioe) {
+                                    System.err.println(
+                                        "Couldn't open log file: " + args[i]);
+                                }
+                            }
+                        }
+                        else {
+                            tester.setLogFile(System.err);
+                        }
+                        break;
+                    default :
+                        System.err.println("Unrecognized option: " + args[i]);
+                }
+            }
+            else {
+                testsSpecified = true;
+                tester.addTest(Integer.parseInt(args[i]));
+            }
+        }
+
+        if (!testsSpecified) {
+            for (int i = 1; i <= NUM_TESTS; i++) {
+                tester.addTest(i);
+            }
+        }
+
+        tester.runTests();
+    }
+
+    private final PrintStream DEFAULT_LOG_STREAM =
+        new PrintStream(new OutputStream() {
+        public void write(int b) throws IOException {
+        }
+    });
+
+    private Writer fWriter;
+    private String fResults;
+    private PrintWriter fOutputWriter;
+    private int[] fTests = new int[NUM_TESTS];
+    private int fNumTests = 0;
+    public boolean fGenerate;
+    public PrintStream fLogStream;
+
+    public Test() throws XNIException {
         XMLParserConfiguration parserConfig = new XIncludeParserConfiguration();
         parserConfig.setFeature(NAMESPACES_FEATURE_ID, true);
         parserConfig.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
         parserConfig.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, true);
+        fWriter = new Writer(parserConfig);
 
-        Writer writer = null;
-        int firstTest = 0;
+        // this has to be done AFTER fWriter is created
+        parserConfig.setProperty(ERROR_HANDLER, this);
 
-        if (args.length > 0) {
-            if (args[0].equals("-f")) {
-                useLog = true;
-                if (args.length > 1) {
-                    try {
-                        logFile = args[1];
-                        log = new PrintWriter(new FileOutputStream(logFile));
-                        firstTest = 2;
-                    }
-                    catch (IOException e) {
-                        System.err.println(
-                            "Error initializing XInclude tests.");
-                        System.err.println(
-                            "Couldn't initialize log file: " + logFile);
-                        e.printStackTrace(System.err);
-                        printUsage();
-                        System.err.println();
-                        System.err.println("XInclude testing aborted");
-                        System.exit(1);
-                    }
-                }
-                else {
-                    printUsage();
-                    System.exit(1);
-                }
-            }
-        }
+        fGenerate = false;
 
-        try {
-            // We'll just ignore the output, for now.
-            // Later, we when output relative URIs instead of absolute ones,
-            // we can actually compare output to a set of expected outputs.
-            OutputStream output = new OutputStream() {
-                public void write(int b) throws IOException {
-                }
-            };
-            writer = new Writer(parserConfig);
-            writer.setOutput(output, "UTF8");
-            parserConfig.setProperty(ERROR_HANDLER, new Test());
-        }
-        catch (Exception e) {
-            System.err.println("Error initializing XInclude tests");
-            if (useLog) {
-                e.printStackTrace(log);
-            }
-            printDetailsMessage();
-            System.err.println("XInclude testing aborted");
-            System.exit(1);
-        }
+        // squelch output by default
+        fLogStream = DEFAULT_LOG_STREAM;
+    }
 
+    public void addTest(int t) {
+        fTests[fNumTests++] = t;
+    }
+
+    public void setLogFile(PrintStream stream) {
+        fLogStream = stream;
+    }
+
+    public void runTests() {
         int totalFailures = 0;
-        int totalTests = 0;
-        if (firstTest >= args.length) {
-            for (int i = firstTest; i < TEST_RESULTS.length; i++) {
-                totalTests++;
-                if (!runTest(i + 1, writer)) {
-                    totalFailures++;
-                }
+
+        for (int i = 0; i < fNumTests; i++) {
+            if (!runTest(fTests[i])) {
+                totalFailures++;
             }
         }
-        else {
-            for (int i = firstTest; i < args.length; i++) {
-                int testnum = Integer.parseInt(args[i]);
-                totalTests++;
-                if (!runTest(testnum, writer)) {
-                    totalFailures++;
-                }
-            }
+
+        if (fLogStream != null && fLogStream != System.err) {
+            fLogStream.close();
         }
-        
-        if (log != null) {
-            log.close();
-        }
-        
+
         if (totalFailures == 0) {
             System.out.println("All XInclude Tests Passed");
         }
@@ -201,59 +231,108 @@ public class Test implements XMLErrorHandler {
                 "Total failures for XInclude: "
                     + totalFailures
                     + "/"
-                    + totalTests);
+                    + fNumTests);
             printDetailsMessage();
             System.exit(1);
         }
     }
 
-    private static boolean runTest(int testnum, Writer writer) {
+    private static final String XML_EXTENSION = ".xml";
+    private static final String TXT_EXTENSION = ".txt";
+
+    private boolean runTest(int testnum) {
         String testname = "tests/xinclude/tests/test";
+        String outputFilename = "tests/xinclude/output/test";
         if (testnum < 10) {
             testname += "0" + testnum;
+            outputFilename += "0" + testnum;
         }
         else {
             testname += testnum;
+            outputFilename += testnum;
         }
-        testname += ".xml";
+        testname += XML_EXTENSION;
+        // we output to an .xml file if we expect success,
+        // or a .txt file if we expect failure
+        if (TEST_RESULTS[testnum - 1]) {
+            outputFilename += XML_EXTENSION;
+        }
+        else {
+            outputFilename += TXT_EXTENSION;
+        }
 
+        boolean passed = true;
+        StringBuffer buffer = null;
         try {
-            writer.parse(new XMLInputSource(null, testname, null));
-            if (TEST_RESULTS[testnum - 1]) {
-                if (useLog) {
-                    log.println("PASS: " + testname);
-                }
-                return true;
-            }
-            else {
-                if (useLog) {
-                    log.println("FAIL: " + testname);
-                }
-                return false;
-            }
+            fLogStream.println("TEST: " + testname);
+            java.io.Writer myWriter = new StringWriter();
+            buffer = ((StringWriter)myWriter).getBuffer();
+            fOutputWriter = new PrintWriter(myWriter);
+            fWriter.setOutput(myWriter);
+            fWriter.parse(new XMLInputSource(null, testname, null));
         }
         catch (XNIException e) {
-            if (TEST_RESULTS[testnum - 1]) {
-                if (useLog) {
-                    log.println("FAIL: " + testname);
-                }
-                return false;
-            }
-            else {
-                if (useLog) {
-                    log.println("PASS: " + testname);
-                }
-                return true;
-            }
+            passed = false;
         }
         catch (IOException e) {
-            if (useLog) {
-                log.println("Unexpected IO problem: " + e);
-                log.println("FAIL: " + testname);
-            }
+            fLogStream.println("Unexpected IO problem: " + e);
+            fLogStream.println("Result: FAIL");
             return false;
         }
+
+        fResults = stripUserDir(buffer);
+        return processTestResults(
+            passed,
+            TEST_RESULTS[testnum - 1],
+            outputFilename);
     }
+
+    private boolean processTestResults(
+        boolean passed,
+        boolean expectedPass,
+        String expectedOutputFile) {
+        if (fGenerate) {
+            try {
+                fLogStream.println("Generated: " + expectedOutputFile);
+                PrintWriter outputFile =
+                    new PrintWriter(new FileWriter(expectedOutputFile));
+                outputFile.print(fResults);
+                outputFile.close();
+            }
+            catch (IOException e) {
+                fLogStream.println(
+                    "IOException generating results: " + e.getMessage());
+                return false;
+            }
+            return true;
+        }
+
+        // try {
+            if (passed == expectedPass) {
+                /** if (compareOutput(new FileReader(expectedOutputFile),
+                    new StringReader(fResults))) { **/
+                    fLogStream.println("Result: PASS");
+                    return true;
+                /** }
+                else {
+                    fLogStream.println("Result: FAIL");
+                    return false;
+                } **/
+            }
+            else {
+                fLogStream.println(fResults);
+                fLogStream.println("Result: FAIL");
+                return false;
+            }
+        // }
+        /** catch (IOException e) {
+            fLogStream.println(
+                "Unexpected IO problem attempting to verify results: " + e);
+            fLogStream.println("Result: FAIL");
+            return false;
+        } **/
+    }
+
     /* (non-Javadoc)
      * @see org.apache.xerces.xni.parser.XMLErrorHandler#error(java.lang.String, java.lang.String, org.apache.xerces.xni.parser.XMLParseException)
      */
@@ -282,20 +361,29 @@ public class Test implements XMLErrorHandler {
     }
 
     private static void printUsage() {
-        System.out.println("java xinclude.Test [-f file] [TESTS]");
+        System.out.println("java xinclude.Test [OPTIONS] [TESTS]");
+        System.out.println("OPTIONS:");
         System.out.println(
-            "  -f file : specifies a log file to print detailed error messages to.");
+            "  -f [file] : Specifies a log file to print detailed error messages to.");
         System.out.println(
-            "            If this option is absent, the messages will not be output.");
+            "              Omitting the FILE parameter makes messages print to standard error.");
         System.out.println(
-            "    TESTS : a space separated list of tests to run, specified by test number.");
+            "              If this option is absent, the messages will not be output.");
+        System.out.println("  -g : Generates the expected output files.");
         System.out.println(
-            "          : If this is absent, all tests will be run.");
+            "       Only use this option when the output is sure to be correct.");
+        System.out.println(
+            "       The previous expected output files will be overwritten.");
+        System.out.println("  -h : Prints this help message and exits.");
+        System.out.println("TESTS:");
+        System.out.println(
+            "  A whitespace separated list of tests to run, specified by test number.");
+        System.out.println("  If this is absent, all tests will be run.");
     }
 
-    private static void printDetailsMessage() {
-        if (useLog) {
-            System.err.println("See file " + logFile + " for details");
+    private void printDetailsMessage() {
+        if (fLogStream != DEFAULT_LOG_STREAM) {
+            System.err.println("See log output for details");
         }
         else {
             System.err.println("Re-run with -f option to get details.");
@@ -304,25 +392,99 @@ public class Test implements XMLErrorHandler {
 
     /** Prints the error message. */
     protected void printError(String type, XMLParseException ex) {
-        if (!useLog)
-            return;
-        log.print("[");
-        log.print(type);
-        log.print("] ");
+        fOutputWriter.print("[");
+        fOutputWriter.print(type);
+        fOutputWriter.print("] ");
         String systemId = ex.getExpandedSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
             if (index != -1)
                 systemId = systemId.substring(index + 1);
-            log.print(systemId);
+            fOutputWriter.print(systemId);
         }
-        log.print(':');
-        log.print(ex.getLineNumber());
-        log.print(':');
-        log.print(ex.getColumnNumber());
-        log.print(": ");
-        log.print(ex.getMessage());
-        log.println();
-        log.flush();
+        fOutputWriter.print(':');
+        fOutputWriter.print(ex.getLineNumber());
+        fOutputWriter.print(':');
+        fOutputWriter.print(ex.getColumnNumber());
+        fOutputWriter.print(": ");
+        fOutputWriter.print(ex.getMessage());
+        fOutputWriter.println();
+        fOutputWriter.flush();
     } // printError(String,XMLParseException)
+
+    protected boolean compareOutput(Reader expected, Reader actual)
+        throws IOException {
+        LineNumberReader expectedOutput = new LineNumberReader(expected);
+        LineNumberReader actualOutput = new LineNumberReader(actual);
+
+        while (expectedOutput.ready() && actualOutput.ready()) {
+            String expectedLine = expectedOutput.readLine();
+            String actualLine = actualOutput.readLine();
+            if (!expectedLine.equals(actualLine)) {
+                fLogStream.println(
+                    "Mismatch on line: " + expectedOutput.getLineNumber());
+                fLogStream.println("Expected: " + expectedLine);
+                fLogStream.println("  Actual: " + actualLine);
+                return false;
+            }
+        }
+        if (expectedOutput.ready() && !actualOutput.ready()) {
+            String expectedLine = expectedOutput.readLine();
+            if (expectedLine != null) {
+                fLogStream.println(
+                    "Actual output contains fewer lines than expected output.");
+                fLogStream.println(
+                    "Line "
+                        + expectedOutput.getLineNumber()
+                        + ": "
+                        + expectedLine);
+                fLogStream.println("Above line has no match in actual output.");
+                return false;
+            }
+        }
+        else if (!expectedOutput.ready() && actualOutput.ready()) {
+            String actualLine = actualOutput.readLine();
+            if (actualLine != null) {
+                fLogStream.println(
+                    "Actual output contains more lines than expected output.");
+                fLogStream.println(
+                    "Line " + actualOutput.getLineNumber() + ": " + actualLine);
+                fLogStream.println(
+                    "Above line has no match in expected output.");
+                return false;
+            }
+        }
+
+        expectedOutput.close();
+        actualOutput.close();
+        return true;
+    }
+
+    // returns "true" if the Strings are different only because of
+    // a different absolute filename (NOTE: only works if they are different because
+    // of ONE filename)
+    private String stripUserDir(StringBuffer buf) {
+        String userDir = System.getProperty("user.dir");
+        String userURI = "file://";
+        if (userDir.charAt(0) != '/') {
+            userURI += "/";
+        }
+        userURI += userDir.replace('\\', '/');
+        String str = buf.toString();
+
+        int start = 0, end = 0;
+        // strip ones in URI form
+        while ((start = str.indexOf(userURI, start)) != -1) {
+            end = start + userURI.length();
+            // we add one, to get rid of the '/' after the user directory path
+            str = str.substring(0, start) + str.substring(end+1);
+        }
+
+        while ((start = str.indexOf(userDir, start)) != -1) {
+            end = start + userDir.length();
+            // we add one, to get rid of the '/' after the user directory path
+            str = str.substring(0, start) + str.substring(end+1);
+        }
+        return str;
+    }
 }
