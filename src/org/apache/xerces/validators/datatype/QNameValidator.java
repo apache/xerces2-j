@@ -135,6 +135,9 @@ public class QNameValidator implements DatatypeValidator {
     public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException,
     IllegalFacetException, IllegalFacetValueException, ConstrainException 
     {
+
+        if( facets == null ) // No facets to set should not be here
+             return; 
         if( derivationBy.equals( SchemaSymbols.ATTVAL_EXTENSION) == true){
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                 String key = (String) e.nextElement();

@@ -129,8 +129,7 @@ public class StringValidator implements DatatypeValidator {
     IllegalFacetException, IllegalFacetValueException, ConstrainException 
     {
         if( facets == null )
-            return;// No facets to set.
-
+            return;
 
         if( derivationBy.equals( SchemaSymbols.ATTVAL_RESTRICTION )){
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {

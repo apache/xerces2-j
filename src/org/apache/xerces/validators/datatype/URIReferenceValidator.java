@@ -83,6 +83,9 @@ public class URIReferenceValidator implements DatatypeValidator {
 	}
 			
 	public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+            if( facets == null ) // No facets to set should not be here
+            return; 
+
 	}
 
 	public void setBasetype(String base) {

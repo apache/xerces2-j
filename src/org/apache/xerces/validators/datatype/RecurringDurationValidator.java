@@ -98,6 +98,9 @@ public class RecurringDurationValidator implements DatatypeValidator {
      * @exception throws IllegalFacetValueException
      */
     public void setFacets(Hashtable facets, String derivedBy ) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
+        if( facets == null ) // No facets to set should not be here
+            return; 
+
     }
 
     /**

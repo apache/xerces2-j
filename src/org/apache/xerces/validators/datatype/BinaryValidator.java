@@ -113,6 +113,10 @@ public class BinaryValidator implements DatatypeValidator {
 
     public void setFacets(Hashtable facets, String derivationBy ) throws UnknownFacetException, 
     IllegalFacetException,IllegalFacetValueException, ConstrainException {
+
+        if( facets == null ) // No facets to set should not be here
+            return; 
+
         if ( derivationBy.equals( SchemaSymbols.ATTVAL_RESTRICTION ) ) {
             _derivedBy = DatatypeValidator.DERIVED_BY_RESTRICTION;
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {

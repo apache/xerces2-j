@@ -108,6 +108,9 @@ public class TimeDurationValidator implements DatatypeValidator {
      * @exception throws IllegalFacetValueException
      */
     public void setFacets(Hashtable facets,String derivationBy ) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
+        if( facets == null ) // No facets to set should not be here
+            return; 
+
     }
 
     /**

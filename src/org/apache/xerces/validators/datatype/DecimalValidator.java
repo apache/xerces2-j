@@ -169,6 +169,9 @@ public class DecimalValidator implements DatatypeValidator {
     }
 
     public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+        if( facets == null ) // No facets to set should not be here
+            return; 
+
         if (fBaseValidator != null)
             if (!fBaseValidator.ensureFacetsAreConsistent(facets))
                 throw new IllegalFacetValueException(

@@ -90,6 +90,7 @@ public class BooleanValidator implements DatatypeValidator {
      */
 
     public void validate(String content) throws InvalidDatatypeValueException {
+
         if ( _facetsDefined == 0 )// No Facets to validate against
             return;
 
@@ -120,6 +121,8 @@ public class BooleanValidator implements DatatypeValidator {
      */
     public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException,
     IllegalFacetException, IllegalFacetValueException, ConstrainException {
+        if( facets == null ) // No facets to set should not be here
+            return; 
 
         if ( derivationBy.equals( SchemaSymbols.ATTVAL_RESTRICTION ) ) {
            _derivedBy = DatatypeValidator.DERIVED_BY_RESTRICTION;
