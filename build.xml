@@ -801,16 +801,18 @@ Copyright:
                         org/apache/xerces/impl/xpath/regex/**
                         org/apache/xerces/impl/dv/Schema*.java
                         org/apache/xerces/impl/msg/XMLSchema**
-                        org/apache/xerces/impl/validation/XMLGrammarPoolImpl.java
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
                         org/apache/xerces/parsers/StandardParserConfiguration.java
                         org/apache/xerces/parsers/IntegratedParserConfiguration.java
+                        org/apache/xerces/parsers/SecurityConfiguration.java
                         org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
                         org/apache/xerces/parsers/CachingParserPool.java
                         org/apache/xerces/dom/ASModelImpl.java
                         org/apache/xerces/dom/ASDOMImplementationImpl.java
-                        org/apache/xerces/impl/XML11*.java
+                        org/apache/xerces/impl/XML11D*.java
+                        org/apache/xerces/impl/XML11NamespaceBinder.java
+                        org/apache/xerces/impl/XMLVersionDetector.java
                         org/apache/xerces/util/DOMUtil.java
                         org/apache/html/**
                         org/apache/wml/**
