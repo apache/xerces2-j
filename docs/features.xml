@@ -435,6 +435,16 @@ catch (SAXException e) {
     can only be set to true.
    </note>
   </feature>
+  <feature name='http://xml.org/sax/features/lexical-handler/parameter-entities'
+           id='lexical-handler.parameter-entities'>
+   <true>
+    Report the beginning and end of parameter entities to a registered LexicalHandler.
+   </true>
+   <false>
+    Do not report the beginning and end of parameter entities to a registered LexicalHandler.
+   </false>
+   <default value='true'/>
+  </feature>
  </fcategory>
  <fcategory name='XInclude Features (Experimental)'>
    <feature name='http://xml.org/sax/features/allow-dtd-events-after-endDTD'
