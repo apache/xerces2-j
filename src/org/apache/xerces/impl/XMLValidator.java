@@ -2423,14 +2423,18 @@ public class XMLValidator
         // datatype validators
         if (fValidation) {
             try {
-                fValID       = (IDDatatypeValidator)fDatatypeValidatorFactory.createDatatypeValidator("ID", null, null, false);
-                fValIDRef    = (IDREFDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("IDREF", null, null, false);
-                fValIDRefs   = (ListDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("IDREFS", null, null, false);
-                fValENTITY   = (ENTITYDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("ENTITY", null, null, false);
-                fValENTITIES = (ListDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("ENTITIES", null, null, false);
-                fValNMTOKEN  = fDatatypeValidatorFactory.createDatatypeValidator("NMTOKEN", null, null, false);
-                fValNMTOKENS = fDatatypeValidatorFactory.createDatatypeValidator("NMTOKENS", null, null, false);
-                fValNOTATION = (NOTATIONDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("NOTATION", null, null, false);
+                //REVISIT: datatypeRegistry + initialization of datatype 
+                //         why do we cast to ListDatatypeValidator?
+                ((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).initializeDTDRegistry();
+                fValID       = (IDDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("ID" );
+                fValIDRef    = (IDREFDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("IDREF" );
+                fValIDRefs   = (ListDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("IDREFS" );
+                fValENTITY   = (ENTITYDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("ENTITY" );
+                fValENTITIES = (ListDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("ENTITIES" );
+                fValNMTOKEN  = ((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("NMTOKEN");
+                fValNMTOKENS = ((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("NMTOKENS");
+                fValNOTATION = (NOTATIONDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("NOTATION" );
+                                
             }
             catch (Exception e) {
                 // should never happen
@@ -2441,11 +2445,11 @@ public class XMLValidator
             if (fTableOfIDs == null) {
                 fTableOfIDs = new Hashtable();//Initialize table of IDs
             }
+
             fTableOfIDs.clear();
             fValID.initialize(fTableOfIDs);
             fValIDRef.initialize(fTableOfIDs);
             fValIDRefs.initialize(fTableOfIDs);
-
             if (fNotationEnumVals == null) {
                 fNotationEnumVals = new Hashtable(); 
             }
