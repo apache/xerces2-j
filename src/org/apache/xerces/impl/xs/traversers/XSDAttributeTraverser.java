@@ -179,7 +179,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             // check 3.5.6 constraint
             // Attribute Use Correct
             // 2 If the {attribute declaration} has a fixed {value constraint}, then if the attribute use itself has a {value constraint}, it must also be fixed and its value must match that of the {attribute declaration}'s {value constraint}.
-            if (attrUse.fAttrDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE &&
+            if (attrUse.fAttrDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE &&
                 attrUse.fConstraintType != XSAttributeDecl.NO_CONSTRAINT) {
                 if (attrUse.fConstraintType != XSAttributeDecl.FIXED_VALUE ||
                     attrUse.fAttrDecl.fType.compare((String)attrUse.fAttrDecl.fDefault,
@@ -200,6 +200,9 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, true, schemaDoc);
         XSAttributeDecl attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, true);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+
+        if (attribute != null)
+            attribute.setIsGlobal();
 
         return attribute;
     }
@@ -253,12 +256,12 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         if (isGlobal) {
             if (fixedAtt != null) {
                 attribute.fDefault = fixedAtt;
-                attribute.fConstraintType = XSElementDecl.FIXED_VALUE;
+                attribute.setConstraintType(XSElementDecl.FIXED_VALUE);
             } else if (defaultAtt != null) {
                 attribute.fDefault = defaultAtt;
-                attribute.fConstraintType = XSElementDecl.DEFAULT_VALUE;
+                attribute.setConstraintType(XSElementDecl.DEFAULT_VALUE);
             } else {
-                attribute.fConstraintType = XSElementDecl.NO_CONSTRAINT;
+                attribute.setConstraintType(XSElementDecl.NO_CONSTRAINT);
             }
         }
 

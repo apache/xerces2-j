@@ -72,7 +72,7 @@ public class XSAttributeDecl {
     // types of value constraint
     public final static short     NO_CONSTRAINT       = 0;
     public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUE        = 2;
+    public final static short     FIXED_VALUE         = 2;
 
     // the name of the attribute
     public String fName = null;
@@ -82,8 +82,27 @@ public class XSAttributeDecl {
     // REVISIT: to be changed to XSSimpleTypeDecl
     public DatatypeValidator fType = null;
     // value constraint type: default, fixed or !specified
-    public short fConstraintType = NO_CONSTRAINT;
+    short fMiscFlags = 0;
     // value constraint value
     public Object fDefault = null;
+
+    private static final short CONSTRAINT_MASK = 3;
+    private static final short GLOBAL          = 4;
+
+    // methods to get/set misc flag
+
+    public short getConstraintType() {
+        return (short)(fMiscFlags & CONSTRAINT_MASK);
+    }
+    public boolean isGlobal() {
+        return ((fMiscFlags & GLOBAL) != 0);
+    }
+
+    public void setConstraintType(short constraintType) {
+        fMiscFlags |= (constraintType & CONSTRAINT_MASK);
+    }
+    public void setIsGlobal() {
+        fMiscFlags |= GLOBAL;
+    }
 
 } // class XSAttributeDecl

@@ -166,7 +166,7 @@ public class XSAttributeGroupDecl {
         XSAttributeUse attrUse = null;
         XSAttributeDecl attrDecl = null;
         XSAttributeUse baseAttrUse = null;
-	XSAttributeDecl baseAttrDecl = null;
+    XSAttributeDecl baseAttrDecl = null;
 
         for (int i=0; i<fAttrUseNum; i++) {
 
@@ -203,30 +203,30 @@ public class XSAttributeGroupDecl {
              // derivation-ok-restriction.  Constraint 2.1.3
              //
              int baseConsType=baseAttrUse.fConstraintType!=XSAttributeDecl.NO_CONSTRAINT?
-                                 baseAttrUse.fConstraintType:baseAttrDecl.fConstraintType;
-             int thisConstType = attrUse.fConstraintType!=XSAttributeDecl.NO_CONSTRAINT? 
-                                 attrUse.fConstraintType:attrDecl.fConstraintType;
-             
-             if (baseConsType == XSAttributeDecl.FIXED_VALUE) { 
-          
+                                 baseAttrUse.fConstraintType:baseAttrDecl.getConstraintType();
+             int thisConstType = attrUse.fConstraintType!=XSAttributeDecl.NO_CONSTRAINT?
+                                 attrUse.fConstraintType:attrDecl.getConstraintType();
+
+             if (baseConsType == XSAttributeDecl.FIXED_VALUE) {
+
                  if (thisConstType != XSAttributeDecl.FIXED_VALUE) {
                    errorCode="derivation-ok-restriction.2.1.3";
                    return errorCode;
                  }
                  else {
-                   // check the values are the same.  NB - this should not be a string 
-                   // comparison REVISIT when we have new datatype design! 
-                   String baseFixedValue=(String) (baseAttrUse.fDefault!=null ? 
+                   // check the values are the same.  NB - this should not be a string
+                   // comparison REVISIT when we have new datatype design!
+                   String baseFixedValue=(String) (baseAttrUse.fDefault!=null ?
                                          baseAttrUse.fDefault: baseAttrDecl.fDefault);
-                   String thisFixedValue=(String) (attrUse.fDefault!=null ? 
-                                         attrUse.fDefault: attrDecl.fDefault); 
+                   String thisFixedValue=(String) (attrUse.fDefault!=null ?
+                                         attrUse.fDefault: attrDecl.fDefault);
                    if (!baseFixedValue.equals(thisFixedValue)) {
                      errorCode="derivation-ok-restriction.2.1.3";
                      return errorCode;
                    }
 
                  }
- 
+
              }
            }
            else {
@@ -246,7 +246,7 @@ public class XSAttributeGroupDecl {
         }
 
         //
-        // Check that any REQUIRED attributes in the base have matching attributes 
+        // Check that any REQUIRED attributes in the base have matching attributes
         // in this group
         // derivation-ok-restriction.  Constraint 3
         //
@@ -255,12 +255,12 @@ public class XSAttributeGroupDecl {
            baseAttrUse = baseGroup.fAttributeUses[i];
 
            if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED) {
-           
+
              baseAttrDecl = baseAttrUse.fAttrDecl;
              // Look for a match in this group
              XSAttributeUse thisAttrUse = getAttributeUse(
                                     baseAttrDecl.fTargetNamespace,baseAttrDecl.fName);
-             if (thisAttrUse == null) { 
+             if (thisAttrUse == null) {
                errorCode = "derivation-ok-restriction.3";
                return errorCode;
              }

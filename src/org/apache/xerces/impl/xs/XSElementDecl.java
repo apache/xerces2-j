@@ -72,7 +72,7 @@ public class XSElementDecl {
     // types of value constraint
     public final static short     NO_CONSTRAINT       = 0;
     public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUE        = 2;
+    public final static short     FIXED_VALUE         = 2;
 
     // name of the element
     public String fName = null;
@@ -98,6 +98,7 @@ public class XSElementDecl {
     private static final short CONSTRAINT_MASK = 3;
     private static final short NILLABLE        = 4;
     private static final short ABSTRACT        = 8;
+    private static final short GLOBAL          = 16;
 
     // methods to get/set misc flag
 
@@ -110,6 +111,9 @@ public class XSElementDecl {
     public boolean isAbstract() {
         return ((fMiscFlags & ABSTRACT) != 0);
     }
+    public boolean isGlobal() {
+        return ((fMiscFlags & GLOBAL) != 0);
+    }
 
     public void setConstraintType(short constraintType) {
         fMiscFlags |= (constraintType & CONSTRAINT_MASK);
@@ -119,6 +123,9 @@ public class XSElementDecl {
     }
     public void setIsAbstract() {
         fMiscFlags |= ABSTRACT;
+    }
+    public void setIsGlobal() {
+        fMiscFlags |= GLOBAL;
     }
 
     public void addIDConstaint(IdentityConstraint idc) {
@@ -157,5 +164,12 @@ public class XSElementDecl {
             fDescription = buffer.toString();
         }
         return fDescription;
+    }
+
+    /**
+     * get the hash code
+     */
+    public int hashCode() {
+        return (fName.hashCode()<<16)+fTargetNamespace.hashCode();
     }
 } // class XMLElementDecl

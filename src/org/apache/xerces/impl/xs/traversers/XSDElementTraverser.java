@@ -218,6 +218,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         XSElementDecl element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
+        if (element != null)
+            element.setIsGlobal();
+
         return element;
     }
 
