@@ -1,5 +1,5 @@
-<?xml version="1.0" standalone="no"?><!DOCTYPE s1 SYSTEM
-"./dtd/document.dtd">
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 <s1 title="Document Object Model Level 3 Implementation">
 <s2 title="Disclaimer">
 <p>
@@ -7,7 +7,7 @@ The &ParserNameLong; &ParserVersion;  contains a partial implementation of the W
 Level 3.  This implementation is experimental.  The DOM Level 3 specification is 
 still in working draft stage: you should not consider this implementation complete or correct.  
 The limitations of this implementation are detailed below. 
-Please, read this document before using org.apache.xerces.dom3 package.  
+Please, read this document before using <code>org.apache.xerces.dom3</code> package.  
 </p>
 </s2> 
 <s2 title="Introduction">
@@ -24,67 +24,74 @@ and Save</jump>.
 </s2>
 
 <s2 title='Implementation of DOM Level 3 Core'>
+<note>
+To be able to use DOM Level 3 Core functionality, you will need to cast to Xerces implementation (e.i. DocumentImpl, NodeImpl).
+</note>
 <ul>
     <li>
-        DOMImplementationRegistry (see DOMImplementationSource)
+        <code>DOMImplementationRegistry</code> (see <code>DOMImplementationSource</code>)
+    </li>
+
+     <li>
+        <code>Document</code>: set/getEncoding, set/getVersion, set/getStandalone, adoptNode.
     </li>
     <li>
-        DOMImplementationRegistry (DOMImplementationSource really)
+        <code>Node</code>: isSameNode
     </li>
     <li>
-        Node.isSameNode()
+        <code>Node</code>: getInterface
     </li>
     <li>
-        Node.getInterface()
-    </li>
-    <li>
-        Node.set/getUserData()
+        <code>Node</code>: set/getUserData
     </li>
     
     <li>
-        Node.isEqualNode()
+        <code>Node</code>: isEqualNode()
     </li>
     <li>
-        DOMErrorHandler, DOMError, DOMLocator
+        <code>DOMErrorHandler</code>, <code>DOMError</code>, <code>DOMLocator</code>
+    </li>
+     <li>
+        <code>Entity</code>: set/getEncoding, set/getVersion
     </li>
 </ul>
-</s2> <s2 title='Implementation of DOM Level 3 Load and Save'>
+</s2> 
+
+<s2 title='Implementation of DOM Level 3 Load and Save'>
 <ul>
     <li>
-        DOMBuilder - supports all required features. Does not provide implementation to 
-        parseWithContext() and DOMBuilderFilter.
+        <code>DOMBuilder</code>: does not provide implementation of parseWithContext() and <code>DOMBuilderFilter</code>.
     </li>
     <li>
-        DOMWriter - supports all required features. Provides support for "format-pretty-print" (true).
-        DOMWriter also fixes namespaces during serialization as required by Load and Save module:
-
-        "Namespaces are fixed up during serialization, the serialization process will verify that namespace declarations, namespace prefixes and the namespace URIs associated with Elements and Attributes are consistent. 
-        If inconsistencies are found, the serialized form of the document will be altered to 
-        remove them"    
-        
-        </li>
-    <li>
-        DOMInputSource
+        <code>DOMWriter</code>: supports all required features and setting <code>format-pretty-print</code> feature to true.
+        <code>DOMWriter</code> fixes namespaces during serialization.
     </li>
     <li>
-        DocumentLS
+        <code>DOMInputSource</code>
     </li>
     <li>
-        DOMImplementationLS
+        <code>DocumentLS</code>
+    </li>
+    <li>
+        <code>DOMImplementationLS</code>
     </li>
 </ul>
+
 </s2> <s2 title='Implementation of DOM Level 3 Abstract Schemas'>
 <note>Xerces does not provide implementation for editing schemas (AS-EDIT) nor we provide implementation
 for "Document-editing"</note>
+
 <ul>
     <li>
-        DOMImplementationAS
+        <code>DOMImplementationAS</code>
     </li>
     <li>
-        DOMASBuilder that allows to preparse XML Schemas and set those on the parser.
+        <code>DOMASBuilder</code> supports parsing of XML Schemas and setting the <code>ASModel</code> on the parser.
     </li>
 </ul>
 <note>
-DOMASBuilder only allows pre-parsing of XML Schemas. The parser provides a partial implementation for <code>ASModel</code> so that it can serve as a containter for several grammars. For more information, see dom.ASBuilder sample.
+<code>DOMASBuilder</code> does not support parsing of DTDs. 
+The parser provides only partial implementation for <code>ASModel</code>. 
+For more information on how to parse schemas and set those on the parser instance, see <code>dom.ASBuilder</code> sample.
 </note>
 </s2></s1>
