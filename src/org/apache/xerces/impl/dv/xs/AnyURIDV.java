@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,10 +157,12 @@ public class AnyURIDV extends TypeValidator {
 
         // If encoding happened, create a new string;
         // otherwise, return the orginal one.
-        if (buffer.length() != len)
+        if (buffer.length() != len) {
             return buffer.toString();
-        else
+        }
+        else {
             return anyURI;
+        }
     }
 
 } // class AnyURIDV
