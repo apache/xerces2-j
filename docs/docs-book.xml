@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE book SYSTEM "sbk:/style/dtd/book.dtd">
+
+<book title="Xerces-J documentation" copyright="1999 The Apache Software Foundation">
+  <document id="index"       label="Readme"       source="readme.xml"      />
+  <document id="install"     label="Installation" source="install.xml"     />
+  <separator/>
+  <document id="api"         label="API Docs"     source="api.xml"         />
+  <document id="samples"     label="Samples"      source="samples.xml"     />
+  <hidden   id="iterator"                         source="sam-iterator.xml"/>
+  <hidden   id="tree"                             source="sam-tree.xml"    />
+  <document id="schema"      label="Schema"       source="schema.xml"      />
+  <separator/>
+  <document id="properties"  label="Properties"   source="properties.xml"  />
+  <document id="features"    label="Features"     source="features.xml"    />
+  <group    id="faqs"        label="FAQs"                                            >
+    <entry  id="faq-general"                      source="faq-general.xml" />
+    <entry  id="faq-build"                        source="faq-build.xml"   />
+    <entry  id="faq-write"                        source="faq-write.xml"   />
+    <entry  id="faq-common"                       source="faq-common.xml"  />
+  </group>
+  <separator/>
+  <document id="releases"    label="Releases"     source="releases.xml"    />
+  <document id="caveats"     label="Caveats"      source="caveats.xml"     />
+  <document id="feedback"    label="Feedback"     source="feedback.xml"    />
+  <separator/>
+  <document id="y2k"         label="Y2K Compliance" source="y2k.xml"         />
+</book>

@@ -1,0 +1,150 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Properties">
+	<s2 title="Seting Features">
+    <anchor name="properties"/>
+		<p>To set a property on either org.apache.xerces.parsers.SAXParser 
+		or org.apache.xerces.parsers.DOMParser, you should use the SAX2 
+		Configurable interface (org.xml.sax.Configurable).</p>
+		<source>
+DOMParser p=new DOMParser();
+try {        
+  p.setProperty("http://xml.org/sax/properties/namespace-sep","|");
+} catch (SAXException e) {
+  System.out.println("error in setting up parser property");             
+}
+		</source>
+	</s2>
+	<s2 title="General Properties">
+		<p>http://xml.org/sax/properties/namespace-sep</p>
+		<table>
+			<tr>
+				<th>Type:</th>
+				<td>java.lang.String</td>
+			</tr>
+			<tr>
+				<th>Access:</th>
+				<td>read-write</td>
+			</tr>
+			<tr>
+				<th>Desc:</th>
+				<td>The separator string that will appear between the namespace 
+				URI and the local part of the name when namespace processing is being 
+				performed. If the value is the empty string, the two parts will be 
+				concatenated. </td>
+			</tr>
+			<tr>
+				<th>Default:</th>
+				<td>""</td>
+			</tr>
+			<tr>
+				<th>See:</th>
+				<td>http://xml.org/sax/features/namespaces</td>
+			</tr>
+		</table>
+	</s2>
+	<s2 title="DOM Parser Properties">
+		<p>http://apache.org/xml/properties/dom/current-element-node</p>
+		<table>
+			<tr>
+				<th>Type:</th>
+				<td>org.w3c.dom.Node</td>
+			</tr>
+			<tr>
+				<th>Access:</th>
+				<td>read-only</td>
+			</tr>
+			<tr>
+				<th>Desc:</th>
+				<td>The current DOM element node while parsing.</td>
+			</tr>
+			<tr>
+				<th>Note:</th>
+				<td>This property is useful for determining the location 
+					with a DOM document when an error occurs.</td>
+			</tr>
+			<tr>
+				<th>See:</th>
+				<td>http://xml.org/sax/properties/dom-node</td>
+			</tr>
+		</table>
+		<p>http://apache.org/xml/properties/dom/document-class-name</p>
+		<table>
+			<tr>
+				<th>Type:</th>
+				<td>java.lang.String</td>
+			</tr>
+			<tr>
+				<th>Access:</th>
+				<td>read-write</td>
+			</tr>
+			<tr>
+				<th>Desc:</th>
+				<td>The fully qualified class name of the DOM implementation. 
+					The implementation used must have a zero argument constructor.</td>
+			</tr>
+			<tr>
+				<th>Default:</th>
+				<td>"org.apache.xerces.dom.DocumentImpl"</td>
+			</tr>
+			<tr>
+				<th>Note:</th>
+				<td>When the document class name is set to a value other 
+					than the name of the default document factory, the 
+					deferred node expansion feature does not work. </td>
+			</tr>
+			<tr>
+				<th>See:</th>
+				<td>http://apache.org/xml/features/dom/defer-node-expansion</td>
+			</tr>
+		</table>
+	</s2>
+	<s2 title="SAX Parser Properties">
+		<p>http://xml.org/sax/handlers/DeclHandler</p>
+		<table>
+			<tr>
+				<th>Type:</th>
+				<td>org.xml.sax.misc.DeclHandler</td>
+			</tr>
+			<tr>
+				<th>Access:</th>
+				<td>read-write</td>
+			</tr>
+			<tr>
+				<th>Desc:</th>
+				<td>Set the handler for DTD declarations.</td>
+			</tr>
+		</table>
+		<p>http://xml.org/sax/handlers/LexicalHandler</p>
+		<table>
+			<tr>
+				<th>Type:</th>
+				<td>org.xml.sax.misc.LexicalHandler</td>
+			</tr>
+			<tr>
+				<th>Access:</th>
+				<td>read-write</td>
+			</tr>
+			<tr>
+				<th>Desc:</th>
+				<td>Set the handler for lexical parsing events.</td>
+			</tr>
+		</table>
+		<p>http://xml.org/sax/handlers/NamespaceHandler</p>
+		<table>
+			<tr>
+				<th>Type:</th>
+				<td>org.xml.sax.misc.NamespaceHandler</td>
+			</tr>
+			<tr>
+				<th>Access:</th>
+				<td>read-write</td>
+			</tr>
+			<tr>
+				<th>Desc:</th>
+				<td>Set the handler for lexical parsing events.</td>
+			</tr>
+		</table>
+	</s2>
+</s1>

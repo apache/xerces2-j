@@ -1,0 +1,123 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
+
+<faqs title="Building and Running FAQs">
+	<faq title="Swing?">
+		<q>Which version of Swing is required?</q>
+		<a> <p>This release uses Swing 1.1 (JFC 1.1). 
+			Swing is only used by the sample programs and is not 
+			required by the parser itself.</p>
+		</a>
+	</faq>
+	<faq title="Recompling?">
+		<q>How do I recompile the source files?</q>
+		<a> <p>blah
+			</p>
+		</a>
+	</faq>
+	<faq title="Regenerating?">
+		<q>How do I regenerate the api documentation?</q>
+		<a> <p>blah
+			</p>
+		</a>
+	</faq>
+	<faq title="Packaging?">
+		<q>How do I package the parser?</q>
+		<a> <p>blah
+			</p>
+		</a>
+	</faq>
+	<faq title="Visual Age?">
+		<q>How do I import Xerces-J into Visual Age for Java</q>
+		<a> 		
+		<ul>
+          <li>Why does VisualAge for Java 2.0 report problems when I import the Xerces-J parser?
+			<br/>The current version of the Xerces-J parser uses Swing 1.1, 
+		  	while VisualAge for Java 2.0 comes with Swing 1.0.2. The free update for the 
+            Professional version of VisualAge for Java 2.0 installs Swing 1.0.3. 
+			The most important difference between Swing 1.0.2 - 1.0.3 and 1.1 is 
+			the Java package was changed from com.sun.java.swing.* to javax.swing.*.
+			<br/>To fix the errors, you must download the Java Foundation Classes 1.1 
+			with Swing 1.1 from Sun's Java home page and import the &quot;swingall.jar&quot; 
+			file into VisualAge for Java 2.0. The Swing 1.1 package can be found at 
+            the following URL:
+			<br/>http://java.sun.com/products/jfc/index.html 
+			<br/>Refer to the VisualAge for Java 2.0 documentation for information about 
+			how to import a JAR file into the repository and add that code to your workspace.
+          </li>
+          <li>Are there any other tips for importing the Xerces-J parser into VisualAge 
+		  	for Java 2.0?
+			<br/>The most useful tip applies to *any* updated code that you import 
+			into the VisualAge for Java 2.0 product. Before updating code, do the following:
+            <br/>1. version the old code
+			<br/>2. delete it from your workspace
+			<br/>3. import the new code
+            <br/>Deleting code from your workspace does not actually delete the code 
+				permanently -- the versioned code is moved to the repository where it can be 
+				retrieved later. Be aware, though, that removing code from your 
+           		workspace will cause problems with all of the other classes that use that code. 
+				VisualAge for Java 2.0 will flag them as errors but this situation is temporary. 
+				When you import the new code, the errors found when deleting the old code will be fixed.
+				<br/>If you are unsure as to how to perform any of these steps, refer to the VisualAge 
+				for Java 2.0 documentation.
+			</li>
+          </ul>
+		</a>
+	</faq>
+	<faq title="100% Pure Java?">
+		<q>Is this Xerces-J version 100% pure Java compliant?</q>
+		<a> <p>blah
+			</p>
+		</a>
+	</faq>
+	<faq title="Running on the Mac?">
+		<q>How do I get Xerces-J to run on the Mac under MRJ?</q>
+		<a> <p><em>Prerequisites</em> (available from 
+			<jump href="http://developer.apple.com/java/">http://developer.apple.com/java/</jump>):</p>
+        <ul>
+          <li>MRJ 2.1 (this is the most recent version of the JVM)</li>
+          <li>MRJ SDK 2.1 (this is the most recent version of the Java developer tools)</li>
+        </ul>
+        <p><em>Instructions </em>(other variations would work also):</p>
+        <ol>
+          <li>Download the .tar.gz file containing Xerces-J.</li>
+          <li>Use Stuffit Expander(tm), Suntar, or some other Macintosh tool that
+		  	<br/>supports the .tar.gz format to expand the downloaded file.</li>
+          <li>JBindery, part of MRJ SDK 2.1, is used to create a double-clickable 
+		  	Java application with the necessary configuration information built in. 
+			It is analogous to writing a .bat or .sh script. </li>
+          <li><em>To run the dom.DOMWriter example:</em></li>
+          <ol>
+            <li>Double click on JBindery to start it up.</li>
+            <li>Click on the Classpath panel.</li>
+            <li>Click on the &quot;Add .zip File&quot; button and add both the 
+				&quot;Xerces-J.jar&quot; and &quot;Xerces-JSamples.jar&quot; files.</li>
+            <li>Click on the Command panel.</li>
+            <li>Enter &quot;dom.DOMWriter&quot; as the Class name. Enter 
+				&quot;data/personal.xml&quot; in the Optional parameters box.</li>
+            <li>Click on Save Settings button, pick a name such as &quot;Run dom.DOMWriter&quot; 
+				for the file, and <em>be sure</em> that &quot;Save as Application&quot; 
+				is selected (this is the default) and save the file.</li>
+            <li>Quit JBindery.</li>
+            <li>You can now double click on the file you created in step f to run the XJParse example.</li>
+          </ol>
+		</ol>
+		</a>
+	</faq>
+	<faq title="Visual Cafe Error?">
+		<q>Why do I get ArrayIndexOutOfBoundsException in the Symantec Visual Cafe debugger?</q>
+		<a> <p>Visual Cafe's debugger is set to trap <code>ArrayIndexOutOfBoundsException</code>'s by 
+        	default. Xerces-J uses <code>ArrayIndexOutOfBoundsException</code> internally to signal 
+			exceptional, but not erroneous conditions. In order to run Xerces-J2 inside 
+       		Visual Cafe's debugger, you need to turn off the trapping of these 
+			exceptions.</p>
+			<p><em>To do this:</em></p>
+        	<ol>
+          		<li>Select the &quot;Options&quot; item in the "Project" menu.</li>
+          		<li>Select the &quot;Debugger&quot; tab in the dialog which appears.</li>
+          		<li>Select &quot;Exceptions&quot; from the popup menu.</li>
+          		<li>Remove the check from the checkbox for <code>java.lang.ArrayIndexOutOfBoundsException</code>.</li>
+        	</ol>
+		</a>
+	</faq>
+</faqs>

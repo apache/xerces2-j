@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Caveats">
+	<s2 title="Caveats and Limitations">
+		<p>This is a list of the limitations in this release of Xerces-J:</p>
+		<ul>
+			<li>Due to a transcoding bug in the Sun JDK's 
+			(1.1.6, 1.1.7, 1.1.8, 1.2)  handling of EBCDIC data 
+			(specifically, end of line characters), you must use 
+			IBM's JDK 1.1.6, if you want to use EBCDIC support. 
+			The IBM JDK has the bug fixed.  We don't know when the 
+			bug fix will get into the Sun JDK's. </li>
+		</ul>
+	</s2>
+</s1>

@@ -1,0 +1,65 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Xerces Java">
+	<s2 title="Xerces-J 1.0.0 Release">
+		<p>The Xerces-J 1.0.0 release contains advanced
+		parser functionality, such as XML Schema, DOM Level 2, and SAX version 2,
+		in addition to supporting the industry-standard DOM Level 1 and SAX version 1
+		APIs.</p>
+		<p>Xerces-J v1.0.0 is the first in a series of ongoing updates -- 
+		Watch <jump href="http://xml.apache.org">xml.apache.org</jump> 
+		for new updates. Note that because some of the standards, notably
+		XML Schema, are still not complete, the stable API will definitely be 
+		different from its current form in Xerces-J v1.0.0. This is your chance to give us 
+		feedback on the features that are important to you, and let us know
+		whether the APIs that we are providing are the right ones. Please 
+		direct your feedback to the Xerces mailing list.</p>
+	</s2>
+	<s2 title="License Information">
+		<p>The Xerces-J version 1.0.0 release is available in both source code
+			and precompiled binary (JAR files) form.</p>
+	</s2>
+	<s2 title="Applications of the Xerces-J Parser">
+		<p>The rich generating and validating capabilities allow the Xerces-J 
+		Parser to be used for: </p>
+		<ul>
+			<li>Building XML-savvy Web servers </li>
+			<li>The next generation of vertical applications which will use 
+				XML as their data format. </li>
+			<li>On-the-fly validation for creating XML editors </li>
+			<li>Ensuring the integrity of e-business data expressed in XML </li>
+			<li>Building truly internationalized XML applications. </li>
+		</ul>
+	</s2>
+	<s2 title="XML Schema (alpha) Support">
+		<p>This release includes preliminary support for the W3C XML Schema 
+		Language. The <link idref="schema">Schema</link> page contains a 
+		complete description of the 
+		schema capabilities of this release. We intend to track the W3C XML 
+		Schema Language in subsequent updates of Xerces-J.</p>
+	</s2>
+	<s2 title="DOM Level 2 (alpha) Support">
+		<p>This release include support for the 
+		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2 Core</jump> and 
+		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2 Traversal</jump> APIs. 
+		We will be expanding our DOM Level 2 support to include all of DOM Level 2. At the moment, the DOM 
+		Level 2 Traversal API's live in the org.apache.xerces.dom.domx.traversal 
+		package.</p>
+	</s2>
+	<s2 title="SAX 2 (alpha) Support">
+		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/SAX2/">
+		SAX Version 2</jump> API's which are being discussed on the 
+		<jump href="http://www.lists.ic.ac.uk/hypermail/xml-dev/">XML-DEV</jump> mailing list. 
+		These API's are still 
+		under development, so they are subject to change in the future.</p>
+	</s2>
+	<s2 title="Configuration Mechanism">
+		<p>Xerces-J version 1.0.0 uses a collection of methods to configure 
+		various settings in the parser. This release includes a new mechanism 
+		for setting parser switches. This mechanism uses the SAX2 Configurable 
+		interface. We have defined a series of properties and features for the 
+		options available in Xerces-J. The list of features can be found 
+		<link idref="features">here</link>.</p>
+	</s2>
+</s1>

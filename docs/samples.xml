@@ -1,0 +1,55 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Samples">
+	<s2 title="Introduction">
+		<p>There are two new samples to test and demonstrate the new DOM2 
+		Transversal implementation: </p>
+		<ul>
+			<li><link idref="iterator">IteratorView</link></li>
+			<li><link idref="tree">TreeWalker</link></li>
+		</ul>
+	</s2>
+	<s2 title="Caveats">
+		<note>Make sure that Xerces-J and a JDK are loaded on 
+		your computer before running any of the sample parsers.</note>
+		<note>Xerces-J: Running the sample applications 
+		requires that you have already loaded the Xerces-J software on 
+		your computer.</note>
+		<note>Java: Running the sample parsers require that your computer has a 
+			correctly installed JDK. If you do not already have a JDK already on your computer download
+		one from Sun's Java website: <jump href="http://java.sun.com">
+		http://java.sun.com</jump> or from IBM's website
+		<jump href="http://www.ibm.com/developer/java/">http://www.ibm.com/developer/java/</jump> 
+		where you can find an "Enhanced Windows	JDK" that is optimized for the Windows platform. 
+		The sample applications
+		described in the following pages support Java 1 - JDK 1.1.6. 1.1.7, 1.1.8 or
+		Java 2 - JDK 1.2.2. </note>
+		<note>UNIX: Command lines in the pages linked below use the Windows path
+		separator ';' (semicolon) and directory separator '\' (backslash).. 
+		On UNIX, use the ':' (colon) character to separate the JAR files in the classpath,
+		and replace Windows directory separator '\' (backslash) with '/' (forward slash).</note>
+	</s2>
+	<s2 title="IteratorView Sample">
+		<p>The IteratorView is an interactive UI sample that displays the DOM tree. It
+		shows the progress of the iteration by moving the selection within the DOM tree.
+		Buttons act as a control panel, allowing the user to interactively iterate through
+		the tree,  remove nodes, add nodes, and view the results immediately in the tree.</p>
+		<p>The IteratorView uses an example filter, NameNodeFilter, that can be controlled
+		from the UI and a DOMTreeFull class that displays the full DOM tree with all
+		the nodes.</p>
+		<p><link idref="iterator">IteratorView page</link></p>
+	</s2>
+	<s2 title="TreeWalker Sample">
+		<p>The TreeWalkerviewView is an interactive UI sample that displays the DOM
+		tree. It show the progress of the tree traversal by moving the selection within the
+		DOM tree. Buttons act as a control panel, allowing the user to interactively
+		traverse the tree,  remove nodes, add nodes, and view the results immediately in
+		the tree.</p>
+
+		<p>The TreeWalkerviewView uses an example filter, NameNodeFilter, that can be
+		controlled from the UI and a DOMTreeFull class that displays the full DOM tree
+		with all the nodes.</p>
+		<p><link idref="tree">TreeWalkerView page</link></p>
+	</s2>
+</s1>

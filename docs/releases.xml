@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Releases">
+	<s2 title="November 5, 1999">
+		<ul>
+			<li>Created initial code base from IBM's XML4J.</li>
+			<li>Modified documentation to reflect new name (Xerces)</li>
+		</ul>
+	</s2>
+
+
+</s1>
