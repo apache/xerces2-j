@@ -1,19 +1,13 @@
 Build Instructions:
 
 To build Xerces Java on Windows, you need a copy of Cygnus's Cygwin.
-See http://sourceware.cygnus.com/cygwin.   Once Cygwin is installed,
-you need to set two environment variables.  Edit the batch file
-BuildAll.bat to set these variables.  Execute BuildAll.bat, and then
-set your classpath to point to the src and samples directories in the
-Xerces Java distribution.  You can then go to the top of the Xerces
-Java tree and type 'make'. 
+See http://sourceware.cygnus.com/cygwin. Once Cygwin is installed,
+or if you're on unix, all you need to do is then to go to the top of
+the Xerces Java tree and type 'make'.
 
-To build Xerces Java on UNIX, you need to set an environment
-variable. Edit the shell script BuildAll to set this variables.  
-Execute BuildAll, and then set your classpath to point to the src 
-and samples directories in the Xerces Java distribution.  You can then
-go to the top of the Xerces Java tree and type 'make'. 
+If you're using JDK 1.1 and want to build the documentation you need
+to specify where the JDK 1.2 java and javadoc programs are by setting
+the variable JDK12BIN, either in your environment or simply when
+calling make with something like:
 
-
-
-
+	make JDK12BIN="<pathToJDK12>"

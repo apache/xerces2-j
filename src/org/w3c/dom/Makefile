@@ -1,3 +1,5 @@
+TOP = ../../../..
+include $(TOP)/src/Makefile.incl
 # Makefile for directory ./org/w3c/dom
 #
 # This makefile depends on the following environment variables

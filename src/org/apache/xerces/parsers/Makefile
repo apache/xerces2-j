@@ -1,4 +1,5 @@
-include ../../../../../src/Makefile.incl
+TOP = ../../../../..
+include $(TOP)/src/Makefile.incl
 # Makefile for directory ./org/apache/xerces/parsers
 #
 # This makefile depends on the following environment variables
@@ -12,7 +13,6 @@ include ../../../../../src/Makefile.incl
 
 TARGETS=\
 	DOMParser.class\
-	RevalidatingDOMParser.class\
 	SAXParser.class
 
 all: dirs compile

@@ -1,4 +1,5 @@
-include ../../src/Makefile.incl
+TOP = ../..
+include $(TOP)/src/Makefile.incl
 # Makefile for directory ./ui
 #
 # This makefile depends on the following environment variables

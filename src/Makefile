@@ -1,4 +1,5 @@
-include Makefile.incl
+TOP = ..
+include $(TOP)/src/Makefile.incl
 # Makefile for directory .
 #
 # This makefile depends on the following environment variables
@@ -32,7 +33,7 @@ clean:
 apidocs: ../docs/apiDocs/index.html
 ../docs/apiDocs/index.html: classfiles_updated
 
-	${JDK12BIN}/javadoc -windowtitle "Xerces ${PRODUCTVERSION_DOT} API" \
+	$(JAVADOC12) -windowtitle "Xerces ${PRODUCTVERSION_DOT} API" \
 		-splitindex -header "Xerces ${PRODUCTVERSION_DOT}" \
 		-version  \
 		-d ../docs/apiDocs ${PACKAGES}

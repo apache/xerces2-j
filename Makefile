@@ -1,4 +1,5 @@
-include ./src/Makefile.incl
+TOP = .
+include $(TOP)/src/Makefile.incl
 
 all: compile jars docs apidocs package
 
@@ -21,7 +22,7 @@ jars: compile
 
 docs: src/classfiles_updated
 	echo Building Stylebook docs in docs directory
-	${JDK12BIN}/java org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
+	$(JAVA12) -classpath "$(CLASSPATH)" org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
 
 apidocs:
 	echo Building apiDocs in docs directory.
@@ -40,9 +41,9 @@ ${BINZIPFILE}: ./src/classfiles_updated
 	${RM} -r bin/data/CVS
 	${CP} LICENSE bin
 	${RM} bin/build.xml
-	mv bin xerces-${PRODUCTVERSION}
-	jar cvfM ${BINZIPFILE} xerces-${PRODUCTVERSION} 
-	mv xerces-${PRODUCTVERSION} bin
+	$(MV) bin xerces-${PRODUCTVERSION}
+	$(JAR) cvfM ${BINZIPFILE} xerces-${PRODUCTVERSION} 
+	$(MV) xerces-${PRODUCTVERSION} bin
 
 package_src: ./source/src/Makefile
 ./source/src/Makefile: ./src/classfiles_updated
@@ -56,14 +57,12 @@ package_src: ./source/src/Makefile
 	${CP} docs/*.ent source/docs
 	${CP} LICENSE source
 	${RM} bin/build.xml
-	mv source xerces-${PRODUCTVERSION}
-	jar cvfM ${SRCZIPFILE} xerces-${PRODUCTVERSION} 
-	mv xerces-${PRODUCTVERSION} source
+	$(MV) source xerces-${PRODUCTVERSION}
+	$(JAR) cvfM ${SRCZIPFILE} xerces-${PRODUCTVERSION} 
+	$(MV) xerces-${PRODUCTVERSION} source
 
 clean:
 	${MAKE} -C src clean
 	${MAKE} -C samples clean
 	${RM} -rf bin class source docs/apiDocs docs/html
 	${RM} ${BINZIPFILE} ${SRCZIPFILE}
-
-
