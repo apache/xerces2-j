@@ -795,9 +795,19 @@ public class XMLDocumentScanner
      */
     protected int scanContent() throws IOException, SAXException {
 
-        int c = fEntityScanner.scanContent(fString);
-        if (fDocumentHandler != null && fString.length > 0) {
-            fDocumentHandler.characters(fString);
+        XMLString content = fString;
+        int c = fEntityScanner.scanContent(content);
+        if (c == '\r') {
+            // happens when there is the character reference &#13;
+            fEntityScanner.scanChar();
+            fStringBuffer.clear();
+            fStringBuffer.append(fString);
+            fStringBuffer.append((char)c);
+            content = fStringBuffer;
+            c = -1;
+        }
+        if (fDocumentHandler != null && content.length > 0) {
+            fDocumentHandler.characters(content);
         }
 
         if (c == ']' && fString.length == 0) {

@@ -703,6 +703,11 @@ public abstract class XMLScanner
                 else if (c == '%') {
                     fStringBuffer2.append((char)fEntityScanner.scanChar());
                 }
+                else if (c == '\r') {
+                    // this happens when we have the character reference &#13;
+                    fEntityScanner.scanChar();
+                    fStringBuffer2.append(' '); // normalize to #x20
+                }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
                     scanSurrogates(fStringBuffer2);
                 }

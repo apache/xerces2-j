@@ -551,7 +551,7 @@ public class XMLEntityManager
 
         // resolve external entity
         XMLInputSource xmlInputSource = null;
-        if (entity.isExternal()) {
+        if (external) {
             ExternalEntity externalEntity = (ExternalEntity)entity;
             String publicId = externalEntity.publicId;
             String systemId = externalEntity.systemId;
@@ -1598,9 +1598,19 @@ public class XMLEntityManager
             if (DEBUG_BUFFER) {
                 System.out.print(")peekChar: ");
                 print();
-                System.out.println(" -> '"+(c!='\r'?(char)c:'\n')+"'");
+                if (fCurrentEntity.isExternal()) {
+                    System.out.println(" -> '"+(c!='\r'?(char)c:'\n')+"'");
+                }
+                else {
+                    System.out.println(" -> '"+(char)c+"'");
+                }
             }
-            return c != '\r' ? c : '\n';
+            if (fCurrentEntity.isExternal()) {
+                return c != '\r' ? c : '\n';
+            }
+            else {
+                return c;
+            }
 
         } // peekChar():int
     
@@ -1628,21 +1638,24 @@ public class XMLEntityManager
 
             // scan character
             int c = fCurrentEntity.ch[fCurrentEntity.position++];
-            if (c == '\r' || c == '\n') {
+            boolean external = false;
+            if (c == '\n' ||
+                (c == '\r' && (external = fCurrentEntity.isExternal()))) {
                 fCurrentEntity.lineNumber++;
                 fCurrentEntity.columnNumber = 1;
                 if (fCurrentEntity.position == fCurrentEntity.count) {
                     fCurrentEntity.ch[0] = (char)c;
                     load(1, false);
                 }
-                if (c == '\r') {
+                if (c == '\r' && external) {
                     if (fCurrentEntity.ch[fCurrentEntity.position++] != '\n') {
                         fCurrentEntity.position--;
                     }
                     c = '\n';
                 }
                 else {
-                    if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
+                    if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
+                        && fCurrentEntity.isExternal()) {
                         fCurrentEntity.position++;
                     }
                 }
@@ -1948,7 +1961,8 @@ public class XMLEntityManager
             int offset = fCurrentEntity.position;
             int c = fCurrentEntity.ch[offset];
             int newlines = 0;
-            if (c == '\r' || c == '\n') {
+            boolean external = fCurrentEntity.isExternal();
+            if (c == '\n' || (c == '\r' && external)) {
                 if (DEBUG_BUFFER) {
                     System.out.print("[newline, "+offset+", "+fCurrentEntity.position+": ");
                     print();
@@ -1956,7 +1970,7 @@ public class XMLEntityManager
                 }
                 do {
                     c = fCurrentEntity.ch[fCurrentEntity.position++];
-                    if (c == '\r') {
+                    if (c == '\r' && external) {
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
@@ -1983,7 +1997,8 @@ public class XMLEntityManager
                                 break;
                             }
                         }
-                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
+                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
+                            && external) {
                             fCurrentEntity.position++;
                             offset++;
                         }
@@ -2028,9 +2043,12 @@ public class XMLEntityManager
             // return next character
             if (fCurrentEntity.position != fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position];
-                if (c == '\r' || c == '\n') {
+                if (c == '\r' && external) {
                     c = '\n';
                 }
+            }
+            else {
+                c = -1;
             }
             if (DEBUG_BUFFER) {
                 System.out.print(")scanContent: ");
@@ -2093,7 +2111,8 @@ public class XMLEntityManager
             int offset = fCurrentEntity.position;
             int c = fCurrentEntity.ch[offset];
             int newlines = 0;
-            if (c == '\r' || c == '\n') {
+            boolean external = fCurrentEntity.isExternal();
+            if (c == '\n' || (c == '\r' && external)) {
                 if (DEBUG_BUFFER) {
                     System.out.print("[newline, "+offset+", "+fCurrentEntity.position+": ");
                     print();
@@ -2101,7 +2120,7 @@ public class XMLEntityManager
                 }
                 do {
                     c = fCurrentEntity.ch[fCurrentEntity.position++];
-                    if (c == '\r') {
+                    if (c == '\r' && external) {
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
@@ -2128,7 +2147,8 @@ public class XMLEntityManager
                                 break;
                             }
                         }
-                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
+                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
+                            && external) {
                             fCurrentEntity.position++;
                             offset++;
                         }
@@ -2162,7 +2182,7 @@ public class XMLEntityManager
             while (fCurrentEntity.position < fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
                 if ((c == quote &&
-                     (!fCurrentEntity.literal || fCurrentEntity.isExternal()))
+                     (!fCurrentEntity.literal || external))
                     || c == '%' || !XMLChar.isContent(c)) {
                     fCurrentEntity.position--;
                     break;
@@ -2181,6 +2201,9 @@ public class XMLEntityManager
                 if (c == quote && fCurrentEntity.literal) {
                     c = -1;
                 }
+            }
+            else {
+                c = -1;
             }
             if (DEBUG_BUFFER) {
                 System.out.print(")scanLiteral, '"+(char)quote+"': ");
@@ -2250,7 +2273,8 @@ public class XMLEntityManager
             int offset = fCurrentEntity.position;
             int c = fCurrentEntity.ch[offset];
             int newlines = 0;
-            if (c == '\r' || c == '\n') {
+            boolean external = fCurrentEntity.isExternal();
+            if (c == '\n' || (c == '\r' && external)) {
                 if (DEBUG_BUFFER) {
                     System.out.print("[newline, "+offset+", "+fCurrentEntity.position+": ");
                     print();
@@ -2258,7 +2282,7 @@ public class XMLEntityManager
                 }
                 do {
                     c = fCurrentEntity.ch[fCurrentEntity.position++];
-                    if (c == '\r') {
+                    if (c == '\r' && external) {
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
@@ -2290,7 +2314,8 @@ public class XMLEntityManager
                             }
                         }
                         /***/
-                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
+                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
+                            && external) {
                             fCurrentEntity.position++;
                             offset++;
                         }
@@ -2343,7 +2368,7 @@ public class XMLEntityManager
                         break;
                     }
                 }
-                else if (c == '\r' || c == '\n') {
+                else if (c == '\n' || (external && c == '\r')) {
                     fCurrentEntity.position--;
                     break;
                 }
@@ -2449,22 +2474,24 @@ public class XMLEntityManager
             // skip spaces
             int c = fCurrentEntity.ch[fCurrentEntity.position];
             if (XMLChar.isSpace(c)) {
+                boolean external = fCurrentEntity.isExternal();
                 do {
                     // handle newlines
-                    if (c == '\r' || c == '\n') {
+                    if (c == '\n' || (external && c == '\r')) {
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
                         if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                             fCurrentEntity.ch[0] = (char)c;
                             load(1, true);
                         }
-                        if (c == '\r') {
+                        if (c == '\r' && external) {
                             if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
                                 fCurrentEntity.position--;
                             }
                         }
                         else {
-                            if (fCurrentEntity.ch[fCurrentEntity.position + 1] == '\r') {
+                            if (fCurrentEntity.ch[fCurrentEntity.position + 1] == '\r'
+                                && external) {
                                 fCurrentEntity.position++;
                             }
                         }
