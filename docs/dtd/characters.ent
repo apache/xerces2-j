@@ -103,8 +103,8 @@
 
 <!-- C0 Controls and Basic Latin -->
 <!ENTITY quot     "&#34;">   <!-- U+0022 ISOnum    - quotation mark = APL quote                                            -->
-<!ENTITY amp      "&#38;">   <!-- U+0026 ISOnum    - ampersand                                                             -->
-<!ENTITY lt       "&#60;">   <!-- U+003C ISOnum    - less-than sign                                                        -->
+<!ENTITY amp      "&#38;&#38;">   <!-- U+0026 ISOnum    - ampersand                                                             -->
+<!ENTITY lt       "&#38;&#60;">   <!-- U+003C ISOnum    - less-than sign                                                        -->
 <!ENTITY gt       "&#62;">   <!-- U+003E ISOnum    - greater-than sign                                                     -->
 
 <!-- Latin Extended-A -->

@@ -1,8 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!ENTITY % include.blocks SYSTEM 'blocks.ent'>
-<!ENTITY % include.markup SYSTEM 'markup.ent'>
 %include.blocks;
-%include.markup;
 
 <!ENTITY % boolean '(true|false)'>
 <!ENTITY % access-options '(read-only|read-write|write-only)'>
@@ -13,7 +11,6 @@
 
 <!ELEMENT desc (#PCDATA|%markup;|%blocks;)*>
 <!ATTLIST desc name CDATA #IMPLIED>
-<!ELEMENT note (#PCDATA|%markup;)*>
 <!ELEMENT fcategory (desc?,feature+)>
 <!ATTLIST fcategory name CDATA #REQUIRED>
 <!ELEMENT pcategory (desc?,property+)>

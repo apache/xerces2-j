@@ -2,6 +2,7 @@
 
 <!-- BLOCKS ENTITY -->
 <!ENTITY % blocks "p|note|ul|ol|gloss|table|source|anchor">
+<!ENTITY % relBlocks "p|note|ul|ol|gloss|table|source">
 
 <!-- import the external markup.ent dtd -->
 <!ENTITY % markupEntity SYSTEM "markup.ent">

@@ -2,8 +2,7 @@
 <!ENTITY % include.blocks SYSTEM 'blocks.ent'>
 %include.blocks;
 
-<!ELEMENT desc (#PCDATA|%blocks;|%markup;|%links;)*>
-<!ELEMENT note (#PCDATA|%markup;)*>
+<!ELEMENT desc (#PCDATA|%relBlocks;|%markup;|%links;)*>
 
 <!ELEMENT releases (desc?,release+)>
 <!ELEMENT release (desc?,changes?)>
