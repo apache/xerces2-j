@@ -9,6 +9,7 @@ TARGETS=\
 	DecimalValidator.class\
 	DoubleValidator.class\
 	FloatValidator.class\
+	ConstrainException.class\
 	IllegalFacetException.class\
 	IllegalFacetValueException.class\
 	InvalidDatatypeValueException.class\
