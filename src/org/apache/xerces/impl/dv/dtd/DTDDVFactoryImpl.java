@@ -96,38 +96,36 @@ public class DTDDVFactoryImpl extends DTDDVFactory {
     // make sure the built-in types are created
     // the types are supposed to be reused for all factory objects,
     // so we synchorinize on the class object.
-    void prepareBuiltInTypes() {
+    static void prepareBuiltInTypes() {
         if (fBuiltInTypes == null) {
-            synchronized (this.getClass()) {
-                // check again, in case I'm waiting for another thread to create
-                // the types.
-                if (fBuiltInTypes == null) {
-                    createBuiltInTypes();
-                }
-            }
+            createBuiltInTypes();
         }
     }
 
     // create all built-in types
     // we are assumeing that fBuiltInTypes == null
-    void createBuiltInTypes() {
+    static synchronized void createBuiltInTypes() {
 
-        fBuiltInTypes = new Hashtable();
+        if (fBuiltInTypes != null)
+            return;
+
+        Hashtable types = new Hashtable();
         DatatypeValidator dvTemp;
-        
-        fBuiltInTypes.put("string", new StringDatatypeValidator());
-        fBuiltInTypes.put("ID", new IDDatatypeValidator());
+
+        types.put("string", new StringDatatypeValidator());
+        types.put("ID", new IDDatatypeValidator());
         dvTemp = new IDREFDatatypeValidator();
-        fBuiltInTypes.put("IDREF", dvTemp);
-        fBuiltInTypes.put("IDREFS", new ListDatatypeValidator(dvTemp));
+        types.put("IDREF", dvTemp);
+        types.put("IDREFS", new ListDatatypeValidator(dvTemp));
         dvTemp = new ENTITYDatatypeValidator();
-        fBuiltInTypes.put("ENTITY", new ENTITYDatatypeValidator());
-        fBuiltInTypes.put("ENTITIES", new ListDatatypeValidator(dvTemp));
-        fBuiltInTypes.put("NOTATION", new NOTATIONDatatypeValidator());
+        types.put("ENTITY", new ENTITYDatatypeValidator());
+        types.put("ENTITIES", new ListDatatypeValidator(dvTemp));
+        types.put("NOTATION", new NOTATIONDatatypeValidator());
         dvTemp = new NMTOKENDatatypeValidator();
-        fBuiltInTypes.put("NMTOKEN", dvTemp);
-        fBuiltInTypes.put("NMTOKENS", new ListDatatypeValidator(dvTemp));
-        
+        types.put("NMTOKEN", dvTemp);
+        types.put("NMTOKENS", new ListDatatypeValidator(dvTemp));
+
+        fBuiltInTypes = types;
     }//createBuiltInTypes()
 
 }//SchemaDVFactory
