@@ -259,16 +259,19 @@ public class ElementNSImpl
         return index < 0 ? null : name.substring(0, index); 
     }
     
-    /** 
+    /**
      * Introduced in DOM Level 2. <p>
-     *
+     * 
      * Note that setting this attribute changes the nodeName attribute, which holds the
      * qualified name, as well as the tagName and name attributes of the Element
      * and Attr interfaces, when applicable.<p>
+     * 
+     * @param prefix The namespace prefix of this node, or null(empty string) if it is unspecified.
      *
-     * @throws INVALID_CHARACTER_ERR Raised if the specified
-     * prefix contains an invalid character.     
-     *
+     * @exception INVALID_CHARACTER_ERR
+     *                   Raised if the specified
+     *                   prefix contains an invalid character.
+     * @exception DOMException
      * @since WD-DOM-Level-2-19990923
      */
     public void setPrefix(String prefix)
@@ -284,24 +287,29 @@ public class ElementNSImpl
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                                      msg);
             }
-            if (!CoreDocumentImpl.isXMLName(prefix)) {
-                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
-                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-            }
-            if (namespaceURI == null || prefix.indexOf(':') >=0) {
-                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-                throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-            } else if (prefix != null) {
-                if (prefix.equals("xml")) {
-                    if (!namespaceURI.equals(xmlURI)) {
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-                        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                    }
+            if (prefix != null && prefix.length() != 0) {
+                if (!CoreDocumentImpl.isXMLName(prefix)) {
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
+                    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
+                }
+                if (namespaceURI == null || prefix.indexOf(':') >=0) {
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                    throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+                } else if (prefix.equals("xml")) {
+                     if (!namespaceURI.equals(xmlURI)) {
+                         String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
+                         throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+                     }
                 }
             }
         }
         // update node name with new qualifiedName
-        name = prefix + ":" + localName;
+        if (prefix !=null && prefix.length() != 0) {
+            name = prefix + ":" + localName;
+        }
+        else {
+            name = localName;
+        }
     }
                                         
     /** 
