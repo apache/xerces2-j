@@ -2480,7 +2480,8 @@ public class XMLEntityManager
 
             StringBuffer str = new StringBuffer();
             str.append("name=\""+name+'"');
-            str.append(",ch="+ch);
+            str.append(",ch=");
+            str.append(ch);
             str.append(",position="+position);
             str.append(",count="+count);
             return str.toString();
