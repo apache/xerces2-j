@@ -24,6 +24,7 @@ import java.util.Vector;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.ParserConfigurationSettings;
@@ -1263,6 +1264,10 @@ public class XIncludeHandler
                 }
                 reader.setErrorReporter(fErrorReporter);
                 reader.parse();
+            }
+            catch (MalformedByteSequenceException ex) {
+                fErrorReporter.reportError(ex.getDomain(), ex.getKey(), 
+                    ex.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             catch (IOException e) {
                 reportResourceError(
