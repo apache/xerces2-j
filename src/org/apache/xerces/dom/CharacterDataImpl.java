@@ -60,7 +60,6 @@ package org.apache.xerces.dom;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * CharacterData is an abstract Node that can carry character data as its

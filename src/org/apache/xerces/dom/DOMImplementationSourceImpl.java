@@ -57,13 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.DOMImplementation;
-import org.apache.xerces.dom3.DOMImplementationList;
-import org.apache.xerces.dom3.bootstrap.DOMImplementationRegistry;
-import org.apache.xerces.dom3.DOMImplementationSource;
-
-
 import java.util.StringTokenizer;
+
+import org.apache.xerces.dom3.DOMImplementationList;
+import org.apache.xerces.dom3.DOMImplementationSource;
+import org.w3c.dom.DOMImplementation;
 
 /**
  * Supply one the right implementation, based upon requested features. Each

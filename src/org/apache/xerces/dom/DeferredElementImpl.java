@@ -63,9 +63,6 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
 import org.w3c.dom.NamedNodeMap;
 
 /**

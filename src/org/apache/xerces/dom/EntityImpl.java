@@ -60,9 +60,6 @@ package org.apache.xerces.dom;
 import org.w3c.dom.Entity;
 import org.w3c.dom.Node;
 
-
-import org.w3c.dom.DOMException;
-
 /**
  * Entity nodes hold the reference data for an XML Entity -- either
  * parsed or unparsed. The nodeName (inherited from Node) will contain

@@ -57,12 +57,13 @@
 
 package org.apache.xerces.dom;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.io.Serializable;
 
-
-
+import org.apache.xerces.dom.events.EventImpl;
+import org.apache.xerces.dom.events.MutationEventImpl;
+import org.apache.xerces.dom3.UserDataHandler;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
@@ -70,29 +71,17 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Notation;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
-
-import org.apache.xerces.dom3.UserDataHandler;
-
-  
 import org.w3c.dom.events.DocumentEvent;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventException;
 import org.w3c.dom.events.EventListener;
-import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.events.MutationEvent;
 import org.w3c.dom.ranges.DocumentRange;
 import org.w3c.dom.ranges.Range;
 import org.w3c.dom.traversal.DocumentTraversal;
-import org.w3c.dom.traversal.NodeIterator;
 import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.NodeIterator;
 import org.w3c.dom.traversal.TreeWalker;
-
-import org.apache.xerces.dom.events.EventImpl;
-import org.apache.xerces.dom.events.MutationEventImpl;
 
 
 /**

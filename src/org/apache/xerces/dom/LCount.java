@@ -56,7 +56,6 @@
  */
 package org.apache.xerces.dom;
 
-import java.util.Vector;
 
 /** Internal class LCount is used to track the number of
     listeners registered for a given event name, as an entry
