@@ -413,7 +413,7 @@ Copyright:
     <copy todir="${distsrc.dir}/src" >
         <fileset
             dir="${src.dir}"  
-            includes="org/**, dom3/**, javax/**"
+            includes="org/**, dom3/**, javax/**, manifest.xerces"
             excludes="**/CVS*, **/.#*, **/*.class
                       **/v1/** **/v2/**"
         />
