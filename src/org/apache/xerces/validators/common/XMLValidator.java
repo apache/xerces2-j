@@ -665,9 +665,6 @@ public final class XMLValidator
         if ( DEBUG_SCHEMA_VALIDATION )
             System.out.println("\n=======StartElement : " + fStringPool.toString(element.localpart));
 
-        if (fAttrListHandle != -1) {
-            fAttrList.endAttrList();
-        }
 
         //
         // Check after all specified attrs are scanned
@@ -687,6 +684,10 @@ public final class XMLValidator
         }
 
         validateElementAndAttributes(element, fAttrList);
+        if (fAttrListHandle != -1) {
+            fAttrList.endAttrList();
+        }
+
         fDocumentHandler.startElement(element, fAttrList, fAttrListHandle);
         fAttrListHandle = -1;
 
@@ -2232,6 +2233,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                    + "attType : "+fTempAttDecl.type + "\n"
                                    + "attDefaultType : "+fTempAttDecl.defaultType + "\n"
                                    + "attDefaultValue : '"+fTempAttDecl.defaultValue + "'\n"
+                                   + attrList.getLength() +"\n"
                                    );
             }
             /***/
@@ -2246,6 +2248,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             boolean specified = false;
             boolean required = attDefType == fREQUIREDSymbol;
+            
 
             /****
             if (fValidating && fGrammar != null && fGrammar instanceof DTDGrammar && attValue != -1) {
@@ -2284,6 +2287,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                 }
             }
+
             if (!specified) {
                 if (required) {
                     if (validationEnabled) {
@@ -2302,7 +2306,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         if ( fGrammar instanceof DTDGrammar 
                              && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
                         
-                         // REVISIT: we don't have such informatio anymore && fAttDefIsExternal[adChunk][adIndex] != 0) {
                         Object[] args = { fStringPool.toString(elementNameIndex),
                                           fStringPool.toString(attName) };
                         fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -2326,7 +2329,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         attrIndex = attrList.startAttrList();
                     }
                     // REVISIT: Validation. What should the prefix be?
-                    fTempQName.setValues(attPrefix, attName, attName);
+                    fTempQName.setValues(attPrefix, attName, attName, fTempAttDecl.name.uri);
                     int newAttr = attrList.addAttr(fTempQName, 
                                                    attValue, attType, 
                                                    false, false);
@@ -3619,7 +3622,28 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // checkIdRefs()
 
-    // debugging
+    /** 
+     * Checks that all declared elements refer to declared elements
+     * in their content models. This method calls out to the error
+     * handler to indicate warnings.
+     */
+    /*private void checkDeclaredElements() throws Exception {
+
+                //****DEBUG****
+                if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
+                //****DEBUG****
+
+        for (int i = 0; i < fElementCount; i++) {
+            int type = fGrammar.getContentSpecType(i);
+            if (type == fMIXEDSymbol || type == fCHILDRENSymbol) {
+                int chunk = i >> CHUNK_SHIFT;
+                int index = i &  CHUNK_MASK;
+                int contentSpecIndex = fContentSpec[chunk][index];
+                checkDeclaredElements(i, contentSpecIndex);
+            }
+        }
+    }
+    */
 
     private void printChildren() {
         if (DEBUG_ELEMENT_CHILDREN) {
