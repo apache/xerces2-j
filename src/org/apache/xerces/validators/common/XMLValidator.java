@@ -900,10 +900,11 @@ public final class XMLValidator
 
                 if (result != -1) {
                     int majorCode = result != childCount ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
+                    fGrammar.getElementDecl(elementIndex, fTempElementDecl);
                     reportRecoverableXMLError(majorCode,
                                               0,
                                               fStringPool.toString(elementType),
-                                              "");// REVISIT: getContentSpecAsString(elementIndex));
+                                              XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));// REVISIT: getContentSpecAsString(elementIndex));
                 }
             }
         }
@@ -2526,8 +2527,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 System.out.println("element: "+fStringPool.toString(element.name.localpart));
                 System.out.println("attlistIndex " + attlistIndex + "\n"+
                     "attName : '"+fStringPool.toString(fTempAttDecl.name.localpart) + "'\n"
-                                   + "attType : '"+fTempAttDecl.type + "'\n"
-                                   + "attDefaultType : '"+fTempAttDecl.defaultType + "'\n"
+                                   + "attType : "+fTempAttDecl.type + "\n"
+                                   + "attDefaultType : "+fTempAttDecl.defaultType + "\n"
                                    + "attDefaultValue : '"+fTempAttDecl.defaultValue + "'\n"
                                    );
             }
@@ -3086,7 +3087,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 fGrammarNameSpaceIndex = fEmptyURI;
             }
 
-            if (fRootElement.rawname != -1) {
+            if ( fGrammar instanceof DTDGrammar && 
+                ((DTDGrammar) fGrammar).getRootElementQName(fRootElement) ) {
+
                 String root1 = fStringPool.toString(fRootElement.rawname);
                 String root2 = fStringPool.toString(rootElement.rawname);
                 if (!root1.equals(root2)) {
@@ -3587,7 +3590,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     // break;
                 }
                 // here, we validate every "user-defined" attributes
-		int _xmlns = fStringPool.addSymbol("xmlns");
+                int _xmlns = fStringPool.addSymbol("xmlns");
                 if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns) 
                 if (fValidating) {
                     fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
@@ -3619,12 +3622,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                         fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
 
+                        //TO DO: special handling needed here for IDs IDrefs, ENTITIES, ?NOTations
+
                         if (fTempAttDecl.datatypeValidator == null) {
                             Object[] args = { fStringPool.toString(element.rawname),
                                               fStringPool.toString(attrList.getAttrName(index)) };
                             System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
                                                + " not found in element type " + fStringPool.toString(element.rawname));
-                        //REVISIT : is this the right message?
+                            //REVISIT : is this the right message?
                               /****/
                             fErrorReporter.reportError(fAttrNameLocator,    
                                                    XMLMessages.XML_DOMAIN,
