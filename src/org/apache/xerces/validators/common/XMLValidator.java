@@ -3149,13 +3149,6 @@ public final class XMLValidator
       if (skipThisOne) {
          fNeedValidationOff = true;
       } else {
-        String euri = fStringPool.toString(element.uri);
-        String elocal = fStringPool.toString(element.localpart);
-        String eraw = fStringPool.toString(element.rawname);
-        if (elocal.equals("shapeElement")) {
-            int asdf = 0;
-            asdf++;
-        }
          //REVISIT: is this the right place to check on if the Schema has changed?
          TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
         if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1)
