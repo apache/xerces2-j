@@ -427,6 +427,28 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
          System.out.println("float value = " + value + " is Not valid " );
       }
 
+      DatatypeValidator  idData = tstRegistry.getDatatypeValidator( "ID" );
+
+      if (  idData != null ) {
+         ((IDDatatypeValidator) idData).initialize();
+         try {
+            idData.validate( "a1", null );
+            idData.validate( "a2", null );
+         } catch ( Exception ex ) {
+            ex.printStackTrace();
+         }
+         Hashtable tst = (Hashtable)((IDDatatypeValidator) idData).getTableIds();
+         if (tst != null) {
+            System.out.println("Table of ID = " + tst.toString());
+         }
+         try {
+            idData.validate( "a1", null );
+         } catch ( Exception ex ) {
+            ex.printStackTrace();// Should throw a unique exception
+         }
+
+      }
+
    }
 
 }
