@@ -4,6 +4,7 @@
 <s1 title="Releases">
   <s2 title='TBD'>
     <ul>
+        <li>Completed implementation of schema Identity Constraints [Neil Graham]</li>
         <li>Update XPath support to bring it into compliance with Schema 
             PR [Achille Fokoue Nkoutche/Neil Graham]</li>
         <li>Implemented Schema PR changes to the syntax of &lt;attribute&gt; 

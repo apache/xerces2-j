@@ -42,12 +42,12 @@
 			<li>Building truly internationalized XML applications. </li>
 		</ul>
 	</s2>
-	<s2 title="XML Schema (alpha) Support">
-		<p>This release includes preliminary support for the W3C XML Schema 
-		Language. The <link idref="schema">Schema</link> page contains a 
-		complete description of the 
-		schema capabilities of this release. We intend to track the W3C XML 
-		Schema Language in subsequent updates of &javaparsername;.</p>
+	<s2 title="XML Schema 1.0 (beta) Support">
+		<p>This release includes full support for the W3C XML Schema 
+		Recommendation, except for limitations as described on the <link 
+        idref="schema">Schema Implementation Limitations</link> page.
+        We intend to remove these limitations and fix outstanding
+        bugs in the next release of &javaparsername;.</p>
 	</s2>
 	<s2 title="DOM Level 2 Support">
 		<p>This release includes support for DOM Level 2 

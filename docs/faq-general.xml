@@ -3,6 +3,24 @@
 
 <faqs title="General FAQs">
 
+    <faq title="Validating Schemas">
+        <q>I have written a schema and I want to use Xerces to
+            validate it.  How do I do this?</q>
+        <a>
+            <p>
+            The best way to solve this problem is to write a
+            simple, valid instance document and use one of the
+            sample programs that accompanies Xerces (such as
+            sax.SAXCount or dom.DOMCount) to validate the
+            instance document.  While validating the instance
+            document, Xerces will simultaneously validate the
+            corresponding schema.  We hope to introduce
+            functionality to permit schemas to be validated
+            independently of instance documents in Xerces2.
+            </p>
+        </a>
+    </faq>
+
 	<faq title="Bugzilla">
 		<q>How do I use Bugzilla to report bugs?</q>
 		<a>
