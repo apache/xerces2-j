@@ -567,15 +567,22 @@ public class NamedNodeMapImpl
      // than being set manually later on?
      // We _do_ clone the defaults reference, if any.
     public NamedNodeMapImpl cloneMap() {
+        return cloneMap(null);
+    }
+    public NamedNodeMapImpl cloneMap(ElementImpl element) {
 
-    	boolean deep = true;
-    	NamedNodeMapImpl newmap = new NamedNodeMapImpl(ownerDocument, defaults);
+    	NamedNodeMapImpl newmap = null;
+        if (element != null) {
+            newmap = new NamedNodeMapImpl(element, defaults);
+        }
+        else {
+            newmap = new NamedNodeMapImpl(ownerDocument, defaults);
+        }
     	if (nodes != null) {
     		newmap.nodes = new Vector(nodes.size());
     		for (int i = 0; i < nodes.size(); ++i) {
-                NodeImpl clone = (NodeImpl)((Node)nodes.elementAt(i)).cloneNode(deep);
-                clone.parentNode = element;
-    			newmap.nodes.addElement(clone);
+                NodeImpl clone = (NodeImpl)((Node)nodes.elementAt(i)).cloneNode(true);
+                newmap.setNamedItem(clone);
             }
         }
     	newmap.defaults = defaults;

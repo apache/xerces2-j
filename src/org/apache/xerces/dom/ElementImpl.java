@@ -173,7 +173,7 @@ public class ElementImpl
 
     	ElementImpl newnode = (ElementImpl) super.cloneNode(deep);
     	// Replicate NamedNodeMap rather than sharing it.
-    	newnode.attributes = attributes.cloneMap();
+    	newnode.attributes = attributes.cloneMap(newnode);
     	return newnode;
 
     } // cloneNode(boolean):Node
