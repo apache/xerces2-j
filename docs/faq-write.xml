@@ -114,10 +114,7 @@ parser.getXMLReader().setErrorHandler(handler);</source>
   </a>
  </faq>
  <faq title='What does &quot;non-validating&quot; mean?'>  
-  <q>
-   Why does &quot;non-validating&quot; not mean &quot;well-formedness 
-   checking only&quot;?
-  </q>
+  <q>Why does &quot;non-validating&quot; not mean &quot;well-formedness checking&quot; only?</q>
   <a>
    <p>
     Using a &quot;non-validating&quot; parser does not mean that
@@ -227,15 +224,15 @@ parser.getXMLReader().setErrorHandler(handler);</source>
   <a>
    <p>
     Since the pull-parsing API is specific to Xerces, you have to use
-    Xerces-specific way to create parsers, and parse documents.
+    a Xerces-specific method to create parsers, and parse documents.
    </p>
    <p>
-    You first need to create a parser configuration that implements the
+    First, you need to create a parser configuration that implements the
     <code>XMLPullParserConfiguration</code> interface. Then you need to
     create a parser from this configuration. To parse documents, method
     <code>parse(boolean)</code> should be called.
    </p>
-   <source>import org.apache.xerces.parsers.StandardParserConfiguration;
+   <source>import &DefaultConfigLong;;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
@@ -243,7 +240,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 
 boolean continueParse = true;
 void pullParse(XMLInputSource input) throws Exception {
-    StandardParserConfiguration config = new StandardParserConfiguration();
+    &DefaultConfig; config = new &DefaultConfig;();
     SAXParser parser = new SAXParser(config);
     config.setInputSource(input);
     parser.reset();
