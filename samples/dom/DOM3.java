@@ -57,8 +57,15 @@
  */
 
 package dom;
-import  org.w3c.dom.*;
-import  org.w3c.dom.ls.*;
+
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMError;
+import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.DOMImplementationRegistry;
+import org.w3c.dom.Document;
+import org.w3c.dom.ls.DOMBuilder;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.DOMWriter;
 
 /**
  * This sample program illustrates how to use DOM L3 
@@ -98,28 +105,44 @@ public class DOM3 implements DOMErrorHandler {
             // create DOMBuilder
             DOMBuilder builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, null);
             
+            DOMConfiguration config = builder.getConfig();
 
             // create Error Handler
             DOMErrorHandler errorHandler = new DOM3();
 
             // set error handler
-            builder.setErrorHandler(errorHandler);
+            config.setParameter("error-handler", errorHandler);
+
 
             // set validation feature
-            builder.setFeature("validate",true);
+            //config.setParameter("validate", Boolean.FALSE);
+            config.setParameter("validate",Boolean.TRUE);
+            
+            // set schema language
+            config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
+            //config.setParameter("psvi",Boolean.TRUE);
+            //config.setParameter("schema-type","http://www.w3.org/TR/REC-xml");
+            
+            // set schema location
+            config.setParameter("schema-location","personal.xsd");
             
             // parse document
             System.out.println("Parsing "+argv[0]+"...");
             Document doc = builder.parseURI(argv[0]);
 
             // set error handler on the Document
-            doc.setErrorHandler(errorHandler);
+            config = doc.getConfig();
+            
+            config.setParameter("error-handler", errorHandler);
 
             // set validation feature
-            doc.setNormalizationFeature("validate", true);
+            config.setParameter("validate", Boolean.TRUE);
+            config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
+            //config.setParameter("schema-type","http://www.w3.org/TR/REC-xml");
+            config.setParameter("schema-location","data/personal.xsd");
             
             // remove comments from the document
-            doc.setNormalizationFeature("comments", false);
+            config.setParameter("comments", Boolean.FALSE);
 
             System.out.println("Normalizing document... ");
             doc.normalizeDocument();
@@ -129,6 +152,10 @@ public class DOM3 implements DOMErrorHandler {
             DOMWriter domWriter = impl.createDOMWriter();
             
             System.out.println("Serializing document... ");
+            config = domWriter.getConfig();
+            config.setParameter("xml-declaration", Boolean.FALSE);
+            //config.setParameter("validate",errorHandler);
+
             // serialize document to standard output
             domWriter.writeNode(System.out, doc);
 

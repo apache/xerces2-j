@@ -57,6 +57,7 @@
 
 package dom;
 
+import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
 
@@ -135,7 +136,8 @@ public class ASBuilder implements DOMErrorHandler {
         DOMImplementationAS domImpl = (DOMImplementationAS)ASDOMImplementationImpl.getDOMImplementation();
         // create a new parser, and set the error handler
         DOMASBuilder parser = domImpl.createDOMASBuilder();
-        parser.setErrorHandler(new ASBuilder());
+        DOMConfiguration config = parser.getConfig();
+        config.setParameter("error-handler", new ASBuilder());
 
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
 
@@ -154,10 +156,12 @@ public class ASBuilder implements DOMErrorHandler {
 
         // set the features. since we only deal with schema, some features have
         // to be true
-        parser.setFeature(NAMESPACES_FEATURE_ID, true);
-        parser.setFeature(VALIDATION_FEATURE_ID, true);
-        parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-        parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+        config.setParameter(NAMESPACES_FEATURE_ID, Boolean.TRUE);
+        config.setParameter(VALIDATION_FEATURE_ID, Boolean.TRUE);
+        
+        config.setParameter(SCHEMA_VALIDATION_FEATURE_ID, Boolean.TRUE);
+        config.setParameter(SCHEMA_FULL_CHECKING_FEATURE_ID, 
+        (schemaFullChecking)?Boolean.TRUE:Boolean.FALSE);
 
         // process -a: as model files
         if (!arg.equals("-a")) {
