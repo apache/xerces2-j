@@ -131,33 +131,70 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 	public void setParameter(String name, Object value) throws DOMException {
 		if (serializer.fFeatures.containsKey(name)) {
 			// This is a feature
-			if (value == Boolean.TRUE || value == Boolean.FALSE){
-				if (canSetParameter(name, value)) {
+			if (value instanceof Boolean){
+				boolean state = ((Boolean)value).booleanValue();
+				if (name.equals(Constants.DOM_XMLDECL)){
+					serializer._format.setOmitXMLDeclaration(!state);
 					serializer.fFeatures.put(name, value);
-					if (name.equals(Constants.DOM_XMLDECL)) {
-						serializer._format.setOmitXMLDeclaration(
-							!((Boolean) value).booleanValue());
+				}
+				else if (name.equals(Constants.DOM_NAMESPACES)){
+					serializer.fNamespaces = state;
+					serializer.fFeatures.put(name, value);
+				}
+				else if (name.equals(Constants.DOM_SPLIT_CDATA)
+				|| name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)){
+					// both values supported 		
+					serializer.fFeatures.put(name, value);
+				}			
+				else if (name.equals(Constants.DOM_CANONICAL_FORM)
+					|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
+					|| name.equals(Constants.DOM_VALIDATE)
+					|| name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
+					|| name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
+					|| name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
+					|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+					// REVISIT: these must be supported
+					|| name.equals(Constants.DOM_WELLFORMED)) {
+					// true is not supported
+					if (state){
+						String msg = DOMMessageFormatter.formatMessage(
+								DOMMessageFormatter.DOM_DOMAIN,
+								"FEATURE_NOT_SUPPORTED",
+								new Object[] { name });
+						throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 					}
-                    else if (name.equals(Constants.DOM_NAMESPACES)){
-                        serializer.fNamespaces = (value==Boolean.TRUE)?true:false;
-                    }
+				}
+				else if (name.equals(Constants.DOM_INFOSET)
+						|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+						|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
+						|| name.equals(Constants.DOM_IGNORE_CHAR_DENORMALIZATION)
+						// REVISIT: these must be supported
+						|| name.equals(Constants.DOM_ENTITIES)
+						|| name.equals(Constants.DOM_CDATA_SECTIONS)
+						|| name.equals(Constants.DOM_COMMENTS)) {
+					// false is not supported
+					if (!state){
+						String msg = DOMMessageFormatter.formatMessage(
+								DOMMessageFormatter.DOM_DOMAIN,
+								"FEATURE_NOT_SUPPORTED",
+								new Object[] { name });
+						throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+					}
 				}
 				else {
 					String msg = DOMMessageFormatter.formatMessage(
 							DOMMessageFormatter.DOM_DOMAIN,
-							"FEATURE_NOT_SUPPORTED",
+							"FEATURE_NOT_FOUND",
 							new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 				}
 			}
-            else {
-                // REVISIT: should be TYPE_MISMATCH
-                String msg = DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
-                            new Object[] { name });
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
-            }
+			 // REVISIT: modify error exception to TYPE_MISMATCH
+ 			String msg = DOMMessageFormatter.formatMessage(
+			 DOMMessageFormatter.DOM_DOMAIN,
+			 "FEATURE_NOT_SUPPORTED",
+			 new Object[] { name });
+			throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
 		}
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
 			if (value instanceof DOMErrorHandler) {
@@ -169,7 +206,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
                             DOMMessageFormatter.DOM_DOMAIN,
                             "FEATURE_NOT_SUPPORTED",
                             new Object[] { name });
-               throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+               throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
 			}
 		}
 		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)
@@ -194,29 +231,42 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
      * Check if parameter can be set
      */
 	public boolean canSetParameter(String name, Object state) {
-		if (name.equals(Constants.DOM_NORMALIZE_CHARACTERS) 
-			&& state == Boolean.TRUE){
-			return false;
+		if (state instanceof Boolean){
+			boolean value = ((Boolean)state).booleanValue();
+			if (name.equals(Constants.DOM_NAMESPACES)
+			|| name.equals(Constants.DOM_SPLIT_CDATA)
+			|| name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)
+			|| name.equals(Constants.DOM_XMLDECL)){
+	            // both values supported 		
+				return true;
+			}			
+			else if (name.equals(Constants.DOM_CANONICAL_FORM)
+			    || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
+			    || name.equals(Constants.DOM_VALIDATE)
+			    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
+			    || name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
+			    || name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
+			    || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+			    // REVISIT: these must be supported
+			    || name.equals(Constants.DOM_WELLFORMED)) {
+				// true is not supported
+				return !value;
+			}
+			else if (name.equals(Constants.DOM_INFOSET)
+					|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+			        || name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
+			        || name.equals(Constants.DOM_IGNORE_CHAR_DENORMALIZATION)
+			        // REVISIT: these must be supported
+			        || name.equals(Constants.DOM_ENTITIES)
+					|| name.equals(Constants.DOM_CDATA_SECTIONS)
+					|| name.equals(Constants.DOM_COMMENTS)) {
+				// false is not supported
+				return value;
+			        }
 		}
-		else if (name.equals(Constants.DOM_VALIDATE) && state == Boolean.TRUE) {
-			return false;
+		else if (name.equals(Constants.DOM_ERROR_HANDLER)){
+			return true;
 		}
-		else if (name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
-				&& state == Boolean.FALSE) {
-			return false;
-		}
-		else if (name.equals(Constants.DOM_CANONICAL_FORM)
-				&& state == Boolean.TRUE) {
-			return false;
-		}
-		else if (name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
-				&& state == Boolean.TRUE) {
-			return false;
-		}
-        else if (serializer.fFeatures.get(name)!=null ||
-            name.equals(Constants.DOM_ERROR_HANDLER)){
-            return true;
-        }
 	    return false; 
     }
     
@@ -281,29 +331,6 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     public void setEncoding(String encoding) {
         serializer._format.setEncoding(encoding);
         fEncoding = serializer._format.getEncoding();
-    }
-
-    /**
-     *  The error handler that will receive error notifications during 
-     * serialization. The node where the error occured is passed to this 
-     * error handler, any modification to nodes from within an error 
-     * callback should be avoided since this will result in undefined, 
-     * implementation dependent behavior. 
-     */
-    public DOMErrorHandler getErrorHandler() {
-        return serializer.fDOMErrorHandler;
-    }
-
-    /**
-     * DOM L3 EXPERIMENTAL: 
-     *  The error handler that will receive error notifications during 
-     * serialization. The node where the error occured is passed to this 
-     * error handler, any modification to nodes from within an error 
-     * callback should be avoided since this will result in undefined, 
-     * implementation dependent behavior. 
-     */
-    public void setErrorHandler(DOMErrorHandler errorHandler) {
-        serializer.fDOMErrorHandler = errorHandler;
     }
 
     /**
@@ -538,17 +565,27 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
         ser.fLocalNSBinder = new NamespaceSupport();
         ser.fSymbolTable = new SymbolTable();
         ser.fFeatures = new Hashtable();
-        ser.fFeatures.put(Constants.NAMESPACES_FEATURE, Boolean.TRUE);
+        ser.fFeatures.put(Constants.DOM_NAMESPACES, Boolean.TRUE);
         ser.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, Boolean.FALSE);
-        ser.fFeatures.put(Constants.DOM_SPLIT_CDATA, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_VALIDATE_IF_SCHEMA, Boolean.FALSE);
         ser.fFeatures.put(Constants.DOM_VALIDATE, Boolean.FALSE);
-        ser.fFeatures.put(Constants.DOM_ENTITIES, Boolean.FALSE);
+        ser.fFeatures.put(Constants.DOM_ENTITIES, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_SPLIT_CDATA, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_CDATA_SECTIONS, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_COMMENTS, Boolean.TRUE);
         ser.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, Boolean.TRUE);
         ser.fFeatures.put(Constants.DOM_DISCARD_DEFAULT_CONTENT, Boolean.TRUE);
         ser.fFeatures.put(Constants.DOM_CANONICAL_FORM, Boolean.FALSE);
         ser.fFeatures.put(Constants.DOM_FORMAT_PRETTY_PRINT, Boolean.FALSE);
         ser.fFeatures.put(Constants.DOM_XMLDECL, Boolean.TRUE);
-        ser.fFeatures.put(Constants.DOM_UNKNOWNCHARS, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_CHECK_CHAR_NORMALIZATION, Boolean.FALSE);
+		ser.fFeatures.put(Constants.DOM_DATATYPE_NORMALIZATION, Boolean.FALSE);
+		ser.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, Boolean.FALSE);
+		ser.fFeatures.put(Constants.DOM_WELLFORMED, Boolean.FALSE);
+		ser.fFeatures.put(Constants.DOM_INFOSET, Boolean.FALSE);
+		ser.fFeatures.put(Constants.DOM_NAMESPACE_DECLARATIONS, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_IGNORE_CHAR_DENORMALIZATION, Boolean.TRUE);
     }
 
     // copies all settings that could have been modified

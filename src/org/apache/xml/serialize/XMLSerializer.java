@@ -81,6 +81,7 @@ import java.util.Enumeration;
 
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
@@ -1157,7 +1158,7 @@ extends BaseMarkupSerializer {
     private void printAttribute (String name, String value, boolean isSpecified) throws IOException{
 
         if (isSpecified || (fFeatures != null && 
-                            !((Boolean)fFeatures.get("discard-default-content")).booleanValue())) {
+                            !((Boolean)fFeatures.get(Constants.DOM_DISCARD_DEFAULT_CONTENT)).booleanValue())) {
             _printer.printSpace();
             _printer.printText( name );
             _printer.printText( "=\"" );
