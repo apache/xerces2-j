@@ -1165,7 +1165,9 @@ public final class XMLValidator
          if (DEBUG_IDENTITY_CONSTRAINTS) {
              System.out.println("<IC>: popping context - element: "+fStringPool.toString(fCurrentElement.rawname));
          }
-         fMatcherStack.popContext();
+         if (fMatcherStack.size() > 0) {
+             fMatcherStack.popContext();
+         }
          int newCount = fMatcherStack.getMatcherCount();
          for (int i = oldCount - 1; i >= newCount; i--) {
              XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
@@ -3900,6 +3902,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             fMatchersCount = 0;
             fContextStack.clear();
         } // clear()
+
+        /** Returns the size of the stack. */
+        public int size() {
+            return fContextStack.size();
+        } // size():int
 
         /** Returns the count of XPath matchers. */
         public int getMatcherCount() {
