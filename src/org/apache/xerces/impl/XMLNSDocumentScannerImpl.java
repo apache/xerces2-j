@@ -112,15 +112,15 @@ public class XMLNSDocumentScannerImpl
 extends XMLDocumentScannerImpl {
 
     /** If is true, the dtd validator is no longer in the pipeline 
-      * and the scanner should bind namespaces */    
-    protected boolean fBindNamespaces;
-    
+      * and the scanner should bind namespaces */
+    protected boolean fBindNamespaces;    
+
     /** If validating parser, make sure we report an error in the 
-      *   scanner if DTD grammar is missing.*/    
+      *   scanner if DTD grammar is missing.*/
     protected boolean fPerformValidation;
-    
+
     /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
+    protected NamespaceSupport fNamespaceSupport = null;
     protected String[] fUri= new String[4];
     protected String[] fLocalpart = new String[4];
     protected int fLength = 0;
@@ -217,7 +217,8 @@ extends XMLDocumentScannerImpl {
             if (c == '>') {
                 fEntityScanner.scanChar();
                 break;
-            } else if (c == '/') {
+            } 
+            else if (c == '/') {
                 fEntityScanner.scanChar();
                 if (!fEntityScanner.skipChar('>')) {
                     reportFatalError("ElementUnterminated",
@@ -225,7 +226,8 @@ extends XMLDocumentScannerImpl {
                 }
                 empty = true;
                 break;
-            } else if (!XMLChar.isNameStart(c) || !sawSpace) {
+            } 
+            else if (!XMLChar.isNameStart(c) || !sawSpace) {
                 reportFatalError("ElementUnterminated", new Object[]{rawname});
             }
 
@@ -416,8 +418,8 @@ extends XMLDocumentScannerImpl {
 
 
 
+        // record namespace declarations if any.
         if (fBindNamespaces) {
-            // get namespace declarations
 
             String localpart = fAttributeQName.localpart;
             String prefix = fAttributeQName.prefix != null
@@ -486,19 +488,14 @@ extends XMLDocumentScannerImpl {
                 if (fDocumentHandler != null) {
                     fDocumentHandler.startPrefixMapping(prefix, uri, null);
                 }
-            } else {
-
+            } 
+            else {
                 // attempt to bind attribute
                 if (fAttributeQName.prefix != null) {
                     attributes.setURI(oldLen, fNamespaceSupport.getURI(fAttributeQName.prefix));
                 }
             }
-
         }
-
-
-
-
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
     } // scanAttribute(XMLAttributes)
@@ -557,6 +554,8 @@ extends XMLDocumentScannerImpl {
 
         // call handler
         if (fDocumentHandler != null ) {
+
+            fDocumentHandler.endElement(fElementQName, null);
             if (fBindNamespaces) {
                 int count = fNamespaceSupport.getDeclaredPrefixCount();
                 for (int i = count - 1; i >= 0; i--) {
@@ -566,7 +565,6 @@ extends XMLDocumentScannerImpl {
                 fNamespaceSupport.popContext();
             }
 
-            fDocumentHandler.endElement(fElementQName, null);
         }
 
         return fMarkupDepth;
@@ -580,8 +578,9 @@ extends XMLDocumentScannerImpl {
         super.reset(componentManager);
         fPerformValidation = false;
         fBindNamespaces = false;
-        fNamespaceSupport.reset();
 
+        // internal xerces property: namespace context
+        fNamespaceSupport = (NamespaceSupport)componentManager.getProperty(NAMESPACE_CONTEXT_PROPERTY);
     }
 
     /** Creates a content dispatcher. */
@@ -609,8 +608,11 @@ extends XMLDocumentScannerImpl {
          */
         protected boolean scanRootElementHook()
         throws IOException, XNIException {
-            if (fDTDValidator != null && !fDTDValidator.hasGrammar()) {
-                fBindNamespaces = true;                
+            if (fDTDValidator == null) {
+                fBindNamespaces = true;
+            }
+            else if (!fDTDValidator.hasGrammar()) {
+                fBindNamespaces = true;
                 fPerformValidation = fDTDValidator.validate();
                 // re-configure pipeline
                 // 

@@ -155,6 +155,10 @@ public class XMLDocumentScannerImpl
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
 
+    /** Internal property: namespace context */
+    protected static final String NAMESPACE_CONTEXT_PROPERTY =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -173,6 +177,7 @@ public class XMLDocumentScannerImpl
         ENTITY_MANAGER,
         DTD_SCANNER,
         VALIDATION_MANAGER,
+        NAMESPACE_CONTEXT_PROPERTY
     };
 
     //

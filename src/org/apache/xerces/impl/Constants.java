@@ -303,6 +303,8 @@ public final class Constants {
     /** Validation manager property ("internal/validation-manager"). */
     public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";
 
+    /** Validation manager property ("internal/namespace-context"). */
+    public static final String NAMESPACE_CONTEXT_PROPERTY = "internal/namespace-context";
 
     // general constants
 

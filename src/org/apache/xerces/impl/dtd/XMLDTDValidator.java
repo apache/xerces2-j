@@ -1046,13 +1046,9 @@ public class XMLDTDValidator
         return fValidation && (!fDynamicValidation || fSeenDoctypeDecl)  
                              && (fDTDValidation || fSeenDoctypeDecl);
     }
-
-    //
-    // Private methods
-    //
-
+    
     /** Add default attributes and validate. */
-    private void addDTDDefaultAttrsAndValidate(int elementIndex, 
+    protected void addDTDDefaultAttrsAndValidate(int elementIndex, 
                                                XMLAttributes attributes) 
     throws XNIException {
 
@@ -1264,7 +1260,7 @@ public class XMLDTDValidator
     } // addDTDDefaultAttrsAndValidate(int,XMLAttrList)
 
     /** Checks entities in attribute values for standalone VC. */
-    private String getExternalEntityRefInAttrValue(String nonNormalizedValue) {
+    protected String getExternalEntityRefInAttrValue(String nonNormalizedValue) {
         int valLength = nonNormalizedValue.length();
         int ampIndex = nonNormalizedValue.indexOf('&');
         while (ampIndex != -1) {
@@ -1290,7 +1286,7 @@ public class XMLDTDValidator
     /**
      * Validate attributes in DTD fashion.
      */
-    private void validateDTDattribute(QName element, String attValue,
+    protected void validateDTDattribute(QName element, String attValue,
                                       XMLAttributeDecl attributeDecl) 
     throws XNIException {
 
@@ -1416,8 +1412,9 @@ public class XMLDTDValidator
 
     } // validateDTDattribute(QName,String,XMLAttributeDecl)
 
+
     /** Returns true if invalid standalone attribute definition. */
-    boolean invalidStandaloneAttDef(QName element, QName attribute) {
+    protected boolean invalidStandaloneAttDef(QName element, QName attribute) {
         // REVISIT: This obviously needs to be fixed! -Ac
         boolean state = true;
         /*
@@ -1432,6 +1429,12 @@ public class XMLDTDValidator
        */
         return state;
     }
+
+
+    //
+    // Private methods
+    //
+
 
     /**
      * Normalize the attribute value of a non CDATA attributes collapsing

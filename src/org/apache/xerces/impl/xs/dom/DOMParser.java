@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs.dom;
 
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
+import org.apache.xerces.parsers.NonValidatingConfiguration;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -117,7 +117,7 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
         // REVISIT: should we use a new configuration with scannerNS->dom API with 
         //          no dtd scanners/valitors..?
         //
-        super(new IntegratedParserConfiguration());
+        super(new NonValidatingConfiguration());
         try {
             // use our own document implementation
             setProperty(DOCUMENT_CLASS, "org.apache.xerces.impl.xs.dom.DocumentImpl");

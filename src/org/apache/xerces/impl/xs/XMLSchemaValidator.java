@@ -213,6 +213,10 @@ public class XMLSchemaValidator
     protected static final String JAXP_SCHEMA_SOURCE =
     Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
+    /** Internal property: namespace context */
+    protected static final String NAMESPACE_CONTEXT_PROPERTY =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -231,7 +235,8 @@ public class XMLSchemaValidator
         VALIDATION_MANAGER,
         SCHEMA_LOCATION,
         SCHEMA_NONS_LOCATION,
-        JAXP_SCHEMA_SOURCE
+        JAXP_SCHEMA_SOURCE, 
+        NAMESPACE_CONTEXT_PROPERTY
     };
 
     // this is the number of valuestores of each kind
@@ -556,7 +561,7 @@ public class XMLSchemaValidator
         if (DEBUG) {
             System.out.println("startPrefixMapping("+prefix+","+uri+")");
         }
-        handleStartPrefix(prefix, uri);
+
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startPrefixMapping(prefix, uri, augs);
@@ -1006,11 +1011,8 @@ public class XMLSchemaValidator
     final XMLSchemaLoader fSchemaLoader;
 
     /** Namespace support. */
-    final NamespaceSupport fNamespaceSupport = new NamespaceSupport();
-    /** this flag is used to indicate whether the next prefix binding
-     *  should start a new context (.pushContext)
-     */
-    boolean fPushForNextBinding;
+    protected NamespaceSupport fNamespaceSupport = null;
+    
     /** the DV usd to convert xsi:type to a QName */
     // REVISIT: in new simple type design, make things in DVs static,
     //          so that we can QNameDV.getCompiledForm()
@@ -1139,11 +1141,8 @@ public class XMLSchemaValidator
         // initialize the schema loader
         fSchemaLoader = new XMLSchemaLoader(fXSIErrorReporter.fErrorReporter, fGrammarBucket, fSubGroupHandler, fCMBuilder);
 
-        fValidationState.setNamespaceSupport(fNamespaceSupport);
         fState4XsiType.setExtraChecking(false);
-        fState4XsiType.setNamespaceSupport(fNamespaceSupport);
         fState4ApplyDefault.setFacetChecking(false);
-        fState4ApplyDefault.setNamespaceSupport(fNamespaceSupport);
 
     } // <init>()
 
@@ -1173,6 +1172,13 @@ public class XMLSchemaValidator
             fSchemaLoader.setProperty(SYMBOL_TABLE, symbolTable);
             fSymbolTable = symbolTable;
         }
+
+
+        // internal xerces property: namespace-context 
+        fNamespaceSupport = (NamespaceSupport)componentManager.getProperty(NAMESPACE_CONTEXT_PROPERTY);
+        fValidationState.setNamespaceSupport(fNamespaceSupport);
+        fState4XsiType.setNamespaceSupport(fNamespaceSupport);
+        fState4ApplyDefault.setNamespaceSupport(fNamespaceSupport);
 
         try {
             fValidation = componentManager.getFeature(VALIDATION);
@@ -1223,9 +1229,6 @@ public class XMLSchemaValidator
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
         fSchemaLoader.setEntityResolver(fEntityResolver);
 
-        // initialize namespace support
-        fNamespaceSupport.reset();
-        fPushForNextBinding = true;
         fValidationManager = (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.addValidationState(fValidationState);
         fValidationState.setSymbolTable(fSymbolTable);
@@ -1644,18 +1647,6 @@ public class XMLSchemaValidator
         }
         fCurrentPSVI.reset();
 
-        // we receive prefix binding events before this one,
-        // so at this point, the prefix bindings for this element is done,
-        // and we need to push context when we receive another prefix binding.
-
-        // but if fPushForNextBinding is still true, that means there has
-        // been no prefix binding for this element. we still need to push
-        // context, because the context is always popped in end element.
-        if (fPushForNextBinding)
-            fNamespaceSupport.pushContext();
-        else
-            fPushForNextBinding = true;
-
         // root element
         if (fElementDepth == -1) {
             // at this point we assume that no XML schemas found in the instance document
@@ -1994,10 +1985,6 @@ public class XMLSchemaValidator
                 fElementDepth--;
             }
 
-            // need to pop context so that the bindings for this element is
-            // discarded.
-            fNamespaceSupport.popContext();
-
             // pop error reporter context: get all errors for the current
             // element, and remove them from the error list
             // String[] errors = fXSIErrorReporter.popContext();
@@ -2098,10 +2085,6 @@ public class XMLSchemaValidator
             fSawChildren = fSawChildrenStack[fElementDepth];
         }
 
-        // need to pop context so that the bindings for this element is
-        // discarded.
-        fNamespaceSupport.popContext();
-
         fCurrentPSVI.fDeclaration = this.fCurrentElemDecl;
         fCurrentPSVI.fTypeDecl = this.fCurrentType;
         fCurrentPSVI.fNotation = this.fNotation;
@@ -2134,17 +2117,6 @@ public class XMLSchemaValidator
 
         return augs;
     } // handleEndElement(QName,boolean)*/
-
-    void handleStartPrefix(String prefix, String uri) {
-        // push namespace context if necessary
-        if (fPushForNextBinding) {
-            fNamespaceSupport.pushContext();
-            fPushForNextBinding = false;
-        }
-
-        // add prefix declaration to the namespace support
-        fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
-    }
 
     void storeLocations(String sLocation, String nsLocation){
         if (sLocation != null) {

@@ -122,6 +122,10 @@ public class XMLNamespaceBinder
     protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
+    /** Internal property: namespace context */
+    protected static final String NAMESPACE_CONTEXT_PROPERTY =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -162,7 +166,7 @@ public class XMLNamespaceBinder
     // namespaces
 
     /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
+    protected NamespaceSupport fNamespaceSupport = null;
 
     // settings
 
@@ -264,6 +268,7 @@ public class XMLNamespaceBinder
         // Xerces properties
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+        fNamespaceSupport = (NamespaceSupport)componentManager.getProperty(NAMESPACE_CONTEXT_PROPERTY);
 
         // initialize vars
         fNamespaceSupport.reset();
