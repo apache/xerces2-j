@@ -374,9 +374,8 @@ public class SAXParser
      * 
      * @param name 
      * @param text 
-     * @param isPE 
      */
-    public void internalEntityDecl(String name, XMLString text, boolean isPE)
+    public void internalEntityDecl(String name, XMLString text)
         throws SAXException {
 
         if (fDeclHandler != null || DEBUG_CALLBACKS) {
@@ -387,8 +386,7 @@ public class SAXParser
                                    + name + ", " + text + ")");
             }
             if (fDeclHandler != null) {
-                fDeclHandler.internalEntityDecl(isPE ? "%" + name : name,
-                                                text.toString());
+                fDeclHandler.internalEntityDecl(name, text.toString());
             }
         }
 
@@ -400,10 +398,9 @@ public class SAXParser
      * @param name 
      * @param publicId 
      * @param systemId 
-     * @param isPE 
      */
     public void externalEntityDecl(String name, String publicId,
-                                   String systemId, boolean isPE)
+                                   String systemId)
         throws SAXException {
 
         if (fDeclHandler != null || DEBUG_CALLBACKS) {
@@ -414,8 +411,7 @@ public class SAXParser
                                    + publicId + ", " + systemId + ")");
             }
             if (fDeclHandler != null) {
-                fDeclHandler.externalEntityDecl(isPE ? "%" + name : name,
-                                                publicId, systemId);
+                fDeclHandler.externalEntityDecl(name, publicId, systemId);
             }
         }
 
