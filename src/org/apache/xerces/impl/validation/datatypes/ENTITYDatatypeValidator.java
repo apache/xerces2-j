@@ -130,7 +130,8 @@ implements StatefullDatatypeValidator {
         int entityDeclIndex = -1;
         if (fGrammar == null) {
             InvalidDatatypeValueException error = 
-            new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Need to call initialize method with a valid Grammar reference" );//Need Message
+            new InvalidDatatypeValueException();//Need Message
+            error.setKeyIntoReporter( "ENTITYFailedInitializeGrammar");
             throw error;
         }
 
@@ -142,12 +143,14 @@ implements StatefullDatatypeValidator {
             fGrammar.getEntityDecl( entityDeclIndex, fEntityDecl );
             if (fEntityDecl.notation != null) {// not unparsed entity
                 InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not unparsed" );
+                new InvalidDatatypeValueException( content );
+                error.setKeyIntoReporter( "ENTITYNotUnparsed" );
                 throw error;
             }
         } else {
             InvalidDatatypeValueException error = 
-            new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );
+            new InvalidDatatypeValueException( content );
+            error.setKeyIntoReporter( "ENTITYNotValid" );
             throw error;
         }
     }

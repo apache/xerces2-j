@@ -770,12 +770,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     fValIDRef.validate();//Do final validation of IDREFS against IDs
                     fValIDRefs.validate();
                 } catch (InvalidDatatypeValueException ex) {
-                String  key = ex.getKeyIntoReporter();
+                    String  key = ex.getKeyIntoReporter();
 
-                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                            key,
-                                            new Object[]{ ex.getMessage()},
-                                            XMLErrorReporter.SEVERITY_ERROR );
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                key,
+                                                new Object[]{ ex.getMessage()},
+                                                XMLErrorReporter.SEVERITY_ERROR );
                 }
             }
 
@@ -1175,7 +1175,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                        "IDDefaultTypeInvalid",
-                                                       new Object[]{ attributeName },
+                                                       new Object[]{ attributeName},
                                                        XMLErrorReporter.SEVERITY_ERROR);
 
 
@@ -1840,11 +1840,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 if (fValidation) {
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                            /*
-                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                                                      */
+                            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                               "MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE",
+                                new Object[]{ value, attributeDecl.name.rawname, unTrimValue },
+                                                        XMLErrorReporter.SEVERITY_ERROR );
                         }
                     }
                 }
@@ -1856,15 +1855,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                         fValENTITY.validate( value, null );
                     }
                 } catch (InvalidDatatypeValueException ex) {
-                    if (ex.getMajorCode() != 1 && ex.getMinorCode() != -1) {
-                        /*
-                        reportRecoverableXMLError(ex.getMajorCode(),
-                                                  ex.getMinorCode(),
-                                                  fStringPool.toString( attributeDecl.name.rawname), value );
-                                                  */
-                    } else {
-                        System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
-                    }
+                    String  key = ex.getKeyIntoReporter();
+
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                key,
+                                                new Object[]{ ex.getMessage()},
+                                                XMLErrorReporter.SEVERITY_ERROR );
+
                 }
 
                 /*if (attributeDecl.list) {
