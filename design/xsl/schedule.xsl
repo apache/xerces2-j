@@ -7,6 +7,9 @@
    <HEAD>
     <TITLE>Xerces 2 | Schedule</TITLE>
     <LINK rel='stylesheet' type='text/css' href='css/site.css'/>
+    <STYLE type='text/css'>
+     .note { font-size: smaller }
+    </STYLE>
    </HEAD>
    <BODY>
     <SPAN class='netscape'>
@@ -49,23 +52,57 @@
       </TD>
      </TR>
     </xsl:if>
-    <xsl:for-each select='goal'>
+    <xsl:for-each select='task'>
      <TR>
-      <TH>Goal:</TH>
+      <TH>Task:</TH>
       <TD>
-       <xsl:value-of select='.'/>
-       <xsl:if test='@owner'>
+       <xsl:value-of select='title'/>
+       <SPAN class='note'>
+       <xsl:if test='detail'>
+        <BR/>
+        <xsl:value-of select='detail'/>
+       </xsl:if>
+       <!--
+       <xsl:if test='not(@status="working")'>
+        <BR/>
+        <STRONG>Status:</STRONG>
+        <xsl:text> </xsl:text>
+        <xsl:value-of select='@status'/>
+       </xsl:if>
+       -->
+       <xsl:if test='@driver'>
 	<BR/>
-        <STRONG>Owner:</STRONG> 
+        <STRONG>Driver:</STRONG> 
 	<xsl:choose>
-	 <xsl:when test='id(@owner)/@email'>
-	  <A href='mailto:{id(@owner)/@email}'><xsl:value-of select='id(@owner)'/></A>
+	 <xsl:when test='id(@driver)/@email'>
+	  <A href='mailto:{id(@driver)/@email}'><xsl:value-of select='id(@driver)'/></A>
 	 </xsl:when>
 	 <xsl:otherwise>
-	  <xsl:value-of select='@owner'/>
+	  <xsl:value-of select='id(@driver)'/>
 	 </xsl:otherwise>
 	</xsl:choose>
        </xsl:if>
+       <BR/>
+       <STRONG>Contributors:</STRONG>
+       <xsl:choose>
+        <xsl:when test='contributor'>
+         <xsl:for-each select='contributor'>
+          <xsl:choose>
+           <xsl:when test='id(@owner)/@email'>
+            <A href='mailto:{id(@owner)/@email}'><xsl:value-of select='id(@owner)'/></A>
+           </xsl:when>
+           <xsl:otherwise>
+            <xsl:value-of select='id(@owner)'/>
+           </xsl:otherwise>
+          </xsl:choose>
+          <xsl:if test='not(position()=last())'>, </xsl:if>
+         </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+         <EM>Contributors wanted! Contact task driver to contribute.</EM>
+        </xsl:otherwise>
+       </xsl:choose>
+       </SPAN>
       </TD>
      </TR>
     </xsl:for-each>

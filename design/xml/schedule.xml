@@ -4,74 +4,98 @@
 <!ENTITY people SYSTEM 'people.ent'>
 ]>
 <schedule date='$Date$'>
+ <!-- People -->
  &people;
+ 
+ <!-- Milestones -->
  <milestone id='M1' date='Friday, 29 Sep 2000'>
   <title>Parser without DTD support</title>
-  <goal owner='andyc'>
-   Document design based on Xerces community feedback.
-  </goal>
-  <goal owner='ericye' status='verify'>
-   Support classes. (XMLString, XMLStringBuffer,
-   XMLChar, EncodingMap, SymbolTable, QName)
-  </goal>
-  <goal owner='jeffreyr'>
-   Basic entity managment. (XMLEntityManager, XMLEntityScanner)
-  </goal>
-  <goal owner='ericye'>
-   Basic error handling. (XMLErrorReporter, some MessageFormatter)
-  </goal>
-  <goal owner='andyc'>
-   Parsing of elements and attributes using internal interface.
-   (XMLAttributes, XMLDocumentScanner)
-  </goal>
-  <goal owner='lehors'>
-   Implement a SAX2 parser from internal callbacks.
-   (XMLParser, XMLDocumentParser, SAXParser)
-  </goal>
+  <task driver='andyc'>
+   <title>Document design based on Xerces community feedback</title>
+  </task>
+  <task driver='ericye' status='verify'>
+   <title>Support classes</title>
+   <detail>
+    This affects the following classes: 
+    XMLString, XMLStringBuffer, XMLChar, EncodingMap, SymbolTable, QName.
+   </detail>
+  </task>
+  <task driver='jeffreyr'>
+   <title>Basic entity managment</title>
+   <detail>
+    This affects the following classes: XMLEntityManager, XMLEntityScanner.
+   </detail>
+  </task>
+  <task driver='ericye'>
+   <title>Basic error handling</title>
+   <detail>
+    This affects the following interfaces &amp; classes:
+    XMLErrorReporter, some MessageFormatter.
+   </detail>
+  </task>
+  <task driver='andyc'>
+   <title>Parsing of elements and attributes using internal interface</title>
+   <detail>
+    This affects the following classes: XMLAttributes, XMLDocumentScanner.
+   </detail>
+  </task>
+  <task driver='lehors'>
+   <title>Implement a SAX2 parser from internal callbacks</title>
+   <detail>
+    This affects the following classes: 
+    XMLParser, XMLDocumentParser, SAXParser.
+   </detail>
+  </task>
  </milestone>
  <milestone id='M2'>
-  <depends idref='M1'/>
   <title>Parser with DTD scanning without validation</title>
+  <depends idref='M1'/>
+  <task>
+   <title>Parsing of DOCTYPE line and DTD markup declarations</title>
+  </task>
+  <task>
+   <title>Storing basic DTD grammar information</title>
+  </task>
   <!-- REVISIT: re-group
-  <goal>CachingParserPool (supporting GrammarPool)</goal>
-  <goal>XMLDTDScanner</goal>
-  <goal>XMLGrammarParser/DTDParser</goal>
-  <goal>GrammarPool</goal>
-  <goal>Grammar/DTDGrammar</goal>
-  <goal>XMLElementDecl</goal>
-  <goal>XMLAttributeDecl</goal>
-  <goal>XMLSimpleType</goal>
-  <goal>XMLEntityDecl</goal>
-  <goal>XMLNotationDecl</goal>
+  <task>CachingParserPool (supporting GrammarPool)</task>
+  <task>XMLDTDScanner</task>
+  <task>XMLGrammarParser/DTDParser</task>
+  <task>GrammarPool</task>
+  <task>Grammar/DTDGrammar</task>
+  <task>XMLElementDecl</task>
+  <task>XMLAttributeDecl</task>
+  <task>XMLSimpleType</task>
+  <task>XMLEntityDecl</task>
+  <task>XMLNotationDecl</task>
   -->
  </milestone>
  <milestone id='M3'>
-  <depends idref='M2'/>
   <title>Parser with DTD scanning + datatypes validation</title>
+  <depends idref='M2'/>
   <!-- REVISIT: re-group
-  <goal>XMLValidator</goal>
-  <goal>DatatypeValidatorFactoryImpl</goal>
-  <goal>AbstractDatatypeValidator</goal>
-  <goal>StringDatatypeValidator</goal>
-  <goal>InvalidDatatypeFacetException</goal>
-  <goal>InvalidDatatypeValueException</goal>
+  <task>XMLValidator</task>
+  <task>DatatypeValidatorFactoryImpl</task>
+  <task>AbstractDatatypeValidator</task>
+  <task>StringDatatypeValidator</task>
+  <task>InvalidDatatypeFacetException</task>
+  <task>InvalidDatatypeValueException</task>
   -->
  </milestone>
  <milestone id='M4'>
-  <depends idref='M3'/>
   <title>Parser with DTD scanning + datatypes and content model validation</title>
+  <depends idref='M3'/>
   <!-- REVISIT: re-group
-  <goal>SimpleContentModel</goal>
-  <goal>MixedContentModel</goal>
-  <goal>DFAContentModel</goal>
+  <task>SimpleContentModel</task>
+  <task>MixedContentModel</task>
+  <task>DFAContentModel</task>
   -->
  </milestone>
  <milestone id='M5'>
-  <depends idref='M4'/>
   <title>Parser with DTD scanning and Schema parsing + validation</title>
+  <depends idref='M4'/>
   <!-- REVISIT: re-group
-  <goal>SchemaGrammar</goal>
-  <goal>SchemaParser</goal>
+  <task>SchemaGrammar</task>
+  <task>SchemaParser</task>
   -->
  </milestone>
 </schedule>

@@ -4,13 +4,17 @@
 %person;
 <!ELEMENT schedule (person*,milestone*)>
 <!ATTLIST schedule date CDATA #REQUIRED>
-<!ELEMENT milestone (title,depends*,goal*)>
-<!ATTLIST milestone id      ID     #REQUIRED
-                    date    CDATA  #IMPLIED
-		    owner   IDREF  #IMPLIED>
+<!ELEMENT milestone (title,depends*,task*)>
+<!ATTLIST milestone id    ID    #REQUIRED
+                    date  CDATA #IMPLIED
+		    owner IDREF #IMPLIED>
+<!ELEMENT title (#PCDATA)>
 <!ELEMENT depends EMPTY>
 <!ATTLIST depends idref IDREF #REQUIRED>
-<!ELEMENT title (#PCDATA)>
-<!ELEMENT goal (#PCDATA)>
-<!ATTLIST goal owner IDREF #IMPLIED
+<!ELEMENT task (title,detail?,contributor*)>
+<!ATTLIST task date   CDATA #IMPLIED
+               driver IDREF #IMPLIED
                status (working|verify|done) 'working'>
+<!ELEMENT detail (#PCDATA)>
+<!ELEMENT contributor EMPTY>
+<!ATTLIST contributor idref IDREF #REQUIRED>
