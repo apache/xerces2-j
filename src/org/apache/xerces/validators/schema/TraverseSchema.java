@@ -1489,8 +1489,11 @@ public class TraverseSchema implements
         DatatypeValidator simpleTypeValidator = null;
         int baseTypeSymbol = -1;
         String fullBaseName = "";
+
         boolean baseIsSimpleSimple = false;
         boolean baseIsComplexSimple = false;
+        boolean baseFromAnotherSchema = false;
+        String baseTypeSchemaURI = null;
         boolean derivedByRestriction = true;
         boolean derivedByExtension = false;
         int baseContentSpecHandle = -1;
@@ -1528,6 +1531,8 @@ public class TraverseSchema implements
             if ( ! typeURI.equals(fTargetNSURIString) 
                  && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
                  && typeURI.length() != 0 )  /*REVISIT, !!!! a hack: for schema that has no target namespace, e.g. personal-schema.xml*/{
+                baseFromAnotherSchema = true;
+                baseTypeSchemaURI = typeURI;
                 baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
                 if (baseTypeInfo == null) {
                     baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
@@ -2011,9 +2016,19 @@ public class TraverseSchema implements
         XMLAttributeDecl baseAttWildcard = null;
         if (baseTypeInfo != null && baseTypeInfo.attlistHead > -1 ) {
             int attDefIndex = baseTypeInfo.attlistHead;
+            SchemaGrammar aGrammar = fSchemaGrammar;
+            if (baseFromAnotherSchema) {
+                aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(baseTypeSchemaURI);
+            }
+            if (aGrammar == null) {
+                reportGenericSchemaError("In complexType "+typeName+", can NOT find the grammar "+
+                                         "with targetNamespace" + baseTypeSchemaURI+
+                                         "for the base type");
+            }
+            else
             while ( attDefIndex > -1 ) {
                 fTempAttributeDecl.clear();
-                fSchemaGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
+                aGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
                 if (fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
                     ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
                     ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
@@ -2021,7 +2036,7 @@ public class TraverseSchema implements
                     if (attWildcard == null) {
                         baseAttWildcard = fTempAttributeDecl;
                     }
-                    attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
+                    attDefIndex = aGrammar.getNextAttributeDeclIndex(attDefIndex);
                     continue;
                 }
                 // if found a duplicate, if it is derived by restriction. then skip the one from the base type
@@ -2033,6 +2048,7 @@ public class TraverseSchema implements
                         continue;
                     }
                 }
+
                 /**/
                 fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                           fTempAttributeDecl.name, fTempAttributeDecl.type, 
@@ -2040,7 +2056,7 @@ public class TraverseSchema implements
                                           fTempAttributeDecl.defaultValue, 
                                           fTempAttributeDecl.datatypeValidator,
                                           fTempAttributeDecl.list);
-                attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
+                attDefIndex = aGrammar.getNextAttributeDeclIndex(attDefIndex);
             }
         }
         // att wildcard will inserted after all attributes were processed
