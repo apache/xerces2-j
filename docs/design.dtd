@@ -17,12 +17,14 @@
 <!ELEMENT array (note*,(primitive|reference))>
 <!ATTLIST array dimension CDATA '1'>
 <!ELEMENT primitive EMPTY>
-<!ATTLIST primitive type (long|int|short|char|boolean) #REQUIRED>
+<!ATTLIST primitive type (long|int|short|byte|char|boolean) #REQUIRED>
 <!ELEMENT reference EMPTY>
 <!ATTLIST reference idref IDREF #REQUIRED>
 <!ELEMENT collection (note*,collector,items)>
 <!ELEMENT collector (%types;)>
 <!ELEMENT items (%types;)>
+<!ELEMENT union (note?,part,part+)>
+<!ELEMENT part (note?,(%types;)*)>
 
 <!-- sections -->
 <!ENTITY % visibility 'public|private|protected'>

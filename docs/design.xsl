@@ -179,6 +179,12 @@
   <xsl:value-of select='@type'/>
  </xsl:template>
 
+ <xsl:template match='union'>
+  <xsl:for-each select='part'>
+   <xsl:apply-templates select='.'/>
+  </xsl:for-each>
+ </xsl:template>
+
  <xsl:template match='reference'>
   <xsl:choose>
    <xsl:when test='id(@idref)[name()="interface"]'>
