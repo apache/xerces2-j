@@ -2065,17 +2065,17 @@ public class XMLEntityManager
         // Windows fix
         if (str.length() >= 2) {
             char ch1 = str.charAt(1);
-            // change "C:blah" to "/C:blah"
+            // change "C:blah" to "file:///C:blah"
             if (ch1 == ':') {
                 char ch0 = Character.toUpperCase(str.charAt(0));
                 if (ch0 >= 'A' && ch0 <= 'Z') {
-                    sb = new StringBuffer(str.length());
-                    sb.append('/');
+                    sb = new StringBuffer(str.length() + 8);
+                    sb.append("file:///");
                 }
             }
             // change "//blah" to "file://blah"
             else if (ch1 == '/' && str.charAt(0) == '/') {
-                sb = new StringBuffer(str.length());
+                sb = new StringBuffer(str.length() + 5);
                 sb.append("file:");
             }
         }
