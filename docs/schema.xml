@@ -5,15 +5,17 @@
 		<p>This package contains an implementation of the W3C XML 
 		Schema language. This implementation is experimental. The 
 		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump> 
-		language is still in working draft stage: you 
-		should not consider this implementation complete or correct. 
+		language is in candidate recommendation stage: it is still
+		possible that some changes in the specification could
+		occur.  You should also not necessarily 
+		consider this implementation complete or correct. 
 		The limitations of this implementation are detailed below. 
 		Please read this document before using this package.</p>
 	</s2>
 	<s2 title="Introduction">
 		<p>This package contains an implementation of a subset of the 
-		W3C XML Schema Language as specified in the 7 April 2000
-        Working Drafts for <jump
+		W3C XML Schema Language as specified in the 24 October 2000
+        Candidate Recommendations for <jump
         href="http://www.w3.org/TR/xmlschema-1/">Structures</jump> and
         <jump
         href="http://www.w3.org/TR/xmlschema-2/">Datatypes</jump>. The
@@ -26,14 +28,14 @@
 		design and on representing an XML document&apos;s grammar 
 		as part of the document&apos;s DOM tree. We intend to update 
 		this package until it implements all of the functionality 
-		of the then current XML Schema Working Draft. If you are 
+		of the then current XML Schema Draft. If you are 
 		interested in a particular unimplemented feature, we welcome 
 		your feedback on the &javaparsername; mailing list.</p>
 	</s2>
 	<s2 title="Limitations">
 		<p>The XML Schema implementation in this package is a 
-		subset of the features defined in the 7 April 2000 
-		XML Schema Working Drafts.</p>
+		subset of the features defined in the 24 October 2000 
+		XML Schema Candidate Recommendations.</p>
 	</s2>
     <s2 title='Components Supported'>
         <ul>
@@ -46,13 +48,16 @@
             <li>Complex type definitions</li>
             <li>Wildcards: any</li>
             <li>Wildcards: anyAttribute</li>
+            <li>import and include</li>
+            <li>Identity constraints: unique, key, keyref
+			(experimental)</li>
         </ul>
     </s2>
     <s2 title='Components NOT Supported'>
         <ul>
-            <li>Identity constraints: unique, key, keyref</li>
             <li>Notation declaration</li>
             <li>Annotation (ignored)</li>
+            <li>Redefine</li>
         </ul>
     </s2>
     <s2 title='Features Supported'>
@@ -62,9 +67,9 @@
             <li>Nested element declaration</li>
             <li>Separate symbol spaces for elements, types, groups, and
                 attribute groups</li>
-            <li>Equivalency classes</li>
+            <li>Substitution Groups</li>
             <li>Target namespace</li>
-            <li>"xsi:schemaLocation" and "xsl:noNamespacesSchemaLocation"</li>
+            <li>"xsi:schemaLocation" and "xsi:noNamespaceSchemaLocation"</li>
             <li>Include</li>
             <li>Import</li>
             <li>"xsi:type"</li>
@@ -72,19 +77,22 @@
     </s2>
     <s2 title='Features NOT Supported'>
         <ul>
-            <li>Constraints in Chapter 5</li>
+            <li>Constraints in Chapter 5 and elsewhere in the
+			specifications</li>
             <li>Nullable</li>
-            <li>Block</li>
-            <li>Abstract</li>
+            <li>Block and final</li>
+            <li>Abstract for both types and elements</li>
+			<li>Fixed and default values of elements</li>
+			<li>Attribute normalization</li>
         </ul>
     </s2>
     <s2 title='Datatypes Supported'>
         <ul>
             <li>Built-in simple types (primitive, derived)</li>
-            <li>Simple type derivation (restriction, list)</li>
+            <li>Simple type derivation (restriction, list, union)</li>
             <li>Regular expressions</li>
             <li>Binary (base64, hex)</li>
-            <li>Constraining facets</li>
+            <li>Constraining facets (except for whiteSpace)</li>
         </ul>
     </s2>
     <s2 title='Datatypes NOT Supported'>
@@ -97,8 +105,26 @@
 		xsi:noNamespaceSchemaLocation attribute on the root 
 		element of the document. The xsi prefix must be bound to the 
 		Schema document instance namespace, as specified by the
-		working draft specification. See the sample provided in the
+		candidate recommendation specification. See the sample provided in the
 		Usage section.</p>
+		<p>We also emphasize that support for schema ID constraints is
+		highly experimental.  Some of the limitations of this support
+		are:
+		<ul>
+		<li>Very little error-checking has been performed.</li> 
+		<li>Identity constraints will not work if the schema under
+		consideration has a targetNamespace.</li>
+		<li>The XPath expressions used for specifying selectors and
+		fields are
+		 a subset of XPath. Currently, only the self, child, and
+		 attribute axes are supported.</li>
+		 <li>Field values are currently compared in the lexical space. 
+		 Therefore, the values "1" and "1.0" are NOT equal for a 
+		 field of type "decimal" (even though they should be).</li>
+		 </ul>
+		 </p>
+		 <p>Finally, note that in all model groups fewer than 8 elements must
+		 be used.</p>
 	</s2>
 	<s2 title="Usage">
 		<p>In this release, schema validation has been integrated with the 
@@ -108,16 +134,16 @@
 		grammar using an xsi:schemaLocation attribute attached to the root / top-level element 
 		in the document. Here is an example with no target namspace: </p>
 <source>&lt;document
-  xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance'
+  xmlns:xsi='http://www.w3.org/2000/10/XMLSchema-instance'
   xsi:noNamespaceSchemaLocation='document.xsd'&gt;
 ...
 &lt;/document&gt;</source>
 		<p>Here is an example with a target namespace. Note that it is an
 		error to specify a different namespace than the target namespace
-		defined in Schema.</p>
+		defined in the Schema.</p>
 <source>&lt;document
   xmlns='NS'
-  xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance' 
+  xmlns:xsi='http://www.w3.org/2000/10/XMLSchema-instance' 
   xsi:schemaLocation='NS document.xsd'&gt;
 ...
 &lt;/document&gt;</source>

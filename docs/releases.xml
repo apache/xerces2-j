@@ -2,8 +2,16 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
-  <s2 title='TBD'>
+  <s2 title='January 31, 2001 (version 1.3.0)'>
         <ul>
+				<li>Upgraded schema support to the schema CR drafts at a
+					similar level to that which had existed for the WD schema
+					specifications.[elena, lmartin, neilg]</li> 
+					<li>Implemented schema union simple type
+					definition.[elena]</li>
+					<li>Implemented many attribute and element declaration
+					schema-validation constraints, as well as
+					use=prohibited.[neilg]</li>
            <li>Implemented basic support for XML Schema identity constraints [andyc]</li>
            <li>Fixed bug in Deferred DOM with multiple IDs on same element [andyc]</li>
            <li>Updates to improve DFA build-time performance. [ATOZAWA@jp.ibm.com]</li>
@@ -12,13 +20,16 @@
            <li>Optimized DOM normalize operation. [Jay Cain + Arnaud  Le Hors]</li>
         </ul>
   </s2>
-  <s2 title='December 06, 2000'>
+  <s2 title='December 06, 2000 (version 1.2.3)'>
          <ul>
            <li>Fixed Memory leak bug was reported by Tosiki IGA where parser runs out of memory [ericye]</li>
            <li>Rampant object creation even when not validating fix patch send by Elena Litani[Elena Litani]</li>
            <li>ListDatatypeValidator enumeration bug fix by Elena Litani[Elena Litani]</li>
            <li>Optimization in validator to only instantiate objects needed in the case of DTD vs. Schemas[jeffreyr]</li>
            <li>Fixed misc. Schema Structures miscelaneous bugs since last release [ericye]</li>
+           <li>improved implementation of &lt;all&gt; schema construct
+					 to handle 8 elements instead of 6; also increased
+					 validation speed [Neil Graham, ericye]</li>
            <li>Fixed DOM misc. bugs and other patches since last release [lehors]</li>
            <li>Miscelaneous DOM patches by Lynn Monson [Lynn Monson]</li>
            <li>Added new 'load-external-dtd' feature, so that when non
@@ -26,7 +37,7 @@ validating, applications can ask the parser not to load the external subset at
 all [Arnaud Le Hors]</li>
         </ul>
   </s2>
-  <s2 title='November 22, 2000'>
+  <s2 title='November 22, 2000 (version 1.2.2)'>
         <ul>
            <li>DOM 2 Recommendation release support update[lehors]</li>
            <li>Fixed FAQ section submitted by Tony Montgomery Smith[jeffreyr,Tony Montgomery]</li>
@@ -40,7 +51,7 @@ all [Arnaud Le Hors]</li>
         </ul>
   </s2>
 
-   <s2 title='October 19, 2000'>
+   <s2 title='October 19, 2000 (version 1.2.1)'>
         <ul>
            <li>This is a bug fix release</li>
            <li>Added Mark Swinkels datatype list refactoring [mark swinkels, jeffreyr]</li>           
@@ -51,7 +62,7 @@ all [Arnaud Le Hors]</li>
         </ul>
     </s2>
 
-    <s2 title='August 28, 2000'>
+    <s2 title='August 28, 2000 (version 1.2.0)'>
         <ul>
            <li>Merged redundant Attribute validators inner classes with the data type validators. [jeffreyr]</li>
            <li>Fixed namespaces bugs for endElement method in SAX. [jeffreyr]</li>
@@ -64,7 +75,7 @@ all [Arnaud Le Hors]</li>
            <li>Fixed misc. Schema Structures bugs. [ericye]</li>
         </ul>
     </s2>
-    <s2 title='July 26, 2000'>
+    <s2 title='July 26, 2000 (version 1.1.3)'>
         <ul>
            <li>Added "anyAttribute" support for Schema. [ericye]</li>           
            <li>Added "xsi:type" support for Schema. [ericye]</li>
@@ -87,7 +98,7 @@ all [Arnaud Le Hors]</li>
 	   <li>Fixed bug reported by Michael Brundage in StringReader. [jeffreyr]</li>
         </ul>
     </s2>
-    <s2 title='June 21, 2000'>
+    <s2 title='June 21, 2000 (version 1.1.2)'>
         <ul>
            <li>Added "any" element content support for Schema [andyc]</li>
            <li>Fixed adjacent text nodes bug in deferred DOM [andyc]</li>
@@ -110,7 +121,7 @@ all [Arnaud Le Hors]</li>
            <li>Fixed lots of Schema bugs [ericye]</li>
         </ul>
     </s2>
-    <s2 title='June 5, 2000'>
+    <s2 title='June 5, 2000 (version 1.1.1)'>
         <ul>
            <li>Added Schema include/import [ericye]</li>
            <li>Performance tuning [ericye, andyc]</li>
@@ -126,7 +137,7 @@ all [Arnaud Le Hors]</li>
            <li>Fixed a bug in cloning default attribute</li>
         </ul>
     </s2>
-    <s2 title='May 19, 2000'>
+    <s2 title='May 19, 2000 (version 1.1.0)'>
         <ul>
            <li>Reworked internals for XML Schema support [andyc, ericye, 
 	       jeffreyr]</li>
