@@ -760,7 +760,8 @@ public abstract class NodeContainer
             nodeListLength = 0;
             nodeListIndex = 0;
             nodeListNode = firstChild;
-            for (NodeImpl node = firstChild; node != null; node = node.nextSibling) {
+            for (NodeImpl node = firstChild;
+		 node != null; node = node.nextSibling) {
                 nodeListLength++;
             }
         }
@@ -777,7 +778,7 @@ public abstract class NodeContainer
      */
     public Node item(int index) {
         // short way
-        if (nodeListChanges == changes) {
+        if (nodeListChanges == changes && nodeListNode != null) {
             if (nodeListIndex < index) {
                 while (nodeListIndex < index && nodeListNode != null) {
                     nodeListIndex++;
