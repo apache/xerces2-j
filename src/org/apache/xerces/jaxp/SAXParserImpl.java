@@ -187,15 +187,19 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
         if (JAXP_SCHEMA_LANGUAGE.equals(name)) {
-            // JAXP 1.2 support
-            if (W3C_XML_SCHEMA.equals(value)) {
-                schemaLanguage = W3C_XML_SCHEMA;
-                xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
+            // JAXP 1.2 support            
+            if ( W3C_XML_SCHEMA.equals(value) ) {
+                //None of the properties will take effect till the setValidating(true) has been called                                                        
+                if( isValidating() ) {
+                    schemaLanguage = W3C_XML_SCHEMA;
+                    xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
                                      Constants.SCHEMA_VALIDATION_FEATURE,
                                      true);
-                // this will allow the parser not to emit DTD-related
-                // errors, as the spec demands
-                xmlReader.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
+                    // this will allow the parser not to emit DTD-related
+                    // errors, as the spec demands
+                    xmlReader.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
+                }
+                
             } else if (value == null) {
                 schemaLanguage = null;
                 xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
