@@ -81,7 +81,7 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
     private boolean fDerivedByList               = false;
 
     private int       fLength          = 0;
-    private int       fMaxLength       = 0;
+    private int       fMaxLength       = Integer.MAX_VALUE;
     private int       fMinLength       = 0;
     private String    fPattern         = null;
     private Vector    fEnumeration     = null;
@@ -154,8 +154,8 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength < fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                      "must be greater that the value of maxLength" + fMaxLength );
+                        throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
+                                                      "must be greater that the value of minLength" + fMinLength );
                     }
                 }
             } else { //derived by list

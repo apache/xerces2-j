@@ -79,7 +79,7 @@ import org.apache.xerces.utils.HexBin;
 public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator  fBaseValidator   = null; //Basetype null means this is a native type
     private int                fLength          = 0;
-    private int                fMaxLength       = 0;
+    private int                fMaxLength       = Integer.MAX_VALUE;
     private int                fMinLength       = 0;
     private String             fPattern         = null;
     private Vector             fEnumeration     = null;
@@ -156,9 +156,9 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
 
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength < fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                      "must be greater that the value of maxLength" + fMaxLength );
+                    if ( fMinLength > fMaxLength ) {
+                        throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
+                                                      "must be greater that the value of minLength" + fMinLength );
                     }
                 }
             } else {  //Derivation by List 
