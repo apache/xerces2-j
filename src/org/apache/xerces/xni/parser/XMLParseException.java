@@ -79,8 +79,11 @@ public class XMLParseException
     /** Public identifier. */
     protected String fPublicId;
 
-    /** System identifier. */
-    protected String fSystemId;
+    /** literal System identifier. */
+    protected String fLiteralSystemId;
+
+    /** expanded System identifier. */
+    protected String fExpandedSystemId;
 
     /** Base system identifier. */
     protected String fBaseSystemId;
@@ -100,7 +103,8 @@ public class XMLParseException
         super(message);
         if (locator != null) {
             fPublicId = locator.getPublicId();
-            fSystemId = locator.getSystemId();
+            fLiteralSystemId = locator.getLiteralSystemId();
+            fExpandedSystemId = locator.getExpandedSystemId();
             fBaseSystemId = locator.getBaseSystemId();
             fLineNumber = locator.getLineNumber();
             fColumnNumber = locator.getColumnNumber();
@@ -112,7 +116,8 @@ public class XMLParseException
                              String message, Exception exception) {
         super(message, exception);
         fPublicId = locator.getPublicId();
-        fSystemId = locator.getSystemId();
+        fLiteralSystemId = locator.getLiteralSystemId();
+        fExpandedSystemId = locator.getExpandedSystemId();
         fBaseSystemId = locator.getBaseSystemId();
         fLineNumber = locator.getLineNumber();
         fColumnNumber = locator.getColumnNumber();
@@ -127,10 +132,15 @@ public class XMLParseException
         return fPublicId;
     } // getPublicId():String
 
-    /** Returns the system identifier. */
-    public String getSystemId() {
-        return fSystemId;
-    } // getSystemId():String
+    /** Returns the expanded system identifier. */
+    public String getExpandedSystemId() {
+        return fExpandedSystemId;
+    } // getExpandedSystemId():String
+
+    /** Returns the literal system identifier. */
+    public String getLiteralSystemId() {
+        return fLiteralSystemId;
+    } // getLiteralSystemId():String
 
     /** Returns the base system identifier. */
     public String getBaseSystemId() {
@@ -163,8 +173,12 @@ public class XMLParseException
             str.append(fPublicId);
         }
         str.append(':');
-        if (fSystemId != null) {
-            str.append(fSystemId);
+        if (fLiteralSystemId != null) {
+            str.append(fLiteralSystemId);
+        }
+        str.append(':');
+        if (fExpandedSystemId != null) {
+            str.append(fExpandedSystemId);
         }
         str.append(':');
         if (fBaseSystemId != null) {

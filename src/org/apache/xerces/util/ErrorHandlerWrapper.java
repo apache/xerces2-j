@@ -231,7 +231,7 @@ public class ErrorHandlerWrapper
     protected static SAXParseException createSAXParseException(XMLParseException exception) {
         return new SAXParseException(exception.getMessage(),
                                      exception.getPublicId(),
-                                     exception.getSystemId(),
+                                     exception.getExpandedSystemId(),
                                      exception.getLineNumber(),
                                      exception.getColumnNumber(),
                                      exception.getException());
@@ -240,13 +240,14 @@ public class ErrorHandlerWrapper
     /** Creates an XMLParseException from a SAXParseException. */
     protected static XMLParseException createXMLParseException(SAXParseException exception) {
         final String fPublicId = exception.getPublicId();
-        final String fSystemId = exception.getSystemId();
+        final String fExpandedSystemId = exception.getSystemId();
         final int fLineNumber = exception.getLineNumber();
         final int fColumnNumber = exception.getColumnNumber();
         XMLLocator location = new XMLLocator() {
             public String getPublicId() { return fPublicId; }
-            public String getSystemId() { return fSystemId; }
+            public String getExpandedSystemId() { return fExpandedSystemId; }
             public String getBaseSystemId() { return null; }
+            public String getLiteralSystemId() { return null; }
             public int getColumnNumber() { return fColumnNumber; }
             public int getLineNumber() { return fLineNumber; }
         };

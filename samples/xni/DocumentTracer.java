@@ -225,11 +225,14 @@ public class DocumentTracer
             fOut.print("publicId=");
             printQuotedString(locator.getPublicId());
             fOut.print(',');
-            fOut.print("systemId=");
-            printQuotedString(locator.getSystemId());
+            fOut.print("literal systemId=");
+            printQuotedString(locator.getLiteralSystemId());
             fOut.print(',');
             fOut.print("baseSystemId=");
             printQuotedString(locator.getBaseSystemId());
+            fOut.print(',');
+            fOut.print("expanded systemId=");
+            printQuotedString(locator.getExpandedSystemId());
             fOut.print(',');
             fOut.print("lineNumber=");
             fOut.print(locator.getLineNumber());
@@ -514,11 +517,14 @@ public class DocumentTracer
             fOut.print("publicId=");
             printQuotedString(locator.getPublicId());
             fOut.print(',');
-            fOut.print("systemId=");
-            printQuotedString(locator.getSystemId());
+            fOut.print("literal systemId=");
+            printQuotedString(locator.getLiteralSystemId());
             fOut.print(',');
             fOut.print("baseSystemId=");
             printQuotedString(locator.getBaseSystemId());
+            fOut.print(',');
+            fOut.print("expanded systemId=");
+            printQuotedString(locator.getExpandedSystemId());
             fOut.print(',');
             fOut.print("lineNumber=");
             fOut.print(locator.getLineNumber());
@@ -1122,7 +1128,7 @@ public class DocumentTracer
         System.err.print("[");
         System.err.print(type);
         System.err.print("] ");
-        String systemId = ex.getSystemId();
+        String systemId = ex.getExpandedSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
             if (index != -1)

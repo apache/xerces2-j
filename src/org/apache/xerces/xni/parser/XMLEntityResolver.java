@@ -60,6 +60,7 @@ package org.apache.xerces.xni.parser;
 import java.io.IOException;
 
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 
 /**
  * This interface is used to resolve external parsed entities. The
@@ -85,16 +86,14 @@ public interface XMLEntityResolver {
      * Resolves an external parsed entity. If the entity cannot be
      * resolved, this method should return null.
      *
-     * @param publicId
-     * @param systemId
-     * @param baseSystemId The base system identifier.
+     * @param resourceIdentifier:  location of the XML resource to resolve
      *
      * @throws XNIException Thrown on general error.
      * @throws IOException  Thrown if resolved entity stream cannot be
      *                      opened or some other i/o error occurs.
+     * @see org.apache.xerces.xni.XMLResourceIdentifier
      */
-    public XMLInputSource resolveEntity(String publicId, String systemId,
-                                        String baseSystemId)
+    public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier)
         throws XNIException, IOException;
 
 } // interface XMLEntityResolver

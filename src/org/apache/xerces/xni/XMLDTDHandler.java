@@ -262,6 +262,8 @@ public interface XMLDTDHandler {
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param nonNormalizedDefaultValue  The attribute default value with no normalization 
+     *                      performed, or null if no default value is specified.
      * @param augmentations Additional information that may include infoset
      *                      augmentations.
      *
@@ -270,7 +272,7 @@ public interface XMLDTDHandler {
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue,
-                              Augmentations augmentations)
+                              XMLString nonNormalizedDefaultValue, Augmentations augmentations)
         throws XNIException;
 
     /**
@@ -334,6 +336,8 @@ public interface XMLDTDHandler {
      *                 specified.
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
+     * @param baseSystemId The base system identifier where this entity
+     *                     is declared.
      * @param notation The name of the notation.
      * @param augmentations Additional information that may include infoset
      *                      augmentations.
@@ -342,6 +346,7 @@ public interface XMLDTDHandler {
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
+				   String baseSystemId, 
                                    String notation, Augmentations augmentations) 
         throws XNIException;
 
@@ -353,12 +358,15 @@ public interface XMLDTDHandler {
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param baseSystemId The base system identifier where this entity
+     *                     is declared.
      * @param augmentations Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId,
+			     String baseSystemId, 
                              Augmentations augmentations) throws XNIException;
 
     /**

@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
@@ -122,26 +123,24 @@ public class EntityResolverWrapper
      * Resolves an external parsed entity. If the entity cannot be
      * resolved, this method should return null.
      *
-     * @param publicId
-     * @param systemId
-     * @param baseSystemId The base system identifier.
+     * @param resourceIdentifier	contains the physical co-ordinates of the resource to be resolved
      *
      * @throws XNIException Thrown on general error.
      * @throws IOException  Thrown if resolved entity stream cannot be
      *                      opened or some other i/o error occurs.
      */
-    public XMLInputSource resolveEntity(String publicId, String systemId, 
-                                        String baseSystemId) 
+    public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier)
         throws XNIException, IOException {
 
         // resolve entity using SAX entity resolver
-        if (fEntityResolver != null) {
+        if (fEntityResolver != null && resourceIdentifier != null) {
             try {
                 InputSource inputSource = 
-                    fEntityResolver.resolveEntity(publicId, systemId);
+                    fEntityResolver.resolveEntity(resourceIdentifier.getPublicId(), resourceIdentifier.getExpandedSystemId());
                 if (inputSource != null) {
-                    publicId = inputSource.getPublicId();
-                    systemId = inputSource.getSystemId();
+                    String publicId = inputSource.getPublicId();
+                    String systemId = inputSource.getSystemId();
+                    String baseSystemId = resourceIdentifier.getBaseSystemId();
                     InputStream byteStream = inputSource.getByteStream();
                     Reader charStream = inputSource.getCharacterStream();
                     String encoding = inputSource.getEncoding();

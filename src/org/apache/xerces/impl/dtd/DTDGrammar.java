@@ -490,6 +490,8 @@ public class DTDGrammar
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param nonNormalizedDefaultValue  The attribute default value with no normalization 
+     *                      performed, or null if no default value is specified.
      *
      * @param augs Additional information that may include infoset
      *                      augmentations.
@@ -498,7 +500,7 @@ public class DTDGrammar
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue,
-                              Augmentations augs) throws XNIException {
+                              XMLString nonNormalizedDefaultValue, Augmentations augs) throws XNIException {
 
         if ( this.fElementDeclTab.containsKey( (String) elementName) ) {
             //if ElementDecl has already being created in the Grammar then remove from table, 
@@ -543,6 +545,7 @@ public class DTDGrammar
             System.out.println("defaultvalue = " + defaultValue.toString() );
         }
         fSimpleType.defaultValue      = defaultValue!=null ?  defaultValue.toString() : null;
+        fSimpleType.nonNormalizedDefaultValue      = nonNormalizedDefaultValue!=null ?  nonNormalizedDefaultValue.toString() : null;
         fSimpleType.enumeration       = enumeration;
 
         Hashtable facets = new Hashtable();
@@ -607,7 +610,7 @@ public class DTDGrammar
         ensureAttributeDeclCapacity(chunk);
         fAttributeDeclIsExternal[chunk][index] = fReadingExternalDTD ?  1 : 0;
 
-    } // attributeDecl(String,String,String,String[],String,XMLString)
+    } // attributeDecl(String,String,String,String[],String,XMLString,XMLString, Augmentations)
 
     /**
      * An internal entity declaration.
@@ -685,20 +688,21 @@ public class DTDGrammar
      *                 specified.
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
+     * @param baseSystemId	the URI of the entity that referred to this one.
      * @param notation The name of the notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId, 
-                                   String systemId, String notation,
+                                   String systemId, String baseSystemId, String notation,
                                    Augmentations augs) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
         boolean inExternal = fReadingExternalDTD;
 
-        entityDecl.setValues(name,publicId,systemId, null, notation, 
+        entityDecl.setValues(name,publicId,systemId, baseSystemId, notation, 
                              null, isPE, inExternal);
         int entityIndex = getEntityDeclIndex(name);
         if (entityIndex == -1) {
@@ -716,15 +720,16 @@ public class DTDGrammar
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param baseSystemId	the URI of the entity that referred to this one.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId,
-                             Augmentations augs) throws XNIException {
+                             String baseSystemId, Augmentations augs) throws XNIException {
 
         XMLNotationDecl  notationDecl = new XMLNotationDecl();
-        notationDecl.setValues(name,publicId,systemId);
+        notationDecl.setValues(name,publicId,systemId, baseSystemId);
         int notationIndex = getNotationDeclIndex(name);
         if (notationIndex == -1) {
             notationIndex = createNotationDecl();

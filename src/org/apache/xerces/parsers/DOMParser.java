@@ -166,7 +166,7 @@ public class DOMParser
                 // a SAXParseException
                 LocatorImpl locatorImpl = new LocatorImpl();
                 locatorImpl.setPublicId(e.getPublicId());
-                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
                 locatorImpl.setColumnNumber(e.getColumnNumber());
                 throw new SAXParseException(e.getMessage(), locatorImpl);
@@ -246,7 +246,7 @@ public class DOMParser
                 // a SAXParseException
                 LocatorImpl locatorImpl = new LocatorImpl();
                 locatorImpl.setPublicId(e.getPublicId());
-                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
                 locatorImpl.setColumnNumber(e.getColumnNumber());
                 throw new SAXParseException(e.getMessage(), locatorImpl);

@@ -213,6 +213,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
     private short fAttributeDeclDefaultType[][] = new short[INITIAL_CHUNK_COUNT][];
     private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
     private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
+    private String fAttributeDeclNonNormalizedDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
     private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
 
     // content specs
@@ -244,6 +245,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
     private String fNotationName[][] = new String[INITIAL_CHUNK_COUNT][];
     private String[][] fNotationPublicId = new String[INITIAL_CHUNK_COUNT][];
     private String[][] fNotationSystemId = new String[INITIAL_CHUNK_COUNT][];
+    private String[][] fNotationBaseSystemId = new String[INITIAL_CHUNK_COUNT][];
 
     // other information
 
@@ -466,6 +468,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
                                            fAttributeDeclEnumeration[chunk][index],
                                            isList, fAttributeDeclDefaultType[chunk][index],
                                            fAttributeDeclDefaultValue[chunk][index], 
+                                           fAttributeDeclNonNormalizedDefaultValue[chunk][index], 
                                            fAttributeDeclDatatypeValidator[chunk][index]);
         return true;
 
@@ -619,7 +622,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
 
         notationDecl.setValues(fNotationName[chunk][index], 
                                fNotationPublicId[chunk][index],
-                               fNotationSystemId[chunk][index]);
+                               fNotationSystemId[chunk][index],
+			       fNotationBaseSystemId[chunk][index]);
 
         return true;
 
@@ -1004,6 +1008,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
       fAttributeDeclEnumeration[chunk][index]             = null;
       fAttributeDeclDefaultType[chunk][index]             = XMLSimpleType.DEFAULT_TYPE_IMPLIED;
       fAttributeDeclDefaultValue[chunk][index]            = null;
+      fAttributeDeclNonNormalizedDefaultValue[chunk][index]            = null;
       fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
       return fAttributeDeclCount++;
    }
@@ -1024,6 +1029,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
       fAttributeDeclDatatypeValidator[attrChunk][attrIndex] =  attributeDecl.simpleType.datatypeValidator;
 
       fAttributeDeclDefaultValue[attrChunk][attrIndex] = attributeDecl.simpleType.defaultValue;
+      fAttributeDeclNonNormalizedDefaultValue[attrChunk][attrIndex] = attributeDecl.simpleType.nonNormalizedDefaultValue;
 
       int elemChunk     = elementDeclIndex >> CHUNK_SHIFT;
       int elemIndex     = elementDeclIndex &  CHUNK_MASK;
@@ -1113,6 +1119,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
        fNotationName[chunk][index] = notationDecl.name;
        fNotationPublicId[chunk][index] = notationDecl.publicId;
        fNotationSystemId[chunk][index] = notationDecl.systemId;
+       fNotationBaseSystemId[chunk][index] = notationDecl.baseSystemId;
    }
 
    protected void setTargetNamespace( String targetNamespace ){
@@ -1545,6 +1552,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
             fAttributeDeclDefaultType = resize(fAttributeDeclDefaultType, fAttributeDeclDefaultType.length * 2);
             fAttributeDeclDatatypeValidator = resize(fAttributeDeclDatatypeValidator, fAttributeDeclDatatypeValidator.length * 2);
             fAttributeDeclDefaultValue = resize(fAttributeDeclDefaultValue, fAttributeDeclDefaultValue.length * 2);
+            fAttributeDeclNonNormalizedDefaultValue = resize(fAttributeDeclNonNormalizedDefaultValue, fAttributeDeclNonNormalizedDefaultValue.length * 2);
             fAttributeDeclNextAttributeDeclIndex = resize(fAttributeDeclNextAttributeDeclIndex, fAttributeDeclNextAttributeDeclIndex.length * 2);
         } catch (NullPointerException ex) {
             // ignore
@@ -1555,6 +1563,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         fAttributeDeclDefaultType[chunk] = new short[CHUNK_SIZE];
         fAttributeDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
         fAttributeDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
+        fAttributeDeclNonNormalizedDefaultValue[chunk] = new String[CHUNK_SIZE];
         fAttributeDeclNextAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
         return true;
     }
@@ -1592,12 +1601,14 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
             fNotationName = resize(fNotationName, fNotationName.length * 2);
             fNotationPublicId = resize(fNotationPublicId, fNotationPublicId.length * 2);
             fNotationSystemId = resize(fNotationSystemId, fNotationSystemId.length * 2);
+            fNotationBaseSystemId = resize(fNotationBaseSystemId, fNotationBaseSystemId.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
         fNotationName[chunk] = new String[CHUNK_SIZE];
         fNotationPublicId[chunk] = new String[CHUNK_SIZE];
         fNotationSystemId[chunk] = new String[CHUNK_SIZE];
+        fNotationBaseSystemId[chunk] = new String[CHUNK_SIZE];
         return true;
     }
 

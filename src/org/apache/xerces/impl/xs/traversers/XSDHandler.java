@@ -73,8 +73,10 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.DOMUtil;
@@ -194,6 +196,9 @@ public class XSDHandler {
     // processed (by getSchema) was a duplicate.
     private boolean fLastSchemaWasDuplicate;
 
+    // object for use in calling XMLEntityResolver (perhaps later XMLGrammarPool...
+    private XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
+
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
 
@@ -253,7 +258,10 @@ public class XSDHandler {
 
             // REVISIT: resolve the entity. passing null as public id, instead
             // of passing namespace value. -SG
-            return fExternalResolver.resolveEntity(null, loc, base);
+	    // REVISIT:  shouldn't we expand the literal systemId (location hint) first?  - neilg
+	    String expandedLoc = XMLEntityManager.expandSystemId(loc, base);
+	    fResourceIdentifier.setValues(null, loc, base, expandedLoc);
+            return fExternalResolver.resolveEntity(fResourceIdentifier);
         }
     }
 
@@ -1239,6 +1247,7 @@ public class XSDHandler {
         fDoc2SystemId.clear();
         fDoc2XSDocumentMap.clear();
         fRedefine2XSDMap.clear();
+	fResourceIdentifier.clear();
         fRoot = null;
         fLastSchemaWasDuplicate = false;
 

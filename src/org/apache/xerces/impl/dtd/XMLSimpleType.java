@@ -125,6 +125,9 @@ public class XMLSimpleType {
     /** defaultValue */
     public String defaultValue;
 
+    /** non-normalized defaultValue */
+    public String nonNormalizedDefaultValue;
+
     /** datatypeValidator */
     public DatatypeValidator datatypeValidator;
 
@@ -141,11 +144,12 @@ public class XMLSimpleType {
      * @param list 
      * @param defaultType 
      * @param defaultValue 
+     * @param nonNormalizedDefaultValue
      * @param datatypeValidator 
      */
     public void setValues(short type, String name, String[] enumeration, 
                           boolean list, short defaultType, 
-                          String defaultValue, 
+                          String defaultValue, String nonNormalizedDefaultValue,
                           DatatypeValidator datatypeValidator) {
 
         this.type              = type;
@@ -161,9 +165,10 @@ public class XMLSimpleType {
         this.list              = list;
         this.defaultType       = defaultType;
         this.defaultValue      = defaultValue;
+        this.nonNormalizedDefaultValue      = nonNormalizedDefaultValue;
         this.datatypeValidator = datatypeValidator;
 
-    } // setValues(short,String,String[],boolean,short,String,DatatypeValidator)
+    } // setValues(short,String,String[],boolean,short,String,String,DatatypeValidator)
 
     /** Set values. */
     public void setValues(XMLSimpleType simpleType) {
@@ -181,6 +186,7 @@ public class XMLSimpleType {
         list = simpleType.list;
         defaultType = simpleType.defaultType;
         defaultValue = simpleType.defaultValue;
+        nonNormalizedDefaultValue = simpleType.nonNormalizedDefaultValue;
         datatypeValidator = simpleType.datatypeValidator;
 
     } // setValues(XMLSimpleType)
@@ -195,6 +201,7 @@ public class XMLSimpleType {
         this.list              = false;
         this.defaultType       = -1;
         this.defaultValue      = null;
+        this.nonNormalizedDefaultValue      = null;
         this.datatypeValidator = null;
     } // clear
 

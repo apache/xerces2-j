@@ -1103,6 +1103,7 @@ public class XMLDTDScannerImpl
                                                     fLiteral, fLiteral2);
             // REVISIT: Should we do anything with the non-normalized
             //          default attribute value? -Ac
+	    // yes--according to bug 5073.  - neilg
 
             // call handler
             if (fDTDHandler != null) {
@@ -1117,11 +1118,11 @@ public class XMLDTDScannerImpl
                 if (defaultType!=null && (defaultType.equals("#REQUIRED") || 
                                           defaultType.equals("#IMPLIED"))) {
                     fDTDHandler.attributeDecl(elName, name, type, enum,
-                                              defaultType, null, null);
+                                              defaultType, null, null, null);
                 }
                 else {
                     fDTDHandler.attributeDecl(elName, name, type, enum,
-                                              defaultType, fLiteral, null);
+                                              defaultType, fLiteral, fLiteral2, null);
                 }
             }
             skipSeparator(false, !scanningInternalSubset());
@@ -1447,21 +1448,20 @@ public class XMLDTDScannerImpl
             name = "%" + name;
         }
         if (systemId != null) {
+            String baseSystemId = fEntityScanner.getBaseSystemId();
             if (notation != null) {
-                fEntityManager.addUnparsedEntity(name, publicId, systemId, notation);
+                fEntityManager.addUnparsedEntity(name, publicId, systemId, baseSystemId, notation);
             }
             else {
-                String baseSystemId = fEntityScanner.getBaseSystemId();
                 fEntityManager.addExternalEntity(name, publicId, systemId, 
                                                  baseSystemId);
             }
             if (fDTDHandler != null) {
                 if (notation != null) {
                     fDTDHandler.unparsedEntityDecl(name, publicId, systemId, 
-                                                   notation, null);
+                                                   baseSystemId, notation, null);
                 }
                 else {
-                    String baseSystemId = fEntityScanner.getBaseSystemId();
                     fDTDHandler.externalEntityDecl(name, publicId, systemId, 
                                                    baseSystemId, null);
                 }
@@ -1631,6 +1631,7 @@ public class XMLDTDScannerImpl
         scanExternalID(fStrings, true);
         String systemId = fStrings[0];
         String publicId = fStrings[1];
+        String baseSystemId = fEntityScanner.getBaseSystemId();
 
         if (systemId == null && publicId == null) {
             reportFatalError("ExternalIDorPublicIDRequired",
@@ -1648,7 +1649,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.notationDecl(name, publicId, systemId, null);
+            fDTDHandler.notationDecl(name, publicId, systemId, baseSystemId, null);
         }
         fReportEntity = true;
 

@@ -82,6 +82,7 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -376,7 +377,7 @@ public class XMLEntityManager
      *
      * @param name         The name of the entity.
      * @param publicId     The public identifier of the entity.
-     * @param systemId     The system identifier of the entity.
+     * @param literalSystemId     The system identifier of the entity.
      * @param baseSystemId The base system identifier of the entity.
      *                     This is the system identifier of the entity
      *                     where <em>the entity being added</em> and
@@ -388,25 +389,26 @@ public class XMLEntityManager
      * @see SymbolTable
      */
     public void addExternalEntity(String name,
-                                  String publicId, String systemId,
+                                  String publicId, String literalSystemId,
                                   String baseSystemId) {
         if (!fEntities.containsKey(name)) {
             if (baseSystemId == null) {
                 // search for the first external entity on the stack
                 int size = fEntityStack.size();
-                if (size == 0 && fCurrentEntity != null) {
-                    baseSystemId = fCurrentEntity.systemId;
+                if (size == 0 && fCurrentEntity != null && fCurrentEntity.entityLocation != null) {
+                    baseSystemId = fCurrentEntity.entityLocation.getExpandedSystemId();
                 }
                 for (int i = size - 1; i >= 0 ; i--) {
                     ScannedEntity externalEntity =
                         (ScannedEntity)fEntityStack.elementAt(i);
-                    if (externalEntity.systemId != null) {
-                        baseSystemId = externalEntity.systemId;
+                    if (externalEntity.entityLocation != null && externalEntity.entityLocation.getExpandedSystemId() != null) {
+                        baseSystemId = externalEntity.entityLocation.getExpandedSystemId();
+                        break;
                     }
                 }
             }
-            Entity entity = new ExternalEntity(name, publicId, systemId,
-                                               baseSystemId, null);
+            Entity entity = new ExternalEntity(name, 
+                    new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId)), null);
             fEntities.put(name, entity);
         }
     } // addExternalEntity(String,String,String,String)
@@ -445,9 +447,9 @@ public class XMLEntityManager
      */
     public void addUnparsedEntity(String name,
                                   String publicId, String systemId,
-                                  String notation) {
+                                  String baseSystemId, String notation) {
         if (!fEntities.containsKey(name)) {
-            Entity entity = new ExternalEntity(name, publicId, systemId, null, notation);
+            Entity entity = new ExternalEntity(name, new XMLResourceIdentifierImpl(publicId, systemId, baseSystemId, null), notation);
             fEntities.put(name, entity);
         }
     } // addUnparsedEntity(String,String,String,String)
@@ -502,20 +504,28 @@ public class XMLEntityManager
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown by entity resolver to signal an error.
      */
-    public XMLInputSource resolveEntity(String publicId, String systemId,
-                                        String baseSystemId)
-        throws IOException, XNIException {
-
+    public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier)
+            throws IOException, XNIException {
+        if(resourceIdentifier == null ) return null;
+        String publicId = resourceIdentifier.getPublicId();
+        String literalSystemId = resourceIdentifier.getLiteralSystemId();
+        String baseSystemId = resourceIdentifier.getBaseSystemId();
+        String expandedSystemId = resourceIdentifier.getExpandedSystemId();
         // if no base systemId given, assume that it's relative
         // to the systemId of the current scanned entity
-        if (baseSystemId == null && fCurrentEntity != null) {
-            baseSystemId = fCurrentEntity.systemId;
+        // REVISIT:  why would the baseSystemId ever be null?  if we
+        // didn't have to make this check we wouldn't have to reuse the
+        // fXMLResourceIdentifier object...
+        if (baseSystemId == null && fCurrentEntity != null && fCurrentEntity.entityLocation != null) {
+            baseSystemId = fCurrentEntity.entityLocation.getExpandedSystemId();
         }
 
         // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
-             xmlInputSource = fEntityResolver.resolveEntity(publicId, systemId, baseSystemId);
+             fResourceIdentifier.clear();
+            fResourceIdentifier.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
+             xmlInputSource = fEntityResolver.resolveEntity(fResourceIdentifier);
         }
 
         // do default resolution
@@ -527,7 +537,7 @@ public class XMLEntityManager
             // REVISIT: when systemId is null, I think we should return null.
             //          is this the right solution? -SG
             //if (systemId != null)
-            xmlInputSource = new XMLInputSource(publicId, systemId, baseSystemId);
+            xmlInputSource = new XMLInputSource(publicId, literalSystemId, baseSystemId);
         }
 
         if (DEBUG_RESOLVER) {
@@ -537,7 +547,7 @@ public class XMLEntityManager
 
         return xmlInputSource;
 
-    } // resolveEntity(String,String,String):XMLInputSource
+    } // resolveEntity(XMLResourceIdentifier):XMLInputSource
 
     /**
      * Starts a named entity.
@@ -577,11 +587,15 @@ public class XMLEntityManager
                     final String encoding = null;
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
-                        String expandedSystemId = expandSystemId(externalEntity.systemId, externalEntity.baseSystemId);
-                        fResourceIdentifier.setValues(externalEntity.publicId,
-                                                      externalEntity.systemId,
-                                                      externalEntity.baseSystemId,
-                                                      expandedSystemId);
+                        //REVISIT:  since we're storing expandedSystemId in the
+                        // externalEntity, how could this have got here if it wasn't already
+                        // expanded??? - neilg
+                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null); 
+                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null); 
+                        String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
+                        fResourceIdentifier.setValues(
+                                (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
+                                extLitSysId, extBaseSysId, expandedSystemId);
                     }
                     fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
                     fEntityHandler.endEntity(entityName);
@@ -613,11 +627,13 @@ public class XMLEntityManager
                     final String encoding = null;
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
-                        String expandedSystemId = expandSystemId(externalEntity.systemId, externalEntity.baseSystemId);
-                        fResourceIdentifier.setValues(externalEntity.publicId,
-                                                      externalEntity.systemId,
-                                                      externalEntity.baseSystemId,
-                                                      expandedSystemId);
+                        // REVISIT:  for the same reason above...
+                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null); 
+                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null); 
+                        String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
+                        fResourceIdentifier.setValues(
+                                (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
+                                extLitSysId, extBaseSysId, expandedSystemId);
                     }
                     fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
                     fEntityHandler.endEntity(entityName);
@@ -630,10 +646,7 @@ public class XMLEntityManager
         XMLInputSource xmlInputSource = null;
         if (external) {
             ExternalEntity externalEntity = (ExternalEntity)entity;
-            String publicId = externalEntity.publicId;
-            String systemId = externalEntity.systemId;
-            String baseSystemId = externalEntity.baseSystemId;
-            xmlInputSource = resolveEntity(publicId, systemId, baseSystemId);
+            xmlInputSource = resolveEntity(externalEntity.entityLocation);
         }
 
         // wrap internal entity
@@ -699,7 +712,7 @@ public class XMLEntityManager
         // get information
 
         final String publicId = xmlInputSource.getPublicId();
-        final String systemId = xmlInputSource.getSystemId();
+        final String literalSystemId = xmlInputSource.getSystemId();
         String baseSystemId = xmlInputSource.getBaseSystemId();
         String encoding = xmlInputSource.getEncoding();
         Boolean isBigEndian = null;
@@ -707,13 +720,13 @@ public class XMLEntityManager
         // create reader
         InputStream stream = null;
         Reader reader = xmlInputSource.getCharacterStream();
+        String expandedSystemId = expandSystemId(literalSystemId, baseSystemId);
+        if (baseSystemId == null) {
+            baseSystemId = expandedSystemId;
+        }
         if (reader == null) {
             stream = xmlInputSource.getByteStream();
             if (stream == null) {
-                String expandedSystemId = expandSystemId(systemId, baseSystemId);
-                if (baseSystemId == null) {
-                    baseSystemId = expandedSystemId;
-                }
                 stream = new URL(expandedSystemId).openStream();
             }
             // wrap this stream in RewindableInputStream
@@ -758,17 +771,6 @@ public class XMLEntityManager
                             ***/
                         }
                     }
-                    /******
-                    pbstream.unread(b4, offset, count);
-
-                    // REVISIT: Should save the original input stream instead of
-                    //          the pushback input stream so that when we swap out
-                    //          the OneCharReader, we don't still have a method
-                    //          indirection to get at the underlying bytes. -Ac
-
-                    // create reader from input stream
-                    reader = createReader(new RewindableInputStream(pbstream), encoding, isBigEndian);
-                    ******/
                     reader = createReader(stream, encoding, isBigEndian);
                 }
                 else {
@@ -796,14 +798,13 @@ public class XMLEntityManager
         }
 
         // create entity
-        String expandedSystemId = expandSystemId(systemId, baseSystemId);
-        fCurrentEntity = new ScannedEntity(name, publicId, systemId,
-                                           expandedSystemId, stream, reader,
-                                           encoding, literal, false);
+        fCurrentEntity = new ScannedEntity(name, 
+                new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandedSystemId),
+                stream, reader, encoding, literal, false);
 
         // call handler
         if (fEntityHandler != null) {
-            fResourceIdentifier.setValues(publicId, systemId, baseSystemId, expandedSystemId);
+            fResourceIdentifier.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
             fEntityHandler.startEntity(name, fResourceIdentifier, encoding);
         }
 
@@ -1574,14 +1575,8 @@ public class XMLEntityManager
         // Data
         //
 
-        /** Public identifier. */
-        public String publicId;
-
-        /** System identifier. */
-        public String systemId;
-
-        /** Base system identifier. */
-        public String baseSystemId;
+        /** container for all relevant entity location information. */
+        public XMLResourceIdentifier entityLocation;
 
         /** Notation name for unparsed entity. */
         public String notation;
@@ -1596,14 +1591,12 @@ public class XMLEntityManager
         } // <init>()
 
         /** Constructs an internal entity. */
-        public ExternalEntity(String name, String publicId, String systemId,
-                              String baseSystemId, String notation) {
+        public ExternalEntity(String name, XMLResourceIdentifier entityLocation,
+                              String notation) {
             super(name);
-            this.publicId = publicId;
-            this.systemId = systemId;
-            this.baseSystemId = baseSystemId;
+            this.entityLocation = entityLocation;
             this.notation = notation;
-        } // <init>(String,String,String,String,String)
+        } // <init>(String,XMLResourceIdentifier, String)
 
         //
         // Entity methods
@@ -1622,27 +1615,21 @@ public class XMLEntityManager
         /** Clears the entity. */
         public void clear() {
             super.clear();
-            publicId = null;
-            systemId = null;
-            baseSystemId = null;
+            entityLocation = null;
             notation = null;
         } // clear()
 
         /** Sets the values of the entity. */
         public void setValues(Entity entity) {
             super.setValues(entity);
-            publicId = null;
-            systemId = null;
-            baseSystemId = null;
+            entityLocation = null;
             notation = null;
         } // setValues(Entity)
 
         /** Sets the values of the entity. */
         public void setValues(ExternalEntity entity) {
             super.setValues(entity);
-            publicId = entity.publicId;;
-            systemId = entity.systemId;
-            baseSystemId = entity.baseSystemId;
+            entityLocation = entity.entityLocation;
             notation = entity.notation;
         } // setValues(ExternalEntity)
 
@@ -1670,14 +1657,8 @@ public class XMLEntityManager
 
         // locator information
 
-        /** Public identifier. */
-        public String publicId;
-
-        /** System identifier. */
-        public String systemId;
-
-        /** Base system identifier. */
-        public String baseSystemId;
+        /** entity location information */
+        public XMLResourceIdentifier entityLocation;
 
         /** Line number. */
         public int lineNumber = 1;
@@ -1715,20 +1696,17 @@ public class XMLEntityManager
 
         /** Constructs a scanned entity. */
         public ScannedEntity(String name,
-                             String publicId, String systemId,
-                             String baseSystemId,
+                             XMLResourceIdentifier entityLocation,
                              InputStream stream, Reader reader,
                              String encoding, boolean literal, boolean mayReadChunks) {
             super(name);
-            this.publicId = publicId;
-            this.systemId = systemId;
-            this.baseSystemId = baseSystemId;
+            this.entityLocation = entityLocation;
             this.stream = stream;
             this.reader = reader;
             this.encoding = encoding;
             this.literal = literal;
             this.mayReadChunks = mayReadChunks;
-        } // <init>(String,String,String,InputStream,Reader,String,boolean)
+        } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean)
 
         //
         // Entity methods
@@ -1736,7 +1714,7 @@ public class XMLEntityManager
 
         /** Returns true if this is an external entity. */
         public final boolean isExternal() {
-            return systemId != null;
+            return entityLocation != null && entityLocation.getLiteralSystemId() != null;
         } // isExternal():boolean
 
         /** Returns true if this is an unparsed entity. */
@@ -1787,7 +1765,7 @@ public class XMLEntityManager
          * entity, or null if none is available.
          */
         public String getBaseSystemId() {
-            return fCurrentEntity != null ? fCurrentEntity.baseSystemId : null;
+            return (fCurrentEntity != null && fCurrentEntity.entityLocation != null) ? fCurrentEntity.entityLocation.getBaseSystemId() : null;
         } // getBaseSystemId():String
 
         /**
@@ -2982,26 +2960,27 @@ public class XMLEntityManager
          *         null if none is available.
          */
         public String getPublicId() {
-            return fCurrentEntity != null ? fCurrentEntity.publicId : null;
+            return (fCurrentEntity != null && fCurrentEntity.entityLocation != null) ? fCurrentEntity.entityLocation.getPublicId() : null;
         } // getPublicId():String
 
         /**
-         * Return the system identifier for the current document event.
+         * Return the expanded system identifier for the current document event.
          * <p>
-         * The return value is the system identifier of the document
+         * The return value is the expanded system identifier of the document
          * entity or of the external parsed entity in which the markup
          * triggering the event appears.
          * <p>
          * If the system identifier is a URL, the parser must resolve it
          * fully before passing it to the application.
          *
-         * @return A string containing the system identifier, or null
+         * @return A string containing the expanded system identifier, or null
          *         if none is available.
          */
-        public String getSystemId() {
+        public String getExpandedSystemId() {
             if (fCurrentEntity != null) {
-                if (fCurrentEntity.systemId != null ) {
-                    return fCurrentEntity.systemId;
+                if (fCurrentEntity.entityLocation != null &&
+                        fCurrentEntity.entityLocation.getExpandedSystemId() != null ) {
+                    return fCurrentEntity.entityLocation.getExpandedSystemId();
                 }
                 else {
                     // search for the first external entity on the stack
@@ -3010,14 +2989,48 @@ public class XMLEntityManager
                         ScannedEntity externalEntity =
                             (ScannedEntity)fEntityStack.elementAt(i);
 
-                        if (externalEntity.systemId != null) {
-                            return externalEntity.systemId;
+                        if (externalEntity.entityLocation != null &&
+                                externalEntity.entityLocation.getExpandedSystemId() != null) {
+                            return externalEntity.entityLocation.getExpandedSystemId();
                         }
                     }
                 }
             }
             return null;
-        } // getSystemId():String
+        } // getExpandedSystemId():String
+
+        /**
+         * Return the literal system identifier for the current document event.
+         * <p>
+         * The return value is the literal system identifier of the document
+         * entity or of the external parsed entity in which the markup
+         * triggering the event appears.
+         * <p>
+         * @return A string containing the literal system identifier, or null
+         *         if none is available.
+         */
+        public String getLiteralSystemId() {
+            if (fCurrentEntity != null) {
+                if (fCurrentEntity.entityLocation != null &&
+                        fCurrentEntity.entityLocation.getLiteralSystemId() != null ) {
+                    return fCurrentEntity.entityLocation.getLiteralSystemId();
+                }
+                else {
+                    // search for the first external entity on the stack
+                    int size = fEntityStack.size();
+                    for (int i = size - 1; i >= 0 ; i--) {
+                        ScannedEntity externalEntity =
+                            (ScannedEntity)fEntityStack.elementAt(i);
+
+                        if (externalEntity.entityLocation != null &&
+                                externalEntity.entityLocation.getLiteralSystemId() != null) {
+                            return externalEntity.entityLocation.getLiteralSystemId();
+                        }
+                    }
+                }
+            }
+            return null;
+        } // getLiteralSystemId():String
 
         /**
          * Return the line number where the current document event ends.
@@ -3040,7 +3053,7 @@ public class XMLEntityManager
         public int getLineNumber() {
             //return fCurrentEntity != null ? fCurrentEntity.lineNumber : -1;
             if (fCurrentEntity != null) {
-                if (fCurrentEntity.systemId != null ) {
+                if (fCurrentEntity.entityLocation != null && fCurrentEntity.entityLocation.getLiteralSystemId() != null ) {
                     return fCurrentEntity.lineNumber;
                 }
                 else {
@@ -3049,7 +3062,7 @@ public class XMLEntityManager
                     for (int i=size-1; i>0 ; i--) {
                         ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
 
-                        if (firstExternalEntity.systemId != null) {
+                        if (firstExternalEntity.entityLocation != null && firstExternalEntity.entityLocation.getLiteralSystemId() != null) {
                             return firstExternalEntity.lineNumber;
                         }
                     }
@@ -3085,7 +3098,7 @@ public class XMLEntityManager
         public int getColumnNumber() {
             //return fCurrentEntity != null ? fCurrentEntity.columnNumber : -1;
             if (fCurrentEntity != null) {
-                if (fCurrentEntity.systemId != null ) {
+                if (fCurrentEntity.entityLocation != null && fCurrentEntity.entityLocation.getLiteralSystemId() != null ) {
                     return fCurrentEntity.columnNumber;
                 }
                 else {
@@ -3094,7 +3107,7 @@ public class XMLEntityManager
                     for (int i=size-1; i>0 ; i--) {
                         ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
 
-                        if (firstExternalEntity.systemId != null) {
+                        if (firstExternalEntity.entityLocation != null && firstExternalEntity.entityLocation.getLiteralSystemId() != null) {
                             return firstExternalEntity.columnNumber;
                         }
                     }

@@ -59,6 +59,7 @@ package org.apache.xerces.util;
 
 
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
@@ -123,26 +124,25 @@ public class DOMEntityResolverWrapper
      * Resolves an external parsed entity. If the entity cannot be
      * resolved, this method should return null.
      *
-     * @param publicId
-     * @param systemId
-     * @param baseSystemId The base system identifier.
-     *
+     * @param resourceIdentifier	description of the resource to be revsoved
      * @throws XNIException Thrown on general error.
      * @throws IOException  Thrown if resolved entity stream cannot be
      *                      opened or some other i/o error occurs.
      */
-    public XMLInputSource resolveEntity(String publicId, String systemId, 
-                                        String baseSystemId) 
+    public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier)
         throws XNIException, IOException {
 
         // resolve entity using DOM entity resolver
         if (fEntityResolver != null) {
             try {
                 DOMInputSource inputSource = 
-                    fEntityResolver.resolveEntity(publicId, systemId, baseSystemId);
+		    resourceIdentifier == null ?
+                    fEntityResolver.resolveEntity(null, null, null) : 
+                    fEntityResolver.resolveEntity(resourceIdentifier.getPublicId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getBaseSystemId());
                 if (inputSource != null) {
-                    publicId = inputSource.getPublicId();
-                    systemId = inputSource.getSystemId();
+                    String publicId = inputSource.getPublicId();
+                    String systemId = inputSource.getSystemId();
+                    String baseSystemId = inputSource.getBaseURI();
                     InputStream byteStream = inputSource.getByteStream();
                     Reader charStream = inputSource.getCharacterStream();
                     String encoding = inputSource.getEncoding();

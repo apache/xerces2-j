@@ -133,7 +133,7 @@ public class DefaultErrorHandler
         fOut.print("[");
         fOut.print(type);
         fOut.print("] ");
-        String systemId = ex.getSystemId();
+        String systemId = ex.getExpandedSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
             if (index != -1)

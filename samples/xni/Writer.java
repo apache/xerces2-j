@@ -489,7 +489,7 @@ public class Writer
         System.err.print("[");
         System.err.print(type);
         System.err.print("] ");
-        String systemId = ex.getSystemId();
+        String systemId = ex.getExpandedSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
             if (index != -1)

@@ -1355,6 +1355,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param nonNormalizedDefaultValue  The attribute default value with no normalization 
+     *                      performed, or null if no default value is specified.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
@@ -1363,7 +1365,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue,
-                              Augmentations augs) throws XNIException {
+                              XMLString nonNormalizedDefaultValue, Augmentations augs) throws XNIException {
 
         if (type != fCDATASymbol && defaultValue != null) {
             normalizeDefaultAttrValue(defaultValue);
@@ -1497,14 +1499,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         // call handlers
         fDTDGrammar.attributeDecl(elementName, attributeName, 
                                   type, enumeration,
-                                  defaultType, defaultValue, augs);
+                                  defaultType, defaultValue, nonNormalizedDefaultValue, augs);
         if (fDTDHandler != null) {
             fDTDHandler.attributeDecl(elementName, attributeName, 
                                       type, enumeration, 
-                                      defaultType, defaultValue, augs);
+                                      defaultType, defaultValue, nonNormalizedDefaultValue, augs);
         }
 
-    } // attributeDecl(String,String,String,String[],String,XMLString)
+    } // attributeDecl(String,String,String,String[],String,XMLString, XMLString, Augmentations)
 
     /**
      * The end of an attribute list.
@@ -1591,6 +1593,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *                 specified.
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
+     * @param baseSystemId	URI of the entity by which this was referenced
      * @param notation The name of the notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
@@ -1599,7 +1602,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation, 
+                                   String baseSystemId, String notation, 
                                    Augmentations augs) throws XNIException {
 
         // VC: Notation declared,  in the production of NDataDecl
@@ -1608,12 +1611,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         // call handlers
-        fDTDGrammar.unparsedEntityDecl(name, publicId, systemId, notation, augs);
+        fDTDGrammar.unparsedEntityDecl(name, publicId, systemId, baseSystemId, notation, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation, augs);
+            fDTDHandler.unparsedEntityDecl(name, publicId, systemId, baseSystemId, notation, augs);
         }
 
-    } // unparsedEntityDecl(String,String,String,String)
+    } // unparsedEntityDecl(String,String,String,String,String,Augmentations)
 
     /**
      * A notation declaration
@@ -1623,21 +1626,22 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param baseSystemId	URI of the entity by which this was referenced
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId,
-                             Augmentations augs) throws XNIException {
+                             String baseSystemId, Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.notationDecl(name, publicId, systemId, augs);
+        fDTDGrammar.notationDecl(name, publicId, systemId, baseSystemId, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.notationDecl(name, publicId, systemId, augs);
+            fDTDHandler.notationDecl(name, publicId, systemId, baseSystemId, augs);
         }
 
-    } // notationDecl(String,String,String)
+    } // notationDecl(String,String,String, String, Augmentations)
 
     /**
      * The start of a conditional section.

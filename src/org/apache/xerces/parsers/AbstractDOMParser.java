@@ -1256,6 +1256,7 @@ public abstract class AbstractDOMParser
      *                 specified.
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
+     * @param baseSystemId	URI of the entity by which this one was referenced
      * @param notation The name of the notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
@@ -1264,7 +1265,7 @@ public abstract class AbstractDOMParser
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation, Augmentations augs) 
+                                   String baseSystemId, String notation, Augmentations augs) 
         throws XNIException {
 
         // internal subset string
@@ -1328,7 +1329,7 @@ public abstract class AbstractDOMParser
             }
         }
     
-    } // unparsedEntityDecl(String,String,String,String)
+    } // unparsedEntityDecl(String,String,String,String, String, Augmentations)
 
     /**
      * A notation declaration
@@ -1338,13 +1339,14 @@ public abstract class AbstractDOMParser
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param baseSystemId The base system identifier where this entity
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId,
-                             Augmentations augs) throws XNIException {
+                             String baseSystemId, Augmentations augs) throws XNIException {
 
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {
@@ -1401,7 +1403,7 @@ public abstract class AbstractDOMParser
             }
         }
 
-    } // notationDecl(String,String,String)
+    } // notationDecl(String,String,String, String, Augmentations)
 
     /**
      * An element declaration.
@@ -1445,6 +1447,8 @@ public abstract class AbstractDOMParser
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param nonNormalizedDefaultValue  The attribute default value with no normalization 
+     *                      performed, or null if no default value is specified.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
@@ -1453,7 +1457,7 @@ public abstract class AbstractDOMParser
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue,
-                              Augmentations augs) throws XNIException {
+                              XMLString nonNormalizedDefaultValue, Augmentations augs) throws XNIException {
 
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {
@@ -1567,6 +1571,6 @@ public abstract class AbstractDOMParser
 
         } // if NOT defer-node-expansion
 
-    } // attributeDecl(String,String,String,String[],String,XMLString)
+    } // attributeDecl(String,String,String,String[],String,XMLString, XMLString, Augmentations)
 
 } // class AbstractDOMParser

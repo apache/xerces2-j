@@ -822,6 +822,8 @@ public abstract class AbstractSAXParser
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
      *
+     * @param nonNormalizedDefaultValue  The attribute default value with no normalization 
+     *                      performed, or null if no default value is specified.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
@@ -830,7 +832,7 @@ public abstract class AbstractSAXParser
     public void attributeDecl(String elementName, String attributeName,
                               String type, String[] enumeration,
                               String defaultType, XMLString defaultValue,
-                              Augmentations augs) throws XNIException {
+                              XMLString nonNormalizedDefaultValue, Augmentations augs) throws XNIException {
 
         try {
             // SAX2 extension
@@ -864,7 +866,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // attributeDecl(String,String,String,String[],String,XMLString)
+    } // attributeDecl(String,String,String,String[],String,XMLString, XMLString, Augmentations)
 
     /**
      * An internal entity declaration.
@@ -939,6 +941,7 @@ public abstract class AbstractSAXParser
      *                 specified.
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
+     * @param baseSystemId	URI of the entity by which this one was referenced
      * @param notation The name of the notation.
      *
      * @param augs Additional information that may include infoset
@@ -947,7 +950,7 @@ public abstract class AbstractSAXParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId,
-                                   String systemId, String notation,
+                                   String systemId, String baseSyseemId, String notation,
                                    Augmentations augs) throws XNIException {
 
         try {
@@ -971,6 +974,7 @@ public abstract class AbstractSAXParser
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param baseSystemId The baseSystem identifier of the entity.
      *
      * @param augs Additional information that may include infoset
      *                      augmentations.
@@ -978,7 +982,7 @@ public abstract class AbstractSAXParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId,
-                             Augmentations augs) throws XNIException {
+                             String baseSystemId, Augmentations augs) throws XNIException {
 
         try {
             // SAX1 and SAX2
@@ -990,7 +994,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // notationDecl(String,String,String)
+    } // notationDecl(String,String,String, String, Augmentations)
 
     /**
      * The end of the DTD.
@@ -1048,7 +1052,7 @@ public abstract class AbstractSAXParser
                 // a SAXParseException
                 LocatorImpl locatorImpl = new LocatorImpl();
                 locatorImpl.setPublicId(e.getPublicId());
-                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
                 locatorImpl.setColumnNumber(e.getColumnNumber());
                 throw new SAXParseException(e.getMessage(), locatorImpl);
@@ -1128,7 +1132,7 @@ public abstract class AbstractSAXParser
                 // a SAXParseException
                 LocatorImpl locatorImpl = new LocatorImpl();
                 locatorImpl.setPublicId(e.getPublicId());
-                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
                 locatorImpl.setColumnNumber(e.getColumnNumber());
                 throw new SAXParseException(e.getMessage(), locatorImpl);
@@ -1896,7 +1900,7 @@ public abstract class AbstractSAXParser
 
         /** System identifier. */
         public String getSystemId() {
-            return fLocator.getSystemId();
+            return fLocator.getExpandedSystemId();
         }
         /** Line number. */
         public int getLineNumber() {

@@ -59,25 +59,18 @@ package org.apache.xerces.xni;
 
 /**
  * Location information.
+ * Since location information subsumes information on the physical location of the resource,
+ * it makes eminent sense for this interface to extend XMLResourceIdentifier.
  *
  * @author Andy Clark, IBM
  *
  * @version $Id$
  */
-public interface XMLLocator {
+public interface XMLLocator  extends XMLResourceIdentifier {
 
     //
     // XMLLocator methods
     //
-
-    /** Returns the public identifier. */
-    public String getPublicId();
-
-    /** Returns the system identifier. */
-    public String getSystemId();
-
-    /** Returns the base system identifier. */
-    public String getBaseSystemId();
 
     /** Returns the line number. */
     public int getLineNumber();
