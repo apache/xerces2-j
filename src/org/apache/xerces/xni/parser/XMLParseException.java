@@ -86,10 +86,10 @@ public class XMLParseException
     protected String fBaseSystemId;
 
     /** Line number. */
-    protected int fLineNumber;
+    protected int fLineNumber = -1;
     
     /** Column number. */
-    protected int fColumnNumber;
+    protected int fColumnNumber = -1;
 
     //
     // Constructors
@@ -98,11 +98,13 @@ public class XMLParseException
     /** Constructs a parse exception. */
     public XMLParseException(XMLLocator locator, String message) {
         super(message);
-        fPublicId = locator.getPublicId();
-        fSystemId = locator.getSystemId();
-        fBaseSystemId = locator.getBaseSystemId();
-        fLineNumber = locator.getLineNumber();
-        fColumnNumber = locator.getColumnNumber();
+        if (locator != null) {
+            fPublicId = locator.getPublicId();
+            fSystemId = locator.getSystemId();
+            fBaseSystemId = locator.getBaseSystemId();
+            fLineNumber = locator.getLineNumber();
+            fColumnNumber = locator.getColumnNumber();
+        }
     } // <init>(XMLLocator,String)
 
     /** Constructs a parse exception. */
