@@ -191,6 +191,10 @@ public class TraverseSchema implements
     private Vector fImportLocations = new Vector();
     private Hashtable fRedefineLocations = new Hashtable();
     private Vector fTraversedRedefineElements = new Vector();
+    // Hashtable associating attributeGroups within a <redefine> which
+    // restrict attributeGroups in the original schema with the
+    // new name for those groups in the modified redefined schema.  
+    private Hashtable fRedefineAttributeGroupMap = null;
 
     //to store facets for simpleType
     private Hashtable fFacetData = new Hashtable(10);
@@ -890,6 +894,38 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { 
                 traverseElementDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                if(fRedefineAttributeGroupMap != null) {
+                    String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
+                    String bName = (String)fRedefineAttributeGroupMap.get(dName);
+                    if(bName != null) {
+                        child.setAttribute(SchemaSymbols.ATT_NAME, bName);
+                        // Now we reuse this location in the array to store info we'll need for validation...  
+                        ComplexTypeInfo typeInfo = new ComplexTypeInfo();
+                        int templateElementNameIndex = fStringPool.addSymbol("$"+bName);
+                        int typeNameIndex = fStringPool.addSymbol("%"+bName);
+                        typeInfo.scopeDefined = -2;
+                        typeInfo.contentSpecHandle = -1;
+                        typeInfo.contentType = XMLElementDecl.TYPE_SIMPLE;
+                        typeInfo.datatypeValidator = null;
+                        typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
+                            new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
+                            (fTargetNSURI==StringPool.EMPTY_STRING) ? StringPool.EMPTY_STRING : -2, typeInfo.scopeDefined,
+                            typeInfo.contentType, 
+                            typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
+
+                        Vector anyAttDecls = new Vector();
+                        // need to determine how to initialize these babies; then
+                        // on the <redefine> traversing end, try
+                        // and cast the hash value into the right form;
+                        // failure indicates nothing to redefine; success
+                        // means we can feed checkAttribute... what it needs...
+                        traverseAttributeGroupDecl(child, typeInfo, anyAttDecls);
+                        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(
+                                typeInfo.templateElementIndex);
+                        fRedefineAttributeGroupMap.put(dName, new Object []{typeInfo, fSchemaGrammar, anyAttDecls});
+                        continue;
+                    }
+                }
                 traverseAttributeGroupDecl(child, null, null);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null , false);
@@ -1035,6 +1071,9 @@ public class TraverseSchema implements
 	 */
     private void traverseRedefine(Element redefineDecl) throws Exception {
 
+        // initialize storage areas...
+        fRedefineAttributeGroupMap = new Hashtable();
+
         // only case in which need to save contents is when fSchemaInfoListRoot is null; otherwise we'll have
         // done this already one way or another.  
         if (fSchemaInfoListRoot == null) {
@@ -1078,6 +1117,45 @@ public class TraverseSchema implements
            	} else if (name.equals(SchemaSymbols.ELT_GROUP)) {
                	traverseGroupDecl(child);
            	} else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                if(fRedefineAttributeGroupMap != null) {
+                    String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
+                    Object [] bAttGrpStore = (Object [])fRedefineAttributeGroupMap.get(dName);
+                    if(bAttGrpStore != null) { // we have something!
+                        ComplexTypeInfo bTypeInfo = (ComplexTypeInfo)bAttGrpStore[0];
+                        SchemaGrammar bSchemaGrammar = (SchemaGrammar)bAttGrpStore[1];
+                        Vector bAnyAttDecls = (Vector)bAttGrpStore[2];
+                        XMLAttributeDecl bAnyAttDecl =  
+                            (bAnyAttDecls.size()>0 )? (XMLAttributeDecl)bAnyAttDecls.elementAt(0):null;
+                        ComplexTypeInfo dTypeInfo = new ComplexTypeInfo();
+                        int templateElementNameIndex = fStringPool.addSymbol("$"+dName);
+                        int dTypeNameIndex = fStringPool.addSymbol("%"+dName);
+                        dTypeInfo.scopeDefined = -2;
+                        dTypeInfo.contentSpecHandle = -1;
+                        dTypeInfo.contentType = XMLElementDecl.TYPE_SIMPLE;
+                        dTypeInfo.datatypeValidator = null;
+                        dTypeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
+                            new QName(-1, templateElementNameIndex,dTypeNameIndex,fTargetNSURI),
+                            (fTargetNSURI==StringPool.EMPTY_STRING) ? StringPool.EMPTY_STRING : -2, dTypeInfo.scopeDefined,
+                            dTypeInfo.contentType, 
+                            dTypeInfo.contentSpecHandle, -1, dTypeInfo.datatypeValidator);
+
+                        Vector dAnyAttDecls = new Vector();
+                        XMLAttributeDecl dAnyAttDecl =  
+                            (dAnyAttDecls.size()>0 )? (XMLAttributeDecl)dAnyAttDecls.elementAt(0):null;
+                        traverseAttributeGroupDecl(child, dTypeInfo, dAnyAttDecls);
+                        dTypeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(
+                                dTypeInfo.templateElementIndex);
+                        try {
+                            checkAttributesDerivationOKRestriction(dTypeInfo.attlistHead,fSchemaGrammar,
+                                dAnyAttDecl,bTypeInfo.attlistHead,bSchemaGrammar,bAnyAttDecl); 
+                        }
+                        catch (ComplexTypeRecoverableError e) {
+                            String message = e.getMessage();
+                            handleComplexTypeError(message,fStringPool.addSymbol(dName),dTypeInfo);
+                        }
+                        continue;
+                    }
+                }
                	traverseAttributeGroupDecl(child, null, null);
 			} // no else; error reported in the previous traversal
        	} //for
@@ -1361,8 +1439,7 @@ public class TraverseSchema implements
 			} else if (attGroupRefsCount == 1) {
                 return true;
 			}  else
-				// REVISIT:  localize and for PR:
-				reportGenericSchemaError("an attributeGroup in a <redefine> must have exactly one ref attribute to itself in schema CR");
+                fRedefineAttributeGroupMap.put(oldName, newName);
         } else if (eltLocalname.equals(SchemaSymbols.ELT_GROUP)) {
 			QName processedBaseName = new QName(-1, fStringPool.addSymbol(oldName), fStringPool.addSymbol(oldName), fTargetNSURI);
 			int groupRefsCount = changeRedefineGroup(processedBaseName, eltLocalname, newName, child);
@@ -5585,7 +5662,6 @@ public class TraverseSchema implements
                         }
                         DatatypeValidator validator = edecl.datatypeValidator;
                         if (validator == null) validator = new StringDatatypeValidator();
-                        System.err.println(validator);
                         return validator;
                     }
                     break;
