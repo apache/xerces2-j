@@ -64,6 +64,11 @@ import org.apache.xerces.impl.validation.XMLAttributeDecl;
 import org.apache.xerces.impl.validation.XMLNotationDecl;
 import org.apache.xerces.impl.validation.XMLEntityDecl;
 import org.apache.xerces.impl.validation.XMLSimpleType;
+import org.apache.xerces.impl.validation.models.CMNode;
+import org.apache.xerces.impl.validation.models.CMAny;
+import org.apache.xerces.impl.validation.models.CMLeaf;
+import org.apache.xerces.impl.validation.models.CMUniOp;
+import org.apache.xerces.impl.validation.models.CMBinOp;
 import org.apache.xerces.impl.validation.models.DFAContentModel;
 import org.apache.xerces.impl.validation.models.MixedContentModel;
 import org.apache.xerces.impl.validation.models.SimpleContentModel;
@@ -209,7 +214,7 @@ public class Grammar {
     * @param elementDeclIndex 
     * @param elementDecl The values of this structure are set by this call.
     * 
-    * @return 
+    * @return True if find the element, False otherwise. 
     */
    public boolean getElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
       if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
@@ -252,6 +257,13 @@ public class Grammar {
    } // getElementDecl
 
 
+   /**
+    * getElementContentModelValidator
+    * 
+    * @param elementDeclIndex 
+    * 
+    * @return its ContentModelValidator if any.
+    */
    protected ContentModelValidator getElementContentModelValidator(int elementDeclIndex) {
       int chunk = elementDeclIndex >> CHUNK_SHIFT;
       int index = elementDeclIndex & CHUNK_MASK;
@@ -712,15 +724,7 @@ public class Grammar {
    //}
 
 
-   // private int countLeaves(int contentSpecIndex) {
-   //     return countLeaves(contentSpecIndex, new XMLContentSpec());
-   //}
 
-   //private int countLeaves(int contentSpecIndex, XMLContentSpec contentSpec) {
-   //}
-
-
-   private int fLeafCount = 0;
    //
    //  When the element has a 'CHILDREN' model, this method is called to
    //  create the content model object. It looks for some special case simple
@@ -816,17 +820,90 @@ public class Grammar {
       //  encapsulates all of the work to create the DFA.
       //
 
+      fLeafCount = 0;
       //int leafCount = countLeaves(contentSpecIndex);
       fLeafCount = 0;
-      //REVISIT
-      //CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
+      CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
 
       // REVISIT: has to be fLeafCount because we convert x+ to x,x*, one more leaf
-      // return new DFAContentModel(  cmn, fLeafCount, isDTD());
-      return null;
+      return new DFAContentModel(  cmn, fLeafCount, isDTD(), false);
    }
 
-   /**
+    private int fLeafCount = 0;
+    private int fEpsilonIndex = -1;
+    private final CMNode buildSyntaxTree(int startNode, XMLContentSpec contentSpec)
+    {
+        // We will build a node at this level for the new tree
+        CMNode nodeRet = null;
+        getContentSpec(startNode, contentSpec);
+        if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) {
+            //nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
+            nodeRet = new CMAny(contentSpec.type, (String)contentSpec.otherValue, fLeafCount++);
+        }
+        else if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+            nodeRet = new CMAny(contentSpec.type, (String)contentSpec.otherValue, fLeafCount++);
+        }
+        else if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+            nodeRet = new CMAny(contentSpec.type, null, fLeafCount++);
+        }
+        //
+        //  If this node is a leaf, then its an easy one. We just add it
+        //  to the tree.
+        //
+        else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            //
+            //  Create a new leaf node, and pass it the current leaf count,
+            //  which is its DFA state position. Bump the leaf count after
+            //  storing it. This makes the positions zero based since we
+            //  store first and then increment.
+            //
+            fQName1.setValues(null, (String)contentSpec.value, 
+                              (String)contentSpec.value, (String)contentSpec.otherValue);
+            nodeRet = new CMLeaf(fQName1, fLeafCount++);
+        } 
+        else {
+            //
+            //  Its not a leaf, so we have to recurse its left and maybe right
+            //  nodes. Save both values before we recurse and trash the node.
+            final int leftNode = ((int[])contentSpec.value)[0];
+            final int rightNode = ((int[])contentSpec.otherValue)[0];
+
+            if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+                ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
+                //
+                //  Recurse on both children, and return a binary op node
+                //  with the two created sub nodes as its children. The node
+                //  type is the same type as the source.
+                //
+
+                nodeRet = new CMBinOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec)
+                                       , buildSyntaxTree(rightNode, contentSpec));
+            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE) {
+                nodeRet = new CMUniOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
+            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
+                // Convert to (x|epsilon)
+                String epsilon = "<<CMNODE_EPSILON>>";
+                epsilon.intern();
+                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                                       buildSyntaxTree(leftNode, contentSpec)
+                                       , new CMLeaf( new QName(null, epsilon, epsilon, null), fEpsilonIndex));
+                                       // REVISIT: Epsilon constants in DFAContentModel.
+                                       //, new CMLeaf( new QName(-1,-2,-2,-1), fEpsilonIndex));
+            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+                // Convert to (x,x*)
+                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_SEQ, 
+                                       buildSyntaxTree(leftNode, contentSpec), 
+                                       new CMUniOp( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
+                                                    buildSyntaxTree(leftNode, contentSpec) ));
+            } else {
+                throw new RuntimeException("ImplementationMessages.VAL_CST");
+            }
+        }
+        // And return our new node for this level
+        return nodeRet;
+    }
+   
+    /**
     * Build a vector of valid QNames from Content Spec
     * table.
     * 

@@ -86,7 +86,7 @@ public class CMAny
      * XMLContentSpec.CONTENTSPECNODE_ANY, 
      * XMLContentSpec.CONTENTSPECNODE_ANY_OTHER.
      */
-    private int fURI;
+    private String fURI;
 
     /**
      * Part of the algorithm to convert a regex directly to a DFA
@@ -100,7 +100,7 @@ public class CMAny
     //
 
     /** Constructs a content model any. */
-    public CMAny(int type, int uri, int position)  {
+    public CMAny(int type, String uri, int position)  {
         super(type);
 
         // Store the information
@@ -117,7 +117,7 @@ public class CMAny
         return fType;
     }
 
-    final int getURI() {
+    final String getURI() {
         return fURI;
     }
 
