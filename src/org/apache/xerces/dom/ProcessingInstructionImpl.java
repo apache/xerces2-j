@@ -79,13 +79,20 @@ public class ProcessingInstructionImpl
     static final long serialVersionUID = 7554435174099981510L;
 
     //
+    // Data
+    //
+
+    protected String target;
+
+    //
     // Constructors
     //
 
     /** Factory constructor. */
     public ProcessingInstructionImpl(DocumentImpl ownerDoc,
                                      String target, String data) {
-        super(ownerDoc, target, data);
+        super(ownerDoc, data);
+        this.target = target;
     }
 
     //
@@ -98,6 +105,24 @@ public class ProcessingInstructionImpl
      */
     public short getNodeType() {
         return Node.PROCESSING_INSTRUCTION_NODE;
+    }
+
+    /**
+     * Returns the target
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return target;
+    }
+
+    /** Clone node. */
+    public Node cloneNode(boolean deep) {
+        ProcessingInstructionImpl newpi =
+            (ProcessingInstructionImpl) super.cloneNode(deep);
+        newpi.target = target;
+        return newpi;
     }
 
     //
@@ -116,11 +141,10 @@ public class ProcessingInstructionImpl
      * Note that getNodeName is aliased to getTarget.
      */
     public String getTarget() {
-
         if (syncData) {
             synchronizeData();
-            }
-        return name;
+        }
+        return target;
 
     } // getTarget():String
 
@@ -137,10 +161,9 @@ public class ProcessingInstructionImpl
      * Note that getNodeValue is aliased to getData
      */
     public String getData() {
-
         if (syncData) {
             synchronizeData();
-            }
+        }
         return value;
 
     } // getData():String

@@ -154,7 +154,7 @@ public class DocumentImpl
 
     /** Experimental constructor. */
     public DocumentImpl(boolean grammarAccess) {
-        super(null,null,null);
+        super(null,null);
         ownerDocument = this;
         allowGrammarAccess = grammarAccess;
     }

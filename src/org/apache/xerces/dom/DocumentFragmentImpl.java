@@ -116,7 +116,7 @@ public class DocumentFragmentImpl
 
     /** Factory constructor. */
     public DocumentFragmentImpl(DocumentImpl ownerDoc) {
-        super(ownerDoc, null, null);
+        super(ownerDoc, null);
     }  
   
     /** Constructor for serialization. */

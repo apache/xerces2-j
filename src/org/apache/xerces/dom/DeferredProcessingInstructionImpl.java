@@ -121,8 +121,9 @@ public class DeferredProcessingInstructionImpl
         syncData = false;
 
         // fluff data
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        name  = ownerDocument.getNodeNameString(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) this.ownerDocument;
+        target  = ownerDocument.getNodeNameString(fNodeIndex);
         value = ownerDocument.getNodeValueString(fNodeIndex);
 
     } // synchronizeData()

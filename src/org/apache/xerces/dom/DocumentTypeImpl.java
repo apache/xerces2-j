@@ -94,6 +94,9 @@ public class DocumentTypeImpl
     // Data
     //
 
+    /** Document type name. */
+    protected String name;
+
     /** Entities. */
     protected NamedNodeMapImpl entities;
     
@@ -120,8 +123,9 @@ public class DocumentTypeImpl
 
     /** Factory method for creating a document type node. */
     public DocumentTypeImpl(DocumentImpl ownerDocument, String name) {
-        super(ownerDocument, name, null);
+        super(ownerDocument, null);
 
+        this.name = name;
         // DOM
         entities  = new NamedNodeMapImpl(this, null);
         notations = new NamedNodeMapImpl(this, null);
@@ -207,6 +211,16 @@ public class DocumentTypeImpl
     }
     
     /**
+     * Returns the document type name
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return name;
+    }
+
+    /**
      * DocumentTypes never have a nodeValue.
      * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
      */
@@ -220,7 +234,7 @@ public class DocumentTypeImpl
     public Node cloneNode(boolean deep) {
 
     	DocumentTypeImpl newnode = (DocumentTypeImpl)super.cloneNode(deep);
-
+        newnode.name = name;
     	// NamedNodeMaps must be cloned explicitly, to avoid sharing them.
     	newnode.entities  = entities.cloneMap(newnode);
     	newnode.notations = notations.cloneMap(newnode);

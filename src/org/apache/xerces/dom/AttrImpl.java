@@ -116,6 +116,9 @@ public class AttrImpl
     // Data
     //
 
+    /** Attribute name. */
+    protected String name;
+
     /** False for default attributes. */
     protected boolean specified = true;
   
@@ -128,7 +131,8 @@ public class AttrImpl
      * method in the Document class.
      */
     protected AttrImpl(DocumentImpl ownerDocument, String name) {
-    	super(ownerDocument, name, null);
+    	super(ownerDocument, null);
+        this.name = name;
         syncData = true;
     }
 
@@ -145,6 +149,16 @@ public class AttrImpl
      */
     public short getNodeType() {
         return Node.ATTRIBUTE_NODE;
+    }
+
+    /**
+     * Returns the attribute name
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return name;
     }
 
     /**
@@ -175,6 +189,7 @@ public class AttrImpl
     /** Clone node. */
     public Node cloneNode(boolean deep) {
         AttrImpl newattr = (AttrImpl)super.cloneNode(deep);
+        newattr.name = name;
         newattr.specified = specified;
         return newattr;
     }

@@ -156,8 +156,8 @@ public abstract class NodeContainer
      * instantiated, and those normally via a Document's factory methods
      */
     protected NodeContainer(DocumentImpl ownerDocument,
-			    String name, String value) {
-	super(ownerDocument, name, value);
+			    String value) {
+	super(ownerDocument, value);
     }
 
     /** Constructor for serialization. */

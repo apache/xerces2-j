@@ -99,15 +99,12 @@ public abstract class CharacterDataImpl
 
     /** Factory constructor. */
     protected CharacterDataImpl(DocumentImpl ownerDocument, String data) {
-        super(ownerDocument, null, data);
+        super(ownerDocument, data);
     }
 
     //
     // Node methods
     //
-
-    /** Returns the node name. */
-    public abstract String getNodeName();
 
     /** Returns an empty node list. */
     public NodeList getChildNodes() {

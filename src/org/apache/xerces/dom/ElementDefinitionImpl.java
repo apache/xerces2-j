@@ -82,8 +82,11 @@ public class ElementDefinitionImpl
     // Data
     //
 
+    /** Element definition name. */
+    protected String name;
+
     /** Default attributes. */
-	protected NamedNodeMapImpl attributes;
+    protected NamedNodeMapImpl attributes;
 
     //
     // Constructors
@@ -91,7 +94,8 @@ public class ElementDefinitionImpl
 
     /** Factory constructor. */
     public ElementDefinitionImpl(DocumentImpl ownerDocument, String name) {
-    	super(ownerDocument, name, null);
+    	super(ownerDocument, null);
+        this.name = name;
         attributes = new NamedNodeMapImpl(ownerDocument, null);
     }
 
@@ -105,6 +109,16 @@ public class ElementDefinitionImpl
      */
     public short getNodeType() {
         return NodeImpl.ELEMENT_DEFINITION_NODE;
+    }
+
+    /**
+     * Returns the element definition name
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return name;
     }
 
     /**

@@ -125,6 +125,9 @@ public class EntityReferenceImpl
     // Data
     //
 
+    /** Name of Entity referenced */
+    protected String name;
+
     /** Entity changes. */
 	//protected int entityChanges = -1;	
 
@@ -137,7 +140,8 @@ public class EntityReferenceImpl
 
     /** Factory constructor. */
     public EntityReferenceImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, name, null);
+    	super(ownerDoc, null);
+        this.name = name;
         //fEnableSynchronize = false;
 
     	// EntityReference behaves as a read-only node, since its contents
@@ -157,9 +161,21 @@ public class EntityReferenceImpl
         return Node.ENTITY_REFERENCE_NODE;
     }
 
+    /**
+     * Returns the name of the entity referenced
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return name;
+    }
+
     /** Clone node. */
     public Node cloneNode(boolean deep) {
-        EntityReferenceImpl newentityref = (EntityReferenceImpl)super.cloneNode(deep);
+        EntityReferenceImpl newentityref =
+            (EntityReferenceImpl) super.cloneNode(deep);
+        newentityref.name = name;
         return newentityref;
     }
 

@@ -132,9 +132,6 @@ public abstract class NodeImpl
 
     // data
 
-    /** Node name. */
-	protected String name;
-
     /** Node value. */
 	protected String value;
 
@@ -193,13 +190,11 @@ public abstract class NodeImpl
      * <p>
      * Every Node knows what Document it belongs to.
      */
-    protected NodeImpl(DocumentImpl ownerDocument, String name, String value) {
+    protected NodeImpl(DocumentImpl ownerDocument, String value) {
 
         // set information
         // REVISITNS: This may have to be modifoed for DOM2:
         this.ownerDocument = ownerDocument;
-
-        this.name  = name;
         this.value = value;
 
     } // <init>(DocumentImpl,String,short,boolean,String)
@@ -218,18 +213,9 @@ public abstract class NodeImpl
     public abstract short getNodeType();
 
     /**
-     * For many nodes, nodeName is derived from their nodeType mnemonic
-     * (lowercasified and preceeded by a '#' character). Others return the
-     * "name of the data" -- tag name, attribute name, and so on.
+     * the name of this node.
      */
-    public String getNodeName() {
-
-        if (syncData) {
-            synchronizeData();
-        }
-        return name;
-
-    } // getNodeName():String
+    public abstract String getNodeName();
     
     /** This function added so that we can distinguish whether
      *  setNodeValue has been called from some other DOM functions.
@@ -417,7 +403,6 @@ public abstract class NodeImpl
         newnode.nextSibling     = null;
 
         // set other values
-        newnode.name = name;
         newnode.value = value;
         // REVISIT: What to do when readOnly? -Ac
         newnode.readOnly = false;

@@ -108,6 +108,9 @@ public class EntityImpl
     // Data
     //
 
+    /** Entity name. */
+    protected String name;
+
     /** Public identifier. */
     protected String publicId;
 
@@ -123,7 +126,8 @@ public class EntityImpl
 
     /** Factory constructor. */
     public EntityImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, name, null);
+    	super(ownerDoc, null);
+        this.name = name;
     }
     
     //
@@ -140,6 +144,16 @@ public class EntityImpl
 
     public Node getParentNode() {
         return null;
+    }
+
+    /**
+     * Returns the entity name
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return name;
     }
 
     /** Returns the node value. */
@@ -159,6 +173,7 @@ public class EntityImpl
     /** Clone node. */
     public Node cloneNode(boolean deep) {
         EntityImpl newentity = (EntityImpl)super.cloneNode(deep);
+        newentity.name = name;
         // NOTE: This explicit setting of the public id, system id, and
         //       notation name isn't necessary because at the base of
         //       the cloning operation, the object's clone() method will

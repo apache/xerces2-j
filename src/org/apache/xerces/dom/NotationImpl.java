@@ -95,6 +95,9 @@ public class NotationImpl
     // Data
     //
 
+    /** Notation name. */
+    protected String name;
+
     /** Public identifier. */
     protected String publicId;
 
@@ -107,7 +110,8 @@ public class NotationImpl
 
     /** Factory constructor. */
     public NotationImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, name, null);
+    	super(ownerDoc, null);
+        this.name = name;
     }
     
     //
@@ -120,6 +124,23 @@ public class NotationImpl
      */
     public short getNodeType() {
         return Node.NOTATION_NODE;
+    }
+
+    /**
+     * Returns the notation name
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return name;
+    }
+
+    /** Clone node. */
+    public Node cloneNode(boolean deep) {
+        NotationImpl newnotation = (NotationImpl) super.cloneNode(deep);
+        newnotation.name = name;
+        return newnotation;
     }
 
     public Node getParentNode() {

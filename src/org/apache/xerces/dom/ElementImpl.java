@@ -97,6 +97,9 @@ public class ElementImpl
     // Data
     //
 
+    /** Element name. */
+    protected String name;
+
     /** Attributes. */
     protected NamedNodeMapImpl attributes;
 
@@ -106,9 +109,9 @@ public class ElementImpl
 
     /** Factory constructor. */
     public ElementImpl(DocumentImpl ownerDoc, String name) {
-    	super(ownerDoc, name, null);
+    	super(ownerDoc, null);
+        this.name = name;
         //setupDefaultAttributes(ownerDoc);
-        //this.localName = name;
         syncData = true;
     }
 
@@ -126,6 +129,16 @@ public class ElementImpl
      */
     public short getNodeType() {
         return Node.ELEMENT_NODE;
+    }
+
+    /**
+     * Returns the element name
+     */
+    public String getNodeName() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return name;
     }
 
     /** Returns the node value. */
@@ -172,6 +185,7 @@ public class ElementImpl
         }
 
     	ElementImpl newnode = (ElementImpl) super.cloneNode(deep);
+        newnode.name = name;
     	// Replicate NamedNodeMap rather than sharing it.
     	newnode.attributes = attributes.cloneMap(newnode);
     	return newnode;
