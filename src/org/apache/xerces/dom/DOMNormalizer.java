@@ -149,7 +149,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
     /** symbol table */
     protected SymbolTable fSymbolTable;
-    /** error handler */
+    /** error handler. may be null. */
     protected DOMErrorHandler fErrorHandler;
 
     // Validation against namespace aware grammar
@@ -167,8 +167,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
     /** list of attributes */
     protected final Vector fAttributeList = new Vector(5,10);
 
-    /** DOM Error object */
-    protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
 
     /** DOM Locator -  for namespace fixup algorithm */
     protected final DOMLocatorImpl fLocator = new DOMLocatorImpl();
@@ -180,6 +178,12 @@ public class DOMNormalizer implements XMLDocumentHandler {
     // attribute value normalization
     final XMLString fNormalizedValue = new XMLString(new char[16], 0, 0);
 
+    /**
+     * If the user stops the normalization process, this exception will be thrown.
+     */
+    private static final RuntimeException abort = new RuntimeException();
+    
+    
     // 
     // Constructor
     // 
@@ -250,16 +254,9 @@ public class DOMNormalizer implements XMLDocumentHandler {
 			}
 		}
 		catch (RuntimeException e) {
-			// fatal error occured
-			modifyDOMError(
-				"Runtime exception: " + e.getMessage(),
-				DOMError.SEVERITY_FATAL_ERROR,
-				null);
-
-			this.fErrorHandler.handleError(fDOMError);
-			if (true) {
-				e.printStackTrace();
-			}
+            if( e==abort )
+                return; // processing aborted by the user
+            throw e;    // otherwise re-throw.
 		}
 
 	}
@@ -463,17 +460,19 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                 if ((fConfiguration.features & DOMConfigurationImpl.SPLITCDATA) != 0) {
                     String value = node.getNodeValue();
-                    int index = value.indexOf("]]>");
-                    if (index >= 0) {
-                        // REVISIT: issue warning
-                    }
+                    int index;
                     Node parent = node.getParentNode();
-                    while ( index >= 0 ) {
+                    while ( (index=value.indexOf("]]>")) >= 0 ) {
                         node.setNodeValue(value.substring(0, index+2));
                         value = value.substring(index +2);
-                        node = fDocument.createCDATASection(value);
-                        parent.insertBefore(node, node.getNextSibling());
-                        index = value.indexOf("]]>");
+                        Node newChild = fDocument.createCDATASection(value);
+                        parent.insertBefore(newChild, node.getNextSibling());
+                        node = newChild;
+                       
+                        // issue warning
+                        reportDOMError(
+                            "CDATA sections containing the CDATA section termination marker ']]>'",
+                            DOMError.SEVERITY_WARNING, node,  "cdata-sections-splitted");
                     }
                 }
                 break;
@@ -565,7 +564,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         //
         // ------------------------------------
 
-        String localUri, value, name, uri, prefix;
+        String value, name, uri, prefix;
         if (attributes != null) {
 
             // Record all valid local declarations
@@ -581,15 +580,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                     // Check for invalid namespace declaration:
                     if (value.equals(NamespaceContext.XMLNS_URI)) {
-                        if (fErrorHandler != null) {
-                            modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
-                                           DOMError.SEVERITY_ERROR, attr);
-                            boolean continueProcess = fErrorHandler.handleError(fDOMError);
-                            if (!continueProcess) {
-                                // stop the namespace fixup and validation
-                                throw new RuntimeException("Stopped at user request");
-                            }
-                        }
+                        reportDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
+                                       DOMError.SEVERITY_ERROR, attr, null);
                     } else {
                         // XML 1.0 Attribute value normalization
                         // value = normalizeAttributeValue(value, attr);
@@ -659,19 +651,10 @@ public class DOMNormalizer implements XMLDocumentHandler {
         } else { // Element has no namespace
             if (element.getLocalName() == null) {
                 //  Error: DOM Level 1 node!
-                boolean continueProcess = true;
-                if (fErrorHandler != null) {
-                    if (fNamespaceValidation) {
-                        modifyDOMError("DOM Level 1 node: "+element.getNodeName(), DOMError.SEVERITY_FATAL_ERROR, element);
-                        fErrorHandler.handleError(fDOMError);
-                    } else {
-                        modifyDOMError("DOM Level 1 node: "+element.getNodeName(), DOMError.SEVERITY_ERROR, element);
-                        continueProcess = fErrorHandler.handleError(fDOMError);
-                    }
-                }
-                if (fNamespaceValidation || !continueProcess) {
-                    // stop the namespace fixup and validation
-                    throw new RuntimeException("DOM Level 1 node: "+element.getNodeName());
+                if (fNamespaceValidation) {
+                    reportDOMError("DOM Level 1 node: "+element.getNodeName(), DOMError.SEVERITY_FATAL_ERROR, element, null);
+                } else {
+                    reportDOMError("DOM Level 1 node: "+element.getNodeName(), DOMError.SEVERITY_ERROR, element, null);
                 }
             } else { // uri=null and no colon (DOM L2 node)
                 uri = fNamespaceContext.getURI(XMLSymbols.EMPTY_STRING);
@@ -714,7 +697,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     prefix = attr.getPrefix();
                     prefix = (prefix == null || 
                               prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
-                    String localpart = fSymbolTable.addSymbol( attr.getLocalName());
+                    /*String localpart =*/ fSymbolTable.addSymbol( attr.getLocalName());
 
                     // ---------------------------------------
                     // skip namespace declarations 
@@ -797,21 +780,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                     if (attr.getLocalName() == null) {
                         // It is an error if document has DOM L1 nodes.
-                        boolean continueProcess = true;
-                        if (fErrorHandler != null) {
-                            if (fNamespaceValidation) {
-                                modifyDOMError("DOM Level 1 node: "+name, DOMError.SEVERITY_FATAL_ERROR, attr);
-                                fErrorHandler.handleError(fDOMError);
-                            } else {
-                                modifyDOMError("DOM Level 1 node: "+name, DOMError.SEVERITY_ERROR, attr);
-                                continueProcess = fErrorHandler.handleError(fDOMError);
-                            }
+                        if (fNamespaceValidation) {
+                            reportDOMError("DOM Level 1 node: "+name, DOMError.SEVERITY_FATAL_ERROR, attr, null);
+                        } else {
+                            reportDOMError("DOM Level 1 node: "+name, DOMError.SEVERITY_ERROR, attr, null );
                         }
-                        if (fNamespaceValidation || !continueProcess) {
-                            // stop the namespace fixup and validation
-                            throw new RuntimeException("DOM Level 1 node");
-                        }
-
                     } else {
                         // uri=null and no colon
                         // no fix up is needed: default namespace decl does not 
@@ -871,14 +844,26 @@ public class DOMNormalizer implements XMLDocumentHandler {
     }
     */
 
-
-    protected final DOMError modifyDOMError(String message, short severity, Node node){
-        fDOMError.reset();
-        fDOMError.fMessage = message;
-        fDOMError.fSeverity = severity;
-        fDOMError.fLocator = fLocator;
-        fLocator.fRelatedNode = node;
-        return fDOMError;
+    /**
+     * Reports a DOM error to the user handler.
+     * 
+     * If the error is fatal, the processing will be always aborted.
+     */
+    protected final void reportDOMError(String message, short severity, Node node, String type ){
+        if( fErrorHandler!=null ) {
+            DOMErrorImpl error = new DOMErrorImpl();
+            error.reset();
+            error.fMessage = message;
+            error.fSeverity = severity;
+            error.fLocator = fLocator;
+            error.fType = type;
+            fLocator.fRelatedNode = node;
+    
+            if(!fErrorHandler.handleError(error))
+                throw abort;
+        }
+        if( severity==DOMError.SEVERITY_FATAL_ERROR )
+            throw abort;
     }
 
     protected final void updateQName (Node node, QName qname){
