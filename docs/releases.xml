@@ -5,9 +5,54 @@
  <release version='Not released'>
   <desc>
       This release fixes a number of bugs.
-</desc>
+  </desc>
   <changes>
    
+   <add>
+    <note>
+     Added the support of reporting line/column numbers of schema errors.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </add>
+
+   <update>
+    <note>
+     When creating DOM nodes, use Strings we already have, instead of
+     creating new ones.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </update>
+
+   <update>
+    <note>
+     Updated DTD datatypes to use the new datatype interfaces.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </update>
+
+   <fix>
+    <note>
+     Fixed an entity resolution bug: we passed null as the system ID
+     to the entity resolver.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </fix>
+
+   <fix>
+    <note>
+     Fixed a bug in the handling of URI's containing "../../".
+    </note>
+    <submitter name='Sandy Gao'/>
+   </fix>
+
+   <fix>
+    <note>
+     Fixed a thread-safety bug in schema simple type implementation.
+     The implementation class should be stateless after construction.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </fix>
+
    <fix>
     <note>Fixed bugs in namespace algorithm for serialization.</note>
     <submitter name='Elena Litani'/>
