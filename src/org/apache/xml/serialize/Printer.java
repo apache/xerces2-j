@@ -73,7 +73,7 @@ import java.io.IOException;
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  */
-class Printer
+public class Printer
 {
 
 
@@ -133,7 +133,7 @@ class Printer
     private int           _pos = 0;
 
 
-    Printer( Writer writer, OutputFormat format)
+    public Printer( Writer writer, OutputFormat format)
     {
         _writer = writer;
         _format = format;
@@ -144,7 +144,7 @@ class Printer
     }
 
 
-    IOException getException()
+    public IOException getException()
     {
         return _exception;
     }
@@ -158,7 +158,7 @@ class Printer
      * have affect the first time it's called. To exist DTD state
      * and get the accumulated DTD, call {@link #leaveDTD}.
      */
-    void enterDTD()
+    public void enterDTD()
     {
         // Can only enter DTD state once. Once we're out of DTD
         // state, can no longer re-enter it.
@@ -176,7 +176,7 @@ class Printer
      * DTD parts were printer, will return a string with their
      * textual content.
      */
-    String leaveDTD()
+    public String leaveDTD()
     {
         // Only works if we're going out of DTD mode.
         if ( _writer == _dtdWriter ) {
@@ -188,7 +188,7 @@ class Printer
     }
     
     
-    void printText( String text )
+    public void printText( String text )
     {
         try {
             int length = text.length();
@@ -209,7 +209,7 @@ class Printer
     }
     
     
-    void printText( StringBuffer text )
+    public void printText( StringBuffer text )
     {
         try {
             int length = text.length();
@@ -230,7 +230,7 @@ class Printer
     }
 
 
-    void printText( char[] chars, int start, int length )
+    public void printText( char[] chars, int start, int length )
     {
         try {
             while ( length-- > 0 ) {
@@ -251,7 +251,7 @@ class Printer
     }
     
 
-    void printText( char ch )
+    public void printText( char ch )
     {
         try {
             if ( _pos == BufferSize ) {
@@ -269,7 +269,7 @@ class Printer
     }
 
 
-    void printSpace()
+    public void printSpace()
     {
         try {
             if ( _pos == BufferSize ) {
@@ -287,7 +287,7 @@ class Printer
     }
 
 
-    void breakLine()
+    public void breakLine()
     {
         try {
             if ( _pos == BufferSize ) {
@@ -305,13 +305,13 @@ class Printer
     }
 
 
-    void breakLine( boolean preserveSpace )
+    public void breakLine( boolean preserveSpace )
     {
         breakLine();
     }
     
 
-    void flushLine( boolean preserveSpace )
+    public void flushLine( boolean preserveSpace )
     {
         // NOOP
     }
@@ -321,7 +321,7 @@ class Printer
      * Flush the output stream. Must be called when done printing
      * the document, otherwise some text might be buffered.
      */
-    void flush()
+    public void flush()
     {
         try {
             _writer.write( _buffer, 0, _pos );
@@ -336,30 +336,30 @@ class Printer
     }
 
 
-    void indent()
+    public void indent()
     {
         // NOOP
     }
 
 
-    void unindent()
+    public void unindent()
     {
         // NOOP
     }
 
 
-    int getNextIndent()
+    public int getNextIndent()
     {
         return 0;
     }
 
 
-    void setNextIndent( int indent )
+    public void setNextIndent( int indent )
     {
     }
 
 
-    void setThisIndent( int indent )
+    public void setThisIndent( int indent )
     {
     }
 

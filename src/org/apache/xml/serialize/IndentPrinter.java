@@ -132,7 +132,7 @@ class IndentPrinter
      * have affect the first time it's called. To exist DTD state
      * and get the accumulated DTD, call {@link #leaveDTD}.
      */
-    void enterDTD()
+    public void enterDTD()
     {
         // Can only enter DTD state once. Once we're out of DTD
         // state, can no longer re-enter it.
@@ -152,7 +152,7 @@ class IndentPrinter
      * DTD parts were printer, will return a string with their
      * textual content.
      */
-    String leaveDTD()
+    public String leaveDTD()
     {
         // Only works if we're going out of DTD mode.
         if ( _writer == _dtdWriter ) {
@@ -175,25 +175,25 @@ class IndentPrinter
      *
      * @param text The text to print
      */
-    void printText( String text )
+    public void printText( String text )
     {
         _text.append( text );
     }
     
     
-    void printText( StringBuffer text )
+    public void printText( StringBuffer text )
     {
         _text.append( text );
     }
 
 
-    void printText( char ch )
+    public void printText( char ch )
     {
         _text.append( ch );
     }
 
 
-    void printText( char[] chars, int start, int length )
+    public void printText( char[] chars, int start, int length )
     {
         _text.append( chars, start, length );
     }
@@ -207,7 +207,7 @@ class IndentPrinter
      * separator will be counted. If the line accumulated so far is
      * long enough, it will be printed.
      */
-    void printSpace()
+    public void printSpace()
     {
         // The line consists of the text accumulated in _line,
         // followed by one or more spaces as counted by _spaces,
@@ -264,13 +264,13 @@ class IndentPrinter
      * #printSpace} will only start a new line if the current line
      * is long enough).
      */
-    void breakLine()
+    public void breakLine()
     {
         breakLine( false );
     }
 
 
-    void breakLine( boolean preserveSpace )
+    public void breakLine( boolean preserveSpace )
     {
         // Equivalent to calling printSpace and forcing a flushLine.
         if ( _text.length() > 0 ) {
@@ -301,7 +301,7 @@ class IndentPrinter
      * accumulated text are two long to fit on a given line. At the end of
      * this method {@link #_line} is empty and {@link #_spaces} is zero.
      */
-    void flushLine( boolean preserveSpace )
+    public void flushLine( boolean preserveSpace )
     {
         int     indent;
         
@@ -343,7 +343,7 @@ class IndentPrinter
      * Flush the output stream. Must be called when done printing
      * the document, otherwise some text might be buffered.
      */
-    void flush()
+    public void flush()
     {
         if ( _line.length() > 0 || _text.length() > 0 )
             breakLine();
@@ -361,7 +361,7 @@ class IndentPrinter
     /**
      * Increment the indentation for the next line.
      */
-    void indent()
+    public void indent()
     {
         _nextIndent += _format.getIndent();
     }
@@ -370,7 +370,7 @@ class IndentPrinter
     /**
      * Decrement the indentation for the next line.
      */
-    void unindent()
+    public void unindent()
     {
         _nextIndent -= _format.getIndent();
         if ( _nextIndent < 0 )
@@ -382,19 +382,19 @@ class IndentPrinter
     }
 
 
-    int getNextIndent()
+    public int getNextIndent()
     {
         return _nextIndent;
     }
 
 
-    void setNextIndent( int indent )
+    public void setNextIndent( int indent )
     {
         _nextIndent = indent;
     }
 
 
-    void setThisIndent( int indent )
+    public void setThisIndent( int indent )
     {
         _thisIndent = indent;
     }
