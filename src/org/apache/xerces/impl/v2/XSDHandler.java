@@ -654,6 +654,17 @@ class XSDHandler {
         } // while
     } // end traverseSchemas
 
+    private static final String[] COMP_TYPE = {
+        null,               // index 0
+        "attribute declaration",
+        "attribute group",
+        "elment declaration",
+        "group",
+        "identity constraint",
+        "notation",
+        "type definition",
+    };
+
     // since it is forbidden for traversers to talk to each other
     // directly (except wen a traverser encounters a local declaration),
     // this provides a generic means for a traverser to call
@@ -723,14 +734,13 @@ class XSDHandler {
         if (decl != null)
             schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
         else {
-            reportGenericSchemaError("Could not locate a component corresponding to " + declToTraverse.localpart);
+            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]});
             return null;
         }
 
         if (schemaWithDecl == null) {
             // cannot get to this schema from the one containing the requesting decl
-            // REVISIT: report component not found error
-            reportGenericSchemaError("components from the schema document containing " + declToTraverse.localpart + " are not referenceable from schema document " + currSchema);
+            reportSchemaError("src-resolve.4", new Object[]{currSchema, declToTraverse.uri});
             return null;
         }
         SchemaGrammar sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
@@ -791,7 +801,9 @@ class XSDHandler {
             break;
         case IDENTITYCONSTRAINT_TYPE :
             // identity constraints should have been parsed already...
+            // we should never get here
             retObj = null;
+            break;
         case NOTATION_TYPE :
             retObj = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
             break;
