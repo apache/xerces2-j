@@ -354,11 +354,26 @@
         Yes, for grammar types for which such an API is defined.
         No such API exists at the current moment for DTD's.  For
         XML Schemas, there is a Xerces-specific schema component
-        model API; see the XML Schema documentation for specific
-        details on this API, and on how to turn a Grammar object
-        that <code>XMLGrammarPreparser</code> would return into
-        an object usable in this API.
+        model API.  For details, it's best to look at the javadocs for
+        the <code>org.apache.xerces.impl.xs.psvi</code>
+        package.  Assuming you have produced a Grammar object from an XML Schema
+        document by some means, to turn that object
+        into an object usable in this API, do the following:
     </p>
+    <ol>
+        <li>
+            Cast the Grammar object to <code>org.apache.xerces.xni.grammars.XSGrammar</code>;
+        </li>
+        <li>
+            Call the <code>toXSModel()</code> method on the casted object;
+        </li>
+        <li>
+            Use the methods in the <code>org.apache.xerces.impl.xs.psvi.XSModel</code>
+            interface to examine the new object; methods on this
+            interface and others in the same package should allow you to access
+            all aspects of the schema.
+        </li>
+    </ol>
   </a>
  </faq>
 </faqs>
