@@ -77,6 +77,7 @@ package org.apache.xerces.util;
  * @author Andy Clark, IBM
  * @author Eric Ye, IBM
  * @author Arnaud  Le Hors, IBM
+ * @author Rahul Srivastava, Sun Microsystems Inc.
  *
  * @version $Id$
  */
@@ -113,6 +114,12 @@ public class XMLChar {
      * This is an optimization for the inner loop of character scanning.
      */
     public static final int MASK_CONTENT = 0x20;
+
+    /** NCName start character mask. */
+    public static final int MASK_NCNAME_START = 0x40;
+
+    /** NCName character mask. */
+    public static final int MASK_NCNAME = 0x80;
 
     //
     // Static initialization
@@ -312,42 +319,48 @@ public class XMLChar {
 
         // set name start characters
         for (int i = 0; i < nameStartChar.length; i++) {
-            CHARS[nameStartChar[i]] |= MASK_NAME_START | MASK_NAME;
+            CHARS[nameStartChar[i]] |= MASK_NAME_START | MASK_NAME | 
+                                       MASK_NCNAME_START | MASK_NCNAME;
         }
         for (int i = 0; i < letterRange.length; i += 2) {
             for (int j = letterRange[i]; j <= letterRange[i + 1]; j++) {
-                CHARS[j] |= MASK_NAME_START | MASK_NAME;
+                CHARS[j] |= MASK_NAME_START | MASK_NAME |
+                            MASK_NCNAME_START | MASK_NCNAME;
             }
         }
         for (int i = 0; i < letterChar.length; i++) {
-            CHARS[letterChar[i]] |= MASK_NAME_START | MASK_NAME;
+            CHARS[letterChar[i]] |= MASK_NAME_START | MASK_NAME |
+                                    MASK_NCNAME_START | MASK_NCNAME;
         }
 
         // set name characters
         for (int i = 0; i < nameChar.length; i++) {
-            CHARS[nameChar[i]] |= MASK_NAME;
+            CHARS[nameChar[i]] |= MASK_NAME | MASK_NCNAME;
         }
         for (int i = 0; i < digitRange.length; i += 2) {
             for (int j = digitRange[i]; j <= digitRange[i + 1]; j++) {
-                CHARS[j] |= MASK_NAME;
+                CHARS[j] |= MASK_NAME | MASK_NCNAME;
             }
         }
         for (int i = 0; i < combiningCharRange.length; i += 2) {
             for (int j = combiningCharRange[i]; j <= combiningCharRange[i + 1]; j++) {
-                CHARS[j] |= MASK_NAME;
+                CHARS[j] |= MASK_NAME | MASK_NCNAME;
             }
         }
         for (int i = 0; i < combiningCharChar.length; i++) {
-            CHARS[combiningCharChar[i]] |= MASK_NAME;
+            CHARS[combiningCharChar[i]] |= MASK_NAME | MASK_NCNAME;
         }
         for (int i = 0; i < extenderRange.length; i += 2) {
             for (int j = extenderRange[i]; j <= extenderRange[i + 1]; j++) {
-                CHARS[j] |= MASK_NAME;
+                CHARS[j] |= MASK_NAME | MASK_NCNAME;
             }
         }
         for (int i = 0; i < extenderChar.length; i++) {
-            CHARS[extenderChar[i]] |= MASK_NAME;
+            CHARS[extenderChar[i]] |= MASK_NAME | MASK_NCNAME;
         }
+
+        // remove ':' from allowable MASK_NCNAME_START and MASK_NCNAME chars
+        CHARS[':'] &= ~(MASK_NCNAME_START | MASK_NCNAME);
 
         // set Pubid characters
         for (int i = 0; i < pubidChar.length; i++) {
@@ -498,7 +511,29 @@ public class XMLChar {
         return c < 0x10000 && (CHARS[c] & MASK_NAME) != 0;
     } // isName(int):boolean
 
-     /**
+    /**
+     * Returns true if the specified character is a valid NCName start
+     * character as defined by production [4] in Namespaces in XML
+     * recommendation.
+     *
+     * @param c The character to check.
+     */
+    public static boolean isNCNameStart(int c) {
+        return c < 0x10000 && (CHARS[c] & MASK_NCNAME_START) != 0;
+    } // isNCNameStart(int):boolean
+
+    /**
+     * Returns true if the specified character is a valid NCName
+     * character as defined by production [5] in Namespaces in XML
+     * recommendation.
+     *
+     * @param c The character to check.
+     */
+    public static boolean isNCName(int c) {
+        return c < 0x10000 && (CHARS[c] & MASK_NCNAME) != 0;
+    } // isNCName(int):boolean
+
+    /**
      * Returns true if the specified character is a valid Pubid
      * character as defined by production [13] in the XML 1.0
      * specification.
