@@ -17,6 +17,13 @@ Copyright:
 ==================================================================== -->
 
 <project default="usage" basedir=".">
+  <!-- Allow properties following these statements to be overridden -->
+  <!-- Note that all of these don't have to exist.  They've just been defined
+       incase they are used. -->
+  <property file="build.properties"/>
+  <property file=".ant.properties"/>
+  <property file="${user.home}/.ant.properties"/>
+  <property file="default.properties"/>  
 
   <target name="init">
     <property name='parser.Name' value='Xerces-J'/>
@@ -842,4 +849,44 @@ Copyright:
   </target>
 
 
+  <!-- =================================================================== -->
+  <!--  Retreive the XML Conformance test suite from sourceforge           -->
+  <!-- =================================================================== -->
+  <target name="get-conftests" depends="init">
+    <get src="http://prdownloads.sourceforge.net/xmlconf/utilities.jar" dest="tests/conformance/utilties.jar" verbose="true" usetimestamp="true"/>
+    <cvspass cvsroot=":pserver:anonymous@cvs.xmlconf.sourceforge.net:/cvsroot/xmlconf" password=""/>
+    <cvs cvsRoot=":pserver:anonymous@cvs.xmlconf.sourceforge.net:/cvsroot/xmlconf" package="xml" dest="tests/conformance"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Run the XML Conformance test suite from sourceforge                 -->
+  <!-- =================================================================== -->
+  <target name="run-conftests" depends="init">
+    <java classname="xml.testing.Driver" output="tests/conformance/report-nv.html">
+      <arg value="tests/conformance/xml/suite/xmlconf.xml"/>
+      <arg value="org.apache.xerces.parsers.SAXParser"/>
+      <arg value="tests/conformance/xml/template.xml"/>
+      <arg value="nv"/>
+      <arg value="${parser.version}"/>
+      <classpath>
+        <pathelement location="tests/conformance/utilities.jar"/>
+        <pathelement location="build/xmlParserAPIs.jar"/>
+        <pathelement location="build/xercesImpl.jar"/>
+      </classpath>
+    </java>
+
+    <java classname="xml.testing.Driver" output="tests/conformance/report-val.html">
+      <arg value="tests/conformance/xml/suite/xmlconf.xml"/>
+      <arg value="org.apache.xerces.parsers.SAXParser"/>
+      <arg value="tests/conformance/xml/template.xml"/>
+      <arg value="val"/>
+      <arg value="${parser.version}"/>
+      <classpath>
+        <pathelement location="tests/conformance/utilities.jar"/>
+        <pathelement location="build/xmlParserAPIs.jar"/>
+        <pathelement location="build/xercesImpl.jar"/>
+      </classpath>
+    </java>
+
+  </target>
 </project>
