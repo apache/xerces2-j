@@ -1,12 +1,10 @@
 # Makefile for directory ./sax
 
 TARGETS=\
+	Counter.class\
 	DelayedInput.class\
 	DocumentTracer.class\
-	SAXCount.class\
-	SAX2Count.class\
-	SAXWriter.class\
-	SAX2Writer.class
+	Writer.class
 
 DIRS = helpers
 

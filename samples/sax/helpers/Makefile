@@ -1,8 +1,7 @@
 # Makefile for directory ./sax/helpers
 
 TARGETS=\
-	AttributesImpl.class\
-	AttributeListImpl.class
+	AttributesImpl.class
 
 DIRS = 
 

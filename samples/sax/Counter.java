@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,40 +55,44 @@
  * <http://www.apache.org/>.
  */
 
-package sax;
+package sax;                    
 
-import java.io.FileInputStream;
-import java.io.FilterInputStream;
-import java.io.InputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Random;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.ParserAdapter;
 import org.xml.sax.helpers.ParserFactory;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
- * This sample delays the input to the SAX parser to simulate reading data
- * from a socket where data is not always immediately available. An XML
- * parser should be able to parse the input and perform the necessary
- * callbacks as data becomes available.
+ * A sample SAX2 counter. This sample program illustrates how to
+ * register a SAX2 ContentHandler and receive the callbacks in
+ * order to print information about the document. The output of
+ * this program shows the time and count of elements, attributes, 
+ * ignorable whitespaces, and characters appearing in the document. 
+ * <p>
+ * This class is useful as a "poor-man's" performance tester to
+ * compare the speed and accuracy of various SAX parsers. However,
+ * it is important to note that the first parse time of a parser
+ * will include both VM class load time and parser initialization
+ * that would not be present in subsequent parses with the same
+ * file. 
+ * <p>
+ * <strong>Note:</strong> The results produced by this program
+ * should never be accepted as true performance measurements.
  *
  * @author Andy Clark, IBM
  *
  * @version $Id$
  */
-public class DelayedInput
+public class Counter
     extends DefaultHandler {
 
     //
@@ -124,38 +128,91 @@ public class DelayedInput
     // Data
     //
 
-    /** Print writer. */
-    protected PrintWriter fOut;
+    /** Number of elements. */
+    protected long fElements;
+
+    /** Number of attributes. */
+    protected long fAttributes;
+
+    /** Number of characters. */
+    protected long fCharacters;
+
+    /** Number of ignorable whitespace characters. */
+    protected long fIgnorableWhitespace;
 
     //
     // Constructors
     //
 
     /** Default constructor. */
-    public DelayedInput() {
+    public Counter() {
     } // <init>()
+
+    //
+    // Public methods
+    //
+
+    /** Prints the results. */
+    public void printResults(PrintWriter out, String uri, long time) {
+
+        // filename.xml: 631 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
+        out.print(uri);
+        out.print(": ");
+        out.print(time);
+        out.print(" ms (");
+        out.print(fElements);
+        out.print(" elems, ");
+        out.print(fAttributes);
+        out.print(" attrs, ");
+        out.print(fIgnorableWhitespace);
+        out.print(" spaces, ");
+        out.print(fCharacters);
+        out.print(" chars)");
+        out.println();
+        out.flush();
+
+    } // printResults(PrintWriter,String,long)
 
     //
     // ContentHandler methods
     //
 
+    /** Start document. */
+    public void startDocument() throws SAXException {
+
+        fElements            = 0;
+        fAttributes          = 0;
+        fCharacters          = 0;
+        fIgnorableWhitespace = 0;
+
+    } // startDocument()
+
     /** Start element. */
-    public void startElement(String uri, String localpart, String rawname,
+    public void startElement(String uri, String local, String raw, 
                              Attributes attrs) throws SAXException {
 
-        System.out.println("("+rawname);
-        int length = attrs != null ? attrs.getLength() : 0;
-        for (int i = 0; i < length; i++) {
-            System.out.println("A"+attrs.getQName(i)+' '+attrs.getValue(i));
+        fElements++;
+        if (attrs != null) {
+            fAttributes += attrs.getLength();
         }
 
-    } // startElement(String,String,String,Attributes)
+    } // startElement(String,String,StringAttributes)
 
-    /** End element. */
-    public void endElement(String uri, String localpart, String rawname) 
+    /** Characters. */
+    public void characters(char ch[], int start, int length) 
         throws SAXException {
-        System.out.println(")"+rawname);
-    } // endElement(String,String,String)
+
+        fCharacters += length;
+
+    } // characters(char[],int,int);
+
+    /** Ignorable whitespace. */
+    public void ignorableWhitespace(char ch[], int start, int length) 
+        throws SAXException {
+
+        fIgnorableWhitespace += length;
+
+    } // ignorableWhitespace(char[],int,int);
 
     //
     // ErrorHandler methods
@@ -206,108 +263,6 @@ public class DelayedInput
     } // printError(String,SAXParseException)
 
     //
-    // Classes
-    //
-
-    /**
-     * Delayed input stream filter. This class will limit block reads to a small
-     * number of bytes (suitable for display on a standard 80 column terminal)
-     * pausing in small increments, randomly. This lets you can verify that the
-     * parser can parse the input and make the appropriate callbacks as the
-     * data arrives.
-     *
-     * @author Andy Clark, IBM
-     */
-    static class DelayedInputStream
-        extends FilterInputStream {
-
-        //
-        // Data
-        //
-
-        /** Random number generator. */
-        private Random fRandom = new Random(System.currentTimeMillis());
-
-        //
-        // Constructors
-        //
-
-        /** Constructs a delayed input stream from the specified input stream. */
-        public DelayedInputStream(InputStream in) {
-            super(in);
-        } // <init>(InputStream)
-
-        //
-        // InputStream methods
-        //
-
-        /** Performs a delayed block read. */
-        public int read(byte[] buffer, int offset, int length) throws IOException {
-
-            // keep read small enough for display
-            if (length > 48) {
-                length = 48;
-            }
-            int count = 0;
-
-            // read bytes and pause
-            long before = System.currentTimeMillis();
-            count = in.read(buffer, offset, length);
-            try {
-                Thread.currentThread().sleep(Math.abs(fRandom.nextInt()) % 2000);
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace(System.err);
-            }
-            long after = System.currentTimeMillis();
-
-            // print output
-            System.out.print("read "+count+" bytes in "+(after-before)+" ms: ");
-            printBuffer(buffer, offset, count);
-            System.out.println();
-
-            // return number of characters read
-            return count;
-
-        } // read(byte[],int,int):int
-
-        //
-        // Private methods
-        //
-
-        /** Prints the specified buffer. */
-        private void printBuffer(byte[] buffer, int offset, int length) {
-
-            // is there anything to do?
-            if (length <= 0) {
-                System.out.print("no data read");
-                return;
-            }
-
-            // print buffer
-            System.out.print('[');
-            for (int i = 0; i < length; i++) {
-                switch ((char)buffer[offset + i]) {
-                    case '\r': {
-                        System.out.print("\\r");
-                        break;
-                    }
-                    case '\n': {
-                        System.out.print("\\n");
-                        break;
-                    }
-                    default: {
-                        System.out.print((char)buffer[offset + i]);
-                    }
-                }
-            }
-            System.out.print(']');
-
-        } // printBuffer(byte[],int,int)
-
-    } // class DelayedInputStream
-
-    //
     // MAIN
     //
 
@@ -321,7 +276,7 @@ public class DelayedInput
         }
 
         // variables
-        DefaultHandler handler = new DelayedInput();
+        Counter counter = new Counter();
         PrintWriter out = new PrintWriter(System.out);
         XMLReader parser = null;
         boolean namespaces = DEFAULT_NAMESPACES;
@@ -412,14 +367,13 @@ public class DelayedInput
             }
 
             // parse file
-            parser.setContentHandler(handler);
-            parser.setErrorHandler(handler);
+            parser.setContentHandler(counter);
+            parser.setErrorHandler(counter);
             try {
-                System.out.println("# filename: "+arg);
-                InputStream stream = new DelayedInputStream(new FileInputStream(arg));
-                InputSource source = new InputSource(stream);
-                source.setSystemId(arg);
-                parser.parse(source);
+                long before = System.currentTimeMillis();
+                parser.parse(arg);
+                long after = System.currentTimeMillis();
+                counter.printResults(out, arg, after - before);
             }
             catch (SAXParseException e) {
                 // ignore
@@ -438,7 +392,7 @@ public class DelayedInput
     /** Prints the usage. */
     private static void printUsage() {
 
-        System.err.println("usage: java sax.DelayedInput (options) filename ...");
+        System.err.println("usage: java sax.Counter (options) uri ...");
         System.err.println();
         
         System.err.println("options:");
@@ -461,4 +415,4 @@ public class DelayedInput
 
     } // printUsage()
 
-} // class DelayedInput
+} // class Counter
