@@ -418,12 +418,16 @@ abstract class XSDAbstractTraverser {
                                             tempAttrUse.fAttrDecl.fName)==null) {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     if (idName != null) {
-                        reportSchemaError("cvc-complex-type.5.3",new Object[]{tempAttrUse.fAttrDecl.fName, idName}, child);
+                        String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
+                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.fName;
+                        reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.fName, idName}, child);
                     }
                 }
                 else {
                     // REVISIT: what if one of the attribute uses is "prohibited"
-                    reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + tempAttrUse.fAttrDecl.fName + " found "}, child);
+                    String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
+                    String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.fName;
+                    reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.fName}, child);
                 }
             }
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
