@@ -96,24 +96,4 @@ public class TimeDV extends AbstractDateTimeDV {
         append(message, (char)date.utc, 0);
         return message.toString();
     }
-
-	/* (non-Javadoc)
-	 * @see org.apache.xerces.impl.dv.xs.AbstractDateTimeDV#compareOrder2(org.apache.xerces.impl.dv.xs.AbstractDateTimeDV.DateTimeData, org.apache.xerces.impl.dv.xs.AbstractDateTimeDV.DateTimeData)
-	 */
-	protected short compareOrder2(DateTimeData date1, DateTimeData date2) {
-        if (date1.hour < date2.hour)
-            return -1;
-        if (date1.hour > date2.hour)
-            return 1;
-        if (date1.minute < date2.minute)
-            return -1;
-        if (date1.minute > date2.minute)
-            return 1;
-        if (date1.second < date2.second)
-            return -1;
-        if (date1.second > date2.second)
-            return 1;
-        return 0;
-	}
-
 }

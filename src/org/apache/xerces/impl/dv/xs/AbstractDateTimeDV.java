@@ -94,7 +94,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	 */
 	protected short compareDates(DateTimeData date1, DateTimeData date2, boolean strict) {
 		if (date1.utc == date2.utc) {
-			return compareOrder2(date1, date2);
+			return compareOrder(date1, date2);
 		}
 		short c1, c2;
 		
@@ -164,10 +164,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		}
 		return INDETERMINATE;
 		
-	}
-	
-	protected short compareOrder2(DateTimeData date1, DateTimeData date2) {
-		return compareOrder(date1, date2);
 	}
 	
 	/**
