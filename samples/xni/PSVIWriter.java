@@ -1152,8 +1152,11 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
     }
 
     private void processPSVISimpleTypeDefinition(XSSimpleTypeDefinition type) {
-        if (type == null)
+        if (type == null) {
+        	sendElementEvent("psv:simpleTypeDefinition");
             return;
+        }
+            
         sendIndentedElementWithID("psv:simpleTypeDefinition", type);
         sendElementEvent("psv:name", type.getName());
         sendElementEvent("psv:targetNamespace", type.getNamespace());
@@ -1763,8 +1766,10 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
     private void processPSVITypeDefinitionRef(
         String enclose,
         XSTypeDefinition type) {
-        if (type == null)
+        if (type == null) {
+        	sendElementEvent(enclose);
             return;
+        }
 
         sendIndentedElement(enclose);
         if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
@@ -1785,8 +1790,10 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
     private void processPSVITypeDefinitionOrRef(
         String enclose,
         XSTypeDefinition type) {
-        if (type == null)
+        if (type == null){
+        	sendElementEvent(enclose);
             return;
+        }
 
         // we'll check for anonymous types here, since they only occur in places where
         // a reference would be appropriate
@@ -2188,17 +2195,17 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         if ((val & XSConstants.DERIVATION_RESTRICTION) != 0) {
             if (ret.length() != 0)
                 ret += " ";
-            ret += SchemaSymbols.ATTVAL_RESTRICTION + " ";
+            ret += SchemaSymbols.ATTVAL_RESTRICTION;
         }
         if ((val & XSConstants.DERIVATION_UNION) != 0) {
             if (ret.length() != 0)
                 ret += " ";
-            ret += SchemaSymbols.ATTVAL_UNION + " ";
+            ret += SchemaSymbols.ATTVAL_UNION;
         }
         if ((val & XSConstants.DERIVATION_SUBSTITUTION) != 0) {
             if (ret.length() != 0)
                 ret += " ";
-            ret += SchemaSymbols.ATTVAL_SUBSTITUTION + " ";
+            ret += SchemaSymbols.ATTVAL_SUBSTITUTION;
         }
         return ret;
     }
