@@ -28,13 +28,13 @@ package org.apache.xerces.xs.datatypes;
 public interface XSDateTime {
 	
     /**
-     * @return years – can be negative for datetime;
+     * @return years – can be negative for date-time related types;
      *          returns 0 for duration types
      */
     public int getYears();
     
     /**
-     * @return months – can be negative only for durations;
+     * @return months – can be negative only for duration types;
      *                  For duration types, it returns years*12 + months
      */
     public int getMonths();
@@ -65,7 +65,8 @@ public interface XSDateTime {
     public double getSeconds();
     
     /**
-     * @return boolean (true when timezone exists)
+     * @return boolean (true when timezone is specified in the original lexical value)
+     *                  (not valid for duration types)
      */
     public boolean hasTimeZone();
     
@@ -87,14 +88,14 @@ public interface XSDateTime {
     public String getLexicalValue();
     
     /**
-     * @return a new datetime object with normalized values
+     * @return a new date-time related object with normalized values
      *         (has no effect on durations or objects already
      *          normalized)
      */
     public XSDateTime normalize();
     
     /**
-     * @return whether a datetime object is normalized or not
+     * @return whether a date-time related object is normalized or not
      *         (value is not useful for durations)
      */
     public boolean isNormalized();

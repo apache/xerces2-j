@@ -22,7 +22,7 @@ import java.math.BigInteger;
  * <p><b>EXPERIMENTAL: This interface should not be considered stable.
  * It is likely it may be altered or replaced in the future.</b></p>
  * 
- * <p>Interface to expose the value of 'decimal' and related datatypes.</p>
+ * <p>Interface to expose the value of '' and related datatypes.</p>
  * 
  * @author Naela Nissar, IBM
  * 
@@ -37,31 +37,31 @@ public interface XSDecimal {
     
     /**
      * @return the <code>BigInteger</code> representation of this object 
-     * @exception NumberFormatException if the decimal value cannot be represented as a <code>BigInteger</code> 
+     * @exception NumberFormatException if the value cannot be represented as a <code>BigInteger</code> 
      */
     public BigInteger getBigInteger() throws NumberFormatException;
     
     /**
      * @return the long value representation of this object
-     * @exception NumberFormatException if the decimal value cannot be represented as a <code>long</code>
+     * @exception NumberFormatException if the value cannot be represented as a <code>long</code>
      */
     public long getLong() throws NumberFormatException;
     
     /**
      * @return the int value representation of this object
-     * @exception NumberFormatException if the decimal value cannot be represented as a int
+     * @exception NumberFormatException if the value cannot be represented as a int
      */
     public int getInt() throws NumberFormatException;
     
     /**
      * @return the short value representation of this object
-     * @exception NumberFormatException if the decimal value cannot be represented as a short
+     * @exception NumberFormatException if the value cannot be represented as a short
      */
     public short getShort() throws NumberFormatException;
     
     /**
      * @return the byte value representation of this object
-     * @exception NumberFormatException if the decimal value cannot be represented as a byte
+     * @exception NumberFormatException if the value cannot be represented as a byte
      */
     public byte getByte() throws NumberFormatException;
 }
