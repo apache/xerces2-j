@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.validation.datatypes;
 
 import java.util.Hashtable;
+import java.util.Enumeration;
 import java.lang.reflect.*;
 import org.apache.xerces.impl.validation.DatatypeValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
@@ -381,19 +382,48 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     }
 
     static public DatatypeValidatorFactoryImpl getDatatypeRegistry()  {
+
         return fRegistryOfDatatypes;
     }
 
     static public void main( String argv[] ){
         DatatypeValidatorFactoryImpl  tstRegistry = DatatypeValidatorFactoryImpl.getDatatypeRegistry();
 
+        System.out.println("tstRegistry = " + tstRegistry );
 
-        DatatypeValidator   tstData1            = tstRegistry.getDatatypeValidator( "NTOKEN" );
-        DatatypeValidator   tstData2            = tstRegistry.getDatatypeValidator( "NTOKENS" );
+        DatatypeValidator   tstData1            = tstRegistry.getDatatypeValidator( "string" );
+        DatatypeValidator   tstData2            = tstRegistry.getDatatypeValidator( "boolean" );
+        DatatypeValidator   tstData3            = tstRegistry.getDatatypeValidator( "NOTATION" );
+        DatatypeValidator   tstData4            = tstRegistry.getDatatypeValidator( "float" );
 
-        System.out.println( "NMTOKEN = " + tstData1 );
-        System.out.println( "NMTOKENS = " + tstData2 );
+        System.out.println( "string = " + tstData1 );
+        System.out.println( "boolean = " + tstData2 );
+        System.out.println( "NOTATION = " + tstData3 );
 
+        System.out.println( "registry = " + tstRegistry );
+        System.out.println( "basetypes registered are " );
+        Enumeration  listOfDatatypes = tstRegistry.fBaseTypes.keys();
+        int index = 0;
+        while( listOfDatatypes.hasMoreElements() ){
+            System.out.println( "Datatype[ " + (index++) + "] =" + listOfDatatypes.nextElement() ); 
+        }
+        String value = "3.444";
+        try{
+        tstData4.validate( value, null ); 
+        } catch( Exception ex ){
+            ex.printStackTrace();
+        }
+        System.out.println("Value = " + value + " is valid " ); 
+                           
+
+        value = "b344.3";
+        try{
+        tstData4.validate( value, null ); 
+        } catch( Exception ex ){
+            System.out.println("float value = " + value + " is Not valid " );
+        }
+       
     }
+
 }
 
