@@ -115,6 +115,10 @@ public class AttributeMap extends NamedNodeMapImpl {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
+        if (arg.getNodeType() != arg.ATTRIBUTE_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
+                                   "DOM006 Hierarchy request error");
+        }
 
         NodeImpl argn = (NodeImpl)arg;
 
@@ -179,6 +183,10 @@ public class AttributeMap extends NamedNodeMapImpl {
                                        "DOM005 Wrong document");
         }
 
+        if (arg.getNodeType() != arg.ATTRIBUTE_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
+                                   "DOM006 Hierarchy request error");
+        }
         NodeImpl argn = (NodeImpl)arg;
     	if (argn.isOwned()) {
             throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
