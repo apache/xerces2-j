@@ -1021,9 +1021,11 @@ public class DOMParser
             }
             int attrHandle = xmlAttrList.getFirstAttr(attrListIndex);
             while (attrHandle != -1) {
+                int attName = xmlAttrList.getAttrName(attrHandle);
+                String attrName = fStringPool.toString(attName);
+                String attrValue =
+                    fStringPool.toString(xmlAttrList.getAttValue(attrHandle));
                 if (nsEnabled) {
-                    int attName = xmlAttrList.getAttrName(attrHandle);
-                    String attNameStr = fStringPool.toString(attName);
 		    int nsURIIndex = xmlAttrList.getAttrURI(attrHandle);
 		    String namespaceURI = fStringPool.toString(nsURIIndex);
 		    // DOM Level 2 wants all namespace declaration attributes
@@ -1037,22 +1039,17 @@ public class DOMParser
 			    if (prefix.equals("xmlns")) {
 				namespaceURI = "http://www.w3.org/2000/xmlns/";
 			    }
-			} else if (attNameStr.equals("xmlns")) {
+			} else if (attrName.equals("xmlns")) {
 			    namespaceURI = "http://www.w3.org/2000/xmlns/";
 			}
 		    }
-                    e.setAttributeNS(namespaceURI,
-				     attNameStr,
-                                     xmlAttrList.getValue(attrHandle));
+                    e.setAttributeNS(namespaceURI, attrName, attrValue);
                 } else {
-                    String attrName = fStringPool.toString(xmlAttrList.getAttrName(attrHandle));
-                    String attrValue = fStringPool.toString(xmlAttrList.getAttValue(attrHandle));
                     e.setAttribute(attrName, attrValue);
-                    if (fDocumentImpl != null
-                        && !xmlAttrList.isSpecified(attrHandle)) {
-                        ((AttrImpl)e.getAttributeNode(attrName))
-                            .setSpecified(false);
-                    }
+                }
+                if (!xmlAttrList.isSpecified(attrHandle)) {
+                    ((AttrImpl)e.getAttributeNode(attrName))
+                        .setSpecified(false);
                 }
                 attrHandle = xmlAttrList.getNextAttr(attrHandle);
             }
