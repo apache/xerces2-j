@@ -176,9 +176,6 @@ public class XMLVersionDetector
 
     // protected data
 
-    /** Entity scanner. */
-    protected XMLEntityScanner fEntityScanner = null;
-
     // the current componentManager; so that we can use it to
     // properly reset any scanners we create
     protected XMLComponentManager fComponentManager = null;
