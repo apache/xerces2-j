@@ -118,8 +118,11 @@
     </p>
     
     <ul>
-       <li>This release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>. In particular in the <code>XSModel</code> interface the order of the parameters in <code>getTypeDefinition, getNotationDeclaration, getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroupM</code> methods have been changes from <code>(String namespace, String name) to (String name, String namespace)</code>. 
-</li>
+       <li>This release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>. 
+           In particular in the <code>XSModel</code> interface the order of the parameters in <code>getTypeDefinition, getNotationDeclaration, 
+           getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroup</code> methods have been changed 
+           from <code>(String namespace, String name) to (String name, String namespace)</code>. 
+       </li>
        <li>This release requires JDK 1.2 or later to run and also requires JDK 1.2 or later to build the source code</li>
     </ul>
     <p>
@@ -144,7 +147,7 @@
       The &ParserName; &ParserVersion; release is available
       in source code and precompiled binary (JAR files) form. 
       Both &ParserName; packages are made available under the 
-      <jump href='http://xml.apache.org/LICENSE'>Apache Software
+      <jump href='http://www.apache.org/licenses/LICENSE-2.0'>Apache Software
 	License</jump>.
     </p>
   </s2>
