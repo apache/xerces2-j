@@ -69,7 +69,8 @@ public class XMLStringBuffer
     //
 
     /** SIZE */
-    public static final int SIZE = -1;
+    /** initial buffer size when constructed from the default constructor */
+    public static final int SIZE = 16;
 
     //
     // Constructors
@@ -79,6 +80,9 @@ public class XMLStringBuffer
      * 
      */
     public XMLStringBuffer() {
+        ch = new char[SIZE];
+        offset = 0;
+        length = 0;
     }
 
     /**
@@ -87,6 +91,9 @@ public class XMLStringBuffer
      * @param size 
      */
     public XMLStringBuffer(int size) {
+        ch = new char[size];
+        offset = 0;
+        length = 0;
     }
 
     //
@@ -99,6 +106,13 @@ public class XMLStringBuffer
      * @param c 
      */
     public void append(char c) {
+        if ( (length+1) > ch.length ) {
+            char[] newArray = new char[ch.length+SIZE];
+            System.arraycopy(ch, 0, newArray, 0, length);
+            ch = newArray;
+        }
+
+        ch[length++] = c;
     } // append
 
     /**
@@ -107,6 +121,17 @@ public class XMLStringBuffer
      * @param s 
      */
     public void append(String s) {
+        int len = s.length();
+        if ( (length+len) > ch.length) {
+            char[] newArray = new char[ch.length+len+SIZE];
+            System.arraycopy(ch, 0, newArray, 0, length);
+            ch = newArray;
+        }
+
+        for (int i=0; i<len; i++) {
+            ch[length+i] = s.charAt(i);
+        }
+        length += len;
     } // append
 
     /**
@@ -117,6 +142,16 @@ public class XMLStringBuffer
      * @param length 
      */
     public void append(char[] ch, int offset, int length) {
+        if ( (this.length+length) > ch.length) {
+            char[] newArray = new char[ch.length+length+SIZE];
+            System.arraycopy(this.ch, 0, newArray, 0, this.length);
+            this.ch = newArray;
+        }
+
+        for (int i=0; i<length; i++) {
+            this.ch[this.length+i] = ch[offset+i];
+        }
+        this.length += length;
     } // append
 
     /**
@@ -125,6 +160,7 @@ public class XMLStringBuffer
      * @param s 
      */
     public void append(XMLString s) {
+        append(s.ch, s.offset, s.length);
     } // append
 
 } // class XMLStringBuffer
