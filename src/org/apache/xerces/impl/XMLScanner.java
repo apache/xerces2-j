@@ -388,8 +388,7 @@ public abstract class XMLScanner
                         }
                         version = fString.toString();
                         state = STATE_ENCODING;
-                        if (!(version.equals("1.0") || 
-                            version.equals("1.1" ))) { 
+                        if (!versionSupported(version)) {
                             reportFatalError("VersionNotSupported", 
                                              new Object[]{version});
                         }
@@ -1242,6 +1241,10 @@ public abstract class XMLScanner
     protected boolean isValidNameStartChar(int value) {
         return (XMLChar.isNameStart(value)); 
     } // isValidNameStartChar(int):  boolean
+    
+    protected boolean versionSupported(String version ) {
+        return version.equals("1.0");
+    } // version Supported
 
     /**
      * Scans surrogates and append them to the specified buffer.

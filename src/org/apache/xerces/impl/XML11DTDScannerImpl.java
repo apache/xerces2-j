@@ -254,4 +254,11 @@ public class XML11DTDScannerImpl
         return (XML11Char.isXML11NameStart(value)); 
     } // isValidNameStartChar(int):  boolean
 
+    // note that, according to 4.3.4 of the XML 1.1 spec, XML 1.1
+    // documents may invoke 1.0 entities; thus either version decl (or none!)
+    // is allowed to appear in this context
+    protected boolean versionSupported(String version) {
+        return version.equals("1.1") || version.equals ("1.0");
+    } // versionSupported(String):  boolean
+
 } // class XML11DTDScannerImpl

@@ -707,4 +707,8 @@ public class XML11DocumentScannerImpl
         return (XML11Char.isXML11NameStart(value)); 
     } // isValidNameStartChar(int):  boolean
 
+    protected boolean versionSupported(String version) {
+        return version.equals("1.1");
+    } // versionSupported(String):  boolean
+
 } // class XML11DocumentScannerImpl
