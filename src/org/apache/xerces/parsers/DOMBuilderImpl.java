@@ -59,6 +59,8 @@ package org.apache.xerces.parsers;
 
 import java.io.StringReader;
 import java.util.Stack;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
@@ -143,6 +145,9 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
     protected boolean fBusy = false;
 
     protected final static boolean DEBUG = false;
+    
+	private Vector fSchemaLocations = new Vector();
+	private String fSchemaLocation = null;
 
     //
     // Constructors
@@ -257,6 +262,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         if (fSkippedElemStack!=null) {        
             fSkippedElemStack.removeAllElements();
         }
+		fSchemaLocations.clear();
         fRejectedElement.clear();
         fFilterReject = false;
         fSchemaType = null;
@@ -431,10 +437,25 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 				if (value instanceof String) {
 					try {
 						if (fSchemaType == Constants.NS_XMLSCHEMA) {
+							fSchemaLocation = (String)value;
 							// map DOM schema-location to JAXP schemaSource property
-							fConfiguration.setProperty(
-								Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
-								value);
+							// tokenize location string
+							StringTokenizer t = new StringTokenizer(fSchemaLocation, " \n\t\r");							
+							if (t.hasMoreTokens()){	
+								fSchemaLocations.clear();
+								fSchemaLocations.add(t.nextToken ());						
+								while (t.hasMoreTokens()) {
+									fSchemaLocations.add(t.nextToken ());
+								}
+								fConfiguration.setProperty(
+									Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
+								    fSchemaLocations.toArray());
+							}
+							else {
+								fConfiguration.setProperty(
+									Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
+									value);							
+							}
 						}
 						else {
 							// REVISIT: allow pre-parsing DTD grammars
@@ -587,8 +608,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 				Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE);
 		}
 		else if (name.equals(Constants.DOM_SCHEMA_LOCATION)) {
-			return fConfiguration.getProperty(
-				Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE);
+			return fSchemaLocation;
 		}
         else if (name.equals(SYMBOL_TABLE)){
             return fConfiguration.getProperty(SYMBOL_TABLE);
