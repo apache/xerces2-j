@@ -1937,7 +1937,8 @@ public abstract class AbstractSAXParser
         }
 
         public String getType(String uri, String localName) {
-            return fAttributes.getType(uri, localName);
+            return uri.equals("") ? fAttributes.getType(null, localName) :
+                                    fAttributes.getType(uri, localName);
         }
 
         public String getValue(int i) {
@@ -1949,7 +1950,8 @@ public abstract class AbstractSAXParser
         }
 
         public String getValue(String uri, String localName) {
-            return fAttributes.getValue(uri, localName);
+            return uri.equals("") ? fAttributes.getValue(null, localName) :
+                                    fAttributes.getValue(uri, localName);
         }
 
         public int getIndex(String qName) {
@@ -1957,7 +1959,8 @@ public abstract class AbstractSAXParser
         }
 
         public int getIndex(String uri, String localPart) {
-            return fAttributes.getIndex(uri, localPart);
+            return uri.equals("") ? fAttributes.getIndex(null, localPart) :
+                                    fAttributes.getIndex(uri, localPart);
         }
 
     } // class AttributesProxy
