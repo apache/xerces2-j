@@ -231,7 +231,6 @@ public class DocumentTracer
         printQuotedString(uri);
         fOut.println(')');
         fOut.flush();
-        fIndent++;
 
     } // startPrefixMapping(String,String)
 
@@ -369,7 +368,6 @@ public class DocumentTracer
     /** End prefix mapping. */
     public void endPrefixMapping(String prefix) throws SAXException {
 
-        fIndent--;
         printIndent();
         fOut.print("endPrefixMapping(");
         fOut.print("prefix=");
@@ -1053,6 +1051,10 @@ public class DocumentTracer
             }
             catch (Exception e) {
                 System.err.println("error: Parse error occurred - "+e.getMessage());
+                if (e instanceof SAXException) {
+                    e = ((SAXException)e).getException();
+                }
+                e.printStackTrace(System.err);
             }
         }
 

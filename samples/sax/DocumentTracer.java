@@ -274,7 +274,6 @@ public class DocumentTracer
         printQuotedString(uri);
         fOut.println(')');
         fOut.flush();
-        fIndent++;
 
     } // startPrefixMapping(String,String)
 
@@ -302,11 +301,11 @@ public class DocumentTracer
             int length = attributes.getLength();
             for (int i = 0; i < length; i++) {
                 if (i > 0) {
-                    System.out.print(',');
+                    fOut.print(',');
                 }
-                String attrURI = attributes.getURI(i);
                 String attrLocalName = attributes.getLocalName(i);
                 String attrQName = attributes.getQName(i);
+                String attrURI = attributes.getURI(i);
                 String attrType = attributes.getType(i);
                 String attrValue = attributes.getValue(i);
                 fOut.print('{');
@@ -357,7 +356,6 @@ public class DocumentTracer
     /** End prefix mapping. */
     public void endPrefixMapping(String prefix) throws SAXException {
 
-        fIndent--;
         printIndent();
         fOut.print("endPrefixMapping(");
         fOut.print("prefix=");
@@ -907,6 +905,10 @@ public class DocumentTracer
             }
             catch (Exception e) {
                 System.err.println("error: Parse error occurred - "+e.getMessage());
+                if (e instanceof SAXException) {
+                    e = ((SAXException)e).getException();
+                }
+                e.printStackTrace(System.err);
             }
         }
 

@@ -570,6 +570,10 @@ public class Writer
             }
             catch (Exception e) {
                 System.err.println("error: Parse error occurred - "+e.getMessage());
+                if (e instanceof SAXException) {
+                    e = ((SAXException)e).getException();
+                }
+                e.printStackTrace(System.err);
             }
         }
 
