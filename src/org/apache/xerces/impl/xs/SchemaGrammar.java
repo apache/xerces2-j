@@ -932,12 +932,33 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         return new XSModelImpl(new SchemaGrammar[]{this});
     }
 
-	/**
-	 * @see org.apache.xerces.xs.XSNamespaceItem#getAnnotations()
-	 */
-	public XSObjectList getAnnotations() {
-		return new XSObjectListImpl(fAnnotations, fNumAnnotations);
-	}
+    public XSModel toXSModel(XSGrammar[] grammars) {
+        if (grammars == null || grammars.length == 0)
+            return toXSModel();
+
+        int len = grammars.length;
+        boolean hasSelf = false;
+        for (int i = 0; i < len; i++) {
+            if (grammars[i] == this) {
+                hasSelf = true;
+                break;
+            }
+        }
+
+        SchemaGrammar[] gs = new SchemaGrammar[hasSelf ? len : len+1];
+        for (int i = 0; i < len; i++)
+            gs[i] = (SchemaGrammar)grammars[i];
+        if (!hasSelf)
+            gs[len] = this;
+        return new XSModelImpl(gs);
+    }
+
+    /**
+     * @see org.apache.xerces.xs.XSNamespaceItem#getAnnotations()
+     */
+    public XSObjectList getAnnotations() {
+        return new XSObjectListImpl(fAnnotations, fNumAnnotations);
+    }
 
     public void addAnnotation(XSAnnotationImpl annotation) {
         if(annotation == null)
