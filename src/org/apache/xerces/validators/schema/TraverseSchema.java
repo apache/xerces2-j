@@ -564,11 +564,8 @@ public class TraverseSchema implements
                 root.setAttribute("xmlns", SchemaSymbols.URI_SCHEMAFORSCHEMA );
         }
 
-        //Retrieve the targetnamespace URI information
-        fTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
-        if (fTargetNSURIString==null) {
-            fTargetNSURIString="";
-        }
+        //Retrieve the targetNamespace URI information
+        fTargetNSURIString = getTargetNamespaceString(root);
         fTargetNSURI = fStringPool.addSymbol(fTargetNSURIString);
 
         if (fGrammarResolver == null) {
@@ -979,7 +976,7 @@ public class TraverseSchema implements
         }
 
         if (root != null) {
-            String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+            String targetNSURI = getTargetNamespaceString(root);
             if (targetNSURI.length() > 0 && !targetNSURI.equals(fTargetNSURIString) ) {
                 // REVISIT: Localize
                 reportGenericSchemaError("included schema '"+location+"' has a different targetNameSpace '"
@@ -1290,7 +1287,7 @@ public class TraverseSchema implements
         // first pass is out of the way, so this should be quite robust.  
 
         // check to see if the targetNameSpace is right
-        String redefinedTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+        String redefinedTargetNSURIString = getTargetNamespaceString(root);
         if (redefinedTargetNSURIString.length() > 0 && !redefinedTargetNSURIString.equals(fTargetNSURIString) ) {
             // REVISIT: Localize
             fRedefineSucceeded = false;
@@ -1822,7 +1819,7 @@ public class TraverseSchema implements
          }
 
          if (root != null) {
-             String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+             String targetNSURI = getTargetNamespaceString(root);
              if (!targetNSURI.equals(namespaceString) ) {
                  // REVISIT: Localize
                  reportGenericSchemaError("imported schema '"+location+"' has a different targetNameSpace '"
@@ -1846,6 +1843,20 @@ public class TraverseSchema implements
              reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
          }
     }
+
+    // utility method for finding the targetNamespace (and flagging errors if they occur)
+    private String getTargetNamespaceString( Element root) throws Exception {
+        String targetNSURI = "";
+        Attr targetNSAttr = root.getAttributeNode(SchemaSymbols.ATT_TARGETNAMESPACE);
+        if(targetNSAttr != null) {
+            targetNSURI=targetNSAttr.getValue();
+            if(targetNSURI.length() == 0) {
+                // REVISIT:  localize
+                reportGenericSchemaError("sch-prop-correct.1:  \"\" is not a legal value for the targetNamespace attribute; the attribute must either be absent or contain a nonempty value");
+            }
+        }
+        return targetNSURI;
+    } // end getTargetNamespaceString(Element)
 
     /**
     * <annotation>(<appinfo> | <documentation>)*</annotation>
@@ -6254,6 +6265,7 @@ throws Exception {
         String substitutionGroupFullName = null;
         ComplexTypeInfo substitutionGroupEltTypeInfo = null;
         DatatypeValidator substitutionGroupEltDV = null;
+        SchemaGrammar subGrammar = fSchemaGrammar;
 
         if ( substitutionGroupStr.length() > 0 ) {
             if(refAtt != null)
@@ -6264,15 +6276,34 @@ throws Exception {
             substitutionGroupFullName = substitutionGroupUri+","+substitutionGroupLocalpart;
            
             if ( !substitutionGroupUri.equals(fTargetNSURIString) ) {  
-                substitutionGroupEltTypeInfo = getElementDeclTypeInfoFromNS(substitutionGroupUri, substitutionGroupLocalpart);
-                if (substitutionGroupEltTypeInfo == null) {
-                    substitutionGroupEltDV = getElementDeclTypeValidatorFromNS(substitutionGroupUri, substitutionGroupLocalpart);
-                    if (substitutionGroupEltDV == null) {
-                        //TO DO: report error here;
+                Grammar grammar = fGrammarResolver.getGrammar(substitutionGroupUri);
+                if (grammar != null && grammar instanceof SchemaGrammar) {
+                    subGrammar = (SchemaGrammar) grammar;
+                    substitutionGroupElementDeclIndex = subGrammar.getElementDeclIndex(fStringPool.addSymbol(substitutionGroupUri), 
+                                                              fStringPool.addSymbol(substitutionGroupLocalpart), 
+                                                              TOP_LEVEL_SCOPE);
+                    if (substitutionGroupElementDeclIndex<=-1) {
+                        // REVISIT:  localize
                         noErrorSoFar = false;
-                        reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart 
+                        reportGenericSchemaError("couldn't find substitutionGroup " + substitutionGroupLocalpart + " referenced by element " + nameStr 
+                                         + " in the SchemaGrammar "+substitutionGroupUri);
+
+                    } else {
+                        substitutionGroupEltTypeInfo = getElementDeclTypeInfoFromNS(substitutionGroupUri, substitutionGroupLocalpart);
+                        if (substitutionGroupEltTypeInfo == null) {
+                            substitutionGroupEltDV = getElementDeclTypeValidatorFromNS(substitutionGroupUri, substitutionGroupLocalpart);
+                            if (substitutionGroupEltDV == null) {
+                                //TO DO: report error here;
+                                noErrorSoFar = false;
+                                reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart 
                                                  + "' in schema '" + substitutionGroupUri+"'");
+                            }
+                        }
                     }
+                } else {
+                    // REVISIT:  locallize
+                    noErrorSoFar = false;
+                    reportGenericSchemaError("couldn't find a schema grammar with target namespace " + substitutionGroupUri);
                 }
             }
             else {
@@ -6517,7 +6548,7 @@ throws Exception {
         // now we need to make sure that our substitution (if any)
         // is valid, now that we have all the requisite type-related info.
         if(substitutionGroupStr.length() > 0) {
-            checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV); 
+            checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV); 
         }
         
         // this element is ur-type, check its substitutionGroup affiliation.
@@ -7097,7 +7128,7 @@ throws Exception {
     }
     
     private void checkSubstitutionGroupOK(Element elementDecl, Element substitutionGroupElementDecl, 
-            boolean noErrorSoFar, int substitutionGroupElementDeclIndex, ComplexTypeInfo typeInfo, 
+            boolean noErrorSoFar, int substitutionGroupElementDeclIndex, SchemaGrammar substitutionGroupGrammar, ComplexTypeInfo typeInfo, 
             ComplexTypeInfo substitutionGroupEltTypeInfo, DatatypeValidator dv, 
             DatatypeValidator substitutionGroupEltDV)  throws Exception {
         // here we must do two things:
@@ -7113,7 +7144,7 @@ throws Exception {
         // be modified as this element desires.  
 
         // Check for type relationship;
-        // that is, make sure that the type we're deriving has some relatoinship
+        // that is, make sure that the type we're deriving has some relationship
         // to substitutionGroupElt's type.
         if (typeInfo != null) {
             int derivationMethod = typeInfo.derivedBy;
@@ -7152,7 +7183,7 @@ throws Exception {
                             noErrorSoFar = false;
                         }
                     } else { // now let's see if substitutionGroup element allows this:
-                        if((derivationMethod & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                        if((derivationMethod & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                             noErrorSoFar = false;
                             // REVISIT:  localize
                             reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
@@ -7174,7 +7205,7 @@ throws Exception {
                     reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type whose base is " + eltBaseName + "; this basetype does not derive from the type of the element at the head of the substitution group");
                     noErrorSoFar = false;
                 } else { // type is fine; does substitutionElement allow this?
-                    if((derivationMethod & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                    if((derivationMethod & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                         noErrorSoFar = false;
                         // REVISIT:  localize
                         reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
@@ -7191,7 +7222,7 @@ throws Exception {
                noErrorSoFar = false;
             }
             else { // now let's see if substitutionGroup element allows this:
-                if((SchemaSymbols.RESTRICTION & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                if((SchemaSymbols.RESTRICTION & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                     noErrorSoFar = false;
                     // REVISIT:  localize
                     reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
