@@ -221,7 +221,7 @@ abstract class XSDAbstractTraverser {
                             reportSchemaError("declaration-not-found", new Object [] {"notation", temp.localpart});
                         }
                     }catch(InvalidDatatypeValueException ex){
-                        reportSchemaError("cvc-simple-type", new Object[]{ ex.getMessage()});
+                        reportSchemaError(ex.getKey(), ex.getArgs());
                     }
                     // restore to the normal namespace context
                     schemaDoc.fValidationContext.setNamespaceSupport(schemaDoc.fNamespaceSupport);
@@ -239,8 +239,7 @@ abstract class XSDAbstractTraverser {
                          child = DOMUtil.getNextSiblingElement(child);
                      }
                      if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                         Object[] args = new Object [] {"Enumeration facet has more than one annotation."};
-                         reportSchemaError("cvc-simple-type", args);
+                         reportSchemaError("s4s-elt-must-match", new Object[]{"enumeration", "(annotation?)"});
                      }
                }
             }
@@ -264,7 +263,7 @@ abstract class XSDAbstractTraverser {
                          }
                          if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                               Object[] args = new Object [] {"Pattern facet has more than one annotation."};
-                              reportSchemaError("cvc-simple-type", args);
+                             reportSchemaError("s4s-elt-must-match", new Object[]{"pattern", "(annotation?)"});
                          }
                    }
                 }
@@ -357,7 +356,7 @@ abstract class XSDAbstractTraverser {
                         child = DOMUtil.getNextSiblingElement(child);
                     }
                     if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        reportSchemaError("cvc-simple-type", new Object[]{facet+" facet has more than one annotation."});                        
+                        reportSchemaError("s4s-elt-must-match", new Object[]{facet, "(annotation?)"});
                     }
                 }
             }

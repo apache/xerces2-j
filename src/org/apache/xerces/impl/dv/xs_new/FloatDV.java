@@ -79,9 +79,7 @@ public class FloatDV extends TypeValidator {
         try{
             return fValueOf(content);
         } catch (Exception ex){
-            //throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_FLOAT ],
-            //                                        new Object[]{content});
-            throw new InvalidDatatypeValueException("'" + content + "' is not a valid float value");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "float"});
         }
     }//getActualValue()
 

@@ -67,15 +67,6 @@ package org.apache.xerces.impl.dv;
 public class InvalidDatatypeValueException extends DatatypeException {
 
     /**
-     * Create a new datatype exception by providing an error message.
-     *
-     * @param msg  error message
-     */
-    public InvalidDatatypeValueException(String msg) {
-        super(msg);
-    }
-
-    /**
      * Create a new datatype exception by providing an error code and a list
      * of error message substitution arguments.
      *

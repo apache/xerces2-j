@@ -84,9 +84,7 @@ public class BooleanDV extends TypeValidator{
         else if (content.equals(fValueSpace[1]) || content.equals(fValueSpace[3]))
             ret = Boolean.TRUE;
         else
-            //throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_BOOLEAN],
-            //                                        new Object[]{content});
-            throw new InvalidDatatypeValueException("'" + content + "' is not a valid boolean value");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "boolean"});
         return ret;
     }
 

@@ -87,7 +87,7 @@ public class DurationDV extends AbstractDateTimeDV {
         try{
             return parse(content, null);
         } catch (Exception ex) {
-            throw new InvalidDatatypeValueException("not a valid duration");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "duration"});
         }
     }
 

@@ -95,15 +95,15 @@ public class QNameDV extends TypeValidator {
 
         // both prefix (if any) and localpart must be valid NCName
         if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix))
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName: '" + prefix + "' is not an NCName");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "QName"});
 
         if(!XMLChar.isValidNCName(localpart))
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName: '" + localpart + "' is not an NCName");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "QName"});
 
         // resove prefix to a uri, report an error if failed
         String uri = context.getURI(prefix);
         if (prefix.length() > 0 && uri == null)
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName: cannot resolve the prefix to a namespace uri");
+            throw new InvalidDatatypeValueException("UndeclaredPrefix", new Object[]{content, prefix});
 
         return new QName(prefix, context.getSymbol(localpart), context.getSymbol(content), uri);
 

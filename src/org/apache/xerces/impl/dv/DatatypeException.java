@@ -69,22 +69,6 @@ package org.apache.xerces.impl.dv;
  */
 public class DatatypeException extends Exception {
 
-    // in case the exception is thrown from a Schema DV, but the DTD constructor
-    // is used, we treat it as a general schema error, and use the "general"
-    // error code.
-    private static final String GENERAL_ERROR = "general";
-
-    /**
-     * Create a new datatype exception by providing an error message.
-     *
-     * @param msg  error message
-     */
-    public DatatypeException(String msg) {
-        super(msg);
-        this.key = GENERAL_ERROR;
-        this.args = new Object[]{msg};
-    }
-
     // used to store error code and error substitution arguments
     protected String key;
     protected Object[] args;

@@ -479,7 +479,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 newDecl.applyFacets(facetData , presentFacets , fixedFacets, fValidationState);
             } catch (InvalidDatatypeFacetException ex) {
-                reportSchemaError("cvc-simple-type", new Object[]{"facet error when creating type '" + qualifiedName + "': " + ex.getLocalizedMessage()} );
+                reportSchemaError(ex.getKey(), ex.getArgs());
             }
         }
         else { //union

@@ -1154,7 +1154,7 @@ public class XSAttributeChecker {
                 }
             } catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("s4s-att-invalid-value",
-                                   new Object[] {elName, attrName, ide.getLocalizedMessage()});
+                                   new Object[] {elName, attrName, ide.getKey()});
                 if (oneAttr.dfltValue != null)
                     //attrValues.put(attrName, oneAttr.dfltValue);
                     attrValues[oneAttr.valueIndex] = oneAttr.dfltValue;
@@ -1224,17 +1224,17 @@ public class XSAttributeChecker {
                        value.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
                 retValue = Boolean.TRUE;
             } else {
-                throw new InvalidDatatypeValueException("the value '"+value+"' is not a valid boolean");
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "boolean"});
             }
             break;
         case DT_NONNEGINT:
             try {
                 retValue = fXIntPool.getXInt(Integer.parseInt(value));
             } catch (NumberFormatException e) {
-                throw new InvalidDatatypeValueException("the value '"+value+"' is not a valid nonNegativeInteger");
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "nonNegativeInteger"});
             }
             if (((XInt)retValue).intValue() < 0)
-                throw new InvalidDatatypeValueException("the value '"+value+"' is not a valid nonNegativeInteger");
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "nonNegativeInteger"});
             break;
         case DT_BLOCK:
             // block = (#all | List of (substitution | extension | restriction | list | union))
@@ -1265,7 +1265,7 @@ public class XSAttributeChecker {
                         choice |= SchemaSymbols.RESTRICTION;
                     }
                     else {
-                        throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | List of (substitution | extension | restriction | list | union))");
+                        throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (substitution | extension | restriction | list | union))"});
                     }
                 }
             }
@@ -1304,7 +1304,7 @@ public class XSAttributeChecker {
                         choice |= SchemaSymbols.RESTRICTION;
                     }
                     else {
-                        throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | List of (extension | restriction))");
+                        throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (extension | restriction))"});
                     }
                 }
             }
@@ -1334,7 +1334,7 @@ public class XSAttributeChecker {
                 choice = SchemaSymbols.RESTRICTION;
             }
             else {
-                throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | (list | union | restriction))");
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | (list | union | restriction))"});
             }
             retValue = fXIntPool.getXInt(choice);
             break;
@@ -1345,7 +1345,8 @@ public class XSAttributeChecker {
             else if (value.equals (SchemaSymbols.ATTVAL_UNQUALIFIED))
                 retValue = INT_UNQUALIFIED;
             else
-                throw new InvalidDatatypeValueException("the value '"+value+"' must match (qualified | unqualified)");
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object[]{value, "(qualified | unqualified)"});
             break;
         case DT_MAXOCCURS:
             // maxOccurs = (nonNegativeInteger | unbounded)
@@ -1355,7 +1356,7 @@ public class XSAttributeChecker {
                 try {
                     retValue = validate(attr, value, DT_NONNEGINT, schemaDoc);
                 } catch (NumberFormatException e) {
-                    throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(nonNegativeInteger | unbounded)"});
                 }
             }
             break;
@@ -1364,7 +1365,8 @@ public class XSAttributeChecker {
             if (value.equals("1"))
                 retValue = fXIntPool.getXInt(1);
             else
-                throw new InvalidDatatypeValueException("the value '"+value+"' must be '1'");
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object[]{value, "(1)"});
             break;
         case DT_MEMBERTYPES:
             // memberTypes = List of QName
@@ -1382,7 +1384,7 @@ public class XSAttributeChecker {
                 retValue = memberType;
             }
             catch (InvalidDatatypeValueException ide) {
-                throw new InvalidDatatypeValueException("the value '"+value+"' must match (List of QName)");
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.2", new Object[]{value, "(List of QName)"});
             }
             break;
         case DT_MINOCCURS1:
@@ -1392,7 +1394,8 @@ public class XSAttributeChecker {
             else if (value.equals("1"))
                 retValue = fXIntPool.getXInt(1);
             else
-                throw new InvalidDatatypeValueException("the value '"+value+"' must be '0' or '1'");
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object[]{value, "(0 | 1)"});
             break;
         case DT_NAMESPACE:
             // namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )
@@ -1445,7 +1448,7 @@ public class XSAttributeChecker {
                         }
                     }
                 } catch (InvalidDatatypeValueException ide) {
-                    throw new InvalidDatatypeValueException("the value '"+value+"' must match ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )");
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )"});
                 }
 
                 // resize the array, so there is no empty entry
@@ -1468,7 +1471,8 @@ public class XSAttributeChecker {
             else if (value.equals (SchemaSymbols.ATTVAL_SKIP))
                 retValue = INT_ANY_SKIP;
             else
-                throw new InvalidDatatypeValueException("the value '"+value+"' must match (lax | skip | strict)");
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object[]{value, "(lax | skip | strict)"});
             break;
         case DT_PUBLIC:
             // public = A public identifier, per ISO 8879
@@ -1484,7 +1488,8 @@ public class XSAttributeChecker {
             else if (value.equals (SchemaSymbols.ATTVAL_PROHIBITED))
                 retValue = INT_USE_PROHIBITED;
             else
-                throw new InvalidDatatypeValueException("the value '"+value+"' must match (optional | prohibited | required)");
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object[]{value, "(optional | prohibited | required)"});
             break;
         case DT_WHITESPACE:
             // value = preserve | replace | collapse
@@ -1495,7 +1500,8 @@ public class XSAttributeChecker {
             else if (value.equals (SchemaSymbols.ATTVAL_COLLAPSE))
                 retValue = INT_WS_COLLAPSE;
             else
-                throw new InvalidDatatypeValueException("the value '"+value+"' must match (preserve | replace | collapse)");
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object[]{value, "(preserve | replace | collapse)"});
             break;
         }
 
@@ -1546,7 +1552,7 @@ public class XSAttributeChecker {
                     dv.validate((String)values.elementAt(i+1), null, null);
                 } catch(InvalidDatatypeValueException ide) {
                     reportSchemaError ("s4s-att-invalid-value",
-                                       new Object[] {elName, attrName, ide.getLocalizedMessage()});
+                                       new Object[] {elName, attrName, ide.getKey()});
                 }
             }
         }

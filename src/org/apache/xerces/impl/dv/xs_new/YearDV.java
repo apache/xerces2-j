@@ -81,7 +81,7 @@ public class YearDV extends AbstractDateTimeDV {
         try{
             return parse(content, null);
         } catch(Exception ex){
-            throw new InvalidDatatypeValueException("not a valid year");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "gYear"});
         }
     }
 

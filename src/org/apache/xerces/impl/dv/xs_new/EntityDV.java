@@ -77,7 +77,7 @@ public class EntityDV extends TypeValidator {
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         if (!XMLChar.isValidNCName(content)) {
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid ID");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "NCName"});
         }
 
         return content;
@@ -85,7 +85,7 @@ public class EntityDV extends TypeValidator {
 
     public void checkExtraRules(Object value, ValidationContext context) throws InvalidDatatypeValueException {
         if (!context.isEntityDeclared((String)value)) {
-            throw new InvalidDatatypeValueException("entity not declared");
+            throw new InvalidDatatypeValueException("UndeclaredEntity", new Object[]{value});
         }
     }
 

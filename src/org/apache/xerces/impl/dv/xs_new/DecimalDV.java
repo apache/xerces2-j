@@ -79,9 +79,7 @@ public class DecimalDV extends TypeValidator {
         try {
             return new BigDecimal( stripPlusIfPresent( content));
         } catch (Exception nfe) {
-            //throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_DECIMAL],
-            //                                        new Object[]{content});
-            throw new InvalidDatatypeValueException("'" + content + "' is not a valid decimal value");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
         }
     } //getActualValue()
 

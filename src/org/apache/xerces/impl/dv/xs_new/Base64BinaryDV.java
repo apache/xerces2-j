@@ -78,7 +78,7 @@ public class Base64BinaryDV extends TypeValidator {
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         String decoded = Base64.decode(content);
         if (decoded == null)
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not encoded in base64");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "base64Binary"});
 
         return decoded;
     }

@@ -65,7 +65,6 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.dv.DatatypeMessageProvider;
 import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.util.XMLChar;
@@ -429,55 +428,46 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // length
         if ((presentFacet & FACET_LENGTH) != 0) {
             if ((allowedFacet & FACET_LENGTH) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"length"});
             } else {
                 fLength = facets.length;
                 fFacetsDefined |= FACET_LENGTH;
                 if ((fixedFacet & FACET_LENGTH) != 0)
                     fFixedFacet |= FACET_LENGTH;
-                // check 4.3.1.c0 must: length >= 0
-                if (fLength < 0)
-                    reportError("length value '"+facets.length+"' must be a nonNegativeInteger");
             }
         }
         // minLength
         if ((presentFacet & FACET_MINLENGTH) != 0) {
             if ((allowedFacet & FACET_MINLENGTH) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"minLength"});
             } else {
                 fMinLength = facets.minLength;
                 fFacetsDefined |= FACET_MINLENGTH;
                 if ((fixedFacet & FACET_MINLENGTH) != 0)
                     fFixedFacet |= FACET_MINLENGTH;
-                // check 4.3.2.c0 must: minLength >= 0
-                if (fMinLength < 0)
-                    reportError("minLength value '"+facets.minLength+"' must be a nonNegativeInteger");
             }
         }
         // maxLength
         if ((presentFacet & FACET_MAXLENGTH) != 0) {
             if ((allowedFacet & FACET_MAXLENGTH) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"maxLength"});
             } else {
                 fMaxLength = facets.maxLength;
                 fFacetsDefined |= FACET_MAXLENGTH;
                 if ((fixedFacet & FACET_MAXLENGTH) != 0)
                     fFixedFacet |= FACET_MAXLENGTH;
-                // check 4.3.3.c0 must: maxLength >= 0
-                if (fMaxLength < 0)
-                    reportError("maxLength value '"+facets.maxLength+"' must be a nonNegativeInteger");
             }
         }
         // pattern
         if ((presentFacet & FACET_PATTERN) != 0) {
             if ((allowedFacet & FACET_PATTERN) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"pattern"});
             } else {
                 RegularExpression regex = null;
                 try {
                     regex = new RegularExpression(facets.pattern, "X");
                 } catch (Exception e) {
-                    reportError("pattern value '"+facets.pattern+"' is not valid: " + e.getLocalizedMessage());
+                    reportError("InvalidRegex", new Object[]{facets.pattern, e.getLocalizedMessage()});
                 }
                 if (regex != null) {
                     fPattern = new Vector();
@@ -492,7 +482,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // enumeration
         if ((presentFacet & FACET_ENUMERATION) != 0) {
             if ((allowedFacet & FACET_ENUMERATION) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"enumeration"});
             } else {
                 fEnumeration = new Vector();
                 Vector enumVals = facets.enumeration;
@@ -505,7 +495,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                         // check 4.3.5.c0 must: enumeration values from the value space of base
                         fEnumeration.addElement(this.fBase.validate((String)enumVals.elementAt(i), ctx, fTempInfo));
                     } catch (InvalidDatatypeValueException ide) {
-                        reportError("Value of enumeration '" + enumVals.elementAt(i) + "' must be from the value space of base");
+                        reportError("FacetValueFromBase", new Object[]{enumVals.elementAt(i), "enumeration"});
                     }
                 }
                 fFacetsDefined |= FACET_ENUMERATION;
@@ -516,7 +506,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // whiteSpace
         if ((presentFacet & FACET_WHITESPACE) != 0) {
             if ((allowedFacet & FACET_WHITESPACE) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"whiteSpace"});
             } else {
                 fWhiteSpace = facets.whiteSpace;
                 fFacetsDefined |= FACET_WHITESPACE;
@@ -527,7 +517,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // maxInclusive
         if ((presentFacet & FACET_MAXINCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MAXINCLUSIVE) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"maxInclusive"});
             } else {
                 try {
                     fMaxInclusive = getActualValue(facets.maxInclusive, context, fTempInfo);
@@ -535,14 +525,14 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     if ((fixedFacet & FACET_MAXINCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXINCLUSIVE;
                 } catch (InvalidDatatypeValueException ide) {
-                    reportError("maxInclusive value '"+facets.maxInclusive+"' is invalid");
+                    reportError("FacetValueFromBase", new Object[]{facets.maxInclusive, "maxInclusive"});
                 }
             }
         }
         // maxExclusive
         if ((presentFacet & FACET_MAXEXCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MAXEXCLUSIVE) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"maxExclusive"});
             } else {
                 try {
                     fMaxExclusive = getActualValue(facets.maxExclusive, context, fTempInfo);
@@ -550,14 +540,14 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     if ((fixedFacet & FACET_MAXEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXEXCLUSIVE;
                 } catch (InvalidDatatypeValueException ide) {
-                    reportError("maxExclusive value '"+facets.maxExclusive+"' is invalid");
+                    reportError("FacetValueFromBase", new Object[]{facets.maxExclusive, "maxExclusive"});
                 }
             }
         }
         // minExclusive
         if ((presentFacet & FACET_MINEXCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MINEXCLUSIVE) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"minExclusive"});
             } else {
                 try {
                     fMinExclusive = getActualValue(facets.minExclusive, context, fTempInfo);
@@ -565,14 +555,14 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     if ((fixedFacet & FACET_MINEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MINEXCLUSIVE;
                 } catch (InvalidDatatypeValueException ide) {
-                    reportError("minExclusive value '"+facets.minExclusive+"' is invalid");
+                    reportError("FacetValueFromBase", new Object[]{facets.minExclusive, "minExclusive"});
                 }
             }
         }
         // minInclusive
         if ((presentFacet & FACET_MININCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MININCLUSIVE) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"minInclusive"});
             } else {
                 try {
                     fMinInclusive = getActualValue(facets.minInclusive, context, fTempInfo);
@@ -580,36 +570,30 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     if ((fixedFacet & FACET_MININCLUSIVE) != 0)
                         fFixedFacet |= FACET_MININCLUSIVE;
                 } catch (InvalidDatatypeValueException ide) {
-                    reportError("minInclusive value '"+facets.minInclusive+"' is invalid");
+                    reportError("FacetValueFromBase", new Object[]{facets.minInclusive, "minInclusive"});
                 }
             }
         }
         // totalDigits
         if ((presentFacet & FACET_TOTALDIGITS) != 0) {
             if ((allowedFacet & FACET_TOTALDIGITS) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"totalDigits"});
             } else {
                 fTotalDigits = facets.totalDigits;
                 fFacetsDefined |= FACET_TOTALDIGITS;
                 if ((fixedFacet & FACET_TOTALDIGITS) != 0)
                     fFixedFacet |= FACET_TOTALDIGITS;
-                // check 4.3.11.c0 must: totalDigits > 0
-                if (fTotalDigits <= 0)
-                    reportError("totalDigits value '"+facets.totalDigits+"' must be a positiveInteger");
             }
         }
         // fractionDigits
         if ((presentFacet & FACET_FRACTIONDIGITS) != 0) {
             if ((allowedFacet & FACET_FRACTIONDIGITS) == 0) {
-                reportError("non-supported facet");
+                reportError("cos-applicable-facets", new Object[]{"fractionDigits"});
             } else {
                 fFractionDigits = facets.fractionDigits;
                 fFacetsDefined |= FACET_FRACTIONDIGITS;
                 if ((fixedFacet & FACET_FRACTIONDIGITS) != 0)
                     fFixedFacet |= FACET_FRACTIONDIGITS;
-                // check 4.3.12.c0 must: fractionDigits >= 0
-                if (fFractionDigits < 0)
-                    reportError("fractionDigits value '"+facets.fractionDigits+"' must be a positiveInteger");
             }
         }
 
@@ -623,11 +607,9 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
 
             // check 4.3.1.c1 error: length & (maxLength | minLength)
             if((fFacetsDefined & FACET_LENGTH) != 0 ){
-              if( (fFacetsDefined & FACET_MINLENGTH) != 0 ){
-                reportError("it is an error for both length and min length to be present" );
-              }
-              else if((fFacetsDefined & FACET_MAXLENGTH) != 0 ){
-                reportError("it is an error for both length and max length to be present" );
+              if ((fFacetsDefined & FACET_MINLENGTH) != 0 ||
+                  (fFacetsDefined & FACET_MAXLENGTH) != 0 ) {
+                  reportError("length-minLength-maxLength", null);
               }
             }
 
@@ -635,82 +617,71 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             if(((fFacetsDefined & FACET_MINLENGTH ) != 0 ) && ((fFacetsDefined & FACET_MAXLENGTH) != 0))
             {
               if(fMinLength > fMaxLength)
-                reportError("value of minLength = " + fMinLength + "must  be less than value of maxLength = "+ fMaxLength);
+                reportError("minLength-less-than-equal-to-maxLength", new Object[]{Integer.toString(fMinLength), Integer.toString(fMaxLength)});
             }
 
             // check 4.3.8.c1 error: maxInclusive + maxExclusive
             if (((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) && ((fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
-                reportError( "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype" );
+                reportError( "maxInclusive-maxExclusive", null);
             }
 
             // check 4.3.9.c1 error: minInclusive + minExclusive
             if (((fFacetsDefined & FACET_MINEXCLUSIVE) != 0) && ((fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
-                reportError("It is an error for both minInclusive and minExclusive to be specified for the same datatype" );
+                reportError("minInclusive-minExclusive", null);
             }
 
             // check 4.3.7.c1 must: minInclusive <= maxInclusive
             if (((fFacetsDefined &  FACET_MAXINCLUSIVE) != 0) && ((fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
               result = fDVs[fValidationDV].compare(fMinInclusive, fMaxInclusive);
               if (result != -1 && result != 0)
-                reportError("minInclusive value ='" + getStringValue(fMinInclusive) + "'must be <= maxInclusive value ='" +
-                    getStringValue(fMaxInclusive) + "'. " );
+                reportError("minInclusive-less-than-equal-to-maxInclusive", new Object[]{getStringValue(fMinInclusive), getStringValue(fMaxInclusive)});
             }
 
             // check 4.3.8.c2 must: minExclusive <= maxExclusive ??? minExclusive < maxExclusive
             if (((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) && ((fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
               result = fDVs[fValidationDV].compare(fMinExclusive, fMaxExclusive);
               if (result != -1 && result != 0)
-                reportError( "minExclusive value ='" + getStringValue(fMinExclusive) + "' must be <= maxExclusive value ='" +
-                                                        getStringValue(fMaxExclusive) + "'. " );
+                reportError( "minExclusive-less-than-equal-to-maxExclusive", new Object[]{getStringValue(fMinExclusive), getStringValue(fMaxExclusive)});
             }
 
             // check 4.3.9.c2 must: minExclusive < maxInclusive
             if (((fFacetsDefined & FACET_MAXINCLUSIVE) != 0) && ((fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
               if (fDVs[fValidationDV].compare(fMinExclusive, fMaxInclusive) != -1)
-                reportError( "minExclusive value ='" + getStringValue(fMinExclusive) + "' must be < maxInclusive value ='" +
-                                                                     getStringValue(fMaxInclusive) + "'. " );
+                reportError( "minExclusive-less-than-maxInclusive", new Object[]{getStringValue(fMinExclusive), getStringValue(fMaxInclusive)});
             }
 
             // check 4.3.10.c1 must: minInclusive < maxExclusive
             if (((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) && ((fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
               if (fDVs[fValidationDV].compare(fMinInclusive, fMaxExclusive) != -1)
-                reportError( "minInclusive value ='" + getStringValue(fMinInclusive) + "' must be < maxExclusive value ='" +
-                                                                     getStringValue(fMaxExclusive) + "'. " );
+                reportError( "minInclusive-less-than-maxExclusive", new Object[]{getStringValue(fMinInclusive), getStringValue(fMaxExclusive)});
             }
 
             // check 4.3.12.c1 must: fractionDigits <= totalDigits
             if (((fFacetsDefined & FACET_FRACTIONDIGITS) != 0) &&
                 ((fFacetsDefined & FACET_TOTALDIGITS) != 0)) {
                 if (fFractionDigits > fTotalDigits)
-                    reportError( "fractionDigits value ='" + this.fFractionDigits + "' must be <= totalDigits value ='" +
-                                                             this.fTotalDigits + "'. " );
+                    reportError( "fractionDigits-totalDigits", new Object[]{Integer.toString(fFractionDigits), Integer.toString(fTotalDigits)});
             }
 
             // step 3: check facets against base
             // check 4.3.1.c1 error: length & (fBase.maxLength | fBase.minLength)
             if ( ((fFacetsDefined & FACET_LENGTH ) != 0 ) ) {
-
-                if ( ((fBase.fFacetsDefined & FACET_MAXLENGTH ) != 0 ) ) {
-                    reportError("It is an error for both length and maxLength to be members of facets" );
-                }
-                else if ( ((fBase.fFacetsDefined & FACET_MINLENGTH ) != 0 ) ) {
-                    reportError("It is an error for both length and minLength to be members of facets" );
+                if ((fBase.fFacetsDefined & FACET_MAXLENGTH ) != 0 ||
+                    (fBase.fFacetsDefined & FACET_MINLENGTH ) != 0 ) {
+                    reportError("length-minLength-maxLength", null);
                 }
                 else if ( (fBase.fFacetsDefined & FACET_LENGTH) != 0 ) {
                     // check 4.3.1.c2 error: length != fBase.length
                     if ( fLength != fBase.fLength )
-                        reportError( "Value of length = '" + fLength +
-                                                                 "' must be = the value of fBase.length = '" + fBase.fLength + "'");
+                        reportError( "length-valid-restriction", new Object[]{Integer.toString(fLength), Integer.toString(fBase.fLength)});
                 }
             }
 
             // check 4.3.1.c1 error: fBase.length & (maxLength | minLength)
             if ( ((fBase.fFacetsDefined & FACET_LENGTH ) != 0 ) ) {
-                if ( ((fFacetsDefined & FACET_MAXLENGTH ) != 0 ) ) {
-                    reportError("It is an error for both length and maxLength to be members of facets" );
-                }
-                else if ( ((fFacetsDefined & FACET_MINLENGTH ) != 0 ) ) {
-                    reportError("It is an error for both length and minLength to be members of facets" );
+                if ((fFacetsDefined & FACET_MAXLENGTH ) != 0 ||
+                    (fFacetsDefined & FACET_MINLENGTH ) != 0 ) {
+                    reportError("length-minLength-maxLength", null);
                 }
             }
 
@@ -718,32 +689,26 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             if ( ((fFacetsDefined & FACET_MINLENGTH ) != 0 ) ) {
                 if ( (fBase.fFacetsDefined & FACET_MAXLENGTH ) != 0 ) {
                     if ( fMinLength > fBase.fMaxLength ) {
-                        reportError( "Value of minLength = '" + fMinLength +
-                                                                 "' must be <= the value of maxLength = '" + fMaxLength + "'");
+                        reportError("minLength-less-than-equal-to-maxLength", new Object[]{Integer.toString(fMinLength), Integer.toString(fBase.fMaxLength)});
                     }
                 }
                 else if ( (fBase.fFacetsDefined & FACET_MINLENGTH) != 0 ) {
                     if ( (fBase.fFixedFacet & FACET_MINLENGTH) != 0 && fMinLength != fBase.fMinLength ) {
-                        reportError( "minLength value = '" + fMinLength +
-                                                                 "' must be equal to fBase.minLength value = '" +
-                                                                 fBase.fMinLength + "' with attribute {fixed} = true" );
+                        reportError( "FixedFacetValue", new Object[]{"minLength", Integer.toString(fMinLength), Integer.toString(fBase.fMinLength)});
                     }
 
                     // check 4.3.2.c2 error: minLength < fBase.minLength
                     if ( fMinLength < fBase.fMinLength ) {
-                        reportError( "Value of minLength = '" + fMinLength +
-                                                                 "' must be >= the value of fBase.minLength = '" + fBase.fMinLength + "'");
+                        reportError( "minLength-valid-restriction", new Object[]{Integer.toString(fMinLength), Integer.toString(fBase.fMinLength)});
                     }
                 }
             }
 
 
             // check 4.3.2.c1 must: maxLength < fBase.minLength
-            if ( ((fFacetsDefined & FACET_MAXLENGTH ) != 0 ) && ((fBase.fFacetsDefined & FACET_MINLENGTH ) != 0 ))
-            {
+            if ( ((fFacetsDefined & FACET_MAXLENGTH ) != 0 ) && ((fBase.fFacetsDefined & FACET_MINLENGTH ) != 0 )) {
                 if ( fMaxLength < fBase.fMinLength) {
-                    reportError( "Value of maxLength = '" + fMaxLength +
-                                                             "' must be >= the value of fBase.minLength = '" + fBase.fMinLength + "'");
+                    reportError("minLength-less-than-equal-to-maxLength", new Object[]{Integer.toString(fBase.fMinLength), Integer.toString(fMaxLength)});
                 }
             }
 
@@ -751,13 +716,10 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             if ( (fFacetsDefined & FACET_MAXLENGTH) != 0 ) {
                 if ( (fBase.fFacetsDefined & FACET_MAXLENGTH) != 0 ){
                     if(( (fBase.fFixedFacet & FACET_MAXLENGTH) != 0 )&& fMaxLength != fBase.fMaxLength ) {
-                        reportError( "maxLength value = '" + fMaxLength +
-                                                             "' must be equal to fBase.maxLength value = '" +
-                                                             fBase.fMaxLength + "' with attribute {fixed} = true" );
+                        reportError( "FixedFacetValue", new Object[]{"maxLength", Integer.toString(fMaxLength), Integer.toString(fBase.fMaxLength)});
                     }
                     if ( fMaxLength > fBase.fMaxLength ) {
-                        reportError( "Value of maxLength = '" + fMaxLength +
-                                                                 "' must be <= the value of fBase.maxLength = '" + fBase.fMaxLength + "'");
+                        reportError( "maxLength-valid-restriction", new Object[]{Integer.toString(fMaxLength), Integer.toString(fBase.fMaxLength)});
                     }
                 }
             }
@@ -772,35 +734,28 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             if (((fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                 if (((fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMaxInclusive);
-
                     if ((fBase.fFixedFacet & FACET_MAXINCLUSIVE) != 0 && result != 0) {
-                            reportError( "maxInclusive value = '" + getStringValue(fMaxInclusive) +
-                                                                 "' must be equal to fBase.maxInclusive value = '" +
-                                                                 getStringValue(fBase.fMaxInclusive) + "' with attribute {fixed} = true" );
+                        reportError( "FixedFacetValue", new Object[]{"maxInclusive", getStringValue(fMaxInclusive), getStringValue(fBase.fMaxInclusive)});
                     }
                     if (result != -1 && result != 0) {
-                        reportError( "maxInclusive value ='" + getStringValue(fMaxInclusive) + "' must be <= fBase.maxInclusive value ='" +
-                                                                 getStringValue(fBase.fMaxInclusive) + "'" );
+                        reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMaxInclusive)});
                     }
                 }
                 if (((fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMaxExclusive) != -1){
-                        reportError( "maxInclusive value ='" + getStringValue(fMaxInclusive) + "' must be < fBase.maxExclusive value ='" +
-                                                           getStringValue(fBase.fMaxExclusive) + "'" );
+                        reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMaxExclusive)});
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMinInclusive);
                     if (result != 1 && result != 0) {
-                        reportError( "maxInclusive value ='" + getStringValue(fMaxInclusive) + "' must be >= fBase.minInclusive value ='" +
-                                                                 getStringValue(fBase.fMinInclusive) + "'" );
+                        reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMinInclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMinExclusive ) != 1)
-                    reportError( "maxInclusive value ='" + getStringValue(fMaxInclusive) + "' must be > fBase.minExclusive value ='" +
-                                                           getStringValue(fBase.fMinExclusive) + "'" );
+                    reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMinExclusive)});
             }
 
             // check 4.3.8.c3 error:
@@ -811,55 +766,43 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             if (((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0)) {
                 if ((( fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0)) {
                     result= fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMaxExclusive);
-
                     if ((fBase.fFixedFacet & FACET_MAXEXCLUSIVE) != 0 &&  result != 0) {
-                        reportError( "maxExclusive value = '" + getStringValue(fMaxExclusive) +
-                                                                 "' must be equal to fBase.maxExclusive value = '" +
-                                                                 getStringValue(fBase.fMaxExclusive) + "' with attribute {fixed} = true" );
+                        reportError( "FixedFacetValue", new Object[]{"maxExclusive", getStringValue(fMaxExclusive), getStringValue(fBase.fMaxExclusive)});
                     }
                     if (result != -1 && result != 0) {
-                        reportError( "maxExclusive value ='" + getStringValue(fMaxExclusive) + "' must be < fBase.maxExclusive value ='" +
-                                                                 getStringValue(fBase.fMaxExclusive) + "'" );
+                        reportError( "maxExclusive-valid-restriction.1", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMaxExclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                     result= fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMaxInclusive);
                     if (result != -1 && result != 0) {
-                        reportError( "maxExclusive value ='" + getStringValue(fMaxExclusive) + "' must be <= fBase.maxInclusive value ='" +
-                                                                 getStringValue(fBase.fMaxInclusive) + "'" );
+                        reportError( "maxExclusive-valid-restriction.2", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMaxInclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMinExclusive ) != 1)
-                    reportError( "maxExclusive value ='" + getStringValue(fMaxExclusive) + "' must be > fBase.minExclusive value ='" +
-                                                             getStringValue(fBase.fMinExclusive) + "'" );
+                    reportError( "maxExclusive-valid-restriction.3", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMinExclusive)});
 
                 if ((( fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMinInclusive) != 1)
-                    reportError( "maxExclusive value ='" + getStringValue(fMaxExclusive) + "' must be > fBase.minInclusive value ='" +
-                                                             getStringValue(fBase.fMinInclusive) + "'" );
+                    reportError( "maxExclusive-valid-restriction.4", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMinInclusive)});
             }
 
             // check 4.3.9.c3 error:
             // minExclusive < fBase.minExclusive
-            // maxInclusive > fBase.maxInclusive
-            // minInclusive < fBase.minInclusive
-            // maxExclusive >= fBase.maxExclusive
+            // minExclusive > fBase.maxInclusive
+            // minExclusive < fBase.minInclusive
+            // minExclusive >= fBase.maxExclusive
             if (((fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
-
                     result= fDVs[fValidationDV].compare(fMinExclusive, fBase.fMinExclusive);
-                    if ((fBase.fFixedFacet & FACET_MINEXCLUSIVE) != 0 &&
-                        result != 0) {
-                        reportError( "minExclusive value = '" + getStringValue(fMinExclusive) +
-                                                                 "' must be equal to fBase.minExclusive value = '" +
-                                                                 getStringValue(fBase.fMinExclusive) + "' with attribute {fixed} = true" );
+                    if ((fBase.fFixedFacet & FACET_MINEXCLUSIVE) != 0 && result != 0) {
+                        reportError( "FixedFacetValue", new Object[]{"minExclusive", getStringValue(fMinExclusive), getStringValue(fBase.fMinExclusive)});
                     }
                     if (result != 1 && result != 0) {
-                        reportError( "minExclusive value ='" + getStringValue(fMinExclusive) + "' must be >= fBase.minExclusive value ='" +
-                                                                 getStringValue(fBase.fMinExclusive) + "'" );
+                        reportError( "minExclusive-valid-restriction.1", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMinExclusive)});
                     }
                 }
 
@@ -867,8 +810,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     result=fDVs[fValidationDV].compare(fMinExclusive, fBase.fMaxInclusive);
 
                     if (result != -1 && result != 0) {
-                        reportError( "minExclusive value ='" + getStringValue(fMinExclusive) + "' must be <= fBase.maxInclusive value ='" +
-                                                               getStringValue(fBase.fMaxInclusive) + "'" );
+                        reportError( "minExclusive-valid-restriction.2", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMaxInclusive)});
                     }
                 }
 
@@ -876,15 +818,13 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     result = fDVs[fValidationDV].compare(fMinExclusive, fBase.fMinInclusive);
 
                     if (result != 1 && result != 0) {
-                        reportError( "minExclusive value ='" + getStringValue(fMinExclusive) + "' must be >= fBase.minInclusive value ='" +
-                                                               getStringValue(fBase.fMinInclusive) + "'" );
+                        reportError( "minExclusive-valid-restriction.3", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMinInclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMinExclusive, fBase.fMaxExclusive) != -1)
-                    reportError( "minExclusive value ='" + getStringValue(fMinExclusive) + "' must be < fBase.maxExclusive value ='" +
-                                                             getStringValue(fBase.fMaxExclusive) + "'" );
+                    reportError( "minExclusive-valid-restriction.4", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMaxExclusive)});
             }
 
             // check 4.3.10.c2 error:
@@ -897,44 +837,34 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     result = fDVs[fValidationDV].compare(fMinInclusive, fBase.fMinInclusive);
 
                     if ((fBase.fFixedFacet & FACET_MININCLUSIVE) != 0 && result != 0) {
-                        reportError( "minInclusive value = '" + getStringValue(fMinInclusive) +
-                                                                 "' must be equal to fBase.minInclusive value = '" +
-                                                                 getStringValue(fBase.fMinInclusive) + "' with attribute {fixed} = true" );
+                        reportError( "FixedFacetValue", new Object[]{"minInclusive", getStringValue(fMinInclusive), getStringValue(fBase.fMinInclusive)});
                     }
                     if (result != 1 && result != 0) {
-                        reportError( "minInclusive value ='" + getStringValue(fMinInclusive) + "' must be >= fBase.minInclusive value ='" +
-                                                                 getStringValue(fBase.fMinInclusive) + "'" );
+                        reportError( "minInclusive-valid-restriction.1", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMinInclusive)});
                     }
                 }
                 if ((( fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                     result=fDVs[fValidationDV].compare(fMinInclusive, fBase.fMaxInclusive);
                     if (result != -1 && result != 0) {
-                        reportError( "minInclusive value ='" + getStringValue(fMinInclusive) + "' must be <= fBase.maxInclusive value ='" +
-                                                                 getStringValue(fBase.fMaxInclusive) + "'" );
+                        reportError( "minInclusive-valid-restriction.2", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMaxInclusive)});
                     }
                 }
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMinInclusive, fBase.fMinExclusive ) != 1)
-                    reportError( "minInclusive value ='" + getStringValue(fMinInclusive) + "' must be > fBase.minExclusive value ='" +
-                                                             getStringValue(fBase.fMinExclusive) + "'" );
+                    reportError( "minInclusive-valid-restriction.3", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMinExclusive)});
                 if ((( fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMinInclusive, fBase.fMaxExclusive) != -1)
-                    reportError( "minInclusive value ='" + getStringValue(fMinInclusive) + "' must be < fBase.maxExclusive value ='" +
-                                                             getStringValue(fBase.fMaxExclusive) + "'" );
+                    reportError( "minInclusive-valid-restriction.4", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMaxExclusive)});
             }
 
             // check 4.3.11.c1 error: totalDigits > fBase.totalDigits
             if (((fFacetsDefined & FACET_TOTALDIGITS) != 0)) {
                 if ((( fBase.fFacetsDefined & FACET_TOTALDIGITS) != 0)) {
-                    if (fTotalDigits > fBase.fTotalDigits) {
-                        reportError("totalDigits value = '" + fTotalDigits +
-                                                                "' must be equal to fBase.totalDigits value = '" +
-                                                                fBase.fTotalDigits +
-                                                                "' with attribute {fixed} = true" );
+                    if ((fBase.fFixedFacet & FACET_TOTALDIGITS) != 0 && fTotalDigits != fBase.fTotalDigits) {
+                        reportError("FixedFacetValue", new Object[]{"totalDigits", Integer.toString(fTotalDigits), Integer.toString(fBase.fTotalDigits)});
                     }
                     if (fTotalDigits > fBase.fTotalDigits) {
-                        reportError( "totalDigits value ='" + fTotalDigits + "' must be <= fBase.totalDigits value ='" +
-                                                                 fBase.fTotalDigits + "'" );
+                        reportError( "totalDigits-valid-restriction", new Object[]{Integer.toString(fTotalDigits), Integer.toString(fBase.fTotalDigits)});
                     }
                 }
             }
@@ -943,10 +873,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             if (((fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
                 if ((( fBase.fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
                     if ((fBase.fFixedFacet & FACET_FRACTIONDIGITS) != 0 && fFractionDigits != fBase.fFractionDigits) {
-                        reportError("fractionDigits value = '" + fFractionDigits +
-                                                                "' must be equal to fBase.fractionDigits value = '" +
-                                                                fBase.fFractionDigits +
-                                                                "' with attribute {fixed} = true" );
+                        reportError("FixedFacetValue", new Object[]{"fractionDigits", Integer.toString(fFractionDigits), Integer.toString( fBase.fFractionDigits)});
                     }
                 }
             }
@@ -957,16 +884,14 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
 
             if ( (fFacetsDefined & FACET_WHITESPACE) != 0 && (fBase.fFacetsDefined & FACET_WHITESPACE) != 0 ){
                 if ( (fBase.fFixedFacet & FACET_WHITESPACE) != 0 &&  fWhiteSpace != fBase.fWhiteSpace ) {
-                    reportError( "whiteSpace value = '" + whiteSpaceValue(fWhiteSpace) +
-                                 "' must be equal to fBase.whiteSpace value = '" +
-                                 whiteSpaceValue(fBase.fWhiteSpace) + "' with attribute {fixed} = true" );
+                    reportError( "FixedFacetValue", new Object[]{"whiteSpace", whiteSpaceValue(fWhiteSpace), whiteSpaceValue(fBase.fWhiteSpace)});
                 }
 
                 if ( (fWhiteSpace == WS_PRESERVE || fWhiteSpace == WS_REPLACE) &&  fBase.fWhiteSpace == WS_COLLAPSE ){
-                    reportError( "It is an error if whiteSpace = 'preserve' or 'replace' and fBase.whiteSpace = 'collapse'");
+                    reportError( "whiteSpace-valid-restriction.1", null);
                 }
                 if ( fWhiteSpace == WS_PRESERVE &&  fBase.fWhiteSpace == WS_REPLACE ){
-                    reportError( "It is an error if whiteSpace = 'preserve' and fBase.whiteSpace = 'replace'");
+                    reportError( "whiteSpace-valid-restriction.2", null);
                 }
             }
         }//fFacetsDefined != null
@@ -1111,27 +1036,24 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // maxLength
         if ( (fFacetsDefined & FACET_MAXLENGTH) != 0 ) {
             if ( length > fMaxLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+length+
-                                                        "' exceeds maximum length facet of '"+fMaxLength+"'");
+                throw new InvalidDatatypeValueException("cvc-maxLength-valid",
+                                                        new Object[]{content, Integer.toString(length), Integer.toString(fMaxLength)});
             }
         }
 
         //minLength
         if ( (fFacetsDefined & FACET_MINLENGTH) != 0 ) {
             if ( length < fMinLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+length+
-                                                        "' is less than minimum length facet of '"+fMinLength+"'" );
+                throw new InvalidDatatypeValueException("cvc-minLength-valid",
+                                                        new Object[]{content, Integer.toString(length), Integer.toString(fMinLength)});
             }
         }
 
         //length
         if ( (fFacetsDefined & FACET_LENGTH) != 0 ) {
             if ( length != fLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+length+
-                                                        "' is not equal to length facet '"+fLength+"'");
+                throw new InvalidDatatypeValueException("cvc-length-valid",
+                                                        new Object[]{content, Integer.toString(length), Integer.toString(fLength)});
             }
         }
 
@@ -1145,8 +1067,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 }
             }
             if(!present){
-                throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_ENUM_VALUE],
-                                                        new Object [] {content});
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                                                        new Object [] {content, fEnumeration.toString()});
             }
         }
 
@@ -1154,11 +1076,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         if ((fFacetsDefined & FACET_FRACTIONDIGITS) != 0) {
             int scale = fDVs[fValidationDV].getFractionDigits(ob);
             if (scale > fFractionDigits) {
-                throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.FRACTION_EXCEEDED],
-                                           new Object[] {
-                                               "'" + content + "'" + " with fractionDigits = '"+ scale +"'",
-                                               "'" + fFractionDigits + "'"
-                                           });
+                throw new InvalidDatatypeValueException("cvc-fractionDigits-valid",
+                                                        new Object[] {content, Integer.toString(scale), Integer.toString(fFractionDigits)});
             }
         }
 
@@ -1166,81 +1085,47 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         if ((fFacetsDefined & FACET_TOTALDIGITS)!=0) {
             int totalDigits = fDVs[fValidationDV].getTotalDigits(ob);
             if (totalDigits > fTotalDigits) {
-                throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.TOTALDIGITS_EXCEEDED],
-                                           new Object[] {
-                                               "'" + content + "'" + " with totalDigits = '"+ totalDigits +"'",
-                                               "'" + fTotalDigits + "'"
-                                           });
+                throw new InvalidDatatypeValueException("cvc-totalDigits-valid",
+                                                        new Object[] {content, Integer.toString(totalDigits), Integer.toString(fTotalDigits)});
             }
         }
 
-
-        // REVISIT this part for error reporting
-
-        boolean minOk = true;
-        boolean maxOk = true;
-        String  upperBound="";
-
-        String  lowerBound="";
-        String  lowerBoundIndicator = "";
-        String  upperBoundIndicator = "";
         int compare;
 
         //maxinclusive
         if ( (fFacetsDefined & FACET_MAXINCLUSIVE) != 0 ) {
             compare = fDVs[fValidationDV].compare(ob, fMaxInclusive);
-            maxOk = (compare == -1 || compare == 0);
-            upperBound   = fMaxInclusive.toString();
-            if ( upperBound != null ) {
-                upperBoundIndicator = "<=";
-            }
-            else {
-                upperBound="";
+            if (compare != -1 && compare != 0) {
+                throw new InvalidDatatypeValueException("cvc-maxInclusive-valid",
+                                                        new Object[] {content, fMaxInclusive});
             }
         }
 
         //maxExclusive
         if ( (fFacetsDefined & FACET_MAXEXCLUSIVE) != 0 ) {
-            compare = fDVs[fValidationDV].compare(ob,  fMaxExclusive );
-            maxOk = (compare == -1);
-            upperBound = fMaxExclusive.toString();
-            if ( upperBound != null ) {
-                upperBoundIndicator = "<";
-            }
-            else {
-                upperBound = "";
+            compare = fDVs[fValidationDV].compare(ob, fMaxExclusive );
+            if (compare != -1) {
+                throw new InvalidDatatypeValueException("cvc-maxExclusive-valid",
+                                                        new Object[] {content, fMaxExclusive});
             }
         }
 
         //minInclusive
         if ( (fFacetsDefined & FACET_MININCLUSIVE) != 0 ) {
             compare = fDVs[fValidationDV].compare(ob, fMinInclusive);
-            minOk = (compare == 1 || compare == 0);
-            lowerBound = fMinInclusive.toString();
-            if ( lowerBound != null ) {
-                lowerBoundIndicator = "<=";
-            }
-            else {
-                lowerBound = "";
+            if (compare != 1 && compare != 0) {
+                throw new InvalidDatatypeValueException("cvc-minInclusive-valid",
+                                                        new Object[] {content, fMinInclusive});
             }
         }
 
         //minExclusive
         if ( (fFacetsDefined & FACET_MINEXCLUSIVE) != 0 ) {
             compare = fDVs[fValidationDV].compare(ob, fMinExclusive);
-            minOk = (compare == 1);
-            lowerBound = fMinExclusive.toString();
-            if ( lowerBound != null ) {
-                lowerBoundIndicator = "<";
+            if (compare != 1) {
+                throw new InvalidDatatypeValueException("cvc-minExclusive-valid",
+                                                        new Object[] {content, fMinExclusive});
             }
-            else {
-                lowerBound = "";
-            }
-        }
-
-        if ( !(minOk && maxOk) ){
-            throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.OUT_OF_BOUNDS],
-                new Object [] { ob.toString(), lowerBound, upperBound, lowerBoundIndicator, upperBoundIndicator});
         }
 
     }
@@ -1306,8 +1191,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     seenErr = !XMLChar.isValidNCName(nvalue);
                 }
                 if (seenErr) {
-                    throw new InvalidDatatypeValueException("Value '"+nvalue+"' is not a valid " +
-                                                            SPECIAL_TOKEN_STRING[fTokenType]);
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1",
+                                                            new Object[]{nvalue, SPECIAL_TOKEN_STRING[fTokenType]});
                 }
             }
 
@@ -1316,8 +1201,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 for (int idx = fPattern.size()-1; idx >= 0; idx--) {
                     regex = (RegularExpression)fPattern.elementAt(idx);
                     if (!regex.matches(nvalue)){
-                        throw new InvalidDatatypeValueException("Value '"+content+
-                                                                "' does not match regular expression facet '" + regex + "'" );
+                        throw new InvalidDatatypeValueException("cvc-pattern-valid",
+                                                                new Object[]{content, regex});
                     }
                 }
             }
@@ -1377,8 +1262,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 }
             }
 
-            String msg  = " content = " + content + " doesnt't match any of the member types " ;
-            throw new InvalidDatatypeValueException(msg);
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.2",
+                                                    new Object[]{content, fTypeName});
         }
 
     }//getActualValue()
@@ -1466,8 +1351,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         return sb.toString();
     }
 
-    void reportError(String msg) throws InvalidDatatypeFacetException {
-        throw new InvalidDatatypeFacetException(msg);
+    void reportError(String key, Object[] args) throws InvalidDatatypeFacetException {
+        throw new InvalidDatatypeFacetException(key, args);
     }
 
 

@@ -77,7 +77,7 @@ public class IDDV extends TypeValidator{
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         if (!XMLChar.isValidNCName(content)) {
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid ID");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "NCName"});
         }
         return content;
     }
@@ -85,7 +85,7 @@ public class IDDV extends TypeValidator{
     public void checkExtraRules(Object value, ValidationContext context) throws InvalidDatatypeValueException {
         String content = (String)value;
         if (context.isIdDeclared(content))
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid ID");
+            throw new InvalidDatatypeValueException("cvc-id.2", new Object[]{content});
         context.addId(content);
     }
 } // class IDDV

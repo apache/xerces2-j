@@ -77,7 +77,7 @@ public class IDREFDV extends TypeValidator{
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         if (!XMLChar.isValidNCName(content)) {
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid ID");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "NCName"});
         }
         return content;
     }

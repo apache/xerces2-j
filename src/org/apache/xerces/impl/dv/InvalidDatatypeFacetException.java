@@ -68,17 +68,6 @@ package org.apache.xerces.impl.dv;
 public class InvalidDatatypeFacetException extends DatatypeException {
 
     /**
-     * Create a new datatype exception by providing an error message.
-     * NOTE: this message shouldn't be called, after we provide complete
-     *       schema error code support.
-     *
-     * @param msg  error message
-     */
-    public InvalidDatatypeFacetException(String msg) {
-        super(msg);
-    }
-
-    /**
      * Create a new datatype exception by providing an error code and a list
      * of error message substitution arguments.
      *

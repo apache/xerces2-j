@@ -95,7 +95,7 @@ public class AnyURIDV extends TypeValidator {
                 new URI(BASE_URI, content );
             }
         } catch (URI.MalformedURIException ex) {
-            throw new InvalidDatatypeValueException("Value '"+content+"' is a Malformed URI");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "anyURI"});
         }
 
         // REVISIT: do we need to return the new URI object?

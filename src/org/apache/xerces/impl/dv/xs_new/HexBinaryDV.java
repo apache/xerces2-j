@@ -78,7 +78,7 @@ public class HexBinaryDV extends TypeValidator {
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         String decoded = HexBin.decode(content);
         if (decoded == null)
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not encoded in Hex");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "hexBinary"});
 
         return decoded;
     }

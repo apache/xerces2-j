@@ -79,9 +79,7 @@ public class DoubleDV extends TypeValidator {
         try{
             return dValueOf(content);
         } catch (Exception ex){
-            //throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_DOUBLE ],
-            //                                        new Object[]{content});
-            throw new InvalidDatatypeValueException("'" + content + "' is not a valid double value");
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "double"});
         }
     }//getActualValue()
 

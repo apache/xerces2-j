@@ -460,7 +460,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 typeInfo.fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
             }catch(InvalidDatatypeFacetException ex){
-                reportGenericSchemaError(ex.getLocalizedMessage());
+                reportSchemaError(ex.getKey(), ex.getArgs());
             }
 
             // -----------------------------------------------------------------------

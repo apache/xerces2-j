@@ -65,11 +65,6 @@ package org.apache.xerces.impl.xs;
  */
 public class XMLSchemaException extends Exception {
 
-    // this one is like reportGenericSchemaError: remove it later
-    public XMLSchemaException(String msg) {
-        this("general", new Object[]{msg});
-    }
-
     // store a datatype error: error code plus the arguments
     String key;
     Object[] args;
