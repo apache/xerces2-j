@@ -64,8 +64,11 @@
      <DT>interface <SPAN class="interface-title">XMLDocumentHandler</SPAN>
      <DD class="methods">      methods:      <UL>
        <LI>
-        <SPAN class="method-title">startDocument</SPAN>      (
-        )
+        <SPAN class="method-title">startDocument</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">systemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">encoding</SPAN>          )
        <LI>
         <SPAN class="method-title">xmlDecl</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
@@ -589,6 +592,13 @@
         <SPAN class="method-title">getNonNormalizedValue</SPAN>      (
         int <SPAN class="param-title">index</SPAN>          )       :
          <SPAN class="class-title">String</SPAN>
+       <LI>
+        <SPAN class="method-title">setSpecified</SPAN>      (   int
+         <SPAN class="param-title">index</SPAN>, boolean <SPAN
+        class="param-title">specified</SPAN>          )
+       <LI>
+        <SPAN class="method-title">isSpecified</SPAN>      (   int <SPAN
+        class="param-title">index</SPAN>          )       :    boolean
        <LI>
         <SPAN class="method-title">getEntityCount</SPAN>      (   int
          <SPAN class="param-title">attrIndex</SPAN>          )       :    int

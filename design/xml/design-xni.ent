@@ -169,9 +169,9 @@
   <method name='startEntity'>
    <param name='name'>
     <note>
-     The document has the pseudo-name of "[xml]", the DTD has the
-     pseudo-name of "[dtd]; parameter entity names start with '%';
-     and general entities are just specified by their name.
+     The DTD has the pseudo-name of "[dtd]; parameter entity names 
+     start with '%'; and general entities are just specified by 
+     their name.
     </note>
     <reference idref='java-string'/>
    </param>
@@ -339,9 +339,9 @@
   <method name='startEntity'>
    <param name='name'>
     <note>
-     The document has the pseudo-name of "[xml]", the DTD has the
-     pseudo-name of "[dtd]; parameter entity names start with '%';
-     and general entities are just specified by their name.
+     The DTD has the pseudo-name of "[dtd]; parameter entity names 
+     start with '%'; and general entities are just specified by 
+     their name.
     </note>
     <reference idref='java-string'/>
    </param>
@@ -540,9 +540,9 @@
   <method name='startEntity'>
    <param name='name'>
     <note>
-     The document has the pseudo-name of "[xml]", the DTD has the
-     pseudo-name of "[dtd]; parameter entity names start with '%';
-     and general entities are just specified by their name.
+     The DTD has the pseudo-name of "[dtd]; parameter entity names 
+     start with '%'; and general entities are just specified by 
+     their name.
     </note>
     <reference idref='java-string'/>
    </param>
@@ -1102,6 +1102,24 @@
    </param>
    <returns>
     <reference idref='java-string'/>
+   </returns>
+  </method>
+
+  <method name='setSpecified'>
+   <param name='index'>
+    <primitive type='int'/>
+   </param>
+   <param name='specified'>
+    <primitive type='boolean'/>
+   </param>
+  </method>
+  
+  <method name='isSpecified'>
+   <param name='index'>
+    <primitive type='int'/>
+   </param>
+   <returns>
+    <primitive type='boolean'/>
    </returns>
   </method>
   

@@ -217,6 +217,23 @@ public interface XMLAttributes
     public String getNonNormalizedValue(int attrIndex);
 
     /**
+     * Sets whether an attribute is specified in the instance document
+     * or not.
+     *
+     * @param attrIndex The attribute index.
+     * @param specified True if the attribute is specified in the instance
+     *                  document.
+     */
+    public void setSpecified(int attrIndex, boolean specified);
+
+    /**
+     * Returns true if the attribute is specified in the instance document.
+     *
+     * @param attrIndex The attribute index.
+     */
+    public boolean isSpecified(int attrIndex);
+
+    /**
      * Returns the number of entities for the specified attribute.
      * 
      * @param attrIndex The attribute index.

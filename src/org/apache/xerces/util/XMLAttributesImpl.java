@@ -357,6 +357,27 @@ public class XMLAttributesImpl
     } // getNonNormalizedValue(int):String
 
     /**
+     * Sets whether an attribute is specified in the instance document
+     * or not.
+     *
+     * @param attrIndex The attribute index.
+     * @param specified True if the attribute is specified in the instance
+     *                  document.
+     */
+    public void setSpecified(int attrIndex, boolean specified) {
+        fAttributes[attrIndex].specified = specified;
+    } // setSpecified(int,boolean)
+
+    /**
+     * Returns true if the attribute is specified in the instance document.
+     *
+     * @param attrIndex The attribute index.
+     */
+    public boolean isSpecified(int attrIndex) {
+        return fAttributes[attrIndex].specified;
+    } // isSpecified(int):boolean
+
+    /**
      * Returns the number of entities for the specified attribute.
      * 
      * @param attrIndex The attribute index.
@@ -716,6 +737,9 @@ public class XMLAttributesImpl
 
         /** Non-normalized value. */
         public String nonNormalizedValue;
+
+        /** Specified. */
+        public boolean specified;
 
         // entity info
 
