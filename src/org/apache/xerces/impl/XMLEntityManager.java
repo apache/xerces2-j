@@ -2535,14 +2535,17 @@ public class XMLEntityManager
             if (XMLChar.isSpace(c)) {
                 boolean external = fCurrentEntity.isExternal();
                 do {
+                    boolean entityChanged = false;
                     // handle newlines
                     if (c == '\n' || (external && c == '\r')) {
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
                         if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                             fCurrentEntity.ch[0] = (char)c;
-                            if (!load(1, true))
-                                // he load change the position to be 1, need to restore it, only when entity not changed:
+                            entityChanged = load(1, true);
+                            if (!entityChanged)
+                                // the load change the position to be 1,
+                                // need to restore it when entity not changed
                                 fCurrentEntity.position = 0;
                         }
                         if (c == '\r' && external) {
@@ -2561,7 +2564,8 @@ public class XMLEntityManager
                         fCurrentEntity.columnNumber++;
                     }
                     // load more characters, if needed
-                    fCurrentEntity.position++;
+                    if (!entityChanged)
+                        fCurrentEntity.position++;
                     if (fCurrentEntity.position == fCurrentEntity.count) {
                         load(0, true);
                     }
