@@ -229,10 +229,18 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
         try {
             d = Double.valueOf(content).doubleValue();
         } catch (NumberFormatException nfe) {
-            throw new InvalidDatatypeValueException(
-                                                    getErrorString(DatatypeMessageProvider.NotReal,
-                                                                    DatatypeMessageProvider.MSG_NONE,
-                                                                    new Object [] { content}));
+           if( content.equals("INF") ){
+                   d=Double.POSITIVE_INFINITY;
+               } else if( content.equals("-INF") ){
+                   d=Double.NEGATIVE_INFINITY;
+               } else if( content.equals("NaN" ) ) {
+                   d=Double.NaN;
+               } else {
+                   throw new InvalidDatatypeValueException(
+                                 getErrorString(DatatypeMessageProvider.NotFloat,
+                                                DatatypeMessageProvider.MSG_NONE,
+                                                          new Object [] { content}));
+               }
         }
         boundsCheck(d);
 
