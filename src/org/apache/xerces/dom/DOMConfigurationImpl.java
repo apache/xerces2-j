@@ -916,6 +916,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 || name.equals(Constants.DOM_NAMESPACES)
                 || name.equals(Constants.DOM_VALIDATE)
                 || name.equals(Constants.DOM_WELLFORMED)
+                || name.equals(Constants.DOM_INFOSET)
                 ) {
                 return true ;
             }//features whose parameter value can not be set to 'true'
