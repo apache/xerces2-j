@@ -123,6 +123,9 @@ public final class REUtil {
           case 'X':
             ret = RegularExpression.XMLSCHEMA_MODE;
             break;
+          case ',':
+            ret = RegularExpression.SPECIAL_COMMA;
+            break;
           default:
         }
         return ret;
@@ -160,6 +163,8 @@ public final class REUtil {
             sb.append((char)'w');
         if ((options & RegularExpression.EXTENDED_COMMENT) != 0)
             sb.append((char)'x');
+        if ((options & RegularExpression.SPECIAL_COMMA) != 0)
+            sb.append((char)',');
         return sb.toString().intern();
     }
 

@@ -87,10 +87,11 @@ class RegexParser {
     static final int T_NEGATIVELOOKBEHIND = 17; // '(?<!'
     static final int T_INDEPENDENT = 18;        // '(?>'
     static final int T_SET_OPERATIONS = 19;     // '(?['
-    static final int T_POSIX_CHARCLASS_START = 20; // '[:'
+    static final int T_POSIX_CHARCLASS_START = 20; // '[:' in a character class
     static final int T_COMMENT = 21;            // '(?#'
     static final int T_MODIFIERS = 22;          // '(?' [\-,a-z,A-Z]
     static final int T_CONDITION = 23;          // '(?('
+    static final int T_XMLSCHEMA_CC_SUBTRACTION = 24; // '-[' in a character class
 
     static class ReferencePosition {
         int refNumber;
@@ -108,8 +109,9 @@ class RegexParser {
     ResourceBundle resources;
     int chardata;
     int nexttoken;
-    static private final int S_NORMAL = 0;
-    static private final int S_INBRACKETS = 1;
+    static protected final int S_NORMAL = 0;
+    static protected final int S_INBRACKETS = 1;
+    static protected final int S_INXBRACKETS = 2;
     int context = S_NORMAL;
     int parennumber = 1;
     boolean hasBackReferences;
@@ -166,12 +168,14 @@ class RegexParser {
         return ret;
     }
 
+    /*
     public RegularExpression createRegex(String regex, int options) throws ParseException {
         Token tok = this.parse(regex, options);
         return new RegularExpression(regex, tok, this.parennumber, this.hasBackReferences, options);
     }
+    */
 
-    private final void setContext(int con) {
+    protected final void setContext(int con) {
         this.context = con;
     }
 
@@ -201,8 +205,18 @@ class RegexParser {
                 this.chardata = this.regex.charAt(this.offset++);
                 break;
 
+              case '-':
+                if (this.isSet(RegularExpression.XMLSCHEMA_MODE)
+                    && this.offset < this.regexlen && this.regex.charAt(this.offset) == '[') {
+                    this.offset++;
+                    ret = T_XMLSCHEMA_CC_SUBTRACTION;
+                } else
+                    ret = T_CHAR;
+                break;
+
               case '[':
-                if (this.offset < this.regexlen && this.regex.charAt(this.offset) == ':') {
+                if (!this.isSet(RegularExpression.XMLSCHEMA_MODE)
+                    && this.offset < this.regexlen && this.regex.charAt(this.offset) == ':') {
                     this.offset++;
                     ret = T_POSIX_CHARCLASS_START;
                     break;
@@ -567,9 +581,13 @@ class RegexParser {
     Token processBacksolidus_I() throws ParseException {
         throw ex("parser.process.1", this.offset);
     }
-    Token processBacksolidus_X() throws ParseException {
+    Token processBacksolidus_g() throws ParseException {
         this.next();
         return Token.getGraphemePattern();
+    }
+    Token processBacksolidus_X() throws ParseException {
+        this.next();
+        return Token.getCombiningCharacterSequence();
     }
     Token processBackreference() throws ParseException {
         int refnum = this.chardata-'0';
@@ -737,6 +755,7 @@ class RegexParser {
               case 'C': return this.processBacksolidus_C();
               case 'i': return this.processBacksolidus_i();
               case 'I': return this.processBacksolidus_I();
+              case 'g': return this.processBacksolidus_g();
               case 'X': return this.processBacksolidus_X();
               case '1':  case '2':  case '3':  case '4':
               case '5':  case '6':  case '7':  case '8':  case '9':
@@ -744,43 +763,9 @@ class RegexParser {
 
               case 'P':
               case 'p':
-                boolean positive = this.chardata == 'p';
                 int pstart = this.offset;
-                this.next();
-                if (this.read() != T_CHAR)  throw ex("parser.atom.2", this.offset-1);
-                switch (this.chardata) {
-                  case 'L':                     // Letter
-                    tok = Token.getRange("L", positive);  break;
-                  case 'M':                     // Mark
-                    tok = Token.getRange("M", positive);  break;
-                  case 'N':                     // Number
-                    tok = Token.getRange("N", positive);  break;
-                  case 'Z':                     // Separator
-                    tok = Token.getRange("Z", positive);  break;
-                  case 'C':                     // Other
-                    tok = Token.getRange("C", positive);  break;
-                  case 'P':                     // Punctuation
-                    tok = Token.getRange("P", positive);  break;
-                  case 'S':                     // Symbol
-                    tok = Token.getRange("S", positive);  break;
-                  case '{':
-                    // this.offset points the next of '{'.
-                    pstart = this.offset;
-                    int namestart = this.offset;
-                    int nameend = this.regex.indexOf('}', namestart);
-                    if (nameend < 0)  throw ex("parser.atom.3", this.offset);
-                    this.offset = nameend+1;
-                    tok = Token.getRange(this.regex.substring(namestart, nameend), positive);
-                    /*
-                    if (this.isSet(RegularExpression.IGNORE_CASE))
-                        tok = RangeToken.createCaseInsensitiveToken(tok);
-                    */
-                    break;
-
-                  default:
-                    throw ex("parser.atom.2", this.offset-1);
-                }
-                if (tok == null)  throw ex("parser.atom.5", pstart);
+                tok = processBacksolidus_pP(this.chardata);
+                if (tok == null)  throw this.ex("parser.atom.5", pstart);
                 break;
 
               default:
@@ -795,7 +780,47 @@ class RegexParser {
             break;
 
           default:
-            throw ex("parser.atom.4", this.offset-1);
+            throw this.ex("parser.atom.4", this.offset-1);
+        }
+        return tok;
+    }
+
+    protected RangeToken processBacksolidus_pP(int c) throws ParseException {
+        boolean positive = c == 'p';
+        this.next();
+        if (this.read() != T_CHAR)  throw this.ex("parser.atom.2", this.offset-1);
+        RangeToken tok;
+        switch (this.chardata) {
+          case 'L':                             // Letter
+            tok = Token.getRange("L", positive);  break;
+          case 'M':                             // Mark
+            tok = Token.getRange("M", positive);  break;
+          case 'N':                             // Number
+            tok = Token.getRange("N", positive);  break;
+          case 'Z':                             // Separator
+            tok = Token.getRange("Z", positive);  break;
+          case 'C':                             // Other
+            tok = Token.getRange("C", positive);  break;
+          case 'P':                             // Punctuation
+            tok = Token.getRange("P", positive);  break;
+          case 'S':                             // Symbol
+            tok = Token.getRange("S", positive);  break;
+          case '{':
+            // this.offset points the next of '{'.
+            //pstart = this.offset;
+            int namestart = this.offset;
+            int nameend = this.regex.indexOf('}', namestart);
+            if (nameend < 0)  throw this.ex("parser.atom.3", this.offset);
+            this.offset = nameend+1;
+            tok = Token.getRange(this.regex.substring(namestart, nameend), positive);
+            /*
+              if (this.isSet(RegularExpression.IGNORE_CASE))
+              tok = RangeToken.createCaseInsensitiveToken(tok);
+            */
+            break;
+
+          default:
+            throw this.ex("parser.atom.2", this.offset-1);
         }
         return tok;
     }
@@ -811,7 +836,7 @@ class RegexParser {
      * range-char ::= '\[' | '\]' | '\\' | '\' [,-efnrtv] | bmp-code | character-2
      * bmp-code ::= '\' 'u' [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]
      */
-    private RangeToken parseCharacterClass(boolean useNrange) throws ParseException {
+    protected RangeToken parseCharacterClass(boolean useNrange) throws ParseException {
         this.setContext(S_INBRACKETS);
         this.next();                            // '['
         boolean nrange = false;
@@ -824,7 +849,121 @@ class RegexParser {
                 tok = Token.createNRange();
             } else {
                 base = Token.createRange();
-                base.addRange(0, 0xffff);
+                base.addRange(0, Token.UTF16_MAX);
+                tok = Token.createRange();
+            }
+        } else {
+            tok = Token.createRange();
+        }
+        int type;
+        boolean firstloop = true;
+        while ((type = this.read()) != T_EOF) {
+            if (type == T_CHAR && this.chardata == ']' && !firstloop)
+                break;
+            firstloop = false;
+            int c = this.chardata;
+            boolean end = false;
+            if (type == T_BACKSOLIDUS) {
+                switch (c) {
+                  case 'd':  case 'D':
+                  case 'w':  case 'W':
+                  case 's':  case 'S':
+                    tok.mergeRanges(this.getTokenForShorthand(c));
+                    end = true;
+                    break;
+
+                  case 'i':  case 'I':
+                  case 'c':  case 'C':
+                    c = this.processCIinCharacterClass(tok, c);
+                    if (c < 0)  end = true;
+                    break;
+                    
+                  case 'p':
+                  case 'P':
+                    int pstart = this.offset;
+                    RangeToken tok2 = this.processBacksolidus_pP(c);
+                    if (tok2 == null)  throw this.ex("parser.atom.5", pstart);
+                    tok.mergeRanges(tok2);
+                    end = true;
+                    break;
+
+                  default:
+                    c = this.decodeEscaped();
+                } // \ + c
+            } // backsolidus
+                                                // POSIX Character class such as [:alnum:]
+            else if (type == T_POSIX_CHARCLASS_START) {
+                int nameend = this.regex.indexOf(':', this.offset);
+                if (nameend < 0) throw this.ex("parser.cc.1", this.offset);
+                boolean positive = true;
+                if (this.regex.charAt(this.offset) == '^') {
+                    this.offset ++;
+                    positive = false;
+                }
+                String name = this.regex.substring(this.offset, nameend);
+                RangeToken range = Token.getRange(name, positive);
+                if (range == null)  throw this.ex("parser.cc.3", this.offset);
+                tok.mergeRanges(range);
+                end = true;
+                if (nameend+1 >= this.regexlen || this.regex.charAt(nameend+1) != ']')
+                    throw this.ex("parser.cc.1", nameend);
+                this.offset = nameend+2;
+            }
+            this.next();
+            if (!end) {                         // if not shorthands...
+                if (this.read() != T_CHAR || this.chardata != '-') { // Here is no '-'.
+                    tok.addRange(c, c);
+                } else {
+                    this.next(); // Skips '-'
+                    if ((type = this.read()) == T_EOF)  throw this.ex("parser.cc.2", this.offset);
+                    if (type == T_CHAR && this.chardata == ']') {
+                        tok.addRange(c, c);
+                        tok.addRange('-', '-');
+                    } else {
+                        int rangeend = this.chardata;
+                        if (type == T_BACKSOLIDUS)
+                            rangeend = this.decodeEscaped();
+                        this.next();
+                        tok.addRange(c, rangeend);
+                    }
+                }
+            }
+            if (this.isSet(RegularExpression.SPECIAL_COMMA)
+                && this.read() == T_CHAR && this.chardata == ',')
+                this.next();
+        }
+        if (this.read() == T_EOF)
+            throw this.ex("parser.cc.2", this.offset);
+        if (!useNrange && nrange) {
+            base.subtractRanges(tok);
+            tok = base;
+        }
+        tok.sortRanges();
+        tok.compactRanges();
+        //tok.dumpRanges();
+        /*
+        if (this.isSet(RegularExpression.IGNORE_CASE))
+            tok = RangeToken.createCaseInsensitiveToken(tok);
+        */
+        this.setContext(S_NORMAL);
+        this.next();                    // Skips ']'
+
+        return tok;
+    }
+    private RangeToken parseCharacterClass_old(boolean useNrange) throws ParseException {
+        this.setContext(S_INBRACKETS);
+        this.next();                            // '['
+        boolean nrange = false;
+        RangeToken base = null;
+        RangeToken tok;
+        if (this.read() == T_CHAR && this.chardata == '^') {
+            nrange = true;
+            this.next();                        // '^'
+            if (useNrange) {
+                tok = Token.createNRange();
+            } else {
+                base = Token.createRange();
+                base.addRange(0, Token.UTF16_MAX);
                 tok = Token.createRange();
             }
         } else {
@@ -962,7 +1101,7 @@ class RegexParser {
     /**
      * '(?[' ... ']' (('-' | '+' | '&') '[' ... ']')? ')'
      */
-    private RangeToken parseSetOperations() throws ParseException {
+    protected RangeToken parseSetOperations() throws ParseException {
         RangeToken tok = this.parseCharacterClass(false);
         int type;
         while ((type = this.read()) != T_RPAREN) {

@@ -101,7 +101,7 @@ public class BMPattern {
 
     /**
      *
-     * @return -1 if iterator does not contain this pattern.
+     * @return -1 if <var>iterator</var> does not contain this pattern.
      */
     public int matches(CharacterIterator iterator, int start, int limit) {
         if (this.ignoreCase)  return this.matchesIgnoreCase(iterator, start, limit);
@@ -126,7 +126,7 @@ public class BMPattern {
 
     /**
      *
-     * @return -1 if str does not contain this pattern.
+     * @return -1 if <var>str</var> does not contain this pattern.
      */
     public int matches(String str, int start, int limit) {
         if (this.ignoreCase)  return this.matchesIgnoreCase(str, start, limit);
@@ -151,7 +151,7 @@ public class BMPattern {
     }
     /**
      *
-     * @return -1 if str does not contain this pattern.
+     * @return -1 if <var>chars</char> does not contain this pattern.
      */
     public int matches(char[] chars, int start, int limit) {
         if (this.ignoreCase)  return this.matchesIgnoreCase(chars, start, limit);

@@ -276,6 +276,9 @@ class Token implements java.io.Serializable {
     }
 
     public String toString() {
+        return this.toString(0);
+    }
+    public String toString(int options) {
         return this.type == Token.DOT ? "." : "";
     }
 
@@ -811,10 +814,11 @@ class Token implements java.io.Serializable {
                     Token.categories.put(n, r1);
                     Token.categories2.put(n, Token.complementRanges(r1));
                     if (n.indexOf(' ') >= 0) {
-                        StringBuffer buffer = new StringBuffer(n.length());
+                        StringBuffer buffer = new StringBuffer(n.length()+2);
+                        buffer.append("Is");
                         for (int ci = 0;  ci < n.length();  ci ++)
                             if (n.charAt(ci) != ' ')  buffer.append((char)n.charAt(ci));
-                        Token.setAlias(buffer.toString(), n, true);
+                        Token.setAlias(new String(buffer), n, true);
                     }
                 }
 
@@ -961,6 +965,20 @@ class Token implements java.io.Serializable {
         return Token.token_grapheme;
     }
 
+    /**
+     * Combing Character Sequence in Perl 5.6.
+     */
+    static private Token token_ccs = null;
+    static synchronized protected Token getCombiningCharacterSequence() {
+        if (Token.token_ccs != null)
+            return Token.token_ccs;
+
+        Token foo = Token.createClosure(Token.getRange("M", true)); // \pM*
+        foo = Token.createConcat(Token.getRange("M", false), foo); // \PM + \pM*
+        Token.token_ccs = foo;
+        return Token.token_ccs;
+    }
+
     // ------------------------------------------------------
 
     // ------------------------------------------------------
@@ -984,7 +1002,7 @@ class Token implements java.io.Serializable {
             return this.string;
         }
         
-        public String toString() {
+        public String toString(int options) {
             if (this.type == BACKREFERENCE)
                 return "\\"+this.refNumber;
             else
@@ -1012,14 +1030,14 @@ class Token implements java.io.Serializable {
             return index == 0 ? this.child : this.child2;
         }
 
-        public String toString() {
+        public String toString(int options) {
             String ret;
             if (this.child2.type == CLOSURE && this.child2.getChild(0) == this.child) {
-                ret = this.child.toString()+"+";
+                ret = this.child.toString(options)+"+";
             } else if (this.child2.type == NONGREEDYCLOSURE && this.child2.getChild(0) == this.child) {
-                ret = this.child.toString()+"+?";
+                ret = this.child.toString(options)+"+?";
             } else
-                ret = this.child.toString()+this.child2.toString();
+                ret = this.child.toString(options)+this.child2.toString(options);
             return ret;
         }
     }
@@ -1039,7 +1057,7 @@ class Token implements java.io.Serializable {
             return this.chardata;
         }
 
-        public String toString() {
+        public String toString(int options) {
             String ret;
             switch (this.type) {
               case CHAR:
@@ -1120,29 +1138,29 @@ class Token implements java.io.Serializable {
             return this.max;
         }
 
-        public String toString() {
+        public String toString(int options) {
             String ret;
             if (this.type == CLOSURE) {
                 if (this.getMin() < 0 && this.getMax() < 0) {
-                    ret = this.child.toString()+"*";
+                    ret = this.child.toString(options)+"*";
                 } else if (this.getMin() == this.getMax()) {
-                    ret = this.child.toString()+"{"+this.getMin()+"}";
+                    ret = this.child.toString(options)+"{"+this.getMin()+"}";
                 } else if (this.getMin() >= 0 && this.getMax() >= 0) {
-                    ret = this.child.toString()+"{"+this.getMin()+","+this.getMax()+"}";
+                    ret = this.child.toString(options)+"{"+this.getMin()+","+this.getMax()+"}";
                 } else if (this.getMin() >= 0 && this.getMax() < 0) {
-                    ret = this.child.toString()+"{"+this.getMin()+",}";
+                    ret = this.child.toString(options)+"{"+this.getMin()+",}";
                 } else
                     throw new RuntimeException("Token#toString(): CLOSURE "
                                                +this.getMin()+", "+this.getMax());
             } else {
                 if (this.getMin() < 0 && this.getMax() < 0) {
-                    ret = this.child.toString()+"*?";
+                    ret = this.child.toString(options)+"*?";
                 } else if (this.getMin() == this.getMax()) {
-                    ret = this.child.toString()+"{"+this.getMin()+"}?";
+                    ret = this.child.toString(options)+"{"+this.getMin()+"}?";
                 } else if (this.getMin() >= 0 && this.getMax() >= 0) {
-                    ret = this.child.toString()+"{"+this.getMin()+","+this.getMax()+"}?";
+                    ret = this.child.toString(options)+"{"+this.getMin()+","+this.getMax()+"}?";
                 } else if (this.getMin() >= 0 && this.getMax() < 0) {
-                    ret = this.child.toString()+"{"+this.getMin()+",}?";
+                    ret = this.child.toString(options)+"{"+this.getMin()+",}?";
                 } else
                     throw new RuntimeException("Token#toString(): NONGREEDYCLOSURE "
                                                +this.getMin()+", "+this.getMax());
@@ -1175,31 +1193,31 @@ class Token implements java.io.Serializable {
             return this.parennumber;
         }
 
-        public String toString() {
+        public String toString(int options) {
             String ret = null;
             switch (this.type) {
               case PAREN:
                 if (this.parennumber == 0) {
-                    ret = "(?:"+this.child.toString()+")";
+                    ret = "(?:"+this.child.toString(options)+")";
                 } else {
-                    ret = "("+this.child.toString()+")";
+                    ret = "("+this.child.toString(options)+")";
                 }
                 break;
 
               case LOOKAHEAD:
-                ret = "(?="+this.child.toString()+")";
+                ret = "(?="+this.child.toString(options)+")";
                 break;
               case NEGATIVELOOKAHEAD:
-                ret = "(?!"+this.child.toString()+")";
+                ret = "(?!"+this.child.toString(options)+")";
                 break;
               case LOOKBEHIND:
-                ret = "(?<="+this.child.toString()+")";
+                ret = "(?<="+this.child.toString(options)+")";
                 break;
               case NEGATIVELOOKBEHIND:
-                ret = "(?<!"+this.child.toString()+")";
+                ret = "(?<!"+this.child.toString(options)+")";
                 break;
               case INDEPENDENT:
-                ret = "(?>"+this.child.toString()+")";
+                ret = "(?>"+this.child.toString(options)+")";
                 break;
             }
             return ret;
@@ -1230,7 +1248,7 @@ class Token implements java.io.Serializable {
             throw new RuntimeException("Internal Error: "+index);
         }
 
-        public String toString() {
+        public String toString(int options) {
             String ret;
             if (refNumber > 0) {
                 ret = "(?("+refNumber+")";
@@ -1278,12 +1296,12 @@ class Token implements java.io.Serializable {
             return this.mask;
         }
 
-        public String toString() {
+        public String toString(int options) {
             return "(?"
                 +(this.add == 0 ? "" : REUtil.createOptionString(this.add))
                 +(this.mask == 0 ? "" : REUtil.createOptionString(this.mask))
                 +":"
-                +this.child.toString()
+                +this.child.toString(options)
                 +")";
         }
     }
@@ -1352,7 +1370,7 @@ class Token implements java.io.Serializable {
                 buffer.append(tok.getString());
             }
 
-            ((StringToken)previous).string = buffer.toString();
+            ((StringToken)previous).string = new String(buffer);
         }
 
         int size() {
@@ -1362,40 +1380,40 @@ class Token implements java.io.Serializable {
             return (Token)this.children.elementAt(index);
         }
 
-        public String toString() {
+        public String toString(int options) {
             String ret;
             if (this.type == CONCAT) {
                 if (this.children.size() == 2) {
                     Token ch = this.getChild(0);
                     Token ch2 = this.getChild(1);
                     if (ch2.type == CLOSURE && ch2.getChild(0) == ch) {
-                        ret = ch.toString()+"+";
+                        ret = ch.toString(options)+"+";
                     } else if (ch2.type == NONGREEDYCLOSURE && ch2.getChild(0) == ch) {
-                        ret = ch.toString()+"+?";
+                        ret = ch.toString(options)+"+?";
                     } else
-                        ret = ch.toString()+ch2.toString();
+                        ret = ch.toString(options)+ch2.toString(options);
                 } else {
                     StringBuffer sb = new StringBuffer();
                     for (int i = 0;  i < this.children.size();  i ++) {
-                        sb.append(this.children.elementAt(i).toString());
+                        sb.append(((Token)this.children.elementAt(i)).toString(options));
                     }
-                    ret = sb.toString();
+                    ret = new String(sb);
                 }
                 return ret;
             }
             if (this.children.size() == 2 && this.getChild(1).type == EMPTY) {
-                ret = this.getChild(0).toString()+"?";
+                ret = this.getChild(0).toString(options)+"?";
             } else if (this.children.size() == 2
                        && this.getChild(0).type == EMPTY) {
-                ret = this.getChild(1).toString()+"??";
+                ret = this.getChild(1).toString(options)+"??";
             } else {
                 StringBuffer sb = new StringBuffer();
-                sb.append(this.children.elementAt(0).toString());
+                sb.append(((Token)this.children.elementAt(0)).toString(options));
                 for (int i = 1;  i < this.children.size();  i ++) {
                     sb.append((char)'|');
-                    sb.append(this.children.elementAt(i).toString());
+                    sb.append(((Token)this.children.elementAt(i)).toString(options));
                 }
-                ret = sb.toString();
+                ret = new String(sb);
             }
             return ret;
         }

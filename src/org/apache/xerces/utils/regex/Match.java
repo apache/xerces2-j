@@ -62,6 +62,13 @@ import java.text.CharacterIterator;
 
 /**
  * 
+ * An instance of this class has ranges captured in matching.
+ *
+ * @see org.apache.xerces.utils.regex.RegularExpression#matches(char[], int, int, org.apache.xerces.utils.regex.Match)
+ * @see org.apache.xerces.utils.regex.RegularExpression#matches(char[], org.apache.xerces.utils.regex.Match)
+ * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.text.CharacterIterator, org.apache.xerces.utils.regex.Match)
+ * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String, int, int, org.apache.xerces.utils.regex.Match)
+ * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String, org.apache.xerces.utils.regex.Match)
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
  */
 public class Match implements Cloneable {
@@ -73,9 +80,15 @@ public class Match implements Cloneable {
     String strSource = null;
     char[] charSource = null;
 
+    /**
+     * Creates an instance.
+     */
     public Match() {
     }
 
+    /**
+     *
+     */
     public synchronized Object clone() {
         Match ma = new Match();
         if (this.nofgroups > 0) {
@@ -90,6 +103,9 @@ public class Match implements Cloneable {
         return ma;
     }
 
+    /**
+     *
+     */
     protected void setNumberOfGroups(int n) {
         int oldn = this.nofgroups;
         this.nofgroups = n;
@@ -104,26 +120,41 @@ public class Match implements Cloneable {
         }
     }
 
+    /**
+     *
+     */
     protected void setSource(CharacterIterator ci) {
         this.ciSource = ci;
         this.strSource = null;
         this.charSource = null;
     }
+    /**
+     *
+     */
     protected void setSource(String str) {
         this.ciSource = null;
         this.strSource = str;
         this.charSource = null;
     }
+    /**
+     *
+     */
     protected void setSource(char[] chars) {
         this.ciSource = null;
         this.strSource = null;
         this.charSource = chars;
     }
 
+    /**
+     *
+     */
     protected void setBeginning(int index, int v) {
         this.beginpos[index] = v;
     }
 
+    /**
+     *
+     */
     protected void setEnd(int index, int v) {
         this.endpos[index] = v;
     }
@@ -178,13 +209,14 @@ public class Match implements Cloneable {
             throw new IllegalArgumentException("The parameter must be less than "
                                                +this.nofgroups+": "+index);
         String ret;
+        int begin = this.beginpos[index], end = this.endpos[index];
+        if (begin < 0 || end < 0)  return null;
         if (this.ciSource != null) {
-            ret = REUtil.substring(this.ciSource, this.beginpos[index], this.endpos[index]);
+            ret = REUtil.substring(this.ciSource, begin, end);
         } else if (this.strSource != null) {
-            ret = this.strSource.substring(this.beginpos[index], this.endpos[index]);
+            ret = this.strSource.substring(begin, end);
         } else {
-            int begin = this.beginpos[index];
-            ret = new String(this.charSource, begin, this.endpos[index]-begin);
+            ret = new String(this.charSource, begin, end-begin);
         }
         return ret;
     }

@@ -158,11 +158,12 @@ final class RangeToken extends Token implements java.io.Serializable {
      */
     protected void compactRanges() {
         boolean DEBUG = false;
-        if (this.ranges == null || this.ranges.length == 2)
+        if (this.ranges == null || this.ranges.length <= 2)
             return;
         if (this.isCompacted())
             return;
-        int base = 0, target = 0;
+        int base = 0;                           // Index of writing point
+        int target = 0;                         // Index of processing point
 
         while (target < this.ranges.length) {
             if (base != target) {
@@ -170,8 +171,6 @@ final class RangeToken extends Token implements java.io.Serializable {
                 this.ranges[base+1] = this.ranges[target++];
             } else
                 target += 2;
-            if (target >= this.ranges.length)
-                break;
             int baseend = this.ranges[base+1];
             while (target < this.ranges.length) {
                 if (baseend+1 < this.ranges[target])
@@ -217,10 +216,10 @@ final class RangeToken extends Token implements java.io.Serializable {
                                                +"] ["+this.ranges[target]
                                                +","+this.ranges[target+1]+"]");
                 }
-            }
+            } // while
             base += 2;
         }
-        base += 2;
+
         if (base != this.ranges.length) {
             int[] result = new int[base];
             System.arraycopy(this.ranges, 0, result, 0, base);
@@ -570,7 +569,7 @@ final class RangeToken extends Token implements java.io.Serializable {
         //for (int i = 0;  i < asize;  i ++)  System.err.println("Map: "+Integer.toString(this.map[i], 16));
     }
 
-    public String toString() {
+    public String toString(int options) {
         String ret;
         if (this.type == RANGE) {
             if (this == Token.token_dot)
@@ -585,7 +584,7 @@ final class RangeToken extends Token implements java.io.Serializable {
                 StringBuffer sb = new StringBuffer();
                 sb.append("[");
                 for (int i = 0;  i < this.ranges.length;  i += 2) {
-                    if (i > 0)  sb.append(",");
+                    if ((options & RegularExpression.SPECIAL_COMMA) != 0 && i > 0)  sb.append(",");
                     if (this.ranges[i] == this.ranges[i+1]) {
                         sb.append(escapeCharInCharClass(this.ranges[i]));
                     } else {
@@ -608,7 +607,7 @@ final class RangeToken extends Token implements java.io.Serializable {
                 StringBuffer sb = new StringBuffer();
                 sb.append("[^");
                 for (int i = 0;  i < this.ranges.length;  i += 2) {
-                    if (i > 0)  sb.append(",");
+                    if ((options & RegularExpression.SPECIAL_COMMA) != 0 && i > 0)  sb.append(",");
                     if (this.ranges[i] == this.ranges[i+1]) {
                         sb.append(escapeCharInCharClass(this.ranges[i]));
                     } else {

@@ -62,14 +62,10 @@ package org.apache.xerces.utils.regex;
 import java.util.Hashtable;
 import java.util.Locale;
 
-/*
- * TODO:
- * Grammar of character classes
- * Shorthands in character classes
- */
-
 /**
+ * A regular expression parser for the XML Shema.
  *
+ * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
  */
 class ParserForXMLSchema extends RegexParser {
 
@@ -176,11 +172,14 @@ class ParserForXMLSchema extends RegexParser {
         this.next();
         return this.getTokenForShorthand('I');
     }
+    Token processBacksolidus_g() throws ParseException {
+        throw this.ex("parser.process.1", this.offset-2);
+    }
     Token processBacksolidus_X() throws ParseException {
-        throw ex("parser.process.1", this.offset);
+        throw ex("parser.process.1", this.offset-2);
     }
     Token processBackreference() throws ParseException {
-        throw ex("parser.process.1", this.offset);
+        throw ex("parser.process.1", this.offset-4);
     }
 
     int processCIinCharacterClass(RangeToken tok, int c) {
@@ -189,6 +188,142 @@ class ParserForXMLSchema extends RegexParser {
     }
 
 
+    /**
+     * Parses a character-class-expression, not a character-class-escape.
+     *
+     * c-c-expression   ::= '[' c-group ']'
+     * c-group          ::= positive-c-group | negative-c-group | c-c-subtraction
+     * positive-c-group ::= (c-range | c-c-escape)+
+     * negative-c-group ::= '^' positive-c-group
+     * c-c-subtraction  ::= (positive-c-group | negative-c-group) subtraction
+     * subtraction      ::= '-' c-c-expression
+     * c-range          ::= single-range | from-to-range
+     * single-range     ::= multi-c-escape | category-c-escape | block-c-escape | <any XML char>
+     * cc-normal-c      ::= <any character except [, ], \>
+     * from-to-range    ::= cc-normal-c '-' cc-normal-c
+     *
+     * @param useNrage Ignored.
+     * @return This returns no NrageToken.
+     */
+    protected RangeToken parseCharacterClass(boolean useNrange) throws ParseException {
+        this.setContext(S_INBRACKETS);
+        this.next();                            // '['
+        boolean nrange = false;
+        RangeToken base = null;
+        RangeToken tok;
+        if (this.read() == T_CHAR && this.chardata == '^') {
+            nrange = true;
+            this.next();                        // '^'
+            base = Token.createRange();
+            base.addRange(0, Token.UTF16_MAX);
+            tok = Token.createRange();
+        } else {
+            tok = Token.createRange();
+        }
+        int type;
+        boolean firstloop = true;
+        while ((type = this.read()) != T_EOF) { // Don't use 'cotinue' for this loop.
+            // single-range | from-to-range | subtraction
+            if (type == T_CHAR && this.chardata == ']' && !firstloop) {
+                if (nrange) {
+                    base.subtractRanges(tok);
+                    tok = base;
+                }
+                break;
+            }
+            int c = this.chardata;
+            boolean end = false;
+            if (type == T_BACKSOLIDUS) {
+                switch (c) {
+                  case 'd':  case 'D':
+                  case 'w':  case 'W':
+                  case 's':  case 'S':
+                    tok.mergeRanges(this.getTokenForShorthand(c));
+                    end = true;
+                    break;
+
+                  case 'i':  case 'I':
+                  case 'c':  case 'C':
+                    c = this.processCIinCharacterClass(tok, c);
+                    if (c < 0)  end = true;
+                    break;
+                    
+                  case 'p':
+                  case 'P':
+                    int pstart = this.offset;
+                    RangeToken tok2 = this.processBacksolidus_pP(c);
+                    if (tok2 == null)  throw this.ex("parser.atom.5", pstart);
+                    tok.mergeRanges(tok2);
+                    end = true;
+                    break;
+
+                  default:
+                    c = this.decodeEscaped();
+                } // \ + c
+            } // backsolidus
+            else if (type == T_XMLSCHEMA_CC_SUBTRACTION && !firstloop) {
+                                                // Subraction
+                if (nrange) {
+                    base.subtractRanges(tok);
+                    tok = base;
+                }
+                RangeToken range2 = this.parseCharacterClass(false);
+                tok.subtractRanges(range2);
+                if (this.read() != T_CHAR || this.chardata != ']')
+                    throw this.ex("parser.cc.5", this.offset);
+                break;                          // Exit this loop
+            }
+            this.next();
+            if (!end) {                         // if not shorthands...
+                if (type == T_CHAR) {
+                    if (c == '[')  throw this.ex("parser.cc.6", this.offset-2);
+                    if (c == ']')  throw this.ex("parser.cc.7", this.offset-2);
+                }
+                if (this.read() != T_CHAR || this.chardata != '-') { // Here is no '-'.
+                    tok.addRange(c, c);
+                } else {                        // Found '-'
+                                                // Is this '-' is a from-to token??
+                    this.next(); // Skips '-'
+                    if ((type = this.read()) == T_EOF)  throw this.ex("parser.cc.2", this.offset);
+                                                // c '-' ']' -> '-' is a single-range.
+                    if (type == T_CHAR && this.chardata == ']') {
+                        tok.addRange(c, c);
+                        tok.addRange('-', '-');
+                    }
+                                                // c '-' '-[' -> '-' is a single-range.
+                    else if (type == T_XMLSCHEMA_CC_SUBTRACTION) {
+                        tok.addRange(c, c);
+                        tok.addRange('-', '-');
+                    } else {
+                        int rangeend = this.chardata;
+                        if (type == T_CHAR) {
+                            if (rangeend == '[')  throw this.ex("parser.cc.6", this.offset-1);
+                            if (rangeend == ']')  throw this.ex("parser.cc.7", this.offset-1);
+                        }
+                        if (type == T_BACKSOLIDUS)
+                            rangeend = this.decodeEscaped();
+                        this.next();
+                        tok.addRange(c, rangeend);
+                    }
+                }
+            }
+            firstloop = false;
+        }
+        if (this.read() == T_EOF)
+            throw this.ex("parser.cc.2", this.offset);
+        tok.sortRanges();
+        tok.compactRanges();
+        //tok.dumpRanges();
+        this.setContext(S_NORMAL);
+        this.next();                    // Skips ']'
+
+        return tok;
+    }
+
+    protected RangeToken parseSetOperations() throws ParseException {
+        throw this.ex("parser.process.1", this.offset);
+    }
+ 
     Token getTokenForShorthand(int ch) {
         switch (ch) {
           case 'd':

@@ -85,13 +85,6 @@ import java.text.CharacterIterator;
  * }
  * </pre>
  *
- *<!--
- *   <dt>C. Easy way
- * <pre>
- * if (RegularExpression.matches(<var>regex</var>, text) >= 0) { ... }
- * </pre>
- *-->
- *
  * </dl>
  *
  * <h4>Case-insensitive matching</h4>
@@ -119,16 +112,16 @@ import java.text.CharacterIterator;
  *      'Unicode Regular Expression Guidelines' Revision 4.
  *      When "w" and "u" are specified at the same time,
  *      <kbd>\b \B \&lt; \></kbd> are processed for the "w" option.
+ *   <dt><a name="COMMA_OPTION"><code>","</code></a>
+ *   <dd>The parser treats a comma in a character class as a range separator.
+ *      <kbd class="REGEX">[a,b]</kbd> matches <kbd>a</kbd> or <kbd>,</kbd> or <kbd>b</kbd> without this option.
+ *      <kbd class="REGEX">[a,b]</kbd> matches <kbd>a</kbd> or <kbd>b</kbd> with this option.
  *
  *   <dt><a name="X_OPTION"><code>"X"</code></a>
- *   <dd class="REGEX"><!--<a href="http://www.w3.org/TR/xmlschema-2/#regexs">XML Schema</a> mode.-->
- *       By this option, the engine confoms to <a href="http://www.w3.org/TR/1999/WD-xmlschema-2-19991217/#regexs">XML Schema: Regular Expression</a>.
+ *   <dd class="REGEX">
+ *       By this option, the engine confoms to <a href="http://www.w3.org/TR/2000/WD-xmlschema-2-20000407/#regexs">XML Schema: Regular Expression</a>.
  *       The <code>match()</code> method does not do subsring matching
  *       but entire string matching.
- *       <dl>
- *         <dt>NOT IMPLEMNTED FEATURES:
- *         <dd>Character class subtraction
- *       </dl>
  *
  * </dl>
  * 
@@ -139,15 +132,13 @@ import java.text.CharacterIterator;
  *    <td>
  *     <h4>Differences from the Perl 5 regular expression</h4>
  *     <ul>
- *      <li><kbd>,</kbd> is a special character in <kbd>[]</kbd>.
  *      <li>There is 6-digit hexadecimal character representation  (<kbd>\u005cv</kbd><var>HHHHHH</var>.)
- *      <li><kbd>\X</kbd> has different meaning.
  *      <li>Supports subtraction, union, and intersection operations for character classes.
  *      <li>Not supported: <kbd>\</kbd><var>ooo</var> (Octal character representations),
  *          <Kbd>\G</kbd>, <kbd>\C</kbd>, <kbd>\l</kbd><var>c</var>,
  *          <kbd>\u005cu</kbd><var>c</var>, <kbd>\L</kbd>, <kbd>\U</kbd>,
- *          <kbd>\E</kbd>, <kbd>\Q</kbd>,
- *          <Kbd>(?{<kbd><var>code</var><kbd>})</kbd>, <Kbd>(?p{<kbd><var>code</var><kbd>})</kbd>
+ *          <kbd>\E</kbd>, <kbd>\Q</kbd>, <kbd>\N{</kbd><var>name</var><kbd>}</kbd>,
+ *          <Kbd>(?{<kbd><var>code</var><kbd>})</kbd>, <Kbd>(??{<kbd><var>code</var><kbd>})</kbd>
  *     </ul>
  *    </td>
  *   </tr>
@@ -197,16 +188,20 @@ import java.text.CharacterIterator;
  *       <dt class="REGEX"><kbd>\u005cv</kbd><var>HHHHHH</var>
  *       <dd>Matches a character of which code point is <var>HHHHHH</var> (Hexadecimal) in Unicode.
  *
- *       <dt class="REGEX"><kbd>\X</kbd>
+ *       <dt class="REGEX"><kbd>\g</kbd>
  *       <dd>Matches a grapheme.
- *       <dd class="REGEX">It is equivalent to <kbd>(?[\p{ASSIGNED}]-[\p{M},\p{C}])?(?:\p{M}|[\x{094D},\x{09CD},\x{0A4D},\x{0ACD},\x{0B3D},\x{0BCD},\x{0C4D},\x{0CCD},\x{0D4D},\x{0E3A},\x{0F84}]\p{L}|[\x{1160}-\x{11A7}]|[\x{11A8}-\x{11FF}]|[\x{FF9E},\x{FF9F}])*</kbd>
- *       <dd class="WARNING"><Kbd>\X</kbd> in Perl 5.6 means <kbd>\P{M}\p{M}*</kbd>.</dd>
+ *       <dd class="REGEX">It is equivalent to <kbd>(?[\p{ASSIGNED}]-[\p{M}\p{C}])?(?:\p{M}|[\x{094D}\x{09CD}\x{0A4D}\x{0ACD}\x{0B3D}\x{0BCD}\x{0C4D}\x{0CCD}\x{0D4D}\x{0E3A}\x{0F84}]\p{L}|[\x{1160}-\x{11A7}]|[\x{11A8}-\x{11FF}]|[\x{FF9E}\x{FF9F}])*</kbd>
+ *
+ *       <dt class="REGEX"><kbd>\X</kbd>
+ *       <dd class="REGEX">Matches a combining character sequence.
+ *       It is equivalent to <kbd>(?:\PM\pM*)</kbd>
  *     </dl>
  *   </li>
  *
  *   <li>Character class
  *     <dl>
- *       <dt class="REGEX"><kbd>[</kbd><var>R<sub>1</sub></var><kbd>,</kbd><var>R<sub>2</sub></var><kbd>,</kbd><var>...</var><kbd>,</kbd><var>R<sub>n</sub></var><kbd>]</kbd>
++ *       <dt class="REGEX"><kbd>[</kbd><var>R<sub>1</sub></var><var>R<sub>2</sub></var><var>...</var><var>R<sub>n</sub></var><kbd>]</kbd> (without <a href="#COMMA_OPTION">"," option</a>)
++ *       <dt class="REGEX"><kbd>[</kbd><var>R<sub>1</sub></var><kbd>,</kbd><var>R<sub>2</sub></var><kbd>,</kbd><var>...</var><kbd>,</kbd><var>R<sub>n</sub></var><kbd>]</kbd> (with <a href="#COMMA_OPTION">"," option</a>)
  *       <dd>Positive character class.  It matches a character in ranges.
  *       <dd><var>R<sub>n</sub></var>:
  *       <ul>
@@ -214,61 +209,65 @@ import java.text.CharacterIterator;
  *             <p>This range matches the character.
  *         <li class="REGEX"><var>C<sub>1</sub></var><kbd>-</kbd><var>C<sub>2</sub></var>
  *             <p>This range matches a character which has a code point that is >= <var>C<sub>1</sub></var>'s code point and &lt;= <var>C<sub>2</sub></var>'s code point.
- *         <li class="REGEX">A POSIX character class: <Kbd>[:alpha:] [:alnum:] [:ascii:] [:cntrl:] [:digit:] [:graph:] [:lower:] [:print:] [:punct:] [:space:] [:upper:] [:xdigit:]</kbd>
++ *         <li class="REGEX">A POSIX character class: <Kbd>[:alpha:] [:alnum:] [:ascii:] [:cntrl:] [:digit:] [:graph:] [:lower:] [:print:] [:punct:] [:space:] [:upper:] [:xdigit:]</kbd>,
++ *             and negative POSIX character classes in Perl like <kbd>[:^alpha:]</kbd>
  *             <p>...
  *         <li class="REGEX"><kbd>\d \D \s \S \w \W \p{</kbd><var>name</var><kbd>} \P{</kbd><var>name</var><kbd>}</kbd>
  *             <p>These expressions specifies the same ranges as the following expressions.
  *       </ul>
  *       <p class="REGEX">Enumerated ranges are merged (union operation).
- *          <kbd>[a-e,c-z]</kbd> is equivalent to <kbd>[a-z]</kbd>
+ *          <kbd>[a-ec-z]</kbd> is equivalent to <kbd>[a-z]</kbd>
  *
- *       <dt class="REGEX"><kbd>[^</kbd><var>R<sub>1</sub></var><kbd>,</kbd><var>R<sub>2</sub></var><kbd>,</kbd><var>...</var><kbd>,</kbd><var>R<sub>n</sub></var><kbd>]</kbd>
+ *       <dt class="REGEX"><kbd>[^</kbd><var>R<sub>1</sub></var><var>R<sub>2</sub></var><var>...</var><var>R<sub>n</sub></var><kbd>]</kbd> (without a <a href="#COMMA_OPTION">"," option</a>)
+ *       <dt class="REGEX"><kbd>[^</kbd><var>R<sub>1</sub></var><kbd>,</kbd><var>R<sub>2</sub></var><kbd>,</kbd><var>...</var><kbd>,</kbd><var>R<sub>n</sub></var><kbd>]</kbd> (with a <a href="#COMMA_OPTION">"," option</a>)
  *       <dd>Negative character class.  It matches a character not in ranges.
  *
  *       <dt class="REGEX"><kbd>(?[</kbd><var>ranges</var><kbd>]</kbd><var>op</var><kbd>[</kbd><var>ranges</var><kbd>]</kbd><var>op</var><kbd>[</kbd><var>ranges</var><kbd>]</kbd> ... <Kbd>)</kbd>
- *       (<var>op</var> is <kbd>-</kbd> or <kbd>+</kbd> or <kbd>&</kbd>.
- *       <var>ranges</var> is <var>R<sub>1</sub></var><kbd>,</kbd><var>R<sub>2</sub></var><kbd>,</kbd><var>...</var><kbd>,</kbd><var>R<sub>n</sub></var> or <kbd>^</kbd><var>R<sub>1</sub></var><kbd>,</kbd><var>R<sub>2</sub></var><kbd>,</kbd><var>...</var><kbd>,</kbd><var>R<sub>n</sub></var>.)
- *       <dd class="WARNING">This feature is highly experimental.</dd>
+ *       (<var>op</var> is <kbd>-</kbd> or <kbd>+</kbd> or <kbd>&</kbd>.)
  *       <dd>Subtraction or union or intersection for character classes.
- *       <dd class="REGEX">For exmaple, <kbd>(?[A-Z]-[C,F])</kbd> is equivalent to <kbd>[A-B,D-E,G-Z]</kbd>, and <kbd>(?[0x00-0x7f]-[K]&[\p{Lu}])</kbd> is equivalent to <kbd>[A-J,L-Z]</kbd>.
+ *       <dd class="REGEX">For exmaple, <kbd>(?[A-Z]-[CF])</kbd> is equivalent to <kbd>[A-BD-EG-Z]</kbd>, and <kbd>(?[0x00-0x7f]-[K]&[\p{Lu}])</kbd> is equivalent to <kbd>[A-JL-Z]</kbd>.
  *       <dd>The result of this operations is a <u>positive character class</u>
  *           even if an expression includes any negative character classes.
  *           You have to take care on this in case-insensitive matching.
- *           For instance, <kbd>(?[^b])</kbd> is equivalent to <kbd>[\x00-a,c-\x{10ffff}]</kbd>,
+ *           For instance, <kbd>(?[^b])</kbd> is equivalent to <kbd>[\x00-ac-\x{10ffff}]</kbd>,
  *           which is equivalent to <kbd>[^b]</kbd> in case-sensitive matching.
  *           But, in case-insensitive matching, <kbd>(?[^b])</kbd> matches any character because
  *           it includes '<kbd>B</kbd>' and '<kbd>B</kbd>' matches '<kbd>b</kbd>'
- *           though <kbd>[^b]</kbd> is processed as <kbd>[^B,b]</kbd>.
+ *           though <kbd>[^b]</kbd> is processed as <kbd>[^Bb]</kbd>.
  *
+ *       <dt class="REGEX"><kbd>[</kbd><var>R<sub>1</sub>R<sub>2</sub>...</var><kbd>-[</kbd><var>R<sub>n</sub>R<sub>n+1</sub>...</var><kbd>]]</kbd> (with an <a href="#X_OPTION">"X" option</a>)</dt>
+ *       <dd>Character class subtraction for the XML Schema.
+ *           You can use this syntax when you specify an <a href="#X_OPTION">"X" option</a>.
+ *           
  *       <dt class="REGEX"><kbd>\d</kbd>
  *       <dd class="REGEX">Equivalent to <kbd>[0-9]</kbd>.
- *       <dd>When <a href="#U_OPTION">the "u" option</a> is set, it is equivalent to
+ *       <dd>When <a href="#U_OPTION">a "u" option</a> is set, it is equivalent to
  *           <span class="REGEX"><kbd>\p{Nd}</kbd></span>.
  *
  *       <dt class="REGEX"><kbd>\D</kbd>
  *       <dd class="REGEX">Equivalent to <kbd>[^0-9]</kbd>
- *       <dd>When <a href="#U_OPTION">the "u" option</a> is set, it is equivalent to
+ *       <dd>When <a href="#U_OPTION">a "u" option</a> is set, it is equivalent to
  *           <span class="REGEX"><kbd>\P{Nd}</kbd></span>.
  *
  *       <dt class="REGEX"><kbd>\s</kbd>
- *       <dd class="REGEX">Equivalent to <kbd>[ ,\f,\n,\r,\t]</kbd>
- *       <dd>When <a href="#U_OPTION">the "u" option</a> is set, it is equivalent to
- *           <span class="REGEX"><kbd>[ ,\f,\n,\r,\t,\p{Z}]</kbd></span>.
+ *       <dd class="REGEX">Equivalent to <kbd>[ \f\n\r\t]</kbd>
+ *       <dd>When <a href="#U_OPTION">a "u" option</a> is set, it is equivalent to
+ *           <span class="REGEX"><kbd>[ \f\n\r\t\p{Z}]</kbd></span>.
  *
  *       <dt class="REGEX"><kbd>\S</kbd>
- *       <dd class="REGEX">Equivalent to <kbd>[^ ,\f,\n,\r,\t]</kbd>
- *       <dd>When <a href="#U_OPTION">the "u" option</a> is set, it is equivalent to
- *           <span class="REGEX"><kbd>[^ ,\f,\n,\r,\t,\p{Z}]</kbd></span>.
+ *       <dd class="REGEX">Equivalent to <kbd>[^ \f\n\r\t]</kbd>
+ *       <dd>When <a href="#U_OPTION">a "u" option</a> is set, it is equivalent to
+ *           <span class="REGEX"><kbd>[^ \f\n\r\t\p{Z}]</kbd></span>.
  *
  *       <dt class="REGEX"><kbd>\w</kbd>
- *       <dd class="REGEX">Equivalent to <kbd>[a-z,A-Z,0-9,_]</kbd>
- *       <dd>When <a href="#U_OPTION">the "u" option</a> is set, it is equivalent to
- *           <span class="REGEX"><kbd>[\p{Lu},\p{Ll},\p{Lo},\p{Nd},_]</kbd></span>.
+ *       <dd class="REGEX">Equivalent to <kbd>[a-zA-Z0-9_]</kbd>
+ *       <dd>When <a href="#U_OPTION">a "u" option</a> is set, it is equivalent to
+ *           <span class="REGEX"><kbd>[\p{Lu}\p{Ll}\p{Lo}\p{Nd}_]</kbd></span>.
  *
  *       <dt class="REGEX"><kbd>\W</kbd>
- *       <dd class="REGEX">Equivalent to <kbd>[^a-z,A-Z,0-9,_]</kbd>
- *       <dd>When <a href="#U_OPTION">the "u" option</a> is set, it is equivalent to
- *           <span class="REGEX"><kbd>[^\p{Lu},\p{Ll},\p{Lo},\p{Nd},_]</kbd></span>.
+ *       <dd class="REGEX">Equivalent to <kbd>[^a-zA-Z0-9_]</kbd>
+ *       <dd>When <a href="#U_OPTION">a "u" option</a> is set, it is equivalent to
+ *           <span class="REGEX"><kbd>[^\p{Lu}\p{Ll}\p{Lo}\p{Nd}_]</kbd></span>.
  *
  *       <dt class="REGEX"><kbd>\p{</kbd><var>name</var><kbd>}</kbd>
  *       <dd>Matches one character in the specified General Category (the second field in <a href="ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt"><kbd>UnicodeData.txt</kbd></a>) or the specified <a href="ftp://ftp.unicode.org/Public/UNIDATA/Blocks.txt">Block</a>.
@@ -403,7 +402,7 @@ import java.text.CharacterIterator;
  *
  *       <dt class="REGEX"><kbd>^</kbd>
  *       <dd>Matches the beginning of the text.  It is equivalent to <span class="REGEX"><Kbd>\A</kbd></span>.
- *       <dd>When <a href="#M_OPTION">the "m" option</a> is set,
+ *       <dd>When <a href="#M_OPTION">a "m" option</a> is set,
  *           it matches the beginning of the text, or after one of EOL characters (
  *           LINE FEED (U+000A), CARRIAGE RETURN (U+000D), LINE SEPARATOR (U+2028),
  *           PARAGRAPH SEPARATOR (U+2029).)
@@ -411,24 +410,24 @@ import java.text.CharacterIterator;
  *       <dt class="REGEX"><kbd>$</kbd>
  *       <dd>Matches the end of the text, or before an EOL character at the end of the text,
  *           or CARRIAGE RETURN + LINE FEED at the end of the text.
- *       <dd>When <a href="#M_OPTION">the "m" option</a> is set,
+ *       <dd>When <a href="#M_OPTION">a "m" option</a> is set,
  *           it matches the end of the text, or before an EOL character.
  *
  *       <dt class="REGEX"><kbd>\b</kbd>
  *       <dd>Matches word boundary.
- *           (See <a href="#W_OPTION">the "w" option</a>)
+ *           (See <a href="#W_OPTION">a "w" option</a>)
  *
  *       <dt class="REGEX"><kbd>\B</kbd>
  *       <dd>Matches non word boundary.
- *           (See <a href="#W_OPTION">the "w" option</a>)
+ *           (See <a href="#W_OPTION">a "w" option</a>)
  *
  *       <dt class="REGEX"><kbd>\&lt;</kbd>
  *       <dd>Matches the beginning of a word.
- *           (See <a href="#W_OPTION">the "w" option</a>)
+ *           (See <a href="#W_OPTION">a "w" option</a>)
  *
  *       <dt class="REGEX"><kbd>\&gt;</kbd>
  *       <dd>Matches the end of a word.
- *           (See <a href="#W_OPTION">the "w" option</a>)
+ *           (See <a href="#W_OPTION">a "w" option</a>)
  *     </dl>
  *   </li>
  *   <li>Lookahead and lookbehind
@@ -493,7 +492,7 @@ import java.text.CharacterIterator;
  *
  * char-class ::= '[' ranges ']'
  *                | '(?[' ranges ']' ([-+&] '[' ranges ']')? ')'
- * ranges ::= '^'? (range ','?)+
+ * ranges ::= '^'? (range <a href="#COMMA_OPTION">','?</a>)+
  * range ::= '\d' | '\w' | '\s' | '\D' | '\W' | '\S' | category-block
  *           | range-char | range-char '-' range-char
  * range-char ::= '\[' | '\]' | '\\' | '\' [,-efnrtv] | code-point | character-2
@@ -523,6 +522,9 @@ import java.text.CharacterIterator;
 public class RegularExpression implements java.io.Serializable {
     static final boolean DEBUG = false;
 
+    /**
+     * Compiles a token tree into an operation flow.
+     */
     private synchronized void compile(Token tok) {
         if (this.operations != null)
             return;
@@ -530,6 +532,9 @@ public class RegularExpression implements java.io.Serializable {
         this.operations = this.compile(tok, null, false);
     }
 
+    /**
+     * Converts a token to an operation.
+     */
     private Op compile(Token tok, Op next, boolean reverse) {
         Op ret;
         switch (tok.type) {
@@ -688,39 +693,47 @@ public class RegularExpression implements java.io.Serializable {
 
 //Public
 
-/**
- *
- * @return true if the target is matched to this regular expression.
- */
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern or not.
+     *
+     * @return true if the target is matched to this regular expression.
+     */
     public boolean matches(char[]  target) {
         return this.matches(target, 0,  target .length , (Match)null);
     }
 
-/**
- *
- * @return true if the target is matched to this regular expression.
- */
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern
+     * in specified range or not.
+     *
+     * @param start Start offset of the range.
+     * @param end  End offset +1 of the range.
+     * @return true if the target is matched to this regular expression.
+     */
     public boolean matches(char[]  target, int start, int end) {
         return this.matches(target, start, end, (Match)null);
     }
 
-/**
- *
- * @param match A Match instance for storing matching result.
- * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
- */
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern or not.
+     *
+     * @param match A Match instance for storing matching result.
+     * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
+     */
     public boolean matches(char[]  target, Match match) {
         return this.matches(target, 0,  target .length , match);
     }
 
 
-/**
- *
- * @param match A Match instance for storing matching result.
- * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
- */
-
-
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern
+     * in specified range or not.
+     *
+     * @param start Start offset of the range.
+     * @param end  End offset +1 of the range.
+     * @param match A Match instance for storing matching result.
+     * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
+     */
     public boolean matches(char[]  target, int start, int end, Match match) {
 
         synchronized (this) {
@@ -799,7 +812,8 @@ public class RegularExpression implements java.io.Serializable {
         /*
          * Checks whether the expression starts with ".*".
          */
-        if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
+        if (this.operations != null
+            && this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
             if (isSet(this.options, SINGLE_LINE)) {
                 matchStart = con.start;
                 matchEnd = this. matchCharArray (con, this.operations, con.start, 1, this.options);
@@ -1387,42 +1401,46 @@ public class RegularExpression implements java.io.Serializable {
 
 
 
-/**
- *
- * @return true if the target is matched to this regular expression.
- */
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern or not.
+     *
+     * @return true if the target is matched to this regular expression.
+     */
     public boolean matches(String  target) {
         return this.matches(target, 0,  target .length() , (Match)null);
     }
 
-/**
- *
- * @return true if the target is matched to this regular expression.
- */
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern
+     * in specified range or not.
+     *
+     * @param start Start offset of the range.
+     * @param end  End offset +1 of the range.
+     * @return true if the target is matched to this regular expression.
+     */
     public boolean matches(String  target, int start, int end) {
         return this.matches(target, start, end, (Match)null);
     }
 
-/**
- *
- * @param match A Match instance for storing matching result.
- * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
- */
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern or not.
+     *
+     * @param match A Match instance for storing matching result.
+     * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
+     */
     public boolean matches(String  target, Match match) {
         return this.matches(target, 0,  target .length() , match);
     }
 
-
-/**
- *
- * @param match A Match instance for storing matching result.
- * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
- */
-
-
-
-
-
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern
+     * in specified range or not.
+     *
+     * @param start Start offset of the range.
+     * @param end  End offset +1 of the range.
+     * @param match A Match instance for storing matching result.
+     * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
+     */
     public boolean matches(String  target, int start, int end, Match match) {
 
         synchronized (this) {
@@ -1501,7 +1519,8 @@ public class RegularExpression implements java.io.Serializable {
         /*
          * Checks whether the expression starts with ".*".
          */
-        if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
+        if (this.operations != null
+            && this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
             if (isSet(this.options, SINGLE_LINE)) {
                 matchStart = con.start;
                 matchEnd = this. matchString (con, this.operations, con.start, 1, this.options);
@@ -1584,9 +1603,9 @@ public class RegularExpression implements java.io.Serializable {
         }
     }
 
-/**
- * @return -1 when not match; offset of the end of matched string when match.
- */
+    /**
+     * @return -1 when not match; offset of the end of matched string when match.
+     */
     private int matchString (Context con, Op op, int offset, int dx, int opts) {
 
 
@@ -2048,21 +2067,22 @@ public class RegularExpression implements java.io.Serializable {
 
 
 
-/**
- *
- * @return true if the target is matched to this regular expression.
- */
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern or not.
+     *
+     * @return true if the target is matched to this regular expression.
+     */
     public boolean matches(CharacterIterator target) {
         return this.matches(target, (Match)null);
     }
 
 
-/**
- *
- * @param match A Match instance for storing matching result.
- * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
- */
-
+    /**
+     * Checks whether the <var>target</var> text <strong>contains</strong> this pattern or not.
+     *
+     * @param match A Match instance for storing matching result.
+     * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
+     */
     public boolean matches(CharacterIterator  target, Match match) {
         int start = target.getBeginIndex();
         int end = target.getEndIndex();
@@ -2145,7 +2165,8 @@ public class RegularExpression implements java.io.Serializable {
         /*
          * Checks whether the expression starts with ".*".
          */
-        if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
+        if (this.operations != null
+            && this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
             if (isSet(this.options, SINGLE_LINE)) {
                 matchStart = con.start;
                 matchEnd = this. matchCharacterIterator (con, this.operations, con.start, 1, this.options);
@@ -2228,9 +2249,9 @@ public class RegularExpression implements java.io.Serializable {
         }
     }
 
-/**
- * @return -1 when not match; offset of the end of matched string when match.
- */
+    /**
+     * @return -1 when not match; offset of the end of matched string when match.
+     */
     private int matchCharacterIterator (Context con, Op op, int offset, int dx, int opts) {
 
 
@@ -2690,9 +2711,9 @@ public class RegularExpression implements java.io.Serializable {
         return true;
     }
 
-/**
- * @see java.lang.String#regionMatches
- */
+    /**
+     * @see java.lang.String#regionMatches
+     */
     private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, int offset, int limit,
                                                          String part, int partlen) {
         if (offset < 0)  return false;
@@ -2817,6 +2838,9 @@ public class RegularExpression implements java.io.Serializable {
         }
     }
 
+    /**
+     * Prepares for matching.  This method is called just before starting matching.
+     */
     void prepare() {
         if (Op.COUNT)  Op.nofinstances = 0;
         this.compile(this.tokentree);
@@ -2844,7 +2868,8 @@ public class RegularExpression implements java.io.Serializable {
             }
         }
 
-        if ((this.operations.type == Op.STRING || this.operations.type == Op.CHAR)
+        if (this.operations != null
+            && (this.operations.type == Op.STRING || this.operations.type == Op.CHAR)
             && this.operations.next == null) {
             if (DEBUG)
                 System.err.print(" *** Only fixed string! *** ");
@@ -2950,14 +2975,18 @@ public class RegularExpression implements java.io.Serializable {
      * "X". XML Schema mode.
      */
     static final int XMLSCHEMA_MODE = 1<<9;
+    /**
+     * ",".
+     */
+    static final int SPECIAL_COMMA = 1<<10;
 
 
     private static final boolean isSet(int options, int flag) {
-        return(options & flag) == flag;
+        return (options & flag) == flag;
     }
 
     /**
-     * Constructor.
+     * Creates a new RegularExpression instance.
      *
      * @param regex A regular expression
      * @exception org.apache.xerces.utils.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
@@ -2967,10 +2996,10 @@ public class RegularExpression implements java.io.Serializable {
     }
 
     /**
-     * Constructor.
+     * Creates a new RegularExpression instance with options.
      *
      * @param regex A regular expression
-     * @param options A String consisted of "i" "m" "s" "u" "w"
+     * @param options A String consisted of "i" "m" "s" "u" "w" "," "X"
      * @exception org.apache.xerces.utils.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
      */
     public RegularExpression(String regex, String options) throws ParseException {
@@ -3022,10 +3051,13 @@ public class RegularExpression implements java.io.Serializable {
      * Represents this instence in String.
      */
     public String toString() {
-        return this.tokentree.toString();
+        return this.tokentree.toString(this.options);
     }
 
     /**
+     * Returns a option string.
+     * The order of letters in it may be different from a string specified
+     * in a constructor or <code>setPattern()</code>.
      *
      * @see #RegularExpression(java.lang.String,java.lang.String)
      * @see #setPattern(java.lang.String,java.lang.String)
@@ -3035,7 +3067,7 @@ public class RegularExpression implements java.io.Serializable {
     }
 
     /**
-     *
+     *  Return true if patterns are the same and the options are equivalent.
      */
     public boolean equals(Object obj) {
         if (obj == null)  return false;
@@ -3053,7 +3085,7 @@ public class RegularExpression implements java.io.Serializable {
      *
      */
     public int hashCode() {
-        return(this.regex+"/"+this.getOptions()).hashCode();
+        return (this.regex+"/"+this.getOptions()).hashCode();
     }
 
     /**
