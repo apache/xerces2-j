@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,8 +58,9 @@
 package org.apache.xerces.validators.common;
 
 import org.apache.xerces.framework.XMLContentSpec;
-import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.ImplementationMessages;
+import org.apache.xerces.utils.QName;
+import org.apache.xerces.utils.StringPool;
 
 /**
  * DFAContentModel is the derivative of ContentModel that does
@@ -73,10 +74,10 @@ import org.apache.xerces.utils.ImplementationMessages;
  * are very constrained in form and easily handled via a special case. 
  * This also makes implementation of this class much easier.
  *
- * @version
+ * @version $Id$
  */
-public class DFAContentModel implements XMLContentModel
-{
+public class DFAContentModel 
+    implements XMLContentModel {
 
     //
     // Constants
@@ -95,23 +96,133 @@ public class DFAContentModel implements XMLContentModel
     /** Set to true to debug content model validation. */
     private static final boolean DEBUG_VALIDATE_CONTENT = false;
 
-    // -----------------------------------------------------------------------
-    //  Constructors
-    // -----------------------------------------------------------------------
+    //
+    // Data
+    //
+
+    /**
+     * This is the map of unique input symbol elements to indices into
+     * each state's per-input symbol transition table entry. This is part
+     * of the built DFA information that must be kept around to do the
+     * actual validation.
+     */
+    private QName fElemMap[] = null;
+
+    /** The element map size. */
+    private int fElemMapSize = 0;
+
+    /**
+     * The string index for the 'end of content' string that we add to
+     * the string pool. This is used as the special name of an element
+     * that represents the end of the syntax tree.
+     */
+    private int fEOCIndex = 0;
+
+    /**
+     * The NFA position of the special EOC (end of content) node. This
+     * is saved away since it's used during the DFA build.
+     */
+    private int fEOCPos = 0;
+
+    /**
+     * The string index for the 'epsilon' string that we add to the
+     * string pool. This represents epsilon node transitions in the
+     * syntax tree.
+     */
+    private int fEpsilonIndex = 0;
+
+    /**
+     * This is an array of booleans, one per state (there are
+     * fTransTableSize states in the DFA) that indicates whether that
+     * state is a final state.
+     */
+    private boolean fFinalStateFlags[] = null;
+
+    /**
+     * The list of follow positions for each NFA position (i.e. for each
+     * non-epsilon leaf node.) This is only used during the building of
+     * the DFA, and is let go afterwards.
+     */
+    private CMStateSet fFollowList[] = null;
+
+    /**
+     * This is the head node of our intermediate representation. It is
+     * only non-null during the building of the DFA (just so that it
+     * does not have to be passed all around.) Once the DFA is built,
+     * this is no longer required so its nulled out.
+     */
+    private CMNode fHeadNode = null;
+
+    /**
+     * The count of leaf nodes. This is an important number that set some
+     * limits on the sizes of data structures in the DFA process.
+     */
+    private int fLeafCount = 0;
+
+    /**
+     * An array of non-epsilon leaf nodes, which is used during the DFA
+     * build operation, then dropped.
+     */
+    private CMLeaf fLeafList[] = null;
+
+    /**
+     * The string pool of our parser session. This is set during construction
+     * and kept around.
+     */
+    private StringPool fStringPool = null;
+
+    /**
+     * This is the transition table that is the main by product of all
+     * of the effort here. It is an array of arrays of ints. The first
+     * dimension is the number of states we end up with in the DFA. The
+     * second dimensions is the number of unique elements in the content
+     * model (fElemMapSize). Each entry in the second dimension indicates
+     * the new state given that input for the first dimension's start
+     * state.
+     * <p>
+     * The fElemMap array handles mapping from element indexes to
+     * positions in the second dimension of the transition table.
+     */
+    private int fTransTable[][] = null;
+
+    /**
+     * The number of valid entries in the transition table, and in the other
+     * related tables such as fFinalStateFlags.
+     */
+    private int fTransTableSize = 0;
+
+    /**
+     * Flag that indicates that even though we have a "complicated"
+     * content model, it is valid to have no content. In other words,
+     * all parts of the content model are optional. For example:
+     * <pre>
+     *      &lt;!ELEMENT AllOptional (Optional*,NotRequired?)&gt;
+     * </pre>
+     */
+    private boolean fEmptyContentIsValid = false;
+
+    // temp variables
+
+    /** Temporary qualified name. */
+    private QName fQName = new QName();
+
+    //
+    // Constructors
+    //
 
     /**
      * Constructs a DFA content model.
      *
-     * @param elementIndex  The element decl index.
      * @param stringPool    The string pool.
-     * @param declPool      The element decl pool.
+     * @param syntaxTree    The syntax tree of the content model.
+     * @param leafCount     The number of leaves.
      *
      * @exception CMException Thrown if DMA can't be built.
      */
-    public DFAContentModel( StringPool      stringPool
-                            , CMNode        syntaxTree
-                            , int           leafCount) throws CMException
-    {
+    public DFAContentModel(StringPool stringPool, 
+                           CMNode syntaxTree, 
+                           int leafCount) throws CMException {
+
         // Store away our index and pools in members
         fStringPool = stringPool;
         fLeafCount = leafCount;
@@ -144,10 +255,9 @@ public class DFAContentModel implements XMLContentModel
         buildDFA(syntaxTree);
     }
 
-
-    // -----------------------------------------------------------------------
-    //  Public, inherited methods
-    // -----------------------------------------------------------------------
+    //
+    // XMLContentModel methods
+    //
     
     /**
      * Check that the specified content is valid according to this
@@ -172,8 +282,9 @@ public class DFAContentModel implements XMLContentModel
      *
      * @exception CMException Thrown on error.
      */
-    public int validateContent(int childCount, int[] children) throws CMException
-    {
+    public int validateContent(int childCount, 
+                               QName children[]) throws CMException {
+
         if (DEBUG_VALIDATE_CONTENT) 
             System.out.println("DFAContentModel#validateContent");
 
@@ -195,10 +306,12 @@ public class DFAContentModel implements XMLContentModel
                 System.out.println("!!! no children");
                 System.out.println("elemMap="+fElemMap);
                 for (int i = 0; i < fElemMap.length; i++) {
-                    int elemIndex = fElemMap[i];
-                    System.out.println("fElemMap["+i+"]="+elemIndex+
-                                       " ("+
-                                       fStringPool.toString(elemIndex)+
+                    int uriIndex = fElemMap[i].uri;
+                    int localpartIndex = fElemMap[i].localpart;
+                    System.out.println("fElemMap["+i+"]="+uriIndex+","+
+                                       localpartIndex+" ("+
+                                       fStringPool.toString(uriIndex)+", "+
+                                       fStringPool.toString(localpartIndex)+
                                        ')');
                 }
                 System.out.println("EOCIndex="+fEOCIndex);
@@ -217,7 +330,7 @@ public class DFAContentModel implements XMLContentModel
         for (int childIndex = 0; childIndex < childCount; childIndex++)
         {
             // Get the current element index out
-            final int curElem = children[childIndex];
+            final QName curElem = children[childIndex];
 
             // Look up this child in our element map
             int elemIndex = 0;
@@ -232,7 +345,7 @@ public class DFAContentModel implements XMLContentModel
                 if (DEBUG_VALIDATE_CONTENT) 
                     System.out.println("!!! didn't find it");
                 return childIndex;
-                }
+            }
 
             //
             //  Look up the next state for this input symbol when in the
@@ -245,7 +358,7 @@ public class DFAContentModel implements XMLContentModel
                 if (DEBUG_VALIDATE_CONTENT) 
                     System.out.println("!!! not a legal transition");
                 return childIndex;
-                }
+            }
         }
 
         //
@@ -290,9 +403,9 @@ public class DFAContentModel implements XMLContentModel
      *
      * @see InsertableElementsInfo
      */
-    public int whatCanGoHere(boolean                    fullyValid
-                            , InsertableElementsInfo    info) throws CMException
-    {
+    public int whatCanGoHere(boolean fullyValid, 
+                             InsertableElementsInfo info) throws CMException {
+
         //
         //  First, lets make sure that the passed in current content is valid
         //  up to the insert point.
@@ -301,13 +414,14 @@ public class DFAContentModel implements XMLContentModel
         for (int childIndex = 0; childIndex < info.insertAt; childIndex++)
         {
             // Get the current element index out
-            final int curElem = info.curChildren[childIndex];
+            final QName curElem = info.curChildren[childIndex];
 
             // Look up this child in our element map
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                if (fElemMap[elemIndex] == curElem)
+                if (fElemMap[elemIndex].uri == curElem.uri && 
+                    fElemMap[elemIndex].localpart == curElem.localpart)
                     break;
             }
 
@@ -354,7 +468,10 @@ public class DFAContentModel implements XMLContentModel
         if ((info.possibleChildren == null)
         ||  (info.possibleChildren.length < info.resultsCount))
         {
-            info.possibleChildren = new int[info.resultsCount];
+            info.possibleChildren = new QName[info.resultsCount];
+            for (int i = 0; i < info.possibleChildren.length; i++) {
+                info.possibleChildren[i] = new QName();
+            }
         }
 
         //
@@ -365,7 +482,7 @@ public class DFAContentModel implements XMLContentModel
         //
         for (int index = 0; index < fElemMapSize; index++)
         {
-            info.possibleChildren[index] = fElemMap[index];
+            info.possibleChildren[index].setValues(fElemMap[index]);
             info.results[index] = (fTransTable[insertState][index] != -1);
         }
 
@@ -399,10 +516,17 @@ public class DFAContentModel implements XMLContentModel
         return -1;
     }
 
+    //
+    // Private methods
+    //
 
-    // -----------------------------------------------------------------------
-    //  Private methods
-    // -----------------------------------------------------------------------
+    /** 
+     * Builds the internal DFA transition table from the given syntax tree.
+     *
+     * @param syntaxTree The syntax tree.
+     *
+     * @exception CMException Thrown if DFA cannot be built.
+     */
     private void buildDFA(CMNode syntaxTree) throws CMException
     {
         //
@@ -433,7 +557,8 @@ public class DFAContentModel implements XMLContentModel
         //  level of recursion, which would be piggy in Java (as is everything
         //  for that matter.)
         //
-        CMLeaf nodeEOC = new CMLeaf(XMLContentSpec.CONTENTSPECNODE_LEAF, fEOCIndex);
+        fQName.setValues(-1, fEOCIndex, fEOCIndex);
+        CMLeaf nodeEOC = new CMLeaf(fQName);
         fHeadNode = new CMBinOp
         (
             XMLContentSpec.CONTENTSPECNODE_SEQ
@@ -488,24 +613,27 @@ public class DFAContentModel implements XMLContentModel
         //  input element. So we need to a zero based range of indexes that
         //  map to element types. This element map provides that mapping.
         //
-        fElemMap = new int[fLeafCount];
+        fElemMap = new QName[fLeafCount];
         fElemMapSize = 0;
         for (int outIndex = 0; outIndex < fLeafCount; outIndex++)
         {
+            fElemMap[outIndex] = new QName();
+
             // Get the current leaf's element index
-            final int elemIndex = fLeafList[outIndex].getElemIndex();
+            final QName element = fLeafList[outIndex].getElement();
 
             // See if the current leaf node's element index is in the list
             int inIndex = 0;
             for (; inIndex < fElemMapSize; inIndex++)
             {
-                if (fElemMap[inIndex] == elemIndex)
+                if (fElemMap[inIndex].uri == element.uri &&
+                    fElemMap[inIndex].localpart == element.localpart)
                     break;
             }
 
             // If it was not in the list, then add it, if not the EOC node
             if (inIndex == fElemMapSize)
-                fElemMap[fElemMapSize++] = elemIndex;
+                fElemMap[fElemMapSize++].setValues(element);
         }
 
         //
@@ -597,7 +725,10 @@ public class DFAContentModel implements XMLContentModel
                         //  want to add its follow list to the set of states to
                         //  transition to from the current state.
                         //
-                        if (fLeafList[leafIndex].getElemIndex() == fElemMap[elemIndex])
+                        final QName leaf = fLeafList[leafIndex].getElement();
+                        final QName element = fElemMap[elemIndex];
+                        if (leaf.uri == element.uri &&
+                            leaf.localpart == element.localpart)
                             newSet.union(fFollowList[leafIndex]);
                     }
                 }
@@ -695,7 +826,13 @@ public class DFAContentModel implements XMLContentModel
 
     }
 
-
+    /**
+     * Calculates the follow list of the current node.
+     *
+     * @param nodeCur The curent node.
+     *
+     * @exception CMException Thrown if follow list cannot be calculated.
+     */
     private void calcFollowList(CMNode nodeCur) throws CMException
     {
         // Recurse as required
@@ -760,7 +897,14 @@ public class DFAContentModel implements XMLContentModel
         }
     }
 
-
+    /**
+     * Dumps the tree of the current node to standard output.
+     *
+     * @param nodeCur The current node.
+     * @param level   The maximum levels to output.
+     *
+     * @exception CMException Thrown on error.
+     */
     private void dumpTree(CMNode nodeCur, int level) throws CMException
     {
         for (int index = 0; index < level; index++)
@@ -807,9 +951,9 @@ public class DFAContentModel implements XMLContentModel
                 "Leaf: (pos="
                 + ((CMLeaf)nodeCur).getPosition()
                 + "), "
-                + fStringPool.toString(((CMLeaf)nodeCur).getElemIndex())
+                + ((CMLeaf)nodeCur).getElement()
                 + "(elemIndex="
-                + ((CMLeaf)nodeCur).getElemIndex()
+                + ((CMLeaf)nodeCur).getElement()
                 + ") "
             );
 
@@ -828,11 +972,11 @@ public class DFAContentModel implements XMLContentModel
     }
 
 
-    //
-    //  -1 is used to represent bad transitions in the transition table
-    //  entry for each state. So each entry is initialized to an all -1
-    //  array. This method creates a new entry and initializes it.
-    //
+    /**
+     * -1 is used to represent bad transitions in the transition table
+     * entry for each state. So each entry is initialized to an all -1
+     * array. This method creates a new entry and initializes it.
+     */
     private int[] makeDefStateList()
     {
         int[] retArray = new int[fElemMapSize];
@@ -841,7 +985,7 @@ public class DFAContentModel implements XMLContentModel
         return retArray;
     }
 
-
+    /** Post tree build initialization. */
     private int postTreeBuildInit(CMNode nodeCur, int curIndex) throws CMException
     {
         // Set the maximum states on this node
@@ -864,7 +1008,8 @@ public class DFAContentModel implements XMLContentModel
             //  Put this node in the leaf list at the current index if its
             //  a non-epsilon leaf.
             //
-            if (((CMLeaf)nodeCur).getElemIndex() != fEpsilonIndex)
+             final QName node = ((CMLeaf)nodeCur).getElement();
+            if (node.localpart != fEpsilonIndex)
                 fLeafList[curIndex++] = (CMLeaf)nodeCur;
         }
          else
@@ -874,113 +1019,4 @@ public class DFAContentModel implements XMLContentModel
         return curIndex;
     }
 
-
-    // -----------------------------------------------------------------------
-    //  Private data members
-    //
-    //  fDeclPool
-    //      The element/attribute declaration pool of our parser session.
-    //      This is set during ctor and kept around.
-    //
-    //  fElementIndex
-    //      The Element Decl pool index of the element that we are the content
-    //      model for.
-    //
-    //  fElemMap
-    //  fElemMapSize
-    //      This is the map of unique input symbol elements to indices into
-    //      each state's per-input symbol transition table entry. This is part
-    //      of the built DFA information that must be kept around to do the
-    //      actual validation.
-    //
-    //  fEOCIndex
-    //      The string index for the 'end of content' string that we add to
-    //      the string pool. This is used as the special name of an element
-    //      that represents the end of the syntax tree.
-    //
-    //  fEOCPos
-    //      The NFA position of the special EOC (end of content) node. This
-    //      is saved away since its used during the DFA build.
-    //
-    //  fEpsilonIndex
-    //      The string index for the 'epsilon' string that we add to the
-    //      string pool. This represents epsilon node transitions in the
-    //      syntax tree.
-    //
-    //  fErrHandler
-    //      The object to report errors to.
-    //
-    //  fFinalStateFlags
-    //      This is an array of booleans, one per state (there are
-    //      fTransTableSize states in the DFA) that indicates whether that
-    //      state is a final state.
-    //
-    //  fFollowList
-    //      The list of follow positions for each NFA position (i.e. for each
-    //      non-epsilon leaf node.) This is only used during the building of
-    //      the DFA, and is let go afterwards.
-    //
-    //  fHeadNode
-    //      This is the head node of our intermediate representation. It is
-    //      only non-null during the building of the DFA (just so that it
-    //      does not have to be passed all around.) Once the DFA is built,
-    //      this is no longer required so its nulled out.
-    //
-    //  fLeafCount
-    //      The count of leaf nodes. This is an important number that set some
-    //      limits on the sizes of data structures in the DFA process.
-    //
-    //  fLeafList
-    //      An array of non-epsilon leaf nodes, which is used during the DFA
-    //      build operation, then dropped.
-    //
-    //  fSpecNode
-    //      The content spec node for the element that this object represents
-    //      the content of. This info is needed a good bit so we get it once
-    //      and keep it.
-    //
-    //  fStringPool
-    //      The string pool of our parser session. This is set during ctor
-    //      and kept around.
-    //
-    //  fTransTable
-    //  fTransTableSize
-    //      This is the transition table that is the main by product of all
-    //      of the effort here. It is an array of arrays of ints. The first
-    //      dimension is the number of states we end up with in the DFA. The
-    //      second dimensions is the number of unique elements in the content
-    //      model (fElemMapSize). Each entry in the second dimension indicates
-    //      the new state given that input for the first dimension's start
-    //      state.
-    //
-    //      The fElemMap array handles mapping from element indexes to
-    //      positions in the second dimension of the transition table.
-    //
-    //      fTransTableSize is the number of valid entries in the transition
-    //      table, and in the other related tables such as fFinalStateFlags.
-    // -----------------------------------------------------------------------
-    private int[]           fElemMap        = null;
-    private int             fElemMapSize    = 0;
-    private int             fEOCIndex       = 0;
-    private int             fEOCPos         = 0;
-    private int             fEpsilonIndex   = 0;
-    private boolean[]       fFinalStateFlags = null;
-    private CMStateSet[]    fFollowList     = null;
-    private CMNode          fHeadNode       = null;
-    private int             fLeafCount      = 0;
-    private CMLeaf[]        fLeafList       = null;
-    private StringPool      fStringPool     = null;
-    private int[][]         fTransTable     = null;
-    private int             fTransTableSize = 0;
-
-    /**
-     * Flag that indicates that even though we have a "complicated"
-     * content model, it is valid to have no content. In other words,
-     * all parts of the content model are optional. For example:
-     * <pre>
-     *      &lt;!ELEMENT AllOptional (Optional*,NotRequired?)&gt;
-     * </pre>
-     */
-    private boolean fEmptyContentIsValid = false;
-
-}
+} // class DFAContentModel

@@ -100,6 +100,11 @@ public class QName {
         setValues(prefix, localpart, rawname, uri);
     }
 
+    /** Copy constructor. */
+    public QName(QName qname) {
+        setValues(qname);
+    }
+
     //
     // Public methods
     //
@@ -136,6 +141,23 @@ public class QName {
     //
     // Object methods
     //
+
+    /** Returns true if the two objects are equal. */
+    public boolean equals(Object object) {
+        if (object != null && object instanceof QName) {
+            QName qname = (QName)object;
+            return prefix == qname.prefix &&
+                   localpart == qname.localpart &&
+                   rawname == qname.rawname &&
+                   uri == qname.uri;
+        }
+        return false;
+    }
+
+    /** Returns a hash code value. */
+    public int hashCode() {
+        return (localpart << 16) | uri;
+    }
 
     /** Returns a string representation of this object. */
     public String toString() {

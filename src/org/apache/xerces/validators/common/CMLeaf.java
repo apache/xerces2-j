@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,50 +58,60 @@
 package org.apache.xerces.validators.common;
 
 import org.apache.xerces.framework.XMLContentSpec;
-import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.ImplementationMessages;
+import org.apache.xerces.utils.QName;
+import org.apache.xerces.utils.StringPool;
 
 /**
+ * Content model leaf node.
  *
- * @version
+ * @version $Id$
  */
-public class CMLeaf extends CMNode
-{
-    // -------------------------------------------------------------------
-    //  Constructors
-    // -------------------------------------------------------------------
-    public CMLeaf(int type, int elementIndex, int position) throws CMException
-    {
-        super(type);
+public class CMLeaf 
+    extends CMNode {
 
-        // Insure that its one of the types we require
-        if (type() != XMLContentSpec.CONTENTSPECNODE_LEAF)
-            throw new CMException(ImplementationMessages.VAL_LST);
+    //
+    // Data
+    //
+
+    /** This is the element that this leaf represents. */
+    private QName fElement = new QName();
+
+    /**
+     * Part of the algorithm to convert a regex directly to a DFA
+     * numbers each leaf sequentially. If its -1, that means its an
+     * epsilon node. Zero and greater are non-epsilon positions.
+     */
+    private int fPosition = -1;
+
+    //
+    // Constructors
+    //
+
+    /** Constructs a content model leaf. */
+    public CMLeaf(QName element, int position) throws CMException {
+        super(XMLContentSpec.CONTENTSPECNODE_LEAF);
 
         // Store the element index and position
-        fElementIndex = elementIndex;
+        fElement.setValues(element);
         fPosition = position;
     }
 
-    public CMLeaf(int type, int elementIndex) throws CMException
-    {
-        super(type);
-
-        // Insure that its one of the types we require
-        if (type() != XMLContentSpec.CONTENTSPECNODE_LEAF)
-            throw new CMException(ImplementationMessages.VAL_LST);
+    /** Constructs a content model leaf. */
+    public CMLeaf(QName element) throws CMException {
+        super(XMLContentSpec.CONTENTSPECNODE_LEAF);
 
         // Store the element index and position
-        fElementIndex = elementIndex;
+        fElement.setValues(element);
     }
 
+    //
+    // Package methods
+    //
 
-    // -------------------------------------------------------------------
-    //  Package final methods
-    // -------------------------------------------------------------------
-    final int getElemIndex()
+    final QName getElement()
     {
-        return fElementIndex;
+        return fElement;
     }
 
     final int getPosition()
@@ -114,10 +124,12 @@ public class CMLeaf extends CMNode
         fPosition = newPosition;
     }
 
+    //
+    // CMNode methods
+    //
 
-    // -------------------------------------------------------------------
-    //  Package, inherited methods
-    // -------------------------------------------------------------------
+    // package
+
     boolean isNullable() throws CMException
     {
         // Leaf nodes are never nullable unless its an epsilon node
@@ -126,8 +138,12 @@ public class CMLeaf extends CMNode
 
     String toString(StringPool stringPool)
     {
-        StringBuffer strRet = new StringBuffer(stringPool.toString(fElementIndex));
-
+        StringBuffer strRet = new StringBuffer(fElement.toString());
+        strRet.append(" (");
+        strRet.append(stringPool.toString(fElement.uri));
+        strRet.append(',');
+        strRet.append(stringPool.toString(fElement.localpart));
+        strRet.append(')');
         if (fPosition >= 0)
         {
             strRet.append
@@ -140,10 +156,8 @@ public class CMLeaf extends CMNode
         return strRet.toString();
     }
 
+    // protected
 
-    // -------------------------------------------------------------------
-    //  Protected, inherited methods
-    // -------------------------------------------------------------------
     protected void calcFirstPos(CMStateSet toSet) throws CMException
     {
         // If we are an epsilon node, then the first pos is an empty set
@@ -166,19 +180,4 @@ public class CMLeaf extends CMNode
             toSet.setBit(fPosition);
     }
 
-
-    // -------------------------------------------------------------------
-    //  Private data members
-    //
-    //  fElementIndex
-    //      This is the element decl pool index of the element that this
-    //      leaf represents.
-    //
-    //  fPosition
-    //      Part of the algorithm to convert a regex directly to a DFA
-    //      numbers each leaf sequentially. If its -1, that means its an
-    //      epsilon node. Zero and greater are non-epsilon positions.
-    // -------------------------------------------------------------------
-    private int fElementIndex   = 0;
-    private int fPosition       = -1;
-};
+} // class CMLeaf
