@@ -1150,6 +1150,13 @@ public class TraverseSchema implements
                 fSchemaRootElement = root;
                 fCurrentSchemaURL = location;
                 traverseIncludedSchemaHeader(root);
+                //
+                // Bug fix: http://nagoya.apache.org/bugzilla/show_bug.cgi?id=3272
+                // For included schemas with no namespace we need to bind the default namespace 
+                // (empty string) to the target namespace of the including XML Schema.
+                if((fTargetNSURIString.length() != 0) && (root.getAttributeNode("xmlns") == null)) {
+                    fNamespacesScope.setNamespaceForPrefix(StringPool.EMPTY_STRING, fTargetNSURI);
+                } 
                 // and now we'd better save this stuff!
                 fCurrentSchemaInfo = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
                         fBlockDefault, fFinalDefault,
