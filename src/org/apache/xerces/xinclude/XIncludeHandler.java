@@ -61,7 +61,8 @@ import java.util.Enumeration;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
+import java.net.*;
+import java.io.*;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
@@ -138,6 +139,9 @@ public class XIncludeHandler
 
     public final static String XINCLUDE_DEFAULT_CONFIGURATION =
         "org.apache.xerces.parsers.XIncludeParserConfiguration";
+    public final static String HTTP_ACCEPT = "Accept";
+    public final static String HTTP_ACCEPT_LANGUAGE = "Accept-Language";
+    public final static String HTTP_ACCEPT_CHARSET = "Accept-Charset";
 
     public final static String XINCLUDE_NS_URI =
         "http://www.w3.org/2003/XInclude".intern();
@@ -1091,7 +1095,6 @@ public class XIncludeHandler
         //       this ties in with the above IURI section, but I suspect Java already does it
         String href = attributes.getValue(XINCLUDE_ATTR_HREF);
         String parse = attributes.getValue(XINCLUDE_ATTR_PARSE);
-
         if (href == null) {
             reportFatalError("HrefMissing");
         }
@@ -1130,7 +1133,6 @@ public class XIncludeHandler
                     href,
                     fCurrentBaseURI.getExpandedSystemId());
         }
-
         if (parse.equals(XINCLUDE_PARSE_XML)) {
             // Instead of always creating a new configuration, the first one can be reused
             if (fChildConfig == null) {
@@ -1157,6 +1159,8 @@ public class XIncludeHandler
                 newHandler.setParent(this);
                 newHandler.setDocumentHandler(this.getDocumentHandler());
             }
+			//disabled for now.
+			//setHttpProperties(includedSource,attributes);
 
             // set all features on parserConfig to match this parser configuration
             copyFeatures(fSettings, fChildConfig);
@@ -1206,6 +1210,8 @@ public class XIncludeHandler
             includedSource.setEncoding(encoding);
 
             XIncludeTextReader reader = null;
+			//disabled for now.
+			//setHttpProperties(includedSource,attributes);
             try {
                 if (fIsXML11) {
                     reader = new XInclude11TextReader(includedSource, this);
@@ -2106,4 +2112,32 @@ public class XIncludeHandler
             }
         }
     }
+
+	/**
+		Set the Accept,Accept-Language,Accept-CharSet 
+	*/
+	protected void setHttpProperties(XMLInputSource source,XMLAttributes attributes){
+		try{
+			String httpAcceptLang = attributes.getValue(HTTP_ACCEPT_LANGUAGE);
+			String httpAccept = attributes.getValue(HTTP_ACCEPT);
+			String httpAcceptchar = attributes.getValue(HTTP_ACCEPT_CHARSET);
+			InputStream stream = source.getByteStream();
+			if (stream == null) {
+   	        	URL location = new URL(source.getSystemId());
+   	         	URLConnection connect = location.openConnection();
+				if (connect instanceof HttpURLConnection) {
+					if( httpAcceptLang !=null && !httpAcceptLang.equals(""))
+						connect.setRequestProperty(HTTP_ACCEPT_LANGUAGE,httpAcceptLang);
+					if( httpAccept !=null && !httpAccept.equals(""))
+						connect.setRequestProperty(HTTP_ACCEPT,httpAccept);
+					if( httpAcceptchar !=null && !httpAcceptchar.equals(""))
+						connect.setRequestProperty(HTTP_ACCEPT_CHARSET,httpAcceptchar);
+   	         }
+				stream = connect.getInputStream(); 
+				source.setByteStream(stream);
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
 }
