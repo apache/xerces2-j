@@ -252,7 +252,7 @@ public class DOMCount {
                   "  -n turn on  Namespace  - default",
                   "  -v turn on  Validation - default",
                   "  -s turn on  Schema support - default",
-                  "  -d turn on  Deferred DOM - default"
+                  "  -d turn on  Deferred DOM - default",
                   "  -N turn off Namespace",
                   "  -V turn off Validation",
                   "  -S turn off Schema validation",
