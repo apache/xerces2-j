@@ -684,7 +684,6 @@ implements XMLContentSpec.Provider {
             }
         } 
         else {
-            System.out.println("type is " + contentSpec.type);
             throw new CMException(ImplementationMessages.VAL_CST);
         }
 
