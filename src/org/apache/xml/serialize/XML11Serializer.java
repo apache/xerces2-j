@@ -99,9 +99,9 @@ import org.xml.sax.SAXException;
  * The serializer supports both DOM and SAX. SAX serializing is done by firing
  * SAX events and using the serializer as a document handler. DOM serializing is done
  * by calling {@link #serialize(Document)} or by using DOM Level 3  
- * {@link org.w3c.dom.ls.DOMWriter} and
- * serializing with {@link org.w3c.dom.ls.DOMWriter#writeNode}, 
- * {@link org.w3c.dom.ls.DOMWriter#writeToString}.
+ * {@link org.w3c.dom.ls.DOMSerializer} and
+ * serializing with {@link org.w3c.dom.ls.DOMSerializer#write},
+ * {@link org.w3c.dom.ls.DOMSerializer#writeToString}.
  * <p>
  * If an I/O exception occurs while serializing, the serializer
  * will not throw an exception directly, but only throw it
@@ -133,7 +133,7 @@ extends XMLSerializer {
     //
 
     // 
-    // DOM Level 3 implementation: variables intialized in DOMWriterImpl
+    // DOM Level 3 implementation: variables intialized in DOMSerializerImpl
     // 
 
     /** stores namespaces in scope */

@@ -61,6 +61,11 @@ package org.apache.xml.serialize;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -78,25 +83,28 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.ls.DOMWriter;
-import org.w3c.dom.ls.DOMWriterFilter;
+import org.w3c.dom.ls.DOMSerializer;
+import org.w3c.dom.ls.DOMSerializerFilter;
+import org.w3c.dom.ls.DOMOutput;
 
 
 /**
- * Implemenatation of DOM Level 3 org.w3c.ls.DOMWriter  by delegating serialization 
- * calls to <CODE>XMLSerializer</CODE>. 
- * DOMWriter provides an API for serializing (writing) a DOM document out in an
+ * Implemenatation of DOM Level 3 org.w3c.ls.DOMSerializer  by delegating serialization
+ * calls to <CODE>XMLSerializer</CODE>.
+ * DOMSerializer provides an API for serializing (writing) a DOM document out in an
  * XML document. The XML data is written to an output stream.
  * During serialization of XML data, namespace fixup is done when possible as
  * defined in DOM Level 3 Core, Appendix B.
- * 
+ *
  * @author Elena Litani, IBM
+ * @author Gopal Sharma, Sun Microsystems
+ * @author Arun Yadav, Sun Microsystems
  * @version $Id$
  */
-public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
+public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 
     // data
-    private String fEncoding; 
+    private String fEncoding;
 
     // serializer
     private XMLSerializer serializer;
@@ -105,12 +113,12 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     private XML11Serializer xml11Serializer;
 
     /**
-     * Constructs a new DOMWriter.
+     * Constructs a new DOMSerializer.
      * The constructor turns on the namespace support in <code>XMLSerializer</code> and
-     * initializes the following fields: fNSBinder, fLocalNSBinder, fSymbolTable, 
+     * initializes the following fields: fNSBinder, fLocalNSBinder, fSymbolTable,
      * fEmptySymbol, fXmlSymbol, fXmlnsSymbol, fNamespaceCounter, fFeatures.
      */
-    public DOMWriterImpl() {
+    public DOMSerializerImpl() {
         serializer = new XMLSerializer();
         initSerializer(serializer);
     }
@@ -118,14 +126,14 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 
 
     //
-    // DOMWriter methods   
+    // DOMSerializer methods
     //
-    
+
     public DOMConfiguration getConfig(){
         return this;
     }
 
-    /** DOM L3-EXPERIMENTAL: 
+    /** DOM L3-EXPERIMENTAL:
      * Setter for boolean and object parameters
      */
 	public void setParameter(String name, Object value) throws DOMException {
@@ -143,9 +151,9 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 				}
 				else if (name.equals(Constants.DOM_SPLIT_CDATA)
 				|| name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)){
-					// both values supported 		
+					// both values supported
 					serializer.fFeatures.put(name, value);
-				}			
+				}
 				else if (name.equals(Constants.DOM_CANONICAL_FORM)
 					|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
 					|| name.equals(Constants.DOM_VALIDATE)
@@ -190,7 +198,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 				}
 			}
 			else {
-			
+
 			 // REVISIT: modify error exception to TYPE_MISMATCH
  			String msg = DOMMessageFormatter.formatMessage(
 			 DOMMessageFormatter.DOM_DOMAIN,
@@ -225,12 +233,12 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
                 String msg = DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
                             "FEATURE_NOT_FOUND",
-                            new Object[] { name });		
+                            new Object[] { name });
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
 	}
-    
-    /** DOM L3-EXPERIMENTAL: 
+
+    /** DOM L3-EXPERIMENTAL:
      * Check if parameter can be set
      */
 	public boolean canSetParameter(String name, Object state) {
@@ -240,9 +248,9 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 			|| name.equals(Constants.DOM_SPLIT_CDATA)
 			|| name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)
 			|| name.equals(Constants.DOM_XMLDECL)){
-	            // both values supported 		
+	            // both values supported
 				return true;
-			}			
+			}
 			else if (name.equals(Constants.DOM_CANONICAL_FORM)
 			    || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
 			    || name.equals(Constants.DOM_VALIDATE)
@@ -270,10 +278,10 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)){
 			return true;
 		}
-	    return false; 
+	    return false;
     }
-    
-    /** DOM L3-EXPERIMENTAL: 
+
+    /** DOM L3-EXPERIMENTAL:
      * Getter for boolean and object parameters
      */
 	public Object getParameter(String name) throws DOMException {
@@ -306,13 +314,13 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 	}
 
     /**
-     * DOM L3 EXPERIMENTAL: 
-     *  The character encoding in which the output will be written. 
-     * <br> The encoding to use when writing is determined as follows: If the 
-     * encoding attribute has been set, that value will be used.If the 
-     * encoding attribute is <code>null</code> or empty, but the item to be 
-     * written includes an encoding declaration, that value will be used.If 
-     * neither of the above provides an encoding name, a default encoding of 
+     * DOM L3 EXPERIMENTAL:
+     *  The character encoding in which the output will be written.
+     * <br> The encoding to use when writing is determined as follows: If the
+     * encoding attribute has been set, that value will be used.If the
+     * encoding attribute is <code>null</code> or empty, but the item to be
+     * written includes an encoding declaration, that value will be used.If
+     * neither of the above provides an encoding name, a default encoding of
      * "UTF-8" will be used.
      * <br>The default value is <code>null</code>.
      */
@@ -321,13 +329,13 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     }
 
     /**
-     * DOM L3 EXPERIMENTAL: 
-     *  The character encoding in which the output will be written. 
-     * <br> The encoding to use when writing is determined as follows: If the 
-     * encoding attribute has been set, that value will be used.If the 
-     * encoding attribute is <code>null</code> or empty, but the item to be 
-     * written includes an encoding declaration, that value will be used.If 
-     * neither of the above provides an encoding name, a default encoding of 
+     * DOM L3 EXPERIMENTAL:
+     *  The character encoding in which the output will be written.
+     * <br> The encoding to use when writing is determined as follows: If the
+     * encoding attribute has been set, that value will be used.If the
+     * encoding attribute is <code>null</code> or empty, but the item to be
+     * written includes an encoding declaration, that value will be used.If
+     * neither of the above provides an encoding name, a default encoding of
      * "UTF-8" will be used.
      * <br>The default value is <code>null</code>.
      */
@@ -337,23 +345,23 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     }
 
     /**
-     * DOM L3 EXPERIMENTAL: 
-     * Write out the specified node as described above in the description of 
-     * <code>DOMWriter</code>. Writing a Document or Entity node produces a 
-     * serialized form that is well formed XML. Writing other node types 
-     * produces a fragment of text in a form that is not fully defined by 
-     * this document, but that should be useful to a human for debugging or 
-     * diagnostic purposes. 
+     * DOM L3 EXPERIMENTAL:
+     * Write out the specified node as described above in the description of
+     * <code>DOMSerializer</code>. Writing a Document or Entity node produces a
+     * serialized form that is well formed XML. Writing other node types
+     * produces a fragment of text in a form that is not fully defined by
+     * this document, but that should be useful to a human for debugging or
+     * diagnostic purposes.
      * @param destination The destination for the data to be written.
-     * @param wnode The <code>Document</code> or <code>Entity</code> node to 
-     *   be written. For other node types, something sensible should be 
+     * @param wnode The <code>Document</code> or <code>Entity</code> node to
+     *   be written. For other node types, something sensible should be
      *   written, but the exact serialized form is not specified.
-     * @return  Returns <code>true</code> if <code>node</code> was 
-     *   successfully serialized and <code>false</code> in case a failure 
-     *   occured and the failure wasn't canceled by the error handler. 
+     * @return  Returns <code>true</code> if <code>node</code> was
+     *   successfully serialized and <code>false</code> in case a failure
+     *   occured and the failure wasn't canceled by the error handler.
      * @exception none
      */
-    public boolean writeNode(java.io.OutputStream destination, 
+    public boolean writeNode(java.io.OutputStream destination,
                              Node wnode) {
         // determine which serializer to use:
         Document doc = (wnode.getNodeType()== Node.DOCUMENT_NODE)?(Document)wnode:wnode.getOwnerDocument();
@@ -387,7 +395,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
             ser.setOutputByteStream(destination);
             if (wnode == null)
                 return false;
-            else if (wnode.getNodeType() == Node.DOCUMENT_NODE) 
+            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
                 ser.serialize((Document)wnode);
             else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
                 ser.serialize((DocumentFragment)wnode);
@@ -409,21 +417,21 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     }
 
     /**
-     * DOM L3 EXPERIMENTAL: 
-     *  Serialize the specified node as described above in the description of 
-     * <code>DOMWriter</code>. The result of serializing the node is 
-     * returned as a string. Writing a Document or Entity node produces a 
-     * serialized form that is well formed XML. Writing other node types 
-     * produces a fragment of text in a form that is not fully defined by 
-     * this document, but that should be useful to a human for debugging or 
-     * diagnostic purposes. 
-     * @param wnode  The node to be written. 
-     * @return  Returns the serialized data, or <code>null</code> in case a 
-     *   failure occured and the failure wasn't canceled by the error 
-     *   handler. 
+     * DOM L3 EXPERIMENTAL:
+     *  Serialize the specified node as described above in the description of
+     * <code>DOMSerializer</code>. The result of serializing the node is
+     * returned as a string. Writing a Document or Entity node produces a
+     * serialized form that is well formed XML. Writing other node types
+     * produces a fragment of text in a form that is not fully defined by
+     * this document, but that should be useful to a human for debugging or
+     * diagnostic purposes.
+     * @param wnode  The node to be written.
+     * @return  Returns the serialized data, or <code>null</code> in case a
+     *   failure occured and the failure wasn't canceled by the error
+     *   handler.
      * @exception DOMException
-     *    DOMSTRING_SIZE_ERR: The resulting string is too long to fit in a 
-     *   <code>DOMString</code>. 
+     *    DOMSTRING_SIZE_ERR: The resulting string is too long to fit in a
+     *   <code>DOMString</code>.
      */
     public String writeToString(Node wnode)
     throws DOMException {
@@ -479,24 +487,24 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     }
 
     /**
-     * DOM L3 EXPERIMENTAL: 
-     * The end-of-line sequence of characters to be used in the XML being 
-     * written out. The only permitted values are these: 
+     * DOM L3 EXPERIMENTAL:
+     * The end-of-line sequence of characters to be used in the XML being
+     * written out. The only permitted values are these:
      * <dl>
      * <dt><code>null</code></dt>
-     * <dd> 
-     * Use a default end-of-line sequence. DOM implementations should choose 
-     * the default to match the usual convention for text files in the 
-     * environment being used. Implementations must choose a default 
-     * sequence that matches one of those allowed by  2.11 "End-of-Line 
+     * <dd>
+     * Use a default end-of-line sequence. DOM implementations should choose
+     * the default to match the usual convention for text files in the
+     * environment being used. Implementations must choose a default
+     * sequence that matches one of those allowed by  2.11 "End-of-Line
      * Handling". </dd>
      * <dt>CR</dt>
      * <dd>The carriage-return character (#xD).</dd>
      * <dt>CR-LF</dt>
-     * <dd> The 
+     * <dd> The
      * carriage-return and line-feed characters (#xD #xA). </dd>
      * <dt>LF</dt>
-     * <dd> The line-feed 
+     * <dd> The line-feed
      * character (#xA). </dd>
      * </dl>
      * <br>The default value for this attribute is <code>null</code>.
@@ -507,24 +515,24 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 
 
     /**
-     * DOM L3 EXPERIMENTAL: 
-     * The end-of-line sequence of characters to be used in the XML being 
-     * written out. The only permitted values are these: 
+     * DOM L3 EXPERIMENTAL:
+     * The end-of-line sequence of characters to be used in the XML being
+     * written out. The only permitted values are these:
      * <dl>
      * <dt><code>null</code></dt>
-     * <dd> 
-     * Use a default end-of-line sequence. DOM implementations should choose 
-     * the default to match the usual convention for text files in the 
-     * environment being used. Implementations must choose a default 
-     * sequence that matches one of those allowed by  2.11 "End-of-Line 
+     * <dd>
+     * Use a default end-of-line sequence. DOM implementations should choose
+     * the default to match the usual convention for text files in the
+     * environment being used. Implementations must choose a default
+     * sequence that matches one of those allowed by  2.11 "End-of-Line
      * Handling". </dd>
      * <dt>CR</dt>
      * <dd>The carriage-return character (#xD).</dd>
      * <dt>CR-LF</dt>
-     * <dd> The 
+     * <dd> The
      * carriage-return and line-feed characters (#xD #xA). </dd>
      * <dt>LF</dt>
-     * <dd> The line-feed 
+     * <dd> The line-feed
      * character (#xA). </dd>
      * </dl>
      * <br>The default value for this attribute is <code>null</code>.
@@ -535,21 +543,21 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 
 
     /**
-     *  When the application provides a filter, the serializer will call out 
-     * to the filter before serializing each Node. Attribute nodes are never 
-     * passed to the filter. The filter implementation can choose to remove 
-     * the node from the stream or to terminate the serialization early. 
+     *  When the application provides a filter, the serializer will call out
+     * to the filter before serializing each Node. Attribute nodes are never
+     * passed to the filter. The filter implementation can choose to remove
+     * the node from the stream or to terminate the serialization early.
      */
-    public DOMWriterFilter getFilter(){
+    public DOMSerializerFilter getFilter(){
         return null;
     }
     /**
-     *  When the application provides a filter, the serializer will call out 
-     * to the filter before serializing each Node. Attribute nodes are never 
-     * passed to the filter. The filter implementation can choose to remove 
-     * the node from the stream or to terminate the serialization early. 
+     *  When the application provides a filter, the serializer will call out
+     * to the filter before serializing each Node. Attribute nodes are never
+     * passed to the filter. The filter implementation can choose to remove
+     * the node from the stream or to terminate the serialization early.
      */
-    public void setFilter(DOMWriterFilter filter){
+    public void setFilter(DOMSerializerFilter filter){
         serializer.fDOMFilter = filter;
     }
 
@@ -592,7 +600,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     }
 
     // copies all settings that could have been modified
-    // by calls to DOMWriter methods from one serializer to another.
+    // by calls to DOMSerializer methods from one serializer to another.
     // IMPORTANT:  if new methods are implemented or more settings of
     // the serializer are made alterable, this must be
     // reflected in this method!
@@ -610,9 +618,215 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
             Object val = src.fFeatures.get(key);
             dest.fFeatures.put(key,val);
         }
-    }
+    }//copysettings
 
-}
+    /**
+      *  Serialize the specified node as described above in the general
+      * description of the <code>DOMSerializer</code> interface. The output
+      * is written to the supplied <code>DOMOutput</code>.
+      * <br> When writing to a <code>DOMOutput</code>, the encoding is found by
+      * looking at the encoding information that is reachable through the
+      * <code>DOMOutput</code> and the item to be written (or its owner
+      * document) in this order:
+      * <ol>
+      * <li> <code>DOMOutput.encoding</code>,
+      * </li>
+      * <li>
+      * <code>Document.actualEncoding</code>,
+      * </li>
+      * <li>
+      * <code>Document.xmlEncoding</code>.
+      * </li>
+      * </ol>
+      * <br> If no encoding is reachable through the above properties, a
+      * default encoding of "UTF-8" will be used.
+      * <br> If the specified encoding is not supported an
+      * "unsupported-encoding" error is raised.
+      * <br> If no output is specified in the <code>DOMOutput</code>, a
+      * "no-output-specified" error is raised.
+      * @param node  The node to serialize.
+      * @param destination The destination for the serialized DOM.
+      * @return  Returns <code>true</code> if <code>node</code> was
+      *   successfully serialized and <code>false</code> in case the node
+      *   couldn't be serialized.
+      */
+    public boolean write(Node node,
+                         DOMOutput destination){
+      Method getVersion = null;
+      XMLSerializer ser = null;
+      String ver = null;
+      OutputStream fOutputStream = null;
+      String fEncoding = null;
+
+      Document fDocument = (node.getNodeType()== Node.DOCUMENT_NODE)?(Document)node:node.getOwnerDocument();
+      // this should run under JDK 1.1.8...
+      try {
+      getVersion = fDocument.getClass().getMethod("getVersion", new Class[]{});
+      if(getVersion != null ) {
+          ver = (String)getVersion.invoke(fDocument, null);
+      }
+      } catch (Exception e) {
+        // no way to test the version...
+        // ignore the exception
+      }
+      // determine which serializer to use:
+      if(ver != null && ver.equals("1.1")) {
+        if(xml11Serializer == null) {
+          xml11Serializer = new XML11Serializer();
+          initSerializer(xml11Serializer);
+        }
+       // copy setting from "main" serializer to XML 1.1 serializer
+      copySettings(serializer, xml11Serializer);
+      ser = xml11Serializer;
+      } else {
+      ser = serializer;
+      }
+      checkAllFeatures(ser);
+
+      Writer fWriter = destination.getCharacterStream();
+
+      if(fWriter==null){
+      fOutputStream = destination.getByteStream();
+      if( fOutputStream ==null){
+          if (ser.fDOMErrorHandler != null) {
+            DOMErrorImpl error = new DOMErrorImpl();
+            error.fMessage = "no-output-specified";
+            error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+            ser.fDOMErrorHandler.handleError(error);
+           }
+          return false;
+      }
+      if( (fEncoding = destination.getEncoding())== null){
+          fDocument = node.getOwnerDocument();
+          if( (fEncoding = fDocument.getActualEncoding()) == null)
+              if((fEncoding = fDocument.getXmlEncoding()) == null)
+                 fEncoding = "UTF-8";
+      }
+      }
+      try {
+        ser.reset();
+        if(fWriter!=null)
+          ser.setOutputCharStream(fWriter);
+        else if ( fOutputStream !=null){
+          serializer._format.setEncoding(fEncoding);
+          ser.setOutputByteStream(fOutputStream);
+        }
+        if (node == null)
+          return false;
+        else if (node.getNodeType() == Node.DOCUMENT_NODE)
+          ser.serialize((Document)node);
+        else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
+          ser.serialize((DocumentFragment)node);
+        else if (node.getNodeType() == Node.ELEMENT_NODE)
+          ser.serialize((Element)node);
+        else
+          return false;
+      } catch (Exception e) {
+      if (ser.fDOMErrorHandler != null) {
+            DOMErrorImpl error = new DOMErrorImpl();
+            error.fException = e;
+            error.fMessage = e.getMessage();
+            error.fSeverity = DOMError.SEVERITY_ERROR;
+            ser.fDOMErrorHandler.handleError(error);
+
+      }
+  }
+              return true;
+    } //write
+
+    /**
+      *  Serialize the specified node as described above in the general
+      * description of the <code>DOMSerializer</code> interface. The output
+      * is written to the supplied URI.
+      * <br> When writing to a URI, the encoding is found by looking at the
+      * encoding information that is reachable through the item to be written
+      * (or its owner document) in this order:
+      * <ol>
+      * <li>
+      * <code>Document.actualEncoding</code>,
+      * </li>
+      * <li>
+      * <code>Document.xmlEncoding</code>.
+      * </li>
+      * </ol>
+      * <br> If no encoding is reachable through the above properties, a
+      * default encoding of "UTF-8" will be used.
+      * <br> If the specified encoding is not supported an
+      * "unsupported-encoding" error is raised.
+      * @param node  The node to serialize.
+      * @param URI The URI to write to.
+      * @return  Returns <code>true</code> if <code>node</code> was
+      *   successfully serialized and <code>false</code> in case the node
+      *   couldn't be serialized.
+      */
+    public boolean writeURI(Node node,
+                            String URI){
+      // determine which serializer to use:
+      Method getVersion = null;
+      XMLSerializer ser = null;
+      String ver = null;
+      String fEncoding = null;
+
+      Document fDocument = (node.getNodeType()== Node.DOCUMENT_NODE)?(Document)node:node.getOwnerDocument();
+      // this should run under JDK 1.1.8...
+      try {
+        getVersion = fDocument.getClass().getMethod("getVersion", new Class[]{});
+        if(getVersion != null ) {
+          ver = (String)getVersion.invoke(fDocument, null);
+        }
+      } catch (Exception e) {
+        // no way to test the version...
+        // ignore the exception
+      }
+      if(ver != null && ver.equals("1.1")) {
+        if(xml11Serializer == null) {
+          xml11Serializer = new XML11Serializer();
+          initSerializer(xml11Serializer);
+        }
+        // copy setting from "main" serializer to XML 1.1 serializer
+        copySettings(serializer, xml11Serializer);
+        ser = xml11Serializer;
+      } else {
+        ser = serializer;
+      }
+      checkAllFeatures(ser);
+      if((fEncoding = fDocument.getActualEncoding())==null)
+        if((fEncoding = fDocument.getXmlEncoding())==null)
+          fEncoding = "UTF-8";
+
+      try {
+        ser.reset();
+        FileOutputStream fileOut = new FileOutputStream(new File(URI));
+        OutputStreamWriter fWriter = new OutputStreamWriter(fileOut, fEncoding);
+        if(fWriter!=null)
+          ser.setOutputCharStream(fWriter);
+        else
+          return false;
+
+        if (node == null)
+          return false;
+        else if (node.getNodeType() == Node.DOCUMENT_NODE)
+          ser.serialize((Document)node);
+        else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
+          ser.serialize((DocumentFragment)node);
+        else if (node.getNodeType() == Node.ELEMENT_NODE)
+          ser.serialize((Element)node);
+        else
+          return false;
+      } catch (Exception e) {
+        if (ser.fDOMErrorHandler != null) {
+          DOMErrorImpl error = new DOMErrorImpl();
+          error.fException = e;
+          error.fMessage = e.getMessage();
+          error.fSeverity = DOMError.SEVERITY_ERROR;
+          ser.fDOMErrorHandler.handleError(error);
+
+        }
+      }
+             return true;
+    } //writeURI
+
+}//DOMSerializerImpl
 
 
 

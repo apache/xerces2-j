@@ -106,7 +106,7 @@ import org.w3c.dom.Entity;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.Notation;
-import org.w3c.dom.ls.DOMWriterFilter;
+import org.w3c.dom.ls.DOMSerializerFilter;
 import org.w3c.dom.traversal.NodeFilter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -174,7 +174,7 @@ public abstract class BaseMarkupSerializer
     protected Hashtable fFeatures;
     protected DOMErrorHandler fDOMErrorHandler;
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
-    protected DOMWriterFilter fDOMFilter;
+    protected DOMSerializerFilter fDOMFilter;
 
     protected EncodingInfo _encodingInfo;
 
