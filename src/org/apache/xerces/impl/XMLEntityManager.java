@@ -2274,7 +2274,6 @@ public class XMLEntityManager
                         if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                             fCurrentEntity.ch[0] = (char)c;
                             load(1, false);
-                            fCurrentEntity.position = 0;
                         }
                         if (c == '\r') {
                             if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
