@@ -1,0 +1,3 @@
+all:: 
+	jar xvf ../style-apachexml.jar
+

@@ -30,7 +30,13 @@ jars:: compile
 docs:: ./src/classfiles_updated
 	@echo Building Stylebook docs in docs directory
 	${MKDIR} docs/html
-	$(STYLEBOOK) "targetDirectory=docs/html" docs/docs-book.xml tools/style-apachexml.jar
+# 	heinous hack to permit proper building of docs under Unix; stylebook 
+# 	can't look inside jar files on these platforms.
+	${MKDIR} ./tools/style-apachexml
+	${CP} ./tools/style-apachexml-Makefile ./tools/style-apachexml/Makefile
+	${MAKE} -C tools/style-apachexml
+	$(STYLEBOOK) "targetDirectory=docs/html" docs/docs-book.xml tools/style-apachexml
+	$(RM) -r ./tools/style-apachexml
 
 apidocs::
 	@echo Building apiDocs in docs directory.

@@ -86,7 +86,8 @@ Copyright:
 
     <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
     <property name="doc.generator.package" value="${tools.dir}/stylebook-1.0-b2.jar"/>
-    <property name="doc.style" value="${tools.dir}/style-apachexml.jar"/>
+    <property name="doc.style" value="${tools.dir}/style-apachexml"/>
+    <property name="doc.style.jar" value="${tools.dir}/style-apachexml.jar"/>
 
     <property name="build.dir" value="./build"/>
     <property name="build.src" value="${build.dir}/src"/>
@@ -252,6 +253,8 @@ Copyright:
   <!-- =================================================================== -->
   <target name="prepare-docs" depends="init">
     <mkdir dir="${build.docs}"/>
+    <unjar src="${doc.style.jar}"
+        dest="${doc.style}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -263,6 +266,7 @@ Copyright:
           classpath="${java.class.path}:${doc.generator.package}"
           classname="${doc.generator}"
           args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
+    <delete dir="${doc.style}"/>
   </target>
 
   <!-- =================================================================== -->
