@@ -283,12 +283,20 @@ public class XSModelImpl implements XSModel {
         
         // try to find the grammar
         int i = 0;
-        for (; i < fGrammarCount; i++) {
-            if (fNamespaces[i] == namespace)
-                break;
+        if (namespace != null) {
+            for (; i < fGrammarCount; ++i) {
+                if (namespace.equals(fNamespaces[i]))
+                    break;
+            }
+        }
+        else {
+            for (; i < fGrammarCount; ++i) {
+                if (fNamespaces[i] == null)
+                    break; 
+            }
         }
         if (i == fGrammarCount)
-            return null;
+            return XSNamedMapImpl.EMPTY_MAP;
         
         // get the hashtable for this type of components
         if (fNSComponents[i][objectType] == null) {
