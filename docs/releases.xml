@@ -4,94 +4,112 @@
 <releases>
  <release version='Xerces 2.0.0 (NOT YET RELEASED)'>
   <desc>
-   This release fixes a number of bugs, introduces more changes to
-   the Xerces Native Interface, provides partial experimental DOM Level 3 implementation, 
+   This release fixes a number of bugs, introduces more changes to the Xerces
+   Native Interface, provides partial experimental DOM Level 3 implementation,
    and includes full XML Schema support.
   </desc>
   <changes>
 
     <add>
     <note>
-     Added implementation of DOMInputSource, DOMError, DOMLocator and wrappers for entity resolver and error handler (DOM Level 3).
+     Added implementation of DOMInputSource, DOMError, DOMLocator and wrappers
+     for entity resolver and error handler (DOM Level 3).
     </note>
     <submitter name='Gopal Sharma, Elena Litani'/>
    </add>
 
    <add>
     <note>
-     Added implementation of DOMWriter, DocumentLS, DOMImplementationLS and new features     support for save and load: create-cdata-nodes, split-cdata-sections (DOM Level 3).
+     Added implementation of DOMWriter, DocumentLS, DOMImplementationLS and new
+     features support for save and load: create-cdata-nodes,
+     split-cdata-sections (DOM Level 3).
     </note>
     <submitter name='Rahul Srivastava, Elena Litani'/>
    </add>
 
    <add>
     <note>
-     Added implementation of DOMBuilder, DOMASBuilder and partial implementation of ASModel.      Add support for a new feature "include-comments" (DOM Level 3).
+     Added implementation of DOMBuilder, DOMASBuilder and partial
+     implementation of ASModel.  Add support for a new feature
+     "include-comments" (DOM Level 3).
     </note>
     <submitter name='Pavani Mukthipudi, Neil Graham, Elena Litani'/>
    </add>
 
    <add>
     <note>
-     Added Augmentations interface to core XNI interfaces and PSVI interfaces as an extension to XNI (unstable). Added DOM Level 3 interfaces to xerces.dom3 package. Modified samples accordingly.
+     Added Augmentations interface to core XNI interfaces and PSVI interfaces
+     as an extension to XNI (unstable). Added DOM Level 3 interfaces to
+     xerces.dom3 package. Modified samples accordingly.
     </note>
     <submitter name='Elena Litani'/>
    </add>
 
    <update>
     <note>
-     Modified XNI document handler interface to include Augmentations as an extra parameter on each parser event. Modified XMLAttributes interface to include getter methods for augmentations. 
+     Modified XNI document handler interface to include Augmentations as an
+     extra parameter on each parser event. Modified XMLAttributes interface to
+     include getter methods for augmentations.
     </note>
     <submitter name='Elena Litani'/>
    </update>
 
    <add>
     <note>
-     Implemented PSVI support in Xerces and added PSVIWriter, PSVIParser and PSVIConfiguration sample files. 
+     Implemented PSVI support in Xerces and added PSVIWriter, PSVIParser and
+     PSVIConfiguration sample files.
     </note>
     <submitter name='Arun Yadav, Elena Litani, Sandy Gao'/>
    </add>
    
    <add>
     <note>
-     Added "external-schemaLocation" and "external-noNamespaceSchemaLocation" properties.
+     Added "external-schemaLocation" and "external-noNamespaceSchemaLocation"
+     properties.
     </note>
     <submitter name='Sandy Gao'/>
    </add>
 
    <add>
     <note>
-     New schema simple type interface and implementation. It fixes various bugs in the old implementation, and provides enough informatin for PSVI support.
+     New schema simple type interface and implementation. It fixes various bugs
+     in the old implementation, and provides enough informatin for PSVI
+     support.
     </note>
     <submitter name='Sandy Gao, Neeraj Bajaj'/>
    </add>
 
    <update>
     <note>
-     Internalize all symbols in SymbolTable using java.jang.String#intern(). Now applications can compare the symbols by reference.
+     Internalize all symbols in SymbolTable using
+     java.jang.String#intern(). Now applications can compare the symbols by
+     reference.
     </note>
     <submitter name='Sandy Gao'/>
    </update>
 
    <add>
     <note>
-     Added "schema-full-checking" feature, and implemented "Unique Particle Attribution" constraint.
+     Added "schema-full-checking" feature, and implemented "Unique Particle
+     Attribution" constraint.
     </note>
     <submitter name='Sandy Gao'/>
    </add>
 
    <fix>
     <note>
-     Changed the default configuration to standard parser configuration (that does not include XML Schema validator), modified how and when the pipeline is constructed.
+     Changed the default configuration to standard parser configuration (that
+     does not include XML Schema validator), modified how and when the pipeline
+     is constructed.
     </note>
     <submitter name='Elena Litani'/>
    </fix>
 
    <fix>
     <note>
-     Changed XML Schema validation behavior back to validate only if
-     the http://xml.org/sax/features/validation feature is true. Note: XML Schema validation
-     is off by default.
+     Changed XML Schema validation behavior back to validate only if the
+     http://xml.org/sax/features/validation feature is true. Note: XML Schema
+     validation is off by default.
     </note>
     <submitter name='Andy Clark'/>
    </fix>
@@ -114,7 +132,10 @@
 
    <fix>
     <note>
-      Fixed cloneNode() for Entity, EntityReference and DocumentType. Fixed importNode() of EntityReference nodes which mistakenly carried the old value. Fixed handling EntityReference node subtrees that left the node empty in non deferred DOM. 
+      Fixed cloneNode() for Entity, EntityReference and DocumentType. Fixed
+      importNode() of EntityReference nodes which mistakenly carried the old
+      value. Fixed handling EntityReference node subtrees that left the node
+      empty in non deferred DOM.
     </note>
     <submitter name='Arnaud Le Hors'/>
    </fix>
@@ -129,7 +150,8 @@
 
    <fix>
     <note>
-     Fixed getElementById() in the DOMParser. Binded namespace attributes to  http://www.w3.org/2000/xmlns/ (DOM only).
+     Fixed getElementById() in the DOMParser. Binded namespace attributes to
+     http://www.w3.org/2000/xmlns/ (DOM only).
     </note>
     <submitter name='Elena Litani'/>
    </fix>
@@ -139,6 +161,16 @@
     <submitter name='Andy Clark, Elena Litani'/>
    </fix>
   
+   <add>
+    <note>
+     Added more DOM Level 3 interfaces to xerces.dom3 package. Implemented
+     DOMImplementationRegistry (DOMImplementationSource really),
+     Node.set/getTextContent(), Node.isSameNode(), Node.getInterface(),
+     Node.set/getUserData(). Extended dom.mem.Test to test these additions.
+    </note>
+    <submitter name='Arnaud Le Hors'/>
+   </add>
+
   </changes>
  </release>
 
@@ -163,7 +195,9 @@
 
   <add>
     <note>
-     Added new default parser configuration that includes DTD and XML Schema validators (DTDXSParserConfiguration). Implemented dynamic validation for both validators.
+     Added new default parser configuration that includes DTD and XML Schema
+     validators (DTDXSParserConfiguration). Implemented dynamic validation for
+     both validators.
     </note>
     <submitter name='Sandy Gao, Elena Litani'/>
    </add>
