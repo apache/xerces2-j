@@ -605,52 +605,55 @@ public interface Node {
      */
     public String getBaseURI();
 
-    // TreePosition
+
+    // DocumentPosition
+    /**
+     * The two nodes are disconnected. Order between disconnected nodes is 
+     * always implementation-specific.
+     */
+    public static final short DOCUMENT_POSITION_DISCONNECTED = 0x01;
     /**
      * The node precedes the reference node.
      */
-    public static final short TREE_POSITION_PRECEDING   = 0x01;
+    public static final short DOCUMENT_POSITION_PRECEDING = 0x02;
     /**
      * The node follows the reference node.
      */
-    public static final short TREE_POSITION_FOLLOWING   = 0x02;
+    public static final short DOCUMENT_POSITION_FOLLOWING = 0x04;
     /**
-     * The node is an ancestor of the reference node.
+     * The node contains the reference node. A node which contains is always 
+     * preceding, too.
      */
-    public static final short TREE_POSITION_ANCESTOR    = 0x04;
+    public static final short DOCUMENT_POSITION_CONTAINS = 0x08;
     /**
-     * The node is a descendant of the reference node.
+     * The node is contained by the reference node. A node which is contained 
+     * is always following, too.
      */
-    public static final short TREE_POSITION_DESCENDANT  = 0x08;
+    public static final short DOCUMENT_POSITION_IS_CONTAINED = 0x10;
     /**
-     * The two nodes have an equivalent position. This is the case of two 
-     * attributes that have the same <code>ownerElement</code>, and two 
-     * nodes that are the same.
+     * The determination of preceding versus following is 
+     * implementation-specific.
      */
-    public static final short TREE_POSITION_EQUIVALENT  = 0x10;
-    /**
-     * The two nodes are the same. Two nodes that are the same have an 
-     * equivalent position, though the reverse may not be true.
-     */
-    public static final short TREE_POSITION_SAME_NODE   = 0x20;
-    /**
-     * The two nodes are disconnected, they do not have any common ancestor. 
-     * This is the case of two nodes that are not in the same document.
-     */
-    public static final short TREE_POSITION_DISCONNECTED = 0x00;
+    public static final short DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
     /**
      * Compares a node with this node with regard to their position in the 
-     * tree and according to the document order. This order can be extended 
-     * by module that define additional types of nodes.Should this method be 
+     * document and according to the document order.Should this method be 
      * optional?No.Need reference for namespace nodes.No, instead avoid 
-     * referencing them directly.
+     * referencing them directly.Used for Attr nodes that are not part of 
+     * the tree.Change "Tree" to "Document". (F2F 30 Apr 2002)
      * @param other The node to compare against this node.
      * @return Returns how the given node is positioned relatively to this 
      *   node.
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: when the compared nodes are from different DOM 
+     *   implementations that do not coordinate to return consistent 
+     *   implementation-specific results.
      * @since DOM Level 3
      */
-    public short compareTreePosition(Node other);
+    public short compareDocumentPosition(Node other)
+                                         throws DOMException;
+
 
     /**
      * This attribute returns the text content of this node and its 
