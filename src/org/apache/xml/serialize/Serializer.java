@@ -277,9 +277,11 @@ public abstract class Serializer
 	    else
 	    if ( format.getMethod().equalsIgnoreCase( "xhtml" ) )
 		serializer = new HTMLSerializer();
+	    /*
 	    else
 	    if ( format.getMethod().equalsIgnoreCase( "fop" ) )
 		serializer = new FOPSerializer();
+	    */
 	    else
 		serializer = new XMLSerializer();
 	}
