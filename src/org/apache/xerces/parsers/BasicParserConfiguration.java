@@ -307,7 +307,7 @@ public abstract class BasicParserConfiguration
                 String featureId = recognizedFeatures[i];
                 Boolean state = component.getFeatureDefault(featureId);
                 if (state != null) {
-                    setFeature(featureId, state.booleanValue());
+                    super.setFeature(featureId, state.booleanValue());
                 }
             }
         }
@@ -316,7 +316,7 @@ public abstract class BasicParserConfiguration
                 String propertyId = recognizedProperties[i];
                 Object value = component.getPropertyDefault(propertyId);
                 if (value != null) {
-                    setProperty(propertyId, value);
+                    super.setProperty(propertyId, value);
                 }
             }
         }
