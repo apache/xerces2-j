@@ -2025,7 +2025,10 @@ public class XMLSchemaValidator
         int oldCount = fMatcherStack.getMatcherCount();
         for (int i = oldCount - 1; i >= 0; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.endElement(element, fCurrentElemDecl, fCurrentPSVI);
+            matcher.endElement(element, fCurrentElemDecl,
+                               defaultValue == null ?
+                               fValidatedInfo.normalizedValue :
+                               fCurrentElemDecl.fDefault.normalizedValue);
         }
         if (fMatcherStack.size() > 0) {
             fMatcherStack.popContext();

@@ -205,8 +205,8 @@ public class XPathMatcher {
 
     // a place-holder method; to be overridden by subclasses
     // that care about matching element content.
-    protected void handleContent(XSElementDecl eDecl, ElementPSVI ePSVI) { 
-    } // handleContent(XSElementDecl, ElementPSVI)
+    protected void handleContent(XSElementDecl eDecl, String value) { 
+    } // handleContent(XSElementDecl, String)
 
     /**
      * This method is called when the XPath handler matches the
@@ -451,7 +451,7 @@ public class XPathMatcher {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element, XSElementDecl eDecl, ElementPSVI ePSVI) {
+    public void endElement(QName element, XSElementDecl eDecl, String value) {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
@@ -478,7 +478,7 @@ public class XPathMatcher {
                 // match element content.  This permits
                 // them a way to override this to do nothing
                 // and hopefully save a few operations.
-                handleContent(eDecl, ePSVI);
+                handleContent(eDecl, value);
                 fMatched[i] = 0;
             }
 

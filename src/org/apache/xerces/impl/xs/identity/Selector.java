@@ -275,8 +275,8 @@ public class Selector {
 
         } // startElement(QName,XMLAttrList,int)
 
-        public void endElement(QName element, XSElementDecl eDecl, ElementPSVI ePSVI) {
-            super.endElement(element, eDecl, ePSVI);
+        public void endElement(QName element, XSElementDecl eDecl, String value) {
+            super.endElement(element, eDecl, value);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;
                 fFieldActivator.endValueScopeFor(fIdentityConstraint, fInitialDepth);

@@ -172,12 +172,12 @@ public class Field {
             //       order to handle selectors such as "@attr" that 
             //       select the attribute because the fields could be
             //       relative to the selector element. -Ac
-			//       Unless xpath starts with a descendant node -Achille Fokoue
+            //       Unless xpath starts with a descendant node -Achille Fokoue
             //      ... or a / or a . - NG
-			super(((xpath.trim().startsWith("/") ||xpath.trim().startsWith("."))?
-				    xpath:"./"+xpath), 
+            super(((xpath.trim().startsWith("/") ||xpath.trim().startsWith("."))?
+                    xpath:"./"+xpath), 
                   symbolTable, context);
-			
+            
         } // <init>(String,SymbolTable,NamespacesContext)
 
     } // class XPath
@@ -228,7 +228,7 @@ public class Field {
             mayMatch = false;
         } // matched(String)
 
-        protected void handleContent(XSElementDecl eDecl, ElementPSVI ePSVI) { 
+        protected void handleContent(XSElementDecl eDecl, String value) { 
             // REVISIT:  make sure type is simple!
             XSSimpleType val=null;
 
@@ -252,13 +252,13 @@ public class Field {
                 fStore.reportError(code, new Object[]{fIdentityConstraint.getName(), name});
                 return;
             }
-            fMatchedString = ePSVI.getSchemaNormalizedValue();
+            fMatchedString = value;
             if(eDecl != null) {
                 matched(fMatchedString, val, (eDecl.getIsNillable()));
             } else {
                 matched(fMatchedString, val, false); 
             }
-        } // handleContent(XSElementDecl, ElementPSVI)
+        } // handleContent(XSElementDecl, String)
 
     } // class Matcher
 
