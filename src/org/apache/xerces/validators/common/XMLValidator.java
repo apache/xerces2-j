@@ -778,9 +778,11 @@ public final class XMLValidator
         fElementChildCount[fElementDepth] = 0;
 
 	//REVISIT: Validation
-	int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
-	int index = fCurrentElementIndex & CHUNK_MASK;
-	fCurrentScope = fScope[chunk][index];
+	if ( fCurrentElementIndex > -1 ) {
+	    int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
+	    int index = fCurrentElementIndex & CHUNK_MASK;
+	    fCurrentScope = fScope[chunk][index];
+	}
 	fScopeStack[fElementDepth] = fCurrentScope;
 	fSchemaURIStack[fElementDepth] = fCurrentSchemaURI;
 
