@@ -426,6 +426,7 @@ public class StandardParserConfiguration
      *                         specified locale.
      */
     public void setLocale(Locale locale) throws XNIException {
+    	super.setLocale(locale);
         fErrorReporter.setLocale(locale);
     } // setLocale(Locale)
 
