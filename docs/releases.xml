@@ -8,6 +8,13 @@
    XNI parser configuration framework has been added in this release.
   </desc>
   <changes>
+   <add>
+    <note>
+     Added document and DTD scanner interfaces to XNI to allow
+     parser configuration pipelines to be constructed generically.
+    </note>
+    <submitter name='Andy Clark'/>
+   </add>
    <fix>
     <note>
      Fixed bug in DTD grammar for mixed content models that was 
