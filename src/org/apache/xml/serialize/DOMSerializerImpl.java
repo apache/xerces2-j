@@ -675,7 +675,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         }
         try {
             ser.reset();
-            serializer._format.setEncoding(encoding);
+            ser._format.setEncoding(encoding);
             OutputStream outputStream = destination.getByteStream();
             Writer writer = destination.getCharacterStream();
             String uri =  destination.getSystemId();
@@ -721,7 +721,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                             }
                             out = urlCon.getOutputStream();
                         }
-                        ser.setOutputCharStream( new OutputStreamWriter(out, encoding) );
+                        ser.setOutputByteStream(out);
                     }
                 }
                 else {
@@ -855,6 +855,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
         try {
             ser.reset();
+            ser._format.setEncoding(encoding);
             
             // URI was specified. Handle relative URIs.
             String expanded = XMLEntityManager.expandSystemId(URI, null, true);
@@ -885,7 +886,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 }
                 out = urlCon.getOutputStream();
             }
-            ser.setOutputCharStream( new OutputStreamWriter(out, encoding) );
+            ser.setOutputByteStream(out);
 
             if (node.getNodeType() == Node.DOCUMENT_NODE)
                 ser.serialize((Document) node);
