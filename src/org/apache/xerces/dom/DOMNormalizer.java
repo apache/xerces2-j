@@ -1476,7 +1476,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
 			// include element default content (if one is available)
 			String normalizedValue = elementPSVI.getSchemaNormalizedValue();
 			if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
-				elementNode.setTextContent(normalizedValue);
+                if (normalizedValue !=null)
+				    elementNode.setTextContent(normalizedValue);
 			}
 			else {
 				// NOTE: this is a hack: it is possible that DOM had an empty element
