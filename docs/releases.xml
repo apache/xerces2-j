@@ -4,7 +4,7 @@
 <s1 title="Releases">
     <s2 title="February 8, 2000">
         <ul>
-            <li>Removed hard-coded strings to enable national language support (NLS) [jeffreyr,lehors,rip]
+            <li>Removed hard-coded strings to enable national language support (NLS) [jeffreyr,lehors,rip]</li>
             <li>Update for SAX2beta [andyc]</li>
             <li>Add new feature <code>http://apache.org/xml/features/dom/include-ignorable-whitespace</code> [andyc]</li>
             <li>ChunkyByteArray - needed resize chunk array for large files [andyc] </li>
