@@ -1515,7 +1515,7 @@ public class XMLSchemaValidator
             augs.putItem(ELEM_PSVI, fCurrentPSVI);
         }
         fCurrentPSVI.reset();
-        
+
         // if we are skipping, return
         // if there is no validation root, return
         if (fSkipValidationDepth >= 0 || fValidationRootDepth == -1) {
@@ -1612,17 +1612,17 @@ public class XMLSchemaValidator
             }
             fValidationState.resetIDTables();
         }
-        
+
         // PSVI: validation attempted
         if (fElementDepth <= fPartialValidationDepth) {
             // the element had child with a content skip.
-            fCurrentPSVI.fValidationAttempted = ElementPSVI.PARTIAL_VALIDATION;           
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.PARTIAL_VALIDATION;
             if (fElementDepth == fPartialValidationDepth) {
                 // set depth to the depth of the parent
                 fPartialValidationDepth--;
             }
-        } 
-        else {        
+        }
+        else {
             fCurrentPSVI.fValidationAttempted = ElementPSVI.FULL_VALIDATION;
         }
 
@@ -2114,25 +2114,24 @@ public class XMLSchemaValidator
     XMLString processElementContent(QName element) {
         // fCurrentElemDecl: default value; ...
         XMLString defaultValue = null;
-        if (fCurrentElemDecl != null) {
-            if (fCurrentElemDecl.fDefault != null) {
-                if (fBuffer.toString().trim().length() == 0) {
+        // 1 If the item is ·valid· with respect to an element declaration as per Element Locally Valid (Element) (§3.3.4) and the {value constraint} is present, but clause 3.2 of Element Locally Valid (Element) (§3.3.4) above is not satisfied and the item has no element or character information item [children], then schema. Furthermore, the post-schema-validation infoset has the canonical lexical representation of the {value constraint} value as the item's [schema normalized value] property.
+        if (fCurrentElemDecl != null && fCurrentElemDecl.fDefault != null &&
+            fBuffer.toString().length() == 0 && fChildCount == 0 && !fNil) {
 
-                    // PSVI: specified
-                    fCurrentPSVI.fSpecified = false;
+            // PSVI: specified
+            fCurrentPSVI.fSpecified = false;
 
-                    int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
-                    char [] chars = new char[bufLen];
-                    fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, chars, 0);
-                    defaultValue = new XMLString(chars, 0, bufLen);
-                    // call all active identity constraints
-                    int count = fMatcherStack.getMatcherCount();
-                    for (int i = 0; i < count; i++) {
-                        XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-                        matcher.characters(defaultValue);
-                    }
-                }
+            int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
+            char [] chars = new char[bufLen];
+            fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, chars, 0);
+            defaultValue = new XMLString(chars, 0, bufLen);
+            // call all active identity constraints
+            int count = fMatcherStack.getMatcherCount();
+            for (int i = 0; i < count; i++) {
+                XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                matcher.characters(defaultValue);
             }
+
         }
         // fixed values are handled later, after xsi:type determined.
 
