@@ -314,7 +314,10 @@ public class HTMLSerializer
                     } else {
                         // HTML: Empty values print as attribute name, no value.
                         // HTML: URI attributes will print unescaped
-                        if ( value == null || value.length() == 0 )
+                        if ( value == null ) {
+                            value = "";
+                        }
+                        if ( !_format.getPreserveEmptyAttributes() && value.length() == 0 )
                             _printer.printText( name );
                         else if ( HTMLdtd.isURI( rawName, name ) ) {
                             _printer.printText( name );
@@ -558,7 +561,10 @@ public class HTMLSerializer
                     } else {
                         // HTML: Empty values print as attribute name, no value.
                         // HTML: URI attributes will print unescaped
-                        if ( value == null || value.length() == 0 )
+                        if ( value == null ) {
+                            value = "";
+                        }
+                        if ( !_format.getPreserveEmptyAttributes() && value.length() == 0 )
                             _printer.printText( name );
                         else if ( HTMLdtd.isURI( tagName, name ) ) {
                             _printer.printText( name );
@@ -768,7 +774,10 @@ public class HTMLSerializer
                     } else {
                         // HTML: Empty values print as attribute name, no value.
                         // HTML: URI attributes will print unescaped
-                        if ( value == null || value.length() == 0 )
+                        if ( value == null ) {
+                            value = "";
+                        }
+                        if ( !_format.getPreserveEmptyAttributes() && value.length() == 0 )
                             _printer.printText( name );
                         else if ( HTMLdtd.isURI( tagName, name ) ) {
                             _printer.printText( name );

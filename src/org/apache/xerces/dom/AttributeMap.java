@@ -385,6 +385,13 @@ public class AttributeMap extends NamedNodeMapImpl {
                     if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
                         NodeImpl clone = (NodeImpl)d.cloneNode(true);
                         clone.ownerNode = ownerNode;
+                         // we must rely on the name to find a default attribute
+                        // ("test:attr"), but while copying it from the DOCTYPE
+                        // we should not loose namespace URI that was assigned
+                        // to the attribute in the instance document.
+                        if (clone instanceof AttrNSImpl) {
+                            ((AttrNSImpl)clone).namespaceURI = namespaceURI;
+                        }
                         clone.isOwned(true);
                         clone.isSpecified(false);
                         nodes.setElementAt(clone, i);

@@ -45,6 +45,14 @@
             <li> year and seconds values in date/time datatypes are limited to the 
             value 2147483647. Items larger than this limit will not be validated 
             correctly. </li>
+            <li>Due to the way in which the parser constructs content
+            models for elements with complex content, specifying large
+            values for the <code>minOccurs</code> or <code>maxOccurs</code>
+            attributes may cause the parser to throw a
+            <code>StackOverflowError</code>.  Large values for
+            <code>minOccurs</code> should be avoided, and
+            <code>unbounded</code> should be used instead of a large value
+            for <code>maxOccurs</code>.</li>
         </ul>
     </s2>
     <s2 title='Problem Areas/Known Bugs'>

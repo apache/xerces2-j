@@ -237,9 +237,18 @@ public final class XMLValidator
    private boolean fWarningOnUndeclaredElements = false;
    private boolean fNormalizeAttributeValues = true;
    private boolean fLoadDTDGrammar = true;
+   // expose normalized values for element/attribute content
+   // default: expose Infoset
+   private boolean fNormalizeContents = false;
 
+   // REVISIT: normalization
+   // would not work properly for UNION types since we don't have
+   // correct whiteSpace facet to normalize values.
+   //
+   
    // Private temporary variables
-   private Hashtable fLocationUriPairs = new Hashtable(10);
+   
+  private Hashtable fLocationUriPairs = new Hashtable(10);
 
 
    // declarations
@@ -322,6 +331,7 @@ public final class XMLValidator
    private char[] fCharRefData = null;
    private boolean fSendCharDataAsCharArray = false;
    private boolean fBufferDatatype = false;
+   // holds normalized or unnormalized string element value, 
    private StringBuffer fDatatypeBuffer = new StringBuffer();
 
    private QName fTempQName = new QName();
@@ -340,8 +350,8 @@ public final class XMLValidator
     private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
     private boolean fTrailing = false;  // Previous chunk had a trailing space
     private short fWhiteSpace = DatatypeValidator.COLLAPSE;  //whiteSpace: preserve/replace/collapse
-    private StringBuffer fStringBuffer = new StringBuffer(CHUNK_SIZE);  //holds normalized str value
-    private StringBuffer fTempBuffer = new StringBuffer(CHUNK_SIZE);  //holds unnormalized str value
+    private StringBuffer fNormalizedStr = new StringBuffer(CHUNK_SIZE);  //holds normalized str value
+    private StringBuffer fUnnormalizedStr = new StringBuffer(CHUNK_SIZE);  //holds unnormalized str value
 
 
 
@@ -622,6 +632,14 @@ public final class XMLValidator
       return fWarningOnUndeclaredElements;
    }
 
+   /** Sets fNormalizeContents **/
+   public void setNormalizeContents(boolean normalize){
+      fNormalizeContents = normalize;
+   }
+   public boolean getNormalizeConents() {
+      return fNormalizeContents;
+   }
+
     //
     // FieldActivator methods
     //
@@ -723,6 +741,13 @@ public final class XMLValidator
    // XMLEntityHandler.CharDataHandler methods
    //
 
+   private String normalizeValue (String unNormalizedValue){
+       fUnnormalizedStr.setLength(0);
+       fUnnormalizedStr.append(unNormalizedValue);
+       normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace == DatatypeValidator.COLLAPSE));
+       return fNormalizedStr.toString();                                                          
+   }
+
     /**
      * Normalize whitespace in an XMLString according to the rules of attribute
      * value normalization - converting all whitespace characters to space
@@ -739,8 +764,8 @@ public final class XMLValidator
      */
 
     private int normalizeWhitespace( StringBuffer chars, boolean collapse) {
-        int length = fTempBuffer.length();
-        fStringBuffer.setLength(0);
+        int length = fUnnormalizedStr.length();
+        fNormalizedStr.setLength(0);
         boolean skipSpace = collapse;
         boolean sawNonWS = false;
         int leading = 0;
@@ -751,7 +776,7 @@ public final class XMLValidator
             if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
-                    fStringBuffer.append(' ');
+                    fNormalizedStr.append(' ');
                     skipSpace = collapse;
                 }
                 if (!sawNonWS) {
@@ -760,16 +785,16 @@ public final class XMLValidator
                 }
             }
             else {
-                fStringBuffer.append((char)c);
+                fNormalizedStr.append((char)c);
                 skipSpace = false;
                 sawNonWS = true;
             }
         }
         if (skipSpace) {
-            c = fStringBuffer.length();
+            c = fNormalizedStr.length();
             if ( c != 0) {
                 // if we finished on a space trim it but also record it
-                fStringBuffer.setLength (--c);
+                fNormalizedStr.setLength (--c);
                 trailing = 2;
             }
             else if (leading != 0 && !sawNonWS) {
@@ -778,7 +803,7 @@ public final class XMLValidator
                 trailing = 2;
             }
         }
-        //value.setValues(fStringBuffer);
+        //value.setValues(fNormalizedStr);
         return collapse ? leading + trailing : 0;
     }
 
@@ -798,6 +823,10 @@ public final class XMLValidator
             if (fFirstChunk && fGrammar!=null) {
                 fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
                 fCurrentDV = fTempElementDecl.datatypeValidator;
+                if ( fXsiTypeValidator != null ) {
+                   fCurrentDV = fXsiTypeValidator;
+                   fXsiTypeValidator = null;
+                }
                 if (fCurrentDV !=null) {
                     fWhiteSpace = fCurrentDV.getWSFacet();
                 }
@@ -805,28 +834,28 @@ public final class XMLValidator
             if (DEBUG_NORMALIZATION) {
                 System.out.println("Start schema datatype normalization <whiteSpace value=" +fWhiteSpace+">");
             }
-            if (fWhiteSpace == DatatypeValidator.PRESERVE) { //do not normalize
+            if (!fNormalizeContents || fWhiteSpace == DatatypeValidator.PRESERVE) { //do not normalize                
                 fDatatypeBuffer.append(chars, offset, length);
             }
             else {
-                fTempBuffer.setLength(0);
-                fTempBuffer.append(chars, offset, length);
-                int spaces = normalizeWhitespace(fTempBuffer, (fWhiteSpace==DatatypeValidator.COLLAPSE));
-                int nLength = fStringBuffer.length();
+                fUnnormalizedStr.setLength(0);
+                fUnnormalizedStr.append(chars, offset, length);
+                int spaces = normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace==DatatypeValidator.COLLAPSE));
+                int nLength = fNormalizedStr.length();
                 if (nLength > 0) {
                     if (!fFirstChunk && (fWhiteSpace==DatatypeValidator.COLLAPSE) && fTrailing) {
-                         fStringBuffer.insert(0, ' ');
+                         fNormalizedStr.insert(0, ' ');
                          nLength++;
                     }
                     if ((length-offset)!=nLength) {
                         char[] newChars = new char[nLength];
-                        fStringBuffer.getChars(0, nLength , newChars, 0);
+                        fNormalizedStr.getChars(0, nLength , newChars, 0);
                         chars = newChars;
                         offset = 0;
                         length = nLength;
                     }
                     else {
-                       fStringBuffer.getChars(0, nLength , chars, 0);
+                       fNormalizedStr.getChars(0, nLength , chars, 0);
                     }
                     fDatatypeBuffer.append(chars, offset, length);
 
@@ -876,24 +905,28 @@ public final class XMLValidator
             fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
             //REVISIT: add normalization according to datatypes
             fCurrentDV = fTempElementDecl.datatypeValidator;
+            if ( fXsiTypeValidator != null ) {
+               fCurrentDV = fXsiTypeValidator;
+               fXsiTypeValidator = null;
+            }
             if (fCurrentDV !=null) {
                 fWhiteSpace = fCurrentDV.getWSFacet();
             }
-            if (fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
+            if (!fNormalizeContents || fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
                 fDatatypeBuffer.append(fStringPool.toString(data));
             }
             else {
                 String str =  fStringPool.toString(data);
                 int length = str.length();
-                fTempBuffer.setLength(0);
-                fTempBuffer.append(str);
-                int spaces = normalizeWhitespace(fTempBuffer, (fWhiteSpace == DatatypeValidator.COLLAPSE));
+                fUnnormalizedStr.setLength(0);
+                fUnnormalizedStr.append(str);
+                int spaces = normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace == DatatypeValidator.COLLAPSE));
                 if (fWhiteSpace != DatatypeValidator.PRESERVE) {
                     //normalization was done.
                     fStringPool.releaseString(data);
-                    data = fStringPool.addString(fStringBuffer.toString());
+                    data = fStringPool.addString(fNormalizedStr.toString());
                 }
-                fDatatypeBuffer.append(fStringBuffer.toString());
+                fDatatypeBuffer.append(fNormalizedStr.toString());
             }
         }
       }
@@ -943,6 +976,24 @@ public final class XMLValidator
              }
              matcher.characters(chars, offset, length);
          }
+         if (fGrammar != null && fValidating) {
+
+             fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+             fCurrentDV = fTempElementDecl.datatypeValidator;
+             if ( fXsiTypeValidator != null ) {
+                fCurrentDV = fXsiTypeValidator;
+                fXsiTypeValidator = null;
+             }
+             if (fCurrentDV !=null) {
+                fWhiteSpace = fCurrentDV.getWSFacet();
+             }
+
+
+            if (fWhiteSpace == DatatypeValidator.PRESERVE) { //do not normalize
+                fDatatypeBuffer.append(chars, offset, length);
+            }
+
+         }
 
          fDocumentHandler.characters(chars, offset, length);
       }
@@ -980,6 +1031,21 @@ public final class XMLValidator
              }
          }
 
+         if (fGrammar != null && fValidating) {
+            fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+            fCurrentDV = fTempElementDecl.datatypeValidator;
+            if ( fXsiTypeValidator != null ) {
+               fCurrentDV = fXsiTypeValidator;
+               fXsiTypeValidator = null;
+            }
+            if (fCurrentDV !=null) {
+                fWhiteSpace = fCurrentDV.getWSFacet();
+            }
+            if (fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
+                fDatatypeBuffer.append(fStringPool.toString(data));
+            }
+
+         }
          fDocumentHandler.characters(data);
       }
 
@@ -1150,6 +1216,10 @@ public final class XMLValidator
       fCheckedForSchema = true;
       if (fNamespacesEnabled) {
          bindNamespacesToElementAndAttributes(element, fAttrList);
+      }
+
+      if (fDynamicValidation && fGrammar==null) {
+         fValidating = false;
       }
 
       if (!fSeenRootElement) {
@@ -1537,7 +1607,7 @@ public final class XMLValidator
 
       if ( DEBUG_SCHEMA_VALIDATION ) {
 
-		System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
+        System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
                    "\n fCurrentElementIndex : " + fCurrentElementIndex +
                    "\n fCurrentScope : " + fCurrentScope +
                    "\n fCurrentContentSpecType : " + fCurrentContentSpecType +
@@ -1942,6 +2012,7 @@ public final class XMLValidator
       fValidating = fValidationEnabled;
       fValidationEnabledByDynamic = false;
       fDynamicDisabledByValidation = false;
+      fNormalizeContents = false;
       poolReset();
       fCalledStartDocument = false;
       fStandaloneReader = -1;
@@ -2100,16 +2171,16 @@ public final class XMLValidator
                        (  fStringPool.equalNames(attrList.getAttrLocalpart(i), attName)
                           && fStringPool.equalNames(attrList.getAttrURI(i), fTempAttDecl.name.uri) ) ) {
 
-            		if (prohibited && validationEnabled) {
-                  		Object[] args = { fStringPool.toString(elementNameIndex),
-                     		fStringPool.toString(attName)};
-						fErrorReporter.reportError(fErrorReporter.getLocator(),
-								SchemaMessageProvider.SCHEMA_DOMAIN,
-								SchemaMessageProvider.ProhibitedAttributePresent,
-								SchemaMessageProvider.MSG_NONE,
-								args,
-								XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-               		}
+                    if (prohibited && validationEnabled) {
+                        Object[] args = { fStringPool.toString(elementNameIndex),
+                            fStringPool.toString(attName)};
+                        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                SchemaMessageProvider.SCHEMA_DOMAIN,
+                                SchemaMessageProvider.ProhibitedAttributePresent,
+                                SchemaMessageProvider.MSG_NONE,
+                                args,
+                                XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                    }
                      specified = true;
                      break;
                   }
@@ -2146,6 +2217,7 @@ public final class XMLValidator
                   }
                }
                if (validationEnabled) {
+                   // default value should have been already normalized
                    validateUsingDV (fTempAttDecl.datatypeValidator,
                                     fStringPool.toString(attValue), true);
                }
@@ -2413,9 +2485,6 @@ public final class XMLValidator
          if (fGrammar == null) {
 
             fGrammar = fGrammarResolver.getGrammar("");
-            if (fDynamicValidation && fGrammar==null) {
-               fValidating = false;
-            }
 
             if (fGrammar != null) {
                if (fGrammar instanceof DTDGrammar) {
@@ -2450,7 +2519,7 @@ public final class XMLValidator
             fNamespacesScope = new NamespacesScope(this);
             fNamespacesPrefix = fStringPool.addSymbol("xmlns");
             //fNamespacesScope.setNamespaceForPrefix(fNamespacesPrefix, StringPool.EMPTY_STRING);
-		// xxxxx
+        // xxxxx
             fNamespacesScope.setNamespaceForPrefix(fNamespacesPrefix, -1);
             int xmlSymbol = fStringPool.addSymbol("xml");
             int xmlNamespace = fStringPool.addSymbol("http://www.w3.org/XML/1998/namespace");
@@ -2506,6 +2575,14 @@ public final class XMLValidator
                if (attPrefix == fNamespacesPrefix) {
                   int nsPrefix = attrList.getAttrLocalpart(index);
                   int uri = fStringPool.addSymbol(attrList.getAttValue(index));
+                  if(uri == StringPool.EMPTY_STRING) {
+ 		 		      Object[] args = { fStringPool.toString(nsPrefix) };
+ 		 		      fErrorReporter.reportError(fErrorReporter.getLocator(),
+ 		 		 		 		 		 		 XMLMessages.XMLNS_DOMAIN,
+ 		 		 		 		 		 		 XMLMessages.MSG_NAMESPACE_NAME_EMPTY,
+ 		 		 		 		 		 		 XMLMessages.NC_NAMESPACE_NAME_EMPTY,
+ 		 		 		 		 		 		 args, XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+ 		 		   }
                   fNamespacesScope.setNamespaceForPrefix(nsPrefix, uri);
 
                   if (fValidating && fSchemaValidation) {
@@ -2553,6 +2630,7 @@ public final class XMLValidator
              }
 
             fXsiTypeAttValue = -1;
+            fNil = false;
             index = attrList.getFirstAttr(fAttrListHandle);
             int attName;
             int attPrefix;
@@ -3277,11 +3355,14 @@ public final class XMLValidator
                         fGrammarNameSpaceIndex = fCurrentSchemaURI = uriIndex;
                         boolean success = switchGrammar(fCurrentSchemaURI);
                         if (!success && !fNeedValidationOff) {
-                           reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                                                     XMLMessages.SCHEMA_GENERIC_ERROR,
-                                                     "Grammar with uri: "
-                                                     + fStringPool.toString(fCurrentSchemaURI)
-                                                     + " , can not be found");
+                           // only report an error if the new namespace is not
+                           // the schema namespace
+                           if (!uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA))
+                               reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                                         XMLMessages.SCHEMA_GENERIC_ERROR,
+                                                         "Grammar with uri: "
+                                                         + fStringPool.toString(fCurrentSchemaURI)
+                                                         + " , can not be found");
                         }
                      }
                   }
@@ -3321,21 +3402,21 @@ public final class XMLValidator
                         if(tempVal == null) {
                             // now if ancestorValidator is a union, then we must
                             // look through its members to see whether we derive from any of them.
-			                if(ancestorValidator instanceof UnionDatatypeValidator) {
-			                    // fXsiTypeValidator must derive from one of its members...
-			                    Vector subUnionMemberDV = ((UnionDatatypeValidator)ancestorValidator).getBaseValidators();
-			                    int subUnionSize = subUnionMemberDV.size();
-			                    boolean found = false;
-			                    for (int i=0; i<subUnionSize && !found; i++) {
-			                        DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
-			                        DatatypeValidator dTemp = fXsiTypeValidator;
-			                        for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
-			                            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-			                            if(dTempSub == dTemp) {
-			                                found = true;
-			                                break;
-			                            }
-			                        }
+                            if(ancestorValidator instanceof UnionDatatypeValidator) {
+                                // fXsiTypeValidator must derive from one of its members...
+                                Vector subUnionMemberDV = ((UnionDatatypeValidator)ancestorValidator).getBaseValidators();
+                                int subUnionSize = subUnionMemberDV.size();
+                                boolean found = false;
+                                for (int i=0; i<subUnionSize && !found; i++) {
+                                    DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+                                    DatatypeValidator dTemp = fXsiTypeValidator;
+                                    for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
+                                        // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+                                        if(dTempSub == dTemp) {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
                                     if (!found) {
                                         // if dTempSub is anySimpleType,
                                         // then the derivation is ok.
@@ -3343,14 +3424,14 @@ public final class XMLValidator
                                             found = true;
                                         }
                                     }
-			                    }
-			                    if(!found) {
+                                }
+                                if(!found) {
                                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                         XMLMessages.SCHEMA_GENERIC_ERROR,
                                         "Type : "+uri+","+localpart
                                         +" does not derive from the type of element " + fStringPool.toString(elementNameLocalPart));
-			                    }
-			                } else
+                                }
+                            } else
                             if ((ancestorValidator == null &&
                                  ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex) == null) ||
                                 (ancestorValidator instanceof AnySimpleType)) {
@@ -3422,21 +3503,21 @@ public final class XMLValidator
                             if(tempVal == null) {
                                 // now if ancestorValidator is a union, then we must
                                 // look through its members to see whether we derive from any of them.
-			                    if(ancestorValidator instanceof UnionDatatypeValidator) {
-			                        // fXsiTypeValidator must derive from one of its members...
-			                        Vector subUnionMemberDV = ((UnionDatatypeValidator)ancestorValidator).getBaseValidators();
-			                        int subUnionSize = subUnionMemberDV.size();
-			                        boolean found = false;
-			                        for (int i=0; i<subUnionSize && !found; i++) {
-			                            DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
-			                            DatatypeValidator dTemp = fXsiTypeValidator;
-			                            for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
-			                                // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-			                                if(dTempSub == dTemp) {
-			                                    found = true;
-			                                    break;
-			                                }
-			                            }
+                                if(ancestorValidator instanceof UnionDatatypeValidator) {
+                                    // fXsiTypeValidator must derive from one of its members...
+                                    Vector subUnionMemberDV = ((UnionDatatypeValidator)ancestorValidator).getBaseValidators();
+                                    int subUnionSize = subUnionMemberDV.size();
+                                    boolean found = false;
+                                    for (int i=0; i<subUnionSize && !found; i++) {
+                                        DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+                                        DatatypeValidator dTemp = fXsiTypeValidator;
+                                        for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
+                                            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+                                            if(dTempSub == dTemp) {
+                                                found = true;
+                                                break;
+                                            }
+                                        }
                                         if (!found) {
                                             // if dTempSub is anySimpleType,
                                             // then the derivation is ok.
@@ -3444,14 +3525,14 @@ public final class XMLValidator
                                                 found = true;
                                             }
                                         }
-			                        }
-			                        if(!found) {
+                                    }
+                                    if(!found) {
                                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                             XMLMessages.SCHEMA_GENERIC_ERROR,
                                             "Type : "+uri+","+localpart
                                             +" does not derive from the type of element " + fStringPool.toString(elementNameLocalPart));
-			                        }
-			                    } else {
+                                    }
+                                } else {
                                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                         XMLMessages.SCHEMA_GENERIC_ERROR,
                                         "Type : "+uri+","+localpart
@@ -3689,17 +3770,16 @@ public final class XMLValidator
                                                    }
                                                 } else {
                                                    try {
-                                                      String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
-                                                      String  value       = unTrimValue.trim();
+                                                      String  value = fStringPool.toString(attrList.getAttValue(index));
                                                       fWhiteSpace = attDV.getWSFacet();
-                                                      if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
-                                                          attDV.validate(unTrimValue, null );
+                                                      if (fWhiteSpace != DatatypeValidator.PRESERVE) { 
+                                                            value = normalizeValue(value);
                                                       }
-                                                      else { // normalize
-                                                          int normalizedValue = fStringPool.addString(value);
-                                                          attrList.setAttValue(index,normalizedValue );
-                                                          validateUsingDV(attDV, value, false);
-                                                      }
+                                                       validateUsingDV(attDV, value, false);
+                                                       if (fNormalizeContents) {
+                                                            int normalizedValue = fStringPool.addString(value);
+                                                            attrList.setAttValue(index,normalizedValue);
+                                                       }
                                                    } catch (InvalidDatatypeValueException idve) {
                                                       fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                                                  SchemaMessageProvider.SCHEMA_DOMAIN,
@@ -3746,16 +3826,19 @@ public final class XMLValidator
                                  /****/
                               } else {
                                  try {
-                                    String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
-                                    String  value       = unTrimValue.trim();
+                                    String  value = fStringPool.toString(attrList.getAttValue(index));
                                     DatatypeValidator tempDV = fTempAttDecl.datatypeValidator;
+                                    fWhiteSpace = tempDV.getWSFacet();
+                                    if (fWhiteSpace != DatatypeValidator.PRESERVE) { 
+                                        value = normalizeValue(value);
+                                    }
                                     // if "fixed" is specified, then get the fixed string,
                                     // and compare over value space
                                     if ((fTempAttDecl.defaultType & XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0 &&
                                         tempDV.compare(value, fTempAttDecl.defaultValue) != 0) {
                                         Object[] args = { fStringPool.toString(element.rawname),
                                                           fStringPool.toString(attrList.getAttrName(index)),
-                                                          unTrimValue,
+                                                          value,
                                                           fTempAttDecl.defaultValue};
                                         fErrorReporter.reportError( fErrorReporter.getLocator(),
                                                                     XMLMessages.XML_DOMAIN,
@@ -3764,14 +3847,10 @@ public final class XMLValidator
                                                                     args,
                                                                     XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                     }
-                                    fWhiteSpace = tempDV.getWSFacet();
-                                    if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
-                                        tempDV.validate(unTrimValue, null );
-                                    }
-                                    else { // normalize
+                                    validateUsingDV(tempDV, value, false);
+                                    if (fNormalizeContents) {
                                         int normalizedValue = fStringPool.addString(value);
                                         attrList.setAttValue(index,normalizedValue );
-                                        validateUsingDV(tempDV, value, false);
                                     }
                                  } catch (InvalidDatatypeValueException idve) {
                                     fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -4055,7 +4134,7 @@ public final class XMLValidator
 
        //REVISIT: some code might be shared: see normalizeWhitespace()
        //
-       fStringBuffer.setLength(0);
+       fNormalizedStr.setLength(0);
        int length = value.length();
        boolean skipSpace = true;
        char c= 0;
@@ -4065,18 +4144,18 @@ public final class XMLValidator
             if (c == 0x20) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
-                    fStringBuffer.append(' ');
+                    fNormalizedStr.append(' ');
                     skipSpace = true;
                 }
             }
             else {
-                fStringBuffer.append((char)c);
+                fNormalizedStr.append((char)c);
                 skipSpace = false;
             }
        }
-       if (fStringBuffer.length() == unTrimValue.length())
+       if (fNormalizedStr.length() == unTrimValue.length())
            return origIndex;
-       return fStringPool.addSymbol(fStringBuffer.toString());
+       return fStringPool.addSymbol(fNormalizedStr.toString());
    }
 
    /** Character data in content. */
@@ -4269,7 +4348,14 @@ public final class XMLValidator
                                      "but no datatypevalidator was found, element "+fTempElementDecl.name
                                      +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                } else {
-                   String value =fDatatypeBuffer.toString();
+                   String value = fDatatypeBuffer.toString();
+                   if (!fNormalizeContents && fWhiteSpace != DatatypeValidator.PRESERVE) {
+                       // normalize data before validating it
+                       fUnnormalizedStr.setLength(0);
+                       fUnnormalizedStr.append(value);
+                       normalizeWhitespace(fUnnormalizedStr, (fWhiteSpace==DatatypeValidator.COLLAPSE));
+                       value = fNormalizedStr.toString();
+                   }
                    String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
                    int hasFixed =  (((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED);
                    if (fNil) {
