@@ -676,6 +676,7 @@ public class TraverseSchema implements
                newValidator.setFacets(facetData);
            fDatatypeRegistry.addValidator(fStringPool.toString(newSimpleTypeName),newValidator);
            } catch (Exception e) {
+               e.printStackTrace(System.err);
            reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
            }
         return newSimpleTypeName;
@@ -1114,13 +1115,6 @@ public class TraverseSchema implements
                                             contentSpecType, left, 
                                           -1, simpleTypeValidator);
         typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(typeInfo.templateElementIndex);
-
-
-
-
-
-        
-        //int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
 
 
         // (attribute | attrGroupRef)*
@@ -2530,7 +2524,7 @@ public class TraverseSchema implements
     private int parseInt (String intString) throws Exception
     {
             if ( intString.equals("*") ) {
-                    return Schema.INFINITY;
+                    return SchemaSymbols.INFINITY;
             } else {
                     return Integer.parseInt (intString);
             }
@@ -2539,10 +2533,10 @@ public class TraverseSchema implements
     private int parseSimpleDerivedBy (String derivedByString) throws Exception
     {
             if ( derivedByString.equals (SchemaSymbols.ATTVAL_LIST) ) {
-                    return Schema.LIST;
+                    return SchemaSymbols.LIST;
             } 
             else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
-                    return Schema.RESTRICTION;
+                    return SchemaSymbols.RESTRICTION;
             }  
             else {
                     reportGenericSchemaError ("SimpleType: Invalid value for 'derivedBy'");
@@ -2553,10 +2547,10 @@ public class TraverseSchema implements
     private int parseComplexDerivedBy (String derivedByString)  throws Exception
     {
             if ( derivedByString.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
-                    return Schema.EXTENSION;
+                    return SchemaSymbols.EXTENSION;
             } 
             else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
-                    return Schema.RESTRICTION;
+                    return SchemaSymbols.RESTRICTION;
             } 
             else {
                     reportGenericSchemaError ( "ComplexType: Invalid value for 'derivedBy'" );
@@ -2567,7 +2561,7 @@ public class TraverseSchema implements
     private int parseSimpleFinal (String finalString) throws Exception
     {
             if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
-                    return Schema.ENUMERATION+Schema.RESTRICTION+Schema.LIST+Schema.REPRODUCTION;
+                    return SchemaSymbols.ENUMERATION+SchemaSymbols.RESTRICTION+SchemaSymbols.LIST+SchemaSymbols.REPRODUCTION;
             } else {
                     int enumerate = 0;
                     int restrict = 0;
@@ -2580,13 +2574,13 @@ public class TraverseSchema implements
 
                             if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
-                                            restrict = Schema.RESTRICTION;
+                                            restrict = SchemaSymbols.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ("restriction in set twice");
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( list == 0 ) {
-                                            list = Schema.LIST;
+                                            list = SchemaSymbols.LIST;
                                     } else {
                                             reportGenericSchemaError ("list in set twice");
                                     }
@@ -2605,13 +2599,13 @@ public class TraverseSchema implements
     private int parseComplexContent (String contentString)  throws Exception
     {
             if ( contentString.equals (SchemaSymbols.ATTVAL_EMPTY) ) {
-                    return Schema.EMPTY;
+                    return XMLElementDecl.TYPE_EMPTY;
             } else if ( contentString.equals (SchemaSymbols.ATTVAL_ELEMENTONLY) ) {
-                    return Schema.ELEMENT_ONLY;
+                    return XMLElementDecl.TYPE_CHILDREN;
             } else if ( contentString.equals (SchemaSymbols.ATTVAL_TEXTONLY) ) {
-                    return Schema.TEXT_ONLY;
+                    return XMLElementDecl.TYPE_SIMPLE;
             } else if ( contentString.equals (SchemaSymbols.ATTVAL_MIXED) ) {
-                    return Schema.MIXED;
+                    return XMLElementDecl.TYPE_MIXED;
             } else {
                     reportGenericSchemaError ( "Invalid value for content" );
                     return -1;
@@ -2621,7 +2615,7 @@ public class TraverseSchema implements
     private int parseDerivationSet (String finalString)  throws Exception
     {
             if ( finalString.equals ("#all") ) {
-                    return Schema.EXTENSION+Schema.RESTRICTION+Schema.REPRODUCTION;
+                    return SchemaSymbols.EXTENSION+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
             } else {
                     int extend = 0;
                     int restrict = 0;
@@ -2633,13 +2627,13 @@ public class TraverseSchema implements
 
                             if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
-                                            extend = Schema.EXTENSION;
+                                            extend = SchemaSymbols.EXTENSION;
                                     } else {
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
-                                            restrict = Schema.RESTRICTION;
+                                            restrict = SchemaSymbols.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ( "restriction already in set" );
                                     }
@@ -2655,7 +2649,7 @@ public class TraverseSchema implements
     private int parseBlockSet (String finalString)  throws Exception
     {
             if ( finalString.equals ("#all") ) {
-                    return Schema.EQUIVCLASS+Schema.EXTENSION+Schema.LIST+Schema.RESTRICTION+Schema.REPRODUCTION;
+                    return SchemaSymbols.EQUIVCLASS+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
             } else {
                     int extend = 0;
                     int restrict = 0;
@@ -2667,25 +2661,25 @@ public class TraverseSchema implements
 
                             if ( token.equals (SchemaSymbols.ATTVAL_EQUIVCLASS) ) {
                                     if ( extend == 0 ) {
-                                            extend = Schema.EQUIVCLASS;
+                                            extend = SchemaSymbols.EQUIVCLASS;
                                     } else {
                                             reportGenericSchemaError ( "'equivClass' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
-                                            extend = Schema.EXTENSION;
+                                            extend = SchemaSymbols.EXTENSION;
                                     } else {
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( extend == 0 ) {
-                                            extend = Schema.LIST;
+                                            extend = SchemaSymbols.LIST;
                                     } else {
                                             reportGenericSchemaError ( "'list' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
-                                            restrict = Schema.RESTRICTION;
+                                            restrict = SchemaSymbols.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ( "restriction already in set" );
                                     }
@@ -2701,7 +2695,7 @@ public class TraverseSchema implements
     private int parseFinalSet (String finalString)  throws Exception
     {
             if ( finalString.equals ("#all") ) {
-                    return Schema.EQUIVCLASS+Schema.EXTENSION+Schema.LIST+Schema.RESTRICTION+Schema.REPRODUCTION;
+                    return SchemaSymbols.EQUIVCLASS+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
             } else {
                     int extend = 0;
                     int restrict = 0;
@@ -2713,25 +2707,25 @@ public class TraverseSchema implements
 
                             if ( token.equals (SchemaSymbols.ATTVAL_EQUIVCLASS) ) {
                                     if ( extend == 0 ) {
-                                            extend = Schema.EQUIVCLASS;
+                                            extend = SchemaSymbols.EQUIVCLASS;
                                     } else {
                                             reportGenericSchemaError ( "'equivClass' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
-                                            extend = Schema.EXTENSION;
+                                            extend = SchemaSymbols.EXTENSION;
                                     } else {
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( extend == 0 ) {
-                                            extend = Schema.LIST;
+                                            extend = SchemaSymbols.LIST;
                                     } else {
                                             reportGenericSchemaError ( "'list' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
-                                            restrict = Schema.RESTRICTION;
+                                            restrict = SchemaSymbols.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ( "restriction already in set" );
                                     }
