@@ -382,6 +382,8 @@ Copyright:
          includes="${name}-${appendit}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${Name}-src${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-src${version_postfix}.tar" />
+    <!-- and why not get rid of the un-gzip'd tarball and save ourselves 15 Mb? -->
+    <delete file="${build.dir}/${Name}-src${version_postfix}.tar"/>
   </target>
 
   <!-- =================================================================== -->
@@ -443,6 +445,8 @@ Copyright:
          includes="${name}-${appendit}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${Name}-bin${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-bin${version_postfix}.tar" />
+    <!-- as before, let's kill of the ungzip'd tarball! -->
+    <delete file="${build.dir}/${Name}-bin${version_postfix}.tar"/>
 
   </target>
 
