@@ -57,19 +57,16 @@
 
 package simpletype;
 
-import org.apache.xerces.impl.dv.SchemaDVFactory;
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSFacets;
-import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-import org.apache.xerces.impl.xs.XSTypeDecl;
-import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.dv.SchemaDVFactory;
+import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
-import org.apache.xerces.impl.xs.psvi.*;
-
-import java.util.Vector;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 
 /**
  *  It demonstrates how to use the interfaces defined in 'org.apache.xerces.impl.dv'
@@ -207,7 +204,7 @@ public void querySimpleType(XSSimpleType simpleType){
     System.err.println( "Properties information of 'Simple Type' definiton schema component" );
     System.err.println();
     // 'name' property
-    if( simpleType.getIsAnonymous() )
+    if( simpleType.getAnonymous() )
         System.err.println( "Anonymous Simple Type" );
     else{
         System.err.println("'name' \t\t\t\t: " + simpleType.getName()  );
@@ -222,12 +219,12 @@ public void querySimpleType(XSSimpleType simpleType){
     printVariety(variety);
 
     //'base type definition' property
-    XSTypeDecl baseType = (XSTypeDecl)simpleType.getBaseType() ;
+    XSTypeDefinition baseType = (XSTypeDefinition)simpleType.getBaseType() ;
     System.err.println("'base type definition' name \t: " + ( baseType != null ? baseType.getName() : "null" )   );
     System.err.println("'base type definition' target namespace : " + ( baseType != null ? baseType.getNamespace() : "null" )   );
 
     //check if base type is simple or complex
-    if(baseType != null && (baseType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) ){
+    if(baseType != null && (baseType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) ){
         //now we can get all the details of base type
         XSSimpleType simpleTypeDecl = (XSSimpleType)baseType;
     }
@@ -260,7 +257,7 @@ public void querySimpleType(XSSimpleType simpleType){
     printOrdered(ordered);
 
     //bounded schema component
-    boolean bounded = simpleType.getIsBounded();    
+    boolean bounded = simpleType.getBounded();    
     if(bounded){
         System.err.println("'bounded' \t\t\t\t: true"  );
     }
@@ -269,11 +266,11 @@ public void querySimpleType(XSSimpleType simpleType){
     }
     
     //cardinality schema component
-    boolean isFinite = simpleType.getIsFinite();
+    boolean isFinite = simpleType.getFinite();
     printCardinality(isFinite);
     
     //numeric schema component
-    boolean numeric = simpleType.getIsNumeric();
+    boolean numeric = simpleType.getNumeric();
     if(numeric){
         System.err.println("'numeric' \t\t\t\t: true"  );
     }
