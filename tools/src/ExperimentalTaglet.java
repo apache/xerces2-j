@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public class ExperimentalTaglet implements Taglet {
      */
     public String toString(Tag arg0) {
         return "<DT><H1 style=\"font-size:150%\">" + HEADER + "</H1><DD>"
-        + "This interface should not be considered stable. It is likely to be altered or replaced in the future.<br/>"
+        + "This class should not be considered stable. It is likely to be altered or replaced in the future.<br/>"
         + "<I>" + arg0.text() + "</I></DD>\n";
     }
     
@@ -104,7 +104,7 @@ public class ExperimentalTaglet implements Taglet {
             return null;
         }
         String result = "\n<DT><H1 style=\"font-size:150%\">" + HEADER + "</H1><DD>";
-        result += "This interface should not be considered stable. It is likely it may be altered or replaced in the future.";
+        result += "This class should not be considered stable. It is likely to be altered or replaced in the future.";
         result += "<I>";
         for (int i = 0; i < tags.length; i++) {
             result += "<br/>";

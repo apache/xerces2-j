@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public class InternalTaglet implements Taglet {
      */
     public String toString(Tag arg0) {
         return "<DT><H1 style=\"font-size:110%\">" + HEADER + "</H1><DD>"
-        + "This type should not be directly used by the user. The methods/fields defined can be altered or removed at any time.<br/>"
+        + "Usage of this class is not supported. It may be altered or removed at any time.<br/>"
         + "<I>" + arg0.text() + "</I></DD>\n";
     }
     
@@ -104,7 +104,7 @@ public class InternalTaglet implements Taglet {
             return null;
         }
         String result = "\n<DT><H1 style=\"font-size:110%\">" + HEADER + "</H1><DD>";
-        result += "This type should not be directly used by the user. The methods/fields defined can be altered or removed at any time.";
+        result += "Usage of this class is not supported. It may be altered or removed at any time.";
         result += "<I>";
         for (int i = 0; i < tags.length; i++) {
             result += "<br/>";
