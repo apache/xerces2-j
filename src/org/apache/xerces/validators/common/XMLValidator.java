@@ -248,6 +248,9 @@ public final class XMLValidator
     private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
     //REVISIT: ericye, use this temp QName whenever we can!!
+    
+    private boolean fGrammarIsDTDGrammar = false;
+    private boolean fGrammarIsSchemaGrammar = false;
 
     // symbols
 
@@ -736,7 +739,7 @@ public final class XMLValidator
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
 
         //REVISIT: Validation
-        if ( fCurrentElementIndex > -1 && fGrammar instanceof SchemaGrammar  && fValidating) {
+        if ( fCurrentElementIndex > -1 && fGrammarIsSchemaGrammar  && fValidating) {
             fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(fCurrentElementIndex);
         }
 
@@ -985,7 +988,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         return (fElementDeclIsExternal[chunk][index] != 0);
         */
 
-        if (fGrammar instanceof DTDGrammar ) {
+        if (fGrammarIsDTDGrammar ) {
             return ((DTDGrammar) fGrammar).getElementDeclIsExternal(elementIndex);
         }
         return false;
@@ -1196,7 +1199,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Protected for use by AttributeValidator classes. */
     protected boolean getAttDefIsExternal(QName element, QName attribute) {
         int attDefIndex = getAttDef(element, attribute);
-        if (fGrammar instanceof DTDGrammar ) {
+        if (fGrammarIsDTDGrammar ) {
             return ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attDefIndex);
         }
         return false;
@@ -1366,6 +1369,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fGrammar = null;
         fGrammarNameSpaceIndex = -1;
         fGrammarResolver = null;
+        fGrammarIsDTDGrammar = false;
+        fGrammarIsSchemaGrammar = false;
+
 
         init();
 
@@ -1481,7 +1487,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             
 
             /****
-            if (fValidating && fGrammar != null && fGrammar instanceof DTDGrammar && attValue != -1) {
+            if (fValidating && fGrammar != null && fGrammarIsDTDGrammar && attValue != -1) {
                 normalizeAttValue(null, fTempAttDecl.name,
                                   attValue,attType,fTempAttDecl.list, 
                                   fTempAttDecl.enumeration);
@@ -1535,7 +1541,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 } 
                 else if (attValue != -1) {
                     if (validationEnabled && standalone )
-                        if ( fGrammar instanceof DTDGrammar 
+                        if ( fGrammarIsDTDGrammar 
                              && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
                         
                         Object[] args = { fStringPool.toString(elementNameIndex),
@@ -1730,11 +1736,20 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
                 
                 if (fGrammar != null) {
+                    if (fGrammar instanceof DTDGrammar) {
+                        fGrammarIsDTDGrammar = true;
+                        fGrammarIsSchemaGrammar = false;
+                    }
+                    else if ( fGrammar instanceof SchemaGrammar ) {
+                        fGrammarIsSchemaGrammar = true;
+                        fGrammarIsDTDGrammar = false;
+                    }
+
                     fGrammarNameSpaceIndex = fEmptyURI;
                 }
             }
 
-            if ( fGrammar instanceof DTDGrammar && 
+            if ( fGrammarIsDTDGrammar && 
                 ((DTDGrammar) fGrammar).getRootElementQName(fRootElement) ) {
 
                 String root1 = fStringPool.toString(fRootElement.rawname);
@@ -1770,6 +1785,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
         else {
             fGrammar = tempGrammar;
+            if (fGrammar instanceof DTDGrammar) {
+                fGrammarIsDTDGrammar = true;
+                fGrammarIsSchemaGrammar = false;
+            }
+            else if ( fGrammar instanceof SchemaGrammar ) {
+                fGrammarIsSchemaGrammar = true;
+                fGrammarIsDTDGrammar = false;
+            }
         }
     }
     /** Binds namespaces to the element and attributes. */
@@ -2192,7 +2215,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             if (elementIndex == -1) {
                 // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
-                if (fGrammar instanceof SchemaGrammar && fCurrentElementIndex != -1) {
+                if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
                     TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
                     baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
                     while (baseTypeInfo != null) {
@@ -2234,7 +2257,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
         //       this element actually is of a type in another Schema.
-        if (fGrammar instanceof SchemaGrammar && elementIndex != -1) {
+        if (fGrammarIsSchemaGrammar && elementIndex != -1) {
             String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
             if (anotherSchemaURI != null) {
                 fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
@@ -2321,7 +2344,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         int attributeType = attributeTypeName(fTempAttDecl);
                         attrList.setAttType(index, attributeType);
 
-                        if (fGrammar instanceof DTDGrammar && 
+                        if (fGrammarIsDTDGrammar && 
                             (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
                             fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
                             fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
