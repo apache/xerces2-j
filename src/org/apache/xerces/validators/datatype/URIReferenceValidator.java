@@ -59,67 +59,57 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
- * DataTypeValidator defines the interface that data type validators must obey.
- * These validators can be supplied by the application writer and may be useful as
- * standalone code as well as plugins to the validator architecture.
- * Note: there is no support for facets in this API, since we are trying to convince
- * W3C to remove facets from the data type spec.
- * 
+ *
+ * URIValidator validates that XML content is a W3C uri type,
+ * according to RFC 2396
+ *
  * @author Ted Leung
- * @author Kito D. Mann -- changed the MAXLENGTH and MINLENGTH as per 12/17 spec.
- * @author Jeffrey Rodriguez-
+ * @version Revision: %M% %I% %W% %Q%
  */
-public interface DatatypeValidator {
 
-    /**
-     * 
-     * validate that a string matches a datatype
-     * 
+public class URIReferenceValidator implements DatatypeValidator {
+	
+    private Locale fLocale = null;
+	
+	/**
+     * validate that a string is a W3C uri type
+     *
      * validate returns true or false depending on whether the string content is an
-     * instance of the data type represented by this validator.
+     * instance of the W3C uri datatype
      * 
      * @param content A string containing the content to be validated
+     *
      * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
+     *  not a W3C uri type
      */
-    public void validate(String content, boolean list) throws InvalidDatatypeValueException;
+
+	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
+        // just say yes
+	}
+			
+	public void validate(int contentIndex) throws InvalidDatatypeValueException {
+	}
+	
+	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+	}
+	
+	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+	}
+
+	public void setBasetype(String base) {
+	}
 
     /**
-     * set the facets for this datatype
-     *
-     * setFacets is responsible for ensuring that the supplied facets do not contradict each
-     * other
-     *
-     * @param facets A hashtable where facet names are keys and facet values are stored
-     *        in the hashtable.  Usually facet values are strings, except for the 
-     *        enumeration facet.  The value for this facet is a Vector of strings, one
-     *        per enumeration value
-     *
-     * @exception throws UnknownFacetException
-     * @exception throws IllegalFacetException
-     * @exception throws IllegalFacetValueException
+     * set the locate to be used for error messages
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException; 
+    public void setLocale(Locale locale) {
+        fLocale = locale;
+    }
 
-    /**
-     * set the base type for this datatype
-     *
-     * @param base the validator for this type's base type
-     *
-     */
-    public void setBasetype(String base);
-
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale);
-
-    // REVISIT
-
-    public int compare( DatatypeValidator o1, DatatypeValidator o2);
-
+    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+        return 0;
+    }
 }

@@ -260,8 +260,8 @@ public class DecimalValidator implements DatatypeValidator {
     public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
     }
 
-    public void setBasetype(DatatypeValidator base) {
-        fBaseValidator = (DecimalValidator) base;
+    public void setBasetype(String base) {
+        //fBaseValidator = (DecimalValidator) base;
     }
 
     /*

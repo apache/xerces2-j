@@ -83,7 +83,8 @@ public class FloatValidator implements DatatypeValidator {
 	boolean fIsMinExclusive = false;
 	float fEnumValues[] = null;
 	boolean fHasEnums = false;
-	RealValidator fBaseValidator = null;
+        Object fBaseValidator = null;
+	//RealValidator fBaseValidator = null;
 	private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 	private Locale fLocale = null;
 	
@@ -225,8 +226,8 @@ public class FloatValidator implements DatatypeValidator {
 	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
 	}
 
-    public void setBasetype(DatatypeValidator base) {
-	    fBaseValidator = (RealValidator) base;
+    public void setBasetype(String base) {
+	    //fBaseValidator = (RealValidator) base;
     }
 
     /*

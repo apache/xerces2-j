@@ -202,8 +202,8 @@ public class TimeDurationValidator implements DatatypeValidator {
 
 	}
 
-	public void setBasetype(DatatypeValidator base) {
-	    fBaseValidator = (TimeDurationValidator) base;
+	public void setBasetype(String base) {
+	    //fBaseValidator = (TimeDurationValidator) base;
 
 	}
 

@@ -56,22 +56,16 @@
  */
 
 package org.apache.xerces.validators.datatype;
-
 import java.util.Hashtable;
+import java.util.Vector;
+import java.util.Enumeration;
 import java.util.Locale;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.text.ParseException;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
-/**
- * DataTypeValidator defines the interface that data type validators must obey.
- * These validators can be supplied by the application writer and may be useful as
- * standalone code as well as plugins to the validator architecture.
- * Note: there is no support for facets in this API, since we are trying to convince
- * W3C to remove facets from the data type spec.
- * 
- * @author Ted Leung
- * @author Kito D. Mann -- changed the MAXLENGTH and MINLENGTH as per 12/17 spec.
- * @author Jeffrey Rodriguez-
- */
-public interface DatatypeValidator {
+public class QNameValidator implements DatatypeValidator {
 
     /**
      * 
@@ -85,7 +79,8 @@ public interface DatatypeValidator {
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
      */
-    public void validate(String content, boolean list) throws InvalidDatatypeValueException;
+    public void validate(String content, boolean list) throws InvalidDatatypeValueException{
+    }
 
     /**
      * set the facets for this datatype
@@ -102,7 +97,8 @@ public interface DatatypeValidator {
      * @exception throws IllegalFacetException
      * @exception throws IllegalFacetValueException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException; 
+    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    }
 
     /**
      * set the base type for this datatype
@@ -110,16 +106,21 @@ public interface DatatypeValidator {
      * @param base the validator for this type's base type
      *
      */
-    public void setBasetype(String base);
+    public void setBasetype(String base) {
+    }
 
 
     /**
     * set the locate to be used for error messages
     */
-    public void setLocale(Locale locale);
+    public void setLocale(Locale locale) {
+    }
 
     // REVISIT
 
-    public int compare( DatatypeValidator o1, DatatypeValidator o2);
+    public int compare( DatatypeValidator o1, DatatypeValidator o2) {
+     return   -1;
+    }
 
 }
+

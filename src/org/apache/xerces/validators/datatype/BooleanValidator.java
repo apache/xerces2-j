@@ -102,7 +102,7 @@ public class BooleanValidator implements DatatypeValidator {
 	    throw new IllegalFacetException(); // boolean supports no facets
 	}
 	
-	public void setBasetype(DatatypeValidator base) {
+	public void setBasetype(String base) {
 	}
 	
     /**

@@ -225,8 +225,8 @@ public class DoubleValidator implements DatatypeValidator {
 	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
 	}
 
-    public void setBasetype(DatatypeValidator base) {
-	    fBaseValidator = (RealValidator) base;
+    public void setBasetype(String base) {
+	    //fBaseValidator = (RealValidator) base;
     }
 
     /*

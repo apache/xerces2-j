@@ -110,7 +110,7 @@ public class BinaryValidator implements DatatypeValidator {
     public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
     }
 
-    public void setBasetype(DatatypeValidator base) {
+    public void setBasetype(String base) {
     }
 
     /**
