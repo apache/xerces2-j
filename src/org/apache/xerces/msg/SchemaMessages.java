@@ -84,7 +84,7 @@ public class SchemaMessages extends ListResourceBundle {
         { "DatatypeQualUnsupported", "The datatype qualifier {0} is not supported."},
         { "GroupContentRestricted", "Error: {0} content must be one of choice, all or sequence.  Saw {1}"},
         { "UnknownBaseDatatype", "Unknown base type {0} for type {1}." },
-        { "BadAttWithRef", "cannot use ref with any of type, block, final, abstract, nullable, default or fixed."},
+        { "BadAttWithRef", "cannot use ref with any of type, block, final, abstract, nillable, default or fixed."},
         { "NoContentForRef", "Cannot have child content for an element declaration that has a ref attribute" },
         { "IncorrectDefaultType", "Incorrect type for {0}'s default value: {1}" },
         { "IllegalAttContent", "Illegal content {0} in attribute group" },

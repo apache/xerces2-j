@@ -203,7 +203,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "DatatypeQualUnsupported",      //  13, "The datatype qualifier {0} is not supported."
         "GroupContentRestricted",       //  14, "Error: {0} content must be one of choice, all or sequence.  Saw {1}"
         "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." }, 
-        "BadAttWithRef",                //  16, "ref cannot appear with any of type, abstract, block, final, nullable, default or fixed"},
+        "BadAttWithRef",                //  16, "ref cannot appear with any of type, abstract, block, final, nillable, default or fixed"},
         "NoContentForRef",              //  17, "Cannot have child content for an element declaration that has a ref attribute"
         "IncorrectDefaultType",         //  18, "Incorrect type for {0}'s default value: {1}"
         "IllegalAttContent",            //  19, "Illegal content {0} in attribute group"

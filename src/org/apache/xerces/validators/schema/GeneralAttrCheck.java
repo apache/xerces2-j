@@ -67,8 +67,7 @@ import org.apache.xerces.validators.common.XMLAttributeDecl;
  * Title:
  * Description:
  * Copyright:    Copyright (c) 2001
- * Company:
- * @author
+ * @author:  Sandy Gao, IBM
  * @version 1.0
  */
 
@@ -984,17 +983,17 @@ public class GeneralAttrCheck {
             String attrVal = sattr.getValue();
 
             try {
-                // if we validate ID types here, when it's validated again in
-                // TraverseSchema, the validator would think it's already defined.
-                // disable this temprorily. Enable it after modify TraverseSchema.
-                // and URI doesn't validate relative URIs, so disable it too.
+                // values of ID type might be validated more than once,
+                // which would fail the validation.
+                // disable this temprorily. Enable it after modify TraverseSchema. //???
+                // and URI doesn't validate relative URIs, so disable it too. //???
                 // no checking on string needs to be done here.
                 // no checking on xpath needs to be done here.
                 // xpath values are validated in xpath parser
                 if (oneAttr.dvIndex >= 0) {
                     if (oneAttr.dvIndex != DT_ID && oneAttr.dvIndex != DT_ANYURI &&
                         oneAttr.dvIndex != DT_STRING &&
-                        oneAttr.dvIndex != DT_XPATH && oneAttr.dvIndex != DT_XPATH1) //???
+                        oneAttr.dvIndex != DT_XPATH && oneAttr.dvIndex != DT_XPATH1)
                         fExtraDVs[oneAttr.dvIndex].validate(attrVal, null);
                     attrValues.put(attrName, attrVal);
                 } else {
@@ -1085,7 +1084,7 @@ public class GeneralAttrCheck {
                     }
                 }
             }
-            value = Integer.toString(choice);
+//???            value = Integer.toString(choice);
             break;
         case DT_BLOCK1:
         case DT_FINAL:
@@ -1116,7 +1115,7 @@ public class GeneralAttrCheck {
                     }
                 }
             }
-            value = Integer.toString(choice);
+//???            value = Integer.toString(choice);
             break;
         case DT_FINAL1:
             // final = (#all | (list | union | restriction))
@@ -1133,7 +1132,7 @@ public class GeneralAttrCheck {
             } else {
                 throw new InvalidDatatypeValueException();
             }
-            value = Integer.toString(choice);
+//???            value = Integer.toString(choice);
             break;
         case DT_FORM:
             // form = (qualified | unqualified)
