@@ -104,7 +104,7 @@ public class CMBinOp extends CMNode
     // -------------------------------------------------------------------
     //  Package, inherited methods
     // -------------------------------------------------------------------
-    boolean isNullable() 
+    public boolean isNullable() 
     {
         //
         //  If its an alternation, then if either child is nullable then

@@ -67,7 +67,7 @@ public abstract class CMNode
     // -------------------------------------------------------------------
     //  Constructors
     // -------------------------------------------------------------------
-    CMNode(int type) 
+    protected CMNode(int type) 
     {
         fType = type;
     }
@@ -76,18 +76,20 @@ public abstract class CMNode
     // -------------------------------------------------------------------
     //  Package, abstract methods
     // -------------------------------------------------------------------
-    abstract boolean isNullable() ;
+    // made this public so it could be implemented and used outside this package -neilg.
+    public abstract boolean isNullable() ;
 
 
     // -------------------------------------------------------------------
     //  Package final methods
     // -------------------------------------------------------------------
-    final int type()
+    protected final int type()
     {
         return fType;
     }
 
-    final CMStateSet firstPos() 
+    // made this public so it could be implemented and used outside this package -neilg.
+    public final CMStateSet firstPos() 
     {
         if (fFirstPos == null)
         {
@@ -97,7 +99,8 @@ public abstract class CMNode
         return fFirstPos;
     }
 
-    final CMStateSet lastPos() 
+    // made this public so it could be implemented and used outside this package -neilg.
+    public final CMStateSet lastPos() 
     {
         if (fLastPos == null)
         {

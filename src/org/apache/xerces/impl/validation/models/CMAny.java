@@ -137,7 +137,7 @@ public class CMAny
 
     // package
 
-    boolean isNullable() 
+    public boolean isNullable() 
     {
         // Leaf nodes are never nullable unless its an epsilon node
         return (fPosition == -1);

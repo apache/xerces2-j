@@ -74,7 +74,9 @@ package org.apache.xerces.impl.validation.models;
  *
  * @version
  */
-class CMStateSet
+// made this class public so it can be accessed by
+// the XS content models from the schema package -neilg.
+public class CMStateSet
 {
     // -------------------------------------------------------------------
     //  Constructors
@@ -134,7 +136,8 @@ class CMStateSet
     // -------------------------------------------------------------------
     //  Package final methods
     // -------------------------------------------------------------------
-    final void intersection(CMStateSet setToAnd)
+// the XS content models from the schema package -neilg.
+    public final void intersection(CMStateSet setToAnd)
     {
         if (fBitCount < 65)
         {
@@ -208,7 +211,8 @@ class CMStateSet
         return true;
     }
 
-    final void union(CMStateSet setToOr)
+// the XS content models from the schema package -neilg.
+    public final void union(CMStateSet setToOr)
     {
         if (fBitCount < 65)
         {
@@ -222,7 +226,7 @@ class CMStateSet
         }
     }
 
-    final void setBit(int bitToSet) 
+    public final void setBit(int bitToSet) 
     {
         if (bitToSet >= fBitCount)
             throw new RuntimeException("ImplementationMessages.VAL_CMSI");
@@ -253,7 +257,8 @@ class CMStateSet
         }
     }
 
-    final void setTo(CMStateSet srcSet) 
+// the XS content models from the schema package -neilg.
+    public final void setTo(CMStateSet srcSet) 
     {
         // They have to be the same size
         if (fBitCount != srcSet.fBitCount)
@@ -271,7 +276,9 @@ class CMStateSet
         }
     }
 
-    final void zeroBits()
+    // had to make this method public so it could be accessed from
+    // schema package - neilg.
+    public final void zeroBits()
     {
         if (fBitCount < 65)
         {

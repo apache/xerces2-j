@@ -99,7 +99,7 @@ public class CMUniOp extends CMNode
     // -------------------------------------------------------------------
     //  Package, inherited methods
     // -------------------------------------------------------------------
-    boolean isNullable() 
+    public boolean isNullable() 
     {
         //
         //  For debugging purposes, make sure we got rid of all non '*'
