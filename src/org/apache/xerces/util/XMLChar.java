@@ -290,7 +290,7 @@ public class XMLChar {
             CHARS[nameStartChar[i]] |= MASK_NAME_START | MASK_NAME;
         }
         for (int i = 0; i < letterRange.length; i += 2) {
-            for (int j = letterRange[i]; j < letterRange[i + 1]; j++) {
+            for (int j = letterRange[i]; j <= letterRange[i + 1]; j++) {
                 CHARS[j] |= MASK_NAME_START | MASK_NAME;
             }
         }
@@ -303,12 +303,12 @@ public class XMLChar {
             CHARS[nameChar[i]] |= MASK_NAME;
         }
         for (int i = 0; i < digitRange.length; i += 2) {
-            for (int j = digitRange[i]; j < digitRange[i + 1]; j++) {
+            for (int j = digitRange[i]; j <= digitRange[i + 1]; j++) {
                 CHARS[j] |= MASK_NAME;
             }
         }
         for (int i = 0; i < combiningCharRange.length; i += 2) {
-            for (int j = combiningCharRange[i]; j < combiningCharRange[i + 1]; j++) {
+            for (int j = combiningCharRange[i]; j <= combiningCharRange[i + 1]; j++) {
                 CHARS[j] |= MASK_NAME;
             }
         }
@@ -316,7 +316,7 @@ public class XMLChar {
             CHARS[combiningCharChar[i]] |= MASK_NAME;
         }
         for (int i = 0; i < extenderRange.length; i += 2) {
-            for (int j = extenderRange[i]; j < extenderRange[i + 1]; j++) {
+            for (int j = extenderRange[i]; j <= extenderRange[i + 1]; j++) {
                 CHARS[j] |= MASK_NAME;
             }
         }
@@ -329,7 +329,7 @@ public class XMLChar {
             CHARS[pubidChar[i]] |= MASK_PUBID;
         }
         for (int i = 0; i < pubidRange.length; i += 2) {
-            for (int j = pubidRange[i]; j < pubidRange[i + 1]; j++) {
+            for (int j = pubidRange[i]; j <= pubidRange[i + 1]; j++) {
                 CHARS[j] |= MASK_PUBID;
             }
         }
