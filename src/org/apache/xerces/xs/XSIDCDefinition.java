@@ -85,12 +85,12 @@ public interface XSIDCDefinition extends XSObject {
     public short getCategory();
 
     /**
-     * [selector]: a restricted  expression. 
+     * [selector]: a restricted XPath 1.0 expression. 
      */
     public String getSelectorStr();
 
     /**
-     * [fields]: a non-empty list of restricted  expressions. 
+     * [fields]: a non-empty list of restricted  XPath 1.0 expressions. 
      */
     public StringList getFieldStrs();
 

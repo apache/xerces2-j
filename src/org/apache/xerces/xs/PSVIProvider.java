@@ -59,7 +59,7 @@ package org.apache.xerces.xs;
 
 /**
  * This interface provides access to the post schema validation infoset for an 
- * API that provides a streaming document infoset, such as , XNI, and 
+ * API that provides a streaming document infoset, such as SAX, XNI, and 
  * others. 
  * <p>For implementations that would like to provide access to the PSVI in a 
  * streaming model, a parser object should also implement the 

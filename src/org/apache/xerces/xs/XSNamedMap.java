@@ -86,7 +86,7 @@ public interface XSNamedMap {
     /**
      * Retrieves an <code>XSObject</code> specified by local name and 
      * namespace URI.
-     * <br>Per , applications must use the value <code>null</code> as the 
+     * <br>Per XML Namespaces, applications must use the value <code>null</code> as the 
      * <code>namespace</code> parameter for methods if they wish to specify 
      * no namespace.
      * @param namespace The namespace URI of the <code>XSObject</code> to 

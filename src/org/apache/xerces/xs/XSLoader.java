@@ -72,7 +72,7 @@ public interface XSLoader {
      * setting of and the retrieval of the following non-boolean parameters 
      * defined on the <code>DOMConfiguration</code> interface: 
      * <code>error-handler</code> (<code>DOMErrorHandler</code>) and 
-     * <code>entity-resolver</code> (<code>DOMEntityResolver</code>). 
+     * <code>resource-resolver</code> (<code>LSResourceResolver</code>). 
      * <br> The following list of boolean parameters is defined: 
      * <dl>
      * <dt>
@@ -80,11 +80,11 @@ public interface XSLoader {
      * <dd>
      * <dl>
      * <dt><code>true</code></dt>
-     * <dd>[optional] Validate an XML 
+     * <dd>[required] (default) Validate an XML 
      * Schema during loading. If validation errors are found, the error 
      * handler is notified. </dd>
      * <dt><code>false</code></dt>
-     * <dd>[required] (default) Do not 
+     * <dd>[optional] Do not 
      * report errors during the loading of an XML Schema document. </dd>
      * </dl></dd>
      * </dl>
@@ -98,7 +98,7 @@ public interface XSLoader {
      * @param uri The list of URI locations.
      * @return An XSModel representing the schema documents.
      */
-    public XSModel loadURIList(StringList uri);
+    public XSModel loadURIList(StringList uriList);
 
     /**
      *  Parses the content of XML Schema documents specified as a list of 

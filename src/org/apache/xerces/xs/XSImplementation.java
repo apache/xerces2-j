@@ -68,11 +68,7 @@ public interface XSImplementation {
      * this <code>XSImplemenation</code>.
      */
     public StringList getRecognizedVersions();
-    /**
-     * A list containing the versions of XML Schema documents recognized by 
-     * this <code>XSImplemenation</code>.
-     */
-    public void setRecognizedVersions(StringList recognizedVersions);
+
 
     /**
      * Creates a new XSLoader. The newly constructed loader may then be 
