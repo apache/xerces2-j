@@ -1641,8 +1641,10 @@ public abstract class AbstractSAXParser
 
         // save needed symbols
         SymbolTable symbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
-        fEmptySymbol = symbolTable.addSymbol("");
-        fXmlnsSymbol = symbolTable.addSymbol("xmlns");
+        if (symbolTable != null) {
+            fEmptySymbol = symbolTable.addSymbol("");
+            fXmlnsSymbol = symbolTable.addSymbol("xmlns");
+        }
 
     } // reset()
 
