@@ -1,7 +1,0 @@
-<?xml encoding="US-ASCII"?>
-
-<!ENTITY javaparsernamelong "Xerces Java Parser">
-<!ENTITY javaparsername "Xerces-J">
-<!ENTITY javaparserversion "2.0.0 (alpha)">
-<!ENTITY javaparserdirectory "xerces-2_0_0_alpha">
-<!ENTITY javaparserdistname "Xerces-J-bin"> <!-- name of binaries -->
