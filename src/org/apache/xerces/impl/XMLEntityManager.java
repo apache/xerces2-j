@@ -889,6 +889,10 @@ public class XMLEntityManager
                                              "EntityExpansionLimitExceeded",
                                              new Object[]{new Integer(fEntityExpansionLimit) },
                                              XMLErrorReporter.SEVERITY_FATAL_ERROR );
+            // is there anything better to do than reset the counter?
+            // at least one can envision debugging applications where this might
+            // be useful...
+            fEntityExpansionCount = 0;
         }
         
         // call handler
