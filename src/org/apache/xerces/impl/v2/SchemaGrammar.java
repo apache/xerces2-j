@@ -71,7 +71,13 @@ import java.util.Hashtable;
  */
 
 public class SchemaGrammar {
-
+    
+    //
+    // public fields
+    //
+    public boolean fDeferParticleExpantion = true;
+    
+    
     /** Chunk shift (8). */
     private static final int CHUNK_SHIFT = 8; // 2^8 = 256
 
@@ -412,8 +418,7 @@ public class SchemaGrammar {
     public String getTargetNamespace() {
         return fTargetNamespace;
     } // getTargetNamespace():String
-
-
+    
     /**
      * addElementDecl
      * 
@@ -443,6 +448,30 @@ public class SchemaGrammar {
             fGlobalElemDecls.put(element.fQName.localpart, elementIndex);
         
         return elementIndex;
+    }
+
+    /**
+     * 
+     * @param type       particle type
+     * @param value      particle left child
+     * @param otherValue particle right child
+     * @return 
+     */
+    public int addParticle (short type, int value, int otherValue){
+        fParticleCount++;
+        int chunk = fParticleCount >> CHUNK_SHIFT;
+        int index = fParticleCount & CHUNK_MASK;
+        //
+        //Implement
+        //ensureParticleCapacity(chunk);
+        fParticleType[chunk][index] = type;
+        fParticleUri[chunk][index] = null;
+        fParticleValue[chunk][index] = value;
+        fParticleOtherUri[chunk][index] = null;
+        fParticleOtherValue[chunk][index] = otherValue;
+        fParticleMinOccurs[chunk][index] = 1;
+        fParticleMaxOccurs[chunk][index] = 1;
+        return fParticleCount;
     }
 
     /**
@@ -666,6 +695,21 @@ public class SchemaGrammar {
         return particle;
     }
 
+    /**
+     * Set min/max values
+     * 
+     * @param particleIndex
+     * @param min
+     * @param max
+     */
+    public void setParticleMinMax (int particleIndex, int min, int max){        
+        if (particleIndex < 0 || particleIndex >= fParticleCount )
+            return;
+        int chunk = particleIndex >> CHUNK_SHIFT;
+        int index = particleIndex & CHUNK_MASK;
+        fParticleMinOccurs[chunk][index] = min;
+        fParticleMaxOccurs[chunk][index] = max;
+    }
     /**
      * addTypeDecl
      * 

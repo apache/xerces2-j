@@ -77,14 +77,17 @@ public class XSParticleDecl {
     /** Represents <sequence>. */
     public static final short PARTICLE_SEQUENCE  = 2;
 
+    /** Represents <all>. */
+    public static final short PARTICLE_ALL  = 3;
+
     /** Wildcard namespace="##any". */
-    public static final short PARTICLE_ANY       = 3;
+    public static final short PARTICLE_ANY       = 4;
 
     /** Wildcard namespace="##other". */
-    public static final short PARTICLE_ANY_OTHER = 4;
+    public static final short PARTICLE_ANY_OTHER = 5;
 
     /** Wildcard namespace=list of anyURI | ##targetNamespace | ##local. */
-    public static final short PARTICLE_ANY_LIST  = 5;
+    public static final short PARTICLE_ANY_LIST  = 6;
 
     /** Wildcard processContents="lax". */
     public static final short WILDCARD_LAX       = 0x10;
