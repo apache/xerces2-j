@@ -241,6 +241,7 @@ public class DOMCount {
 
     /** Main program entry point. */
     public static void main(String argv[]) {
+
         Arguments argopt = new Arguments();
         argopt.setUsage( new String[] {
         "usage: java dom.DOMCount (options) uri ...",
@@ -251,9 +252,11 @@ public class DOMCount {
                   "  -n turn on  Namespace  - default",
                   "  -v turn on  Validation - default",
                   "  -s turn on  Schema support - default",
+                  "  -d turn on  Deferred DOM - default"
                   "  -N turn off Namespace",
                   "  -V turn off Validation",
                   "  -S turn off Schema validation",
+                  "  -D turn off Deferred DOM",
                   "  -h       This help screen." } );
 
 
@@ -293,10 +296,10 @@ public class DOMCount {
                 setDeferredDOM = false;
                 break;
             case 's':
-                System.out.println( "s" );
+                setSchemaSupport = true;
                 break;
             case 'S':
-                System.out.println( "S" );
+                setSchemaSupport = false;
                 break;
             case '?':
             case 'h':

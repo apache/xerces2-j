@@ -398,7 +398,6 @@ public class DOMWriter {
                 break;
             case 'e':
                 encoding      = argopt.getStringParameter();
-                System.out.println(" encoding = " + encoding );
                 if ( encoding != null && isValidJavaEncoding( encoding ) )
                      setWriterEncoding( encoding );
                 else {
@@ -420,7 +419,6 @@ public class DOMWriter {
                 break;
             case 'p':
                 parserName    = argopt.getStringParameter();
-                System.out.println( "parserNam =" + parserName );
                 break;
             case 'd':
                 setDeferredDOM = true;
@@ -429,10 +427,10 @@ public class DOMWriter {
                 setDeferredDOM = false;
                 break;
             case 's':
-                System.out.println( "s" );
+                setSchemaSupport = true;
                 break;
             case 'S':
-                System.out.println( "S" );
+                setSchemaSupport = false;
                 break;
             case '?':
             case 'h':

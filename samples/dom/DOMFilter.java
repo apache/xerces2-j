@@ -284,10 +284,10 @@ public class DOMFilter {
                 setDeferredDOM = false;
                 break;
             case 's':
-                System.out.println( "s" );
+                setSchemaSupport = true;
                 break;
             case 'S':
-                System.out.println( "S" );
+                setSchemaSupport = false;
                 break;
             case 'e':
                 elementName = argopt.getStringParameter();
