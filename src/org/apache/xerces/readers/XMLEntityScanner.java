@@ -195,7 +195,7 @@ implements Locator {
     throws IOException {
         int charValue;
         StringBuffer  buffer = new StringBuffer();
-        while ( XMLChar.isNameChar( charValue = this.fPushbackReader.read() ) == true ) {
+        while ( XMLChar.isName( charValue = this.fPushbackReader.read() ) == true ) {
             buffer.append( (char) (charValue & 0xffff ) );
             fCharPosition++;
         }
@@ -213,13 +213,13 @@ implements Locator {
     throws IOException {
         int charValue;
         StringBuffer  buffer = new StringBuffer();
-        if ( XMLChar.isNameStartChar( charValue = this.fPushbackReader.read() )== true) {
+        if ( XMLChar.isNameStart( charValue = this.fPushbackReader.read() )== true) {
             buffer.append( (char) (charValue & 0xffff ) );
             fCharPosition++;
         } else {
             return null;//Did not find a NameStartChar 
         }
-        while ( XMLChar.isNameChar( charValue = this.fPushbackReader.read() ) == true ) {
+        while ( XMLChar.isName( charValue = this.fPushbackReader.read() ) == true ) {
             buffer.append( (char) (charValue & 0xffff ) );
             fCharPosition++;
         }
@@ -250,7 +250,7 @@ implements Locator {
         charValue = this.fPushbackReader.read();
         fCharPosition++;
 
-        if ( XMLChar.isNameStartChar( charValue) == false ) {
+        if ( XMLChar.isNameStart( charValue) == false ) {
             qname.clear();
             return;
         }
@@ -264,7 +264,7 @@ implements Locator {
             charValue = this.fPushbackReader.read();
             fCharPosition++;
 
-            if ( XMLChar.isNameChar( charValue) == false ) {
+            if ( XMLChar.isName( charValue) == false ) {
                 this.fPushbackReader.unread( charValue );
                 fCharPosition--;
                 break;
@@ -289,10 +289,10 @@ implements Locator {
      * 
      * @param content 
      */
-    public void scanContent(XMLString content)
+    public boolean scanContent(XMLString content)
     throws IOException {
 
-
+    return false;
     } // scanContent
 
 
