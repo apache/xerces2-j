@@ -66,9 +66,10 @@ import java.io.Serializable;
 * string and fragment) that may constitute a URI.
 * <p>
 * Parsing of a URI specification is done according to the URI
-* syntax described in RFC 2396
-* <http://www.ietf.org/rfc/rfc2396.txt?number=2396>, and amended by
-* RFC 2732 <http://www.ietf.org/rfc/rfc2732.txt?number=2732>. 
+* syntax described in 
+* <a href="http://www.ietf.org/rfc/rfc2396.txt?number=2396">RFC 2396</a>,
+* and amended by
+* <a href="http://www.ietf.org/rfc/rfc2732.txt?number=2732">RFC 2732</a>. 
 * <p>
 * Every absolute URI consists of a scheme, followed by a colon (':'), 
 * followed by a scheme-specific part. For URIs that follow the 
@@ -351,7 +352,7 @@ import java.io.Serializable;
   * setter methods for specifics.
   *
   * @param p_scheme the URI scheme (cannot be null or empty)
-  * @param p_host the hostname or IPv4 address for the URI
+  * @param p_host the hostname, IPv4 address or IPv6 reference for the URI
   * @param p_path the URI path - if the path contains '?' or '#',
   *               then the query string and/or fragment will be
   *               set from the path; however, if the query and
@@ -380,7 +381,7 @@ import java.io.Serializable;
   * @param p_scheme the URI scheme (cannot be null or empty)
   * @param p_userinfo the URI userinfo (cannot be specified if host
   *                   is null)
-  * @param p_host the hostname or IPv4 address for the URI
+  * @param p_host the hostname, IPv4 address or IPv6 reference for the URI
   * @param p_port the URI port (may be -1 for "unspecified"; cannot
   *               be specified if host is null)
   * @param p_path the URI path - if the path contains '?' or '#',
@@ -1466,8 +1467,11 @@ import java.io.Serializable;
   }
   
   /**
-   * <p>Determines whether a string is an IPv4 address 
-   * as defined by RFC 2373.</p>
+   * <p>Determines whether a string is an IPv4 address as defined by 
+   * RFC 2373, and under the further constraint that it must be a 32-bit
+   * address. Though not expressed in the grammar, in order to satisfy 
+   * the 32-bit address constraint, each segment of the address cannot 
+   * be greater than 255 (8 bits of information).</p>
    *
    * <p>IPv4address = 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT</p>
    *
@@ -1498,13 +1502,28 @@ import java.io.Serializable;
             return false;
           }
           numDigits = 0;
-          numDots++;
+          if (++numDots > 3) {
+            return false;
+          }
         }
         else if (!isDigit(testChar)) {
           return false;
         }
+        // Check that that there are no more than three digits
+        // in this segment.
         else if (++numDigits > 3) {
           return false;
+        }
+        // Check that this segment is not greater than 255.
+        else if (numDigits == 3) {
+          char first = address.charAt(i-2);
+          char second = address.charAt(i-1);
+          if (!(first < '2' || 
+               (first == '2' && 
+               (second < '5' || 
+               (second == '5' && testChar <= '5'))))) {
+            return false;
+          }
         }
       }
       return (numDots == 3);
