@@ -234,8 +234,8 @@ public class DeferredDocumentImpl
 
         // save name, public id, system id
         setChunkValue(fNodeName, rootElementName, chunk, index);
-        setChunkValue(fNodeValue, publicId, chunk, eindex);
-        setChunkValue(fNodeURI, systemId, chunk, eindex);
+        setChunkValue(fNodeValue, publicId, chunk, index);
+        setChunkValue(fNodeURI, systemId, chunk, index);
         setChunkIndex(fNodeExtra, extraDataIndex, chunk, index);
 
         // return node index
