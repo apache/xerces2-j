@@ -503,6 +503,9 @@ class ObjectFactory {
     static class ConfigurationError
         extends Error {
 
+        /** Serialization version. */
+        static final long serialVersionUID = 937647395548533254L;
+        
         //
         // Data
         //

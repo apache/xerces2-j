@@ -64,6 +64,9 @@ import java.io.Serializable;
   ********************************************************************/
   public static class MalformedURIException extends IOException {
 
+   /** Serialization version. */
+   static final long serialVersionUID = -6695054834342951930L;
+   
    /******************************************************************
     * Constructs a <code>MalformedURIException</code> with no specified
     * detail message.

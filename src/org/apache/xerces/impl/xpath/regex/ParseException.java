@@ -22,6 +22,10 @@ package org.apache.xerces.impl.xpath.regex;
  * @version $Id$
  */
 public class ParseException extends RuntimeException {
+    
+    /** Serialization version. */
+    static final long serialVersionUID = -7012400318097691370L;
+    
     int location;
 
     /*

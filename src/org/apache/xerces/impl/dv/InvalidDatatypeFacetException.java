@@ -26,6 +26,9 @@ package org.apache.xerces.impl.dv;
  */
 public class InvalidDatatypeFacetException extends DatatypeException {
 
+    /** Serialization version. */
+    static final long serialVersionUID = -4104066085909970654L;
+    
     /**
      * Create a new datatype exception by providing an error code and a list
      * of error message substitution arguments.

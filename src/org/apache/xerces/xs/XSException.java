@@ -29,6 +29,10 @@ package org.apache.xerces.xs;
  * corresponding method descriptions.
  */
 public class XSException extends RuntimeException {
+
+    /** Serialization version. */
+    static final long serialVersionUID = 3111893084677917742L;
+    
     public XSException(short code, String message) {
        super(message);
        this.code = code;

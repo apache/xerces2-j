@@ -31,6 +31,9 @@ import org.apache.xerces.util.MessageFormatter;
  */
 public class MalformedByteSequenceException extends CharConversionException {
 
+    /** Serialization version. */
+    static final long serialVersionUID = 8436382245048328739L;
+    
     //
     // Data
     //

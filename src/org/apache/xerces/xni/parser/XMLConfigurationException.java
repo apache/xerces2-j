@@ -30,6 +30,9 @@ import org.apache.xerces.xni.XNIException;
 public class XMLConfigurationException
     extends XNIException {
 
+    /** Serialization version. */
+    static final long serialVersionUID = -5437427404547669188L;
+    
     //
     // Constants
     //

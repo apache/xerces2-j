@@ -26,6 +26,9 @@ package org.apache.xerces.impl.xpath;
 public class XPathException 
     extends Exception {
 
+    /** Serialization version. */
+    static final long serialVersionUID = -948482312169512085L;
+    
     // Data
 
     // hold the value of the key this Exception refers to.

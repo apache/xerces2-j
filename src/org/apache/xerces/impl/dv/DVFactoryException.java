@@ -23,6 +23,10 @@ package org.apache.xerces.impl.dv;
  * @version $Id$
  */
 public class DVFactoryException extends RuntimeException {
+    
+    /** Serialization version. */
+    static final long serialVersionUID = -3738854697928682412L;
+    
     public DVFactoryException() {
         super();
     }

@@ -24,6 +24,9 @@ package org.apache.xerces.impl.xs;
  */
 public class XMLSchemaException extends Exception {
 
+    /** Serialization version. */
+    static final long serialVersionUID = -9096984648537046218L;
+    
     // store a datatype error: error code plus the arguments
     String key;
     Object[] args;

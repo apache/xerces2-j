@@ -33,6 +33,9 @@ package org.apache.xerces.xni;
 public class XNIException 
     extends RuntimeException {
 
+    /** Serialization version. */
+    static final long serialVersionUID = 9019819772686063775L;
+    
     //
     // Data
     //

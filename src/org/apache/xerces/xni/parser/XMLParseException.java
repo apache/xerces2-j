@@ -31,6 +31,9 @@ import org.apache.xerces.xni.XNIException;
 public class XMLParseException
     extends XNIException {
 
+    /** Serialization version. */
+    static final long serialVersionUID = 1732959359448549967L;
+    
     //
     // Data
     //

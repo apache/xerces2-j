@@ -32,6 +32,9 @@ import java.util.MissingResourceException;
  */
 public class DatatypeException extends Exception {
 
+    /** Serialization version. */
+    static final long serialVersionUID = 1940805832730465578L;
+    
     // used to store error code and error substitution arguments
     protected String key;
     protected Object[] args;
