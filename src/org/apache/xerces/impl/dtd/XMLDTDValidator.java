@@ -1590,10 +1590,23 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                    XMLString nonNormalizedText,
                                    Augmentations augs) throws XNIException {
 
-        // call handlers
-        fDTDGrammar.internalEntityDecl(name, text, nonNormalizedText, augs);
-        if (fDTDHandler != null) {
-            fDTDHandler.internalEntityDecl(name, text, nonNormalizedText, augs);
+        int index = fDTDGrammar.getEntityDeclIndex(name) ;
+
+        //If the same entity is declared more than once, the first declaration
+        //encountered is binding, SAX requires only effective(first) declaration
+        //to be reported to the application
+
+        //REVISIT: Does it make sense to pass duplicate Entity information across
+        //the pipeline -- nb?
+
+        //its a new entity and hasn't been declared.
+        if(index == -1){
+            //store internal entity declaration in grammar
+            fDTDGrammar.internalEntityDecl(name, text, nonNormalizedText, augs);
+            // call handlers
+            if (fDTDHandler != null) {
+                fDTDHandler.internalEntityDecl(name, text, nonNormalizedText, augs);
+            }
         }
 
     } // internalEntityDecl(String,XMLString,XMLString)
@@ -1615,10 +1628,23 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     public void externalEntityDecl(String name, XMLResourceIdentifier identifier,
                                    Augmentations augs) throws XNIException {
 
-        // call handlers
-        fDTDGrammar.externalEntityDecl(name, identifier, augs);
-        if (fDTDHandler != null) {
-            fDTDHandler.externalEntityDecl(name, identifier, augs);
+        int index = fDTDGrammar.getEntityDeclIndex(name) ;
+
+        //If the same entity is declared more than once, the first declaration
+        //encountered is binding, SAX requires only effective(first) declaration
+        //to be reported to the application
+
+        //REVISIT: Does it make sense to pass duplicate entity information across
+        //the pipeline -- nb?
+
+        //its a new entity and hasn't been declared.
+        if(index == -1){
+            //store external entity declaration in grammar
+            fDTDGrammar.externalEntityDecl(name, identifier, augs);
+            // call handlers
+            if (fDTDHandler != null) {
+                fDTDHandler.externalEntityDecl(name, identifier, augs);
+            }
         }
 
     } // externalEntityDecl(String,XMLResourceIdentifier, Augmentations)
