@@ -677,12 +677,16 @@ public class TraverseSchema implements
             if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 traverseAnnotationDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
+                fNamespacesScope.increaseDepth();
                 traverseInclude(child); 
+                fNamespacesScope.decreaseDepth();
             } else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
                 traverseImport(child); 
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
                 fRedefineSucceeded = true; // presume worked until proven failed.
+                fNamespacesScope.increaseDepth();
                 traverseRedefine(child); 
+                fNamespacesScope.decreaseDepth();
             } else
                 break;
         }
@@ -1050,12 +1054,16 @@ public class TraverseSchema implements
             if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 traverseAnnotationDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
+                fNamespacesScope.increaseDepth();
                 traverseInclude(child); 
+                fNamespacesScope.decreaseDepth();
             } else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
                 traverseImport(child); 
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
                 fRedefineSucceeded = true; // presume worked until proven failed.
+                fNamespacesScope.increaseDepth();
                 traverseRedefine(child); 
+                fNamespacesScope.decreaseDepth();
             } else
                 break;
         }
