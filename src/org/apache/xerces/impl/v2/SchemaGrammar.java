@@ -144,12 +144,12 @@ public class SchemaGrammar {
         // In case we ever see an error, Runtime exception will be thrown
         // since this is an implementation failure.
 
-        fGlobalAttrDecls  = new SymbolHash(0);
-        fGlobalAttrGrpDecls = new SymbolHash(0);
-        fGlobalElemDecls = new SymbolHash(0);
-        fGlobalGroupDecls = new SymbolHash(0);
-        fGlobalNotationDecls = new SymbolHash(0);
-        fGlobalIDConstraintDecls = new SymbolHash(0);
+        fGlobalAttrDecls  = new SymbolHash(1);
+        fGlobalAttrGrpDecls = new SymbolHash(1);
+        fGlobalElemDecls = new SymbolHash(1);
+        fGlobalGroupDecls = new SymbolHash(1);
+        fGlobalNotationDecls = new SymbolHash(1);
+        fGlobalIDConstraintDecls = new SymbolHash(1);
 
         // set the size of type SymbolHash to double the number of types need
         // to be created. which should be the most effecient number.
