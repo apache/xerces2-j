@@ -280,6 +280,7 @@ Copyright:
              excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"/>
     <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
 
+    <copyfile src="Makefile" dest="${distsrc.dir}/Makefile"/>
     <copyfile src="LICENSE" dest="${distsrc.dir}/LICENSE"/>
     <copyfile src="README" dest="${distsrc.dir}/README"/>
     <copyfile src="Readme.html" dest="${distsrc.dir}/Readme.html"/>
