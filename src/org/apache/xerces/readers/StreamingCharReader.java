@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,8 +70,8 @@ import java.util.Vector;
 /**
  * An reader class for applications that need to process input data as 
  * it arrives on the stream.
- * *
- * @version
+ * 
+ * @version $Id$
  */
 public class StreamingCharReader extends XMLEntityReader {
 
@@ -344,6 +344,10 @@ public class StreamingCharReader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0)
                 return;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return;
         }
@@ -356,6 +360,10 @@ public class StreamingCharReader extends XMLEntityReader {
                 if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     return;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     return;
             }
@@ -374,6 +382,10 @@ public class StreamingCharReader extends XMLEntityReader {
                 if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     return;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     return;
             }
@@ -612,6 +624,10 @@ public class StreamingCharReader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0)
                 return -1;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return -1;
         }
@@ -627,6 +643,10 @@ public class StreamingCharReader extends XMLEntityReader {
                 if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     break;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     break;
             }
@@ -660,6 +680,10 @@ public class StreamingCharReader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                 return true;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                 return true;
         }
@@ -678,6 +702,10 @@ public class StreamingCharReader extends XMLEntityReader {
             if (ch == ':')
                 return -1;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return -1;
         }
@@ -717,6 +745,10 @@ public class StreamingCharReader extends XMLEntityReader {
                         if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0 || ch == ':')
                             lpok = false;
                     } else {
+                        if (!fCalledCharPropInit) {
+                            XMLCharacterProperties.initCharFlags();
+                            fCalledCharPropInit = true;
+                        }
                         if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                             lpok = false;
                     }
@@ -728,6 +760,10 @@ public class StreamingCharReader extends XMLEntityReader {
                     }
                 }
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     break;
             }
@@ -1130,9 +1166,9 @@ public class StreamingCharReader extends XMLEntityReader {
         if (!fSendCharDataAsCharArray) {
             int stringIndex = addString(offset, length);
             if (isWhitespace)
-                fEntityHandler.processWhitespace(stringIndex);
+                fCharDataHandler.processWhitespace(stringIndex);
             else
-                fEntityHandler.processCharacters(stringIndex);
+                fCharDataHandler.processCharacters(stringIndex);
             return;
         }
 
@@ -1144,9 +1180,9 @@ public class StreamingCharReader extends XMLEntityReader {
             //
             if (length != 0) {
                 if (isWhitespace)
-                    fEntityHandler.processWhitespace(dataChunk.toCharArray(), index, length);
+                    fCharDataHandler.processWhitespace(dataChunk.toCharArray(), index, length);
                 else
-                    fEntityHandler.processCharacters(dataChunk.toCharArray(), index, length);
+                    fCharDataHandler.processCharacters(dataChunk.toCharArray(), index, length);
             }
             return;
         }
@@ -1157,9 +1193,9 @@ public class StreamingCharReader extends XMLEntityReader {
         int count = length;
         int nbytes = CharDataChunk.CHUNK_SIZE - index;
         if (isWhitespace)
-            fEntityHandler.processWhitespace(dataChunk.toCharArray(), index, nbytes);
+            fCharDataHandler.processWhitespace(dataChunk.toCharArray(), index, nbytes);
         else
-            fEntityHandler.processCharacters(dataChunk.toCharArray(), index, nbytes);
+            fCharDataHandler.processCharacters(dataChunk.toCharArray(), index, nbytes);
         count -= nbytes;
 
         //
@@ -1172,9 +1208,9 @@ public class StreamingCharReader extends XMLEntityReader {
             }
             nbytes = count <= CharDataChunk.CHUNK_SIZE ? count : CharDataChunk.CHUNK_SIZE;
             if (isWhitespace)
-                fEntityHandler.processWhitespace(dataChunk.toCharArray(), 0, nbytes);
+                fCharDataHandler.processWhitespace(dataChunk.toCharArray(), 0, nbytes);
             else
-                fEntityHandler.processCharacters(dataChunk.toCharArray(), 0, nbytes);
+                fCharDataHandler.processCharacters(dataChunk.toCharArray(), 0, nbytes);
             count -= nbytes;
         } while (count > 0);
     }
@@ -1339,5 +1375,6 @@ public class StreamingCharReader extends XMLEntityReader {
     protected char[] fMostRecentData = null;
     protected int fMostRecentChar = 0;
     protected int fLength = 0;
+    protected boolean fCalledCharPropInit = false;
 
 }

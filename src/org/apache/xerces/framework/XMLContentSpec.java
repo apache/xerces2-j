@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ package org.apache.xerces.framework;
 /**
  * ContentSpec really exists to aid the parser classes in implementing
  * access to the grammar.
- *
+ * <p>
  * This class is used by the DTD scanner and the validator classes,
  * allowing them to be used separately or together.  This "struct"
  * class is used to build content models for validation, where it
@@ -70,14 +70,14 @@ package org.apache.xerces.framework;
  * without a DTD scanner (i.e. a schema validator) and a DTD scanner
  * without a validator (non-validating processor), this class can be
  * used by each without requiring the presence of the other.
- *
+ * <p>
  * When processing element declarations, the DTD scanner will build
  * up a representation of the content model using the node types that
  * are defined here.  Since a non-validating processor only needs to
  * remember the type of content model declared (i.e. ANY, EMPTY, MIXED,
  * or CHILDREN), it is free to discard the specific details of the
  * MIXED and CHILDREN content models described using this class.
- *
+ * <p>
  * In the typical case of a validating processor reading the grammar
  * of the document from a DTD, the information about the content model
  * declared will be preserved and later "compiled" into an efficient
@@ -87,7 +87,7 @@ package org.apache.xerces.framework;
  * A leaf node has a "value" that is either an index in the string
  * pool of the element type of that leaf, or a value of -1 to indicate
  * the special "#PCDATA" leaf type used in a mixed content model.
- *
+ * <p>
  * For a mixed content model, the content spec will be made up of
  * leaf and choice content spec nodes, with an optional "zero or more"
  * node.  For example, the mixed content declaration "(#PCDATA)" would
@@ -101,13 +101,13 @@ package org.apache.xerces.framework;
  * there will be more corresponding choice and leaf nodes, the choice
  * nodes will be chained together through the "value" field with each
  * leaf node referenced by the "otherValue" field.
- *
+ * <p>
  * For element content models, there are sequence nodes and also "zero or
  * one" and "one or more" nodes.  The leaf nodes would always have a valid
  * string pool index, as the "#PCDATA" leaf is not used in the declarations
  * for element content models.
  *
- * @version
+ * @version $Id$
  */
 
 public interface XMLContentSpec {

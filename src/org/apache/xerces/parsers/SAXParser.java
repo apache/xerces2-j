@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,8 +58,9 @@
 package org.apache.xerces.parsers;
 
 import org.apache.xerces.framework.XMLAttrList;
+import org.apache.xerces.framework.XMLContentSpec;
+import org.apache.xerces.framework.XMLDocumentHandler;
 import org.apache.xerces.framework.XMLParser;
-import org.apache.xerces.framework.XMLValidator;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.StringPool;
 
@@ -82,13 +83,13 @@ import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * SAXParser provides a parser which implements the SAX1 and SAX2
- * parser APIs
+ * parser APIs.
  *
- * @version
+ * @version $Id$
  */
 public class SAXParser
     extends XMLParser
-    implements Parser, XMLReader {
+    implements Parser, XMLReader, XMLDocumentHandler, XMLDocumentHandler.DTDHandler {
 
     //
     // Constants
@@ -132,7 +133,7 @@ public class SAXParser
     // parser/xmlreader handlers
 
     /** DTD handler. */
-    private DTDHandler fDTDHandler;
+    private org.xml.sax.DTDHandler fDTDHandler;
 
     // xmlreader handlers
 
@@ -157,13 +158,14 @@ public class SAXParser
 
     /** Default constructor. */
     public SAXParser() {
-        setSendCharDataAsCharArray(true);
-        try{
-        //setNamespaces(true ); //JR-defect 48 fix - turn on Namespaces
-         setFeature( "http://xml.org/sax/features/namespaces", true );
-        }catch( SAXNotRecognizedException e ){ 
-        }catch( SAXNotSupportedException  e ){ 
+        try {
+            //JR-defect 48 fix - turn on Namespaces
+            setNamespaces(true);
         }
+        catch (Exception e) {
+            // ignore
+        }
+        initHandlers(true, this, this);
     }
 
     //
@@ -423,7 +425,7 @@ public class SAXParser
      *            argument is null.
      * @see #getDTDHandler
      */
-    public void setDTDHandler(DTDHandler handler) {
+    public void setDTDHandler(org.xml.sax.DTDHandler handler) {
         fDTDHandler = handler;
     }
 
@@ -434,7 +436,7 @@ public class SAXParser
      *         has been registered.
      * @see #setDTDHandler
      */
-    public DTDHandler getDTDHandler() {
+    public org.xml.sax.DTDHandler getDTDHandler() {
         return fDTDHandler;
     }
     
@@ -459,8 +461,6 @@ public class SAXParser
                                                "http://xml.org/sax/features/namespace-prefixes");
         }
         fNamespacePrefixes = process;
-        //fDTDValidator.setNamespacePrefixes(process);
-        //getSchemaValidator().setNamespacePrefixes(process);
     }
 
     /**
@@ -502,29 +502,7 @@ public class SAXParser
 
         if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
             String feature = featureId.substring(SAX2_FEATURES_PREFIX.length());
-            // http://xml.org/sax/features/namespace-prefixes
-            //   controls the reporting of raw prefixed names and Namespace 
-            //   declarations (xmlns* attributes): when this feature is false 
-            //   (the default), raw prefixed names may optionally be reported, 
-            //   and xmlns* attributes must not be reported.
-            //
-            if (feature.equals("namespace-prefixes")) {
-                setNamespacePrefixes(state);
-                return;
-            }
-            // http://xml.org/sax/features/string-interning
-            //   controls the use of java.lang.String#intern() for strings
-            //   passed to SAX handlers.
-            //
-            if (feature.equals("string-interning")) {
-                if (state) {
-                    throw new SAXNotSupportedException(
-                        "PAR018 "+state+" state for feature \""+featureId+"\" is not supported.\n"+
-                        state+'\t'+featureId
-                        );
-                }
-                return;
-            }
+
             /*
             //
             // http://xml.org/sax/features/normalize-text
@@ -548,6 +526,31 @@ public class SAXParser
                 return;
             }
             */
+
+            // http://xml.org/sax/features/namespace-prefixes
+            //   controls the reporting of raw prefixed names and Namespace 
+            //   declarations (xmlns* attributes): when this feature is false 
+            //   (the default), raw prefixed names may optionally be reported, 
+            //   and xmlns* attributes must not be reported.
+            //
+            if (feature.equals("namespace-prefixes")) {
+                setNamespacePrefixes(state);
+                return;
+            }
+            // http://xml.org/sax/features/string-interning
+            //   controls the use of java.lang.String#intern() for strings
+            //   passed to SAX handlers.
+            //
+            if (feature.equals("string-interning")) {
+                if (state) {
+                    throw new SAXNotSupportedException(
+                        "PAR018 "+state+" state for feature \""+featureId+"\" is not supported.\n"+
+                        state+'\t'+featureId
+                        );
+                }
+                return;
+            }
+   
             //
             // Drop through and perform default processing
             //
@@ -597,23 +600,7 @@ public class SAXParser
 
         if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
             String feature = featureId.substring(SAX2_FEATURES_PREFIX.length());
-            // http://xml.org/sax/features/namespace-prefixes
-            //   controls the reporting of raw prefixed names and Namespace 
-            //   declarations (xmlns* attributes): when this feature is false 
-            //   (the default), raw prefixed names may optionally be reported, 
-            //   and xmlns* attributes must not be reported.
-            //
-            if (feature.equals("namespace-prefixes")) {
-                return getNamespacePrefixes();
-            }
-            // http://xml.org/sax/features/string-interning
-            //   controls the use of java.lang.String#intern() for strings
-            //   passed to SAX handlers.
-            //
-            if (feature.equals("string-interning")) {
-                // NOTE: This is the only value supported by the parser. -Ac
-                return false;
-            }
+
             /*
             //
             // http://xml.org/sax/features/normalize-text
@@ -635,6 +622,24 @@ public class SAXParser
                 return getUseLocator();
             }
             */
+
+            // http://xml.org/sax/features/namespace-prefixes
+            //   controls the reporting of raw prefixed names and Namespace 
+            //   declarations (xmlns* attributes): when this feature is false 
+            //   (the default), raw prefixed names may optionally be reported, 
+            //   and xmlns* attributes must not be reported.
+            //
+            if (feature.equals("namespace-prefixes")) {
+                return getNamespacePrefixes();
+            }
+            // http://xml.org/sax/features/string-interning
+            //   controls the use of java.lang.String#intern() for strings
+            //   passed to SAX handlers.
+            //
+            if (feature.equals("string-interning")) {
+                return false;
+            }
+
             //
             // Drop through and perform default processing
             //
@@ -930,7 +935,7 @@ public class SAXParser
      * @param model The content model as a normalized string.
      * @exception SAXException The application may raise an exception.
      */
-    public void elementDecl(int elementType, XMLValidator.ContentSpec contentSpec) throws Exception {
+    public void elementDecl(int elementType, XMLContentSpec contentSpec) throws Exception {
 
         if (fDeclHandler != null || DEBUG_CALLBACKS) {
 
@@ -1145,20 +1150,12 @@ public class SAXParser
     }
 
     /** Start document. */
-    public void startDocument(int versionIndex, int encodingIndex, int standaloneIndex)
-        throws Exception {
+    public void startDocument() throws Exception {
 
         // perform callbacks
         if (DEBUG_CALLBACKS) {
             System.err.println("setDocumentLocator(<locator>)");
-            String notes = "";
-            if (versionIndex != -1)
-                notes += " version='" + fStringPool.toString(versionIndex) + "'";
-            if (encodingIndex != -1)
-                notes += " encoding='" + fStringPool.toString(encodingIndex) + "'";
-            if (standaloneIndex != -1)
-                notes += " standalone='" + fStringPool.toString(standaloneIndex) + "'";
-            System.err.println("startDocument()" + notes);
+            System.err.println("startDocument()");
         }
         if (fDocumentHandler != null) {
             fDocumentHandler.setDocumentLocator(getLocator());
@@ -1169,12 +1166,7 @@ public class SAXParser
             fContentHandler.startDocument();
         }
 
-        // release strings
-        fStringPool.releaseString(versionIndex);
-        fStringPool.releaseString(encodingIndex);
-        fStringPool.releaseString(standaloneIndex);
-
-    } // startDocument(int,int,int)
+    } // startDocument()
 
     /** End document. */
     public void endDocument() throws Exception {
@@ -1191,6 +1183,46 @@ public class SAXParser
         }
 
     } // endDocument()
+
+    /** XML declaration. */
+    public void xmlDecl(int versionIndex, int encodingIndex, int standaloneIndex) throws Exception {
+
+        // perform callbacks
+        if (DEBUG_CALLBACKS) {
+            String notes = "";
+            if (versionIndex != -1)
+                notes += " version='" + fStringPool.toString(versionIndex) + "'";
+            if (encodingIndex != -1)
+                notes += " encoding='" + fStringPool.toString(encodingIndex) + "'";
+            if (standaloneIndex != -1)
+                notes += " standalone='" + fStringPool.toString(standaloneIndex) + "'";
+            System.err.println("xmlDecl(<?xml" + notes + "?>)");
+        }
+
+        // release strings
+        fStringPool.releaseString(versionIndex);
+        fStringPool.releaseString(encodingIndex);
+        fStringPool.releaseString(standaloneIndex);
+
+    }
+
+    /** Text declaration. */
+    public void textDecl(int versionIndex, int encodingIndex) throws Exception {
+
+        // perform callbacks
+        if (DEBUG_CALLBACKS) {
+            String notes = "";
+            if (versionIndex != -1)
+                notes += " version='" + fStringPool.toString(versionIndex) + "'";
+            if (encodingIndex != -1)
+                notes += " encoding='" + fStringPool.toString(encodingIndex) + "'";
+            System.err.println("textDecl(<?xml" + notes + "?>)");
+        }
+
+        // release strings
+        fStringPool.releaseString(versionIndex);
+        fStringPool.releaseString(encodingIndex);
+    }
 
     /**
      * Report the start of the scope of a namespace declaration.
@@ -1268,7 +1300,6 @@ public class SAXParser
                          ? fStringPool.toString(localIndex) : "";
             String raw = name;
             fAttributes.clear();
-            boolean namespacePrefixes = getNamespacePrefixes();
             for (int attrIndex = attrList.getFirstAttr(attrListIndex); 
                  attrIndex != -1; 
                  attrIndex = attrList.getNextAttr(attrIndex)) {
@@ -1283,9 +1314,9 @@ public class SAXParser
                 String attrType = fStringPool.toString(attrList.getAttType(attrIndex));
                 String attrValue = fStringPool.toString(attrList.getAttValue(attrIndex));
                 int attrPrefix = fStringPool.getPrefixForQName(attrNameIndex);
-                if (namespacePrefixes ||
-                    (!namespacePrefixes
-                    && attrPrefix != fStringPool.addSymbol("xmlns")
+                boolean namespacePrefixes = getNamespacePrefixes();
+                if (!namespaces || namespacePrefixes || 
+                    (attrPrefix != fStringPool.addSymbol("xmlns")
                     && attrLocalIndex != fStringPool.addSymbol("xmlns")
                     )) 
                     fAttributes.addAttribute(attrUri, attrLocal, attrRaw, 
@@ -1316,7 +1347,8 @@ public class SAXParser
             String uri = uriIndex != -1 && namespaces
                        ? fStringPool.toString(uriIndex) : "";
             int localIndex = fStringPool.getLocalPartForQName(elementType);
-            String local = localIndex != -1 ? fStringPool.toString(localIndex) : "";
+            String local = localIndex != -1 && namespaces
+                         ? fStringPool.toString(localIndex) : "";
             String raw = fStringPool.toString(elementType);
             fContentHandler.endElement(uri, local, raw);
         }
@@ -1462,9 +1494,6 @@ public class SAXParser
         }
 
     }
-    public void processingInstructionInDTD(int piTarget, int piData) throws Exception {
-        processingInstruction(piTarget, piData);
-    }
 
     /** Comment. */
     public void comment(int dataIndex) throws Exception {
@@ -1484,9 +1513,6 @@ public class SAXParser
         } else {
             fStringPool.releaseString(dataIndex);
         }
-    }
-    public void commentInDTD(int dataIndex) throws Exception {
-        comment(dataIndex);
     }
 
     /** Characters. */

@@ -3,6 +3,7 @@
 TARGETS=\
 	AbstractCharReader.class\
 	CharReader.class\
+	DefaultEntityHandler.class\
 	DefaultReaderFactory.class\
 	EBCDICRecognizer.class\
 	MIME2Java.class\

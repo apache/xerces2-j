@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,19 +67,19 @@ import java.io.IOException;
 
 /**
  * Reader for processing internal entity replacement text.
- *
+ * <p>
  * This reader processes data contained within strings kept
  * in the string pool.  It provides the support for both
  * general and parameter entities.  The location support
  * as we are processing the replacement text is somewhat
  * poor and needs to be updated when "nested locations"
  * have been implemented.
- *
+ * <p>
  * For efficiency, we return instances of this class to a
  * free list and reuse those instances to process other
  * strings.
  *
- * @version
+ * @version $Id$
  */
 final class StringReader extends XMLEntityReader {
     /**
@@ -368,6 +368,10 @@ final class StringReader extends XMLEntityReader {
             if (ch == -1 || XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0)
                 return;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return;
         }
@@ -379,6 +383,10 @@ final class StringReader extends XMLEntityReader {
                 if (ch == -1 || XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     return;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     return;
             }
@@ -396,6 +404,10 @@ final class StringReader extends XMLEntityReader {
                 if (ch == -1 || XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     return;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     return;
             }
@@ -613,6 +625,10 @@ final class StringReader extends XMLEntityReader {
         if (ch == -1) {
             return changeReaders().scanExpectedName(fastcheck, expectedName);
         }
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
+        }
         int nameOffset = fCurrentOffset;
         if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
             return false;
@@ -639,6 +655,10 @@ final class StringReader extends XMLEntityReader {
         if (ch == -1) {
             return changeReaders().scanQName(fastcheck);
         }
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
+        }
         int nameOffset = fCurrentOffset;
         if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
             return -1;
@@ -661,6 +681,10 @@ final class StringReader extends XMLEntityReader {
         int ch = fMostRecentChar;
         if (ch == -1) {
             return changeReaders().scanName(fastcheck);
+        }
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
         }
         int nameOffset = fCurrentOffset;
         if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
@@ -909,15 +933,15 @@ final class StringReader extends XMLEntityReader {
         if (!fSendCharDataAsCharArray) {
             int stringIndex = addString(offset, length);
             if (isWhitespace)
-                fEntityHandler.processWhitespace(stringIndex);
+                fCharDataHandler.processWhitespace(stringIndex);
             else
-                fEntityHandler.processCharacters(stringIndex);
+                fCharDataHandler.processCharacters(stringIndex);
             return;
         }
         if (isWhitespace)
-            fEntityHandler.processWhitespace(fData.toCharArray(), offset, length);
+            fCharDataHandler.processWhitespace(fData.toCharArray(), offset, length);
         else
-            fEntityHandler.processCharacters(fData.toCharArray(), offset, length);
+            fCharDataHandler.processCharacters(fData.toCharArray(), offset, length);
     }
     //
     //
@@ -934,4 +958,5 @@ final class StringReader extends XMLEntityReader {
     private int fMostRecentChar;
     private StringReader fNextFreeReader = null;
     private static StringReader fgFreeReaders = null;
+    private boolean fCalledCharPropInit = false;
 }

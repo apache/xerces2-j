@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,7 @@ import java.util.Vector;
  * </ul>
  *
  * @author  Andy Clark, IBM
- * @version
+ * @version $Id$
  */
 public class XCatalog
     extends XMLCatalogHandler
@@ -469,7 +469,7 @@ public class XCatalog
                 }
 
             // expand system id
-            systemId = expandSystemId(systemId);
+            systemId = fEntityHandler.expandSystemId(systemId);
 
             // cut off the least significant part
             int index = systemId.lastIndexOf('/');
@@ -547,7 +547,7 @@ public class XCatalog
                     if (!isURL(href)) {
                         href = base + href;
                         }
-                    String systemId = expandSystemId(href);
+                    String systemId = fEntityHandler.expandSystemId(href);
     
                     // create delegate
                     XCatalog catalog = new XCatalog();
@@ -567,7 +567,7 @@ public class XCatalog
                     if (!isURL(href)) {
                         href = base + href;
                         }
-                    String systemId = expandSystemId(href);
+                    String systemId = fEntityHandler.expandSystemId(href);
     
                     // create catalog
                     XCatalog.this.loadCatalog(new InputSource(systemId));

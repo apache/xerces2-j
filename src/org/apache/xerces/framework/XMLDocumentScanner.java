@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ import org.xml.sax.SAXParseException;
  * "connecting" that method to the corresponding method provided
  * by the XMLDTDScanner class.
  *
- * @version
+ * @version $Id$
  */
 public final class XMLDocumentScanner {
     //
@@ -220,18 +220,32 @@ public final class XMLDocumentScanner {
         /**
          * Signal the start of a document
          *
-         * @param version the handle in the string pool for the version number
-         * @param encoding the handle in the string pool for the encoding
-         * @param standalong the handle in the string pool for the standalone value
          * @exception java.lang.Exception
          */
-        public void callStartDocument(int version, int encoding, int standalone) throws Exception;
+        public void callStartDocument() throws Exception;
         /**
          * Signal the end of a document
          *
          * @exception java.lang.Exception
          */
         public void callEndDocument() throws Exception;
+        /**
+         * Signal the XML declaration of a document
+         *
+         * @param version the handle in the string pool for the version number
+         * @param encoding the handle in the string pool for the encoding
+         * @param standalong the handle in the string pool for the standalone value
+         * @exception java.lang.Exception
+         */
+        public void callXMLDecl(int version, int encoding, int standalone) throws Exception;
+        /**
+         * Signal the Text declaration of an external entity.
+         *
+         * @param version the handle in the string pool for the version number
+         * @param encoding the handle in the string pool for the encoding
+         * @exception java.lang.Exception
+         */
+        public void callTextDecl(int version, int encoding) throws Exception;
         /**
          * signal the scanning of a start element tag
          * 
@@ -245,7 +259,7 @@ public final class XMLDocumentScanner {
          * @param readerId the Id of the reader being used to scan the end tag.
          * @exception java.lang.Exception
          */
-        public boolean callEndElement(int readerId) throws Exception;
+        public void callEndElement(int readerId) throws Exception;
         /**
          * Check for a valid XML version number
          *
@@ -266,12 +280,12 @@ public final class XMLDocumentScanner {
          * Signal the start of a CDATA section
          * @exception java.lang.Exception
          */
-        public void startCDATA() throws Exception;
+        public void callStartCDATA() throws Exception;
         /**
          * Signal the end of a CDATA section
          * @exception java.lang.Exception
          */
-        public void endCDATA() throws Exception;
+        public void callEndCDATA() throws Exception;
         /**
          * Report the scanning of character data
          *
@@ -319,12 +333,10 @@ public final class XMLDocumentScanner {
     /**
      * Constructor
      */
-    public XMLDocumentScanner(EventHandler eventHandler,
-                              StringPool stringPool,
+    public XMLDocumentScanner(StringPool stringPool,
                               XMLErrorReporter errorReporter,
                               XMLEntityHandler entityHandler,
                               XMLEntityHandler.CharBuffer literalData) {
-        fEventHandler = eventHandler;
         fStringPool = stringPool;
         fErrorReporter = errorReporter;
         fEntityHandler = entityHandler;
@@ -333,11 +345,20 @@ public final class XMLDocumentScanner {
     }
 
     /**
+     * Set the event handler
+     *
+     * @param eventHandler The place to send our callbacks.
+     */
+    public void setEventHandler(XMLDocumentScanner.EventHandler eventHandler) {
+        fEventHandler = eventHandler;
+    }
+
+    /**
      * reset the parser so that the instance can be reused
      *
      * @param stringPool the string pool instance to be used by the reset parser
      */
-    public void reset(StringPool stringPool, XMLEntityHandler.CharBuffer literalData) throws Exception {
+    public void reset(StringPool stringPool, XMLEntityHandler.CharBuffer literalData) {
         fStringPool = stringPool;
         fLiteralData = literalData;
         fParseTextDecl = false;
@@ -509,7 +530,7 @@ public final class XMLDocumentScanner {
                                             fEntityReader.addString(nameOffset, nameLength));
                     } else {
                         int entityName = fEntityReader.addSymbol(nameOffset, nameLength);
-                        fEntityHandler.startReadingFromEntity(entityName, fScannerMarkupDepth, XMLEntityHandler.CONTEXT_IN_ATTVALUE);
+                        fEntityHandler.startReadingFromEntity(entityName, fScannerMarkupDepth, XMLEntityHandler.ENTITYREF_IN_ATTVALUE);
                     }
                 }
             } else if (fEntityReader.lookingAtChar('<', true)) {
@@ -728,6 +749,7 @@ public final class XMLDocumentScanner {
     }
     final class XMLDeclDispatcher implements ScannerDispatcher {
         public boolean dispatch(boolean keepgoing) throws Exception {
+            fEventHandler.callStartDocument();
             if (fEntityReader.lookingAtChar('<', true)) {
                 fScannerMarkupDepth++;
                 setScannerState(SCANNER_STATE_START_OF_MARKUP);
@@ -744,15 +766,12 @@ public final class XMLDocumentScanner {
                                         XMLMessages.P17_RESERVED_PITARGET);
                         }
                     } else { // PI
-                      fEventHandler.callStartDocument(-1, -1, -1);
                       scanPI(piTarget);
                     }
-                    fEventHandler.callStartDocument(-1, -1, -1);
                     fDispatcher = new PrologDispatcher();
                     restoreScannerState(SCANNER_STATE_PROLOG);
                     return true;
                 }
-                fEventHandler.callStartDocument(-1, -1, -1);
                 if (fEntityReader.lookingAtChar('!', true)) {
                     if (fEntityReader.lookingAtChar('-', true)) { // comment ?
                         if (fEntityReader.lookingAtChar('-', true)) {
@@ -781,7 +800,6 @@ public final class XMLDocumentScanner {
                     return true;
                 }
             } else {
-                fEventHandler.callStartDocument(-1, -1, -1);
                 if (fEntityReader.lookingAtSpace(true)) {
                     fEntityReader.skipPastSpaces();
                 } else if (!fEntityReader.lookingAtValidChar(false)) {
@@ -941,10 +959,13 @@ public final class XMLDocumentScanner {
             }
         }
     }
+    int fCurrentElementType = -1;
+    public int getCurrentElementType() {
+        return fCurrentElementType;
+    }
     final class ContentDispatcher implements ScannerDispatcher {
         private int fContentReader = -1;
         private int fElementDepth = 0;
-        private int fCurrentElementType = -1;
         private int[] fElementTypeStack = new int[8];
 
         void popElementType() {
@@ -1049,7 +1070,7 @@ public final class XMLDocumentScanner {
                         } else {
                             if (fEntityReader.skippedString(cdata_string)) {
                                 fEntityReader.setInCDSect(true);
-                                fEventHandler.startCDATA();
+                                fEventHandler.callStartCDATA();
                             } else {
                                 abortMarkup(XMLMessages.MSG_MARKUP_NOT_RECOGNIZED_IN_CONTENT,
                                             XMLMessages.P43_NOT_RECOGNIZED);
@@ -1074,16 +1095,15 @@ public final class XMLDocumentScanner {
                                     }
                                 }
                                 fScannerMarkupDepth--;
-                                if (fEventHandler.callEndElement(fReaderId)) {
-                                    fDispatcher = new TrailingMiscDispatcher();
-                                    restoreScannerState(SCANNER_STATE_TRAILING_MISC);
-                                    return true;
-                                }
+                                fEventHandler.callEndElement(fReaderId);
                                 if (fElementDepth-- == 0) {
                                     throw new RuntimeException("FWK002 popElementType: fElementDepth-- == 0.");
                                 }
                                 if (fElementDepth == 0) {
                                     fCurrentElementType = - 1;
+                                    fDispatcher = new TrailingMiscDispatcher();
+                                    restoreScannerState(SCANNER_STATE_TRAILING_MISC);
+                                    return true;
                                 } else {
                                     fCurrentElementType = fElementTypeStack[fElementDepth - 1];
                                 }
@@ -1164,7 +1184,7 @@ public final class XMLDocumentScanner {
                         fScannerMarkupDepth++;
                         fParseTextDecl = false;
                         fEntityReader.setInCDSect(true);
-                        fEventHandler.startCDATA();
+                        fEventHandler.callStartCDATA();
                         break;
                     case XMLEntityHandler.CONTENT_RESULT_START_OF_ETAG:
                         fScannerMarkupDepth++;
@@ -1186,16 +1206,15 @@ public final class XMLDocumentScanner {
                                 }
                             }
                             fScannerMarkupDepth--;
-                            if (fEventHandler.callEndElement(fReaderId)) {
-                                fDispatcher = new TrailingMiscDispatcher();
-                                restoreScannerState(SCANNER_STATE_TRAILING_MISC);
-                                return true;
-                            }
+                            fEventHandler.callEndElement(fReaderId);
                             if (fElementDepth-- == 0) {
                                 throw new RuntimeException("FWK002 popElementType: fElementDepth-- == 0.");
                             }
                             if (fElementDepth == 0) {
                                 fCurrentElementType = - 1;
+                                fDispatcher = new TrailingMiscDispatcher();
+                                restoreScannerState(SCANNER_STATE_TRAILING_MISC);
+                                return true;
                             } else {
                                 fCurrentElementType = fElementTypeStack[fElementDepth - 1];
                             }
@@ -1242,18 +1261,17 @@ public final class XMLDocumentScanner {
                     case XMLEntityHandler.CONTENT_RESULT_MATCHING_ETAG:
                     {
                         fParseTextDecl = false;
-                        if (fEventHandler.callEndElement(fReaderId)) {
-                            if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
-                                fDispatcher = new TrailingMiscDispatcher();
-                                fScannerState = SCANNER_STATE_TRAILING_MISC;
-                            }
-                            return true;
-                        }
+                        fEventHandler.callEndElement(fReaderId);
                         if (fElementDepth-- == 0) {
                             throw new RuntimeException("FWK002 popElementType: fElementDepth-- == 0.");
                         }
                         if (fElementDepth == 0) {
                             fCurrentElementType = - 1;
+                            if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
+                                fDispatcher = new TrailingMiscDispatcher();
+                                fScannerState = SCANNER_STATE_TRAILING_MISC;
+                            }
+                            return true;
                         } else {
                             fCurrentElementType = fElementTypeStack[fElementDepth - 1];
                         }
@@ -1303,7 +1321,7 @@ public final class XMLDocumentScanner {
                         } else {
                             restoreScannerState(SCANNER_STATE_CONTENT);
                             int entityName = fEntityReader.addSymbol(nameOffset, nameLength);
-                            fParseTextDecl = fEntityHandler.startReadingFromEntity(entityName, fElementDepth, XMLEntityHandler.CONTEXT_IN_CONTENT);
+                            fParseTextDecl = fEntityHandler.startReadingFromEntity(entityName, fElementDepth, XMLEntityHandler.ENTITYREF_IN_CONTENT);
                         }
                         break;
                     case XMLEntityHandler.CONTENT_RESULT_END_OF_CDSECT:
@@ -1314,7 +1332,7 @@ public final class XMLDocumentScanner {
                         //
                         if (fEntityReader.getInCDSect()) {
                             fEntityReader.setInCDSect(false);
-                            fEventHandler.endCDATA();
+                            fEventHandler.callEndCDATA();
                             fScannerMarkupDepth--;
                         } else {
                             reportFatalXMLError(XMLMessages.MSG_CDEND_IN_CONTENT,
@@ -1733,12 +1751,14 @@ public final class XMLDocumentScanner {
             return;
         }
         fScannerMarkupDepth--;
-        if (!scanningTextDecl) {
+        if (scanningTextDecl) {
+            fEventHandler.callTextDecl(version, encoding);
+        } else {
             //
             // Now that we have hit '?>' we are done with XML decl. Call the
             // handler before returning.
             //
-            fEventHandler.callStartDocument(version, encoding, standalone);
+            fEventHandler.callXMLDecl(version, encoding, standalone);
         }
     }
     //

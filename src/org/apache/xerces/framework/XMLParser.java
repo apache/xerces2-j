@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,59 +58,40 @@
 package org.apache.xerces.framework;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.io.Reader;
-import java.net.URL;
-import java.net.MalformedURLException;
 import java.util.Locale;
-import java.util.Hashtable;
-import java.util.ResourceBundle;
-import java.util.Stack;
-import java.util.ListResourceBundle;
 
-import org.apache.xerces.readers.DefaultReaderFactory;
+import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.readers.XMLDeclRecognizer;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.readers.XMLEntityReaderFactory;
-import org.apache.xerces.utils.ChunkyByteArray;
 import org.apache.xerces.utils.ChunkyCharArray;
-import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.StringPool;
-import org.apache.xerces.utils.XMLCharacterProperties;
+
 import org.apache.xerces.utils.XMLMessageProvider;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.utils.ImplementationMessages;
-
-// REVISIT - use component factory
-import org.apache.xerces.validators.dtd.DTDValidator;
-import org.apache.xerces.validators.schema.XSchemaValidator;
 import org.apache.xerces.validators.datatype.DatatypeMessageProvider;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
+
+import org.apache.xerces.validators.common.XMLValidator;
 
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
-import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * This is the base class of all standard parsers.
  *
- * @version
+ * @version $Id$
  */
-public abstract class XMLParser
-    implements XMLErrorReporter,
-               XMLEntityHandler,
-               XMLDocumentScanner.EventHandler,
-               DTDValidator.EventHandler,
-               Locator {
+public class XMLParser implements XMLErrorReporter {
 
     //
     // Constants
@@ -169,49 +150,22 @@ public abstract class XMLParser
 
     // state
 
-    private XMLAttrList fAttrList = null;
     protected boolean fParseInProgress = false;
     private boolean fNeedReset = false;
 
     // features
 
     /** Continue after fatal error. */
-    private boolean fContinueAfterFatalError;
+    private boolean fContinueAfterFatalError = false;
 
     // properties
 
     /** Error handler. */
-    private ErrorHandler fErrorHandler;
-
-    // literal strings
-
-    private char[] fCharRefData = null;
-    private int[] fElementTypeStack = new int[8];
-    private int[] fElementEntityStack = new int[8];
-    private boolean fCalledStartDocument = false;
-    private int fXMLLang = -1;
-    protected String fNamespaceSep = "";
-
-    // validators
-
-    protected XMLValidator fValidator = null;
-    protected DTDValidator fDTDValidator = null;
-    protected XSchemaValidator fSchemaValidator = null;
-    private boolean fCheckedForSchema = false;
+    private ErrorHandler fErrorHandler = null;
 
     // other
 
-    private Locator fLocator = null;
     private Locale fLocale = null;
-    private LocatorImpl fAttrNameLocator = null;
-    private boolean fSeenRootElement = false;
-    private boolean fStandaloneDocument = false;
-    private int fCDATASymbol = -1;
-    protected boolean fNamespacesEnabled = false;//JR- fix defect 48
-    private boolean fSendCharDataAsCharArray = false;
-    private boolean fValidating = false;
-    private boolean fScanningDTD = false;
-    private StringPool.CharArrayRange fCurrentElementCharArrayRange = null;
 
     // error information
 
@@ -223,15 +177,11 @@ public abstract class XMLParser
     //
     //
     //
-    protected XMLDocumentScanner fScanner = null;
     protected StringPool fStringPool = null;
     protected XMLErrorReporter fErrorReporter = null;
-    protected XMLEntityHandler fEntityHandler = null;
-    protected XMLEntityReaderFactory fReaderFactory = null;
-    protected int fElementDepth = 0;
-    protected int fCurrentElementType = -1;
-    protected int fCurrentElementEntity = -1;
-    protected boolean fInElementContent = false;
+    protected DefaultEntityHandler fEntityHandler = null;
+    protected XMLDocumentScanner fScanner = null;
+    protected XMLValidator fValidator = null;
 
     //
     // Constructors
@@ -241,30 +191,22 @@ public abstract class XMLParser
      * Constructor
      */
     protected XMLParser() {
-
         fStringPool = new StringPool();
         fErrorReporter = this;
-        fEntityHandler = this;
+        fEntityHandler = new DefaultEntityHandler(fStringPool, fErrorReporter);
+        fScanner = new XMLDocumentScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
+        fValidator = new XMLValidator(fStringPool, fErrorReporter, fEntityHandler, fScanner);
+    }
 
-        // set framework properties
-        fScanner = new XMLDocumentScanner(/*XMLDocumentScanner.EventHandler*/this, fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
-
-        // other inits
-        XMLCharacterProperties.initCharFlags();
-        fAttrList = new XMLAttrList(fStringPool);
-        fLocator = this;
-        fReaderFactory = new DefaultReaderFactory();
-
-        // REVISIT - add all other instance variables...
-
-        fCDATASymbol = fStringPool.addSymbol("CDATA");
-        fDTDValidator = new DTDValidator(/*DTDValidator.EventHandler*/this, fStringPool, fErrorReporter, fEntityHandler);
-
-        // set features
-        try { setContinueAfterFatalError(false); }
-        catch (SAXException e) {} // ignore
-
-    } // <init>()
+    /**
+     * Set char data processing preference and handlers.
+     */
+    protected void initHandlers(boolean sendCharDataAsCharArray,
+                                XMLDocumentHandler docHandler,
+                                XMLDocumentHandler.DTDHandler dtdHandler)
+    {
+        fValidator.initHandlers(sendCharDataAsCharArray, docHandler, dtdHandler);
+    }
 
     //
     // Public methods
@@ -364,21 +306,13 @@ public abstract class XMLParser
     /** Reset parser instance so that it can be reused. */
     public void reset() throws Exception {
         fStringPool.reset();
-        fAttrList.reset(fStringPool);
-        resetCommon();
-
-    } // reset()
+        fEntityHandler.reset(fStringPool);
+        fScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
+        fValidator.reset(fStringPool);
+        fNeedReset = false;
+    }
 
     // properties (the normal kind)
-
-    /**
-     * Sets the locator.
-     *
-     * @param locator The new locator.
-     */
-    public void setLocator(Locator locator) {
-        fLocator = locator;
-    }
 
     /**
      * return the locator being used by the parser
@@ -386,312 +320,24 @@ public abstract class XMLParser
      * @return the parser's active locator
      */
     public final Locator getLocator() {
-        return fLocator;
+        return fEntityHandler;
     }
 
     /**
      * Set the reader factory.
      */
     public void setReaderFactory(XMLEntityReaderFactory readerFactory) {
-        fReaderFactory = readerFactory;
-        fReaderFactory.setSendCharDataAsCharArray(fSendCharDataAsCharArray);
-    }
-
-    // DTD callbacks
-
-    /**
-     * Callback for processing instruction in DTD.
-     *
-     * @param target the string pool index of the PI's target
-     * @param data the string pool index of the PI's data
-     * @exception java.lang.Exception
-     */
-    public void processingInstructionInDTD(int target, int data) throws Exception {
-        fStringPool.releaseString(target);
-        fStringPool.releaseString(data);
+        fEntityHandler.setReaderFactory(readerFactory);
     }
 
     /**
-     * Callback for comment in DTD.
+     * Adds a recognizer.
      *
-     * @param comment the string pool index of the comment text
-     * @exception java.lang.Exception
+     * @param recognizer The XML recognizer to add.
      */
-    public void commentInDTD(int comment) throws Exception {
-        fStringPool.releaseString(comment);
+    public void addRecognizer(XMLDeclRecognizer recognizer) {
+        fEntityHandler.addRecognizer(recognizer);
     }
-
-    //
-    // Public abstract methods
-    //
-
-    // document callbacks
-
-    /**
-     * Callback for start of document
-     *
-     * If the there is no version info, encoding info, or standalone info,
-     * the corresponding argument will be set to -1.
-     *
-     * @param version string pool index of the version attribute's value
-     * @param encoding string pool index of the encoding attribute's value
-     * @param standAlone string pool index of the standalone attribute's value
-     * @exception java.lang.Exception
-     */
-    public abstract void startDocument(int version, int encoding, int standAlone)  throws Exception;
-
-    /**
-     * callback for the end of document.
-     *
-     * @exception java.lang.Exception
-     */
-    public abstract void endDocument() throws Exception;
-
-    /**
-     * callback for the start of a namespace declaration scope.
-     *
-     * @param prefix string pool index of the namespace prefix being declared
-     * @param uri string pool index of the namespace uri begin bound
-     * @param java.lang.Exception
-     */
-    public abstract void startNamespaceDeclScope(int prefix, int uri) throws Exception;
-
-    /**
-     * callback for the end a namespace declaration scope.
-     *
-     * @param prefix string pool index of the namespace prefix being declared
-     * @exception java.lang.Exception
-     */
-    public abstract void endNamespaceDeclScope(int prefix) throws Exception;
-    
-    /**
-     * Supports DOM Level 2 internalSubset additions.
-     * Called when the internal subset is completely scanned.
-     */
-    public abstract void internalSubset(int internalSubset);
-    
-
-    /**
-     * callback for the start of element.
-     *
-     * @param elementType element handle for the element being scanned
-     * @param attrList attrList containing the attributes of the element
-     * @param attrListHandle handle into attrList.  Allows attributes to be retreived.
-     * @exception java.lang.Exception
-     */
-    public abstract void startElement(int elementType, XMLAttrList attrList, int attrListHandle) throws Exception;
-
-    /**
-     * callback for end of element.
-     *
-     * @param elementType element handle for the element being scanned
-     * @exception java.lang.Exception
-     */
-    public abstract void endElement(int elementType) throws Exception;
-
-    /**
-     * callback for start of entity reference.
-     *
-     * @param entityName string pool index of the entity name
-     * @param entityType the XMLEntityHandler.ENTITYTYPE_* type
-     * @see org.apache.xerces.readers.XMLEntityHandler
-     * @param entityContext the XMLEntityHandler.CONTEXT_* type for where
-     *        the entity reference appears
-     * @see org.apache.xerces.readers.XMLEntityHandler
-     * @exception java.lang.Exception
-     */
-    public abstract void startEntityReference(int entityName, int entityType, int entityContext) throws Exception;
-
-    /**
-     * callback for end of entity reference.
-     *
-     * @param entityName string pool index of the entity anem
-     * @param entityType the XMLEntityHandler.ENTITYTYPE_* type
-     * @see org.apache.xerces.readers.XMLEntityHandler
-     * @param entityContext the XMLEntityHandler.CONTEXT_* type for where
-     *        the entity reference appears
-     * @see org.apache.xerces.readers.XMLEntityHandler
-     * @exception java.lang.Exception
-     */
-    public abstract void endEntityReference(int entityName, int entityType, int entityContext) throws Exception;
-
-    /**
-     * callback for start of CDATA section.
-     * this callback marks the start of a CDATA section
-     *
-     * @exception java.lang.Exception
-     */
-    public abstract void startCDATA() throws Exception;
-
-    /**
-     * callback for end of CDATA section.
-     * this callback marks the end of a CDATA section
-     *
-     * @exception java.lang.Exception
-     */
-    public abstract void endCDATA() throws Exception;
-
-    /**
-     * callback for processing instruction.
-     *
-     * @param target string pool index of the PI target
-     * @param data string pool index of the PI data
-     * @exception java.lang.Exception
-     */
-    public abstract void processingInstruction(int target, int data) throws Exception;
-
-    /**
-     * callback for comment.
-     *
-     * @param comment string pool index of the comment text
-     * @exception java.lang.Exception
-     */
-    public abstract void comment(int comment) throws Exception;
-
-    /**
-     * callback for characters (string pool form).
-     *
-     * @param data string pool index of the characters that were scanned
-     * @exception java.lang.Exception
-     */
-    public abstract void characters(int data) throws Exception;
-
-    /**
-     * callback for characters.
-     *
-     * @param ch character array containing the characters that were scanned
-     * @param start offset in ch where scanned characters begin
-     * @param length length of scanned characters in ch
-     * @exception java.lang.Exception
-     */
-    public abstract void characters(char ch[], int start, int length) throws Exception;
-
-    /**
-     * callback for ignorable whitespace.
-     *
-     * @param data string pool index of ignorable whitespace
-     * @exception java.lang.Exception
-     */
-    public abstract void ignorableWhitespace(int data) throws Exception;
-
-    /**
-     * callback for ignorable whitespace.
-     *
-     * @param ch character array containing the whitespace that was scanned
-     * @param start offset in ch where scanned whitespace begins
-     * @param length length of scanned whitespace in ch
-     * @exception java.lang.Exception
-     */
-    public abstract void ignorableWhitespace(char ch[], int start, int length) throws Exception;
-
-    // DTD callbacks
-
-    /**
-     * callback for the start of the DTD
-     * This function will be called when a &lt;!DOCTYPE...&gt; declaration is
-     * encountered.
-     *
-     * @param rootElementType element handle for the root element of the document
-     * @param publicId string pool index of the DTD's public ID
-     * @param systemId string pool index of the DTD's system ID
-     * @exception java.lang.Exception
-     */
-    public abstract void startDTD(int rootElementType, int publicId, int systemId) throws Exception;
-
-    /**
-     * callback for the end of the DTD
-     * This function will be called at the end of the DTD.
-     */
-    public abstract void endDTD() throws Exception;
-
-    /**
-     * callback for an element declaration.
-     *
-     * @param elementType element handle of the element being declared
-     * @param contentSpec contentSpec for the element being declared
-     * @see XMLValidator.ContentSpec
-     * @exception java.lang.Exception
-     */
-    public abstract void elementDecl(int elementType, XMLValidator.ContentSpec contentSpec) throws Exception;
-
-    /**
-     * callback for an attribute list declaration.
-     *
-     * @param elementType element handle for the attribute's element
-     * @param attrName string pool index of the attribute name
-     * @param attType type of attribute
-     * @param enumString String representing the values of the enumeration,
-     *        if the attribute is of enumerated type, or null if it is not.
-     * @param attDefaultType an integer value denoting the DefaultDecl value
-     * @param attDefaultValue string pool index of this attribute's default value
-     *        or -1 if there is no defaultvalue
-     * @exception java.lang.Exception
-     */
-    public abstract void attlistDecl(int elementType,
-                                     int attrName, int attType,
-                                     String enumString,
-                                     int attDefaultType,
-                                     int attDefaultValue) throws Exception;
-
-    /**
-     * callback for an internal parameter entity declaration.
-     *
-     * @param entityName string pool index of the entity name
-     * @param entityValue string pool index of the entity replacement text
-     * @exception java.lang.Exception
-     */
-    public abstract void internalPEDecl(int entityName, int entityValue) throws Exception;
-
-    /**
-     * callback for an external parameter entity declaration.
-     *
-     * @param entityName string pool index of the entity name
-     * @param publicId string pool index of the entity's public id.
-     * @param systemId string pool index of the entity's system id.
-     * @exception java.lang.Exception
-     */
-    public abstract void externalPEDecl(int entityName, int publicId, int systemId) throws Exception;
-
-    /**
-     * callback for internal general entity declaration.
-     *
-     * @param entityName string pool index of the entity name
-     * @param entityValue string pool index of the entity replacement text
-     * @exception java.lang.Exception
-     */
-    public abstract void internalEntityDecl(int entityName, int entityValue) throws Exception;
-
-    /**
-     * callback for external general entity declaration.
-     *
-     * @param entityName string pool index of the entity name
-     * @param publicId string pool index of the entity's public id.
-     * @param systemId string pool index of the entity's system id.
-     * @exception java.lang.Exception
-     */
-    public abstract void externalEntityDecl(int entityName, int publicId, int systemId) throws Exception;
-
-    /**
-     * callback for an unparsed entity declaration.
-     *
-     * @param entityName string pool index of the entity name
-     * @param publicId string pool index of the entity's public id.
-     * @param systemId string pool index of the entity's system id.
-     * @param notationName string pool index of the notation name.
-     * @exception java.lang.Exception
-     */
-    public abstract void unparsedEntityDecl(int entityName, int publicId, int systemId,
-                                            int notationName) throws Exception;
-
-    /**
-     * callback for a notation declaration.
-     *
-     * @param notationName string pool index of the notation name
-     * @param publicId string pool index of the notation's public id.
-     * @param systemId string pool index of the notation's system id.
-     * @exception java.lang.Exception
-     */
-    public abstract void notationDecl(int notationName, int publicId, int systemId) throws Exception;
 
     //
     // Protected methods
@@ -719,8 +365,7 @@ public abstract class XMLParser
                                                "http://xml.org/sax/features/validation");
         }
         try {
-            fDTDValidator.setValidationEnabled(validate);
-            getSchemaValidator().setValidationEnabled(validate);
+            fValidator.setValidationEnabled(validate);
         }
         catch (Exception ex) {
             throw new SAXNotSupportedException(ex.getMessage());
@@ -734,7 +379,7 @@ public abstract class XMLParser
      */
     protected boolean getValidation() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        return fDTDValidator.getValidationEnabled();
+        return fValidator.getValidationEnabled();
     }
 
     /**
@@ -825,7 +470,7 @@ public abstract class XMLParser
      * This method is the equivalent to the feature:
      * <pre>
      * http://xml.org/sax/features/namespaces
-     * </pre>
+     * <pre>
      *
      * @param process True to process namespaces; false to not process.
      *
@@ -838,9 +483,7 @@ public abstract class XMLParser
             throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/namespaces): parse is in progress.\n"+
                                                "http://xml.org/sax/features/namespaces");
         }
-        fNamespacesEnabled = process;
-        fDTDValidator.setNamespacesEnabled(process);
-        getSchemaValidator().setNamespacesEnabled(process);
+        fValidator.setNamespacesEnabled(process);
     }
 
     /**
@@ -850,7 +493,7 @@ public abstract class XMLParser
      */
     protected boolean getNamespaces() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        return fNamespacesEnabled;
+        return fValidator.getNamespacesEnabled();
     }
 
     // Xerces features
@@ -874,12 +517,10 @@ public abstract class XMLParser
     protected void setValidationDynamic(boolean dynamic) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
-            // REVISIT: Localize this message. -Ac
             throw new SAXNotSupportedException("http://apache.org/xml/features/validation/dynamic: parse is in progress");
         }
         try {
-            fDTDValidator.setDynamicValidationEnabled(dynamic);
-            getSchemaValidator().setDynamicValidationEnabled(dynamic);
+            fValidator.setDynamicValidationEnabled(dynamic);
         }
         catch (Exception ex) {
             throw new SAXNotSupportedException(ex.getMessage());
@@ -894,7 +535,7 @@ public abstract class XMLParser
      */
     protected boolean getValidationDynamic() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        return fDTDValidator.getDynamicValidationEnabled();
+        return fValidator.getDynamicValidationEnabled();
     }
 
     /**
@@ -913,8 +554,7 @@ public abstract class XMLParser
      */
     protected void setValidationWarnOnDuplicateAttdef(boolean warn)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        fDTDValidator.setWarningOnDuplicateAttDef(warn);
-        getSchemaValidator().setWarningOnDuplicateAttDef(warn);
+        fValidator.setWarningOnDuplicateAttDef(warn);
     }
 
     /**
@@ -925,7 +565,7 @@ public abstract class XMLParser
      */
     protected boolean getValidationWarnOnDuplicateAttdef()
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        return fDTDValidator.getWarningOnDuplicateAttDef();
+        return fValidator.getWarningOnDuplicateAttDef();
     }
 
     /**
@@ -945,8 +585,7 @@ public abstract class XMLParser
      */
     protected void setValidationWarnOnUndeclaredElemdef(boolean warn)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        fDTDValidator.setWarningOnUndeclaredElements(warn);
-        getSchemaValidator().setWarningOnUndeclaredElements(warn);
+        fValidator.setWarningOnUndeclaredElements(warn);
     }
 
     /**
@@ -957,7 +596,7 @@ public abstract class XMLParser
      */
     protected boolean getValidationWarnOnUndeclaredElemdef()
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        return fDTDValidator.getWarningOnUndeclaredElements();
+        return fValidator.getWarningOnUndeclaredElements();
     }
 
     /**
@@ -976,7 +615,7 @@ public abstract class XMLParser
      */
     protected void setAllowJavaEncodings(boolean allow) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        fReaderFactory.setAllowJavaEncodingName(allow);
+        fEntityHandler.setAllowJavaEncodings(allow);
     }
 
     /**
@@ -986,7 +625,7 @@ public abstract class XMLParser
      */
     protected boolean getAllowJavaEncodings() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        return fReaderFactory.getAllowJavaEncodingName();
+        return fEntityHandler.getAllowJavaEncodings();
     }
 
     /**
@@ -1046,7 +685,6 @@ public abstract class XMLParser
         // REVISIT: Ask someone what it could possibly hurt to allow
         //          the application to change this in mid-parse.
         if (fParseInProgress) {
-            // REVISIT: Localize this message.
             throw new SAXNotSupportedException("http://xml.org/sax/properties/namespace-sep: parse is in progress");
         }
         fNamespaceSep = separator;
@@ -1066,10 +704,6 @@ public abstract class XMLParser
     /***/
 
     /**
-     * <b>Note: This property is currently not supported because it is
-     * not well defined.</b> Querying its value will throw a
-     * SAXNotSupportedException.
-     * <p>
      * This method is the equivalent to the property:
      * <pre>
      * http://xml.org/sax/properties/xml-string
@@ -1077,12 +711,10 @@ public abstract class XMLParser
      *
      * @see #getProperty
      */
-    /***
     protected String getXMLString() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         throw new SAXNotSupportedException("http://xml.org/sax/properties/xml-string");
     }
-    /***/
 
     // resetting
 
@@ -1092,48 +724,10 @@ public abstract class XMLParser
      */
     protected void resetOrCopy() throws Exception {
         fStringPool = new StringPool();
-        fAttrList = new XMLAttrList(fStringPool);
-        resetCommon();
-    } // resetOrCopy()
-
-    private void resetCommon() throws Exception {
+        fEntityHandler.reset(fStringPool);
         fScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
-        fValidating = false;
-        fScanningDTD = false;
-        resetEntityHandler();
-        fValidator = null;
-        fDTDValidator.reset(fStringPool);
-        if (fSchemaValidator != null)
-            fSchemaValidator.reset(fStringPool, fErrorReporter, fEntityHandler);
-        fCheckedForSchema = false;
+        fValidator.resetOrCopy(fStringPool);
         fNeedReset = false;
-        fCalledStartDocument = false;
-        fSeenRootElement = false;
-        fStandaloneDocument = false;
-        fCDATASymbol = fStringPool.addSymbol("CDATA");
-        fXMLLang = -1;
-        // REVISIT - add all other instance variables...
-        fElementDepth = 0;
-        fCurrentElementType = -1;
-        fCurrentElementEntity = -1;
-        fInElementContent = false;
-    }
-
-    // properties
-
-    /** Returns the XML Schema validator. */
-    protected XSchemaValidator getSchemaValidator() {
-        if (fSchemaValidator == null)
-            fSchemaValidator = new XSchemaValidator(fStringPool, fErrorReporter, fEntityHandler);
-        return fSchemaValidator;
-    }
-
-    /**
-     * Set char data processing preference.
-     */
-    protected void setSendCharDataAsCharArray(boolean flag) {
-        fSendCharDataAsCharArray = flag;
-        fReaderFactory.setSendCharDataAsCharArray(fSendCharDataAsCharArray);
     }
 
     //
@@ -1152,7 +746,7 @@ public abstract class XMLParser
      *                 uninstall the currently installed resolver.
      */
     public void setEntityResolver(EntityResolver resolver) {
-        fEntityResolver = resolver;
+        fEntityHandler.setEntityResolver(resolver);
     }
 
     /**
@@ -1163,7 +757,7 @@ public abstract class XMLParser
      * @see #setEntityResolver
      */
     public EntityResolver getEntityResolver() {
-        return fEntityResolver;
+        return fEntityHandler.getEntityResolver();
     }
 
     /**
@@ -1287,8 +881,6 @@ public abstract class XMLParser
 
     } // setLocale(Locale)
 
-    // resolver
-
     //
     // XMLErrorReporter methods
     //
@@ -1357,12 +949,7 @@ public abstract class XMLParser
     } // reportError(Locator,String,int,int,Object[],int)
 
     //
-    // Configurable methods
-    //
-    // This interface is no longer a part of SAX2. These methods have
-    // been added directly to the new XMLReader interface. In addition,
-    // the throws clause has changed from throws SAXException to throws
-    // SAXNotRecognizedException, SAXNotSupportedException
+    // XMLReader methods
     //
 
     /**
@@ -1724,18 +1311,6 @@ public abstract class XMLParser
         }
 
         //
-        // SAX2 Handlers
-        //
-
-        /*
-        else if (propertyId.startsWith(SAX2_HANDLERS_PREFIX)) {
-            //
-            // No handlers defined yet that are common to all parsers.
-            //
-        }
-        */
-
-        //
         // Xerces Properties
         //
 
@@ -1768,7 +1343,7 @@ public abstract class XMLParser
      *            requested property is not known.
      * @exception org.xml.sax.SAXException If there is any other
      *            problem fulfilling the request.
-     * @see org.xml.sax.Configurable#getProperty
+     * @see org.xml.sax.XMLReader#getProperty
      */
     public Object getProperty(String propertyId) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -1804,28 +1379,12 @@ public abstract class XMLParser
             //   way to check for availability before the parse begins).
             //
             if (property.equals("xml-string")) {
-                //return getXMLString();
-                throw new SAXNotSupportedException(
-                    "PAR019 Property, \"http://xml.org/sax/properties/xml-string\", is not supported.\n"+
-                    "http://xml.org/sax/properties/xml-string"
-                    );
+                return getXMLString();
             }
             //
             // Not recognized
             //
         }
-
-        //
-        // SAX2 Handlers
-        //
-
-        /*
-        else if (propertyId.startsWith(SAX2_HANDLERS_PREFIX)) {
-            //
-            // No handlers defined yet that are common to all parsers.
-            //
-        }
-        */
 
         //
         // Xerces Properties
@@ -1847,1154 +1406,4 @@ public abstract class XMLParser
 
     } // getProperty(String):Object
 
-    //
-    // XMLDocumentScanner methods
-    //
-
-    /**
-     * Returns true if the specified version is valid.
-     *
-     */
-    public boolean validVersionNum(String version) {
-        return XMLCharacterProperties.validVersionNum(version);
-    }
-
-    /**
-     * Returns true if the specified encoding is valid.
-     *
-     */
-    public boolean validEncName(String encoding) {
-        return XMLCharacterProperties.validEncName(encoding);
-    }
-
-    // callbacks
-
-    /**
-     * Call the start document callback.
-     */
-    public void callStartDocument(int version, int encoding, int standalone) throws Exception {
-        if (!fCalledStartDocument) {
-            startDocument(version, encoding, standalone);
-            fCalledStartDocument = true;
-        }
-    }
-
-    /**
-     * Call the end document callback.
-     */
-    public void callEndDocument() throws Exception {
-        if (fCalledStartDocument)
-            endDocument();
-    }
-
-    /** Call the start element callback. */
-    public void callStartElement(int elementType) throws Exception {
-
-        //
-        // Check after all specified attrs are scanned
-        // (1) report error for REQUIRED attrs that are missing (V_TAGc)
-        // (2) add default attrs (FIXED and NOT_FIXED)
-        //
-        if (!fSeenRootElement) {
-            fSeenRootElement = true;
-            if (fValidator == null) {
-                fValidator = fDTDValidator;
-            }
-            fValidator.rootElementSpecified(elementType);
-            fStringPool.resetShuffleCount();
-        }
-        fInElementContent = fValidator.startElement(elementType, fAttrList);
-        int attrListHandle = fAttrList.attrListHandle();
-        if (attrListHandle != -1) {
-            fAttrList.endAttrList();
-            // REVISIT - we should check for this more efficiently...
-            if (fXMLLang == -1)
-                fXMLLang = fStringPool.addSymbol("xml:lang");
-            int index = fAttrList.getFirstAttr(attrListHandle);
-            while (index != -1) {
-                if (fStringPool.equalNames(fAttrList.getAttrName(index), fXMLLang)) {
-                    fScanner.checkXMLLangAttributeValue(fAttrList.getAttValue(index));
-                    break;
-                }
-                index = fAttrList.getNextAttr(index);
-            }
-        }
-        startElement(elementType, fAttrList, attrListHandle);
-        int elementEntity = fEntityHandler.getReaderId();
-        if (fElementDepth == fElementTypeStack.length) {
-            int[] newStack = new int[fElementDepth * 2];
-            System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
-            fElementTypeStack = newStack;
-            newStack = new int[fElementDepth * 2];
-            System.arraycopy(fElementEntityStack, 0, newStack, 0, fElementDepth);
-            fElementEntityStack = newStack;
-        }
-        fCurrentElementType = elementType;
-        fCurrentElementEntity = elementEntity;
-        fElementTypeStack[fElementDepth] = elementType;
-        fElementEntityStack[fElementDepth] = elementEntity;
-        fElementDepth++;
-    } // callStartElement(int)
-
-    /** Call the end element callback. */
-    public boolean callEndElement(int readerId) throws Exception {
-        int elementType = fCurrentElementType;
-        if (fCurrentElementEntity != readerId) {
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_ELEMENT_ENTITY_MISMATCH,
-                                       XMLMessages.P78_NOT_WELLFORMED,
-                                       new Object[] { fStringPool.toString(elementType) },
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-        }
-        endElement(elementType);
-        fInElementContent = fValidator.endElement(elementType);
-        if (fElementDepth-- == 0) {
-            throw new RuntimeException("FWK008 Element stack underflow");
-        }
-        if (fElementDepth == 0) {
-            fCurrentElementType = - 1;
-            fCurrentElementEntity = -1;
-            return true;
-        }
-        fCurrentElementType = fElementTypeStack[fElementDepth - 1];
-        fCurrentElementEntity = fElementEntityStack[fElementDepth - 1];
-        return false;
-    }
-
-    /** Call the processing instruction callback. */
-    public void callProcessingInstruction(int target, int data)
-        throws Exception {
-        processingInstruction(target, data);
-    }
-
-    /** Call the comment callback. */
-    public void callComment(int comment) throws Exception {
-        comment(comment);
-    }
-
-    /** Call the characters callback. */
-    public void callCharacters(int ch) throws Exception {
-        if (fCharRefData == null)
-            fCharRefData = new char[2];
-        int count = (ch < 0x10000) ? 1 : 2;
-        if (count == 1)
-            fCharRefData[0] = (char)ch;
-        else {
-            fCharRefData[0] = (char)(((ch-0x00010000)>>10)+0xd800);
-            fCharRefData[1] = (char)(((ch-0x00010000)&0x3ff)+0xdc00);
-        }
-        if (fSendCharDataAsCharArray) {
-            if (!fInElementContent)
-                fValidator.characters(fCharRefData, 0, count);
-            characters(fCharRefData, 0, count);
-        }
-        else {
-            int index = fStringPool.addString(new String(fCharRefData, 0, count));
-            if (!fInElementContent)
-                fValidator.characters(index);
-            characters(index);
-        }
-    }
-
-    // scanning
-
-    /**
-     * Scan an attribute value.
-     *
-     * @param elementType
-     * @param attrName
-     * @return XMLDocumentScanner.RESULT_SUCCESS if the attribute was created,
-     *         XMLDocumentScanner.RESULT_NOT_WELL_FORMED if the scan failed, or
-     *         XMLDocumentScanner.RESULT_DUPLICATE_ATTR if the attribute is a duplicate.
-     * @exception java.lang.Exception
-     */
-    public int scanAttValue(int elementType, int attrName) throws Exception {
-
-        fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
-        int attValue = fScanner.scanAttValue(elementType, attrName, fValidating/* && attType != fCDATASymbol*/);
-        if (attValue == -1) {
-            return XMLDocumentScanner.RESULT_FAILURE;
-        }
-        if (!fCheckedForSchema) {
-            fCheckedForSchema = true;
-            if (getValidation() == true && // default namespacedecl
-		attrName == fStringPool.addSymbol("xmlns")) {
-                fValidator = getSchemaValidator();
-		String fs =
-		 fEntityHandler.expandSystemId(fStringPool.toString(attValue));
-		InputSource is = fEntityResolver == null ?
-		    null : fEntityResolver.resolveEntity(null, fs);
-		if (is == null) {
-		    is = new InputSource(fs);
-						}
-                fSchemaValidator.loadSchema(is);
-            }
-        }
-        if (!fValidator.attributeSpecified(elementType, fAttrList, attrName, fAttrNameLocator, attValue)) {
-            return XMLDocumentScanner.RESULT_DUPLICATE_ATTR;
-        }
-        return XMLDocumentScanner.RESULT_SUCCESS;
-
-    }
-
-    /** Scans an element type. */
-    public int scanElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception {
-
-        if (!fNamespacesEnabled) {
-            return entityReader.scanName(fastchar);
-        }
-        int elementType = entityReader.scanQName(fastchar);
-        if (fNamespacesEnabled && entityReader.lookingAtChar(':', false)) {
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-                                       XMLMessages.P5_INVALID_CHARACTER,
-                                       null,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            entityReader.skipPastNmtoken(' ');
-        }
-        return elementType;
-    }
-
-    /** Scans an expected element type. */
-    public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception {
-        if (fCurrentElementCharArrayRange == null)
-            fCurrentElementCharArrayRange = fStringPool.createCharArrayRange();
-        fStringPool.getCharArrayRange(fCurrentElementType, fCurrentElementCharArrayRange);
-        return entityReader.scanExpectedName(fastchar, fCurrentElementCharArrayRange);
-    }
-
-    /** Scans an attribute name. */
-    public int scanAttributeName(XMLEntityHandler.EntityReader entityReader, int elementType) throws Exception {
-
-        if (!fSeenRootElement) {
-            fSeenRootElement = true;
-            if (fValidator == null) {
-                fValidator = fDTDValidator;
-            }
-            fValidator.rootElementSpecified(elementType);
-            fStringPool.resetShuffleCount();
-        }
-        if (!fNamespacesEnabled) {
-            return entityReader.scanName('=');
-        }
-        int attrName = entityReader.scanQName('=');
-        if (entityReader.lookingAtChar(':', false)) {
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-                                       XMLMessages.P5_INVALID_CHARACTER,
-                                       null,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            entityReader.skipPastNmtoken(' ');
-        }
-        return attrName;
-
-    }
-
-    /** Scan doctype decl. */
-    public void scanDoctypeDecl(boolean standalone) throws Exception {
-        fScanningDTD = true;
-        fCheckedForSchema = true;
-        fStandaloneDocument = standalone;
-        fValidator = fDTDValidator;
-        fDTDValidator.scanDoctypeDecl(standalone);
-        fScanningDTD = false;
-    }
-
-    /**
-     * Tell the parser that we are validating
-     */
-    public void setValidating(boolean flag) throws Exception {
-        fValidating = flag;
-    }
-    //
-    //
-    //
-    private LocatorImpl getLocatorImpl(LocatorImpl fillin) {
-        if (fillin == null)
-            return new LocatorImpl(this);
-        fillin.setPublicId(getPublicId());
-        fillin.setSystemId(getSystemId());
-        fillin.setLineNumber(getLineNumber());
-        fillin.setColumnNumber(getColumnNumber());
-        return fillin;
-    }
-
-    //
-    // XMLEntityHandler methods
-    //
-
-    /**
-     * Character data.
-     */
-    public void processCharacters(char[] chars, int offset, int length)
-        throws Exception {
-
-        if (fValidating && !fInElementContent)
-            fValidator.characters(chars, offset, length);
-        characters(chars, offset, length);
-
-    }
-
-    /**
-     * Character data.
-     */
-    public void processCharacters(int data)
-        throws Exception {
-
-        if (fValidating && !fInElementContent)
-            fValidator.characters(data);
-        characters(data);
-
-    }
-
-    /**
-     * White space.
-     */
-    public void processWhitespace(char[] chars, int offset, int length)
-        throws Exception {
-
-        if (fInElementContent) {
-            if (fStandaloneDocument && fValidating)
-                fValidator.ignorableWhitespace(chars, offset, length);
-            ignorableWhitespace(chars, offset, length);
-        } else {
-            if (fValidating && !fInElementContent)
-                fValidator.characters(chars, offset, length);
-            characters(chars, offset, length);
-        }
-
-    }
-
-    /**
-     * White space.
-     */
-    public void processWhitespace(int data) throws Exception {
-
-        if (fInElementContent) {
-            if (fStandaloneDocument && fValidating)
-                fValidator.ignorableWhitespace(data);
-            ignorableWhitespace(data);
-        } else {
-            if (fValidating && !fInElementContent)
-                fValidator.characters(data);
-            characters(data);
-        }
-
-    }
-
-    //
-    // Data
-    //
-    private class ReaderState {
-        XMLEntityHandler.EntityReader reader;
-        InputSource source;
-        int entityName;
-        int entityType;
-        int entityContext;
-        String publicId;
-        String systemId;
-        int readerId;
-        int depth;
-        ReaderState nextReaderState;
-    }
-    private ReaderState fReaderStateFreeList = null;
-    //
-    //
-    //
-    private EntityResolver fEntityResolver = null;
-    private byte[] fEntityTypeStack = null;
-    private int[] fEntityNameStack = null;
-    private int fEntityStackDepth = 0;
-    private Stack fReaderStack = new Stack();
-    private XMLEntityHandler.EntityReader fReader = null;
-    private InputSource fSource = null;
-    private int fEntityName = -1;
-    private int fEntityType = -1;
-    private int fEntityContext = -1;
-    private String fPublicId = null;
-    private String fSystemId = null;
-    private int fReaderId = -1;
-    private int fReaderDepth = -1;
-    private int fNextReaderId = 0;
-    private NullReader fNullReader = null;
-
-    /**
-     * Resets the entity handler.
-     */
-    private void resetEntityHandler() {
-        fReaderStack.removeAllElements();
-        fEntityStackDepth = 0;
-        fReader = null;
-        fSource = null;
-        fEntityName = -1;
-        fEntityType = -1;
-        fEntityContext = -1;
-        fPublicId = null;
-        fSystemId = null;
-        fReaderId = -1;
-        fReaderDepth = -1;
-        fNextReaderId = 0;
-    }
-
-    //
-    //
-    //
-
-    /**
-     * get the Entity reader.
-     */
-    public XMLEntityHandler.EntityReader getEntityReader() {
-        return fReader;
-    }
-
-    /**
-     * Adds a recognizer.
-     *
-     * @param recognizer The XML recognizer to add.
-     */
-    public void addRecognizer(XMLDeclRecognizer recognizer) {
-        fReaderFactory.addRecognizer(recognizer);
-    }
-
-    /**
-     * Expands a system id and returns the system id as a URL, if
-     * it can be expanded. A return value of null means that the
-     * identifier is already expanded. An exception thrown
-     * indicates a failure to expand the id.
-     *
-     * @param systemId The systemId to be expanded.
-     *
-     * @return Returns the URL object representing the expanded system
-     *         identifier. A null value indicates that the given
-     *         system identifier is already expanded.
-     *
-     */
-    public String expandSystemId(String systemId) {
-        return expandSystemId(systemId, fSystemId);
-    }
-    private String expandSystemId(String systemId, String currentSystemId) {
-        String id = systemId;
-
-        // check for bad parameters id
-        if (id == null || id.length() == 0) {
-            return systemId;
-        }
-
-        // if id already expanded, return
-        try {
-            URL url = new URL(id);
-            if (url != null) {
-                return systemId;
-            }
-        }
-        catch (MalformedURLException e) {
-            // continue on...
-        }
-
-        // normalize id
-        id = fixURI(id);
-
-        // normalize base
-        URL base = null;
-        URL url = null;
-        try {
-            if (currentSystemId == null) {
-                String dir;
-                try {
-                    dir = fixURI(System.getProperty("user.dir"));
-                }
-                catch (SecurityException se) {
-                    dir = "";
-                }
-                if (!dir.endsWith("/")) {
-                    dir = dir + "/";
-                }
-                base = new URL("file", "", dir);
-            }
-            else {
-                base = new URL(currentSystemId);
-            }
-
-            // expand id
-            url = new URL(base, id);
-        }
-        catch (Exception e) {
-            // let it go through
-        }
-        if (url == null) {
-            return systemId;
-        }
-        return url.toString();
-    }
-
-    //
-    // Private methods
-    //
-
-    /**
-     * Fixes a platform dependent filename to standard URI form.
-     *
-     * @param str The string to fix.
-     *
-     * @return Returns the fixed URI string.
-     */
-    private static String fixURI(String str) {
-
-        // handle platform dependent strings
-        str = str.replace(java.io.File.separatorChar, '/');
-
-        // Windows fix
-        if (str.length() >= 2) {
-            char ch1 = str.charAt(1);
-            if (ch1 == ':') {
-                char ch0 = Character.toUpperCase(str.charAt(0));
-                if (ch0 >= 'A' && ch0 <= 'Z') {
-                    str = "/" + str;
-                }
-            }
-        }
-
-        // done
-        return str;
-    }
-
-    //
-    //
-    //
-    private void sendEndOfInputNotifications() throws Exception {
-        boolean moreToFollow = fReaderStack.size() > 1;
-        fScanner.endOfInput(fEntityName, moreToFollow);
-        if (fScanningDTD)
-            fDTDValidator.endOfInput(fEntityName, moreToFollow);
-    }
-    private void sendReaderChangeNotifications() throws Exception {
-        fScanner.readerChange(fReader, fReaderId);
-        if (fScanningDTD)
-            fDTDValidator.readerChange(fReader, fReaderId);
-    }
-    private void sendStartEntityNotifications() throws Exception {
-        startEntityReference(fEntityName, fEntityType, fEntityContext);
-    }
-    private void sendEndEntityNotifications() throws Exception {
-        endEntityReference(fEntityName, fEntityType, fEntityContext);
-    }
-    /**
-     * set up the reader stack to read from the document entity
-     */
-    public boolean startReadingFromDocument(InputSource source) throws Exception {
-        pushEntity(false, -2); // Document Entity
-        fSystemId = null;
-        pushNullReader();
-        fEntityName = -2; // Document Entity
-        fEntityType = ENTITYTYPE_DOCUMENT;
-        fEntityContext = CONTEXT_DOCUMENT;
-        fReaderDepth = 0;
-        fReaderId = fNextReaderId++;
-        fPublicId = source.getPublicId();
-        fSystemId = source.getSystemId();
-        sendStartEntityNotifications();
-        fSystemId = expandSystemId(fSystemId, null);
-        fSource = source;
-        boolean xmlDecl = true; // xmlDecl if true, textDecl if false
-        try {
-            fReader = fReaderFactory.createReader(fEntityHandler, fErrorReporter, source, fSystemId, xmlDecl, fStringPool);
-        } catch (MalformedURLException mu) {
-            fReader = null;
-            String errorSystemId = fSystemId;
-            sendEndEntityNotifications();
-            popReader();
-            popEntity();
-            Object[] args = { errorSystemId };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
-                                        ImplementationMessages.IO0,
-                                        0,
-                                        args,
-                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-        } catch (FileNotFoundException fnf) {
-            fReader = null;
-            String errorSystemId = fSystemId;
-            sendEndEntityNotifications();
-            popReader();
-            popEntity();
-            Object[] args = { errorSystemId };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
-                                        ImplementationMessages.IO0,
-                                        0,
-                                        args,
-                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-        } catch (java.io.UnsupportedEncodingException uee) {
-            fReader = null;
-            sendEndEntityNotifications();
-            popReader();
-            popEntity();
-            String encoding = uee.getMessage();
-            if (encoding == null) {
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ENCODING_REQUIRED,
-                                           XMLMessages.P81_REQUIRED,
-                                           null,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            } else if (!XMLCharacterProperties.validEncName(encoding)) {
-                Object[] args = { encoding };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ENCODINGDECL_INVALID,
-                                           XMLMessages.P81_INVALID_VALUE,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            } else {
-                Object[] args = { encoding };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ENCODING_NOT_SUPPORTED,
-                                           XMLMessages.P81_NOT_SUPPORTED,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            }
-        }
-        sendReaderChangeNotifications();
-        return fReader != null;
-    }
-    /**
-     * start reading from an external DTD subset
-     */
-    public void startReadingFromExternalSubset(String publicId, String systemId, int readerDepth) throws Exception {
-        pushEntity(true, -1);
-        pushReader();
-        pushNullReader();
-        fEntityName = -1; // External Subset
-        fEntityType = ENTITYTYPE_EXTERNAL_SUBSET;
-        fEntityContext = CONTEXT_EXTERNAL_SUBSET;
-        fReaderDepth = readerDepth;
-        fReaderId = fNextReaderId++;
-        fPublicId = publicId;
-        fSystemId = systemId;
-        startReadingFromExternalEntity(false);
-    }
-    /**
-     * stop reading from an external DTD subset
-     */
-    public void stopReadingFromExternalSubset() throws Exception {
-        if (!(fReader instanceof NullReader))
-            throw new RuntimeException("FWK004 cannot happen 18"+"\n18");
-        popReader();
-        sendReaderChangeNotifications();
-    }
-
-    /**
-     * start reading from an external entity
-     */
-    public boolean startReadingFromEntity(int entityName, int readerDepth, int context) throws Exception {
-        if (context > XMLEntityHandler.CONTEXT_IN_CONTENT)
-            return startReadingFromParameterEntity(entityName, readerDepth, context);
-        int entityHandle = fValidator.lookupEntity(entityName);
-        if (entityHandle < 0) {
-            int minorCode = XMLMessages.VC_ENTITY_DECLARED;
-            int errorType = XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR;
-            // REVISIT - the following test in insufficient...
-            if (fEntityContext == CONTEXT_DOCUMENT || fEntityContext == CONTEXT_IN_ATTVALUE) {
-                minorCode = XMLMessages.WFC_ENTITY_DECLARED;
-                errorType = XMLErrorReporter.ERRORTYPE_FATAL_ERROR;
-            }
-            Object[] args = { fStringPool.toString(entityName) };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_ENTITY_NOT_DECLARED,
-                                       minorCode,
-                                       args,
-                                       errorType);
-            return false;
-        }
-        if (context == CONTEXT_IN_CONTENT) {
-            if (fValidator.isUnparsedEntity(entityHandle)) {
-                Object[] args = { fStringPool.toString(entityName) };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_REFERENCE_TO_UNPARSED_ENTITY,
-                                           XMLMessages.WFC_PARSED_ENTITY,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-                return false;
-            }
-        } else {
-            if (fValidator.isExternalEntity(entityHandle)) {
-                Object[] args = { fStringPool.toString(entityName) };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_REFERENCE_TO_EXTERNAL_ENTITY,
-                                           XMLMessages.WFC_NO_EXTERNAL_ENTITY_REFERENCES,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-                return false;
-            }
-        }
-        if (!pushEntity(false, entityName)) {
-            Object[] args = { fStringPool.toString(entityName),
-                              entityReferencePath(false, entityName) };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_RECURSIVE_REFERENCE,
-                                       XMLMessages.WFC_NO_RECURSION,
-                                       args,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            return false;
-        }
-        pushReader();
-        fEntityName = entityName;
-        fEntityContext = context;
-        fReaderDepth = readerDepth;
-        fReaderId = fNextReaderId++;
-        if (context != CONTEXT_IN_CONTENT || !fValidator.externalReferenceInContent(entityHandle)) {
-            fEntityType = ENTITYTYPE_INTERNAL;
-            fPublicId = null/*"Internal Entity: " + fStringPool.toString(entityName)*/;
-            fSystemId = fSystemId; // keep expandSystemId happy
-            int value = -1;
-            if (context == CONTEXT_IN_CONTENT || context == CONTEXT_IN_DEFAULTATTVALUE)
-                value = fValidator.getEntityValue(entityHandle);
-            else
-                value = fValidator.valueOfReferenceInAttValue(entityHandle);
-            startReadingFromInternalEntity(value, false);
-            return false;
-        }
-        fEntityType = ENTITYTYPE_EXTERNAL;
-        fPublicId = fValidator.getPublicIdOfEntity(entityHandle);
-        fSystemId = fValidator.getSystemIdOfEntity(entityHandle);
-        return startReadingFromExternalEntity(true);
-    }
-    private boolean startReadingFromParameterEntity(int peName, int readerDepth, int context) throws Exception {
-        int entityHandle = fValidator.lookupParameterEntity(peName);
-        if (entityHandle == -1) {
-            // The error is generated by the validator (strange... it is a VC, not a WFC...)
-            return false;
-        }
-        if (!pushEntity(true, peName)) {
-            Object[] args = { fStringPool.toString(peName),
-                              entityReferencePath(true, peName) };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_RECURSIVE_PEREFERENCE,
-                                       XMLMessages.WFC_NO_RECURSION,
-                                       args,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            return false;
-        }
-        pushReader();
-        fEntityName = peName;
-        fEntityContext = context;
-        fReaderDepth = readerDepth;
-        fReaderId = fNextReaderId++;
-        if (!fValidator.isExternalParameterEntity(entityHandle)) {
-            fEntityType = ENTITYTYPE_INTERNAL_PE;
-            fPublicId = null/*"Internal Entity: %" + fStringPool.toString(peName)*/;
-            fSystemId = fSystemId; // keep expandSystemId happy
-            int value = fValidator.getParameterEntityValue(entityHandle);
-            startReadingFromInternalEntity(value, fEntityContext == CONTEXT_IN_ENTITYVALUE ? false : true);
-            return false;
-        }
-        fEntityType = ENTITYTYPE_EXTERNAL_PE;
-        fPublicId = fValidator.getPublicIdOfParameterEntity(entityHandle);
-        fSystemId = fValidator.getSystemIdOfParameterEntity(entityHandle);
-        return startReadingFromExternalEntity(true);
-    }
-    private void startReadingFromInternalEntity(int value, boolean addSpaces) throws Exception {
-        if (fEntityContext == CONTEXT_IN_ENTITYVALUE) {
-            //
-            // REVISIT - consider optimizing the case where the entire entity value
-            // consists of a single reference to a parameter entity and do not append
-            // the value to fLiteralData again, but re-use the offset/length of the
-            // referenced entity for the value of this entity.
-            //
-        }
-        fSource = null;
-        sendStartEntityNotifications();
-        fReader = fReaderFactory.createStringReader(this, fErrorReporter, fSendCharDataAsCharArray, getLineNumber(), getColumnNumber(), value, fStringPool, addSpaces); // REVISIT - string reader needs better location support
-        sendReaderChangeNotifications();
-    }
-    private boolean startReadingFromExternalEntity(boolean checkForTextDecl) throws Exception {
-        if (fEntityContext == CONTEXT_IN_ENTITYVALUE) {
-            //
-            // REVISIT - Can we get the spec changed ?
-            // There is a perverse edge case to handle here...  We have a reference
-            // to an external PE within a literal EntityValue.  For the PE to be
-            // well-formed, it must match the extPE production, but the code that
-            // appends the replacement text to the entity value is in no position
-            // to do a complete well-formedness check !!
-            //
-        }
-        if (fEntityContext == CONTEXT_IN_DTD_WITHIN_MARKUP) {
-            //
-            // REVISIT - Can we get the spec changed ?
-            // There is a perverse edge case to handle here...  We have a reference
-            // to an external PE within markup.  For the PE to be well-formed, it
-            // must match the extPE production, which is probably not going to be
-            // very useful expanded in the middle of a markup declaration.  The
-            // problem is that an empty file, a file containing just whitespace or
-            // another PE that is just empty or whitespace, matches extPE !!
-            //
-        }
-        sendStartEntityNotifications();
-        ReaderState rs = (ReaderState) fReaderStack.peek();
-        fSystemId = expandSystemId(fSystemId, rs.systemId);
-        fSource = fEntityResolver == null ? null : fEntityResolver.resolveEntity(fPublicId, fSystemId);
-        if (fSource == null) {
-            fSource = new InputSource(fSystemId);
-            if (fPublicId != null)
-                fSource.setPublicId(fPublicId);
-        }
-        boolean textDecl = false; // xmlDecl if true, textDecl if false
-        try {
-            fReader = fReaderFactory.createReader(fEntityHandler, fErrorReporter, fSource, fSystemId, textDecl, fStringPool);
-        } catch (MalformedURLException mu) {
-            fReader = null;
-            String errorSystemId = fSystemId;
-            sendEndEntityNotifications();
-            popReader();
-            popEntity();
-            Object[] args = { errorSystemId };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
-                                        ImplementationMessages.IO0,
-                                        0,
-                                        args,
-                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-        } catch (FileNotFoundException fnf) {
-            fReader = null;
-            String errorSystemId = fSystemId;
-            sendEndEntityNotifications();
-            popReader();
-            popEntity();
-            Object[] args = { errorSystemId };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
-                                        ImplementationMessages.IO0,
-                                        0,
-                                        args,
-                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-        } catch (java.io.UnsupportedEncodingException uee) {
-            fReader = null;
-            sendEndEntityNotifications();
-            popReader();
-            popEntity();
-            String encoding = uee.getMessage();
-            if (encoding == null) {
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ENCODING_REQUIRED,
-                                           XMLMessages.P81_REQUIRED,
-                                           null,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            } else if (!XMLCharacterProperties.validEncName(encoding)) {
-                Object[] args = { encoding };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ENCODINGDECL_INVALID,
-                                           XMLMessages.P81_INVALID_VALUE,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            } else {
-                Object[] args = { encoding };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ENCODING_NOT_SUPPORTED,
-                                           XMLMessages.P81_NOT_SUPPORTED,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            }
-        }
-        if (fReader == null || !checkForTextDecl) {
-            sendReaderChangeNotifications();
-            return false;
-        }
-        int readerId = fReaderId;
-        sendReaderChangeNotifications();
-        boolean parseTextDecl = fReader.lookingAtChar('<', false);
-        if (readerId != fReaderId)
-            parseTextDecl = false;
-        return parseTextDecl;
-    }
-
-    //
-    // reader stack
-    //
-    private void pushNullReader() {
-        ReaderState rs = fReaderStateFreeList;
-        if (rs == null)
-            rs = new ReaderState();
-        else
-            fReaderStateFreeList = rs.nextReaderState;
-        if (fNullReader == null)
-            fNullReader = new NullReader();
-        rs.reader = fNullReader;
-        rs.source = null;
-        rs.entityName = -1; // Null Entity
-        rs.entityType = -1; // Null Entity
-        rs.entityContext = -1; // Null Entity
-        rs.publicId = "Null Entity";
-        rs.systemId = fSystemId;
-        rs.readerId = fNextReaderId++;
-        rs.depth = -1;
-        rs.nextReaderState = null;
-        fReaderStack.push(rs);
-    }
-    private void pushReader() {
-        ReaderState rs = fReaderStateFreeList;
-        if (rs == null)
-            rs = new ReaderState();
-        else
-            fReaderStateFreeList = rs.nextReaderState;
-        rs.reader = fReader;
-        rs.source = fSource;
-        rs.entityName = fEntityName;
-        rs.entityType = fEntityType;
-        rs.entityContext = fEntityContext;
-        rs.publicId = fPublicId;
-        rs.systemId = fSystemId;
-        rs.readerId = fReaderId;
-        rs.depth = fReaderDepth;
-        rs.nextReaderState = null;
-        fReaderStack.push(rs);
-    }
-    private void popReader() {
-        if (fReaderStack.empty())
-            throw new RuntimeException("FWK004 cannot happen 19"+"\n19");
-        ReaderState rs = (ReaderState) fReaderStack.pop();
-        fReader = rs.reader;
-        fSource = rs.source;
-        fEntityName = rs.entityName;
-        fEntityType = rs.entityType;
-        fEntityContext = rs.entityContext;
-        fPublicId = rs.publicId;
-        fSystemId = rs.systemId;
-        fReaderId = rs.readerId;
-        fReaderDepth = rs.depth;
-        rs.nextReaderState = fReaderStateFreeList;
-        fReaderStateFreeList = rs;
-    }
-
-    //
-    // entity stack
-    //
-    /**
-     * start an entity declaration
-     */
-    public boolean startEntityDecl(boolean isPE, int entityName) throws Exception {
-        if (!pushEntity(isPE, entityName)) {
-            int majorCode = isPE ? XMLMessages.MSG_RECURSIVE_PEREFERENCE : XMLMessages.MSG_RECURSIVE_REFERENCE;
-            Object[] args = { fStringPool.toString(entityName),
-                              entityReferencePath(isPE, entityName) };
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       majorCode,
-                                       XMLMessages.WFC_NO_RECURSION,
-                                       args,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            return false;
-        }
-        return true;
-    }
-    /**
-     * end an entity declaration
-     */
-    public void endEntityDecl() throws Exception {
-        popEntity();
-    }
-    private boolean pushEntity(boolean isPE, int entityName) throws Exception {
-        if (entityName >= 0) {
-            for (int i = 0; i < fEntityStackDepth; i++) {
-                if (fEntityNameStack[i] == entityName && fEntityTypeStack[i] == (isPE ? 1 : 0)) {
-                    return false;
-                }
-            }
-        }
-        if (fEntityTypeStack == null) {
-            fEntityTypeStack = new byte[8];
-            fEntityNameStack = new int[8];
-        } else if (fEntityStackDepth == fEntityTypeStack.length) {
-            byte[] newTypeStack = new byte[fEntityStackDepth * 2];
-            System.arraycopy(fEntityTypeStack, 0, newTypeStack, 0, fEntityStackDepth);
-            fEntityTypeStack = newTypeStack;
-            int[] newNameStack = new int[fEntityStackDepth * 2];
-            System.arraycopy(fEntityNameStack, 0, newNameStack, 0, fEntityStackDepth);
-            fEntityNameStack = newNameStack;
-        }
-        fEntityTypeStack[fEntityStackDepth] = (byte)(isPE ? 1 : 0);
-        fEntityNameStack[fEntityStackDepth] = entityName;
-        fEntityStackDepth++;
-        return true;
-    }
-    private String entityReferencePath(boolean isPE, int entityName) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("(top-level)");
-        for (int i = 0; i < fEntityStackDepth; i++) {
-            if (fEntityNameStack[i] >= 0) {
-                sb.append('-');
-                sb.append(fEntityTypeStack[i] == 1 ? '%' : '&');
-                sb.append(fStringPool.toString(fEntityNameStack[i]));
-                sb.append(';');
-            }
-        }
-        sb.append('-');
-        sb.append(isPE ? '%' : '&');
-        sb.append(fStringPool.toString(entityName));
-        sb.append(';');
-        return sb.toString();
-    }
-    private void popEntity() throws Exception {
-        fEntityStackDepth--;
-    }
-
-    //
-    //
-    //
-    /**
-     * This method is provided for scanner implementations.
-     */
-    public int getReaderId() {
-        return fReaderId;
-    }
-    /**
-     * This method is provided for scanner implementations.
-     */
-    public void setReaderDepth(int depth) {
-        fReaderDepth = depth;
-    }
-    /**
-     * This method is provided for scanner implementations.
-     */
-    public int getReaderDepth() {
-        return fReaderDepth;
-    }
-    /**
-     * Return the public identifier of the <code>InputSource</code> that we are processing.
-     *
-     * @return The public identifier, or null if not provided.
-     */
-    public String getPublicId() {
-        return fPublicId;
-    }
-    /**
-     * Return the system identifier of the <code>InputSource</code> that we are processing.
-     *
-     * @return The system identifier, or null if not provided.
-     */
-    public String getSystemId() {
-        return fSystemId;
-    }
-    /**
-     * Return the line number of the current position within the document that we are processing.
-     *
-     * @return The current line number.
-     */
-    public int getLineNumber() {
-        return fReader.getLineNumber();
-    }
-    /**
-     * Return the column number of the current position within the document that we are processing.
-     *
-     * @return The current column number.
-     */
-    public int getColumnNumber() {
-        return fReader.getColumnNumber();
-    }
-    /**
-     * This method is called by the reader subclasses at the
-     * end of input, and also by the scanner directly to force
-     * a reader change during error recovery.
-     */
-    public XMLEntityHandler.EntityReader changeReaders() throws Exception {
-        sendEndOfInputNotifications();
-        sendEndEntityNotifications();
-        popReader();
-        sendReaderChangeNotifications();
-        popEntity();
-        return fReader;
-    }
-
-    //
-    // We use the null reader after we have reached the
-    // end of input for the document or external subset.
-    //
-    private final class NullReader implements XMLEntityHandler.EntityReader {
-        //
-        //
-        //
-        public NullReader() {
-        }
-        public int currentOffset() {
-            return -1;
-        }
-        public int getLineNumber() {
-            return -1;
-        }
-        public int getColumnNumber() {
-            return -1;
-        }
-        public void setInCDSect(boolean inCDSect) {
-        }
-        public boolean getInCDSect() {
-            return false;
-        }
-        public void append(XMLEntityHandler.CharBuffer charBuffer, int offset, int length) {
-        }
-        public int addString(int offset, int length) {
-            return -1;
-        }
-        public int addSymbol(int offset, int length) {
-            return -1;
-        }
-        public boolean lookingAtChar(char ch, boolean skipPastChar) {
-            return false;
-        }
-        public boolean lookingAtValidChar(boolean skipPastChar) {
-            return false;
-        }
-        public boolean lookingAtSpace(boolean skipPastChar) {
-            return false;
-        }
-        public void skipToChar(char ch) {
-        }
-        public void skipPastSpaces() {
-        }
-        public void skipPastName(char fastcheck) {
-        }
-        public void skipPastNmtoken(char fastcheck) {
-        }
-        public boolean skippedString(char[] s) {
-            return false;
-        }
-        public int scanInvalidChar() {
-            return -1;
-        }
-        public int scanCharRef(boolean hex) {
-            return XMLEntityHandler.CHARREF_RESULT_INVALID_CHAR;
-        }
-        public int scanStringLiteral() {
-            return XMLEntityHandler.STRINGLIT_RESULT_QUOTE_REQUIRED;
-        }
-        public int scanAttValue(char qchar, boolean asSymbol) {
-            return XMLEntityHandler.ATTVALUE_RESULT_INVALID_CHAR;
-        }
-        public int scanEntityValue(int qchar, boolean createString) {
-            return XMLEntityHandler.ENTITYVALUE_RESULT_INVALID_CHAR;
-        }
-        public boolean scanExpectedName(char fastcheck, StringPool.CharArrayRange expectedName) {
-            return false;
-        }
-        public int scanQName(char fastcheck) {
-            return -1;
-        }
-        public int scanName(char fastcheck) {
-            return -1;
-        }
-        public int scanContent(int elementType) throws Exception {
-            return XMLEntityHandler.CONTENT_RESULT_INVALID_CHAR;
-        }
-    }
-
-} // class XMLParser
+}

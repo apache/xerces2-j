@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,25 +69,25 @@ import java.util.Vector;
 
 /**
  * This is the primary reader used for UTF-8 encoded byte streams.
- *
+ * <p>
  * This reader processes requests from the scanners against the
  * underlying UTF-8 byte stream, avoiding when possible any up-front
  * transcoding.  When the StringPool handle interfaces are used,
  * the information in the data stream will be added to the string
  * pool and lazy-evaluated until asked for.
- *
+ * <p>
  * We use the SymbolCache to match expected names (element types in
  * end tags) and walk the data structures of that class directly.
- *
+ * <p>
  * There is a significant amount of hand-inlining and some blatant
  * voilation of good object oriented programming rules, ignoring
  * boundaries of modularity, etc., in the name of good performance.
- *
+ * <p>
  * There are also some places where the code here frequently crashes
  * the SUN java runtime compiler (JIT) and the code here has been
  * carefully "crafted" to avoid those problems.
  * 
- * @version
+ * @version $Id$
  */
 final class UTF8Reader extends XMLEntityReader {
     //
@@ -624,6 +624,10 @@ final class UTF8Reader extends XMLEntityReader {
         UTF8DataChunk saveChunk = fCurrentChunk;
         int saveOffset = fCurrentOffset;
         int saveIndex = fCurrentIndex;
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
+        }
         int b1 = loadNextByte();
         if ((0xe0 & b0) == 0xc0) { // 110yyyyy 10xxxxxx
             if ((XMLCharacterProperties.fgCharFlags[((0x1f & b0)<<6) + (0x3f & b1)] & flag) == 0) { // yyy yyxx xxxx (0x80 to 0x7ff)
@@ -671,6 +675,10 @@ final class UTF8Reader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiInitialNameChar[b0] == 0)
                 return;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if (!skippedMultiByteCharWithFlag(b0, XMLCharacterProperties.E_InitialNameCharFlag))
                 return;
         }
@@ -683,6 +691,10 @@ final class UTF8Reader extends XMLEntityReader {
                 if (XMLCharacterProperties.fgAsciiNameChar[b0] == 0)
                     return;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if (!skippedMultiByteCharWithFlag(b0, XMLCharacterProperties.E_NameCharFlag))
                     return;
             }
@@ -720,8 +732,10 @@ final class UTF8Reader extends XMLEntityReader {
                 if (data[--index] != s[sindex])
                     return false;
             }
+            fCurrentIndex += length;
         } catch (ArrayIndexOutOfBoundsException ex) {
             int i = 0;
+            index = fCurrentIndex;
             while (index < UTF8DataChunk.CHUNK_SIZE) {
                 if (data[index++] != s[i++])
                     return false;
@@ -742,10 +756,10 @@ final class UTF8Reader extends XMLEntityReader {
                     return false;
                 }
             }
+            fCurrentIndex = index;
         }
         fCharacterCounter += length;
         fCurrentOffset += length;
-        fCurrentIndex += length;
         try {
             fMostRecentByte = data[fCurrentIndex] & 0xFF;
         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -1263,6 +1277,10 @@ final class UTF8Reader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                 return true;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                 return true;
         }
@@ -1277,6 +1295,10 @@ final class UTF8Reader extends XMLEntityReader {
             if (ch == ':')
                 return -1;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return -1;
         }
@@ -1326,6 +1348,10 @@ final class UTF8Reader extends XMLEntityReader {
                         if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0 || ch == ':')
                             lpok = false;
                     } else {
+                        if (!fCalledCharPropInit) {
+                            XMLCharacterProperties.initCharFlags();
+                            fCalledCharPropInit = true;
+                        }
                         if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                             lpok = false;
                     }
@@ -1336,6 +1362,10 @@ final class UTF8Reader extends XMLEntityReader {
                     }
                 }
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     break;
             }
@@ -1356,6 +1386,10 @@ final class UTF8Reader extends XMLEntityReader {
         UTF8DataChunk saveChunk = fCurrentChunk;
         int saveIndex = fCurrentIndex;
         int saveOffset = fCurrentOffset;
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
+        }
         int b1;
         if (USE_OUT_OF_LINE_LOAD_NEXT_BYTE) {
             b1 = loadNextByte();
@@ -1455,6 +1489,10 @@ final class UTF8Reader extends XMLEntityReader {
             UTF8DataChunk saveChunk = fCurrentChunk;
             int saveIndex = fCurrentIndex;
             int saveOffset = fCurrentOffset;
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             int b1;
             if (USE_OUT_OF_LINE_LOAD_NEXT_BYTE) {
                 b1 = loadNextByte();
@@ -2176,10 +2214,10 @@ final class UTF8Reader extends XMLEntityReader {
                     case 1: // '<'
                         if (!fInCDSect) {
                             if (fSendCharDataAsCharArray) {
-                                fEntityHandler.processWhitespace(fCharacters, 0, fCharDataLength);
+                                fCharDataHandler.processWhitespace(fCharacters, 0, fCharDataLength);
                             } else {
                                 int stringIndex = addString(charDataOffset, fCurrentOffset - charDataOffset);
-                                fEntityHandler.processWhitespace(stringIndex);
+                                fCharDataHandler.processWhitespace(stringIndex);
                             }
                             fCharacterCounter++;
                             if (USE_OUT_OF_LINE_LOAD_NEXT_BYTE) {
@@ -2305,10 +2343,10 @@ final class UTF8Reader extends XMLEntityReader {
                 case 1: // '<'
                     if (!fInCDSect) {
                         if (fSendCharDataAsCharArray) {
-                            fEntityHandler.processCharacters(fCharacters, 0, fCharDataLength);
+                            fCharDataHandler.processCharacters(fCharacters, 0, fCharDataLength);
                         } else {
                             int stringIndex = addString(charDataOffset, fCurrentOffset - charDataOffset);
-                            fEntityHandler.processCharacters(stringIndex);
+                            fCharDataHandler.processCharacters(stringIndex);
                         }
                         fCharacterCounter++;
                         if (USE_OUT_OF_LINE_LOAD_NEXT_BYTE) {
@@ -2629,10 +2667,10 @@ final class UTF8Reader extends XMLEntityReader {
         //
         if (!fSendCharDataAsCharArray) {
             int stringIndex = addString(offset, endOffset - offset);
-            fEntityHandler.processCharacters(stringIndex);
+            fCharDataHandler.processCharacters(stringIndex);
             return;
         }
-        fEntityHandler.processCharacters(fCharacters, 0, fCharDataLength);
+        fCharDataHandler.processCharacters(fCharacters, 0, fCharDataLength);
     }
     private void whitespace(int offset, int endOffset) throws Exception {
         //
@@ -2640,10 +2678,10 @@ final class UTF8Reader extends XMLEntityReader {
         //
         if (!fSendCharDataAsCharArray) {
             int stringIndex = addString(offset, endOffset - offset);
-            fEntityHandler.processWhitespace(stringIndex);
+            fCharDataHandler.processWhitespace(stringIndex);
             return;
         }
-        fEntityHandler.processWhitespace(fCharacters, 0, fCharDataLength);
+        fCharDataHandler.processWhitespace(fCharacters, 0, fCharDataLength);
     }
     //
     //
@@ -2657,6 +2695,7 @@ final class UTF8Reader extends XMLEntityReader {
     private byte[] fMostRecentData = null;
     private int fMostRecentByte = 0;
     private int fLength = 0;
+    private boolean fCalledCharPropInit = false;
     private boolean fCallClearPreviousChunk = true;
     //
     //

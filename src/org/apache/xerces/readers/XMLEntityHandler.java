@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,9 @@ package org.apache.xerces.readers;
 
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.utils.StringPool;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import java.io.InputStream;
 
 /**
@@ -67,9 +69,9 @@ import java.io.InputStream;
  * is typically implemented by the "parser" class to provide entity
  * management services for the scanner classes.
  *
- * @version
+ * @version $Id$
  */
-public interface XMLEntityHandler {
+public interface XMLEntityHandler extends Locator {
 
     /**
      * Special return values for scanCharRef method.  The normal return
@@ -151,24 +153,24 @@ public interface XMLEntityHandler {
      * This is an enumeration of all the defined contexts in which
      * an entity reference may appear.  The order is important, as
      * all explicit general entity references must appear first and
-     * the last of these must be CONTEXT_IN_CONTENT.  This permits
-     * the test "(context <= CONTEXT_IN_CONTENT)" to be used as a
+     * the last of these must be ENTITYREF_IN_CONTENT.  This permits
+     * the test "(context <= ENTITYREF_IN_CONTENT)" to be used as a
      * quick check for a general entity reference.
      *
      * @see #startReadingFromEntity
      */
     public static final int
-        CONTEXT_IN_ATTVALUE = 0,
-        CONTEXT_IN_DEFAULTATTVALUE = 1,
-        CONTEXT_IN_CONTENT = 2,
-        CONTEXT_IN_DTD_AS_MARKUP = 3,
-        CONTEXT_IN_ENTITYVALUE = 4,
-        CONTEXT_IN_DTD_WITHIN_MARKUP = 5,
-        CONTEXT_DOCUMENT = 6,
-        CONTEXT_EXTERNAL_SUBSET = 7;
+        ENTITYREF_IN_ATTVALUE = 0,
+        ENTITYREF_IN_DEFAULTATTVALUE = 1,
+        ENTITYREF_IN_CONTENT = 2,
+        ENTITYREF_IN_DTD_AS_MARKUP = 3,
+        ENTITYREF_IN_ENTITYVALUE = 4,
+        ENTITYREF_IN_DTD_WITHIN_MARKUP = 5,
+        ENTITYREF_DOCUMENT = 6,
+        ENTITYREF_EXTERNAL_SUBSET = 7;
 
     /**
-     * Start reading from source.
+     * Start reading document from an InputSource.
      *
      * @param source The input source for the document to process.
      * @return <code>true</code> if we were able to open the document source;
@@ -186,57 +188,12 @@ public interface XMLEntityHandler {
      *
      * @param entityName The entity name handle in the string pool.
      * @param readerDepth The depth to associate with the reader for this entity.
-     * @param context The context of the entity reference; see CONTEXT_IN_*.
+     * @param context The context of the entity reference; see ENTITYREF_IN_*.
      * @return <code>true</code> if the entity might start with a TextDecl;
      *         <code>false</code> otherwise.
      * @exception java.lang.Exception
      */
-    public boolean startReadingFromEntity(int entityName, int readerDepth, int context) throws Exception;
-
-    /**
-     * Start reading from the external subset of the DTD.
-     *
-     * @param publicId The public identifier for the external subset.
-     * @param systemId The system identifier for the external subset.
-     * @param readerDepth The depth to associate with the reader for the external subset.
-     * @exception java.lang.Exception
-     */
-    public void startReadingFromExternalSubset(String publicId, String systemId, int readerDepth) throws Exception;
-
-    /**
-     * Finished reading from the external subset of the DTD.
-     * @exception java.lang.Exception
-     */
-    public void stopReadingFromExternalSubset() throws Exception;
-
-    /**
-     * Start the scope of an entity declaration.
-     *
-     * @return <code>true</code> on success; otherwise
-     *         <code>false</code> if the entity declaration is recursive.
-     * @exception java.lang.Exception
-     */
-    public boolean startEntityDecl(boolean isPE, int entityName) throws Exception;
-
-    /**
-     * End the scope of an entity declaration.
-     * @exception java.lang.Exception
-     */
-    public void endEntityDecl() throws Exception;
-
-    /**
-     * Return the public identifier of the entity that we are processing.
-     *
-     * @return The public identifier, or null if not provided.
-     */
-    public String getPublicId();
-
-    /**
-     * Return the system identifier of the entity that we are processing.
-     *
-     * @return The system identifier, or null if not provided.
-     */
-    public String getSystemId();
+    public boolean startReadingFromEntity(int entityName, int readerDepth, int entityContext) throws Exception;
 
     /**
      * Expand the system identifier relative to the entity that we are processing.
@@ -246,40 +203,78 @@ public interface XMLEntityHandler {
     public String expandSystemId(String systemId);
 
     /**
-     * Process character data, character array version
-     * 
-     * @param chars character buffer to be processed
-     * @param offset offset in buffer where the data starts
-     * @param length length of characters to be processed
-     * @exception java.lang.Exception
+     * DTD specific entity handler
      */
-    public void processCharacters(char[] chars, int offset, int length) throws Exception;
+    public interface DTDHandler {
+        /**
+         * Start reading from the external subset of the DTD.
+         *
+         * @param publicId The public identifier for the external subset.
+         * @param systemId The system identifier for the external subset.
+         * @param readerDepth The depth to associate with the reader for the external subset.
+         * @exception java.lang.Exception
+         */
+        public void startReadingFromExternalSubset(String publicId, String systemId, int readerDepth) throws Exception;
 
-    /**
-     * Process character data, <code>StringPool</code> handle version
-     *
-     * @param stringHandle <code>StringPool</code> handle to the character data
-     * @exception java.lang.Exception
-     */
-    public void processCharacters(int stringHandle) throws Exception;
+        /**
+         * Finished reading from the external subset of the DTD.
+         * @exception java.lang.Exception
+         */
+        public void stopReadingFromExternalSubset() throws Exception;
 
-    /**
-     * Process white space data, character array version
-     *
-     * @param chars character buffer to be processed
-     * @param offset offset in buffer where the data starts
-     * @param length length of whitespace to be processed
-     * @exception java.lang.Exception
-     */
-    public void processWhitespace(char[] chars, int offset, int length) throws Exception;
+        /**
+         * Start the scope of an entity declaration.
+         *
+         * @return <code>true</code> on success; otherwise
+         *         <code>false</code> if the entity declaration is recursive.
+         * @exception java.lang.Exception
+         */
+        public boolean startEntityDecl(boolean isPE, int entityName) throws Exception;
 
-    /**
-     * Process white space data, <code>StringPool</code> handle version
-     *
-     * @param stringHandle <code>StringPool</code> handle to the whitespace
-     * @exception java.lang.Exception
-     */
-    public void processWhitespace(int stringHandle) throws Exception;
+        /**
+         * End the scope of an entity declaration.
+         * @exception java.lang.Exception
+         */
+        public void endEntityDecl() throws Exception;
+
+        /**
+         * Declare entities and notations.
+         */
+        public int addInternalPEDecl(int entityName, int value, boolean isExternal) throws Exception;
+        public int addExternalPEDecl(int entityName, int publicId, int systemId, boolean isExternal) throws Exception;
+        public int addInternalEntityDecl(int entityName, int value, boolean isExternal) throws Exception;
+        public int addExternalEntityDecl(int entityName, int publicId, int systemId, boolean isExternal) throws Exception;
+        public int addUnparsedEntityDecl(int entityName, int publicId, int systemId, int notationName, boolean isExternal) throws Exception;
+        public int addNotationDecl(int notationName, int publicId, int systemId, boolean isExternal) throws Exception;
+
+        /**
+         * Check for unparsed entity.
+         *
+         * @param entityName The string handle for the entity name.
+         * @return <code>true</code> if entityName is an unparsed entity; otherwise
+         *         <code>false</code> if entityName is not declared or not an unparsed entity.
+         */
+        public boolean isUnparsedEntity(int entityName);
+
+        /**
+         * Check for declared notation.
+         *
+         * @param notationName The string handle for the notation name.
+         * @return <code>true</code> if notationName is a declared notation; otherwise
+         *         <code>false</code> if notationName is not declared.
+         */
+        public boolean isNotationDeclared(int entityName);
+
+        /**
+         * Remember a required but undeclared notation.
+         */
+        public void addRequiredNotation(int notationName, Locator locator, int majorCode, int minorCode, Object[] args);
+
+        /**
+         * Check required but undeclared notations.
+         */
+        public void checkRequiredNotations() throws Exception;
+    }
 
     /**
      * Return a unique identifier for the current reader.
@@ -355,6 +350,57 @@ public interface XMLEntityHandler {
     }
 
     /**
+     * Set the character data handler.
+     */
+    public void setCharDataHandler(XMLEntityHandler.CharDataHandler charDataHandler);
+
+    /**
+     * Get the character data handler.
+     */
+    public XMLEntityHandler.CharDataHandler getCharDataHandler();
+
+    /**
+     * Interface for passing character data.
+     */
+    public interface CharDataHandler {
+        /**
+         * Process character data, character array version
+         * 
+         * @param chars character buffer to be processed
+         * @param offset offset in buffer where the data starts
+         * @param length length of characters to be processed
+         * @exception java.lang.Exception
+         */
+        public void processCharacters(char[] chars, int offset, int length) throws Exception;
+
+        /**
+         * Process character data, <code>StringPool</code> handle version
+         *
+         * @param stringHandle <code>StringPool</code> handle to the character data
+         * @exception java.lang.Exception
+         */
+        public void processCharacters(int stringHandle) throws Exception;
+
+        /**
+         * Process white space data, character array version
+         *
+         * @param chars character buffer to be processed
+         * @param offset offset in buffer where the data starts
+         * @param length length of whitespace to be processed
+         * @exception java.lang.Exception
+         */
+        public void processWhitespace(char[] chars, int offset, int length) throws Exception;
+
+        /**
+         * Process white space data, <code>StringPool</code> handle version
+         *
+         * @param stringHandle <code>StringPool</code> handle to the whitespace
+         * @exception java.lang.Exception
+         */
+        public void processWhitespace(int stringHandle) throws Exception;
+    }
+
+    /**
      * This is the interface for scanners to process input data
      * from entities without needing to know the details of the
      * underlying storage of those entities, or their encodings.
@@ -365,7 +411,6 @@ public interface XMLEntityHandler {
      * processing of XML documents.
      */
     public interface EntityReader {
-
         /**
          * Return the current offset within this reader.
          *

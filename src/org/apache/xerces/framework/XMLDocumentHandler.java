@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,19 +58,18 @@
 package org.apache.xerces.framework;
 
 /**
- * 
  * XMLValidator defines the interface that XMLDocumentScanner and XML
  * EntityHandler have with an object that serves as a pluggable validator.
  * This abstraction allows validators for XML grammar languages to be
  * plugged in and queried for validity checks as the scanner processes
  * a document.
- *
+ * <p>
  * The document scanner and entity handler need to ask the validator object
  * for this information because the validator object is responsible for reading
  * the grammar specification file (which contains markup declarations and entity
  * declarations)
  *
- * @version
+ * @version $Id$
  */
 
 public interface XMLDocumentHandler {

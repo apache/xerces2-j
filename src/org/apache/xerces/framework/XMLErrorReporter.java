@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ import org.xml.sax.Locator;
 /**
  * Error handling
  *
- * @version
+ * @version $Id$
  */
 public interface XMLErrorReporter {
     //
@@ -77,11 +77,6 @@ public interface XMLErrorReporter {
 
     /** Fatal error type. */
     public static final int ERRORTYPE_FATAL_ERROR = 2;
-
-    /**
-     * Set the default locator to use when reporting errors.
-     */
-    public void setLocator(Locator locator);
 
     /**
      * Get the default locator to use when reporting errors.

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,14 +67,14 @@ import java.io.IOException;
 
 /**
  * Reader for UCS-2 and UCS-4 encodings.
- *
+ * <p>
  * This reader is created by the UCSRecognizer class when it decides that the
  * byte stream is encoded in a format supported by this class.  This class
  * was intended to be another example of an encoding sensitive reader that
  * could take advantage of the system design to improve performance and reduce
  * resource consumption, but the actual performance tuning remains to be done.
  *
- * @version
+ * @version $Id$
  */
 final class UCSReader extends XMLEntityReader implements StringPool.StringProducer {
 
@@ -106,6 +106,7 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
     private int fBytesPerChar = -1;
     private boolean fBigEndian = true;
     private ChunkyCharArray fStringCharArray = null;
+    private boolean fCalledCharPropInit = false;
     //
     //
     //
@@ -251,7 +252,6 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
         boolean skiplf = false;
         while (offset < endOffset) {
             int ch = getChar(offset);
-            /***/
             // fix for Bug23: Element Data not normalized...
             if (skiplf) {
                 skiplf = false;
@@ -263,22 +263,21 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
             if (ch == 0x0D) {
                 skiplf = true;
                 ch = 0x0A;
-            }   
-            /***/
+            }
             appendCharData(ch);
             offset += fBytesPerChar;
         }
         if (fSendCharDataAsCharArray) {
             if (isWhitespace)
-                fEntityHandler.processWhitespace(fCharacters, 0, fCharDataLength);
+                fCharDataHandler.processWhitespace(fCharacters, 0, fCharDataLength);
             else
-                fEntityHandler.processCharacters(fCharacters, 0, fCharDataLength);
+                fCharDataHandler.processCharacters(fCharacters, 0, fCharDataLength);
         } else {
             int stringIndex = fStringPool.addString(new String(fCharacters, 0, fCharDataLength));
             if (isWhitespace)
-                fEntityHandler.processWhitespace(stringIndex);
+                fCharDataHandler.processWhitespace(stringIndex);
             else
-                fEntityHandler.processCharacters(stringIndex);
+                fCharDataHandler.processCharacters(stringIndex);
         }
         fCharDataLength = 0;
     }
@@ -437,6 +436,10 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
     //
     public void skipPastName(char fastcheck) throws Exception {
         int ch = getChar(fCurrentOffset);
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
+        }
         if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
             return;
         while (true) {
@@ -454,6 +457,10 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
     //
     public void skipPastNmtoken(char fastcheck) throws Exception {
         int ch = getChar(fCurrentOffset);
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
+        }
         while (true) {
             if (fastcheck == ch)
                 return;
@@ -757,6 +764,10 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
         int ch = getChar(fCurrentOffset);
         fCurrentOffset += fBytesPerChar;
         byte prop;
+        if (!fCalledCharPropInit) {
+            XMLCharacterProperties.initCharFlags();
+            fCalledCharPropInit = true;
+        }
         if (ch < 0x80) {
             if (ch == -1) {
                 fCurrentOffset -= fBytesPerChar;

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,9 +63,9 @@ import java.util.StringTokenizer;
 
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.framework.XMLAttrList;
-import org.apache.xerces.framework.XMLContentSpecNode;
+import org.apache.xerces.framework.XMLContentSpec;
+import org.apache.xerces.framework.XMLDocumentHandler;
 import org.apache.xerces.framework.XMLParser;
-import org.apache.xerces.framework.XMLValidator;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.schema.XUtil;
@@ -94,21 +94,18 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
-// REVISIT: Change use of AttributeList to Attributes. -Ac
-import org.xml.sax.AttributeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
 
 /**
  * DOMParser provides a parser which produces a W3C DOM tree as its output
  *
- * @version
+ * @version $Id$
  */
 public class DOMParser
     extends XMLParser
+    implements XMLDocumentHandler, XMLDocumentHandler.DTDHandler
     {
 
     //
@@ -223,6 +220,8 @@ public class DOMParser
 
     /** Default constructor. */
     public DOMParser() {
+
+        initHandlers(false, this, this);
 
         // setup parser state
         init();
@@ -371,8 +370,6 @@ public class DOMParser
         fGtIndex = fStringPool.addSymbol("gt");
         fAposIndex = fStringPool.addSymbol("apos");
         fQuotIndex = fStringPool.addSymbol("quot");
-
-        setSendCharDataAsCharArray(false);
 
         fSeenRootElement = false;
 
@@ -889,19 +886,7 @@ public class DOMParser
     //
 
     /** Start document. */
-    public void startDocument(int versionIndex, int encodingIndex,
-                              int standAloneIndex) {
-
-        // clean up unused strings
-        if (versionIndex != -1) {
-            fStringPool.orphanString(versionIndex);
-        }
-        if (encodingIndex != -1) {
-            fStringPool.orphanString(encodingIndex);
-        }
-        if (standAloneIndex != -1) {
-            fStringPool.orphanString(standAloneIndex);
-        }
+    public void startDocument() {
 
         // deferred expansion
         String documentClassName = null;
@@ -954,6 +939,23 @@ public class DOMParser
     /** End document. */
     public void endDocument() throws Exception {}
 
+    /** XML declaration. */
+    public void xmlDecl(int versionIndex, int encodingIndex, int standaloneIndex) throws Exception {
+
+        // release strings
+        fStringPool.releaseString(versionIndex);
+        fStringPool.releaseString(encodingIndex);
+        fStringPool.releaseString(standaloneIndex);
+    }
+
+    /** Text declaration. */
+    public void textDecl(int versionIndex, int encodingIndex) throws Exception {
+
+        // release strings
+        fStringPool.releaseString(versionIndex);
+        fStringPool.releaseString(encodingIndex);
+    }
+
     /** Report the start of the scope of a namespace declaration. */
     public void startNamespaceDeclScope(int prefix, int uri) throws Exception {}
 
@@ -988,8 +990,8 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
-                if (fGrammarAccess && fValidator == fSchemaValidator) {
-                    Document schemaDocument = fSchemaValidator.getSchemaDocument();
+                if (fGrammarAccess) {
+                    Document schemaDocument = fValidator.getSchemaDocument();
                     if (schemaDocument != null) {
                         if (fDocumentTypeIndex == -1) {
                             fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementTypeIndex, -1, -1);
@@ -1011,7 +1013,6 @@ public class DOMParser
             catch (SAXException s) {}
 
             String elementName = fStringPool.toString(elementTypeIndex);
-            AttributeList attrList = xmlAttrList.getAttributeList(attrListIndex);
             Element e;
             if (nsEnabled) {
                 e = fDocument.createElementNS(
@@ -1021,39 +1022,40 @@ public class DOMParser
             } else {
                 e = fDocument.createElement(elementName);
             }
-            int attrListLength = attrList.getLength();
-            for (int i = 0; i < attrListLength; i++) {
+            int attrHandle = xmlAttrList.getFirstAttr(attrListIndex);
+            while (attrHandle != -1) {
                 if (nsEnabled) {
-                    int attName = xmlAttrList.getAttrName(i);
-		            String attNameStr = fStringPool.toString(attName);
-		            int nsURIIndex = fStringPool.getURIForQName(attName);
-		            String namespaceURI = fStringPool.toString(nsURIIndex);
-		            // DOM Level 2 wants all namespace declaration attributes
-		            // to be bound to "http://www.w3.org/2000/xmlns/"
-		            // So as long as the XML parser doesn't do it, it needs to
-		            // done here.
-		            int prefixIndex = fStringPool.getPrefixForQName(attName);
-		            String prefix = fStringPool.toString(prefixIndex);
-		            if (namespaceURI == null) {
-			            if (prefix != null) {
-			                if (prefix.equals("xmlns")) {
-				            namespaceURI = "http://www.w3.org/2000/xmlns/";
-			                }
-			            } else if (attNameStr.equals("xmlns")) {
-			                namespaceURI = "http://www.w3.org/2000/xmlns/";
-			            }
-		            }
-                        e.setAttributeNS(namespaceURI,
-				            attNameStr,
-				            attrList.getValue(i));
+                    int attName = xmlAttrList.getAttrName(attrHandle);
+                    String attNameStr = fStringPool.toString(attName);
+		    int nsURIIndex = fStringPool.getURIForQName(attName);
+		    String namespaceURI = fStringPool.toString(nsURIIndex);
+		    // DOM Level 2 wants all namespace declaration attributes
+		    // to be bound to "http://www.w3.org/2000/xmlns/"
+		    // So as long as the XML parser doesn't do it, it needs to
+		    // done here.
+		    int prefixIndex = fStringPool.getPrefixForQName(attName);
+		    String prefix = fStringPool.toString(prefixIndex);
+		    if (namespaceURI == null) {
+			if (prefix != null) {
+			    if (prefix.equals("xmlns")) {
+				namespaceURI = "http://www.w3.org/2000/xmlns/";
+			    }
+			} else if (attNameStr.equals("xmlns")) {
+			    namespaceURI = "http://www.w3.org/2000/xmlns/";
+			}
+		    }
+                    e.setAttributeNS(namespaceURI,
+				     attNameStr,
+                                     fStringPool.toString(xmlAttrList.getAttValue(attrHandle)));
                 } else {
-                    String attrName = attrList.getName(i);
-                    String attrValue = attrList.getValue(i);
+                    String attrName = fStringPool.toString(xmlAttrList.getAttrName(attrHandle));
+                    String attrValue = fStringPool.toString(xmlAttrList.getAttValue(attrHandle));
                     e.setAttribute(attrName, attrValue);
-                    if (fDocumentImpl != null && !xmlAttrList.isSpecified(i)) {
+                    if (fDocumentImpl != null && !xmlAttrList.isSpecified(attrHandle)) {
                         ((AttrImpl)e.getAttributeNode(attrName)).setSpecified(false);
                     }
                 }
+                attrHandle = xmlAttrList.getNextAttr(attrHandle);
             }
             fCurrentElementNode.appendChild(e);
             fCurrentElementNode = e;
@@ -1076,15 +1078,14 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
-                if (fDocumentImpl != null && fGrammarAccess && fValidator == fSchemaValidator) {
-                    Document schemaDocument = fSchemaValidator.getSchemaDocument();
+                if (fDocumentImpl != null && fGrammarAccess) {
+                    Document schemaDocument = fValidator.getSchemaDocument();
                     if (schemaDocument != null) {
                         if (fDocumentType == null) {
                             String rootName = elementName;
                             String systemId = ""; // REVISIT: How do we get this value? -Ac
                             String publicId = ""; // REVISIT: How do we get this value? -Ac
-                            fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, 
-                                systemId);
+                            fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
                             fDocument.appendChild(fDocumentType);
                         }
 
@@ -1298,7 +1299,7 @@ public class DOMParser
         }
 
         // we only support one context for entity references right now...
-        if (entityContext != XMLEntityHandler.CONTEXT_IN_CONTENT) {
+        if (entityContext != XMLEntityHandler.ENTITYREF_IN_CONTENT) {
             return;
         }
 
@@ -1341,7 +1342,7 @@ public class DOMParser
         }
 
         // we only support one context for entity references right now...
-        if (entityContext != XMLEntityHandler.CONTEXT_IN_CONTENT) {
+        if (entityContext != XMLEntityHandler.ENTITYREF_IN_CONTENT) {
             return;
         }
 
@@ -1432,7 +1433,7 @@ public class DOMParser
             String publicString = fStringPool.toString(publicId);
             String systemString = fStringPool.toString(systemId);
             fDocumentType = fDocumentImpl.
-               createDocumentType(rootElementName, publicString, systemString);
+                createDocumentType(rootElementName, publicString, systemString);
             fDocumentImpl.appendChild(fDocumentType);
 
             if (fGrammarAccess) {
@@ -1513,8 +1514,7 @@ public class DOMParser
     /**
      * &lt;!ELEMENT Name contentspec&gt;
      */
-    public void elementDecl(int elementTypeIndex, 
-                            XMLValidator.ContentSpec contentSpec)
+    public void elementDecl(int elementTypeIndex, XMLContentSpec contentSpec)
         throws Exception {
 
         if (DEBUG_ATTLIST_DECL) {
@@ -1583,7 +1583,7 @@ public class DOMParser
                 // <!ELEMENT name (#PCDATA)>
                 int contentType = contentSpec.getType();
                 String contentTypeName = fStringPool.toString(contentType);
-                XMLContentSpecNode node = new XMLContentSpecNode();
+                XMLContentSpec.Node node = new XMLContentSpec.Node();
                 int contentSpecHandle = contentSpec.getHandle();
                 if (contentSpecHandle != -1) {
                     contentSpec.getNode(contentSpecHandle, node);
@@ -1662,7 +1662,7 @@ public class DOMParser
                             int elementRefIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
                             fDeferredDocumentImpl.insertBefore(typeIndex, elementRefIndex, getFirstChildElement(typeIndex, "element"));
                             contentSpec.getNode(index, node);
-                        } while (node.type != XMLContentSpecNode.CONTENTSPECNODE_LEAF);
+                        } while (node.type != XMLContentSpec.CONTENTSPECNODE_LEAF);
                     }
                 }
 
@@ -1699,7 +1699,7 @@ public class DOMParser
                 // <!ELEMENT name (#PCDATA)>
                 int contentType = contentSpec.getType();
                 String contentTypeName = fStringPool.toString(contentType);
-                XMLContentSpecNode node = new XMLContentSpecNode();
+                XMLContentSpec.Node node = new XMLContentSpec.Node();
                 int contentSpecHandle = contentSpec.getHandle();
                 if (contentSpecHandle != -1) {
                     contentSpec.getNode(contentSpecHandle, node);
@@ -1766,7 +1766,7 @@ public class DOMParser
                             elementRef.setAttribute("ref", elementRefName);
                             type.insertBefore(elementRef, XUtil.getFirstChildElement(type, "element"));
                             contentSpec.getNode(index, node);
-                        } while (node.type != XMLContentSpecNode.CONTENTSPECNODE_LEAF);
+                        } while (node.type != XMLContentSpec.CONTENTSPECNODE_LEAF);
                     }
                 }
 
@@ -2493,21 +2493,20 @@ public class DOMParser
      * containing element, even when the content model contains a
      * single element reference.
      */
-    private Element createContentModel(XMLValidator.ContentSpec contentSpec, 
-                                       XMLContentSpecNode node) {
+    private Element createContentModel(XMLContentSpec contentSpec, XMLContentSpec.Node node) {
 
         Element model = createContentModel(contentSpec, node, 
                                            new DocumentImpl(), null);
         return model;
 
-    } // createContentModel(XMLContentSpecNode):Element
+    } // createContentModel(XMLContentSpec.Node):Element
 
     /**
      * This is the real <em>createContentModel</em> method. This is a
      * recursive solution.
      */
-    private Element createContentModel(XMLValidator.ContentSpec contentSpec, 
-                                       XMLContentSpecNode node, 
+    private Element createContentModel(XMLContentSpec contentSpec,
+                                       XMLContentSpec.Node node, 
                                        Document factory, 
                                        Element parent) {
 
@@ -2515,19 +2514,19 @@ public class DOMParser
         int minOccur = 1;
         int maxOccur = 1;
         switch (node.type) {
-            case XMLContentSpecNode.CONTENTSPECNODE_ONE_OR_MORE: {
+            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
                 minOccur = 1;
                 maxOccur = -1;
                 contentSpec.getNode(node.value, node);
                 break;
             }
-            case XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_MORE: {
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
                 minOccur = 0;
                 maxOccur = -1;
                 contentSpec.getNode(node.value, node);
                 break;
             }
-            case XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_ONE: {
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
                 minOccur = 0;
                 maxOccur = 1;
                 contentSpec.getNode(node.value, node);
@@ -2540,8 +2539,8 @@ public class DOMParser
         switch (nodeType) {
 
             // CHOICE or SEQUENCE
-            case XMLContentSpecNode.CONTENTSPECNODE_CHOICE:
-            case XMLContentSpecNode.CONTENTSPECNODE_SEQ: {
+            case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+            case XMLContentSpec.CONTENTSPECNODE_SEQ: {
 
                 // go down left side
                 int leftIndex  = node.value;
@@ -2556,7 +2555,7 @@ public class DOMParser
                                                    factory, null);
 
                 // append left children
-                String  type  = nodeType == XMLContentSpecNode.CONTENTSPECNODE_CHOICE
+                String  type  = nodeType == XMLContentSpec.CONTENTSPECNODE_CHOICE
                               ? "choice"
                               : "seq";
                 Element model = left;
@@ -2589,7 +2588,7 @@ public class DOMParser
             }
 
             // LEAF
-            case XMLContentSpecNode.CONTENTSPECNODE_LEAF: {
+            case XMLContentSpec.CONTENTSPECNODE_LEAF: {
                 String  name = fStringPool.toString(node.value);
                 Element leaf = factory.createElement("element");
                 leaf.setAttribute("ref", name);
@@ -2604,7 +2603,7 @@ public class DOMParser
         // error
         return null;
 
-    } // createContentModel(XMLContentSpecNode,Element):Element
+    } // createContentModel(XMLContentSpec.Node,Element):Element
 
     /**
      * Sets the appropriate occurrence count attributes on the specified

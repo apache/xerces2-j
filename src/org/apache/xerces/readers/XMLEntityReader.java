@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,8 +62,8 @@ import org.apache.xerces.framework.XMLErrorReporter;
 /**
  * This is the class used by the scanner to process the XML data.
  *
- * @version
  * @see org.apache.xerces.framework.XMLParser
+ * @version $Id$
  */
 abstract class XMLEntityReader implements XMLEntityHandler.EntityReader {
     /*
@@ -72,6 +72,7 @@ abstract class XMLEntityReader implements XMLEntityHandler.EntityReader {
     protected XMLEntityHandler fEntityHandler = null;
     protected XMLErrorReporter fErrorReporter = null;
     protected boolean fSendCharDataAsCharArray;
+    protected XMLEntityHandler.CharDataHandler fCharDataHandler = null;
     protected boolean fInCDSect = false;
     private boolean fStillActive = true;
     /*
@@ -88,6 +89,7 @@ abstract class XMLEntityReader implements XMLEntityHandler.EntityReader {
         fEntityHandler = entityHandler;
         fErrorReporter = errorReporter;
         fSendCharDataAsCharArray = sendCharDataAsCharArray;
+        fCharDataHandler = fEntityHandler.getCharDataHandler();
     }
     /**
      * Constructor
@@ -96,6 +98,7 @@ abstract class XMLEntityReader implements XMLEntityHandler.EntityReader {
         fEntityHandler = entityHandler;
         fErrorReporter = errorReporter;
         fSendCharDataAsCharArray = sendCharDataAsCharArray;
+        fCharDataHandler = fEntityHandler.getCharDataHandler();
         fLinefeedCounter = lineNumber;
         fCharacterCounter = columnNumber;
     }
@@ -103,6 +106,7 @@ abstract class XMLEntityReader implements XMLEntityHandler.EntityReader {
         fEntityHandler = entityHandler;
         fErrorReporter = errorReporter;
         fSendCharDataAsCharArray = sendCharDataAsCharArray;
+        fCharDataHandler = fEntityHandler.getCharDataHandler();
         fLinefeedCounter = lineNumber;
         fCharacterCounter = columnNumber;
         fStillActive = true;

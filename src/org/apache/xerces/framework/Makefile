@@ -3,12 +3,12 @@
 TARGETS=\
 	Version.class\
 	XMLAttrList.class\
-	XMLContentSpecNode.class\
+	XMLContentSpec.class\
+	XMLDocumentHandler.class\
 	XMLDocumentScanner.class\
 	XMLDTDScanner.class\
 	XMLErrorReporter.class\
-	XMLParser.class\
-	XMLValidator.class
+	XMLParser.class
 
 DIRS =
 

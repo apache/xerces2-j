@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,31 +72,28 @@ import org.xml.sax.SAXParseException;
  * are bundled up together before being presented to the application, we don't
  * have a way to build up an attribute value from pieces, most notably entity
  * references.
- *
+ * <p>
  * There is typically one instance of this class for each instance of a
  * parser.  The parser may either use this object to hold the attributes
  * of a single element, calling releaseAttrList() before each new element,
  * or it may use this object to hold the attributes of all of the elements
  * in the document.
- *
+ * <p>
  * To start saving a new set of attributes, the startAttrList() method is
  * called, returning a handle for the attribute list.  All addAttr() calls
- * will be added to the set until a call is made to endAttrList().  Anytime
- * after the call to startAttrList(), and before the call to endAttrList(),
- * the attrListHandle() method may be called to get the handle of the set
- * of attributes currently in progress.  A handle of -1 is used to indicate
- * that there are no attributes in the set.
- *
+ * will be added to the set until a call is made to endAttrList().  A handle
+ * of -1 is used to indicate that there are no attributes in the set.
+ * <p>
  * When an attribute is added to the set, the type of the attribute and an
  * indicator of whether it was specified explicitly or through a default is
  * provided.
- *
+ * <p>
  * The attributes in the set may be accessed either through the getFirstAttr()
  * and getNextAttr() iteration interface, or the getAttributeList() method
  * may be used to access the attribute list through the SAX <code>AttributeList</code>
  * interface.
  *
- * @version
+ * @version $Id$
  */
 public final class XMLAttrList implements AttributeList {
     //
@@ -184,15 +181,6 @@ public final class XMLAttrList implements AttributeList {
         fAttType[chunk][index] = attType;
         fAttFlags[chunk][index] = (byte)(specified ? ATTFLAG_SPECIFIED : 0);
         return fAttrCount++;
-    }
-
-    /**
-     * Get the handle for the set of attributes.
-     *
-     * @return The handle for the current set of attributes.
-     */
-    public int attrListHandle() {
-        return fCurrentHandle;
     }
 
     /**

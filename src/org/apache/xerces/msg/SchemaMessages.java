@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ import java.util.ListResourceBundle;
  * This file contains error and warning messages for the Schema validator
  * The messages are arranged in key and value tuples in a ListResourceBundle.
  *
- * @version
+ * @version $Id$
  */
 public class SchemaMessages extends ListResourceBundle {
     /** The list resource bundle contents. */
@@ -90,7 +90,10 @@ public class SchemaMessages extends ListResourceBundle {
         { "IllegalAttContent", "Illegal content {0} in attribute group" },
         { "ValueNotInteger", "Value of {0} is not an integer." },
         { "DatatypeError", "Datatype error: {0}." },
-    };
+		{ "TypeAlreadySet", "The type of the element has already been declared." },
+		{ "GenericError", "Schema error: {0}." },
+		{ "UnexpectedError", "UnexpectedError" },
+   };
     
     /** Returns the list resource bundle contents. */
     public Object[][] getContents() {
