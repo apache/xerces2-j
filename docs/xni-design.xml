@@ -30,6 +30,7 @@
   <ul>
    <li><link idref='xni-core'>Core Interfaces</link></li>
    <li><link idref='xni-config'>Parser Configuration</link></li>
+   <li><link idref='xni-xerces2'>Xerces2 Parser Components</link></li>
   </ul>
  </s2>
  <anchor name='pipeline'/>
