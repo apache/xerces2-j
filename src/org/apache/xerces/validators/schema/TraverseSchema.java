@@ -4548,8 +4548,7 @@ public class TraverseSchema implements
                      : XUtil.getChildText(selem);
         stext = stext.trim();
         try {
-            // REVISIT: Get namespace context! -Ac
-            Selector.XPath sxpath = new Selector.XPath(stext, fStringPool, null);
+            Selector.XPath sxpath = new Selector.XPath(stext, fStringPool, fNamespacesScope);
             Selector selector = new Selector(sxpath, ic);
             if (DEBUG_IDENTITY_CONSTRAINTS) {
                 System.out.println("<IC>:   selector: "+selector);
@@ -4569,8 +4568,7 @@ public class TraverseSchema implements
                          : XUtil.getChildText(felem);
             ftext = ftext.trim();
             try {
-                // REVISIT: Get namespace context! -Ac
-                Field.XPath fxpath = new Field.XPath(ftext, fStringPool, null);
+                Field.XPath fxpath = new Field.XPath(ftext, fStringPool, fNamespacesScope);
                 // REVISIT: Get datatype validator. -Ac
                 Field field = new Field(fxpath, null, ic);
                 if (DEBUG_IDENTITY_CONSTRAINTS) {

@@ -624,8 +624,7 @@ public final class XMLValidator
         ValueStore valueStore = fValueStoreCache.getValueStoreFor(field);
         XPathMatcher matcher = field.createMatcher(valueStore);
         fMatcherStack.addMatcher(matcher);
-        // REVISIT: Pass namespace scope information. -Ac
-        matcher.startDocumentFragment(fStringPool, null);
+        matcher.startDocumentFragment(fStringPool, fNamespacesScope);
         return matcher;
     } // activateField(Field):XPathMatcher
 
@@ -927,10 +926,45 @@ public final class XMLValidator
          fAttrList.endAttrList();
       }
 
+      // activate identity constraints
+      if (fValidating && fGrammar != null) {
+          if (DEBUG_IDENTITY_CONSTRAINTS) {
+              System.out.println("<IC>: pushing context - element: "+fStringPool.toString(element.rawname));
+          }
+          fMatcherStack.pushContext();
+          int eindex = fGrammar.getElementDeclIndex(element, -1);
+          if (eindex != -1) {
+              fGrammar.getElementDecl(eindex, fTempElementDecl);
+              fValueStoreCache.initValueStoresFor(fTempElementDecl);
+              int ucount = fTempElementDecl.unique.size();
+              for (int i = 0; i < ucount; i++) {
+                  activateSelectorFor((IdentityConstraint)fTempElementDecl.unique.elementAt(i));
+              }
+              int kcount = fTempElementDecl.key.size();
+              for (int i = 0; i < kcount; i++) {
+                  activateSelectorFor((IdentityConstraint)fTempElementDecl.key.elementAt(i));
+              }
+              int krcount = fTempElementDecl.keyRef.size();
+              for (int i = 0; i < krcount; i++) {
+                  activateSelectorFor((IdentityConstraint)fTempElementDecl.keyRef.elementAt(i));
+              }
+          }
+
+          // call all active identity constraints
+          int count = fMatcherStack.getMatcherCount();
+          for (int i = 0; i < count; i++) {
+              XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+              if (DEBUG_IDENTITY_CONSTRAINTS) {
+                  System.out.println("<IC>: "+matcher.toString()+"#startElement("+fStringPool.toString(element.rawname)+")");
+              }
+              matcher.startElement(element, fAttrList, fAttrListHandle);
+          }
+      }
+      
+      // call handler
       fDocumentHandler.startElement(element, fAttrList, fAttrListHandle);
-      fAttrListHandle = -1; 
-      //before we increment the element depth, add this element's QName to its enclosing element 's children list
       fElementDepth++;
+      fAttrListHandle = -1; 
 
       //if (fElementDepth >= 0) {
       // REVISIT: Why are doing anything if the grammar is null? -Ac
@@ -964,40 +998,6 @@ public final class XMLValidator
             printStack();
          }
       
-         // activate identity constraints
-         if (fGrammar != null) {
-             if (DEBUG_IDENTITY_CONSTRAINTS) {
-                 System.out.println("<IC>: pushing context - element: "+fStringPool.toString(element.rawname));
-             }
-             fMatcherStack.pushContext();
-             int eindex = fGrammar.getElementDeclIndex(element, -1);
-             if (eindex != -1) {
-                 fGrammar.getElementDecl(eindex, fTempElementDecl);
-                 fValueStoreCache.initValueStoresFor(fTempElementDecl);
-                 int ucount = fTempElementDecl.unique.size();
-                 for (int i = 0; i < ucount; i++) {
-                     activateSelectorFor((IdentityConstraint)fTempElementDecl.unique.elementAt(i));
-                 }
-                 int kcount = fTempElementDecl.key.size();
-                 for (int i = 0; i < kcount; i++) {
-                     activateSelectorFor((IdentityConstraint)fTempElementDecl.key.elementAt(i));
-                 }
-                 int krcount = fTempElementDecl.keyRef.size();
-                 for (int i = 0; i < krcount; i++) {
-                     activateSelectorFor((IdentityConstraint)fTempElementDecl.keyRef.elementAt(i));
-                 }
-             }
-
-             // call all active identity constraints
-             int count = fMatcherStack.getMatcherCount();
-             for (int i = 0; i < count; i++) {
-                 XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-                 if (DEBUG_IDENTITY_CONSTRAINTS) {
-                     System.out.println("<IC>: "+matcher.toString()+"#startElement("+fStringPool.toString(element.rawname)+")");
-                 }
-                 matcher.startElement(element, fAttrList, fAttrListHandle);
-             }
-         }
       }
 
       ensureStackCapacity(fElementDepth);
@@ -1024,10 +1024,7 @@ public final class XMLValidator
       fScopeStack[fElementDepth] = fCurrentScope;
       fGrammarNameSpaceIndexStack[fElementDepth] = fGrammarNameSpaceIndex;
 
-      fAttrList.releaseAttrList(fAttrListHandle);
-      fAttrListHandle = -1;
-
-   } // callStartElement(QName)
+    } // callStartElement(QName)
 
     private void activateSelectorFor(IdentityConstraint ic) throws Exception {
         Selector selector = ic.getSelector();
