@@ -69,8 +69,11 @@ import java.util.PropertyResourceBundle;
  */
 public class DOMMessageFormatter {
 
+    public static final String XML_DOMAIN = "http://www.w3.org/TR/1998/REC-xml-19980210";
     public static final String DOM_DOMAIN = "http://www.w3.org/dom/DOMTR";
     public static final String SERIALIZER_DOMAIN = "http://apache.org/xml/serializer";
+    
+    
 
     /**
      * Formats a message with the specified arguments using the given
@@ -90,33 +93,57 @@ public class DOMMessageFormatter {
      public static String formatMessage(String domain, 
             String key, Object[] arguments)
             throws MissingResourceException {
-        
+
+        // TODO: need to support locale information
         ResourceBundle resourceBundle = null;
         if(domain.equals(DOM_DOMAIN)) {
             resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages");
         } else if (domain.equals(SERIALIZER_DOMAIN)) {
             resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages");
-        } else {
+        } else if (domain.equals(XML_DOMAIN)){
+            resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
+            
+        }else {
             throw new MissingResourceException("Unknown domain" + domain, null, key);
         }
-        if (resourceBundle == null)
-            throw new MissingResourceException("Property file not found!", "org.apache.xerces.impl.msg.DOMMessages", key);
 
-        String msg = key + ": " + resourceBundle.getString(key);
-
-        if (arguments != null) {
-            try {
-                msg = java.text.MessageFormat.format(msg, arguments);
-            } catch (Exception e) {
-                msg = resourceBundle.getString("FormatFailed");
-                msg += " " + resourceBundle.getString(key);
-            }
-        } 
-
-        if (msg == null) {
-            msg = resourceBundle.getString("BadMessageKey");
-            throw new MissingResourceException(msg, "org.apache.xerces.impl.msg.DOMMessages", key);
+        // format message
+        String msg;
+        try {
+            msg = key + ": " + resourceBundle.getString(key);
+            if (arguments != null) {
+                try {
+                    msg = java.text.MessageFormat.format(msg, arguments);
+                } 
+                catch (Exception e) {
+                    msg = resourceBundle.getString("FormatFailed");
+                    msg += " " + resourceBundle.getString(key);
+                }
+            } 
         }
+        
+
+        // error
+        catch (MissingResourceException e) {
+            msg = resourceBundle.getString("BadMessageKey");
+            throw new MissingResourceException(key, msg, key);
+        }
+
+        // no message
+        if (msg == null) {
+            msg = key;
+            if (arguments.length > 0) {
+                StringBuffer str = new StringBuffer(msg);
+                str.append('?');
+                for (int i = 0; i < arguments.length; i++) {
+                    if (i > 0) {
+                        str.append('&');
+                    }
+                    str.append(String.valueOf(arguments[i]));
+                }
+            }
+        }
+
 
         return msg;
     }
