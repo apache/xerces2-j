@@ -1942,6 +1942,7 @@ public class TraverseSchema implements
                 attType        = XMLAttributeDecl.TYPE_SIMPLE;
                 dataTypeSymbol = fStringPool.addSymbol("string");
             }
+            localpart = fStringPool.toString(dataTypeSymbol);
 
         } else {
 
@@ -1955,7 +1956,8 @@ public class TraverseSchema implements
             String typeURI = resolvePrefixToURI(prefix);
             dataTypeSymbol = fStringPool.addSymbol(localpart);
 
-            if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
+            if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+                 || typeURI.length()==0) {
                 if (localpart.equals("ID")) {
                     attType = XMLAttributeDecl.TYPE_ID;
                 } else if (localpart.equals("IDREF")) {
@@ -1984,7 +1986,7 @@ public class TraverseSchema implements
 
                 // check if the type is from the same Schema
 
-                if (!typeURI.equals(fTargetNSURIString) ) {
+                if (!typeURI.equals(fTargetNSURIString) && typeURI.length() != 0 ) {
                     dv = getTypeValidatorFromNS(typeURI, localpart);
                     if (dv == null) {
                         //TO DO: report error here;
