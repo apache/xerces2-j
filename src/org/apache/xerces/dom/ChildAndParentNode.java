@@ -438,6 +438,21 @@ public abstract class ChildAndParentNode
 
             changed();
 
+            // update cache if we have any
+            if (nodeListLength != -1) {
+                nodeListLength++;
+            }
+            if (nodeListIndex != -1) {
+                // if the cache happens to be the refNode do the obvious
+                if (nodeListNode == refInternal) {
+                    nodeListIndex--;
+                    nodeListNode = newInternal;
+                } else {
+                    // otherwise just invalidate it
+                    nodeListIndex = -1;
+                }
+            }
+
             if(MUTATIONEVENTS)
             {
                 // MUTATION POST-EVENTS:
@@ -639,6 +654,15 @@ public abstract class ChildAndParentNode
         oldInternal.previousSibling = null;
 
         changed();
+
+        // update cache
+        if (nodeListLength > 0) {
+            nodeListLength--;
+        }
+        if (nodeListIndex != -1 && nodeListNode != null) {
+            nodeListIndex--;
+            nodeListNode = nodeListNode.previousSibling();
+        }
 
         if(MUTATIONEVENTS)
         {
