@@ -985,7 +985,7 @@ public class XSAttributeChecker {
         String elName = DOMUtil.getLocalName(element);
 
         if (uri == null || !uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
-            reportSchemaError("Con3X3ElementSchemaURI", new Object[] {elName});
+            reportSchemaError("s4s-elt-schema-ns", new Object[] {elName});
         }
 
         // Get the proper registry:
@@ -1003,8 +1003,7 @@ public class XSAttributeChecker {
         // get desired attribute list of this element
         OneElement oneEle = (OneElement)eleAttrsMap.get(elName);
         if (oneEle == null) {
-            reportSchemaError ("Con3X3ElementAppearance",
-                               new Object[] {elName});
+            reportSchemaError ("s4s-elt-invalid", new Object[] {elName});
             return null;
         }
 
@@ -1040,8 +1039,7 @@ public class XSAttributeChecker {
                 // and not allowed on "document" and "appInfo"
                 if (attrURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ||
                     !oneEle.allowNonSchemaAttr) {
-                    reportSchemaError ("Con3X3AttributeAppearance",
-                                       new Object[] {elName, attrName});
+                    reportSchemaError ("s4s-att-not-allowed", new Object[] {elName, attrName});
                 }
                 else {
                     // for attributes from other namespace
@@ -1068,7 +1066,7 @@ public class XSAttributeChecker {
             // check whether this attribute is allowed
             OneAttr oneAttr = (OneAttr)attrList.get(attrName);
             if (oneAttr == null) {
-                reportSchemaError ("Con3X3AttributeAppearance",
+                reportSchemaError ("s4s-att-not-allowed",
                                    new Object[] {elName, attrName});
                 continue;
             }
@@ -1112,7 +1110,7 @@ public class XSAttributeChecker {
                 }
             }
             catch (InvalidDatatypeValueException ide) {
-                reportSchemaError ("Con3X3AttributeInvalidValue",
+                reportSchemaError ("s4s-att-invalid-value",
                                    new Object[] {elName, attrName, ide.getLocalizedMessage()});
                 if (oneAttr.dfltValue != null)
                     //attrValues.put(attrName, oneAttr.dfltValue);
@@ -1146,12 +1144,9 @@ public class XSAttributeChecker {
             int max = ((XInt)attrValues[ATTIDX_MAXOCCURS]).intValue();
             if (max != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
                 if (min > max) {
-                    reportSchemaError ("p-props-correct:2.1 Value of minOccurs '" + attrValues[ATTIDX_MINOCCURS] + "' must not be greater than value of maxOccurs '" + attrValues[ATTIDX_MAXOCCURS] +"'",
+                    reportSchemaError ("p-props-correct:2.1",
                                        new Object[] {elName, attrValues[ATTIDX_MINOCCURS], attrValues[ATTIDX_MAXOCCURS]});
-                }
-                if (((XInt)attrValues[ATTIDX_MAXOCCURS]).intValue() < 1) {
-                    reportSchemaError("p-props-correct:2.2 Value of maxOccurs " + attrValues[ATTIDX_MAXOCCURS] + " is invalid.  It must be greater than or equal to 1",
-                                       new Object[] {elName, attrValues[ATTIDX_MAXOCCURS]});
+                    attrValues[ATTIDX_MINOCCURS] = attrValues[ATTIDX_MAXOCCURS];
                 }
             }
         }
@@ -1286,12 +1281,10 @@ public class XSAttributeChecker {
                 retValue = INT_UNBOUNDED;
             } else {
                 try {
-                    retValue = fXIntPool.getXInt(Integer.parseInt(value.trim()));
+                    retValue = validate(attr, value, DT_NONNEGINT, schemaDoc);
                 } catch (NumberFormatException e) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
                 }
-                if (((XInt)retValue).intValue() < 0)
-                    throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
             }
             break;
         case DT_MAXOCCURS1:
@@ -1437,24 +1430,15 @@ public class XSAttributeChecker {
         return retValue;
     }
 
-    // report an error. copied from TraverseSchema
     private void reportSchemaError(String key, Object args[]) {
-        if (fErrorReporter == null) {
-            System.out.println("__TraverseSchemaError__ : " + key);
-            for (int i=0; i< args.length ; i++) {
-                System.out.println((String)args[i]);
-            }
-        }
-        else {
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       key,
-                                       args,
-                                       XMLErrorReporter.SEVERITY_ERROR);
-        }
+        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                   key,
+                                   args,
+                                   XMLErrorReporter.SEVERITY_ERROR);
     }
 
     // validate attriubtes from non-schema namespaces
-    public void checkNonSchemaAttributes(XSGrammarResolver grammarResolver) throws Exception {
+    public void checkNonSchemaAttributes(XSGrammarResolver grammarResolver) {
         // for all attributes
         Enumeration enum = fNonSchemaAttrs.keys();
         XSAttributeDecl attrDecl;
@@ -1489,7 +1473,7 @@ public class XSAttributeChecker {
                     // and validate it using the DatatypeValidator
                     dv.validate(attrVal,null);
                 } catch(InvalidDatatypeValueException ide) {
-                    reportSchemaError ("Con3X3AttributeInvalidValue",
+                    reportSchemaError ("s4s-att-invalid-value",
                                        new Object[] {elName, attrName, ide.getLocalizedMessage()});
                 }
             }

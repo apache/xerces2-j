@@ -251,32 +251,32 @@ public final class SchemaSymbols {
     public static final String ATTVAL_YEARMONTH         = "yearMonth";
 
     // block/final values
-    public static final int EMPTY_SET    = 0;
-    public static final int EXTENSION    = 1;
-    public static final int RESTRICTION  = 2;
-    public static final int UNION        = 4;
-    public static final int LIST         = 8;
-    public static final int ENUMERATION  = 16;
-    public static final int SUBSTITUTION = 32;
+    public static final short EMPTY_SET    = 0;
+    public static final short EXTENSION    = 1;
+    public static final short RESTRICTION  = 2;
+    public static final short UNION        = 4;
+    public static final short LIST         = 8;
+    public static final short ENUMERATION  = 16;
+    public static final short SUBSTITUTION = 32;
 
     // form qualified/unqualified
-    public static final int FORM_UNQUALIFIED = 0;
-    public static final int FORM_QUALIFIED   = 1;
+    public static final short FORM_UNQUALIFIED = 0;
+    public static final short FORM_QUALIFIED   = 1;
 
     // any: processContents
-    public static final int ANY_STRICT = 0;
-    public static final int ANY_LAX    = 1;
-    public static final int ANY_SKIP   = 2;
+    public static final short ANY_STRICT = 0;
+    public static final short ANY_LAX    = 1;
+    public static final short ANY_SKIP   = 2;
 
     // attribute use
-    public static final int USE_OPTIONAL   = 0;
-    public static final int USE_REQUIRED   = 1;
-    public static final int USE_PROHIBITED = 2;
+    public static final short USE_OPTIONAL   = 0;
+    public static final short USE_REQUIRED   = 1;
+    public static final short USE_PROHIBITED = 2;
 
     // whiteSpace
-    public static final int WS_PRESERVE = 0;
-    public static final int WS_REPLACE  = 1;
-    public static final int WS_COLLAPSE = 2;
+    public static final short WS_PRESERVE = 0;
+    public static final short WS_REPLACE  = 1;
+    public static final short WS_COLLAPSE = 2;
 
     // maxOccurs = "unbounded"
    public static final int OCCURRENCE_UNBOUNDED = -1;

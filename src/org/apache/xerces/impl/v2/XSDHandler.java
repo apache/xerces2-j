@@ -275,7 +275,8 @@ class XSDHandler {
 //        resolveKeyRefs();
 
         // sixth phase:  handle derivation constraint checking
-        // and UPA
+        // and UPA, and validate attribute of non-schema namespaces
+        fAttributeChecker.checkNonSchemaAttributes(fGrammarResolver);
 
         // and return.
         return fGrammarResolver.getGrammar(fRoot.fTargetNamespace);
