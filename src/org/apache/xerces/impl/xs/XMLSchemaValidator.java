@@ -1365,8 +1365,6 @@ public class XMLSchemaValidator
         fMatcherStack.clear();
         fBaseURI = null;
 
-        fValueStoreCache = new ValueStoreCache();
-
         fState4XsiType.setExtraChecking(false);
         fState4XsiType.setSymbolTable(symbolTable);
         fState4XsiType.setSymbolTable(symbolTable);
@@ -3578,7 +3576,11 @@ public class XMLSchemaValidator
         // startElement:  pushes the current fGlobalIDConstraintMap
         // onto fGlobalMapStack and clears fGlobalIDConstraint map.
         public void startElement() {
-            fGlobalMapStack.push(fGlobalIDConstraintMap.clone());
+            // only clone the hashtable when there are elements
+            if (fGlobalIDConstraintMap.size() > 0)
+                fGlobalMapStack.push(fGlobalIDConstraintMap.clone());
+            else
+                fGlobalMapStack.push(null);
             fGlobalIDConstraintMap.clear();
         } // startElement(void)
 
@@ -3587,6 +3589,9 @@ public class XMLSchemaValidator
         public void endElement() {
             if (fGlobalMapStack.isEmpty()) return; // must be an invalid doc!
             Hashtable oldMap = (Hashtable)fGlobalMapStack.pop();
+            // return if there is no element
+            if (oldMap == null) return;
+            
             Enumeration keys = oldMap.keys();
             while (keys.hasMoreElements()) {
                 IdentityConstraint id = (IdentityConstraint)keys.nextElement();
