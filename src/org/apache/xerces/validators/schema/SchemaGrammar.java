@@ -442,7 +442,6 @@ public class SchemaGrammar extends Grammar{
         int attDefIndex = getFirstAttributeDeclIndex(elementIndex);
         while (attDefIndex != -1) {
             getAttributeDecl(attDefIndex, fTempAttributeDecl);
-
             if (fTempAttributeDecl.name.localpart == attribute.localpart &&
                 fTempAttributeDecl.name.uri == attribute.uri ) {
                 return attDefIndex;

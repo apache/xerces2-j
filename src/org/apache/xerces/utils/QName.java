@@ -66,6 +66,16 @@ package org.apache.xerces.utils;
 public class QName {
 
     //
+    // Constants
+    //
+
+    /** 
+     * Compile to true to help find places where a URI is being set
+     * to the value -1 when it should be StringPool.EMPTY_STRING (0).
+     */
+    private static final boolean FIND_URI_IS_MINUS_ONE = false;
+
+    //
     // Data
     //
 
@@ -92,7 +102,7 @@ public class QName {
 
     /** Constructs a specified qname. */
     public QName(int prefix, int localpart, int rawname) {
-        setValues(prefix, localpart, rawname, -1);
+        setValues(prefix, localpart, rawname, StringPool.EMPTY_STRING);
     }
 
     /** Constructs a specified qname. */
@@ -111,6 +121,16 @@ public class QName {
 
     /** Sets the values of the qualified name. */
     public void setValues(QName qname) {
+        if (FIND_URI_IS_MINUS_ONE) {
+            if (qname.uri == -1) {
+                try { 
+                    throw new Exception("uri value is -1 instead of StringPool.EMPTY_STRING (0)"); 
+                }
+                catch (Exception e) { 
+                    e.printStackTrace(System.err); 
+                }
+            }
+        }
         prefix = qname.prefix;
         localpart = qname.localpart;
         rawname = qname.rawname;
@@ -119,11 +139,21 @@ public class QName {
 
     /** Sets the values of the qualified name. */
     public void setValues(int prefix, int localpart, int rawname) {
-        setValues(prefix, localpart, rawname, -1);
+        setValues(prefix, localpart, rawname, StringPool.EMPTY_STRING);
     }
 
     /** Sets the values of the qualified name. */
     public void setValues(int prefix, int localpart, int rawname, int uri) {
+        if (FIND_URI_IS_MINUS_ONE) {
+            if (uri == -1) {
+                try { 
+                    throw new Exception("uri value is -1 instead of StringPool.EMPTY_STRING (0)"); 
+                }
+                catch (Exception e) { 
+                    e.printStackTrace(System.err); 
+                }
+            }
+        }
         this.prefix = prefix;
         this.localpart = localpart;
         this.rawname = rawname;
@@ -135,7 +165,7 @@ public class QName {
         prefix = -1;
         localpart = -1;
         rawname = -1;
-        uri = -1;
+        uri = StringPool.EMPTY_STRING;
     }
 
     //
@@ -146,9 +176,10 @@ public class QName {
     public boolean equals(Object object) {
         if (object != null && object instanceof QName) {
             QName qname = (QName)object;
-            return prefix == qname.prefix &&
-                   localpart == qname.localpart &&
-                   rawname == qname.rawname &&
+            if (uri == StringPool.EMPTY_STRING) {
+                return rawname == qname.rawname;
+            }
+            return localpart == qname.localpart &&
                    uri == qname.uri;
         }
         return false;
@@ -173,6 +204,23 @@ public class QName {
         str.append(", ");
         str.append("uri: ");
         str.append(uri);
+        return str.toString();
+    }
+
+    /** Returns a string representation of this object. */
+    public String toString(StringPool stringPool) {
+        StringBuffer str = new StringBuffer();
+        str.append("prefix: ");
+        str.append(String.valueOf(stringPool.toString(prefix)));
+        str.append(", ");
+        str.append("localpart: ");
+        str.append(String.valueOf(stringPool.toString(localpart)));
+        str.append(", ");
+        str.append("rawname: ");
+        str.append(String.valueOf(stringPool.toString(rawname)));
+        str.append(", ");
+        str.append("uri: ");
+        str.append(String.valueOf(stringPool.toString(uri)));
         return str.toString();
     }
 

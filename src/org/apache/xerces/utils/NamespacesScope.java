@@ -129,7 +129,7 @@ public class NamespacesScope {
                 }
             }
         }
-        return -1;
+        return StringPool.EMPTY_STRING;
     }
     /**
      *  Add a new namespace mapping

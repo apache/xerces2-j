@@ -1342,7 +1342,7 @@ public class SAXParser
         if (fContentHandler != null) {
             boolean namespaces = getNamespaces();
             int uriIndex = element.uri;
-            String uri = uriIndex != -1 && namespaces
+            String uri = uriIndex != StringPool.EMPTY_STRING && namespaces
                        ? fStringPool.toString(uriIndex) : "";
             int localIndex = element.localpart;
             String local = localIndex != -1 && namespaces
@@ -1394,7 +1394,7 @@ public class SAXParser
         if (fContentHandler != null) {
             boolean namespaces = getNamespaces();
             int uriIndex = element.uri;
-            String uri = uriIndex != -1 && namespaces
+            String uri = uriIndex != StringPool.EMPTY_STRING && namespaces
                        ? fStringPool.toString(uriIndex) : "";
             int localIndex = element.localpart;
             String local = localIndex != -1 && namespaces

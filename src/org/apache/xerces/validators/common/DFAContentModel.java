@@ -61,7 +61,7 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
-//import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.utils.StringPool;
 
 /**
  * DFAContentModel is the derivative of ContentModel that does
@@ -412,14 +412,14 @@ public class DFAContentModel
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                         int uri = fElemMap[elemIndex].uri;
-                        if (uri == -1 || uri == curElem.uri) {
+                        if (uri == StringPool.EMPTY_STRING || uri == curElem.uri) {
                             nextState = fTransTable[curState][elemIndex];
                             if (nextState != -1) 
                               break;
                         }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                        if (curElem.uri == -1) {
+                        if (curElem.uri == StringPool.EMPTY_STRING) {
                             nextState = fTransTable[curState][elemIndex];
                             if (nextState != -1) 
                               break;
@@ -532,14 +532,14 @@ public class DFAContentModel
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                     int uri = fElemMap[elemIndex].uri;
-                    if (uri == -1 || uri == curElem.uri) {
+                    if (uri == StringPool.EMPTY_STRING || uri == curElem.uri) {
                         nextState = fTransTable[curState][elemIndex];
                         if (nextState != -1) 
                           break;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                    if (curElem.uri == -1) {
+                    if (curElem.uri == StringPool.EMPTY_STRING) {
                         nextState = fTransTable[curState][elemIndex];
                         if (nextState != -1) 
                           break;

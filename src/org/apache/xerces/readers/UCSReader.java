@@ -745,7 +745,7 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
         qname.prefix = prefixend == -1 ? -1 : addSymbol(offset, prefixend - offset);
         qname.rawname = addSymbol(offset, length);
         qname.localpart = prefixend == -1 ? qname.rawname : addSymbol(prefixend + fBytesPerChar, fCurrentOffset - (prefixend + fBytesPerChar));
-        qname.uri = -1;
+        qname.uri = StringPool.EMPTY_STRING;
 
 
 

@@ -142,12 +142,13 @@ public class Selector {
     
         /** Constructs a selector XPath expression. */
         public XPath(String xpath, StringPool stringPool, 
-                     NamespacesScope context) throws XPathException {
+                     NamespacesScope context, int targetNamespace) 
+            throws XPathException {
             // NOTE: We have to prefix the selector XPath with "./" in
             //       order to handle selectors such as "." that select
             //       the element container because the fields could be
             //       relative to that element. -Ac
-            super("./"+xpath, stringPool, context);
+            super("./"+xpath, stringPool, context, targetNamespace);
     
             // verify that an attribute is not selected
             XPath.Axis axis = fLocationPath.steps[fLocationPath.steps.length-1].axis;

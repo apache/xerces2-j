@@ -2104,7 +2104,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY) {
                   return attDefIndex;
                } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
-                  if (attribute.uri == -1) {
+                  if (attribute.uri == StringPool.EMPTY_STRING) {
                      return attDefIndex;
                   }
                } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
@@ -2343,9 +2343,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       // bind element to URI
       int prefix = element.prefix != -1 ? element.prefix : 0;
       int uri    = fNamespacesScope.getNamespaceForPrefix(prefix);
-      if (element.prefix != -1 || uri != -1) {
+      if (element.prefix != -1 || uri != StringPool.EMPTY_STRING) {
          element.uri = uri;
-         if (element.uri == -1) {
+         if (element.uri == StringPool.EMPTY_STRING) {
             Object[] args = { fStringPool.toString(element.prefix)};
             fErrorReporter.reportError(fErrorReporter.getLocator(),
                                        XMLMessages.XMLNS_DOMAIN,
@@ -2476,6 +2476,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          	   // entity resolver, and also can fall-back to entityhandler's expandSystemId()
                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER);
                fGrammarResolver.putGrammar(root.getAttribute("targetNamespace"), grammar);
+               fGrammar = (SchemaGrammar)grammar;
             }
          } catch (Exception e) {
             e.printStackTrace(System.err);
@@ -2672,11 +2673,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                   break;
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                int uri = fElemMap[i].uri;
-               if (uri == -1 || uri == element.uri) {
+               if (uri == StringPool.EMPTY_STRING || uri == element.uri) {
                   break;
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-               if (element.uri == -1) {
+               if (element.uri == StringPool.EMPTY_STRING) {
                   break;
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
@@ -2685,12 +2686,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_SKIP) {
                int uri = fElemMap[i].uri;
-               if (uri == -1 || uri == element.uri) {
+               if (uri == StringPool.EMPTY_STRING || uri == element.uri) {
                   skipThisOne = true;
                   break;
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP) {
-               if (element.uri == -1) {
+               if (element.uri == StringPool.EMPTY_STRING) {
                   skipThisOne = true;
                   break;
                }
@@ -2701,12 +2702,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LAX) {
                int uri = fElemMap[i].uri;
-               if (uri == -1 || uri == element.uri) {
+               if (uri == StringPool.EMPTY_STRING || uri == element.uri) {
                   laxThisOne = true;
                   break;
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX) {
-               if (element.uri == -1) {
+               if (element.uri == StringPool.EMPTY_STRING) {
                   laxThisOne = true;
                   break;
                }
@@ -2727,7 +2728,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
          //REVISIT: is this the right place to check on if the Schema has changed?
 
-         if ( fNamespacesEnabled && fValidating && element.uri != fGrammarNameSpaceIndex && element.uri != -1  ) {
+         if ( fNamespacesEnabled && fValidating && 
+              element.uri != fGrammarNameSpaceIndex && 
+              element.uri != StringPool.EMPTY_STRING) {
             fGrammarNameSpaceIndex = element.uri;
 
             boolean success = switchGrammar(fGrammarNameSpaceIndex);
@@ -2838,10 +2841,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                }
 
                String uri = "";
-               int uriIndex = -1;
+               int uriIndex = StringPool.EMPTY_STRING;
                if (fNamespacesScope != null) {
                   uriIndex = fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix));
-                  if (uriIndex > -1) {
+                  if (uriIndex > 0) {
                      uri = fStringPool.toString(uriIndex);
                      if (uriIndex != fGrammarNameSpaceIndex) {
                         fGrammarNameSpaceIndex = fCurrentSchemaURI = uriIndex;
@@ -3027,7 +3030,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                     boolean processContentStrict = 
                                     fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
 
-                                    if (fTempQName.uri == -1) {
+                                    if (fTempQName.uri == StringPool.EMPTY_STRING) {
                                        if (processContentStrict) {
                                           reportError = true;
                                        }
@@ -3153,7 +3156,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                if (attPrefix != fNamespacesPrefix) {
                   if (attPrefix != -1) {
                      int uri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
-                     if (uri == -1) {
+                     if (uri == StringPool.EMPTY_STRING) {
                         Object[] args = { fStringPool.toString(attPrefix)};
                         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                    XMLMessages.XMLNS_DOMAIN,
@@ -4135,6 +4138,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     //          order because we just take advantage of
                     //          a java.util.Hashtable to keep the mapping
                     //          between fields and their values. -Ac
+                    // REVISIT: Compare according to the datatype. -Ac
                     if (!valueTuple.contains(value)) {
                         continue LOOP;
                     }

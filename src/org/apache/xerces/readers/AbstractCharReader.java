@@ -874,7 +874,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
         qname.rawname = fCurrentChunk.addSymbol(offset, length, hashcode);
         qname.prefix = prefixend == -1 ? -1 : addSymbol(offset, prefixend - offset);
         qname.localpart = prefixend == -1 ? qname.rawname : addSymbol(prefixend + 1, fCurrentOffset - (prefixend + 1));
-        qname.uri = -1;
+        qname.uri = StringPool.EMPTY_STRING;
 
     } // scanQName(char,QName)
 

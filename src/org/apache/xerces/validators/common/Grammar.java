@@ -60,6 +60,7 @@ package org.apache.xerces.validators.common;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.Hash2intTable;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.CMException;
@@ -78,6 +79,9 @@ implements XMLContentSpec.Provider {
     //
     // Constants
     //
+
+    /** Signifies top level scope (-1). */
+    public static final int TOP_LEVEL_SCOPE = -1;
 
     private static final int CHUNK_SHIFT = 8; // 2^8 = 256
     private static final int CHUNK_SIZE = (1 << CHUNK_SHIFT);
@@ -148,7 +152,7 @@ implements XMLContentSpec.Provider {
 
     public int getElementDeclIndex(int localpartIndex, int scopeIndex) {
         if ( localpartIndex > -1 && scopeIndex >-2 ) {
-            return fElementNameAndScopeToElementDeclIndexMapping.get(-1, localpartIndex, scopeIndex);
+            return fElementNameAndScopeToElementDeclIndexMapping.get(StringPool.EMPTY_STRING, localpartIndex, scopeIndex);
         }
         return -1;
     }

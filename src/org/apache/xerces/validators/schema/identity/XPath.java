@@ -99,11 +99,12 @@ public class XPath {
     //
 
     /** Constructs an XPath object from the specified expression. */
-    public XPath(String xpath, StringPool stringPool, NamespacesScope context) 
+    public XPath(String xpath, StringPool stringPool, 
+                 NamespacesScope context, int targetNamespace) 
         throws XPathException {
         fExpression = xpath;
         fStringPool = stringPool;
-        parseExpression(context);
+        parseExpression(context, targetNamespace);
     } // <init>(String,StringPool,NamespacesScope)
 
     //
@@ -132,8 +133,8 @@ public class XPath {
      * This method is implemented by using the XPathExprScanner and
      * examining the list of tokens that it returns.
      */
-    private void parseExpression(final NamespacesScope context) 
-        throws XPathException {
+    private void parseExpression(final NamespacesScope context,
+                                 int targetNamespace) throws XPathException {
 
         // tokens
         final XPath.Tokens xtokens = new XPath.Tokens(fStringPool);
@@ -201,9 +202,14 @@ public class XPath {
                     }
                     token = xtokens.getToken(++i);
                     int prefix = xtokens.getTokenString(token);
-                    int uri = context != null
-                            ? context.getNamespaceForPrefix(prefix) : -1;
-                    if (prefix != -1 && context != null && uri == -1) {
+                    int uri = -1;
+                    if (context != null && prefix != -1) {
+                        uri = context.getNamespaceForPrefix(prefix);
+                    }
+                    if (uri == -1) {
+                        uri = targetNamespace;
+                    }
+                    if (prefix != -1 && context != null && uri == StringPool.EMPTY_STRING) {
                         throw new XPathException("prefix "+fStringPool.toString(prefix)+" not bound to namespace URI");
                     }
                     token = xtokens.getToken(++i);
@@ -241,9 +247,15 @@ public class XPath {
                     // consume QName token
                     token = xtokens.getToken(++i);
                     int prefix = xtokens.getTokenString(token);
-                    int uri = context != null
-                            ? context.getNamespaceForPrefix(prefix) : -1;
-                    if (prefix != -1 && context != null && uri == -1) {
+                    int uri = -1;
+                    if (context != null && prefix != -1) {
+                        uri = context.getNamespaceForPrefix(prefix);
+                    }
+                    if (uri == -1) {
+                        uri = targetNamespace;
+                    }
+                    if (prefix != -1 && context != null && 
+                        uri == StringPool.EMPTY_STRING) {
                         throw new XPathException("prefix "+fStringPool.toString(prefix)+" not bound to namespace URI");
                     }
                     token = xtokens.getToken(++i);
@@ -563,7 +575,7 @@ public class XPath {
             switch (type) {
                 case QNAME: {
                     if (name.prefix != -1) {
-                        if (name.uri == -1) {
+                        if (name.uri == StringPool.EMPTY_STRING) {
                             return fStringPool.toString(name.prefix) + ':' + fStringPool.toString(name.localpart);
                         }
                         return "{" + fStringPool.toString(name.uri) + '}' + fStringPool.toString(name.prefix) + ':' + fStringPool.toString(name.localpart);
@@ -3594,7 +3606,8 @@ public class XPath {
             System.out.println("# XPath expression: \""+expression+'"');
             try {
                 StringPool stringPool = new StringPool();
-                XPath xpath = new XPath(expression, stringPool, null);
+                XPath xpath = new XPath(expression, stringPool, 
+                                        null, StringPool.EMPTY_STRING);
                 System.out.println("expanded xpath: \""+xpath.toString()+'"');
             }
             catch (XPathException e) {

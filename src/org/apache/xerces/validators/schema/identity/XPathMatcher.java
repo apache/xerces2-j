@@ -316,12 +316,6 @@ public class XPathMatcher {
                 System.out.println(toString()+" [CHILD] before");
             }
             if (nodeTest.type == XPath.NodeTest.QNAME) {
-                // REVISIT: Hack to work around current problem with schema
-                //          validation setting the target namespace to the
-                //          empty string. -Ac
-                if (element.uri == StringPool.EMPTY_STRING) {
-                    element.uri = -1;
-                }
                 if (!nodeTest.name.equals(element)) {
                     fNoMatchDepth++;
                     if (DEBUG_MATCH) {
@@ -355,12 +349,6 @@ public class XPathMatcher {
                     int alocalpart = attributes.getAttrLocalpart(aindex);
                     int arawname = attributes.getAttrName(aindex);
                     int auri = attributes.getAttrURI(aindex);
-                    // REVISIT: Hack to work around current problem with schema
-                    //          validation setting the target namespace to the
-                    //          empty string. -Ac
-                    if (auri == StringPool.EMPTY_STRING) {
-                        auri = -1;
-                    }
                     aname.setValues(aprefix, alocalpart, arawname, auri);
                     if (nodeTest.type != XPath.NodeTest.QNAME ||
                         nodeTest.name.equals(aname)) {

@@ -236,7 +236,7 @@ public class DTDGrammar
         // create doctype decl
         Element doctypeDecl = fGrammarDocument.createElement("doctypeDecl");
         doctypeDecl.setAttribute("name", fStringPool.toString(rootElement.rawname));
-        if (rootElement.uri != -1) {
+        if (rootElement.uri != StringPool.EMPTY_STRING) {
             doctypeDecl.setAttribute("xmlns:"+fStringPool.toString(rootElement.prefix),
                                      fStringPool.toString(rootElement.uri));
         }
@@ -292,7 +292,7 @@ public class DTDGrammar
         // create element decl element
         Element elementDeclElement = fGrammarDocument.createElement("elementDecl");
         elementDeclElement.setAttribute("name", fStringPool.toString(elementDecl.localpart));
-        if (elementDecl.uri != -1) {
+        if (elementDecl.uri != StringPool.EMPTY_STRING) {
             elementDeclElement.setAttribute("xmlns:"+fStringPool.toString(elementDecl.prefix),
                                             fStringPool.toString(elementDecl.uri));
         }
@@ -328,7 +328,7 @@ public class DTDGrammar
         // create element decl element
         Element elementDeclElement = fGrammarDocument.createElement("elementDecl");
         elementDeclElement.setAttribute("name", fStringPool.toString(elementDecl.localpart));
-        if (elementDecl.uri != -1) {
+        if (elementDecl.uri != StringPool.EMPTY_STRING) {
             elementDeclElement.setAttribute("xmlns:"+fStringPool.toString(elementDecl.prefix),
                                             fStringPool.toString(elementDecl.uri));
         }
@@ -359,7 +359,7 @@ public class DTDGrammar
 
     protected void putElementNameMapping(QName name, int scope,
                                          int elementDeclIndex) {
-        fQName.uri = -1;
+        fQName.uri = StringPool.EMPTY_STRING;
         fQName.localpart = name.rawname;
         super.putElementNameMapping(fQName, scope, elementDeclIndex);
     }
@@ -455,7 +455,7 @@ public class DTDGrammar
         Element attributeDeclElement = fGrammarDocument.createElement("attributeDecl");
         attributeDeclElement.setAttribute("element", fStringPool.toString(elementDecl.localpart));
         attributeDeclElement.setAttribute("name", fStringPool.toString(attributeDecl.localpart));
-        if (attributeDecl.uri != -1) {
+        if (attributeDecl.uri != StringPool.EMPTY_STRING) {
             attributeDeclElement.setAttribute("xmlns:"+fStringPool.toString(attributeDecl.prefix),
                                               fStringPool.toString(attributeDecl.uri));
         }

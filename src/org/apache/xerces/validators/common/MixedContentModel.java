@@ -59,6 +59,7 @@ package org.apache.xerces.validators.common;
 
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 
 /**
@@ -227,12 +228,12 @@ public class MixedContentModel
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                     int uri = fChildren[inIndex].uri;
-                    if (uri != -1 && uri != children[outIndex].uri) {
+                    if (uri != StringPool.EMPTY_STRING && uri != children[outIndex].uri) {
                         return outIndex;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                    if (children[outIndex].uri != -1) {
+                    if (children[outIndex].uri != StringPool.EMPTY_STRING) {
                         return outIndex;
                     }
                 }
@@ -277,12 +278,12 @@ public class MixedContentModel
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                         int uri = fChildren[inIndex].uri;
-                        if (uri == -1 || uri == children[outIndex].uri) {
+                        if (uri == StringPool.EMPTY_STRING || uri == children[outIndex].uri) {
                             break;
                         }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                        if (children[outIndex].uri == -1) {
+                        if (children[outIndex].uri == StringPool.EMPTY_STRING) {
                             break;
                         }
                     }

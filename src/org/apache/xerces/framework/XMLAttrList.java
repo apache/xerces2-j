@@ -367,7 +367,7 @@ public final class XMLAttrList
             fAttPrefix[chunk][index] = -1;
             fAttLocalpart[chunk][index] = -1;
             fAttName[chunk][index] = -1;
-            fAttURI[chunk][index] = -1;
+            fAttURI[chunk][index] = StringPool.EMPTY_STRING;
             if ((fAttFlags[chunk][index] & ATTFLAG_SPECIFIED) != 0)
                 fStringPool.releaseString(fAttValue[chunk][index]);
             fAttValue[chunk][index] = -1;
