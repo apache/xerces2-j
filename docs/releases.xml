@@ -18,11 +18,11 @@
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
   <release version='&ParserName; TBD'>
-   <desc>TBD</desc>
+   <desc>TBD... This release incorporates two minor changes to the Xerces Native Interface.</desc>
    <changes>
     <add>
      <note>
-      Implemented partial experimental support of the first working draft of 
+      Implemented partial experimental support for the first working draft of 
       XML Schema 1.1 <jump href="http://www.w3.org/TR/2004/WD-xmlschema11-1-20040716/">Structures</jump>
       and <jump href="http://www.w3.org/TR/2004/WD-xmlschema11-2-20040716/">Datatypes</jump>.
      </note>
