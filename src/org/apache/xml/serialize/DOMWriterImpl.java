@@ -64,11 +64,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.DOMException;
+
 import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMConfiguration;
 import org.w3c.dom.ls.DOMWriter;
 import org.w3c.dom.ls.DOMWriterFilter;
 import org.w3c.dom.traversal.NodeFilter;
 
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.SymbolTable;
@@ -93,7 +96,7 @@ import java.util.Hashtable;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class DOMWriterImpl implements DOMWriter {
+public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 
     // data
     private String fEncoding; 
@@ -107,21 +110,24 @@ public class DOMWriterImpl implements DOMWriter {
      * initializes the following fields: fNSBinder, fLocalNSBinder, fSymbolTable, 
      * fEmptySymbol, fXmlSymbol, fXmlnsSymbol, fNamespaceCounter, fFeatures.
      */
-    public DOMWriterImpl(boolean namespaces) {
+    public DOMWriterImpl() {
         serializer = new XMLSerializer();
-        serializer.fNamespaces = namespaces;
+        serializer.fNamespaces = true;
         serializer.fNSBinder = new NamespaceSupport();
         serializer.fLocalNSBinder = new NamespaceSupport();
         serializer.fSymbolTable = new SymbolTable();
         serializer.fFeatures = new Hashtable();
-        serializer.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, new Boolean(false));
-        serializer.fFeatures.put(Constants.DOM_SPLIT_CDATA, new Boolean(true));
-        serializer.fFeatures.put(Constants.DOM_VALIDATE, new Boolean(false));
-        serializer.fFeatures.put(Constants.DOM_ENTITIES, new Boolean(false));
-        serializer.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, new Boolean(true));
-        serializer.fFeatures.put(Constants.DOM_DISCARD_DEFAULT_CONTENT, new Boolean(true));
-        serializer.fFeatures.put(Constants.DOM_CANONICAL_FORM, new Boolean(false));
-        serializer.fFeatures.put(Constants.DOM_FORMAT_PRETTY_PRINT, new Boolean(false));
+        serializer.fFeatures.put(Constants.NAMESPACES_FEATURE, Boolean.TRUE);
+        serializer.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, Boolean.FALSE);
+        serializer.fFeatures.put(Constants.DOM_SPLIT_CDATA, Boolean.TRUE);
+        serializer.fFeatures.put(Constants.DOM_VALIDATE, Boolean.FALSE);
+        serializer.fFeatures.put(Constants.DOM_ENTITIES, Boolean.FALSE);
+        serializer.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, Boolean.TRUE);
+        serializer.fFeatures.put(Constants.DOM_DISCARD_DEFAULT_CONTENT, Boolean.TRUE);
+        serializer.fFeatures.put(Constants.DOM_CANONICAL_FORM, Boolean.FALSE);
+        serializer.fFeatures.put(Constants.DOM_FORMAT_PRETTY_PRINT, Boolean.FALSE);
+        serializer.fFeatures.put(Constants.DOM_XMLDECL, Boolean.TRUE);
+        serializer.fFeatures.put(Constants.DOM_UNKNOWNCHARS, Boolean.TRUE);
     }
 
 
@@ -129,75 +135,137 @@ public class DOMWriterImpl implements DOMWriter {
     //
     // DOMWriter methods   
     //
-
-
-    /**
-     * DOM L3-EXPERIMENTAL: Set the state of a feature.
-     * <br>The feature name has the same form as a DOM hasFeature string.
-     * <br>It is possible for a <code>DOMWriter</code> to recognize a feature 
-     * name but to be unable to set its value.
-     * @param name The feature name.
-     * @param state The requested state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @exception DOMException
-     *   Raise a NOT_SUPPORTED_ERR exception when the <code>DOMWriter</code> 
-     *   recognizes the feature name but cannot set the requested value. 
-     *   <br>Raise a NOT_FOUND_ERR When the <code>DOMWriter</code> does not 
-     *   recognize the feature name.
-     */
-    public void setFeature(String name, boolean state) throws DOMException {
-        if (name != null && serializer.fFeatures.containsKey(name))
-            if (canSetFeature(name,state))
-                serializer.fFeatures.put(name,new Boolean(state));
-            else
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature "+name+" cannot be set as "+state);
-        else
-            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature "+name+" not found");
+    
+    public DOMConfiguration getConfig(){
+        return this;
     }
 
-    /**
-     * DOM L3-EXPERIMENTAL: Query whether setting a feature to a specific value is supported.
-     * <br>The feature name has the same form as a DOM hasFeature string.
-     * @param name The feature name, which is a DOM has-feature style string.
-     * @param state The requested state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @return <code>true</code> if the feature could be successfully set to 
-     *   the specified value, or <code>false</code> if the feature is not 
-     *   recognized or the requested value is not supported. The value of 
-     *   the feature itself is not changed.
+    /** DOM L3-EXPERIMENTAL: 
+     * Setter for boolean and object parameters
      */
-    public boolean canSetFeature(String name, boolean state) {
-        if (name.equals(Constants.DOM_NORMALIZE_CHARACTERS) && state)
-            return false;     
-        else if (name.equals(Constants.DOM_VALIDATE) && state)
-            return false;
-        else if (name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT) && !state)
-            return false;
-        else if (name.equals(Constants.DOM_CANONICAL_FORM) && state)
-            return false;
-        else if (name.equals(Constants.DOM_FORMAT_PRETTY_PRINT) && state)
-            return false;
-        else
+	public void setParameter(String name, Object value) throws DOMException {
+		if (serializer.fFeatures.containsKey(name)) {
+			// This is a feature
+			if (value instanceof Boolean) {
+				if (canSetParameter(name, value)) {
+					serializer.fFeatures.put(name, value);
+					if (name.equals(Constants.DOM_XMLDECL)) {
+						serializer._format.setOmitXMLDeclaration(
+							!((Boolean) value).booleanValue());
+					}
+                    else if (name.equals(Constants.DOM_NAMESPACES)){
+                        serializer.fNamespaces = (value==Boolean.TRUE)?true:false;
+                    }
+				}
+				else {
+					String msg = DOMMessageFormatter.formatMessage(
+							DOMMessageFormatter.DOM_DOMAIN,
+							"FEATURE_NOT_SUPPORTED",
+							new Object[] { name });
+                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+				}
+			}
+            else {
+                // REVISIT: should be TYPE_MISMATCH
+                String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "FEATURE_NOT_SUPPORTED",
+                            new Object[] { name });
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+            }
+		}
+		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
+			if (value instanceof DOMErrorHandler) {
+				serializer.fDOMErrorHandler = (DOMErrorHandler) value;
+			}
+			else {
+				// REVISIT: modify error exception to TYPE_MISMATCH
+                String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "FEATURE_NOT_SUPPORTED",
+                            new Object[] { name });
+               throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+			}
+		}
+		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)
+				|| name.equals(Constants.DOM_SCHEMA_LOCATION)
+				|| name.equals(Constants.DOM_SCHEMA_TYPE)) {
+                String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "FEATURE_NOT_SUPPORTED",
+                            new Object[] { name });
+               throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+		}
+		else {
+                String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "FEATURE_NOT_FOUND",
+                            new Object[] { name });		
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+        }
+	}
+    
+    /** DOM L3-EXPERIMENTAL: 
+     * Check if parameter can be set
+     */
+	public boolean canSetParameter(String name, Object state) {
+		if (name.equals(Constants.DOM_NORMALIZE_CHARACTERS) 
+			&& state == Boolean.TRUE){
+			return false;
+		}
+		else if (name.equals(Constants.DOM_VALIDATE) && state == Boolean.TRUE) {
+			return false;
+		}
+		else if (name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
+				&& state == Boolean.FALSE) {
+			return false;
+		}
+		else if (name.equals(Constants.DOM_CANONICAL_FORM)
+				&& state == Boolean.TRUE) {
+			return false;
+		}
+		else if (name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
+				&& state == Boolean.TRUE) {
+			return false;
+		}
+        else if (serializer.fFeatures.get(name)!=null ||
+            name.equals(Constants.DOM_ERROR_HANDLER)){
             return true;
-    }   
-
-    /**
-     * DOM L3-EXPERIMENTAL: Look up the value of a feature.
-     * <br>The feature name has the same form as a DOM hasFeature string
-     * @param name The feature name, which is a string with DOM has-feature 
-     *   syntax.
-     * @return The current state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @exception DOMException
-     *   Raise a NOT_FOUND_ERR When the <code>DOMWriter</code> does not 
-     *   recognize the feature name.
-     */
-    public boolean getFeature(String name) throws DOMException {
-        Boolean state = (Boolean)serializer.fFeatures.get(name);
-        if (state == null)
-            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature "+name+" not found");
-        return state.booleanValue();
+        }
+	    return false; 
     }
+    
+    /** DOM L3-EXPERIMENTAL: 
+     * Getter for boolean and object parameters
+     */
+	public Object getParameter(String name) throws DOMException {
+		Object state = serializer.fFeatures.get(name);
+		if (state == null) {
+			if (name.equals(Constants.DOM_ERROR_HANDLER)) {
+				return serializer.fDOMErrorHandler;
+			}
+			else if (name.equals(Constants.DOM_ENTITY_RESOLVER)
+					|| name.equals(Constants.DOM_SCHEMA_LOCATION)
+					|| name.equals(Constants.DOM_SCHEMA_TYPE)) {
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"FEATURE_NOT_SUPPORTED",
+						new Object[] { name });
+				throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+			}
+			else {
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"FEATURE_NOT_FOUND",
+						new Object[] { name });
+				throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+			}
+		}
+
+		return ((Boolean) state);
+	}
 
     /**
      * DOM L3 EXPERIMENTAL: 
@@ -428,7 +496,7 @@ public class DOMWriterImpl implements DOMWriter {
 
 
     private void checkAllFeatures() {
-        if (getFeature("whitespace-in-element-content"))
+        if (getFeature(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT))
             serializer._format.setPreserveSpace(true);
         else
             serializer._format.setPreserveSpace(false);
