@@ -186,8 +186,8 @@ implements XMLComponent, XMLDocumentFilter {
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
 
-    /** NamespaceBinder*/
-    protected XMLNamespaceBinder fNamespaceBinder;
+    /** Namespace Context*/
+    protected NamespaceContext fNamespaceContext;
 
     /** Attribute QName. */
     private QName fAttrQName = new QName();
@@ -230,8 +230,6 @@ implements XMLComponent, XMLDocumentFilter {
         catch (XMLConfigurationException e) {
             fPSVInfoset = false;
         }
-
-        fNamespaceBinder = (XMLNamespaceBinder)componentManager.getProperty(NAMESPACE_BINDER);
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fIncludeIgnorableWhitespace = componentManager.getFeature(INCLUDE_IGNORABLE_WHITESPACE);
 
@@ -447,6 +445,7 @@ implements XMLComponent, XMLDocumentFilter {
     public void startDocument(XMLLocator locator, String encoding, 
                               NamespaceContext namespaceContext, Augmentations augs)
     throws XNIException {
+        fNamespaceContext = namespaceContext;
         if (fPSVInfoset) {
             printIndentTag("<document"+
                            " xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'"+
@@ -564,21 +563,6 @@ implements XMLComponent, XMLDocumentFilter {
         }
     } // processingInstruction(String,XMLString)
 
-    /**
-     * The start of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param uri    The URI bound to the prefix.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-    throws XNIException {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
-        }
-    } // startPrefixMapping(String,String)
 
     /**
      * Binds the namespaces. This method will handle calling the
@@ -608,6 +592,7 @@ implements XMLComponent, XMLDocumentFilter {
             printElement("localName" , element.localpart);
             printElement("prefix" , element.prefix);
             printAttributes(attributes);
+            printInScopeNamespaces();
             printPSVIStartElement(augs);
         }
         if (fDocumentHandler != null) {
@@ -633,6 +618,7 @@ implements XMLComponent, XMLDocumentFilter {
             printElement("localName" , element.localpart);
             printElement("prefix" , element.prefix);
             printAttributes(attributes);
+            printInScopeNamespaces();
             printTag("<children/>");
             printPSVIStartElement(augs);
             printPSVIEndElement(augs);
@@ -721,7 +707,6 @@ implements XMLComponent, XMLDocumentFilter {
                 printUnIndentTag("</children>");
             }
             _elementState.pop();
-            printinScopeNamespaces();
             printPSVIEndElement(augs);
             printUnIndentTag("</element>");
         }
@@ -729,23 +714,6 @@ implements XMLComponent, XMLDocumentFilter {
             fDocumentHandler.endElement(element, augs);
         }
     } // endElement(QName)
-
-    /**
-     * The end of a namespace prefix mapping. This method will only be
-     * called when namespace processing is enabled.
-     *
-     * @param prefix The namespace prefix.
-     * @param augs   Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endPrefixMapping(String prefix, Augmentations augs)
-    throws XNIException {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix, augs);
-        }
-
-    } // endPrefixMapping(String)
 
     /**
      * The start of a CDATA section.
@@ -1182,28 +1150,26 @@ implements XMLComponent, XMLDocumentFilter {
      * form xmlns="", which does not declare a namespace but rather undeclares
      * the default namespace
      */
-    private void printinScopeNamespaces() {
-        NamespaceContext namespaceContext = fNamespaceBinder.getNamespaceContext();
-        NamespaceContext temp;
-        String prefix;
+	private void printInScopeNamespaces() {
+		printIndentTag("<inScopeNamespaces>");
+		printIndentTag("<namespace>");
+		// print 'xml' binding
+		printElement("prefix", "xml");
+		printElement("namespaceName", NamespaceContext.XML_URI);
+        printUnIndentTag("</namespace>");
+		Enumeration enum = fNamespaceContext.getAllPrefixes();
+		while (enum.hasMoreElements()) {
+            printIndentTag("<namespace>");
 
-        printIndentTag("<inScopeNamespaces>");
-        while (namespaceContext!=null) {
-            temp = namespaceContext.getParentContext();
-            if (temp == null) {
-                int prefixCount = namespaceContext.getDeclaredPrefixCount();
-                for (int i=0;i<prefixCount;i++) {
-                    printIndentTag("<namespace>");
-                    prefix=namespaceContext.getDeclaredPrefixAt(i);
-                    printElement("prefix",prefix);
-                    printElement("namespaceName",namespaceContext.getURI(prefix));
-                    printUnIndentTag("</namespace>");
-                }
-            }
-            namespaceContext = temp;
-        }
-        printUnIndentTag("</inScopeNamespaces>");
-    }//printinScopeNamespaces()
+			String prefix = (String) enum.nextElement();
+			String uri = fNamespaceContext.getURI(prefix);
+			printElement("prefix", prefix);
+			printElement("namespaceName", uri);
+			printUnIndentTag("</namespace>");
+
+		}
+		printUnIndentTag("</inScopeNamespaces>");
+	} //printinScopeNamespaces()
 
     /**
      *  Check whether the calling event is  first in children list ,

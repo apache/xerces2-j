@@ -62,16 +62,16 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.Enumeration;
 
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.parsers.XMLDocumentParser;
-import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
@@ -81,8 +81,6 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-
-import org.apache.xerces.xni.psvi.ElementPSVI;
 
 /**
  * Provides a complete trace of XNI document and DTD events for
@@ -156,6 +154,8 @@ public class DocumentTracer
 
     /** Indent level. */
     protected int fIndent;
+    
+    protected NamespaceContext fNamespaceContext;
 
     //
     // Constructors
@@ -218,7 +218,7 @@ public class DocumentTracer
     public void startDocument(XMLLocator locator, String encoding, 
                               NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
-
+        fNamespaceContext = namespaceContext;
         fIndent = 0;
         printIndent();
         fOut.print("startDocument(");
@@ -305,29 +305,11 @@ public class DocumentTracer
 
     } // doctypeDecl(String,String,String)
 
-    /** Start prefix mapping. */
-    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
-        throws XNIException {
-
-        printIndent();
-        fOut.print("startPrefixMapping(");
-        fOut.print("prefix=");
-        printQuotedString(prefix);
-        fOut.print(',');
-        fOut.print("uri=");
-        printQuotedString(uri);
-        if (augs != null) {
-            fOut.print(',');
-            printAugmentations(augs);
-        }
-        fOut.println(')');
-        fOut.flush();
-
-    } // startPrefixMapping(String,String)
-
     /** Start element. */
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
-        throws XNIException {
+        throws XNIException {           
+
+        printInScopeNamespaces();
 
         printIndent();
         fOut.print("startElement(");
@@ -345,7 +327,7 @@ public class DocumentTracer
     /** Empty element. */
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
-
+        printInScopeNamespaces();
         printIndent();
         fOut.print("emptyElement(");
         printElement(element, attributes);
@@ -355,7 +337,7 @@ public class DocumentTracer
         }
         fOut.println(')');
         fOut.flush();
-
+        printEndNamespaceMapping();
     } // emptyElement(QName,XMLAttributes)
 
 
@@ -424,26 +406,13 @@ public class DocumentTracer
             printAugmentations(augs);
         }
         fOut.println(')');
-        fOut.flush();
+		fOut.flush();
+
+        printEndNamespaceMapping();
 
     } // endElement(QName)
 
-    /** End prefix mapping. */
-    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
-
-        printIndent();
-        fOut.print("endPrefixMapping(");
-        fOut.print("prefix=");
-        printQuotedString(prefix);
-        if (augs != null) {
-            fOut.print(',');
-            printAugmentations(augs);
-        }
-        fOut.println(')');
-        fOut.flush();
-
-    } // endPrefixMapping(String)
-
+ 
     /** Start CDATA section. */
     public void startCDATA(Augmentations augs) throws XNIException {
 
@@ -1215,7 +1184,39 @@ public class DocumentTracer
     //
     // Protected methods
     //
+   protected void printInScopeNamespaces(){
+        int count = fNamespaceContext.getDeclaredPrefixCount();
+        if (count>0){
+            for (int i = 0; i < count; i++) {
+                printIndent();
+                fOut.print("declaredPrefix(");
+                fOut.print("prefix=");
+                String prefix = fNamespaceContext.getDeclaredPrefixAt(i);
+                printQuotedString(prefix);
+                fOut.print(',');
+                fOut.print("uri=");
+                printQuotedString(fNamespaceContext.getURI(prefix));
+                fOut.println(')');
+                fOut.flush();
+            }            
+        }
+   }
+   
+   protected void printEndNamespaceMapping(){
+        int count = fNamespaceContext.getDeclaredPrefixCount();
+        if (count > 0) {
+            for (int i = 0; i < count; i++) {
+                printIndent();
+                fOut.print("endPrefix(");
+                fOut.print("prefix=");
+                String prefix = fNamespaceContext.getDeclaredPrefixAt(i);
+                printQuotedString(prefix);
+                fOut.println(')');
+                fOut.flush();
+            }
+        }
 
+   }
     /** Prints an element. */
     protected void printElement(QName element, XMLAttributes attributes) {
 
