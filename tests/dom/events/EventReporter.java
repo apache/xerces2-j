@@ -65,15 +65,20 @@ class EventReporter implements EventListener
     boolean silent=false; // Toggle this to mask reports you don't care about
     int count=0;
     String[] phasename={"?","BUBBLING","CAPTURING","AT_TARGET","?"};
-    
+
+
     public void on()
     {
-        System.out.println("\nEventReporter awakened:\n");
+        System.out.println();
+        System.out.println("EventReporter awakened:");
+        System.out.println();
         silent=false;
     }
     public void off()
     {
-        System.out.println("\nEventReporter muted\n");
+        System.out.println();
+        System.out.println("EventReporter muted");
+        System.out.println();
         silent=true;
     }
     
@@ -91,20 +96,18 @@ class EventReporter implements EventListener
             "... ");
         if(evt.getBubbles()) System.out.print("will bubble");
         if(evt.getCancelable()) System.out.print("can cancel");
-        System.out.print("\n");
+        System.out.println();
         if(evt instanceof MutationEvent)
         {
             MutationEvent me=(MutationEvent)evt;
-            System.out.print("\t");
             if(me.getRelatedNode()!=null)
-                System.out.print(" relatedNode='"+me.getRelatedNode()+"'");
+                System.out.println("\trelatedNode='"+me.getRelatedNode()+"'");
             if(me.getAttrName()!=null)
-                System.out.print(" attrName='"+me.getAttrName()+"'");
-            System.out.print("\n");
+                System.out.println("\tattrName='"+me.getAttrName()+"'");
             if(me.getPrevValue()!=null)
-                System.out.println("\t prevValue='"+me.getPrevValue()+"'");
+                System.out.println("\tprevValue='"+me.getPrevValue()+"'");
             if(me.getNewValue()!=null)
-                System.out.println("\t newValue='"+me.getNewValue()+"'");
+                System.out.println("\tnewValue='"+me.getNewValue()+"'");
         }
     }
 }

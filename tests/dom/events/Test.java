@@ -78,7 +78,7 @@ public class Test
         Element root=addNoisyElement(doc,doc,0);
         Element e=null;
         int i;
-        
+
         // Individual nodes
         e=addNoisyElement(doc,root,0);
         Attr a=addNoisyAttr(doc,e,0);
@@ -86,11 +86,13 @@ public class Test
         NamedNodeMap nnm=e.getAttributes();
         nnm.removeNamedItem(a.getName());
         nnm.setNamedItem(a);
-        
+
         // InsertedInto/RemovedFrom tests.
         // ***** These do not currently cross the Attr/Element barrier.
         // DOM spec is pretty clear on that, but this may not be the intent.
-        System.out.println("\nAdd/remove a preconstructed tree; tests AddedToDocument\n");
+        System.out.println();
+        System.out.println("Add/remove a preconstructed tree; tests AddedToDocument");
+        System.out.println();
         sharedReporter.off();
         Element lateAdd=doc.createElement("lateAdd");
         reportAllMutations(lateAdd);
@@ -104,13 +106,19 @@ public class Test
         root.appendChild(lateAdd);
         root.removeChild(lateAdd);
 
-        System.out.println("\nReplace a preconstructed tree; tests AddedToDocument\n");
+        System.out.println();
+        System.out.println("Replace a preconstructed tree; tests AddedToDocument");
+        System.out.println();
 
         sharedReporter.off();
         Node e0=root.replaceChild(lateAdd,root.getFirstChild());
         sharedReporter.on();
         root.replaceChild(e0,lateAdd);
-        
+
+        sharedReporter.off();
+        Text t = addNoisyText(doc, root.getFirstChild(), "fo");
+        sharedReporter.on();
+        t.insertData(1, "o");
 
         System.out.println("Done");
     }
@@ -135,7 +143,15 @@ public class Test
         parent.setAttributeNode(a);
         return a;
     }
-    
+
+    Text addNoisyText(Document doc, Node parent, String data)
+    {
+        Text t = doc.createTextNode(data);
+        reportAllMutations(t);
+        parent.appendChild(t);
+        return t;
+    }
+
     void reportAllMutations(Node n)
     {
         String[] evtNames={
