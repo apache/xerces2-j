@@ -181,7 +181,7 @@ public class DecimalDV extends TypeValidator {
     
             intDigits = intEnd - actualIntStart;
             fracDigits = fracEnd - fracStart;
-            totalDigits = (intDigits == 0 ? 1 : intDigits) + fracDigits;
+            totalDigits = intDigits + fracDigits;
     
             if (intDigits > 0) {
                 ivalue = content.substring(actualIntStart, intEnd);
@@ -238,7 +238,7 @@ public class DecimalDV extends TypeValidator {
     
             intDigits = intEnd - actualIntStart;
             fracDigits = 0;
-            totalDigits = intDigits == 0 ? 1 : intDigits;
+            totalDigits = intDigits;
     
             if (intDigits > 0) {
                 ivalue = content.substring(actualIntStart, intEnd);
@@ -302,7 +302,8 @@ public class DecimalDV extends TypeValidator {
                 canonical = ivalue;
                 return;
             }
-            StringBuffer buffer = new StringBuffer(totalDigits+2);
+            // for -0.1, total digits is 1, so we need 3 extra spots
+            StringBuffer buffer = new StringBuffer(totalDigits+3);
             if (sign == -1)
                 buffer.append('-');
             if (intDigits != 0)
