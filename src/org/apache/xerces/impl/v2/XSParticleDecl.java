@@ -99,6 +99,7 @@ public class XSParticleDecl {
         // build fBuffering
         fBuffer.setLength(0);
         appendParticle(fBuffer);
+        fBuffer.append(" with minOccurs="+fMinOccurs +", maxOccurs="+fMaxOccurs);
         return fBuffer.toString();
     }
 

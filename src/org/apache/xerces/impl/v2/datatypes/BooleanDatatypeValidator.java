@@ -168,7 +168,8 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     private void checkContent( String content, boolean asBase )
     throws InvalidDatatypeValueException {
         // validate against parent type if any
-        if ( this.fBaseValidator != null ) {
+        // REVISIT: fast fix to avoid class cast exception
+        if ( this.fBaseValidator != null && !(fBaseValidator instanceof AnySimpleType)) {
             // validate content as a base type
                 ((BooleanDatatypeValidator)fBaseValidator).checkContent(content, true);
         }

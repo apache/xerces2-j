@@ -418,8 +418,21 @@ public class SchemaValidator
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws XNIException {
+        if (fSkipValidationDepth >= 0)
+            return;
+        boolean allWhiteSpace = true;
+        for (int i=text.offset; i< text.offset+text.length; i++) {
+                if (!XMLChar.isSpace(text.ch[i])) {
+                    allWhiteSpace = false;
+                    break;
+                }
+        }
+        
+        fBuffer.append(text.toString()); 
+        if (!allWhiteSpace) {
+            fSawCharacters = true;
+        }
 
-        handleCharacters(text);
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -740,23 +753,25 @@ public class SchemaValidator
     int[][] fCMStateStack = new int[INITIAL_STACK_SIZE][];
 
     /** Temporary string buffers. */
-    StringBuffer fBuffer;
+    final StringBuffer fBuffer = new StringBuffer();
 
-    /** stack to hold string for all nodes */
-    StringBuffer[] fBufferStack = new StringBuffer[INITIAL_STACK_SIZE];
+    /** Did we see non-whitespace character data? */
+    boolean fSawCharacters = false;
 
+    /** Stack to record if we saw character data outside of element content*/
+    boolean[] fStringContent = new boolean[INITIAL_STACK_SIZE];
     /**
      * This table has to be own by instance of XMLValidator and shared
      * among ID, IDREF and IDREFS.
      * REVISIT: Should replace with a lighter structure.
      */
-    Hashtable fTableOfIDs = new Hashtable();
-    Hashtable fTableOfIDRefs = new Hashtable();
+    final Hashtable fTableOfIDs = new Hashtable();
+    final Hashtable fTableOfIDRefs = new Hashtable();
 
     /**
      * temprory qname
      */
-    QName fTempQName = new QName();
+    final QName fTempQName = new QName();
     /**
      * temprory empty object, used to fill IDREF table
      */
@@ -823,7 +838,8 @@ public class SchemaValidator
         fCurrentType = null;
         fCurrentCM = null;
         fCurrCMState = null;
-        fBuffer = null;
+        fBuffer.setLength(0);
+        fSawCharacters=false;
         fSkipValidationDepth = -1;
         fElementDepth = -1;
         fChildCount = 0;
@@ -842,18 +858,23 @@ public class SchemaValidator
             int[] newArrayI = new int[newSize];
             System.arraycopy(fChildCountStack, 0, newArrayI, 0, newSize);
             fChildCountStack = newArrayI;
+            
             XSElementDecl[] newArrayE = new XSElementDecl[newSize];
             System.arraycopy(fElemDeclStack, 0, newArrayE, 0, newSize);
             fElemDeclStack = newArrayE;
+            
             XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
             System.arraycopy(fTypeStack, 0, newArrayT, 0, newSize);
             fTypeStack = newArrayT;
+            
             XSCMValidator[] newArrayC = new XSCMValidator[newSize];
             System.arraycopy(fCMStack, 0, newArrayC, 0, newSize);
             fCMStack = newArrayC;
-            StringBuffer[] newArrayB = new StringBuffer[newSize];
-            System.arraycopy(fBufferStack, 0, newArrayB, 0, newSize);
-            fBufferStack = newArrayB;
+            
+            boolean[] newArrayD = new boolean[newSize];
+            System.arraycopy(fStringContent, 0, newArrayD, 0, newSize);
+            fStringContent = newArrayD;
+
             int[][] newArrayIA = new int[newSize][];
             System.arraycopy(fCMStateStack, 0, newArrayIA, 0, newSize);
             fCMStateStack = newArrayIA;
@@ -903,7 +924,7 @@ public class SchemaValidator
             fNilStack[fElementDepth] = fNil;
             fTypeStack[fElementDepth] = fCurrentType;
             fCMStack[fElementDepth] = fCurrentCM;
-            fBufferStack[fElementDepth] = fBuffer;
+            fStringContent[fElementDepth] = fSawCharacters;
         }
 
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
@@ -1045,7 +1066,8 @@ public class SchemaValidator
             fCurrCMState = fCurrentCM.startContentModel();
 
         // and the buffer to hold the value of the element
-        fBuffer = new StringBuffer();
+        fBuffer.setLength(0);
+        fSawCharacters = false;
 
         // get information about xsi:nil
         String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
@@ -1084,7 +1106,7 @@ public class SchemaValidator
                 fCurrentType = fTypeStack[fElementDepth];
                 fCurrentCM = fCMStack[fElementDepth];
                 fCurrCMState = fCMStateStack[fElementDepth];
-                fBuffer = fBufferStack[fElementDepth];
+                fSawCharacters = fStringContent[fElementDepth];
             } else {
                 fElementDepth--;
             }
@@ -1120,16 +1142,11 @@ public class SchemaValidator
             fCurrentType = fTypeStack[fElementDepth];
             fCurrentCM = fCMStack[fElementDepth];
             fCurrCMState = fCMStateStack[fElementDepth];
-            fBuffer = fBufferStack[fElementDepth];
+            fSawCharacters = fStringContent[fElementDepth];
         }
-
+        
     } // handleEndElement(QName,boolean)*/
 
-    void handleCharacters(XMLString text) {
-        if (fSkipValidationDepth >= 0)
-            return;
-        fBuffer.append(text.toString());
-    } // handleCharacters(XMLString)
 
     void handleStartPrefix(String prefix, String uri) {
         // push namespace context if necessary
@@ -1547,9 +1564,9 @@ public class SchemaValidator
             // 2.3 If the {content type} is element-only, then the element information item has no character information item [children] other than those whose [character code] is defined as a white space in [XML 1.0 (Second Edition)].
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
                 // REVISIT: how to check whether there is any text content?
-                String content = XSAttributeChecker.normalize(textContent, SchemaSymbols.WS_COLLAPSE);
-                if (content.length() != 0)
+                if (fSawCharacters) {
                     reportSchemaError("cvc-complex-type.2.3", new Object[]{element.rawname});
+                }
             }
             // 2.4 If the {content type} is element-only or mixed, then the sequence of the element information item's element information item [children], if any, taken in order, is ·valid· with respect to the {content type}'s particle, as defined in Element Sequence Locally Valid (Particle) (§3.9.4).
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT ||
