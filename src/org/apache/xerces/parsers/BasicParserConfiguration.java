@@ -246,34 +246,33 @@ public abstract class BasicParserConfiguration
 
         // add default recognized features
         final String[] recognizedFeatures = {
-            VALIDATION,                 NAMESPACES, 
-            EXTERNAL_GENERAL_ENTITIES,  EXTERNAL_PARAMETER_ENTITIES,
+            VALIDATION,                 
+            NAMESPACES, 
+            EXTERNAL_GENERAL_ENTITIES,  
+            EXTERNAL_PARAMETER_ENTITIES,
         };
         addRecognizedFeatures(recognizedFeatures);
 
         // set state for default features
-        fFeatures.put(VALIDATION, Boolean.FALSE);
-        fFeatures.put(NAMESPACES, Boolean.TRUE);
-        fFeatures.put(EXTERNAL_GENERAL_ENTITIES, Boolean.TRUE);
-        fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
+        setFeature(VALIDATION, false);
+        setFeature(NAMESPACES, true);
+        setFeature(EXTERNAL_GENERAL_ENTITIES, true);
+        setFeature(EXTERNAL_PARAMETER_ENTITIES, true);
 
         // add default recognized properties
         final String[] recognizedProperties = {
-            XML_STRING,     SYMBOL_TABLE,
-            ERROR_HANDLER,  ENTITY_RESOLVER,
+            XML_STRING,     
+            SYMBOL_TABLE,
+            ERROR_HANDLER,  
+            ENTITY_RESOLVER,
         };
         addRecognizedProperties(recognizedProperties);
 
         if (symbolTable == null) {
-            if (fSymbolTable == null) {
-                fSymbolTable = new SymbolTable();
-                fProperties.put(SYMBOL_TABLE, fSymbolTable);
-            }
+            symbolTable = new SymbolTable();
         }
-        else {
-            fSymbolTable = symbolTable;
-            fProperties.put(SYMBOL_TABLE, fSymbolTable);
-        }
+        fSymbolTable = symbolTable;
+        setProperty(SYMBOL_TABLE, fSymbolTable);
 
     } // <init>(SymbolTable)
 
@@ -307,40 +306,73 @@ public abstract class BasicParserConfiguration
     //
 
     /**
-     * parse
+     * Parse an XML document.
+     * <p>
+     * The parser can use this method to instruct this configuration
+     * to begin parsing an XML document from any valid input source
+     * (a character stream, a byte stream, or a URI).
+     * <p>
+     * Parsers may not invoke this method while a parse is in progress.
+     * Once a parse is complete, the parser may then parse another XML
+     * document.
+     * <p>
+     * This method is synchronous: it will not return until parsing
+     * has ended.  If a client application wants to terminate 
+     * parsing early, it should throw an exception.
      *
-     * @param inputSource
+     * @param source The input source for the top-level of the
+     *               XML document.
      *
-     * @exception org.xml.sax.SAXException
-     * @exception java.io.IOException
+     * @exception XNIException Any XNI exception, possibly wrapping 
+     *                         another exception.
+     * @exception IOException  An IO exception from the parser, possibly
+     *                         from a byte stream or character stream
+     *                         supplied by the parser.
      */
     public abstract void parse(XMLInputSource inputSource) 
         throws XNIException, IOException;
 
+    /**
+     * Sets the document handler to receive information about the document.
+     * 
+     * @param documentHandler The document handler.
+     */
+    public void setDocumentHandler(XMLDocumentHandler documentHandler) {
+        fDocumentHandler = documentHandler;
+    } // setDocumentHandler(XMLDocumentHandler)
 
-    public void setDocumentHandler(XMLDocumentHandler handler) {
-        fDocumentHandler = handler;
-    }
-
+    /** Returns the registered document handler. */
     public XMLDocumentHandler getDocumentHandler() {
         return fDocumentHandler;
-    }
+    } // getDocumentHandler():XMLDocumentHandler
 
-    public void setDTDHandler(XMLDTDHandler handler) {
-        fDTDHandler = handler;
-    }
+    /**
+     * Sets the DTD handler.
+     * 
+     * @param dtdHandler The DTD handler.
+     */
+    public void setDTDHandler(XMLDTDHandler dtdHandler) {
+        fDTDHandler = dtdHandler;
+    } // setDTDHandler(XMLDTDHandler)
 
+    /** Returns the registered DTD handler. */
     public XMLDTDHandler getDTDHandler() {
         return fDTDHandler;
-    }
+    } // getDTDHandler():XMLDTDHandler
 
+    /**
+     * Sets the DTD content model handler.
+     * 
+     * @param handler The DTD content model handler.
+     */
     public void setDTDContentModelHandler(XMLDTDContentModelHandler handler) {
         fDTDContentModelHandler = handler;
-    }
+    } // setDTDContentModelHandler(XMLDTDContentModelHandler)
 
+    /** Returns the registered DTD content model handler. */
     public XMLDTDContentModelHandler getDTDContentModelHandler() {
         return fDTDContentModelHandler;
-    }
+    } // getDTDContentModelHandler():XMLDTDContentModelHandler
 
     /**
      * Sets the resolver used to resolve external entities. The EntityResolver
@@ -350,6 +382,7 @@ public abstract class BasicParserConfiguration
      *                 uninstall the currently installed resolver.
      */
     public void setEntityResolver(XMLEntityResolver resolver) {
+        // REVISIT: Should this be a property?
         fProperties.put(ENTITY_RESOLVER, resolver);
     } // setEntityResolver(XMLEntityResolver)
 
@@ -361,6 +394,7 @@ public abstract class BasicParserConfiguration
      * @see #setEntityResolver
      */
     public XMLEntityResolver getEntityResolver() {
+        // REVISIT: Should this be a property?
         return (XMLEntityResolver)fProperties.get(ENTITY_RESOLVER);
     } // getEntityResolver():XMLEntityResolver
 
@@ -383,6 +417,7 @@ public abstract class BasicParserConfiguration
      * @see #getErrorHandler
      */
     public void setErrorHandler(XMLErrorHandler errorHandler) {
+        // REVISIT: Should this be a property?
         fProperties.put(ERROR_HANDLER, errorHandler);
     } // setErrorHandler(XMLErrorHandler)
 
@@ -394,6 +429,7 @@ public abstract class BasicParserConfiguration
      * @see #setErrorHandler
      */
     public XMLErrorHandler getErrorHandler() {
+        // REVISIT: Should this be a property?
         return (XMLErrorHandler)fProperties.get(ERROR_HANDLER);
     } // getErrorHandler():XMLErrorHandler
 

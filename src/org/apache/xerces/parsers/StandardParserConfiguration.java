@@ -273,6 +273,7 @@ public class StandardParserConfiguration
                                        GrammarPool grammarPool) {
         this(symbolTable, grammarPool, null);
     } // <init>(SymbolTable,GrammarPool)
+
     /**
      * Constructs a parser configuration using the specified symbol table,
      * grammar pool, and parent settings.
