@@ -151,7 +151,9 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-
+        if (attributes == null) {
+            attributes = new NamedNodeMapImpl(this, null);
+        }
         return attributes;
 
     } // getAttributes():NamedNodeMap
@@ -171,7 +173,9 @@ public class ElementImpl
 
     	ElementImpl newnode = (ElementImpl) super.cloneNode(deep);
     	// Replicate NamedNodeMap rather than sharing it.
-    	newnode.attributes = attributes.cloneMap(newnode);
+        if (attributes != null) {
+            newnode.attributes = attributes.cloneMap(newnode);
+        }
     	return newnode;
 
     } // cloneNode(boolean):Node
@@ -183,7 +187,9 @@ public class ElementImpl
      */
     void setOwnerDocument(DocumentImpl doc) {
 	super.setOwnerDocument(doc);
-	attributes.setOwnerDocument(doc);
+        if (attributes != null) {
+            attributes.setOwnerDocument(doc);
+        }
     }
 
     //
@@ -204,7 +210,9 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-
+        if (attributes == null) {
+            return "";
+        }
         Attr attr = (Attr)(attributes.getNamedItem(name));
         return (attr == null) ? "" : attr.getValue();
 
@@ -223,7 +231,9 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-
+        if (attributes == null) {
+            return null;
+        }
         return (Attr)attributes.getNamedItem(name);
 
     } // getAttributeNode(String):Attr
@@ -330,7 +340,9 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-
+        if (attributes == null) {
+            return;
+        }
     	AttrImpl att = (AttrImpl) attributes.getNamedItem(name);
     	// Remove it (and let the NamedNodeMap recreate the default, if any)
     	if (att != null) {
@@ -370,6 +382,10 @@ public class ElementImpl
             synchronizeData();
         }
 
+        if (attributes == null) {
+            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+                                       "DOM008 Not found");
+        }
     	AttrImpl found = (AttrImpl) attributes.getNamedItem(oldAttr.getName());
 
     	// If it is in fact the right object, remove it (and let the
@@ -420,6 +436,10 @@ public class ElementImpl
     	AttrImpl newAttr = (AttrImpl) getAttributeNode(name);
         if (newAttr == null) {
             newAttr = (AttrImpl) getOwnerDocument().createAttribute(name);
+
+            if (attributes == null) {
+                attributes = new NamedNodeMapImpl(this, null);
+            }
             attributes.setNamedItem(newAttr);
         }
     	newAttr.setNodeValue(value);
@@ -459,8 +479,13 @@ public class ElementImpl
         }
 
     	AttrImpl na = (AttrImpl) newAttr;
-    	AttrImpl oldAttr = (AttrImpl) attributes.getNamedItem(newAttr.getName());
-
+    	AttrImpl oldAttr;
+        if (attributes == null) {
+            attributes = new NamedNodeMapImpl(this, null);
+            oldAttr = null;
+        } else {
+            oldAttr = (AttrImpl) attributes.getNamedItem(newAttr.getName());
+        }
     	// This will throw INUSE if necessary
     	attributes.setNamedItem(na);
 
@@ -491,7 +516,9 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-
+        if (attributes == null) {
+            return "";
+        }
         Attr attr = (Attr)(attributes.getNamedItemNS(namespaceURI, localName));
         return (attr == null) ? null : attr.getValue();
 
@@ -553,6 +580,10 @@ public class ElementImpl
         if (newAttr == null) {
             newAttr = (AttrImpl)
                 getOwnerDocument().createAttributeNS(namespaceURI, localName);
+
+            if (attributes == null) {
+                attributes = new NamedNodeMapImpl(this, null);
+            }
             attributes.setNamedItemNS(newAttr);
     	}
     	newAttr.setNodeValue(value);
@@ -585,8 +616,11 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-
-    	AttrImpl att = (AttrImpl) attributes.getNamedItemNS(namespaceURI, localName);
+        if (attributes == null) {
+            return;
+        }
+    	AttrImpl att =
+            (AttrImpl) attributes.getNamedItemNS(namespaceURI, localName);
     	// Remove it (and let the NamedNodeMap recreate the default, if any)
     	if (att != null) {
             attributes.removeNamedItemNS(namespaceURI, localName);
@@ -610,7 +644,9 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-
+        if (attributes == null) {
+            return null;
+        }
         return (Attr)attributes.getNamedItemNS( namespaceURI, localName);
 
     } // getAttributeNodeNS(String,String):Attr
@@ -661,8 +697,15 @@ public class ElementImpl
         }
 
     	AttrImpl na = (AttrImpl) newAttr;
-    	AttrImpl oldAttr = (AttrImpl) attributes.getNamedItemNS(na.getNamespaceURI(), na.getLocalName());
-
+    	AttrImpl oldAttr;
+        if (attributes == null) {
+            attributes = new NamedNodeMapImpl(this, null);
+            oldAttr = null;
+        } else {
+            oldAttr =
+                (AttrImpl) attributes.getNamedItemNS(na.getNamespaceURI(),
+                                                     na.getLocalName());
+        }
     	// This will throw INUSE if necessary
     	attributes.setNamedItem(na);
 
@@ -674,14 +717,14 @@ public class ElementImpl
      * Introduced in DOM Level 2. <p>
      */
     public boolean hasAttribute(String name) {
-        return getAttribute(name) != null;
+        return getAttributeNode(name) != null;
     }
 
     /**
      * Introduced in DOM Level 2. <p>
      */
     public boolean hasAttributeNS(String namespaceURI, String localName) {
-        return getAttributeNS(namespaceURI, localName) != null;
+        return getAttributeNodeNS(namespaceURI, localName) != null;
     }
 
     /**
@@ -715,7 +758,9 @@ public class ElementImpl
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
     	super.setReadOnly(readOnly,deep);
-    	attributes.setReadOnly(readOnly,true);
+        if (attributes != null) {
+            attributes.setReadOnly(readOnly,true);
+        }
     }
 
     //
@@ -750,7 +795,9 @@ public class ElementImpl
         }
 
         // create attributes
-    	attributes = new NamedNodeMapImpl(this, defaultAttrs);
+        if (defaultAttrs != null) {
+            attributes = new NamedNodeMapImpl(this, defaultAttrs);
+        }
 
     } // setupAttributes(DocumentImpl)
 
