@@ -62,7 +62,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Locale;
 import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.util.XMLErrorReporter;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLComponentManager;
 import org.xml.sax.EntityResolver;

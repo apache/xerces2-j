@@ -64,7 +64,7 @@ import java.util.Stack;
 
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLEntityScanner;
-import org.apache.xerces.util.XMLErrorReporter;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;

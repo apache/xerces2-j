@@ -6,6 +6,7 @@ TARGETS=\
         XMLDocumentScanner.class\
         XMLEntityManager.class\
         XMLEntityScanner.class\
+        XMLErrorReporter.class\
         XMLValidator.class
 
 DIRS = msg validation

@@ -67,7 +67,7 @@ import org.apache.xerces.xni.XMLDTDContentModelSource;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDSource;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLErrorReporter;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;

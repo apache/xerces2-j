@@ -5,7 +5,6 @@ TARGETS=\
         MessageFormatter.class\
         SymbolTable.class\
         XMLChar.class\
-        XMLErrorReporter.class\
         XMLStringBuffer.class
 
 DIRS =
