@@ -387,6 +387,7 @@ public abstract class XMLDocumentParser
 
         try {
             reset();
+            fEntityManager.startEntity(source);
             fScanner.scanDocument(true);
             fParseInProgress = false;
         } catch (SAXException ex) {
