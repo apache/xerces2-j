@@ -1100,7 +1100,7 @@ public class XMLDTDScanner
             do {
                 String token = fEntityScanner.scanNmtoken();
                 if (token == null) {
-                    reportFatalError("NMTOKEN_REQUIRED_IN_ENUMERATION",
+                    reportFatalError("MSG_NMTOKEN_REQUIRED_IN_ENUMERATION",
                                      new Object[]{elName, atName});
                 }
                 ensureEnumerationSize(fEnumerationCount + 1);
@@ -1658,7 +1658,7 @@ public class XMLDTDScanner
     {
         int quote = fEntityScanner.scanChar();
         if (quote != '\'' && quote != '"') {
-            reportFatalError("REVISIT: OpenQuoteMissingInDecl", 
+            reportFatalError("OpenQuoteMissingInDecl", 
                              null);
         }
         XMLString value = fString;
