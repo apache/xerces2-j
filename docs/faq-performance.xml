@@ -20,6 +20,11 @@
     instances. A pool of reusable parser instances might be a good idea 
     if you have multiple threads parsing at the same time.
    </p>
+   <p>
+    The parser configuration will affect the performance of the parser.
+    If you are interested in evaluating the parser performance with DTDs use     StandardParserConfiguration. 
+    For testing the performance for XML Schema evaluation use DTDXSParserConfiguration (Note: this is the default parser configuration).
+   </p>
   </a>
  </faq>
  <faq title='Parsing Documents Performance'>
@@ -69,11 +74,13 @@
   <q>XML Application Performance</q>
   <a>
    <ul>
-    <li>
-     Turn validation off if you don't need it. Validation is expensive.
-     Also, avoid using a DOCTYPE line in your XML document. The current
-     version of the parser will always read the DTD if the DOCTYPE line
-     is specified even when not validating.
+    <li>If you don't need validation (and infoset augmentation) of XML documents, don't include validators (DTD or XML Schema) in the pipeline. Including the validator components in the pipeline will result in a performance hit for your application: if a validator component is present in the pipeline, Xerces will try to validate and augment the infoset even if the validation feature is set to false.
+	If you are only interested in validating against DTDs don't include XML Schema validator in the pipeline, instead use StandardParserConfiguration.
+
+    </li>
+    <li> If you don't need validation, avoid using a DOCTYPE line in your XML document. 
+     The current version of the parser will always read the DTD if the DOCTYPE line
+     is specified even when validation feature is set to false.
     </li>
     <li>
      For large documents, avoid using DOM which uses a lot of memory.

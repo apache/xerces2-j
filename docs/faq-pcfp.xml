@@ -7,20 +7,19 @@
    <p>
     If a validator is included in the pipeline, assessment is
     done, whether the validation feature is set to true or false.
-    Currently, validation only enables the reporting of error
-    messages.  This behaviour may be revisited/changed in the future.
+    Currently, validation only enables the validation constraint error reporting. The validation feature does not control the infoset augmentation: if a validator is included in the pipeline the parser will augment the infoset according to the grammar specified for the instance document. This behaviour may be revisited/changed in the future.
    </p>
   </a>
  </faq>
  <faq title='Default Parser Configuration'>
-  <q>What vaidation behavior do I expect from the default parser configuration?</q>
+  <q>What validation behavior do I expect from the default parser configuration?</q>
   <a>
    <p>
     The default configuration includes both DTD validator and XML
     schema validator, so it's capable of validating an instance
     against both kinds of grammars.  But this could bring some
     performance hit for those applications that only process XML
-    documents with DTD.  If you cares about performance, and only
+    documents with DTD.  If you care about performance, and only
     use DTD, please use DTD configuration instead.
    </p>
   </a>
