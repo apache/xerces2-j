@@ -304,7 +304,7 @@ public class XMLDocumentFragmentScannerImpl
      */
     public void setInputSource(XMLInputSource inputSource) throws IOException {
         fEntityManager.setEntityHandler(this);
-        fEntityManager.startEntity("$fragment$", inputSource, false);
+        fEntityManager.startEntity("$fragment$", inputSource, false, true);
         fDocumentSystemId = fEntityManager.expandSystemId(inputSource.getSystemId());
     } // setInputSource(XMLInputSource)
 

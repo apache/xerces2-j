@@ -656,7 +656,7 @@ public class XMLEntityManager
         }
 
         // start the entity
-        startEntity(entityName, xmlInputSource, literal);
+        startEntity(entityName, xmlInputSource, literal, external);
 
     } // startEntity(String,boolean)
 
@@ -672,7 +672,7 @@ public class XMLEntityManager
     public void startDocumentEntity(XMLInputSource xmlInputSource)
         throws IOException, XNIException {
         final String entityName = fSymbolTable.addSymbol("[xml]");
-        startEntity(entityName, xmlInputSource, false);
+        startEntity(entityName, xmlInputSource, false, true);
     } // startDocumentEntity(XMLInputSource)
 
     /**
@@ -687,7 +687,7 @@ public class XMLEntityManager
     public void startDTDEntity(XMLInputSource xmlInputSource)
         throws IOException, XNIException {
         final String entityName = fSymbolTable.addSymbol("[dtd]");
-        startEntity(entityName, xmlInputSource, false);
+        startEntity(entityName, xmlInputSource, false, true);
     } // startDTDEntity(XMLInputSource)
 
     /**
@@ -700,13 +700,14 @@ public class XMLEntityManager
      * @param xmlInputSource The input source of the entity.
      * @param literal        True if this entity is started within a
      *                       literal value.
+     * @param isExternal    whether this entity should be treated as an internal or external entity.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown by entity handler to signal an error.
      */
     public void startEntity(String name,
                             XMLInputSource xmlInputSource,
-                            boolean literal)
+                            boolean literal, boolean isExternal)
         throws IOException, XNIException {
         // get information
 
@@ -731,7 +732,7 @@ public class XMLEntityManager
             // wrap this stream in RewindableInputStream
             stream = new RewindableInputStream(stream);
 
-            // perform auto-detect of encoding
+            // perform auto-detect of encoding if necessary
             if (encoding == null) {
                 // read first four bytes and determine encoding
                 final byte[] b4 = new byte[4];
@@ -799,7 +800,7 @@ public class XMLEntityManager
         // create entity
         fCurrentEntity = new ScannedEntity(name, 
                 new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandedSystemId),
-                stream, reader, encoding, literal, false);
+                stream, reader, encoding, literal, false, isExternal);
 
         // call handler
         if (fEntityHandler != null) {
@@ -1675,6 +1676,9 @@ public class XMLEntityManager
         /** True if in a literal.  */
         public boolean literal;
 
+        // whether this is an external or internal scanned entity
+        public boolean isExternal;
+
         // buffer
 
         /** Character buffer. */
@@ -1697,7 +1701,7 @@ public class XMLEntityManager
         public ScannedEntity(String name,
                              XMLResourceIdentifier entityLocation,
                              InputStream stream, Reader reader,
-                             String encoding, boolean literal, boolean mayReadChunks) {
+                             String encoding, boolean literal, boolean mayReadChunks, boolean isExternal) {
             super(name);
             this.entityLocation = entityLocation;
             this.stream = stream;
@@ -1705,7 +1709,8 @@ public class XMLEntityManager
             this.encoding = encoding;
             this.literal = literal;
             this.mayReadChunks = mayReadChunks;
-        } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean)
+            this.isExternal = isExternal;
+        } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean, boolean)
 
         //
         // Entity methods
@@ -1713,7 +1718,7 @@ public class XMLEntityManager
 
         /** Returns true if this is an external entity. */
         public final boolean isExternal() {
-            return entityLocation != null && entityLocation.getLiteralSystemId() != null;
+            return isExternal;
         } // isExternal():boolean
 
         /** Returns true if this is an unparsed entity. */
