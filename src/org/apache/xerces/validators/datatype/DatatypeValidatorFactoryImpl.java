@@ -74,7 +74,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     private static boolean fDebug = false;
     private static DatatypeValidatorFactoryImpl _instance = new DatatypeValidatorFactoryImpl();
-    private Hashtable fRegistry = new Hashtable();
+    private static Hashtable fRegistry = new Hashtable();
 
     private DatatypeValidatorFactoryImpl() {
         initializeRegistry();
@@ -250,6 +250,11 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         } catch ( InvalidDatatypeFacetException ex ){
             ex.printStackTrace();
         }
+    }
+
+    public void resetRegistry(){
+        fRegistry.clear();
+        initializeRegistry();
     }
 
     public DatatypeValidator createDatatypeValidator(String typeName, 
