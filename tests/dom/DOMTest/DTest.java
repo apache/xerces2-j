@@ -59,6 +59,10 @@ package dom.DOMTest;
 
 import org.w3c.dom.*;
 import java.lang.reflect.*;
+import java.io.StringWriter;
+import java.io.PrintWriter;
+import dom.DOMMemTest.Assertion;
+
 /**
  * This class tests methods for XML DOM implementation
  * version 2.0 10/12/98
@@ -225,24 +229,24 @@ public void docBuilder(org.w3c.dom.Document document, String name)
 //************************************************* ERROR TESTS
 	DTest tests = new DTest();
 
-	OK &= tests.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{docBody}, DOMException.HIERARCHY_REQUEST_ERR ); 
-	OK &= tests.DOMExceptionsTest(docNode3, "appendChild", new Class[]{Node.class}, new Object[]{docNode4}, DOMException.HIERARCHY_REQUEST_ERR ); 
-	OK &= tests.DOMExceptionsTest(doc, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docEntity, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR ); 
-	OK &= tests.DOMExceptionsTest(doc, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docCDATASection, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR ); 
+	OK &= Assertion.assert(tests.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{docBody}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docNode3, "appendChild", new Class[]{Node.class}, new Object[]{docNode4}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.assert(tests.DOMExceptionsTest(doc, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docEntity, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.assert(tests.DOMExceptionsTest(doc, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docCDATASection, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
 
-	OK &= tests.DOMExceptionsTest(docFirstElement, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );	
-	OK &= tests.DOMExceptionsTest(docReferenceEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(doc, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docDocType, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docDocFragment, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docNotation, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docReferenceEntity, "appendChild", new Class[]{Node.class}, new Object[]{entityReferenceText2 }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docFirstElement, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));	
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docReferenceEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(doc, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docDocType, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docDocFragment, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docNotation, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docReferenceEntity, "appendChild", new Class[]{Node.class}, new Object[]{entityReferenceText2 }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
 
 
-	OK &= tests.DOMExceptionsTest(docBodyLevel32, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docBody }, DOMException.NOT_FOUND_ERR );
-	OK &= tests.DOMExceptionsTest(docBodyLevel32, "removeChild", new Class[]{Node.class}, new Object[]{docFirstElement}, DOMException.NOT_FOUND_ERR );
-	OK &= tests.DOMExceptionsTest(docBodyLevel32, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docFirstElement }, DOMException.NOT_FOUND_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docBody }, DOMException.NOT_FOUND_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "removeChild", new Class[]{Node.class}, new Object[]{docFirstElement}, DOMException.NOT_FOUND_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docFirstElement }, DOMException.NOT_FOUND_ERR ));
 
 
 //!! Throws a NOT_FOUND_ERR	********
@@ -442,9 +446,8 @@ public void findTestNodes(Node node) {
 	}// End of switch
 	
 
-
+}
 	
-}//End of class
 /**
  * 
  * version 2.0 10/12/98
@@ -590,7 +593,7 @@ public void testAttr(org.w3c.dom.Document document)
 	boolean T = true;
 	boolean F = false;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testAttr's outputs:\n");
+// For debugging*****	println("\n          testAttr's outputs:\n");
 
 	Attr testAttribute = document.createAttribute("testAttribute");
 	testAttribute.setValue("testAttribute's value");
@@ -676,10 +679,10 @@ public void testAttr(org.w3c.dom.Document document)
 	// 	Element element = (Element)doc.getLastChild().getLastChild();
 	// 	element.setAttributeNode(testAttribute );// Tests setNamedItem which generates error through justSetNamedItem.
 	
-// For debugging*****		System.out.println("All Attr method calls worked correctly.");
+// For debugging*****		println("All Attr method calls worked correctly.");
 	if (! OK)
 		System.out.println("\n*****The Attr method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests CDATASection methods for the XML DOM implementation
@@ -694,7 +697,7 @@ public void testCDATASection(org.w3c.dom.Document document)
 	Node node, node2;
 	boolean T = true;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testCDATASection's outputs:\n");
+// For debugging*****	println("\n          testCDATASection's outputs:\n");
 	node = document.getDocumentElement().getElementsByTagName("dBodyLevel23").item(0).getFirstChild(); // node gets CDATASection node
 
 	node2 = node.cloneNode(T);//*****?
@@ -709,11 +712,11 @@ public void testCDATASection(org.w3c.dom.Document document)
 	}
 	// Deep clone test comparison is in testNode & testDocument
 	
-// For debugging*****	System.out.println("All CDATASection method calls worked correctly.");
+// For debugging*****	println("All CDATASection method calls worked correctly.");
 		
 	if (! OK)
 		System.out.println("\n*****The CDATASection method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests CharacterData methods for the XML DOM implementation
@@ -727,7 +730,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 	CharacterData charData;
 	String compareData, newData, resetData;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testCharacterData's outputs:\n");
+// For debugging*****	println("\n          testCharacterData's outputs:\n");
 	charData = (CharacterData) document.getDocumentElement().getElementsByTagName("dBodyLevel31").item(0).getFirstChild(); // charData gets textNode11
 	compareData = "dBodyLevel31'sChildTextNode11";
 	if (!compareData.equals(charData.getData()))
@@ -737,7 +740,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 	}	
 	
 	resetData = charData.getData();
-	//  System.out.println("This node's original data is: " + charData.getData());
+	//  println("This node's original data is: " + charData.getData());
 
 	newData = " This is new data for this node";
 	compareData = charData.getData() + newData;
@@ -747,7 +750,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'appendData' failed to work properly!");
 		OK = false;
 	}
-	//	System.out.println("This node's appended data is: " + charData.getData());
+	//	println("This node's appended data is: " + charData.getData());
 
 	compareData = "dBodyLevel";
 	charData.deleteData(10, 100);
@@ -756,7 +759,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'deleteData' failed to work properly!");
 		OK = false;
 	}
-	//  System.out.println("This node's partially deleted data is: " + charData.getData());
+	//  println("This node's partially deleted data is: " + charData.getData());
 
 	int length = 10;
 	if (!(length == charData.getLength()))
@@ -764,7 +767,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'getLength' failed to work properly!");
 		OK = false;
 	}
-	//  System.out.println("This node's data length is: " + charData.getLength());
+	//  println("This node's data length is: " + charData.getLength());
 
 	compareData = "dBody' This is data inserted into this node'Level";
 	charData.insertData(5, "' This is data inserted into this node'");
@@ -773,7 +776,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'insertData' failed to work properly!");
 		OK = false;
 	}
-	//	System.out.println("This node's updated with insert data is: " + charData.getData());
+	//	println("This node's updated with insert data is: " + charData.getData());
 
 	compareData = "dBody' This is ' replacement data'ted into this node'Level";
 	charData.replaceData(15, 10, "' replacement data'");
@@ -782,7 +785,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'replaceData' failed to work properly!");
 		OK = false;
 	}
-	//	System.out.println("This node's updated with replacement data is: " +charData.getData());
+	//	println("This node's updated with replacement data is: " +charData.getData());
 
 	compareData = "New data A123456789B123456789C123456789D123456789E123456789";
 	charData.setData("New data A123456789B123456789C123456789D123456789E123456789");
@@ -791,7 +794,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'setData' failed to work properly!");
 		OK = false;
 	}
-	//	System.out.println("This node's new data via setData: " + charData.getData());
+	//	println("This node's new data via setData: " + charData.getData());
 
 	compareData = "123456789D123456789E123456789";
 	if (!compareData.equals(charData.substringData(30, 30)))
@@ -799,7 +802,7 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'substringData' failed to work properly!");
 		OK = false;
 	}
-	//	System.out.println("Using subString 30,30 you get:" + charData.substringData(30,30));
+	//	println("Using subString 30,30 you get:" + charData.substringData(30,30));
 
 	compareData = "New data A123456789B12345";
 	if (!compareData.equals(charData.substringData(0, 25)))
@@ -807,59 +810,59 @@ public void testCharacterData(org.w3c.dom.Document document)
 		System.out.println("Warning!!! CharacterData's 'substringData' failed to work properly!");
 		OK = false;
 	}
-	//	System.out.println("Using subString 0,25 you get:" + charData.substringData(0,25));
+	//	println("Using subString 0,25 you get:" + charData.substringData(0,25));
 
 //************************************************* ERROR TESTS
 	DTest tests = new DTest();
 
 //!! Throws INDEX_SIZE_ERR ********************
-	OK &= tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
-			new Object[]{new Integer(-1),new Integer(5) }, DOMException.INDEX_SIZE_ERR );
-	OK &= tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
-			new Object[]{new Integer(2),new Integer(-1) }, DOMException.INDEX_SIZE_ERR );
-	OK &= tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
-			new Object[]{new Integer(100),new Integer(5) }, DOMException.INDEX_SIZE_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
+			new Object[]{new Integer(-1),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
+			new Object[]{new Integer(2),new Integer(-1) }, DOMException.INDEX_SIZE_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
+			new Object[]{new Integer(100),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
 	
-	OK &= tests.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
-			new Object[]{new Integer(-1),"Stuff inserted" }, DOMException.INDEX_SIZE_ERR );
-	OK &= tests.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
-			new Object[]{new Integer(100),"Stuff inserted" }, DOMException.INDEX_SIZE_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
+			new Object[]{new Integer(-1),"Stuff inserted" }, DOMException.INDEX_SIZE_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
+			new Object[]{new Integer(100),"Stuff inserted" }, DOMException.INDEX_SIZE_ERR ));
 	
-	OK &= tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
-			new Object[]{new Integer(-1),new Integer(5),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR );
-	OK &= tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
-			new Object[]{new Integer(100),new Integer(5),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR );
-	OK &= tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
-			new Object[]{new Integer(2),new Integer(-1),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
+			new Object[]{new Integer(-1),new Integer(5),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
+			new Object[]{new Integer(100),new Integer(5),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
+			new Object[]{new Integer(2),new Integer(-1),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR ));
 	
-	OK &= tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
-			new Object[]{new Integer(-1),new Integer(5) }, DOMException.INDEX_SIZE_ERR );
-	OK &= tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
-			new Object[]{new Integer(100),new Integer(5) }, DOMException.INDEX_SIZE_ERR );
-	OK &= tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
-			new Object[]{new Integer(2),new Integer(-1) }, DOMException.INDEX_SIZE_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
+			new Object[]{new Integer(-1),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
+			new Object[]{new Integer(100),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
+			new Object[]{new Integer(2),new Integer(-1) }, DOMException.INDEX_SIZE_ERR ));
 	
 
 //!! Throws NO_MODIFICATION_ALLOWED_ERR ******** 
 	Node node = document.getDocumentElement().getElementsByTagName("dBodyLevel24").item(0).getFirstChild().getChildNodes().item(0); // node gets ourEntityReference node's child text
 
-	OK &= tests.DOMExceptionsTest(node, "appendData", new Class[]{String.class}, 
-			new Object[]{"new data" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(node, "deleteData", new Class[]{int.class, int.class}, 
-			new Object[]{new Integer(5),new Integer(10) }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(node, "insertData", new Class[]{int.class, String.class}, 
-			new Object[]{new Integer(5),"Stuff inserted" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(node, "replaceData", new Class[]{int.class, int.class, String.class}, 
-			new Object[]{new Integer(5),new Integer(10),"Replacementstuff" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(node, "setData", new Class[]{String.class}, 
-			new Object[]{"New setdata stuff"}, DOMException.NO_MODIFICATION_ALLOWED_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(node, "appendData", new Class[]{String.class}, 
+			new Object[]{"new data" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(node, "deleteData", new Class[]{int.class, int.class}, 
+			new Object[]{new Integer(5),new Integer(10) }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(node, "insertData", new Class[]{int.class, String.class}, 
+			new Object[]{new Integer(5),"Stuff inserted" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(node, "replaceData", new Class[]{int.class, int.class, String.class}, 
+			new Object[]{new Integer(5),new Integer(10),"Replacementstuff" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(node, "setData", new Class[]{String.class}, 
+			new Object[]{"New setdata stuff"}, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
 	
 		
-// For debugging*****		System.out.println("All CharacterData method calls worked correctly.");
+// For debugging*****		println("All CharacterData method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The CharacterData method calls listed above failed, all others worked correctly.*****");
 	charData.setData(resetData); // reset node to original data
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests ChildNodeList methods for the XML DOM implementation
@@ -873,7 +876,7 @@ public void testChildNodeList(org.w3c.dom.Document document)
 	
 	Node node, node2;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testChildNodeList's outputs:\n");
+// For debugging*****	println("\n          testChildNodeList's outputs:\n");
 	node = document.getDocumentElement().getLastChild(); // node gets doc's testBody element
 	
 	if (!(node.getChildNodes().getLength()== 4))
@@ -882,10 +885,10 @@ public void testChildNodeList(org.w3c.dom.Document document)
 	if (! node2.getNodeName().equals("dBodyLevel23"))
 		OK = false;
 	
-// For debugging*****		System.out.println("All ChildNodeList method calls worked correctly.");
+// For debugging*****		println("All ChildNodeList method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The ChildNodeList method calls listed above failed, all others worked correctly.*****");		
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests Comment methods for the XML DOM implementation
@@ -899,7 +902,7 @@ public void testComment(org.w3c.dom.Document document)
 	Node node, node2;
 	boolean T = true;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testComment's outputs:\n");
+// For debugging*****	println("\n          testComment's outputs:\n");
 	node = document.getDocumentElement().getElementsByTagName("dBodyLevel31").item(0).getFirstChild(); // node gets textNode11
 	node2 = node.cloneNode(T);
 	// Check nodes for equality, both their name and value or lack thereof
@@ -907,14 +910,14 @@ public void testComment(org.w3c.dom.Document document)
 	      (node.getNodeValue() != null && node2.getNodeValue() != null)     // Checks to make sure each node has a value node
 	    ?  node.getNodeValue().equals(node2.getNodeValue()) 		// If both have value nodes test those value nodes for equality
 	    : (node.getNodeValue() == null && node2.getNodeValue() == null)))	// If one node doesn't have a value node make sure both don't
-		//System.out.println("'cloneNode' did not clone the Comment node correctly");
+		//println("'cloneNode' did not clone the Comment node correctly");
 		OK = false;
 	// Deep clone test comparison is in testNode & testDocument
 	if (OK)
-// For debugging*****		System.out.println("All Comment method calls worked correctly.");
+// For debugging*****		println("All Comment method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The Comment method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests DeepNodeList methods for the XML DOM implementation
@@ -928,7 +931,7 @@ public void testDeepNodeList(org.w3c.dom.Document document)
 	
 	Node node, node2;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testDeepNodeList's outputs:\n");
+// For debugging*****	println("\n          testDeepNodeList's outputs:\n");
 	node = document.getLastChild().getLastChild(); // node gets docBody element
 	if (!(8 == ((Element) node).getElementsByTagName("*").getLength()))
 		{
@@ -949,10 +952,10 @@ public void testDeepNodeList(org.w3c.dom.Document document)
 		}
 		
 	
-// For debugging*****		System.out.println("All DeepNodeList method calls worked correctly.");
+// For debugging*****		println("All DeepNodeList method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The DeepNodeList method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests Document methods for the XML DOM implementation
@@ -974,7 +977,7 @@ public void testDocument(org.w3c.dom.Document document)
 	String[] newElementNames = {"dFirstElement", "dTestBody", "dBodyLevel22","dBodyLevel33","dBodyLevel34","dBodyLevel23"};
 	boolean result;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testDocument's outputs:\n ");
+// For debugging*****	println("\n          testDocument's outputs:\n ");
 	
 	DocumentType checkDocType =  make.createDocumentType(document,"testDocument1");
 	DocumentType docType = document.getDoctype();
@@ -1040,7 +1043,7 @@ public void testDocument(org.w3c.dom.Document document)
 	docElements.item(1).insertBefore(docFragment, null); //Reattaches removed branch to restore tree to the original
 	docElements.item(1).insertBefore(docFragment2, docElements.item(2)); //Reattaches removed branch to restore tree to the original
 
-	//	System.out.println(docElements.item(2).getNodeName());
+	//	println(docElements.item(2).getNodeName());
 
 	docSize = docElements.getLength();
 	for (i = 0; i < docSize; i++)
@@ -1061,7 +1064,7 @@ public void testDocument(org.w3c.dom.Document document)
 //	tests.docBuilder(z, "z");
 
 //!! Throws WRONG_DOCUMENT_ERR **********
-//	OK &= tests.DOMExceptionsTest(z, "appendChild", new Class[]{Node.class}, new Object[]{doc.createComment("Test doc d comment")}, DOMException.HIERARCHY_REQUEST_ERR ); 
+//	OK &= Assertion.assert(tests.DOMExceptionsTest(z, "appendChild", new Class[]{Node.class}, new Object[]{doc.createComment("Test doc d comment")}, DOMException.HIERARCHY_REQUEST_ERR )); 
 		
 	//	z.appendChild(d.createComment("Test doc d comment"));// Tries to append z document with document d comment
 	//	d.getDocumentElement().appendChild(z.createElement("newZdocElement"));// Tries to append d document with document z Element
@@ -1082,10 +1085,10 @@ public void testDocument(org.w3c.dom.Document document)
 	// Deep clone test comparison is also in testNode
 	
 	
-// For debugging*****		System.out.println("All Document method calls worked correctly.");
+// For debugging*****		println("All Document method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The Document method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests DocumentFragment methods for the XML DOM implementation
@@ -1100,15 +1103,15 @@ public void testDocument(org.w3c.dom.Document document)
 public void testDocumentFragment(org.w3c.dom.Document document)
 {
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testDocumentFragment's outputs:\n");
+// For debugging*****	println("\n          testDocumentFragment's outputs:\n");
 	DocumentFragment testDocFragment = document.createDocumentFragment();
 		
 	//	testDocFragment.setNodeValue("This is a document fragment!");//!! Throws a NO_MODIFICATION_ALLOWED_ERR ********
 	
-// For debugging*****		System.out.println("All DocumentFragment method calls worked correctly.");
+// For debugging*****		println("All DocumentFragment method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The DocumentFragment method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests DocumentType methods for the XML DOM implementation
@@ -1125,7 +1128,7 @@ public void testDocumentType(org.w3c.dom.Document document)
 	Node node, node2;
 	String compare;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testDocumentType's outputs:\n");
+// For debugging*****	println("\n          testDocumentType's outputs:\n");
 	DocumentType newDocumentType =  test.createDocumentType(document, "TestDocument");
 	node = document.getFirstChild(); // node gets doc's docType node
 	node2 = node.cloneNode(true);
@@ -1164,10 +1167,10 @@ public void testDocumentType(org.w3c.dom.Document document)
 	document.insertBefore(holdDocType, document.getFirstChild()); //Reattaches removed branch to restore tree to the original
 
 	
-// For debugging*****		System.out.println("All DocumentType method calls worked correctly.");
+// For debugging*****		println("All DocumentType method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The DocumentType method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * @author Philip W. Davis
@@ -1179,24 +1182,24 @@ public void testDOMerrors(Document document) {
 
 	DTest tests = new DTest();
 
-	OK &= tests.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{testElementNode}, DOMException.HIERARCHY_REQUEST_ERR ); 
-	OK &= tests.DOMExceptionsTest(testTextNode, "appendChild", new Class[]{Node.class}, new Object[]{testTextNode}, DOMException.HIERARCHY_REQUEST_ERR ); 
-//	OK &= tests.DOMExceptionsTest(document, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{document.getElementsByTagName("docEntity").item(0), document.getElementsByTagName("docFirstElement").item(0)}, DOMException.HIERARCHY_REQUEST_ERR ); 
-//	OK &= tests.DOMExceptionsTest(document, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{document.getElementsByTagName("docCDATASection").item(0), document.getElementsByTagName("docFirstElement").item(0)}, DOMException.HIERARCHY_REQUEST_ERR ); 
+	OK &= Assertion.assert(tests.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{testElementNode}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.assert(tests.DOMExceptionsTest(testTextNode, "appendChild", new Class[]{Node.class}, new Object[]{testTextNode}, DOMException.HIERARCHY_REQUEST_ERR )); 
+//	OK &= Assertion.assert(tests.DOMExceptionsTest(document, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{document.getElementsByTagName("docEntity").item(0), document.getElementsByTagName("docFirstElement").item(0)}, DOMException.HIERARCHY_REQUEST_ERR )); 
+//	OK &= Assertion.assert(tests.DOMExceptionsTest(document, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{document.getElementsByTagName("docCDATASection").item(0), document.getElementsByTagName("docFirstElement").item(0)}, DOMException.HIERARCHY_REQUEST_ERR )); 
 
-//	OK &= tests.DOMExceptionsTest(document.getElementsByTagName("docFirstElement").item(0), "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );	
-/*	OK &= tests.DOMExceptionsTest(docReferenceEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(document, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docDocType, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docDocFragment, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docNotation, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
-	OK &= tests.DOMExceptionsTest(docReferenceEntity, "appendChild", new Class[]{Node.class}, new Object[]{entityReferenceText2 }, DOMException.NO_MODIFICATION_ALLOWED_ERR );
+//	OK &= Assertion.assert(tests.DOMExceptionsTest(document.getElementsByTagName("docFirstElement").item(0), "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));	
+/*	OK &= Assertion.assert(tests.DOMExceptionsTest(docReferenceEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(document, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docDocType, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docDocFragment, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docNotation, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docReferenceEntity, "appendChild", new Class[]{Node.class}, new Object[]{entityReferenceText2 }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
 
 
-	OK &= tests.DOMExceptionsTest(docBodyLevel32, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docBody }, DOMException.NOT_FOUND_ERR );
-	OK &= tests.DOMExceptionsTest(docBodyLevel32, "removeChild", new Class[]{Node.class}, new Object[]{docFirstElement}, DOMException.NOT_FOUND_ERR );
-	OK &= tests.DOMExceptionsTest(docBodyLevel32, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docFirstElement }, DOMException.NOT_FOUND_ERR );
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docBody }, DOMException.NOT_FOUND_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "removeChild", new Class[]{Node.class}, new Object[]{docFirstElement}, DOMException.NOT_FOUND_ERR ));
+	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docFirstElement }, DOMException.NOT_FOUND_ERR ));
 */
 
 //!! Throws a NOT_FOUND_ERR	********
@@ -1229,7 +1232,7 @@ public void testDOMImplementation(org.w3c.dom.Document document)
 	DOMImplementation implementation;
 	boolean result = false;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testDOMImplementation's outputs:\n");
+// For debugging*****	println("\n          testDOMImplementation's outputs:\n");
 	implementation = document.getImplementation(); //Uses getDOMImplementation to obtain implementation	
 
 	result = implementation.hasFeature("XML", "1.0");
@@ -1247,10 +1250,10 @@ public void testDOMImplementation(org.w3c.dom.Document document)
 	}
 	
 	
-// For debugging*****		System.out.println("All DOMImplementation method calls worked correctly.");
+// For debugging*****		println("All DOMImplementation method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The DOMImplementation method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests Element methods for the XML DOM implementation
@@ -1271,7 +1274,7 @@ public void testElement(org.w3c.dom.Document document)
 	String[] textCompare = {"dBodyLevel31'sChildTextNode11", "dBodyLevel31'sChildTextNode12", "dBodyLevel31'sChildTextNode13"};
 	NamedNodeMap nodeMap;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testElement's outputs:\n");
+// For debugging*****	println("\n          testElement's outputs:\n");
 	node = document.getDocumentElement(); // node gets doc's firstElement
 	node2 = node.cloneNode(true);
 	// Check nodes for equality, both their name and value or lack thereof
@@ -1317,7 +1320,7 @@ public void testElement(org.w3c.dom.Document document)
 			OK = false;
 			break;
 		}
-	//	System.out.println("firstElement's attribute number " + k + " : " + n.getNodeName());
+	//	println("firstElement's attribute number " + k + " : " + n.getNodeName());
 	}
 	NodeList docElements = document.getElementsByTagName("*");
 	int docSize = docElements.getLength();
@@ -1332,7 +1335,7 @@ public void testElement(org.w3c.dom.Document document)
 			OK = false;
 			break;
 		}		
-	//	System.out.println("docElement's number " + i + " is: " + n.getNodeName());
+	//	println("docElement's number " + i + " is: " + n.getNodeName());
 	}
 	element = (Element) document.getElementsByTagName("dBodyLevel21").item(0); // element gets Element test BodyLevel21 
 	element2 = (Element) document.getElementsByTagName("dBodyLevel31").item(0); // element2 gets Element test BodyLevel31 
@@ -1349,7 +1352,7 @@ public void testElement(org.w3c.dom.Document document)
 			OK = false;
 			break;
 		}
-	//	System.out.println("Element testBodyLevel31's child text node " + j + " is: " + n.getNodeValue());
+	//	println("Element testBodyLevel31's child text node " + j + " is: " + n.getNodeValue());
 	}
 	element = document.getDocumentElement(); // element gets doc's firstElement
 	element.normalize();		// Concatenates all adjacent text nodes in this element's subtree
@@ -1368,10 +1371,10 @@ public void testElement(org.w3c.dom.Document document)
 
 	//	doc.getLastChild().setNodeValue("This shouldn't work");//!! Throws a NO_MODIFICATION_ALLOWED_ERR***
 	
-// For debugging*****		System.out.println("All Element method calls worked correctly.");
+// For debugging*****		println("All Element method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The Element method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests Entity methods for the XML DOM implementation
@@ -1386,7 +1389,7 @@ public void testEntity(org.w3c.dom.Document document)
 	Node node, node2;
 	boolean OK = true;
 	String compare;
-// For debugging*****	System.out.println("\n          testEntity's outputs:\n");
+// For debugging*****	println("\n          testEntity's outputs:\n");
 	entity = (Entity) document.getDoctype().getEntities().getNamedItem("ourEntityNode");
 	node = entity;
 	node2 = entity.cloneNode(true);
@@ -1424,10 +1427,10 @@ public void testEntity(org.w3c.dom.Document document)
 	}		
 	//	entity.setNodeValue("This shouldn't work");//!! Throws a NO_MODIFICATION_ALLOWED_ERR ********
 	
-// For debugging*****		System.out.println("All Entity method calls worked correctly.");
+// For debugging*****		println("All Entity method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The Entity method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests EntityReference methods for the XML DOM implementation
@@ -1441,7 +1444,7 @@ public void testEntityReference(org.w3c.dom.Document document)
 	EntityReference entityReference;
 	Node node, node2;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testEntityReference's outputs:\n");
+// For debugging*****	println("\n          testEntityReference's outputs:\n");
 	entityReference = (EntityReference) document.getLastChild().getLastChild().getLastChild().getFirstChild();
 	node = entityReference;
 	node2 = node.cloneNode(true);
@@ -1458,10 +1461,10 @@ public void testEntityReference(org.w3c.dom.Document document)
 
 	//	entityReference.setNodeValue("This shouldn't work");//!! Throws a NO_MODIFICATION_ALLOWED_ERR ********
 	
-// For debugging*****		System.out.println("All EntityReference method calls worked correctly.");
+// For debugging*****		println("All EntityReference method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The EntityReference method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests Node methods for the XML DOM implementation
@@ -1479,13 +1482,13 @@ public void testNode(org.w3c.dom.Document document)
 	Node node, node2;
 	boolean result;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testNode's outputs:\n");
+// For debugging*****	println("\n          testNode's outputs:\n");
 	node = document.getDocumentElement();
 	node2 = node.cloneNode(true);
 	result = treeCompare(node, node2); // Deep clone test of cloneNode
 	if (result)
 	{
-		//System.out.println("'cloneNode' successfully cloned this whole node tree (deep)!");
+		//println("'cloneNode' successfully cloned this whole node tree (deep)!");
 	}
 	else
 	{
@@ -1498,7 +1501,7 @@ public void testNode(org.w3c.dom.Document document)
 	result = treeCompare(node, node2);
 	if (!result)
 	{
-		//System.out.println("'cloneNode' did not successfully clone this whole node tree (deep)!");
+		//println("'cloneNode' did not successfully clone this whole node tree (deep)!");
 	}
 	else
 	{
@@ -1507,10 +1510,10 @@ public void testNode(org.w3c.dom.Document document)
 	}
 	// Deep clone test also in testDocument
 	
-// For debugging*****		System.out.println("All Node method calls worked correctly.");
+// For debugging*****		println("All Node method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The Node method calls listed above failed, all others worked correctly.*****");	
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests Notation methods for the XML DOM implementation
@@ -1525,7 +1528,7 @@ public void testNotation(org.w3c.dom.Document document)
 	Notation notation;
 	boolean OK = true;
 	String compare;
-// For debugging*****	System.out.println("\n          testNotation's outputs:\n");
+// For debugging*****	println("\n          testNotation's outputs:\n");
 	notation = (Notation) document.getDoctype().getNotations().getNamedItem("ourNotationNode");
 	node = notation;
 	node2 = notation.cloneNode(true);//*****?
@@ -1556,10 +1559,10 @@ public void testNotation(org.w3c.dom.Document document)
 	}
 	//	notation.setNodeValue("This shouldn't work");//!! Throws a NO_MODIFICATION_ALLOWED_ERR ********
 	
-// For debugging*****		System.out.println("All Notation method calls worked correctly.");
+// For debugging*****		println("All Notation method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The Notation method calls listed above failed, all others worked correctly.*****");
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests ProcessingInstruction methods for the XML DOM implementation
@@ -1574,7 +1577,7 @@ public void testPI(org.w3c.dom.Document document)
 	ProcessingInstruction pI, pI2;
 	String compare;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testPI's outputs:\n");
+// For debugging*****	println("\n          testPI's outputs:\n");
 	pI = (ProcessingInstruction) document.getDocumentElement().getFirstChild();// Get doc's ProcessingInstruction
 	pI2 = (org.apache.xerces.dom.ProcessingInstructionImpl) pI.cloneNode(true);//*****?
 	// Check nodes for equality, both their name and value or lack thereof
@@ -1608,11 +1611,11 @@ public void testPI(org.w3c.dom.Document document)
 		OK = false;
 	}	
 	
-// For debugging*****		System.out.println("All PI method calls worked correctly.");
+// For debugging*****		println("All PI method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The PI method calls listed above failed, all others worked correctly.*****");
 	
-//	System.out.println("");
+//	println("");
 }
 /**
  * This method tests Text methods for the XML DOM implementation
@@ -1627,7 +1630,7 @@ public void testText(org.w3c.dom.Document document)
 	Text text;
 	String compare;
 	boolean OK = true;
-// For debugging*****	System.out.println("\n          testText's outputs:\n");
+// For debugging*****	println("\n          testText's outputs:\n");
 	node = document.getDocumentElement().getElementsByTagName("dBodyLevel31").item(0).getFirstChild(); // charData gets textNode11
 	text = (Text) node;
 	node2 = node.cloneNode(true);//*****?
@@ -1664,11 +1667,11 @@ public void testText(org.w3c.dom.Document document)
 	//	text.splitText(-1);
 	//	text.splitText(100);
 	
-// For debugging*****		System.out.println("All Text method calls worked correctly.");
+// For debugging*****		println("All Text method calls worked correctly.");
 	if (!OK)
 		System.out.println("\n*****The Text method calls listed above failed, all others worked correctly.*****");
 	
-//	System.out.println("");
+//	println("");
 }
 /**
  * 
