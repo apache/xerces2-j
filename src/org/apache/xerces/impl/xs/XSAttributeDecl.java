@@ -166,15 +166,21 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     }
 
     public Object getActualVC() {
-        return fDefault.actualValue;
+        return getConstraintType() == XSConstants.VC_NONE ?
+               null :
+               fDefault.actualValue;
     }
 
     public short getActualVCType() {
-        return fDefault.actualValueType;
+        return getConstraintType() == XSConstants.VC_NONE ?
+               XSConstants.UNAVAILABLE_DT :
+               fDefault.actualValueType;
     }
 
     public ShortList getItemValueTypes() {
-        return fDefault.itemValueTypes;
+        return getConstraintType() == XSConstants.VC_NONE ?
+               null :
+               fDefault.itemValueTypes;
     }
 
 } // class XSAttributeDecl
