@@ -64,6 +64,8 @@
 <p>For more information please refer to the <jump href="api.html#xml-schema-api-documentation">interfaces</jump>.
  
       </p>
+<note>The Xerces 2.6.2 release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>. In particular in the XSModel interface the order of the parameters in getTypeDefinition, getNotationDeclaration, getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroup methods have been changes from (String namespace, String name) to (String name, String namespace). 
+</note>
     </a>
   </faq>
   

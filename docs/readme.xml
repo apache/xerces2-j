@@ -114,15 +114,13 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; contains several bug fixes but adds
-      no new features. The following functionality was added in the previous release:
+      The &ParserNameLong; &ParserVersion; contains several bug fixes:
     </p>
     
     <ul>
-       <li>Added support for OASIS XML Catalogs.</li>
-       <li>Implemented well-formedness checking for LSSerializer (DOM Level 3).</li>
-       <li>Implemented the XML Inclusions (XInclude) W3C Working Draft in Last Call,
-           not including support for XPointer.</li>
+       <li>This release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>. In particular in the <code>XSModel</code> interface the order of the parameters in <code>getTypeDefinition, getNotationDeclaration, getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroupM</code> methods have been changes from <code>(String namespace, String name) to (String name, String namespace)</code>. 
+</li>
+       <li>This release requires JDK 1.2 or later to run and also requires JDK 1.2 or later to build the source code</li>
     </ul>
     <p>
       
