@@ -89,8 +89,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * officially not an issue.
  * <p>
  * Note: The ownerNode attribute is used to store the Element the Attr
- * node is associated with. Attr nodes do not have parent nodes. So,
- * the getParentNode() method is defined to return null for Attr nodes.
+ * node is associated with. Attr nodes do not have parent nodes.
  * Besides, the getOwnerElement() method can be used to get the element node
  * this attribute is associated with.
  * <P>
@@ -102,7 +101,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class AttrImpl
-    extends NodeContainer
+    extends ParentNode
     implements Attr {
 
     //
@@ -119,9 +118,6 @@ public class AttrImpl
     /** Attribute name. */
     protected String name;
 
-    /** False for default attributes. */
-    protected boolean specified = true;
-  
     //
     // Constructors
     //
@@ -133,7 +129,8 @@ public class AttrImpl
     protected AttrImpl(DocumentImpl ownerDocument, String name) {
     	super(ownerDocument);
         this.name = name;
-        syncData = true;
+        /** False for default attributes. */
+        specified(true);
     }
 
     // for AttrNS
@@ -155,7 +152,7 @@ public class AttrImpl
      * Returns the attribute name
      */
     public String getNodeName() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return name;
@@ -186,14 +183,6 @@ public class AttrImpl
         return null;
     }
 
-    /** Clone node. */
-    public Node cloneNode(boolean deep) {
-        AttrImpl newattr = (AttrImpl)super.cloneNode(deep);
-        newattr.name = name;
-        newattr.specified = specified;
-        return newattr;
-    }
-
     //
     // Attr methods
     //
@@ -204,7 +193,7 @@ public class AttrImpl
      */
     public String getName() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	return name;
@@ -218,7 +207,7 @@ public class AttrImpl
      */
     public void setValue(String value) {
 
-    	if (readOnly) {
+    	if (readOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
@@ -249,9 +238,15 @@ public class AttrImpl
         }
         else
         {
-            firstChild   = null;
-            lastChild    = null;
-            syncChildren = false;
+            // simply discard children
+            if (firstChild != null) {
+                // remove ref from first child to last child
+                firstChild.previousSibling = null;
+                firstChild.firstChild(false);
+                // then remove ref to first child
+                firstChild   = null;
+            }
+            syncChildren(false);
         }
 
 		// Create and add the new one, generating only non-aggregate events
@@ -259,7 +254,7 @@ public class AttrImpl
 		// capture/bubble listeners on the Attr.
 		// Note that aggregate events are NOT dispatched here,
 		// since we need to combine the remove and insert.
-    	specified = true;
+    	specified(true);
 		if (value != null) {
 			internalInsertBefore(ownerDocument.createTextNode(value),null,
 			    MUTATION_LOCAL);
@@ -282,7 +277,7 @@ public class AttrImpl
     public String getValue() {
 
     	StringBuffer value = new StringBuffer();
-    	NodeImpl node = (NodeImpl)getFirstChild();
+    	ChildNode node = firstChild;
     	while (node != null) {
     		value.append(node.getNodeValue());
     		node = node.nextSibling;
@@ -304,10 +299,10 @@ public class AttrImpl
      */
     public boolean getSpecified() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-    	return specified;
+    	return specified();
 
     } // getSpecified():boolean
 
@@ -325,7 +320,9 @@ public class AttrImpl
      *             is <tt>getOwnerElement()</tt>.
      */
     public Element getElement() {
-        return (Element)ownerNode;
+        // if we have an owner, ownerNode is our ownerElement, otherwise it's
+        // our ownerDocument and we don't have an ownerElement
+        return (Element) (owned() ? ownerNode : null);
     }
 
     /**
@@ -335,13 +332,15 @@ public class AttrImpl
      * @since WD-DOM-Level-2-19990719
      */
     public Element getOwnerElement() {
-        return (Element)ownerNode;
+        // if we have an owner, ownerNode is our ownerElement, otherwise it's
+        // our ownerDocument and we don't have an ownerElement
+        return (Element) (owned() ? ownerNode : null);
     }
     
     public void normalize() {
 
     	Node kid, next;
-    	for (kid = getFirstChild(); kid != null; kid = next) {
+    	for (kid = firstChild; kid != null; kid = next) {
     		next = kid.getNextSibling();
 
     		// If kid and next are both Text nodes (but _not_ CDATASection,
@@ -366,10 +365,10 @@ public class AttrImpl
     /** NON-DOM, for use by parser */
     public void setSpecified(boolean arg) {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-    	specified = arg;
+    	specified(arg);
 
     } // setSpecified(boolean)
 

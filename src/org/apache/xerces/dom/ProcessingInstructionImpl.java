@@ -113,18 +113,10 @@ public class ProcessingInstructionImpl
      * Returns the target
      */
     public String getNodeName() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return target;
-    }
-
-    /** Clone node. */
-    public Node cloneNode(boolean deep) {
-        ProcessingInstructionImpl newpi =
-            (ProcessingInstructionImpl) super.cloneNode(deep);
-        newpi.target = target;
-        return newpi;
     }
 
     //
@@ -143,7 +135,7 @@ public class ProcessingInstructionImpl
      * Note that getNodeName is aliased to getTarget.
      */
     public String getTarget() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return target;
@@ -163,7 +155,7 @@ public class ProcessingInstructionImpl
      * Note that getNodeValue is aliased to getData
      */
     public String getData() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return data;

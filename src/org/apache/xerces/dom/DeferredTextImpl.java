@@ -105,7 +105,7 @@ public class DeferredTextImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
+        syncData(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -126,11 +126,11 @@ public class DeferredTextImpl
     protected void synchronizeData() {
 
         // no need for future synchronizations
-        syncData = false;
+        syncData(false);
 
         // get initial text value
         DeferredDocumentImpl ownerDocument =
-            (DeferredDocumentImpl) this.ownerDocument;
+            (DeferredDocumentImpl) this.ownerDocument();
         data = ownerDocument.getNodeValueString(fNodeIndex);
 
         // revisit: we only normalize text nodes with Elements as parents.
@@ -153,7 +153,7 @@ public class DeferredTextImpl
         }
 
         // ignorable whitespace
-        ignorableWhitespace = ownerDocument.getFirstChild(fNodeIndex) == 1;
+        ignorableWhitespace(ownerDocument.getFirstChild(fNodeIndex) == 1);
 
     } // synchronizeData()
 

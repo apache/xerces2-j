@@ -100,7 +100,7 @@ import org.w3c.dom.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentFragmentImpl 
-    extends NodeContainer
+    extends ParentNode
     implements DocumentFragment {
 
     //

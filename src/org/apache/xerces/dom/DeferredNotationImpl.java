@@ -112,7 +112,7 @@ public class DeferredNotationImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
+        syncData(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -136,10 +136,11 @@ public class DeferredNotationImpl
     protected void synchronizeData() {
 
         // no need to synchronize again
-        syncData = false;
+        syncData(false);
 
         // name
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl)this.ownerDocument();
         name = ownerDocument.getNodeNameString(fNodeIndex);
 
         // public and system ids

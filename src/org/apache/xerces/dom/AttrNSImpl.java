@@ -64,6 +64,10 @@ import org.apache.xerces.dom.events.MutationEventImpl;
 
 /**
  * AttrNSImpl inherits from AttrImpl and adds namespace support. 
+ * <P>
+ * The qualified name is the node name, and we store localName which is also
+ * used in all queries. On the other hand we recompute the prefix when
+ * necessary.
  */
 public class AttrNSImpl
     extends AttrImpl {
@@ -80,13 +84,10 @@ public class AttrNSImpl
     //
 
     /** DOM2: Namespace URI. */
-	protected String namespaceURI;
+    protected String namespaceURI;
   
-    /** DOM2: Prefix */
-	protected String prefix;
-
     /** DOM2: localName. */
-	protected String localName;
+    protected String localName;
     /**
      * DOM2: Constructor for Namespace implementation.
      */
@@ -94,21 +95,21 @@ public class AttrNSImpl
 			 String namespaceURI, 
 			 String qualifiedName) {
 
+    	super(ownerDocument, qualifiedName);
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
         }
 
-        this.ownerDocument = ownerDocument;
-        this.name = qualifiedName;
         int index = qualifiedName.indexOf(':');
+        String prefix;
         if (index < 0) {
-            this.prefix = null;
-            this.localName = qualifiedName;
+            prefix = null;
+            localName = qualifiedName;
         } 
         else {
-            this.prefix = qualifiedName.substring(0, index); 
-            this.localName = qualifiedName.substring(index+1);
+            prefix = qualifiedName.substring(0, index); 
+            localName = qualifiedName.substring(index+1);
         }
         
 	if ((prefix != null &&
@@ -126,7 +127,6 @@ public class AttrNSImpl
 				       "DOM003 Namespace error");
 	}
 	this.namespaceURI = namespaceURI;
-        syncData = true;
     } 
 
     // for DeferredAttrImpl
@@ -154,7 +154,7 @@ public class AttrNSImpl
      */
     public String getNamespaceURI()
     {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         // REVIST: This code could/should be done at a lower-level, such that the namespaceURI
@@ -175,10 +175,11 @@ public class AttrNSImpl
      */
     public String getPrefix()
     {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-        return prefix;
+        int index = name.indexOf(':');
+        return index < 0 ? null : name.substring(0, index); 
     }
     
     /** 
@@ -196,7 +197,7 @@ public class AttrNSImpl
     public void setPrefix(String prefix)
         throws DOMException
     {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
 	if (namespaceURI == null ||
@@ -214,8 +215,8 @@ public class AttrNSImpl
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
         }
-        this.prefix = prefix;
-	this.name = prefix + ":" + localName;
+        // update node name with new qualifiedName
+	name = prefix + ":" + localName;
     }
                                         
     /** 
@@ -226,7 +227,7 @@ public class AttrNSImpl
      */
     public String getLocalName()
     {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return localName;

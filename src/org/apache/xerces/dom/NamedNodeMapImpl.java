@@ -97,6 +97,7 @@ import org.w3c.dom.events.*;
  * This implementation includes support for DOM Level 2 Mutation Events.
  * If the static boolean NodeImpl.MUTATIONEVENTS is not set true, that support
  * is disabled and can be optimized out to reduce code size.
+ * <P>
  *
  * @version
  * @since  PR-DOM-Level-1-19980818.
@@ -116,22 +117,18 @@ public class NamedNodeMapImpl
     // Data
     //
 
-    /** Nodes. */
-	protected Vector nodes;
+    protected short flags;
 
-	protected NodeImpl ownerNode; // the node this map belongs to
+    protected final static short READONLY     = 0x1<<0;
+    protected final static short CHANGED      = 0x1<<1;
+
+    /** Nodes. */
+    protected Vector nodes;
+
+    protected NodeImpl ownerNode; // the node this map belongs to
 
     /** Default nodes. */
-	protected NamedNodeMapImpl defaults;
-
-    /** Changes. */
-	protected int changes;	// Support for reconcileDefaults
-
-    /** Last defaults changes. */
-	protected int lastDefaultsChanges = -1;
-
-    /** Read-only. */
-	protected boolean readOnly = false;
+    protected NamedNodeMapImpl defaults;
 
     //
     // Constructors
@@ -141,6 +138,7 @@ public class NamedNodeMapImpl
     protected NamedNodeMapImpl(NodeImpl ownerNode, NamedNodeMapImpl defaults) {
         this.ownerNode = ownerNode;
         this.defaults = defaults;
+        changed(true);          // to get reconcileDefaults called
     }
 
     //
@@ -247,22 +245,23 @@ public class NamedNodeMapImpl
     public Node setNamedItem(Node arg)
         throws DOMException {
 
-    	if (readOnly) {
+    	if (readOnly()) {
             throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
-    	if(arg.getOwnerDocument() != ownerNode.ownerDocument) {
+    	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
             throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
         NodeImpl argn = (NodeImpl)arg;
 
-    	if (argn.ownerNode != null) {
+    	if (argn.owned()) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
         argn.ownerNode = ownerNode;
+        argn.owned(true);
    	int i = findNamePoint(arg.getNodeName(),0);
     	Node previous = null;
     	if (i >= 0) {
@@ -275,7 +274,7 @@ public class NamedNodeMapImpl
             }
             nodes.insertElementAt(arg, i);
         }
-    	++changes;
+        changed(true);
 
     	// Only NamedNodeMaps containing attributes (those which are
     	// bound to an element) need report MutationEvents
@@ -306,18 +305,18 @@ public class NamedNodeMapImpl
     public Node setNamedItemNS(Node arg)
         throws DOMException {
 
-    	if (readOnly) {
+    	if (readOnly()) {
             throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
     
-    	if(arg.getOwnerDocument() != ownerNode.ownerDocument) {
+    	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
             throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
         NodeImpl argn = (NodeImpl)arg;
-    	if (argn.ownerNode != null) {
+    	if (argn.owned()) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
@@ -342,7 +341,7 @@ public class NamedNodeMapImpl
                 nodes.insertElementAt(arg, i);
             }
         }
-    	++changes;
+    	changed(true);
 
     	// Only NamedNodeMaps containing attributes (those which are
     	// bound to an element) need report MutationEvents
@@ -375,7 +374,7 @@ public class NamedNodeMapImpl
     public Node removeNamedItem(String name)
         throws DOMException {
 
-    	if (readOnly) {
+    	if (readOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -394,15 +393,17 @@ public class NamedNodeMapImpl
             
             NodeImpl clone = (NodeImpl)d.cloneNode(true);
             clone.ownerNode = ownerNode;
+            clone.owned(true);
             nodes.setElementAt(clone, i);
         }
         else {
             nodes.removeElementAt(i);
         }
 
-        ++changes;
+        changed(true);
         // remove owning element
-        n.ownerNode = null;
+        n.ownerNode = ownerNode.ownerDocument();
+        n.owned(false);
         return n;
 
     } // removeNamedItem(String):Node
@@ -430,7 +431,7 @@ public class NamedNodeMapImpl
      public Node removeNamedItemNS(String namespaceURI, String name)
         throws DOMException {
 
-    	if (readOnly) {
+    	if (readOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -466,6 +467,7 @@ public class NamedNodeMapImpl
             if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
                 NodeImpl clone = (NodeImpl)d.cloneNode(true);
                 clone.ownerNode = ownerNode;
+                clone.owned(true);
                 nodes.setElementAt(clone, i);
             } else {
                 nodes.removeElementAt(i);
@@ -475,11 +477,12 @@ public class NamedNodeMapImpl
             nodes.removeElementAt(i);
         }
 
-        ++changes;
+        changed(true);
 
         // Need to remove references to an Attr's owner before the
         // MutationEvents fire.
-        n.ownerNode = null;
+        n.ownerNode = ownerNode.ownerDocument();
+        n.owned(false);
 
         // We can't use the standard dispatchAggregate, since it assumes
         // that the Attr is still attached to an owner. This code is
@@ -491,8 +494,7 @@ public class NamedNodeMapImpl
 	        // do so.
 	        if(lc.captures+lc.bubbles+lc.defaults>0)
 	        {
-                MutationEvent me=
-                    new MutationEventImpl();
+                MutationEvent me= new MutationEventImpl();
                 //?????ownerDocument.createEvent("MutationEvents");
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
                                      true, false,
@@ -533,7 +535,7 @@ public class NamedNodeMapImpl
             }
         }
     	newmap.defaults = defaults;
-        newmap.lastDefaultsChanges = lastDefaultsChanges;
+        newmap.changed(changed());
     	return newmap;
 
     } // cloneMap():NamedNodeMapImpl
@@ -555,7 +557,7 @@ public class NamedNodeMapImpl
      */
     void setReadOnly(boolean readOnly, boolean deep) {
 
-    	this.readOnly = readOnly;
+        readOnly(readOnly);
     	if(deep && nodes != null) {
     		Enumeration e=nodes.elements();
     		while(e.hasMoreElements()) {
@@ -570,7 +572,7 @@ public class NamedNodeMapImpl
      *
      */
     boolean getReadOnly() {
-    	return readOnly;
+    	return readOnly();
     } // getReadOnly()
     
 
@@ -606,7 +608,7 @@ public class NamedNodeMapImpl
     protected void reconcileDefaults() {
         
         if (DEBUG) System.out.println("reconcileDefaults:");
-    	if (defaults != null && lastDefaultsChanges != defaults.changes) {
+    	if (defaults != null && changed()) {
 
     		int n = 0;
             int d = 0;
@@ -634,6 +636,7 @@ public class NamedNodeMapImpl
     			        if (DEBUG) System.out.println("reconcile (test==0, specified = false): clone default");
                         NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                         clone.ownerNode = ownerNode;
+                        clone.owned(true);
     				    nodes.setElementAt(clone, n);
     				    // Advance over both, since names in sync
     				    ++n;
@@ -651,6 +654,7 @@ public class NamedNodeMapImpl
     			    if (DEBUG) System.out.println("reconcile (test>0): insert new default");
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                     clone.ownerNode = ownerNode;
+                    clone.owned(true);
     				nodes.insertElementAt(clone, n);
     				// Now in sync, so advance over both
     				++n;
@@ -683,11 +687,12 @@ public class NamedNodeMapImpl
                     dnode = (AttrImpl)defaults.nodes.elementAt(d++);
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                     clone.ownerNode = ownerNode;
+                    clone.owned(true);
     			    if (DEBUG) System.out.println("reconcile: adding"+clone);
                     nodes.addElement(clone);
                 }
             }
-    		lastDefaultsChanges = defaults.changes;
+            changed(false);
     	}
     } // reconcileDefaults()
 
@@ -702,6 +707,22 @@ public class NamedNodeMapImpl
                 ((NodeImpl)item(i)).setOwnerDocument(doc);
             }
         }
+    }
+
+    final boolean readOnly() {
+        return (flags & READONLY) != 0;
+    }
+
+    final void readOnly(boolean value) {
+        flags = (short) (value ? flags | READONLY : flags & ~READONLY);
+    }
+
+    final boolean changed() {
+        return (flags & CHANGED) != 0;
+    }
+
+    final void changed(boolean value) {
+        flags = (short) (value ? flags | CHANGED : flags & ~CHANGED);
     }
 
     //

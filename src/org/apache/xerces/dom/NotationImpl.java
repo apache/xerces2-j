@@ -130,21 +130,10 @@ public class NotationImpl
      * Returns the notation name
      */
     public String getNodeName() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return name;
-    }
-
-    /** Clone node. */
-    public Node cloneNode(boolean deep) {
-        NotationImpl newnotation = (NotationImpl) super.cloneNode(deep);
-        newnotation.name = name;
-        return newnotation;
-    }
-
-    public Node getParentNode() {
-        return null;
     }
 
     //
@@ -157,7 +146,7 @@ public class NotationImpl
      */
     public String getPublicId() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	return publicId;
@@ -170,7 +159,7 @@ public class NotationImpl
      */
     public String getSystemId() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	return systemId;
@@ -187,12 +176,12 @@ public class NotationImpl
      */
     public void setPublicId(String id) {
 
-    	if (readOnly) {
+    	if (readOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"DOM001 Modification not allowed");
         }
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         publicId = id;
@@ -205,12 +194,12 @@ public class NotationImpl
      */
     public void setSystemId(String id) {
 
-    	if(readOnly) {
+    	if(readOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"DOM001 Modification not allowed");
         }
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	systemId = id;

@@ -114,8 +114,8 @@ public class DeepNodeListImpl
     // Data
     //
 
-    protected NodeImpl rootNode;      // Where the search started
-    protected String tagName;               // Or "*" to mean all-tags-acceptable
+    protected NodeImpl rootNode; // Where the search started
+    protected String tagName;   // Or "*" to mean all-tags-acceptable
     protected int changes=0;
     protected Vector nodes;
     
@@ -128,16 +128,17 @@ public class DeepNodeListImpl
 
     /** Constructor. */
     public DeepNodeListImpl(NodeImpl rootNode, String tagName) {
-	    this.rootNode = rootNode;
-	    this.tagName  = tagName;
-	    nodes = new Vector();
+        this.rootNode = rootNode;
+        this.tagName  = tagName;
+        nodes = new Vector();
     }  
 
     /** Constructor for Namespace support. */
-    public DeepNodeListImpl(NodeImpl rootNode, String nsName, String tagName) {
+    public DeepNodeListImpl(NodeImpl rootNode,
+                            String nsName, String tagName) {
         this(rootNode, tagName);
-	    this.nsName  = (nsName != null && !nsName.equals("")) ? nsName : null;
-	    enableNS = true;
+        this.nsName = (nsName != null && !nsName.equals("")) ? nsName : null;
+        enableNS = true;
     }
     
     //
@@ -146,9 +147,9 @@ public class DeepNodeListImpl
 
     /** Returns the length of the node list. */
     public int getLength() {
-	    // Preload all matching elements. (Stops when we run out of subtree!)
-	    item(java.lang.Integer.MAX_VALUE);
-	    return nodes.size();
+        // Preload all matching elements. (Stops when we run out of subtree!)
+        item(java.lang.Integer.MAX_VALUE);
+        return nodes.size();
     }  
 
     /** Returns the node at the specified index. */
@@ -156,9 +157,9 @@ public class DeepNodeListImpl
     	Node thisNode;
 
         // Tree changed. Do it all from scratch!
-    	if(rootNode.changes != changes) {
-    		nodes   = new Vector();     
-    		changes = rootNode.changes;
+    	if(rootNode.changes() != changes) {
+            nodes   = new Vector();     
+            changes = rootNode.changes();
     	}
     
         // In the cache

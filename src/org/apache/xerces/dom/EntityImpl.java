@@ -94,7 +94,7 @@ import org.w3c.dom.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityImpl 
-    extends NodeContainer
+    extends ParentNode
     implements Entity {
 
     //
@@ -142,15 +142,11 @@ public class EntityImpl
         return Node.ENTITY_NODE;
     }
 
-    public Node getParentNode() {
-        return null;
-    }
-
     /**
      * Returns the entity name
      */
     public String getNodeName() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return name;
@@ -159,17 +155,6 @@ public class EntityImpl
     /** Clone node. */
     public Node cloneNode(boolean deep) {
         EntityImpl newentity = (EntityImpl)super.cloneNode(deep);
-        newentity.name = name;
-        // NOTE: This explicit setting of the public id, system id, and
-        //       notation name isn't necessary because at the base of
-        //       the cloning operation, the object's clone() method will
-        //       copy these directly. And since java.lang.String objects
-        //       are immutable, this doesn't cause a problem sharing the
-        //       references. But we'll leave this here anyway to prevent
-        //       accidental breakage in the future. -Ac
-        newentity.publicId = publicId;
-        newentity.systemId = systemId;
-        newentity.notationName = notationName;
         return newentity;
     }
 
@@ -183,7 +168,7 @@ public class EntityImpl
      */
     public String getPublicId() {
         
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return publicId;
@@ -196,7 +181,7 @@ public class EntityImpl
      */
     public String getSystemId() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return systemId;
@@ -211,7 +196,7 @@ public class EntityImpl
      */
     public String getNotationName() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return notationName;
@@ -227,7 +212,7 @@ public class EntityImpl
      * this will be null. */
     public void setPublicId(String id) {
         
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	publicId = id;
@@ -240,7 +225,7 @@ public class EntityImpl
      */
     public void setSystemId(String id) {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	systemId = id;
@@ -255,7 +240,7 @@ public class EntityImpl
      */
     public void setNotationName(String name) {
         
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	notationName = name;

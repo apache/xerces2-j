@@ -187,8 +187,8 @@ public class DeferredDocumentImpl
 
         fStringPool = stringPool;
 
-        syncData = true;
-        syncChildren = true;
+        syncData(true);
+        syncChildren(true);
 
         fNamespacesEnabled = namespaces;
 
@@ -1242,7 +1242,7 @@ public class DeferredDocumentImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData = false;
+        syncData(false);
 
         // fluff up enough nodes to fill identifiers hash
         if (fIdElement != null) {
@@ -1319,29 +1319,31 @@ public class DeferredDocumentImpl
      */
     protected void synchronizeChildren() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
 
         // no need to sync in the future
-        syncChildren = false;
+        syncChildren(false);
 
         getNodeType(0);
 
         // create children and link them as siblings
-        NodeImpl last = null;
+        ChildNode last = null;
         for (int index = getFirstChild(0);
              index != -1;
              index = getNextSibling(index)) {
 
-            NodeImpl node = (NodeImpl)getNodeObject(index);
+            ChildNode node = (ChildNode)getNodeObject(index);
             if (last == null) {
                 firstChild = node;
+                node.firstChild(true);
             }
             else {
                 last.nextSibling = node;
             }
             node.ownerNode = this;
+            node.owned(true);
             node.previousSibling = last;
             last = node;
 
@@ -1356,7 +1358,7 @@ public class DeferredDocumentImpl
         }
 
         if (last != null) {
-            lastChild = last;
+            lastChild(last);
         }
 
     } // synchronizeChildren()

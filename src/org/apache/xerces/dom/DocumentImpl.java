@@ -95,7 +95,7 @@ import org.apache.xerces.dom.events.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentImpl
-    extends NodeContainer
+    extends ParentNode
     implements Document, DocumentTraversal, DocumentEvent {
 
     //
@@ -139,6 +139,43 @@ public class DocumentImpl
 
     /** Bypass error checking. */
     protected boolean errorChecking = true;
+
+    /** Table for quick check of child insertion. */
+    protected static int[] kidOK;
+
+    //
+    // Static initialization
+    //
+
+    static {
+
+        kidOK = new int[13];
+
+        kidOK[DOCUMENT_NODE] =
+            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
+            1 << COMMENT_NODE | 1 << DOCUMENT_TYPE_NODE;
+			
+        kidOK[DOCUMENT_FRAGMENT_NODE] =
+        kidOK[ENTITY_NODE] =
+        kidOK[ENTITY_REFERENCE_NODE] =
+        kidOK[ELEMENT_NODE] =
+            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
+            1 << COMMENT_NODE | 1 << TEXT_NODE |
+            1 << CDATA_SECTION_NODE | 1 << ENTITY_REFERENCE_NODE ;
+			
+			
+        kidOK[ATTRIBUTE_NODE] =
+            1 << TEXT_NODE | 1 << ENTITY_REFERENCE_NODE;
+			
+        kidOK[DOCUMENT_TYPE_NODE] =
+        kidOK[PROCESSING_INSTRUCTION_NODE] =
+        kidOK[COMMENT_NODE] =
+        kidOK[TEXT_NODE] =
+        kidOK[CDATA_SECTION_NODE] =
+        kidOK[NOTATION_NODE] =
+            0;
+
+    } // static
 
     //
     // Constructors
@@ -436,7 +473,7 @@ public class DocumentImpl
 	 * it will be null.
 	 */
     public DocumentType getDoctype() {
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
 	    return docType;
@@ -452,7 +489,7 @@ public class DocumentImpl
 	 * (HTML not yet supported.)
      */
     public Element getDocumentElement() {
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
 	    return docElement;
@@ -850,7 +887,7 @@ public class DocumentImpl
             return;
         }
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
 
@@ -871,7 +908,7 @@ public class DocumentImpl
      */
     public Element getIdentifier(String idName) {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
 
@@ -892,7 +929,7 @@ public class DocumentImpl
      */
     public void removeIdentifier(String idName) {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
 
@@ -907,7 +944,7 @@ public class DocumentImpl
     /** Returns an enumeration registered of identifier names. */
     public Enumeration getIdentifiers() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
 

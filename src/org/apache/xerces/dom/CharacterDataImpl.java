@@ -80,7 +80,7 @@ import org.w3c.dom.events.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public abstract class CharacterDataImpl
-    extends NodeImpl {
+    extends ChildNode {
 
     //
     // Constants
@@ -95,11 +95,6 @@ public abstract class CharacterDataImpl
 
     protected String data;
 
-    /** flag to indicate whether setNodeValue was called by the
-     *  client or from the DOM.
-     */
-    protected boolean fInternalSetNodeValue = false;
-    
     /** Empty child nodes. */
     private static transient NodeList singletonNodeList = new NodeList() {
         public Node item(int index) { return null; }
@@ -125,19 +120,11 @@ public abstract class CharacterDataImpl
         return singletonNodeList;
     }
 
-    /** Clone node. */
-    public Node cloneNode(boolean deep) {
-        CharacterDataImpl newcdata = (CharacterDataImpl)super.cloneNode(deep);
-        newcdata.data = data;
-        newcdata.fInternalSetNodeValue = fInternalSetNodeValue;
-        return newcdata;
-    }
-
     /*
      * returns the content of this node
      */
     public String getNodeValue() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return data;
@@ -151,22 +138,25 @@ public abstract class CharacterDataImpl
      *  type if the client simply calls setNodeValue(value).
      */
     void setNodeValueInternal(String value) {
-        fInternalSetNodeValue = true;
+        /** flag to indicate whether setNodeValue was called by the
+         *  client or from the DOM.
+         */
+        setValue(true);
         setNodeValue(value);
-        fInternalSetNodeValue = false;
+        setValue(false);
     }
     
     /**
      * Sets the content, possibly firing related events, and updating ranges
      */
     public void setNodeValue(String value) {
-    	if (readOnly)
+    	if (readOnly())
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         // revisit: may want to set the value in ownerDocument.
     	// Default behavior, overridden in some subclasses
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
             
@@ -187,9 +177,9 @@ public abstract class CharacterDataImpl
         } // End mutation preprocessing
             
     	this.data = value;
-    	if (!fInternalSetNodeValue) {
+    	if (!setValue()) {
             // call out to any Ranges to set any boundary index to zero.
-            Enumeration ranges = ownerDocument.getRanges();
+            Enumeration ranges = ownerDocument().getRanges();
             if (ranges != null) {
                 while ( ranges.hasMoreElements()) {
                    ((RangeImpl)ranges.nextElement()).receiveReplacedText(this);
@@ -232,7 +222,7 @@ public abstract class CharacterDataImpl
      * instead retrieve the data in chunks via the substring() operation.  
      */
     public String getData() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return data;
@@ -243,7 +233,7 @@ public abstract class CharacterDataImpl
      * data. It may be 0, meaning that the value is an empty string. 
      */
     public int getLength() {   
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return data.length();
@@ -259,13 +249,13 @@ public abstract class CharacterDataImpl
      */
     public void appendData(String data) {
 
-        if (readOnly) {
+        if (readOnly()) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR,
         		"DOM001 Modification not allowed");
         }
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         
@@ -289,7 +279,7 @@ public abstract class CharacterDataImpl
     public void deleteData(int offset, int count) 
         throws DOMException {
 
-        if (readOnly) {
+        if (readOnly()) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
@@ -300,7 +290,7 @@ public abstract class CharacterDataImpl
         	                           "DOM004 Index out of bounds");
         }
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         int tailLength = Math.max(data.length() - count - offset, 0);
@@ -310,7 +300,7 @@ public abstract class CharacterDataImpl
                                  (tailLength > 0 
 		? data.substring(offset + count, offset + count + tailLength) 
                                   : "") );
-            Enumeration ranges = ownerDocument.getRanges();
+            Enumeration ranges = ownerDocument().getRanges();
             if (ranges != null) {
                 while ( ranges.hasMoreElements()) {
                     RangeImpl r = ((RangeImpl)ranges.nextElement());
@@ -337,13 +327,13 @@ public abstract class CharacterDataImpl
     public void insertData(int offset, String data) 
         throws DOMException {
 
-        if (readOnly) {
+        if (readOnly()) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
         }
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         try {
@@ -351,7 +341,7 @@ public abstract class CharacterDataImpl
             setNodeValueInternal(
                 new StringBuffer(this.data).insert(offset, data).toString()
                 );
-            Enumeration ranges = ownerDocument.getRanges();
+            Enumeration ranges = ownerDocument().getRanges();
             if (ranges != null) {
                 while ( ranges.hasMoreElements()) {
                     RangeImpl r = ((RangeImpl)ranges.nextElement());
@@ -437,7 +427,7 @@ public abstract class CharacterDataImpl
     public String substringData(int offset, int count) 
         throws DOMException {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         

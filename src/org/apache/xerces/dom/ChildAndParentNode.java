@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,126 +67,78 @@ import org.apache.xerces.dom.*;
 import org.apache.xerces.dom.events.*;
 
 /**
- * NodeContainer inherits from NodeImpl and adds the capability of having child
- * nodes. Not every node in the DOM can have children, so only nodes that can
- * should inherit from this class and pay the price for it.
- * <P>
- * NodeContainer, just like NodeImpl, also implements NodeList, so it can
- * return itself in response to the getChildNodes() query. This eliminiates
- * the need for a separate ChildNodeList object. Note that this is an
- * IMPLEMENTATION DETAIL; applications should _never_ assume that
- * this identity exists.
+ * If we had multiple inheritance ChildAndParentNode would simply inherit both
+ * from ChildNode and ParentNode. In this case it only inherits from
+ * ChildNode and all the code of ParentNode is duplicated here (bummer :-(
  * <P>
  */
-public abstract class NodeContainer
-    extends NodeImpl
-    implements NodeList {
+public abstract class ChildAndParentNode
+    extends ChildNode {
 
     /** Serialization version. */
-    static final long serialVersionUID = 2815829867152120872L;
+    static final long serialVersionUID = 0;
+
+    /** Owner document. */
+    protected DocumentImpl ownerDocument;
 
     /** First child. */
-    protected NodeImpl firstChild;
+    protected ChildNode firstChild = null;
 
-    /** Last child. */
-    protected NodeImpl lastChild;
+    /**
+     * Number of alterations made to this subtree since its creation.
+     * Serves as a "dirty bit" so NodeList can recognize when an
+     * alteration has been made and discard its cached state information.
+     * <p>
+     * Any method that alters the tree structure MUST cause or be
+     * accompanied by a call to changed(), to inform it and its
+     * parents that any outstanding NodeLists may have to be updated.
+     * <p>
+     * (Required because NodeList is simultaneously "live" and integer-
+     * indexed -- a bad decision in the DOM's design.)
+     * <p>
+     * Note that changes which do not affect the tree's structure -- changing
+     * the node's name, for example -- do _not_ have to call changed().
+     * <p>
+     * Alternative implementation would be to use a cryptographic
+     * Digest value rather than a count. This would have the advantage that
+     * "harmless" changes (those producing equal() trees) would not force
+     * NodeList to resynchronize. Disadvantage is that it's slightly more prone
+     * to "false negatives", though that's the difference between "wildly
+     * unlikely" and "absurdly unlikely". IF we start maintaining digests,
+     * we should consider taking advantage of them.
+     */
+    protected int changes = 0;
 
     // transients
-
-    /** Last change number for index caching. */
-    protected transient int nodeListChanges = -1;
 
     /** Cached node list length. */
     protected transient int nodeListLength = -1;
 
     /** Last requested node. */
-    protected transient NodeImpl nodeListNode;
+    protected transient ChildNode nodeListNode;
 
     /** Last requested node index. */
-    protected transient int nodeListIndex;
-
-    // lazy-evaluation info
-    /** Synchronization of child nodes needed. */
-    protected transient boolean syncChildren;
-
-    /** Table for quick check of child insertion. */
-    protected static int[] kidOK;
-
-    //
-    // Static initialization
-    //
-
-    static {
-
-        kidOK = new int[13];
-
-        kidOK[DOCUMENT_NODE] =
-            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
-            1 << COMMENT_NODE | 1 << DOCUMENT_TYPE_NODE;
-			
-        kidOK[DOCUMENT_FRAGMENT_NODE] =
-        kidOK[ENTITY_NODE] =
-        kidOK[ENTITY_REFERENCE_NODE] =
-        kidOK[ELEMENT_NODE] =
-            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
-            1 << COMMENT_NODE | 1 << TEXT_NODE |
-            1 << CDATA_SECTION_NODE | 1 << ENTITY_REFERENCE_NODE ;
-			
-			
-        kidOK[ATTRIBUTE_NODE] =
-            1 << TEXT_NODE | 1 << ENTITY_REFERENCE_NODE;
-			
-        kidOK[DOCUMENT_TYPE_NODE] =
-        kidOK[PROCESSING_INSTRUCTION_NODE] =
-        kidOK[COMMENT_NODE] =
-        kidOK[TEXT_NODE] =
-        kidOK[CDATA_SECTION_NODE] =
-        kidOK[NOTATION_NODE] =
-            0;
-
-    } // static
-
+    protected transient int nodeListIndex = -1;
 
     //
     // Constructors
     //
 
     /**
-     * No public constructor; only subclasses of NodeContainer should be
+     * No public constructor; only subclasses of ParentNode should be
      * instantiated, and those normally via a Document's factory methods
      */
-    protected NodeContainer(DocumentImpl ownerDocument) {
-	super(ownerDocument);
+    protected ChildAndParentNode(DocumentImpl ownerDocument) {
+        super(ownerDocument);
+        this.ownerDocument = ownerDocument;
     }
 
     /** Constructor for serialization. */
-    public NodeContainer() {}
+    public ChildAndParentNode() {}
 
     //
     // NodeList methods
     //
-
-    /**
-     * Adds a child node to the end of the list of children for this node.
-     * Convenience shorthand for insertBefore(newChild,null).
-     * @see #insertBefore(Node, Node)
-     *
-     * @returns newChild, in its new state (relocated, or emptied in the
-     * case of DocumentNode.)
-     *
-     * @throws DOMException(HIERARCHY_REQUEST_ERR) if newChild is of a
-     * type that shouldn't be a child of this node.
-     *
-     * @throws DOMException(WRONG_DOCUMENT_ERR) if newChild has a
-     * different owner document than we do.
-     *
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR) if this node is
-     * read-only.
-     */
-    public Node appendChild(Node newChild) throws DOMException {
-    	return insertBefore(newChild, null);
-    }
-
 
     /**
      * Returns a duplicate of a given node. You can consider this a
@@ -208,28 +160,28 @@ public abstract class NodeContainer
      */
     public Node cloneNode(boolean deep) {
     	
-    	NodeContainer newnode = (NodeContainer) super.cloneNode(deep);
+    	ChildAndParentNode newnode = (ChildAndParentNode)super.cloneNode(deep);
+
+        // set owner document
+        newnode.ownerDocument = ownerDocument;
 
         // REVISIT: Do we need to synchronize at this point? -Ac
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
 
     	// Need to break the association w/ original kids
     	newnode.firstChild      = null;
-        newnode.lastChild       = null;
 
         // invalidate cache for children NodeList
-        newnode.nodeListChanges = -1;
+        newnode.nodeListIndex = -1;
         newnode.nodeListLength = -1;
 
-        newnode.kidOK = kidOK;
-    	
         // Then, if deep, clone the kids too.
     	if (deep) {
-            for (NodeImpl child = (NodeImpl)getFirstChild();
+            for (Node child = firstChild;
                  child != null;
-                 child = (NodeImpl)child.getNextSibling()) {
+                 child = child.getNextSibling()) {
                 newnode.appendChild(child.cloneNode(true));
             }
         }
@@ -239,15 +191,31 @@ public abstract class NodeContainer
     } // cloneNode(boolean):Node
 
     /**
+     * Find the Document that this Node belongs to (the document in
+     * whose context the Node was created). The Node may or may not
+     * currently be part of that Document's actual contents.
+     */
+    public Document getOwnerDocument() {
+        return ownerDocument;
+    }
+
+    /**
+     * same as above but returns internal type
+     */
+    DocumentImpl ownerDocument() {
+        return ownerDocument;
+    }
+
+    /**
      * NON-DOM
      * set the ownerDocument of this node and its children
      */
     void setOwnerDocument(DocumentImpl doc) {
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
-	super.setOwnerDocument(doc);
-	for (Node child = getFirstChild();
+        ownerDocument = doc;
+	for (Node child = firstChild;
 	     child != null; child = child.getNextSibling()) {
 	    ((NodeImpl) child).setOwnerDocument(doc);
 	}
@@ -258,7 +226,7 @@ public abstract class NodeContainer
      * for (Node.getFirstChild()!=null)
      */
     public boolean hasChildNodes() {
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
         return firstChild != null;
@@ -280,7 +248,7 @@ public abstract class NodeContainer
     public NodeList getChildNodes() {
         // JKESS: KNOWN ISSUE HERE 
 
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
         return this;
@@ -290,7 +258,7 @@ public abstract class NodeContainer
     /** The first child of this Node, or null if none. */
     public Node getFirstChild() {
 
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
     	return firstChild;
@@ -300,12 +268,24 @@ public abstract class NodeContainer
     /** The first child of this Node, or null if none. */
     public Node getLastChild() {
 
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
-   	    return lastChild;
+        return lastChild();
 
     } // getLastChild():Node
+
+    final ChildNode lastChild() {
+        // last child is stored as the previous sibling of first child
+        return firstChild != null ? firstChild.previousSibling : null;
+    }
+
+    final void lastChild(ChildNode node) {
+        // store lastChild as previous sibling of first child
+        if (firstChild != null) {
+            firstChild.previousSibling = node;
+        }
+    }
 
     /**
      * Move one or more node(s) to our list of children. Note that this
@@ -349,39 +329,28 @@ public abstract class NodeContainer
     Node internalInsertBefore(Node newChild, Node refChild,int mutationMask) 
         throws DOMException {
 
-    	if (readOnly)
+    	if (readOnly())
             throw new DOMExceptionImpl(
                         DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                         "DOM001 Modification not allowed");
 
         boolean errorChecking = ownerDocument.errorChecking;
-    	if(errorChecking && !(newChild instanceof NodeImpl)
-           ||
-           !(
-             newChild.getOwnerDocument() == ownerDocument
-             ||
-             // SPECIAL-CASE: Document has no owner, but may be the owner.
-             (getNodeType() == Node.DOCUMENT_NODE &&
-               newChild.getOwnerDocument() == (Document)this ))
-           ) {
+    	if (errorChecking && newChild.getOwnerDocument() != ownerDocument) {
             throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
                                        "DOM005 Wrong document");
         }
 
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
-
-        // Convert to internal type, to avoid repeated casting
-        NodeImpl newInternal = (NodeImpl)newChild;
 
         if (errorChecking) {
             // Prevent cycles in the tree
             boolean treeSafe = true;
-            for (Node a = getParentNode();
+            for (NodeImpl a = parentNode();
                  treeSafe && a != null;
-                 a = a.getParentNode()) {
-                treeSafe = newInternal != a;
+                 a = a.parentNode()) {
+                treeSafe = newChild != a;
             }
             if(!treeSafe) {
                 throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
@@ -395,7 +364,7 @@ public abstract class NodeContainer
             }
         }
         
-        if (newInternal.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
+        if (newChild.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
             // SLOW BUT SAFE: We could insert the whole subtree without
             // juggling so many next/previous pointers. (Wipe out the
             // parent's child-list, patch the parent pointers, set the
@@ -413,7 +382,7 @@ public abstract class NodeContainer
 
             // No need to check kids for right-document; if they weren't,
             // they wouldn't be kids of that DocFrag.
-            for (Node kid = newInternal.getFirstChild(); // Prescan
+            for (Node kid = newChild.getFirstChild(); // Prescan
                  kid != null;
                  kid = kid.getNextSibling()) {
 
@@ -424,15 +393,21 @@ public abstract class NodeContainer
                 }
             }
 
-            while (newInternal.hasChildNodes()) {
-                insertBefore(newInternal.getFirstChild(), refChild);
+            while (newChild.hasChildNodes()) {
+                insertBefore(newChild.getFirstChild(), refChild);
             }
         }
-        else if (errorChecking && !ownerDocument.isKidOK(this, newInternal)) {
+        else if (errorChecking &&
+                 (!(newChild instanceof ChildNode)
+                  ||
+                  !ownerDocument.isKidOK(this, newChild))) {
             throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
                                        "DOM006 Hierarchy request error");
         }
         else {
+            // Convert to internal type, to avoid repeated casting
+            ChildNode newInternal = (ChildNode)newChild;
+
             EnclosingAttr enclosingAttr=null;
             if(MUTATIONEVENTS && (mutationMask&MUTATION_AGGREGATE)!=0)
             {
@@ -447,36 +422,43 @@ public abstract class NodeContainer
                 }
             }
 
-            Node oldparent = newInternal.getParentNode();
+            Node oldparent = newInternal.parentNode();
             if (oldparent != null) {
                 oldparent.removeChild(newInternal);
             }
 
-            NodeImpl prev;
+            // Convert to internal type, to avoid repeated casting
+            ChildNode refInternal = (ChildNode)refChild;
+
+            ChildNode prev;
             // Find the node we're inserting after, if any (null if
             // inserting to head of list)
-            prev = (refChild == null)
-                   ? lastChild : ((NodeImpl)refChild).previousSibling;
+            prev = (refInternal == null)
+                   ? lastChild() : refInternal.previousSibling;
 
             // Attach up
             newInternal.ownerNode = this;
+            newInternal.owned(true);
 
             // Attach after
             newInternal.previousSibling = prev;
-            if (prev == null) {
+            if (refInternal == firstChild) {
                 firstChild = newInternal;
+                newInternal.firstChild(true);
             }
             else {
                 prev.nextSibling = newInternal;
             }
 
             // Attach before
-            newInternal.nextSibling = (NodeImpl)refChild;
-            if (refChild == null) {
-                lastChild=newInternal;
+            newInternal.nextSibling = refInternal;
+            if (refInternal == null) {
+                // store lastChild as previous sibling of first child
+                firstChild.previousSibling = newInternal;
             }
             else {
-                ((NodeImpl)refChild).previousSibling = newInternal;
+                refInternal.previousSibling = newInternal;
+                refInternal.firstChild(false);
             }
 
             changed();
@@ -522,7 +504,7 @@ public abstract class NodeContainer
                                     p=(ElementImpl)
                                         ((AttrImpl)p).getOwnerElement();
                                 else
-                                    p=p.ownerNode;
+                                    p=p.parentNode();
                             }
                             if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                             {
@@ -544,7 +526,7 @@ public abstract class NodeContainer
                     dispatchAggregateEvents(enclosingAttr);
             }
         }
-        return newInternal;
+        return newChild;
 
     } // internalInsertBefore(Node,Node,int):Node
 
@@ -574,7 +556,7 @@ public abstract class NodeContainer
     Node internalRemoveChild(Node oldChild,int mutationMask)
         throws DOMException {
 
-        if (readOnly) {
+        if (readOnly()) {
             throw new DOMExceptionImpl(
                 DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                 "DOM001 Modification not allowed");
@@ -603,7 +585,7 @@ public abstract class NodeContainer
             }
         }
 
-        NodeImpl oldInternal = (NodeImpl) oldChild;
+        ChildNode oldInternal = (ChildNode) oldChild;
 
         EnclosingAttr enclosingAttr=null;
         if(MUTATIONEVENTS)
@@ -643,9 +625,9 @@ public abstract class NodeContainer
                             (NodeImpl) enclosingAttr.node.getOwnerElement();
                     if(eventAncestor!=null) // Might have been orphan Attr
                     {
-                        for(NodeImpl p=eventAncestor.ownerNode;
+                        for(NodeImpl p=eventAncestor.parentNode();
                             p!=null;
-                            p=p.ownerNode)
+                            p=p.parentNode())
                         {
                             eventAncestor=p; // Last non-null ancestor
                         }
@@ -665,25 +647,33 @@ public abstract class NodeContainer
         } // End mutation preprocessing
 
         // Patch tree past oldChild
-        NodeImpl prev = oldInternal.previousSibling;
-        NodeImpl next = oldInternal.nextSibling;
+        ChildNode prev = oldInternal.previousSibling;
+        ChildNode next = oldInternal.nextSibling;
 
-        if (prev != null) {
+        if (oldInternal != firstChild) {
             prev.nextSibling = next;
         }
         else {
+            oldInternal.firstChild(false);
             firstChild = next;
+            if (next != null) {
+                next.firstChild(true);
+            }
         }
 
-        if (next != null) {
+        if (next != null) {     // oldInternal != lastChild
             next.previousSibling = prev;
         }
         else {
-            lastChild = prev;
+            if (firstChild != null) {
+                // store lastChild as previous sibling of first child
+                firstChild.previousSibling = prev;
+            }
         }
 
         // Remove oldInternal's references to tree
-        oldInternal.ownerNode      = null;
+        oldInternal.ownerNode       = ownerDocument;
+        oldInternal.owned(false);
         oldInternal.nextSibling     = null;
         oldInternal.previousSibling = null;
 
@@ -766,14 +756,17 @@ public abstract class NodeContainer
      */
     public int getLength() {
 
-        if (nodeListChanges != changes || nodeListLength == -1) {
-            nodeListChanges = changes;
-            nodeListLength = 0;
-            nodeListIndex = 0;
-            nodeListNode = firstChild;
-            for (NodeImpl node = firstChild;
-                 node != null;
-                 node = node.nextSibling) {
+        if (nodeListLength == -1) { // is the cached length invalid ?
+            ChildNode node;
+            // start from the cached node if we have one
+            if (nodeListIndex != -1 && nodeListNode != null) {
+                nodeListLength = nodeListIndex;
+                node = nodeListNode;
+            } else {
+                node = firstChild;
+                nodeListLength = 0;
+            }
+            for (; node != null; node = node.nextSibling) {
                 nodeListLength++;
             }
         }
@@ -790,7 +783,7 @@ public abstract class NodeContainer
      */
     public Node item(int index) {
         // short way
-        if (nodeListChanges == changes && nodeListNode != null) {
+        if (nodeListIndex != -1 && nodeListNode != null) {
             if (nodeListIndex < index) {
                 while (nodeListIndex < index && nodeListNode != null) {
                     nodeListIndex++;
@@ -800,14 +793,13 @@ public abstract class NodeContainer
             else if (nodeListIndex > index) {
                 while (nodeListIndex > index && nodeListNode != null) {
                     nodeListIndex--;
-                    nodeListNode = nodeListNode.previousSibling;
+                    nodeListNode = nodeListNode.previousSibling();
                 }
             }
             return nodeListNode;
         }
 
         // long way
-        nodeListChanges = changes;
         nodeListNode = firstChild;
         for (nodeListIndex = 0; 
              nodeListIndex < index && nodeListNode != null; 
@@ -830,7 +822,7 @@ public abstract class NodeContainer
     public void normalize() {
 
         Node kid;
-        for (kid = getFirstChild(); kid != null; kid = kid.getNextSibling()) {
+        for (kid = firstChild; kid != null; kid = kid.getNextSibling()) {
             kid.normalize();
         }
     }
@@ -853,12 +845,12 @@ public abstract class NodeContainer
 
         if (deep) {
 
-            if (syncChildren) {
+            if (syncChildren()) {
                 synchronizeChildren();
             }
 
             // Recursively set kids
-            for (NodeImpl mykid = firstChild;
+            for (ChildNode mykid = firstChild;
                  mykid != null;
                  mykid = mykid.nextSibling) {
                 if(!(mykid instanceof EntityReference)) {
@@ -871,6 +863,22 @@ public abstract class NodeContainer
     //
     // Protected methods
     //
+
+    /** Denotes that this node has changed. */
+    protected void changed() {
+    	++changes;
+        // invalidate cache for children NodeList
+        nodeListIndex = -1;
+        nodeListLength = -1;
+        NodeImpl parentNode = parentNode();
+    	if (parentNode != null) {
+            parentNode.changed();
+        }
+    }
+
+    protected int changes() {
+        return changes;
+    }
 
     /**
      * Override this method in subclass to hook in efficient
@@ -886,7 +894,7 @@ public abstract class NodeContainer
     private void writeObject(ObjectOutputStream out) throws IOException {
 
         // synchronize chilren
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
         // write object
@@ -902,8 +910,9 @@ public abstract class NodeContainer
         ois.defaultReadObject();
 
         // initialize transients
-        nodeListChanges = -1;
+        nodeListLength = -1;
+        nodeListIndex = -1;
 
     } // readObject(ObjectInputStream)
 
-} // class NodeContainer
+} // class ChildAndParentNode

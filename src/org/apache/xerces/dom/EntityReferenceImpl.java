@@ -111,7 +111,7 @@ import org.w3c.dom.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityReferenceImpl 
-    extends NodeContainer
+    extends ChildAndParentNode
     implements EntityReference {
 
     //
@@ -165,18 +165,10 @@ public class EntityReferenceImpl
      * Returns the name of the entity referenced
      */
     public String getNodeName() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return name;
-    }
-
-    /** Clone node. */
-    public Node cloneNode(boolean deep) {
-        EntityReferenceImpl newentityref =
-            (EntityReferenceImpl) super.cloneNode(deep);
-        newentityref.name = name;
-        return newentityref;
     }
 
     // REVISIT: Return original entity reference code. -Ac

@@ -133,8 +133,8 @@ public final class DeferredAttrImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
-        syncChildren = true;
+        syncData(true);
+        syncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -155,14 +155,15 @@ public final class DeferredAttrImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData = false;
+        syncData(false);
 
         // fluff data
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) this.ownerDocument;
         int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(elementTypeName);
-        specified = ownerDocument.getNodeValue(fNodeIndex) == 1;
+        specified(ownerDocument.getNodeValue(fNodeIndex) == 1);
 
     } // synchronizeData()
 
@@ -175,28 +176,30 @@ public final class DeferredAttrImpl
     protected void synchronizeChildren() {
 
         // no need to sync in the future
-        syncChildren = false;
+        syncChildren(false);
 
         // create children and link them as siblings
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        NodeImpl last = null;
+        ChildNode last = null;
         for (int index = ownerDocument.getFirstChild(fNodeIndex);
              index != -1;
              index = ownerDocument.getNextSibling(index)) {
 
-            NodeImpl node = (NodeImpl)ownerDocument.getNodeObject(index);
+            ChildNode node = (ChildNode)ownerDocument.getNodeObject(index);
             if (last == null) {
                 firstChild = node;
+                node.firstChild(true);
             }
             else {
                 last.nextSibling = node;
             }
             node.ownerNode = this;
+            node.owned(true);
             node.previousSibling = last;
             last = node;
         }
         if (last != null) {
-            lastChild = last;
+            lastChild(last);
         }
 
     } // synchronizeChildren()

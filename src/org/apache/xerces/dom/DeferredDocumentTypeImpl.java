@@ -110,8 +110,8 @@ public class DeferredDocumentTypeImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
-        syncChildren = true;
+        syncData(true);
+        syncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -132,10 +132,11 @@ public class DeferredDocumentTypeImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData = false;
+        syncData(false);
 
         // fluff data
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl)this.ownerDocument;
         name = ownerDocument.getNodeNameString(fNodeIndex);
 
         // public and system ids
@@ -144,21 +145,23 @@ public class DeferredDocumentTypeImpl
         //ownerDocument.getNodeType(extraDataIndex);
         publicID = pool.toString(ownerDocument.getNodeName(extraDataIndex));
         systemID = pool.toString(ownerDocument.getNodeValue(extraDataIndex));
-        internalSubset = pool.toString(ownerDocument.getFirstChild(extraDataIndex));
+        internalSubset =
+            pool.toString(ownerDocument.getFirstChild(extraDataIndex));
     } // synchronizeData()
 
     /** Synchronizes the entities, notations, and elements. */
     protected void synchronizeChildren() {
 
         // no need to synchronize again
-        syncChildren = false;
+        syncChildren(false);
 
         // create new node maps
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl)this.ownerDocument;
 
-        entities  = new NamedNodeMapImpl(ownerDocument, null);
-        notations = new NamedNodeMapImpl(ownerDocument, null);
-        elements  = new NamedNodeMapImpl(ownerDocument, null);
+        entities  = new NamedNodeMapImpl(this, null);
+        notations = new NamedNodeMapImpl(this, null);
+        elements  = new NamedNodeMapImpl(this, null);
 
         // fill node maps
         for (int index = ownerDocument.getFirstChild(fNodeIndex);

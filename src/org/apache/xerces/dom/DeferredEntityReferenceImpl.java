@@ -140,8 +140,8 @@ public class DeferredEntityReferenceImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
-        syncChildren = true;
+        syncData(true);
+        syncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -165,7 +165,7 @@ public class DeferredEntityReferenceImpl
     protected void synchronizeData() {
 
         // no need to sychronize again
-        syncData = false;
+        syncData(false);
 
         // get the node data
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
@@ -177,7 +177,7 @@ public class DeferredEntityReferenceImpl
     protected void synchronizeChildren() {
 
         // no need to synchronize again
-        syncChildren = false;
+        syncChildren(false);
 
         // get children
         DocumentType doctype = ownerDocument.getDoctype();
@@ -192,13 +192,13 @@ public class DeferredEntityReferenceImpl
                     found = true;
 
                     // clone entity at this reference
-                    readOnly = false;
+                    readOnly(false);
                     Node child = entity.getFirstChild();
                     while (child != null) {
                         appendChild(child.cloneNode(true));
                         child = child.getNextSibling();
                     }
-                    readOnly = true;
+                    readOnly(true);
                 }
             }
         }
@@ -207,13 +207,13 @@ public class DeferredEntityReferenceImpl
         if (!found) {
             DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
             int index = ownerDocument.getFirstChild(fNodeIndex);
-            readOnly = false;
+            readOnly(false);
             while (index != -1) {
                 Node child = ownerDocument.getNodeObject(index);
                 appendChild(child);
                 index = ownerDocument.getNextSibling(index);
             }
-            readOnly = true;
+            readOnly(true);
         }
 
     } // synchronizeChildren()

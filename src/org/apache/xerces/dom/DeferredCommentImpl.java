@@ -95,7 +95,7 @@ public class DeferredCommentImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
+        syncData(true);
 
     } // <init>(DeferredDocumentImpl,int)
     
@@ -116,11 +116,11 @@ public class DeferredCommentImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData = false;
+        syncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
-            (DeferredDocumentImpl) this.ownerDocument;
+            (DeferredDocumentImpl) this.ownerDocument();
         data = ownerDocument.getNodeValueString(fNodeIndex);
 
     } // synchronizeData()

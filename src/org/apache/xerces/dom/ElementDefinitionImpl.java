@@ -69,7 +69,7 @@ import org.w3c.dom.*;
  * @version
  */
 public class ElementDefinitionImpl 
-    extends NodeContainer {
+    extends ParentNode {
 
     //
     // Constants
@@ -115,7 +115,7 @@ public class ElementDefinitionImpl
      * Returns the element definition name
      */
     public String getNodeName() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return name;
@@ -146,7 +146,7 @@ public class ElementDefinitionImpl
      */
     public NamedNodeMap getAttributes() {
 
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
     	return attributes;

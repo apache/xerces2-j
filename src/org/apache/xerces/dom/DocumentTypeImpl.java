@@ -80,7 +80,7 @@ import org.w3c.dom.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentTypeImpl 
-    extends NodeContainer
+    extends ChildAndParentNode
     implements DocumentType {
 
     //
@@ -155,7 +155,7 @@ public class DocumentTypeImpl
      * @since WD-DOM-Level-2-19990923
      */
     public String getPublicId() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return publicID;
@@ -167,7 +167,7 @@ public class DocumentTypeImpl
      * @since WD-DOM-Level-2-19990923
      */
     public String getSystemId() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return systemID;
@@ -179,7 +179,7 @@ public class DocumentTypeImpl
      * Set the internalSubset given as a string.
      */
     public void setInternalSubset(String internalSubset) {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         this.internalSubset = internalSubset;
@@ -192,7 +192,7 @@ public class DocumentTypeImpl
      * @since WD-DOM-Level-2-19990923
      */
     public String getInternalSubset() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return internalSubset;
@@ -214,7 +214,7 @@ public class DocumentTypeImpl
      * Returns the document type name
      */
     public String getNodeName() {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         return name;
@@ -224,7 +224,6 @@ public class DocumentTypeImpl
     public Node cloneNode(boolean deep) {
 
     	DocumentTypeImpl newnode = (DocumentTypeImpl)super.cloneNode(deep);
-        newnode.name = name;
     	// NamedNodeMaps must be cloned explicitly, to avoid sharing them.
     	newnode.entities  = entities.cloneMap(newnode);
     	newnode.notations = notations.cloneMap(newnode);
@@ -244,7 +243,7 @@ public class DocumentTypeImpl
      */
     public String getName() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	return name;
@@ -274,7 +273,7 @@ public class DocumentTypeImpl
      * as XML or HTML, and hence DO NOT appear here.
      */
     public NamedNodeMap getEntities() {
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
             }
     	return entities;
@@ -286,7 +285,7 @@ public class DocumentTypeImpl
      * or is used to formally declare a Processing Instruction target.
      */
     public NamedNodeMap getNotations() {
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
             }
     	return notations;
@@ -303,7 +302,7 @@ public class DocumentTypeImpl
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
     	
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
             }
         setReadOnly(readOnly, deep);
@@ -320,9 +319,9 @@ public class DocumentTypeImpl
      * @see ElementDefinitionImpl
      */
     public NamedNodeMap getElements() {
-        if (syncChildren) {
+        if (syncChildren()) {
             synchronizeChildren();
-            }
+        }
     	return elements;
     }
 

@@ -1,4 +1,4 @@
-/*
+ /*
  * The Apache Software License, Version 1.1
  *
  *
@@ -82,7 +82,7 @@ import org.w3c.dom.events.*;
  * to specific node types. When there is no obvious mapping for one of
  * these queries, it will respond with null.
  * Note that the default behavior is that children are forbidden. To
- * permit them, the subclass NodeContainer overrides several methods.
+ * permit them, the subclass ParentNode overrides several methods.
  * <P>
  * NodeImpl also implements NodeList, so it can return itself in
  * response to the getChildNodes() query. This eliminiates the need
@@ -94,6 +94,13 @@ import org.w3c.dom.events.*;
  * in that document. (Note that this is much tighter than "must be
  * same implementation") Nodes are all aware of their ownerDocument,
  * and attempts to mismatch will throw WRONG_DOCUMENT_ERR.
+ * <P>
+ * However, to save memory not all nodes always have a direct reference
+ * to their ownerDocument. When a node is owned by another node it relies
+ * on its owner to store its ownerDocument. Parent nodes always store it
+ * though, so there is never more than one level of indirection.
+ * And when a node doesn't have an owner, ownerNode refers to its
+ * ownerDocument.
  *
  * @version
  * @since  PR-DOM-Level-1-19980818.
@@ -106,7 +113,7 @@ public abstract class NodeImpl
     //
 
     /** Serialization version. */
-    static final long serialVersionUID = 2815829867052120872L;
+    static final long serialVersionUID = -6316591992167219696L;
 
     // public
 
@@ -119,59 +126,24 @@ public abstract class NodeImpl
 
     // links
 
-    /** Owner document. */
-	protected DocumentImpl ownerDocument;
-
     protected NodeImpl ownerNode; // typically the parent but not always!
-
-    /** Previous sibling. */
-	protected NodeImpl previousSibling;
-
-    /** Next sibling. */
-    protected NodeImpl nextSibling;
 
     // data
 
-    /** Read-only property. */
-	protected boolean readOnly;
+    protected short flags;
 
-	/** NON-DOM FEATURE; see setUserData/getUserData. **/
-	protected Object userData;
+    protected final static short READONLY     = 0x1<<0;
+    protected final static short SYNCDATA     = 0x1<<1;
+    protected final static short SYNCCHILDREN = 0x1<<2;
+    protected final static short OWNED        = 0x1<<3;
+    protected final static short FIRSTCHILD   = 0x1<<4;
+    protected final static short SPECIFIED    = 0x1<<5;
+    protected final static short IGNORABLEWS  = 0x1<<6;
+    protected final static short SETVALUE     = 0x1<<7;
+
+    /** NON-DOM FEATURE; see setUserData/getUserData. **/
+    protected Object userData;
 	
-    // lazy-evaluation nifo
-
-    /** Synchronization of data needed. */
-    protected transient boolean syncData;
-    
-
-    // internal data
-
-	/**
-     * Number of alterations made to this subtree since its creation.
-	 * Serves as a "dirty bit" so NodeList can recognize when an
-	 * alteration has been made and discard its cached state information.
-	 * <p>
-	 * Any method that alters the tree structure MUST cause or be
-	 * accompanied by a call to changed(), to inform it and its
-	 * parents that any outstanding NodeLists may have to be updated.
-     * <p>
-	 * (Required because NodeList is simultaneously "live" and integer-
-	 * indexed -- a bad decision in the DOM's design.)
-	 * <p>
-	 * Note that changes which do not affect the tree's structure -- changing
-	 * the node's name, for example -- do _not_ have to call changed().
-	 * <p>
-	 * Alternative implementation would be to use a cryptographic
-	 * Digest value rather than a count. This would have the advantage that
-	 * "harmless" changes (those producing equal() trees) would not force
-	 * NodeList to resynchronize. Disadvantage is that it's slightly more prone
-	 * to "false negatives", though that's the difference between "wildly
-	 * unlikely" and "absurdly unlikely". IF we start maintaining digests,
-	 * we should consider taking advantage of them.
-     */
-	int changes = 0;
-
-
     //
     // Constructors
     //
@@ -183,12 +155,9 @@ public abstract class NodeImpl
      * Every Node knows what Document it belongs to.
      */
     protected NodeImpl(DocumentImpl ownerDocument) {
-
-        // set information
-        // REVISITNS: This may have to be modifoed for DOM2:
-        this.ownerDocument = ownerDocument;
-
-    } // <init>(DocumentImpl,String,short,boolean,String)
+        // as long as we do not have any owner, ownerNode is our ownerDocument
+        ownerNode = ownerDocument;
+    } // <init>(DocumentImpl)
 
     /** Constructor for serialization. */
     public NodeImpl() {}
@@ -221,7 +190,7 @@ public abstract class NodeImpl
      */
     public void setNodeValue(String x) 
         throws DOMException {
-        if (readOnly) {
+        if (readOnly()) {
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                    "DOM001 Modification not allowed");
         }
@@ -233,8 +202,8 @@ public abstract class NodeImpl
      * Convenience shorthand for insertBefore(newChild,null).
      * @see #insertBefore(Node, Node)
      * <P>
-     * By default we do not accept any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not accept any children, ParentNode overrides this.
+     * @see ParentNode
      *
      * @returns newChild, in its new state (relocated, or emptied in the
      * case of DocumentNode.)
@@ -249,8 +218,7 @@ public abstract class NodeImpl
      * read-only.
      */
     public Node appendChild(Node newChild) throws DOMException {
-	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-				   "DOM006 Hierarchy request error");
+    	return insertBefore(newChild, null);
     }
 
     /**
@@ -260,8 +228,8 @@ public abstract class NodeImpl
      * in one after the clone has been made will not affect the other.
      * <P>
      * Note: since we never have any children deep is meaningless here,
-     * NodeContainer overrides this behavior.
-     * @see NodeContainer
+     * ParentNode overrides this behavior.
+     * @see ParentNode
      *
      * <p>
      * Example: Cloning a Text node will copy both the node and the text it
@@ -278,30 +246,26 @@ public abstract class NodeImpl
      */
     public Node cloneNode(boolean deep) {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
 	}
     	
     	NodeImpl newnode;
     	try {
-    		newnode = (NodeImpl)clone();
+            newnode = (NodeImpl)clone();
     	}
     	catch (CloneNotSupportedException e) {
-//	        Revisit : don't fail silently - but don't want to tie to parser guts
-//    		System.out.println("UNEXPECTED "+e);
-    		return null;
+//      Revisit : don't fail silently - but don't want to tie to parser guts
+//            System.out.println("UNEXPECTED "+e);
+            return null;
     	}
     	
-        // set owner document
-        newnode.ownerDocument = ownerDocument;
-
         // Need to break the association w/ original kids
-    	newnode.ownerNode      = null;
-    	newnode.previousSibling = null;
-        newnode.nextSibling     = null;
+    	newnode.ownerNode      = ownerDocument();
+        newnode.owned(false);
 
         // REVISIT: What to do when readOnly? -Ac
-        newnode.readOnly = false;
+        newnode.readOnly(false);
 
         // REVISIT: Should the user data be cloned?
         newnode.userData = null;
@@ -316,7 +280,26 @@ public abstract class NodeImpl
      * currently be part of that Document's actual contents.
      */
     public Document getOwnerDocument() {
-        return ownerDocument;
+        // if we have an owner simply forward the request
+        // otherwise ownerNode is our ownerDocument
+        if (owned()) {
+            return ownerNode.getOwnerDocument();
+        } else {
+            return (Document) ownerNode;
+        }
+    }
+
+    /**
+     * same as above but returns internal type
+     */
+    DocumentImpl ownerDocument() {
+        // if we have an owner simply forward the request
+        // otherwise ownerNode is our ownerDocument
+        if (owned()) {
+            return ownerNode.ownerDocument();
+        } else {
+            return (DocumentImpl) ownerNode;
+        }
     }
 
     /**
@@ -324,10 +307,14 @@ public abstract class NodeImpl
      * set the ownerDocument of this node
      */
     void setOwnerDocument(DocumentImpl doc) {
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-	ownerDocument = doc;
+        // if we have an owner we rely on it to have it right
+        // otherwise ownerNode is our ownerDocument
+	if (!owned()) {
+            ownerNode = doc;
+        }
     }
 
     /**
@@ -337,17 +324,28 @@ public abstract class NodeImpl
      * Attribute will never have parents.
      */
     public Node getParentNode() {
-        return ownerNode;
+        return null;            // overriden by ChildNode
+    }
+
+    /*
+     * same as above but returns internal type
+     */
+    NodeImpl parentNode() {
+        return null;
     }
 
     /** The next child of this node's parent, or null if none */
     public Node getNextSibling() {
-        return nextSibling;
+        return null;            // default behavior, overriden in ChildNode
     }
 
     /** The previous child of this node's parent, or null if none */
     public Node getPreviousSibling() {
-        return previousSibling;
+        return null;            // default behavior, overriden in ChildNode
+    }
+
+    ChildNode previousSibling() {
+        return null;            // default behavior, overriden in ChildNode
     }
 
     /**
@@ -365,8 +363,8 @@ public abstract class NodeImpl
      * Test whether this node has any children. Convenience shorthand
      * for (Node.getFirstChild()!=null)
      * <P>
-     * By default we do not have any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not have any children, ParentNode overrides this.
+     * @see ParentNode
      */
     public boolean hasChildNodes() {
         return false;
@@ -391,8 +389,8 @@ public abstract class NodeImpl
 
     /** The first child of this Node, or null if none.
      * <P>
-     * By default we do not have any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not have any children, ParentNode overrides this.
+     * @see ParentNode
      */
     public Node getFirstChild() {
     	return null;
@@ -400,8 +398,8 @@ public abstract class NodeImpl
 
     /** The first child of this Node, or null if none.
      * <P>
-     * By default we do not have any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not have any children, ParentNode overrides this.
+     * @see ParentNode
      */
     public Node getLastChild() {
 	return null;
@@ -411,8 +409,8 @@ public abstract class NodeImpl
      * Move one or more node(s) to our list of children. Note that this
      * implicitly removes them from their previous parent.
      * <P>
-     * By default we do not accept any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not accept any children, ParentNode overrides this.
+     * @see ParentNode
      *
      * @param newChild The Node to be moved to our subtree. As a
      * convenience feature, inserting a DocumentNode will instead insert
@@ -448,8 +446,8 @@ public abstract class NodeImpl
      * Remove a child from this Node. The removed child's subtree
      * remains intact so it may be re-inserted elsewhere.
      * <P>
-     * By default we do not have any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not have any children, ParentNode overrides this.
+     * @see ParentNode
      *
      * @return oldChild, in its new state (removed).
      *
@@ -471,8 +469,8 @@ public abstract class NodeImpl
      * parent, if any. Equivalent to inserting newChild before oldChild,
      * then removing oldChild.
      * <P>
-     * By default we do not have any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not have any children, ParentNode overrides this.
+     * @see ParentNode
      *
      * @returns oldChild, in its new state (removed).
      *
@@ -502,8 +500,8 @@ public abstract class NodeImpl
     /**
      * NodeList method: Count the immediate children of this node
      * <P>
-     * By default we do not have any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not have any children, ParentNode overrides this.
+     * @see ParentNode
      *
      * @return int
      */
@@ -515,8 +513,8 @@ public abstract class NodeImpl
      * NodeList method: Return the Nth immediate child of this node, or
      * null if the index is out of bounds.
      * <P>
-     * By default we do not have any children, NodeContainer overrides this.
-     * @see NodeContainer
+     * By default we do not have any children, ParentNode overrides this.
+     * @see ParentNode
      *
      * @return org.w3c.dom.Node
      * @param Index int
@@ -549,7 +547,7 @@ public abstract class NodeImpl
      */
     public void normalize() {
 	/* by default we do not have any children,
-	   NodeContainer overrides this behavior */
+	   ParentNode overrides this behavior */
     }
 
     /**
@@ -569,7 +567,8 @@ public abstract class NodeImpl
      */
     public boolean supports(String feature, String version)
     {
-        return ownerDocument.getImplementation().hasFeature(feature, version);
+        return getOwnerDocument().getImplementation().hasFeature(feature,
+                                                                 version);
     }
 
     /**
@@ -1022,8 +1021,8 @@ public abstract class NodeImpl
      * @param n node which was directly inserted or removed
      * @param e event to be sent to that node and its subtree
      */
-	void dispatchEventToSubtree(NodeImpl n,Event e)
-	{
+    void dispatchEventToSubtree(ChildNode n,Event e)
+    {
       if(MUTATIONEVENTS)
       {
 	    if(nodeListeners==null || n==null)
@@ -1037,9 +1036,9 @@ public abstract class NodeImpl
 	    {
 	        NamedNodeMap a=n.getAttributes();
 	        for(int i=a.getLength()-1;i>=0;--i)
-	            dispatchEventToSubtree(((NodeImpl)a.item(i)),e);
+	            dispatchEventToSubtree(((ChildNode)a.item(i)),e);
 	    }
-	    dispatchEventToSubtree((NodeImpl)n.getFirstChild(),e);
+	    dispatchEventToSubtree((ChildNode)n.getFirstChild(),e);
 	    dispatchEventToSubtree(n.nextSibling,e);
 	  }
 	} // dispatchEventToSubtree(NodeImpl,Event) :void
@@ -1078,7 +1077,7 @@ public abstract class NodeImpl
                 return retval;
             }    
             else if(type==Node.ENTITY_REFERENCE_NODE)
-                eventAncestor=eventAncestor.ownerNode;
+                eventAncestor=eventAncestor.parentNode();
             else 
                 return null;
                 // Any other parent means we're not in an Attr
@@ -1194,8 +1193,8 @@ public abstract class NodeImpl
      * altered. It _could_ be published as a DOM extension, if desired.
      * <P>
      * Note: since we never have any children deep is meaningless here,
-     * NodeContainer overrides this behavior.
-     * @see NodeContainer
+     * ParentNode overrides this behavior.
+     * @see ParentNode
      *
      * @param readOnly True or false as desired.
      * @param deep If true, children are also toggled. Note that this will
@@ -1204,11 +1203,10 @@ public abstract class NodeImpl
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-
-    	this.readOnly = readOnly;
+    	readOnly(readOnly);
 
     } // setReadOnly(boolean,boolean)
 
@@ -1218,11 +1216,10 @@ public abstract class NodeImpl
      */
     public boolean getReadOnly() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-
-        return readOnly;
+        return readOnly();
 
     } // getReadOnly():boolean
 
@@ -1248,18 +1245,93 @@ public abstract class NodeImpl
     //
 
     /**
+     * Denotes that this node has changed.
+     */
+    protected void changed() {} // overridden in subclasses
+
+    /**
+     * Returns the number of changes to this node.
+     */
+    protected int changes() {
+        // overridden in subclasses
+        throw new RuntimeException(
+                    "changes() called on a NodeImpl or one of its subclasses" +
+                    "which doesn't really implement it");
+    }
+
+    /**
      * Override this method in subclass to hook in efficient
      * internal data structure.
      */
     protected void synchronizeData() {}
 
-    /** Denotes that this node has changed. */
-    protected void changed() {
-    	++changes;
-        NodeImpl parentNode = (NodeImpl) getParentNode();
-    	if (parentNode != null) {
-            parentNode.changed();
-        }
+
+    /*
+     * Flags setters and getters
+     */
+
+    final boolean readOnly() {
+        return (flags & READONLY) != 0;
+    }
+
+    final void readOnly(boolean value) {
+        flags = (short) (value ? flags | READONLY : flags & ~READONLY);
+    }
+
+    final boolean syncData() {
+        return (flags & SYNCDATA) != 0;
+    }
+
+    final void syncData(boolean value) {
+        flags = (short) (value ? flags | SYNCDATA : flags & ~SYNCDATA);
+    }
+
+    final boolean syncChildren() {
+        return (flags & SYNCCHILDREN) != 0;
+    }
+
+    final void syncChildren(boolean value) {
+        flags = (short) (value ? flags | SYNCCHILDREN : flags & ~SYNCCHILDREN);
+    }
+
+    final boolean owned() {
+        return (flags & OWNED) != 0;
+    }
+
+    final void owned(boolean value) {
+        flags = (short) (value ? flags | OWNED : flags & ~OWNED);
+    }
+
+    final boolean firstChild() {
+        return (flags & FIRSTCHILD) != 0;
+    }
+
+    final void firstChild(boolean value) {
+        flags = (short) (value ? flags | FIRSTCHILD : flags & ~FIRSTCHILD);
+    }
+
+    final boolean specified() {
+        return (flags & SPECIFIED) != 0;
+    }
+
+    final void specified(boolean value) {
+        flags = (short) (value ? flags | SPECIFIED : flags & ~SPECIFIED);
+    }
+
+    final boolean ignorableWhitespace() {
+        return (flags & IGNORABLEWS) != 0;
+    }
+
+    final void ignorableWhitespace(boolean value) {
+        flags = (short) (value ? flags | IGNORABLEWS : flags & ~IGNORABLEWS);
+    }
+
+    final boolean setValue() {
+        return (flags & SETVALUE) != 0;
+    }
+
+    final void setValue(boolean value) {
+        flags = (short) (value ? flags | SETVALUE : flags & ~SETVALUE);
     }
 
     //
@@ -1279,7 +1351,7 @@ public abstract class NodeImpl
     private void writeObject(ObjectOutputStream out) throws IOException {
 
         // synchronize data
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
         // write object

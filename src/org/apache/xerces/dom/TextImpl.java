@@ -87,12 +87,6 @@ public class TextImpl
     static final long serialVersionUID = -5294980852957403469L;
     
     //
-    // Data
-    //
-
-    protected boolean ignorableWhitespace;
-
-    //
     // Constructors
     //
 
@@ -123,10 +117,10 @@ public class TextImpl
      */
     public void setIgnorableWhitespace(boolean ignore) {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-        ignorableWhitespace = ignore;
+        ignorableWhitespace(ignore);
 
     } // setIgnorableWhitespace(boolean)
     
@@ -136,10 +130,10 @@ public class TextImpl
      */
     public boolean isIgnorableWhitespace() {
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
-        return ignorableWhitespace;
+        return ignorableWhitespace();
 
     } // isIgnorableWhitespace():boolean
     
@@ -166,13 +160,13 @@ public class TextImpl
     public Text splitText(int offset) 
         throws DOMException {
 
-    	if (readOnly) {
+    	if (readOnly()) {
             throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
 
-        if (syncData) {
+        if (syncData()) {
             synchronizeData();
         }
     	if (offset < 0 || offset > data.length() - 1) {
@@ -181,7 +175,8 @@ public class TextImpl
         }
     		
         // split text into two separate nodes
-    	Text newText = ownerDocument.createTextNode(data.substring(offset));
+    	Text newText =
+            getOwnerDocument().createTextNode(data.substring(offset));
     	setNodeValue(data.substring(0, offset));
 
         // insert new text node

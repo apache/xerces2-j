@@ -5,6 +5,8 @@ TARGETS=\
 	AttrNSImpl.class\
 	CDATASectionImpl.class\
 	CharacterDataImpl.class\
+	ChildNode.class\
+	ChildAndParentNode.class\
 	CommentImpl.class\
 	DeepNodeListImpl.class\
 	DeferredAttrImpl.class\
@@ -34,10 +36,10 @@ TARGETS=\
 	EntityReferenceImpl.class\
 	LCount.class\
 	NamedNodeMapImpl.class\
-	NodeContainer.class\
 	NodeImpl.class\
 	NodeIteratorImpl.class\
 	NotationImpl.class\
+	ParentNode.class\
 	ProcessingInstructionImpl.class\
 	RangeExceptionImpl.class\
 	RangeImpl.class\

@@ -120,8 +120,7 @@ public class DeferredElementImpl
         super(ownerDoc, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
-        syncChildren = true;
+        syncChildren(true);
 
     } // <init>(DocumentImpl,int)
 
@@ -142,7 +141,7 @@ public class DeferredElementImpl
     protected final void synchronizeData() {
 
         // no need to sync in the future
-        syncData = false;
+        syncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
@@ -158,7 +157,6 @@ public class DeferredElementImpl
             do {
                 NodeImpl attr = (NodeImpl)ownerDocument.getNodeObject(index);
                 attrs.setNamedItem(attr);
-                attr.ownerNode = this;
                 index = ownerDocument.getNextSibling(index);
             } while (index != -1);
         }
@@ -174,28 +172,30 @@ public class DeferredElementImpl
     protected final void synchronizeChildren() {
 
         // no need to sync in the future
-        syncChildren = false;
+        syncChildren(false);
 
         // create children and link them as siblings
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        NodeImpl last = null;
+        ChildNode last = null;
         for (int index = ownerDocument.getFirstChild(fNodeIndex);
              index != -1;
              index = ownerDocument.getNextSibling(index)) {
 
-            NodeImpl node = (NodeImpl)ownerDocument.getNodeObject(index);
+            ChildNode node = (ChildNode)ownerDocument.getNodeObject(index);
             if (last == null) {
                 firstChild = node;
+                node.firstChild(true);
             }
             else {
                 last.nextSibling = node;
             }
             node.ownerNode = this;
+            node.owned(true);
             node.previousSibling = last;
             last = node;
         }
         if (last != null) {
-            lastChild = last;
+            lastChild(last);
         }
 
     } // synchronizeChildren()

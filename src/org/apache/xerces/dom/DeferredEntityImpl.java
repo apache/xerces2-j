@@ -125,8 +125,8 @@ public class DeferredEntityImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData = true;
-        syncChildren = true;
+        syncData(true);
+        syncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -150,7 +150,7 @@ public class DeferredEntityImpl
     protected void synchronizeData() {
 
         // no need to sychronize again
-        syncData = false;
+        syncData(false);
 
         // get the node data
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
@@ -170,7 +170,7 @@ public class DeferredEntityImpl
     protected void synchronizeChildren() {
 
         // no need to synchronize again
-        syncChildren = false;
+        syncChildren(false);
 
         // get children
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
