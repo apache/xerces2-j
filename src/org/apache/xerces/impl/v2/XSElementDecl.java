@@ -146,8 +146,16 @@ public class XSElementDecl {
      */
     private String fDescription = null;
     public String toString() {
-        if (fDescription == null)
-            fDescription = fTargetNamespace+":"+fName;
+        if (fDescription == null) {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("\"");
+            if (fTargetNamespace != null)
+                buffer.append(fTargetNamespace);
+            buffer.append("\"");
+            buffer.append(":");
+            buffer.append(fName);
+            fDescription = buffer.toString();
+        }
         return fDescription;
     }
 } // class XMLElementDecl

@@ -387,23 +387,34 @@ public class XSWildcardDecl  {
     private String fDescription = null;
     public String toString() {
         if (fDescription == null) {
-            String ret = null;
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("WC[");
             switch (fType) {
             case WILDCARD_ANY:
-                fDescription = SchemaSymbols.ATTVAL_TWOPOUNDANY;
+                buffer.append(SchemaSymbols.ATTVAL_TWOPOUNDANY);
                 break;
             case WILDCARD_OTHER:
-                fDescription = SchemaSymbols.ATTVAL_TWOPOUNDOTHER + ":uri=" + fNamespaceList[0];
+                buffer.append(SchemaSymbols.ATTVAL_TWOPOUNDOTHER);
+                buffer.append(":\"");
+                if (fNamespaceList[0] != null)
+                    buffer.append(fNamespaceList[0]);
+                buffer.append("\"");
                 break;
-            case WILDCARD_LIST: {
-                StringBuffer buffer = new StringBuffer();
-                buffer.append("namespace:uri=" + fNamespaceList[0]);
-                for (int i = 1; i < fNamespaceList.length; i++)
-                    buffer.append("," + fNamespaceList[i]);
-                fDescription = buffer.toString();
+            case WILDCARD_LIST:
+                buffer.append("\"");
+                if (fNamespaceList[0] != null)
+                    buffer.append(fNamespaceList[0]);
+                buffer.append("\"");
+                for (int i = 1; i < fNamespaceList.length; i++) {
+                    buffer.append(",\"");
+                    if (fNamespaceList[i] != null)
+                        buffer.append(fNamespaceList[i]);
+                    buffer.append("\"");
+                }
                 break;
             }
-            }
+            buffer.append("]");
+            fDescription = buffer.toString();
         }
 
         return fDescription;

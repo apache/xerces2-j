@@ -188,16 +188,11 @@ public class CMBuilder {
             if (right == null)
                 return expandContentModel((XSParticleDecl)left, minOccurs, maxOccurs);
 
-            // When checking Unique Particle Attribution, we always create new
-            // new node to store different name for different groups
-            //if (grammar.fUPAChecking) {
-            //REVISIT:
-            //contentSpecIndex = addContentSpecNode (type, left, right, false);
-            //}
-
-            particle.fValue = left;
-            particle.fOtherValue = right;
-            return expandContentModel((XSParticleDecl)particle, minOccurs, maxOccurs);
+            XSParticleDecl newParticle = new XSParticleDecl();
+            newParticle.fType = particle.fType;
+            newParticle.fValue = left;
+            newParticle.fOtherValue = right;
+            return expandContentModel((XSParticleDecl)newParticle, minOccurs, maxOccurs);
         }
         else if (type == XSParticleDecl.PARTICLE_EMPTY) {
             return null;

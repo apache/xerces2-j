@@ -561,7 +561,7 @@ public class XSDFACM
             final Object decl = fLeafList[outIndex].getDecl();
             if (fLeafListType[outIndex] == XSParticleDecl.PARTICLE_WILDCARD) {
                 for (; inIndex < fElemMapSize; inIndex++) {
-                    if (decl == fLeafList[inIndex])
+                    if (decl == fElemMap[inIndex])
                         break;
                 }
             } else {

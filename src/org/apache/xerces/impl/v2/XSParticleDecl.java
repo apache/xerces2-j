@@ -199,12 +199,12 @@ public class XSParticleDecl {
             // how to output "unbounded"?
             if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
                   fMinOccurs == 1 && fMaxOccurs == 1)) {
-                buffer.append("[" + fMinOccurs);
+                buffer.append("{" + fMinOccurs);
                 if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                     buffer.append("-UNBOUNDED");
                 else if (fMinOccurs != fMaxOccurs)
                     buffer.append("-" + fMaxOccurs);
-                buffer.append("]");
+                buffer.append("}");
             }
             fDescription = buffer.toString();
         }
