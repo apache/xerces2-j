@@ -215,7 +215,7 @@ public final class TextSerializer
     }
 
 
-    public void processingInstruction( String target, String code )
+    public void processingInstructionIO( String target, String code ) throws IOException
     {
     }
 
