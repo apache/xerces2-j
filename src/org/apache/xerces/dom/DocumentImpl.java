@@ -67,6 +67,8 @@ import org.w3c.dom.traversal.*;
 import org.w3c.dom.ranges.*;
 import org.w3c.dom.events.*;
 import org.apache.xerces.dom.events.*;
+import org.apache.xerces.utils.XMLCharacterProperties;
+
 
 /**
  * The Document interface represents the entire HTML or XML document.
@@ -243,6 +245,8 @@ public class DocumentImpl
      */
     public DocumentImpl() {
         this(false);
+        // make sure the XMLCharacterProperties class is initilialized
+        XMLCharacterProperties.initCharFlags();
     }
 
     /** Experimental constructor. */
@@ -250,6 +254,8 @@ public class DocumentImpl
         super(null);
         ownerDocument = this;
         allowGrammarAccess = grammarAccess;
+        // make sure the XMLCharacterProperties class is initilialized
+        XMLCharacterProperties.initCharFlags();
     }
 
     // For DOM2: support.
@@ -257,6 +263,8 @@ public class DocumentImpl
     public DocumentImpl(DocumentType doctype)
     {
         this(doctype, false);
+        // make sure the XMLCharacterProperties class is initilialized
+        XMLCharacterProperties.initCharFlags();
     }
     
     /** Experimental constructor. */
@@ -266,6 +274,8 @@ public class DocumentImpl
         if (this.docType != null) {
             docType.ownerDocument = this;
         }
+        // make sure the XMLCharacterProperties class is initilialized
+        XMLCharacterProperties.initCharFlags();
     }
 
     //
@@ -763,14 +773,10 @@ public class DocumentImpl
     public Entity createEntity(String name)
         throws DOMException {
 
-        // REVISIT: Should we be checking XML name chars?
-        /***
     	if (errorChecking && !isXMLName(name)) {
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
-        /***/
-
     	return new EntityImpl(this, name);
 
     } // createEntity(String):Entity
@@ -790,14 +796,10 @@ public class DocumentImpl
     public Notation createNotation(String name)
         throws DOMException {
 
-        // REVISIT: Should we be checking XML name chars?
-        /***
     	if (errorChecking && !isXMLName(name)) {
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
-        /***/
-
     	return new NotationImpl(this, name);
 
     } // createNotation(String):Notation
@@ -809,14 +811,10 @@ public class DocumentImpl
     public ElementDefinitionImpl createElementDefinition(String name)
         throws DOMException {
 
-        // REVISIT: Should we be checking XML name chars?
-        /***
     	if (errorChecking && !isXMLName(name)) {
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
-        /***/
-
         return new ElementDefinitionImpl(this, name);
 
     } // createElementDefinition(String):ElementDefinitionImpl
@@ -1550,86 +1548,15 @@ public class DocumentImpl
 
     /**
      * Check the string against XML's definition of acceptable names for
-     * elements and attributes and so on. From the XML spec:
-     * <p>
-     * [Definition:] A Name is a token beginning with a letter or one of a
-     * few punctuation characters, and continuing with letters, digits,
-     * hyphens,underscores, colons, or full stops, together known as name
-     * characters.
-     * <p>
-     * Unfortunately, that spec goes on to say that after the first character,
-     * names may use "combining characters" and "extender characters",
-     * which are explicitly listed rather than defined in terms of Java's
-     * Unicode character types... and which in fact can't be expressed solely
-     * in terms of those types.
-     * <p>
-     * I've empirically derived some tests which are partly based on the
-     * Java Unicode space (which simplifies them considerably), but they
-     * still wind up having to be further qualified. This may not remain
-     * valid if future extensions of Java and/or Unicode introduce other
-     * characters having these type numbers.
-     * <p>
-     * Suggestions for alternative implementations would be welcome.
+     * elements and attributes and so on using the XMLCharacterProperties
+     * utility class
      */
     public static boolean isXMLName(String s) {
-
-        // REVISIT: Use the parser's character checking code. -Ac
 
         if (s == null) {
             return false;
         }
-
-    	char [] ca=new char[s.length()];
-    	s.getChars(0,s.length(),ca,0);
-
-    	// First character must be letter, underscore, or colon.
-    	if (!Character.isLetter(ca[0]) && "_:".indexOf((int)ca[0]) == -1) {
-    		return false;
-            }
-
-    	// Remaining characters must be letter, digit, underscore,
-    	// colon, period, dash, an XML "Combining Character", or an
-    	// XML "Extender Character".
-    	for (int i = 1; i < s.length(); ++i) {
-
-    		char c = ca[i];
-    		int ctype = Character.getType(c);
-
-    		if (!Character.isLetterOrDigit(c) &&
-                (".-_:".indexOf(c) == -1) &&
-    		
-                // Right type
-    		    (!(ctype >= 6 && ctype <= 8 &&	
-                      // Bad ranges, combined from the three types:
-    				  !((c >= 0x06dd && c <= 0x06de) ||
-      				  	(c >= 0x20dd && c <= 0x20e0) ||
-      				   	 c >= 0x309b
-    				   	)
-    				  )
-    			    ) &&
-    		
-    			  // XML Extender chars are all type 4 (uppercase) except
-    			  // for two which are type 24. (titlecase modifier)
-
-                  // Right type
-    		      (!(ctype == 4 &&
-                        // Bad ranges
-    					!((c >= 0x02d0 && c <= 0x0559) ||
-    				      (c >= 0x06e5 && c <= 0x06e6) ||
-    					  (c >= 0x309b && c <= 0x309c)
-    					 )
-    				|| c == 0x00b7 // Type 24
-    				|| c == 0x0387 // Type 24
-    				))
-                  ) {
-    		
-    		    return false;
-            }
-    		
-    	}
-
-    	// All characters passed the tests.
-    	return true;
+        return XMLCharacterProperties.validName(s);
     	
     } // isXMLName(String):boolean
 
