@@ -4503,6 +4503,7 @@ public class TraverseSchema implements
       }
  
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        System.out.println("here");
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.3:  Element occurrence range not a restriction of base element's range: element is " +  fStringPool.toString(localpart1));
       }
 
@@ -4563,27 +4564,30 @@ public class TraverseSchema implements
     private void checkTypesOK(XMLElementDecl derived, XMLElementDecl base, int dndx, int bndx, SchemaGrammar aGrammar, String elementName) throws Exception {
       
 
+      ComplexTypeInfo tempType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(dndx); 
       if (derived.type == XMLElementDecl.TYPE_SIMPLE ) {
  
         if (base.type != XMLElementDecl.TYPE_SIMPLE) 
             throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
-        if (!(checkSimpleTypeDerivationOK(derived.datatypeValidator,
-             base.datatypeValidator))) 
-            throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
-      }
-      else {
-        ComplexTypeInfo tempType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(dndx); 
-        ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx); 
-        for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
-          if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
-            throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
-          }
-          if (tempType.typeName.equals(bType.typeName))
-            break; 
+
+        if (tempType == null) {
+         if (!(checkSimpleTypeDerivationOK(derived.datatypeValidator,
+               base.datatypeValidator))) 
+              throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
+         return;
         }
-        if(tempType == null) {
+      }
+      
+      ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx); 
+      for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
+        if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
           throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
         }
+        if (tempType.typeName.equals(bType.typeName))
+          break; 
+      }
+      if(tempType == null) {
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
       }
     }
 
@@ -4691,8 +4695,8 @@ throws Exception {
     }
     private boolean checkOccurrenceRange(int min1, int max1, int min2, int max2) {
 
-      if (min1>=min2 && 
-          (max2==SchemaSymbols.OCCURRENCE_UNBOUNDED || (max1!=SchemaSymbols.OCCURRENCE_UNBOUNDED && max1<=max2))) 
+      if ((min1 >= min2) && 
+          ((max2==SchemaSymbols.OCCURRENCE_UNBOUNDED) || (max1!=SchemaSymbols.OCCURRENCE_UNBOUNDED && max1<=max2))) 
         return true;
       else
         return false;
@@ -4871,10 +4875,7 @@ throws Exception {
       int count2= tempVector2.size();
  
       int current = 0; 
-      for (int i = 0; i<count1; i++) {
-        // check if we've run out of items in the base
-        if (current >= count2) 
-           throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
+      label: for (int i = 0; i<count1; i++) {
 
         Integer particle1 = (Integer)tempVector1.elementAt(i);
         for (int j = current; j<count2; j++) {
@@ -4883,13 +4884,14 @@ throws Exception {
            try {
              checkParticleDerivationOK(particle1.intValue(),derivedScope, 
                 particle2.intValue(), baseScope, bInfo);
-             break;
+             continue label;
            }
            catch (ParticleRecoverableError e) {
              if (!particleEmptiable(particle2.intValue()))
                 throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
            }
         }
+        throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
       }
       
     }
