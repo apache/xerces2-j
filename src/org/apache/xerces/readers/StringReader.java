@@ -218,6 +218,9 @@ final class StringReader extends XMLEntityReader {
         synchronized (StringReader.class) {
             fNextFreeReader = fgFreeReaders;
             fgFreeReaders = this;
+            // Allow these following two fields to be GC-ed.
+            fStringPool = null;
+            fData = null;
         }
         return nextReader;
     }

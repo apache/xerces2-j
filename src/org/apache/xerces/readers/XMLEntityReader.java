@@ -167,6 +167,10 @@ abstract class XMLEntityReader implements XMLEntityHandler.EntityReader {
         if (fStillActive) {
             nextReader = fEntityHandler.changeReaders();
             fStillActive = false;
+           // Allow these following three fields to be GC-ed.
+            fEntityHandler = null;
+            fErrorReporter = null;
+            fCharDataHandler = null;
         }
         return nextReader;
     }
