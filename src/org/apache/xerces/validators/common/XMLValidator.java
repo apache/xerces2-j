@@ -2423,7 +2423,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                              XMLAttrList attrList) 
    throws Exception {
 
-      if ((fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )|| 
+      if ((fGrammarIsSchemaGrammar && fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )|| 
           (fGrammar == null && !fValidating && !fNamespacesEnabled) ) {
          fCurrentElementIndex = -1;
          fCurrentContentSpecType = -1;
@@ -2439,6 +2439,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                index = fAttrList.getNextAttr(index);
             }
          }
+         System.out.println("HHHHHHHH"+fGrammar);
          return;
       }
 
