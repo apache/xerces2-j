@@ -2143,13 +2143,12 @@ public final class XMLDTDScanner {
                 attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
             } else {
                 if (fEntityReader.skippedString(fixed_string)) {
-                    if (!fEntityReader.lookingAtSpace(true)) {
+                    if (!checkForPEReference(true)) {
                         abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_AFTER_FIXED_IN_DEFAULTDECL,
                                     XMLMessages.P60_SPACE_REQUIRED,
                                     elementTypeIndex, attDefName);
                         return;
                     }
-                    fEntityReader.skipPastSpaces();
                     attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
                 } else
                     attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
