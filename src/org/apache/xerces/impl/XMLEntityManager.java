@@ -148,6 +148,10 @@ public class XMLEntityManager
     protected static final String ALLOW_JAVA_ENCODINGS =
         Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
 
+    /** Feature identifier: warn on duplicate EntityDef */
+    protected static final String WARN_ON_DUPLICATE_ENTITYDEF =
+    Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ENTITYDEF_FEATURE;
+
     // property identifiers
 
     /** Property identifier: symbol table. */
@@ -170,6 +174,7 @@ public class XMLEntityManager
         EXTERNAL_GENERAL_ENTITIES,
         EXTERNAL_PARAMETER_ENTITIES,
         ALLOW_JAVA_ENCODINGS,
+        WARN_ON_DUPLICATE_ENTITYDEF
     };
 
     /** Recognized properties. */
@@ -226,6 +231,11 @@ public class XMLEntityManager
      * http://apache.org/xml/features/allow-java-encodings
      */
     protected boolean fAllowJavaEncodings;
+
+    /** warn on duplicate Entity declaration.
+     *  http://apache.org/xml/features/warn-on-duplicate-entitydef
+     */
+    protected boolean fWarnDuplicateEntityDef;
 
     // properties
 
@@ -366,7 +376,16 @@ public class XMLEntityManager
         if (!fEntities.containsKey(name)) {
             Entity entity = new InternalEntity(name, text);
             fEntities.put(name, entity);
-        } 
+        }
+        else{
+            if(fWarnDuplicateEntityDef){
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                             "MSG_DUPLICATE_ENTITY_DEFINITION",
+                                             new Object[]{ name },
+                                             XMLErrorReporter.SEVERITY_WARNING );
+            }
+        }
+
     } // addInternalEntity(String,String)
 
     /**
@@ -410,10 +429,19 @@ public class XMLEntityManager
                     }
                 }
             }
-            Entity entity = new ExternalEntity(name, 
+            Entity entity = new ExternalEntity(name,
                     new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId)), null);
             fEntities.put(name, entity);
         }
+        else{
+            if(fWarnDuplicateEntityDef){
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                             "MSG_DUPLICATE_ENTITY_DEFINITION",
+                                             new Object[]{ name },
+                                             XMLErrorReporter.SEVERITY_WARNING );
+            }
+        }
+
     } // addExternalEntity(String,String,String,String)
 
     /**
@@ -454,6 +482,14 @@ public class XMLEntityManager
         if (!fEntities.containsKey(name)) {
             Entity entity = new ExternalEntity(name, new XMLResourceIdentifierImpl(publicId, systemId, baseSystemId, null), notation);
             fEntities.put(name, entity);
+        }
+        else{
+            if(fWarnDuplicateEntityDef){
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                             "MSG_DUPLICATE_ENTITY_DEFINITION",
+                                             new Object[]{ name },
+                                             XMLErrorReporter.SEVERITY_WARNING );
+            }
         }
     } // addUnparsedEntity(String,String,String,String)
 
@@ -531,7 +567,7 @@ public class XMLEntityManager
          }
          if (needExpand)
             expandedSystemId = expandSystemId(literalSystemId, baseSystemId);
- 
+
        // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
@@ -609,8 +645,8 @@ public class XMLEntityManager
                         //REVISIT:  since we're storing expandedSystemId in the
                         // externalEntity, how could this have got here if it wasn't already
                         // expanded??? - neilg
-                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null); 
-                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null); 
+                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
+                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
                         String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
                         fResourceIdentifier.setValues(
                                 (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
@@ -647,8 +683,8 @@ public class XMLEntityManager
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
                         // REVISIT:  for the same reason above...
-                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null); 
-                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null); 
+                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
+                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
                         String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
                         fResourceIdentifier.setValues(
                                 (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
@@ -815,14 +851,14 @@ public class XMLEntityManager
         // we've seen a new Reader. put it in a list, so that
         // we can close it later.
         fOwnReaders.addElement(reader);
-        
+
         // push entity on stack
         if (fCurrentEntity != null) {
             fEntityStack.push(fCurrentEntity);
         }
 
         // create entity
-        fCurrentEntity = new ScannedEntity(name, 
+        fCurrentEntity = new ScannedEntity(name,
                 new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandedSystemId),
                 stream, reader, encoding, literal, false, isExternal);
 
@@ -841,7 +877,7 @@ public class XMLEntityManager
 
     // a list of Readers ever seen
     protected Vector fOwnReaders = new Vector();
-    
+
     /**
      * Close all opened InputStreams and Readers opened by this parser.
      */
@@ -857,7 +893,7 @@ public class XMLEntityManager
         // and clear the list
         fOwnReaders.removeAllElements();
     }
-    
+
     //
     // XMLComponent methods
     //
@@ -905,6 +941,13 @@ public class XMLEntityManager
         }
         catch (XMLConfigurationException e) {
             fAllowJavaEncodings = false;
+        }
+
+        try {
+            fWarnDuplicateEntityDef = componentManager.getFeature(WARN_ON_DUPLICATE_ENTITYDEF);
+        }
+        catch (XMLConfigurationException e) {
+            fWarnDuplicateEntityDef = false;
         }
 
         // xerces properties
@@ -1190,7 +1233,7 @@ public class XMLEntityManager
      *
      * @param b4    The first four bytes of the input.
      * @param count The number of bytes actually read.
-     * @return a 2-element array:  the first element, an IANA-encoding string, 
+     * @return a 2-element array:  the first element, an IANA-encoding string,
      *  the second element a Boolean which is true iff the document is big endian, false
      *  if it's little-endian, and null if the distinction isn't relevant.
      */
@@ -1283,7 +1326,7 @@ public class XMLEntityManager
      *                     encoding name may be a Java encoding name;
      *                     otherwise, it is an ianaEncoding name.
      * @param isBigEndian   For encodings (like uCS-4), whose names cannot
-     *                      specify a byte order, this tells whether the order is bigEndian.  null menas 
+     *                      specify a byte order, this tells whether the order is bigEndian.  null menas
      *                      unknown or not relevant.
      *
      * @return Returns a reader.
@@ -1886,7 +1929,7 @@ public class XMLEntityManager
                     //fCurrentEntity.stream.reset();
                     fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding, null);
                 } else {
-                    if (DEBUG_ENCODINGS) 
+                    if (DEBUG_ENCODINGS)
                         System.out.println("$$$ reusing old reader on stream");
                 }
             }
@@ -3191,7 +3234,7 @@ public class XMLEntityManager
             }
 
             // read characters
-            int length = fCurrentEntity.mayReadChunks? 
+            int length = fCurrentEntity.mayReadChunks?
                     (fCurrentEntity.ch.length - offset):
                     (DEFAULT_XMLDECL_BUFFER_SIZE);
             if (DEBUG_BUFFER) System.out.println("  length to try to read: "+length);
@@ -3243,7 +3286,7 @@ public class XMLEntityManager
     // methods.  This means that, once we discover the true (declared)
     // encoding of a document, we can neither backtrack to read the
     // whole doc again nor start reading where we are with a new
-    // reader.  
+    // reader.
     //
     // This class allows rewinding an inputStream by allowing a mark
     // to be set, and the stream reset to that position.  <strong>The
@@ -3264,7 +3307,7 @@ public class XMLEntityManager
         private int fOffset;
         private int fLength;
         private int fMark;
-    
+
         public RewindableInputStream(InputStream is) {
             fData = new byte[DEFAULT_BUFFER_SIZE];
             fInputStream = is;
@@ -3278,11 +3321,11 @@ public class XMLEntityManager
         public void setStartOffset(int offset) {
             fStartOffset = offset;
         }
-        
+
         public void rewind() {
             fOffset = fStartOffset;
         }
-    
+
         public int read() throws IOException {
             int b = 0;
             if (fOffset < fLength) {
@@ -3338,7 +3381,7 @@ public class XMLEntityManager
             fOffset += len;
             return len;
         }
-        
+
         public long skip(long n)
             throws IOException
         {
@@ -3372,7 +3415,7 @@ public class XMLEntityManager
             */
             return fInputStream.skip(n) + bytesLeft;
         }
-        
+
         public int available() throws IOException {
             int bytesLeft = fLength - fOffset;
             if (bytesLeft == 0) {
@@ -3399,7 +3442,7 @@ public class XMLEntityManager
 
         public void close() throws IOException {
             if (fInputStream != null) {
-                fInputStream.close(); 
+                fInputStream.close();
                 fInputStream = null;
             }
         }

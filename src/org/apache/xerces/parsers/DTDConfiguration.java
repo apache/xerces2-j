@@ -135,6 +135,10 @@ public class DTDConfiguration
     /** Feature identifier: warn on duplicate attribute definition. */
     protected static final String WARN_ON_DUPLICATE_ATTDEF =
         Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE;
+
+    /** Feature identifier: warn on duplicate entity definition. */
+    protected static final String WARN_ON_DUPLICATE_ENTITYDEF =
+        Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_DUPLICATE_ENTITYDEF_FEATURE;
     
     /** Feature identifier: warn on undeclared element definition. */
     protected static final String WARN_ON_UNDECLARED_ELEMDEF =
@@ -308,12 +312,13 @@ public class DTDConfiguration
             WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
             ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
             LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
-            NOTIFY_CHAR_REFS,
+            NOTIFY_CHAR_REFS,		WARN_ON_DUPLICATE_ENTITYDEF
         };
         addRecognizedFeatures(recognizedFeatures);
 
         // set state for default features
         setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
+        setFeature(WARN_ON_DUPLICATE_ENTITYDEF, false);
         setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);
         setFeature(ALLOW_JAVA_ENCODINGS, false);
         setFeature(CONTINUE_AFTER_FATAL_ERROR, false);

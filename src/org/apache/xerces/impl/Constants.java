@@ -165,6 +165,9 @@ public final class Constants {
     /** Warn on undeclared element feature ("validation/warn-on-undeclared-elemdef"). */
     public static final String WARN_ON_UNDECLARED_ELEMDEF_FEATURE = "validation/warn-on-undeclared-elemdef";
 
+    /** Warn on duplicate entity declaration feature ("warn-on-duplicate-entitydef"). */
+    public static final String WARN_ON_DUPLICATE_ENTITYDEF_FEATURE = "warn-on-duplicate-entitydef";
+
     /** Allow Java encoding names feature ("allow-java-encodings"). */
     public static final String ALLOW_JAVA_ENCODINGS_FEATURE = "allow-java-encodings";
 
@@ -262,8 +265,8 @@ public final class Constants {
 
 
     // general constants
-    
-    /** Element PSVI is stored in augmentations using string "ELEMENT_PSVI" */    
+
+    /** Element PSVI is stored in augmentations using string "ELEMENT_PSVI" */
     public final static String ELEMENT_PSVI = "ELEMENT_PSVI";
 
     /* Attribute PSVI is stored in augmentations using string "ATTRIBUTE_PSVI" */
