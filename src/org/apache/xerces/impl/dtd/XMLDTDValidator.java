@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLDocumentFragmentScannerImpl;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
@@ -852,6 +853,16 @@ public class XMLDTDValidator
                 if (!allWhiteSpace) {
                     charDataInContent();
                 }
+                
+                // For E15.2
+                if (augs != null && augs.getItem(XMLDocumentFragmentScannerImpl.CHAR_REF) == Boolean.TRUE) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                               "MSG_CONTENT_INVALID_SPECIFIED",
+                                               new Object[]{ fCurrentElement.rawname, 
+                                                   fDTDGrammar.getContentSpecAsString(fElementDepth),
+                                                   "character reference"},
+                                               XMLErrorReporter.SEVERITY_ERROR);                
+                }
             }
 
             if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
@@ -963,7 +974,18 @@ public class XMLDTDValidator
      * @throws XNIException Thrown by application to signal an error.
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
-
+        // fixes E15.1
+        if (fPerformValidation && fElementDepth >= 0 && fDTDGrammar != null) {
+            fDTDGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+            if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                               "MSG_CONTENT_INVALID_SPECIFIED",
+                                               new Object[]{ fCurrentElement.rawname,
+                                                             "EMPTY",
+                                                             "comment"},
+                                               XMLErrorReporter.SEVERITY_ERROR);                
+            }
+        }
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.comment(text, augs);
@@ -992,6 +1014,18 @@ public class XMLDTDValidator
     public void processingInstruction(String target, XMLString data, Augmentations augs)
     throws XNIException {
 
+        // fixes E15.1
+        if (fPerformValidation && fElementDepth >= 0 && fDTDGrammar != null) {
+            fDTDGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+            if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                               "MSG_CONTENT_INVALID_SPECIFIED",
+                                               new Object[]{ fCurrentElement.rawname,
+                                                             "EMPTY",
+                                                             "processing instruction"},
+                                               XMLErrorReporter.SEVERITY_ERROR);                
+            }
+        }
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.processingInstruction(target, data, augs);
@@ -1019,10 +1053,19 @@ public class XMLDTDValidator
                                    XMLResourceIdentifier identifier,
                                    String encoding, 
                                    Augmentations augs) throws XNIException {
-
-        if (fPerformValidation && fDTDGrammar != null &&
-                fGrammarBucket.getStandalone()) {
-            XMLDTDLoader.checkStandaloneEntityRef(name, fDTDGrammar, fEntityDecl, fErrorReporter);
+        if (fPerformValidation && fElementDepth >= 0 && fDTDGrammar != null) {
+            fDTDGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+            // fixes E15.1
+            if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                           "MSG_CONTENT_INVALID_SPECIFIED",
+                                           new Object[]{ fCurrentElement.rawname,
+                                                         "EMPTY", "ENTITY"},
+                                           XMLErrorReporter.SEVERITY_ERROR);                
+            }
+            if (fGrammarBucket.getStandalone()) {
+                XMLDTDLoader.checkStandaloneEntityRef(name, fDTDGrammar, fEntityDecl, fErrorReporter);
+            }
         }
         if (fDocumentHandler != null) {
             fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
@@ -1094,7 +1137,7 @@ public class XMLDTDValidator
                (fDTDValidation || fSeenDoctypeDecl);
     }
     
-			//REVISIT:we can convert into functions.. adding default attribute values.. and one validating.
+            //REVISIT:we can convert into functions.. adding default attribute values.. and one validating.
 
     /** Add default attributes and validate. */
     protected void addDTDDefaultAttrsAndValidate(QName elementName, int elementIndex, 
@@ -1137,7 +1180,48 @@ public class XMLDTDValidator
             String attType = getAttributeTypeName(fTempAttDecl);
             int attDefaultType =fTempAttDecl.simpleType.defaultType;
             String attValue = null;
+            
+            boolean found = false;
+            if((fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_ENUMERATION ||
+                fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_NOTATION) && 
+                fPerformValidation) {
+                    
+                for (int i=0; i<fTempAttDecl.simpleType.enumeration.length ; i++) {
+                  for (int j=0; j<fTempAttDecl.simpleType.enumeration.length ; j++) {
+                      if (fTempAttDecl.simpleType.enumeration[i].equals
+                         (fTempAttDecl.simpleType.enumeration[j]) && i!=j) {
+                           found = true;
+                           break;
+                         }
+                    }    
+                     if (found) 
+                         break;
+                   }
 
+                StringBuffer enumValueString = new StringBuffer();
+                if (fTempAttDecl.simpleType.enumeration != null) {
+                    enumValueString.append("(");
+                    for (int i = 0; i < fTempAttDecl.simpleType.enumeration.length; i++) {
+                        enumValueString.append(fTempAttDecl.simpleType.enumeration[i]+" ");
+                    }
+                    enumValueString.append(")");
+                }
+                                           
+                   if (found && fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_ENUMERATION) {
+                      fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                   "MSG_DISTINCT_TOKENS_IN_ENUMERATION", 
+                   new Object[] {attRawName, enumValueString},
+                   XMLErrorReporter.SEVERITY_ERROR);
+                   
+                   } else if (found && fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_NOTATION) {
+                      fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                   "MSG_DISTINCT_NOTATION_IN_ENUMERATION", 
+                   new Object[] {attRawName, enumValueString},
+                   XMLErrorReporter.SEVERITY_ERROR);
+                   
+                }    
+            }
+                            
             if (fTempAttDecl.simpleType.defaultValue != null) {
                 attValue = fTempAttDecl.simpleType.defaultValue;
             }
@@ -1839,34 +1923,34 @@ public class XMLDTDValidator
 
         // VC: Root Element Type
         // see if the root element's name matches the one in DoctypeDecl 
-		if (!fSeenRootElement) {
-			// REVISIT: Here are current assumptions about validation features
-			//          given that XMLSchema validator is in the pipeline
-			//
-			// http://xml.org/sax/features/validation = true
-			// http://apache.org/xml/features/validation/schema = true
-			//
-			// [1] XML instance document only has reference to a DTD 
-			//  Outcome: report validation errors only against dtd.
-			//
-			// [2] XML instance document has only XML Schema grammars:
-			//  Outcome: report validation errors only against schemas (no errors produced from DTD validator)
-			//
-			// [3] XML instance document has DTD and XML schemas:
-			// [a] if schema language is not set outcome - validation errors reported against both grammars: DTD and schemas.
-			// [b] if schema language is set to XML Schema - do not report validation errors
-			//         
-			// if dynamic validation is on
-			//            validate only against grammar we've found (depending on settings
-			//            for schema feature)
-			// 
-			// 
-			fPerformValidation = validate();
-			fSeenRootElement = true;
-			fValidationManager.setEntityState(fDTDGrammar);
-			fValidationManager.setGrammarFound(fSeenDoctypeDecl);
-			rootElementSpecified(element);
-		}
+        if (!fSeenRootElement) {
+            // REVISIT: Here are current assumptions about validation features
+            //          given that XMLSchema validator is in the pipeline
+            //
+            // http://xml.org/sax/features/validation = true
+            // http://apache.org/xml/features/validation/schema = true
+            //
+            // [1] XML instance document only has reference to a DTD 
+            //  Outcome: report validation errors only against dtd.
+            //
+            // [2] XML instance document has only XML Schema grammars:
+            //  Outcome: report validation errors only against schemas (no errors produced from DTD validator)
+            //
+            // [3] XML instance document has DTD and XML schemas:
+            // [a] if schema language is not set outcome - validation errors reported against both grammars: DTD and schemas.
+            // [b] if schema language is set to XML Schema - do not report validation errors
+            //         
+            // if dynamic validation is on
+            //            validate only against grammar we've found (depending on settings
+            //            for schema feature)
+            // 
+            // 
+            fPerformValidation = validate();
+            fSeenRootElement = true;
+            fValidationManager.setEntityState(fDTDGrammar);
+            fValidationManager.setGrammarFound(fSeenDoctypeDecl);
+            rootElementSpecified(element);
+        }
         if (fDTDGrammar == null) {
 
             if (!fPerformValidation) {
@@ -1891,7 +1975,7 @@ public class XMLDTDValidator
         else {
             //  resolve the element
             fCurrentElementIndex = fDTDGrammar.getElementDeclIndex(element);
-									//changed here.. new function for getContentSpecType
+            //changed here.. new function for getContentSpecType
             fCurrentContentSpecType = fDTDGrammar.getContentSpecType(fCurrentElementIndex);
             if (fCurrentContentSpecType == -1 && fPerformValidation) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
@@ -1904,7 +1988,7 @@ public class XMLDTDValidator
                 //  1. normalize the attributes
                 //  2. validate the attrivute list.
                 // TO DO: 
-												//changed here.. also pass element name,
+                //changed here.. also pass element name,
                 addDTDDefaultAttrsAndValidate(element, fCurrentElementIndex, attributes);
             }
         }

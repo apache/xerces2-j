@@ -214,7 +214,7 @@ public class UTF8Reader
                 if (b1 == -1) {
                     expectedByte(2, 3);
                 }
-                if ((b1 & 0xC0) != 0x80) {
+                if ((b1 & 0xC0) != 0x80 || (b0 == 0xED && b1 >= 0xA0)) {
                     invalidByte(2, 3, b1);
                 }
                 int b2 = index == fOffset
@@ -421,7 +421,7 @@ public class UTF8Reader
                     }
                     count++;
                 }
-                if ((b1 & 0xC0) != 0x80) {
+                if ((b1 & 0xC0) != 0x80 || (b0 == 0xED && b1 >= 0xA0)) {
                     if (out > offset) {
                         fBuffer[0] = (byte)b0;
                         fBuffer[1] = (byte)b1;

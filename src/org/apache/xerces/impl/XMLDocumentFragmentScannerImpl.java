@@ -61,10 +61,12 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -1076,6 +1078,8 @@ public class XMLDocumentFragmentScannerImpl
  
     } // scanEndElement():int
 
+    public static final String CHAR_REF = "characterReference";
+
     /**
      * Scans a character reference.
      * <p>
@@ -1095,7 +1099,9 @@ public class XMLDocumentFragmentScannerImpl
                 if (fNotifyCharRefs) {
                     fDocumentHandler.startGeneralEntity(fCharRefLiteral, null, null, null);
                 }
-                fDocumentHandler.characters(fStringBuffer2, null);
+                Augmentations augs = new AugmentationsImpl();
+                augs.putItem(CHAR_REF, Boolean.TRUE);
+                fDocumentHandler.characters(fStringBuffer2, augs);
                 if (fNotifyCharRefs) {
                     fDocumentHandler.endGeneralEntity(fCharRefLiteral, null);
                 }
