@@ -173,6 +173,9 @@ public abstract class XMLScanner
     /** Scanning attribute. */
     protected boolean fScanningAttribute;
 
+    /** Report entity boundary. */
+    protected boolean fReportEntity;
+
     // symbols
 
     /** Symbol: "version". */
@@ -244,6 +247,7 @@ public abstract class XMLScanner
         
         // initialize vars
         fEntityDepth = 0;
+        fReportEntity = true;
 
         // save built-in entity names
         fVersionSymbol = fSymbolTable.addSymbol("version");
@@ -554,6 +558,7 @@ public abstract class XMLScanner
     protected void scanPI() throws IOException, XNIException {
 
         // target
+        fReportEntity = false;
         String target = fEntityScanner.scanName();
         if (target == null) {
             reportFatalError("PITargetRequired", null);
@@ -561,6 +566,7 @@ public abstract class XMLScanner
 
         // scan data
         scanPIData(target, fString);
+        fReportEntity = true;
 
     } // scanPI()
 
@@ -656,7 +662,7 @@ public abstract class XMLScanner
                                      new Object[] { Integer.toHexString(c) }); 
                     fEntityScanner.scanChar();
                 }
-            }
+            } 
         }
         text.append(fString);
         if (!fEntityScanner.skipChar('>')) {

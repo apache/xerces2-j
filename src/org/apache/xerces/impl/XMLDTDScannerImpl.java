@@ -171,9 +171,6 @@ public class XMLDTDScannerImpl
     /** Seen external parameter entity. */
     protected boolean fSeenExternalPE;
 
-    /** Report entity boundary. */
-    protected boolean fReportEntity;
-
     // private data
 
     /** Start DTD called. */
@@ -383,8 +380,6 @@ public class XMLDTDScannerImpl
         fStandalone = false;
         fSeenExternalDTD = false;
         fSeenExternalPE = false;
-
-        fReportEntity = true;
 
         // set starting state
         setScannerState(SCANNER_STATE_TEXT_DECL);
@@ -698,6 +693,7 @@ public class XMLDTDScannerImpl
      */
     protected final void scanComment() throws IOException, XNIException {
 
+        fReportEntity = false;
         scanComment(fStringBuffer);
         fMarkUpDepth--;
 
@@ -705,6 +701,7 @@ public class XMLDTDScannerImpl
         if (fDTDHandler != null) {
             fDTDHandler.comment(fStringBuffer, null);
         }
+        fReportEntity = true;
 
     } // scanComment()
 
