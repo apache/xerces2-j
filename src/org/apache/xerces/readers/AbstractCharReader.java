@@ -852,7 +852,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
                     }
                 }
             } else {
-                if (fCalledCharPropInit) {
+                if (!fCalledCharPropInit) {
                     XMLCharacterProperties.initCharFlags();
                     fCalledCharPropInit = true;
                 }
@@ -1114,7 +1114,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
     //
     private static final char[] cdata_string = { 'C','D','A','T','A','[' };
     private StringPool fStringPool = null;
-    private boolean fCalledCharPropInit = false;
+    private boolean ffCalledCharPropInit = false;
     private boolean fCallClearPreviousChunk = true;
     private Vector fDeferredErrors = null;
 
