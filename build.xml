@@ -234,7 +234,8 @@ Copyright:
   <target name="tests" depends="samples">
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
-        <fileset dir="${tests.dir}" />
+        <fileset dir="${tests.dir}" excludes="io/**"
+        />
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
