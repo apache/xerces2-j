@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.v2.datatypes;
 
-import org.apache.xerces.impl.v2.XSType;
+import org.apache.xerces.impl.v2.XSTypeDecl;
 import java.util.Hashtable;
 import java.util.Locale;
 
@@ -67,15 +67,15 @@ import java.util.Locale;
  * standalone code as well as plugins to the validator architecture.
  * Note: there is no support for facets in this API, since we are trying to convince
  * W3C to remove facets from the data type spec.
- * 
+ *
  * @author Jeffrey Rodriguez-
  * @version $Id$
  */
-public interface DatatypeValidator extends XSType {
+public interface DatatypeValidator extends XSTypeDecl {
     public static final short FACET_LENGTH       = 0x1<<0;
     public static final short FACET_MINLENGTH    = 0x1<<1;
     public static final short FACET_MAXLENGTH    = 0x1<<2;
-    public static final short FACET_PATTERN      = 0x1<<3; 
+    public static final short FACET_PATTERN      = 0x1<<3;
     public static final short FACET_ENUMERATION  = 0x1<<4;
     public static final short FACET_MAXINCLUSIVE = 0x1<<5;
     public static final short FACET_MAXEXCLUSIVE = 0x1<<6;
@@ -91,8 +91,8 @@ public interface DatatypeValidator extends XSType {
     // _dummy_ facet that is passed with all other facets for a datatype
     // its value flags the fixed facets
     public static final String FACET_FIXED   = "fixed";
-    
-    //2.4.2.6 whiteSpace - Datatypes 
+
+    //2.4.2.6 whiteSpace - Datatypes
     public static final short PRESERVE = 0;
     public static final short REPLACE  = 1;
     public static final short COLLAPSE = 2;
@@ -100,12 +100,12 @@ public interface DatatypeValidator extends XSType {
 
 
     /**
-     * Checks that "content" string is valid 
+     * Checks that "content" string is valid
      * datatype.
      * If invalid a Datatype validation exception is thrown.
-     * 
+     *
      * @param content A string containing the content to be validated
-     *                
+     *
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
@@ -114,8 +114,8 @@ public interface DatatypeValidator extends XSType {
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException;
 
     public short getWSFacet ();
-    
-    // returns the base datatypeValidator of the current validator.  
+
+    // returns the base datatypeValidator of the current validator.
     public DatatypeValidator getBaseValidator();
 
     /**
@@ -123,14 +123,14 @@ public interface DatatypeValidator extends XSType {
      * value.
      * e.g. If type is a float then 1.0 may be equivalent
      * to 1 even tough both are lexically different.
-     * 
+     *
      * @param value1
      * @param valu2
-     * @return 
+     * @return
      */
     public int compare( String value1, String value2);
 
     public int getFinalSet();
-    
+
     public void setFinalSet(int finalSet);
 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -68,20 +68,20 @@ package org.apache.xerces.impl.v2.datatypes;
 
 import java.util.Hashtable;
 import java.util.Locale;
-import org.apache.xerces.impl.v2.XSType;
+import org.apache.xerces.impl.v2.XSTypeDecl;
 
 import org.apache.xerces.impl.v1.util.regex.RegularExpression;
 
 public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
 
-    protected DatatypeValidator fBaseValidator = null; 
+    protected DatatypeValidator fBaseValidator = null;
     protected String            fPattern         = null;
     protected RegularExpression fRegex    = null;
     protected short             fFacetsDefined          = 0;
     protected DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     protected Locale            fLocale  = null;
     protected short             fFlags = 0; //flags fixed facets
-    
+
      /**
      * Checks that "content" string is valid
      * datatype.
@@ -99,9 +99,9 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     abstract public Object validate(String content, Object state) throws InvalidDatatypeValueException;
-    
+
     abstract public Object clone() throws CloneNotSupportedException ;
-    
+
     /**
      * default value for whiteSpace facet is collapse
      * this function is overwritten in StringDatatypeValidator
@@ -132,9 +132,9 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
         fLocale = locale;
     }
     public short getXSType (){
-        return XSType.SIMPLE_TYPE;
+        return XSTypeDecl.SIMPLE_TYPE;
     }
-    
+
     public String fLocalName = null;
     public String getXSTypeName() {
         return fLocalName;
