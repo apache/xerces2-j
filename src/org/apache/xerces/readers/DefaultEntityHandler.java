@@ -1216,12 +1216,16 @@ public final class EntityPool {
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fPublicId, 0, newIntArray, 0, chunk);
             fPublicId = newIntArray;
+
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fSystemId, 0, newIntArray, 0, chunk);
+            fSystemId = newIntArray;
+
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fBaseSystemId, 0, newIntArray, 0, chunk);
             fBaseSystemId = newIntArray;
-            fSystemId = newIntArray;
+
+
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fNotationName, 0, newIntArray, 0, chunk);
             fNotationName = newIntArray;
