@@ -637,8 +637,6 @@ public class TraverseSchema implements
                 //traverseAttributeGroupDecl(child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null );
-            } else if (name.equals( SchemaSymbols.ELT_WILDCARD) ) {
-                traverseWildcardDecl( child);
             } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
                 //traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
@@ -906,8 +904,6 @@ public class TraverseSchema implements
                 //traverseAttributeGroupDecl(child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null );
-            } else if (name.equals( SchemaSymbols.ELT_WILDCARD) ) {
-                traverseWildcardDecl( child);
             } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
                 //traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
@@ -4139,45 +4135,6 @@ public class TraverseSchema implements
 
     } // swap(int[],int,int)
 
-    /**
-     * Traverse Wildcard declaration
-     * 
-     * <any 
-     *   id = ID 
-     *   maxOccurs = string 
-     *   minOccurs = nonNegativeInteger 
-     *   namespace = ##any | ##other | ##local | list of {uri, ##targetNamespace} 
-     *   processContents = lax | skip | strict>
-     *   Content: (annotation?)
-     * </any>
-     * @param elementDecl
-     * @return 
-     * @exception Exception
-     */
-    private int traverseWildcardDecl( Element wildcardDecl ) throws Exception {
-        int wildcardID         =  fStringPool.addSymbol(
-                                                       wildcardDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
-
-        int wildcardMaxOccurs  =  fStringPool.addSymbol(
-                                                       wildcardDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
-
-        int wildcardMinOccurs  =  fStringPool.addSymbol(
-                                                       wildcardDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
-
-        int wildcardNamespace  =  fStringPool.addSymbol(
-                                                       wildcardDecl.getAttribute( SchemaSymbols.ATT_NAMESPACE ));
-
-        int wildcardProcessContents =  fStringPool.addSymbol(
-                                                            wildcardDecl.getAttribute( SchemaSymbols.ATT_PROCESSCONTENTS ));
-
-
-        int wildcardContent =  fStringPool.addSymbol(
-                                                    wildcardDecl.getAttribute( SchemaSymbols.ATT_CONTENT ));
-
-
-        return -1;
-    }
-    
     
 
     // utilities from Tom Watson's SchemaParser class
