@@ -406,6 +406,6 @@ public class XSWildcardDecl  {
             }
         }
 
-        return fDecription;
+        return fDescription;
     }
 } // class XSWildcardDecl
