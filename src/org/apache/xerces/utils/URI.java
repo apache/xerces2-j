@@ -514,10 +514,12 @@ import java.io.Serializable;
         if (segIndex != -1) {
           if (!tempString.substring(segIndex++).equals("..")) {
             path = path.substring(0, segIndex).concat(path.substring(index+4));
-           }
+          }
+          else
+            index += 4;
         }
         else
-            index += 4;
+          index += 4;
       }
 
       // 6f - remove ending "<segment>/.." where "<segment>" is a
