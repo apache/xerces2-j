@@ -103,6 +103,12 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
         // use the right ClassLoader
         xmlReader = new org.apache.xerces.parsers.SAXParser();
 
+        // Default Xerces2 configuration automatically enables XML Schema
+        // validation which is not backward compatible w/ JAXP so turn it
+        // off by default
+        xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
+                             Constants.SCHEMA_VALIDATION_FEATURE, false);
+
         // Validation
         validating = spf.isValidating();
         String validation = "http://xml.org/sax/features/validation";
