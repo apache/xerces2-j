@@ -57,26 +57,19 @@
 
 package xni;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.Stack;
+
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLNamespaceBinder;
-
+import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.DefaultErrorHandler;
-import org.apache.xerces.util.MessageFormatter;
-import org.apache.xerces.util.XMLAttributesImpl;
-
-//for testing
-import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.impl.xs.XSTypeDecl;
-import org.apache.xerces.impl.xs.ElementPSVImpl;
-import org.apache.xerces.impl.xs.AttributePSVImpl;
-
-import org.apache.xml.serialize.IndentPrinter;
-import org.apache.xml.serialize.EncodingInfo;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.Printer;
-import org.apache.xml.serialize.LineSeparator;
-
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -86,22 +79,19 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
-
-import org.apache.xerces.xni.psvi.ItemPSVI;
-import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
-import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParseException;
-
-import java.io.*;
-import java.util.*;
+import org.apache.xerces.xni.parser.XMLDocumentFilter;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.psvi.AttributePSVI;
+import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xni.psvi.ItemPSVI;
+import org.apache.xml.serialize.EncodingInfo;
+import org.apache.xml.serialize.IndentPrinter;
+import org.apache.xml.serialize.LineSeparator;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.Printer;
 
 
 /**
@@ -846,19 +836,19 @@ implements XMLComponent, XMLDocumentFilter {
 
             XSTypeDefinition type = elemPSVI.getTypeDefinition();
             short definationType = type.getTypeCategory();
-            if (definationType == XSTypeDecl.SIMPLE_TYPE) {
+            if (definationType == XSTypeDefinition.SIMPLE_TYPE) {
                 printElement("psv:typeDefinitionType","simple");
             }
-            else if (definationType == XSTypeDecl.COMPLEX_TYPE) {
+            else if (definationType == XSTypeDefinition.COMPLEX_TYPE) {
                 printElement("psv:typeDefinitionType","complex");
             }
             printElement("psv:typeDefinitionNamespace ",type.getNamespace());
-            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getIsAnonymous()));
+            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getAnonymous()));
             printElement("psv:typeDefinitionName",type.getName());
 
             XSSimpleTypeDefinition memtype = elemPSVI.getMemberTypeDefinition();
             if (memtype != null) {
-                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getIsAnonymous()));
+                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getAnonymous()));
                 printElement("psv:memberTypeDefinitionName",memtype.getName());
                 printElement("psv:memberTypeDefinitionNamespace",memtype.getNamespace());
             }
@@ -934,16 +924,16 @@ implements XMLComponent, XMLDocumentFilter {
             XSTypeDefinition type = attrPSVI.getTypeDefinition();
             XSSimpleTypeDefinition memtype = attrPSVI.getMemberTypeDefinition();
             short definationType = type.getTypeCategory();
-            if (definationType == XSTypeDecl.SIMPLE_TYPE) {
+            if (definationType == XSTypeDefinition.SIMPLE_TYPE) {
                 printElement("psv:typeDefinitionType","simple");
             }
 
             printElement("psv:typeDefinitionNamespace",type.getNamespace());
-            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getIsAnonymous()));
+            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getAnonymous()));
             printElement("psv:typeDefinitionName",type.getName());
             
             if (memtype != null) {
-                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getIsAnonymous()));
+                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getAnonymous()));
                 printElement("psv:memberTypeDefinitionName",memtype.getName());
                 printElement("psv:memberTypeDefinitionNamespace",memtype.getNamespace());
             }
