@@ -1084,6 +1084,8 @@ Copyright:
     <replace file="${build.src}/org/apache/xerces/dom/CoreDocumentImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>  
     <replace file="${build.src}/org/apache/xerces/parsers/DOMBuilderImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
+    <replace file="${build.src}/org/apache/xerces/parsers/AbstractDOMParser.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>                                   
    <replace file="${build.src}/org/apache/xerces/util/DOMErrorHandlerWrapper.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
@@ -1179,7 +1181,7 @@ Copyright:
 
     <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
-           classpath="${build.dir}/classes:./tools/junit.jar"
+           classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes:./tools/junit.jar"
            debug="${debug}"
            includeAntRuntime="false"
            includeJavaRuntime="true"/>
@@ -1193,28 +1195,28 @@ Copyright:
     <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
     <echo message="Running sax.Counter ..." />
    <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="sax.Counter"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running sax.Writer ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes" 
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes" 
           classname="sax.Writer"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Counter ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.Counter"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Writer ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes" 
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes" 
           classname="dom.Writer"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
@@ -1222,39 +1224,39 @@ Copyright:
     <!--
     <echo message="Running DOMFilter ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.DOMFilter"
           args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
     -->
     <!-- The following are samples but not command-line applications.
     <echo message="Running IteratorView ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.traversal.IteratorView"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeWalkerView ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.traversal.TreeWalkerView"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeViewer ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.TreeViewer"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
      -->
     <echo message="Running dom.mem.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.mem.Test"
           failOnError="yes">
     </java>
     <echo message="Running thread.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="thread.Test"
           failOnError="yes">
            <arg value="-dom"/>
@@ -1268,32 +1270,32 @@ Copyright:
 
     <echo message="Running dom.ids.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.ids.Test"
           failOnError="yes">
     </java>
     <echo message="Running dom.DTest ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.DTest"
           failOnError="yes">
     </java>
     <echo message="Running dom.serialization.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.serialization.Test"
           failOnError="yes">
            <arg value="${data.dir}/personal.xml"/>
            <arg value="out.xml"/>
     </java>
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.registry.Test"
           failOnError="yes">
     </java>
 
     <java fork="yes"
-          classpath="${build.dir}/classes"
+          classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
           classname="dom.dom3.Test"
           failOnError="yes">
     </java>
