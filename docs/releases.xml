@@ -7,6 +7,15 @@
    XNI interfaces related to DTD information.
   </desc>
   <changes>
+   <fix>
+    <note>
+     Fixed DTD scanner from reporting entity boundaries appearing
+     inside of markup declarations. Entity boundaries appearing
+     in the content model of an element declaration is still
+     reported, though.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
    <update>
     <note>
      Simplified XMLAttributes interface by removing the methods

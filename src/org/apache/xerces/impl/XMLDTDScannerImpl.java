@@ -169,6 +169,9 @@ public class XMLDTDScannerImpl
     /** Seen external parameter entity. */
     protected boolean fSeenExternalPE;
 
+    /** Report entity boundary. */
+    protected boolean fReportEntity;
+
     // private data
 
     /** Start DTD called. */
@@ -375,6 +378,8 @@ public class XMLDTDScannerImpl
         fSeenExternalDTD = false;
         fSeenExternalPE = false;
 
+        fReportEntity = true;
+
         // set starting state
         setScannerState(SCANNER_STATE_TEXT_DECL);
 
@@ -459,7 +464,7 @@ public class XMLDTDScannerImpl
         }
 
         // call handler
-        if (fDTDHandler != null) {
+        if (fDTDHandler != null && fReportEntity) {
             fDTDHandler.startEntity(name, publicId, systemId, 
                                     baseSystemId, encoding);
         }
@@ -476,7 +481,7 @@ public class XMLDTDScannerImpl
         super.endEntity(name);
 
         // call handler
-        if (fDTDHandler != null) {
+        if (fDTDHandler != null && fReportEntity) {
             fDTDHandler.endEntity(name);
         }
 
@@ -687,10 +692,12 @@ public class XMLDTDScannerImpl
     protected final void scanElementDecl() throws IOException, XNIException {
 
         // spaces
+        fReportEntity = false;
         if (!skipSeparator(true, !scanningInternalSubset())) {
             reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ELEMENT_TYPE_IN_ELEMENTDECL",
                              null);
         }
+        fReportEntity = true;
 
         // element name
         String name = fEntityScanner.scanName();
@@ -752,7 +759,9 @@ public class XMLDTDScannerImpl
             fDTDContentModelHandler.endContentModel();
         }
 
+        fReportEntity = false;
         skipSeparator(false, !scanningInternalSubset());
+        fReportEntity = true;
         // end
         if (!fEntityScanner.skipChar('>')) {
             reportFatalError("ElementDeclUnterminated", new Object[]{name});
@@ -998,6 +1007,7 @@ public class XMLDTDScannerImpl
     protected final void scanAttlistDecl() throws IOException, XNIException {
 
         // spaces
+        fReportEntity = false;
         if (!skipSeparator(true, !scanningInternalSubset())) {
             reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ELEMENT_TYPE_IN_ATTLISTDECL",
                              null);
@@ -1080,6 +1090,7 @@ public class XMLDTDScannerImpl
             fDTDHandler.endAttlist();
         }
         fMarkUpDepth--;
+        fReportEntity = true;
 
     } // scanAttlistDecl()
 
@@ -1268,6 +1279,7 @@ public class XMLDTDScannerImpl
 
         boolean isPEDecl = false;
         boolean sawPERef = false;
+        fReportEntity = false;
         if (fEntityScanner.skipSpaces()) {
             if (!fEntityScanner.skipChar('%')) {
                 isPEDecl = false; // <!ENTITY x "x">
@@ -1418,6 +1430,7 @@ public class XMLDTDScannerImpl
                 fDTDHandler.internalEntityDecl(name, fLiteral, fLiteral2); 
             }
         }
+        fReportEntity = true;
 
     } // scanEntityDecl()
 
@@ -1552,6 +1565,7 @@ public class XMLDTDScannerImpl
     private final void scanNotationDecl() throws IOException, XNIException {
 
         // spaces
+        fReportEntity = false;
         if (!skipSeparator(true, !scanningInternalSubset())) {
             reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_NOTATIONDECL",
                              null);
@@ -1593,6 +1607,7 @@ public class XMLDTDScannerImpl
         if (fDTDHandler != null) {
             fDTDHandler.notationDecl(name, publicId, systemId);
         }
+        fReportEntity = true;
 
     } // scanNotationDecl()
 
@@ -1615,6 +1630,7 @@ public class XMLDTDScannerImpl
     private final void scanConditionalSect()
         throws IOException, XNIException {
 
+        fReportEntity = false;
         skipSeparator(false, !scanningInternalSubset());
         if (fEntityScanner.skipString("INCLUDE")) {
             skipSeparator(false, !scanningInternalSubset());
@@ -1706,6 +1722,8 @@ public class XMLDTDScannerImpl
         else {
             reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
         }
+        fReportEntity = true;
+
     } // scanConditionalSect()
 
     /** 
