@@ -90,7 +90,6 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     protected static final short LESS_THAN=-1;
     protected static final short EQUAL=0;
     protected static final short GREATER_THAN=1;
-    protected static final short INDETERMINATE=2;
 
     //size for all objects must have the same fields: 
     //CCYY, MM, DD, h, m, s, ms + timeZone
