@@ -136,10 +136,16 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
      * 
      * @param content1
      * @param content2
-     * @return 
+     * @return  0 if equal, 1 if not equal
      */
     public int compare( String content1, String content2){
-        return 0;
+        if (content1.equals(content2)) {
+            return 0;
+        }
+        Boolean b1 = Boolean.valueOf(content1);
+        Boolean b2 = Boolean.valueOf(content2);
+
+        return (b1.equals(b2))?0:1;
     }
 
     /**

@@ -425,17 +425,29 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
 
     public int compare( String value1, String value2){
         try {
-           //REVISIT: datatypes create lots of *new* objects..
-           Float f1 = Float.valueOf(value1);
-           Float f2 = Float.valueOf(value2);
-           return f1.compareTo(f2);
+           
+            float f1 = Float.valueOf(value1).floatValue();
+            float f2 = Float.valueOf(value2).floatValue();
+            int f1V = Float.floatToIntBits(f1);
+            int f2V = Float.floatToIntBits(f2);
+            if (f1 > f2) {
+                return 1;
+            }
+            if (f1 < f2) {
+                return -1;
+            }
+            if  (f1V==f2V){
+                return 0;
+            }
+            return (f1V < f2V) ? -1 : 1;
+
        } catch (NumberFormatException e){
            //REVISIT: should we throw exception??
            return -1;
        }
-
     }
 
+    
     /**
       * Returns a copy of this object.
       */

@@ -410,10 +410,22 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
     
    public int compare( String value1, String value2){
         try {
-            //REVISIT: datatypes create lots of *new* objects..
-            Double d1 = Double.valueOf(value1);
-            Double d2 = Double.valueOf(value2);
-            return d1.compareTo(d2);
+            
+            double d1 = Double.valueOf(value1).doubleValue();
+            double d2 = Double.valueOf(value2).doubleValue();
+            long d1V = Double.doubleToLongBits(d1);
+            long d2V = Double.doubleToLongBits(d2);
+
+            if (d1 > d2) {
+                return 1;
+            }
+            if (d1 < d2) {
+                return -1;
+            }
+            if (d1V == d2V) {
+                return 0;
+            }
+            return (d1V < d2V) ? -1 : 1;
         } catch (NumberFormatException e){
             //REVISIT: should we throw exception??
             return -1;
