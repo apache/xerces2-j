@@ -354,7 +354,7 @@ Copyright:
       <arg value="${build.dir}/xdocs/style"/>
     </java>
 
-    <copy file="${docs.dir}/download.cgi" tofile="${build.dir}/download.cgi"/>
+    <copy file="${docs.dir}/download.cgi" tofile="${build.docs}/download.cgi"/>
     
   </target>
 
