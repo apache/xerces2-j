@@ -1194,6 +1194,9 @@ public class Grammar {
         }
 
         public int hash(String symbol) {
+            if (symbol == null) {
+                return 0;
+            }
             int code = 0;
             int length = symbol.length();
             for (int i = 0; i < length; i++) {
