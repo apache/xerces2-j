@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.validation;
 
-import org.apache.xerces.impl.v2.datatypes.ValidationContext;
 import org.apache.xerces.util.NamespaceSupport;
 import java.util.Hashtable;
 

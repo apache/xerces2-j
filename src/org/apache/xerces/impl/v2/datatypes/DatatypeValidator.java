@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.v2.datatypes;
 
 import org.apache.xerces.impl.v2.XSTypeDecl;
+import org.apache.xerces.impl.validation.ValidationContext;
 import java.util.Hashtable;
 import java.util.Locale;
 

@@ -65,6 +65,7 @@ import org.apache.xerces.impl.v2.msg.XMLMessages;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationContext;
 
 /**
  * DataTypeValidator defines the interface that data type validators must obey.

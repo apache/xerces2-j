@@ -81,10 +81,6 @@ public class XSMixedCM  implements XSCMValidator {
     // start the content model: did not see any children
     private static final short STATE_START = 0;
 
-    //
-    // Data
-    //
-    private int[] fState = {STATE_START};
 
 
     //
@@ -98,7 +94,7 @@ public class XSMixedCM  implements XSCMValidator {
      * @return Start state of the content model
      */
     public int[] startContentModel(){
-        return fState;
+        return (new int[] {STATE_START});    
     }
 
 
@@ -132,9 +128,6 @@ public class XSMixedCM  implements XSCMValidator {
     public boolean endContentModel (int[] currentState){
         boolean isFinal =  false;
         int state = currentState[0];
-
-        // restore content model state:
-        fState[0] = STATE_START;
 
         // error
         if (state < 0) {

@@ -743,11 +743,11 @@ class XSDHandler {
         if (retObj != null)
             return retObj;
 
-		 // decl can be null, if the grammar picked was SG_SchemaNS
-		 if (decl == null) {
-		         fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " +declToTraverse.uri+":"+declToTraverse.localpart);
-		 		 return null;
-		 }
+	// decl can be null, if the grammar picked was SG_SchemaNS
+	if (decl == null) {
+	        fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " +declToTraverse.uri+":"+declToTraverse.localpart);
+		return null;
+        }
         else if (DOMUtil.isHidden(decl)) {
             // decl must not be null if we're here...
             //REVISIT: report an error: circular reference

@@ -65,6 +65,7 @@ import org.apache.xerces.impl.v2.SchemaSymbols;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationContext;
 /**
  *
  * BooleanValidator validates that content satisfies the W3C XML Datatype for Boolean

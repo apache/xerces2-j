@@ -66,6 +66,7 @@ import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 import org.apache.xerces.impl.v2.util.HexBin;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationContext;
 
 /**
  * HexBinaryValidator validates that XML content is a W3C string type.

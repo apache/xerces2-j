@@ -63,6 +63,7 @@ import org.apache.xerces.util.URI;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
 
+import org.apache.xerces.impl.validation.ValidationContext;
 /**
  * URIValidator validates that XML content is a W3C uri type,
  * according to RFC 2396

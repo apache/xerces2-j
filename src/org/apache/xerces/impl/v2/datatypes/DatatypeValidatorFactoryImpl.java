@@ -60,6 +60,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.lang.reflect.*;
 import org.apache.xerces.impl.v2.SchemaSymbols;
+import org.apache.xerces.impl.validation.ValidationContext;
 
 
 

@@ -68,6 +68,7 @@ import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationContext;
 /**
  * AbstractNumericValidator is a base class of decimal, double, and float 
  * schema datatypes

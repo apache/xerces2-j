@@ -59,6 +59,8 @@ package org.apache.xerces.impl.v2.datatypes;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.EntityState;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 
 import java.util.Hashtable;
 /**

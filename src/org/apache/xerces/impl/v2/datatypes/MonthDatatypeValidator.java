@@ -60,6 +60,7 @@ package org.apache.xerces.impl.v2.datatypes;
 import java.util.Hashtable;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationContext;
 
 /**
  * Validator for <gMonth> datatype (W3C Schema Datatypes)

@@ -70,6 +70,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import org.apache.xerces.impl.v2.XSTypeDecl;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.validation.ValidationContext;
 
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 

@@ -67,6 +67,8 @@ import org.apache.xerces.impl.v2.util.Base64;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
+
+import org.apache.xerces.impl.validation.ValidationContext;
 /**
  * Base64BinaryValidator validates that XML content is a W3C string type.
  * @author Ted Leung

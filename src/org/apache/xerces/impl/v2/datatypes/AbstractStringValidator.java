@@ -70,6 +70,7 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
 
+import org.apache.xerces.impl.validation.ValidationContext;
 /**
  * AbstractStringValidator is a base class for anyURI, string,
  * hexBinary, base64Binary, QName and Notation datatypes.

@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
  
-package org.apache.xerces.impl.v2.datatypes;
+package org.apache.xerces.impl.validation;
 
 /**
  * ValidationContext has all the information required for the 

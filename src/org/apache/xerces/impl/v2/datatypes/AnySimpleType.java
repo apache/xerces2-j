@@ -62,6 +62,7 @@ import java.util.Hashtable;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
 
+import org.apache.xerces.impl.validation.ValidationContext;
 /**
  * AnySimpleType is the base of all simple types.
  * @author Sandy Gao
