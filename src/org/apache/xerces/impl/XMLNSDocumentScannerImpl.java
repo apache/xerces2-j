@@ -298,8 +298,6 @@ extends XMLDocumentScannerImpl {
                 fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
 
                 if (fBindNamespaces) {
-                    int count = fNamespaceContext.getDeclaredPrefixCount();
-
                     fNamespaceContext.popContext();
                 }
                 //pop the element off the stack..
