@@ -60,11 +60,11 @@
 	Xerces implements the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump> specification that defines an API for accessing and querying the post schema validation infoset (PSVI) as defined in <jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
 	  Contributions to the post-schema-validation infoset (Appendix C.2)</jump>. 
           This API also defines interfaces for loading XML schema documents. 
-</p>
-<p>For more information please refer to the <jump href="api.html#xml-schema-api-documentation">interfaces</jump>.
- 
       </p>
-<note>The Xerces 2.6.2 release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>. In particular in the XSModel interface the order of the parameters in getTypeDefinition, getNotationDeclaration, getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroup methods have been changes from (String namespace, String name) to (String name, String namespace). 
+      <p>For more information please refer to the 
+         <link idref='api' anchor='xml-schema-api-documentation'>interfaces</link>.
+      </p>
+<note>The Xerces 2.6.2 release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>. In particular in the XSModel interface the order of the parameters in getTypeDefinition, getNotationDeclaration, getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroup methods have been changed from (String namespace, String name) to (String name, String namespace). 
 </note>
     </a>
   </faq>

@@ -43,10 +43,10 @@
  </q>
  <a>
     <p>
-Xerces uses the <code>ObjectFactory</code> class to load some classes dynamically, e.g. the parser configuration. The <code>ObjectFactory</code> finds the specified implementation class by querying the system property, reading <code>META-INF/services/factoryId</code> file or using a fallback classname. After the implementation is found, the <code>ObjectFactory</code> tries to load the file using the context classloader and if it is null, the <code>ObjectFactory</code> uses system classloader. 
+Xerces uses the <code>ObjectFactory</code> class to load some classes dynamically, e.g. the parser configuration. The <code>ObjectFactory</code> finds the specified implementation class by querying the system property, reading <code>META-INF/services/factoryId</code> file or using a fallback classname. After the implementation is found, the <code>ObjectFactory</code> tries to load the file using the context classloader and if it is null, the <code>ObjectFactory</code> uses the system classloader. 
 </p>
 <p>
-If you run Xerces in the environment, such as WAS, that has multiple classloaders you might get ClassCastExceptions thrown from Xerces because different classloaders might get involved in loading Xerces classes. For example, ClassCastExceptions may occur when utility EAR classes that use Xerces load Xerces classes from WAR modules. 
+If you run Xerces in an environment, such as WAS, that has multiple classloaders you may get ClassCastExceptions thrown from Xerces because different classloaders might get involved in loading Xerces classes. For example, ClassCastExceptions may occur when utility EAR classes that use Xerces load Xerces classes from WAR modules. 
 </p>
 <p>
 We suggest you read <jump href="http://www-106.ibm.com/developerworks/websphere/library/techarticles/0310_searle/searle.html">"Avoiding ClassCastExceptions..."</jump> article which explains a workaround for this problem. 
@@ -56,7 +56,7 @@ Also you might want to read <jump href="http://www-106.ibm.com/developerworks/we
   </a>
  </faq>
  <faq title="Xerces HTML, XHTML, and XML Serializers">
-   <q>What can I use instead of Xerces HTML, XHTML, or XML serializers?
+   <q>What can I use instead of Xerces' HTML, XHTML, or XML serializers?
  </q>
  <a>
 <p>
@@ -89,9 +89,9 @@ t.transform(new DOMSource(doc), new StreamResult(System.out));
 
 <p>
 
-You can find more details about the future of Xerces serializers in the <jump href="http://marc.theaimsgroup.com/?l=xalan-dev&amp;m=107593381313807&amp;w=2">archives</jump>.
+You can find more details about the future of Xerces' serializers in the <jump href="http://marc.theaimsgroup.com/?l=xalan-dev&amp;m=107593381313807&amp;w=2">archives</jump>.
 </p>
-<note>The HTML and XHTML serializers (<code>org.apache.xml.serialize</code>) have been <code>deprecated</code> in Xerces 2.6.2 release. We might deprecate <code>XMLSerializer</code> in the future release.</note>
+<note>The HTML and XHTML serializers (<code>org.apache.xml.serialize</code>) have been <code>deprecated</code> in the Xerces 2.6.2 release. We might deprecate <code>XMLSerializer</code> in a future release.</note>
   </a>
  </faq>
  <faq title="Obtaining smaller jars">
