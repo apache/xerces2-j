@@ -649,6 +649,12 @@ Copyright:
           classname="dom.DTest"
           failOnError="yes">
     </java>
+    <echo message="Running dom.ids.Test ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.ids.Test"
+          failOnError="yes">
+    </java>
   </target>
 
   <!-- =================================================================== -->
