@@ -206,9 +206,14 @@ public class Grammar {
             elementDecl.simpleType.list = (fElementDeclType[chunk][index] & LIST_FLAG) != 0;
         }
 
-        elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index];
+        /* Validators are null until we add that code */
+        /*elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index]; */
 
-        elementDecl.simpleType.datatypeValidator = fElementDeclDatatypeValidator[chunk][index];       
+        elementDecl.contentModelValidator = null;
+
+        /* elementDecl.simpleType.datatypeValidator = fElementDeclDatatypeValidator[chunk][index]; */      
+        elementDecl.simpleType.datatypeValidator = null;
+
         elementDecl.simpleType.defaultType = fElementDeclDefaultType[chunk][index];
         elementDecl.simpleType.defaultValue = fElementDeclDefaultValue[chunk][index];
 
