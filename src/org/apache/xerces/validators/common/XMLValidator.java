@@ -3073,6 +3073,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
                   }
                }
+
+               if (attributeDecl.list && value.length() == 0 ) {
+                   reportRecoverableXMLError(XMLMessages.MSG_IDREFS_INVALID, XMLMessages.VC_IDREF,
+                                             fStringPool.toString(attributeDecl.name.rawname) ) ;
+               }
             }
             try {
                if ( isAlistAttribute ) {
@@ -3145,6 +3150,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
                                                fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
                   }
+               }
+               if (attributeDecl.list && value.length() == 0 ) {
+                   reportRecoverableXMLError(XMLMessages.MSG_NMTOKENS_INVALID, XMLMessages.VC_NAME_TOKEN,
+                                             fStringPool.toString(attributeDecl.name.rawname) ) ;
                }
             }
             try {
