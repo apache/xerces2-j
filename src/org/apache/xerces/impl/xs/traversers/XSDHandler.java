@@ -411,57 +411,6 @@ public class XSDHandler {
         return fGrammarBucket.getGrammar(schemaNamespace);
     } // end parseSchema
 
-    /**
-     * REVISIT: Common code needs to be factored out and cleaned up.
-     * XXX Temporary duplicate code to get JAXP SchemaLocation working.
-     * Note: Does passing in null for target namespace cause any problems?
-     * Can schemaNamespace be interned after call to constructTrees()?
-     */
-    public SchemaGrammar parseSchemaJAXP(XMLInputSource is) {
-        short referType = XSDDescription.CONTEXT_PREPARSE;
-        
-        // first phase:  construct trees.
-        Document schemaRoot = getSchema(null, is, true, referType);
-        if (schemaRoot == null) {
-            // something went wrong right off the hop
-            return null;
-        }
-
-        fRoot = constructTrees(schemaRoot, is.getSystemId(), /* ns */ null,
-                               referType);
-
-        if (fRoot == null) {
-            // REVISIT:  something went wrong; print error about no schema found
-            return null;
-        }
-
-        String schemaNamespace = fRoot.fTargetNamespace;
-
-        // handle empty string URI as null
-        if (schemaNamespace != null) {
-            schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
-        }
-
-        // second phase:  fill global registries.
-        buildGlobalNameRegistries();
-
-        // third phase:  call traversers
-        traverseSchemas();
-
-        // fourth phase: handle local element decls
-        traverseLocalElements();
-
-        // fifth phase:  handle Keyrefs
-        resolveKeyRefs();
-
-        // sixth phase: validate attribute of non-schema namespaces
-        // REVISIT: skip this for now. we reall don't want to do it.
-        //fAttributeChecker.checkNonSchemaAttributes(fGrammarBucket);
-
-        // and return.
-        return fGrammarBucket.getGrammar(schemaNamespace);
-    }
-
     // may wish to have setter methods for ErrorHandler,
     // EntityResolver...
 
@@ -1387,7 +1336,8 @@ public class XSDHandler {
         Class componentType = val.getClass().getComponentType();
         if (componentType == null) {
             // Not an array
-            parseSchemaJAXP(XSD2XMLInputSource(val, xer));
+            parseSchema(null, XSD2XMLInputSource(val, xer),
+                        XSDDescription.CONTEXT_PREPARSE);
             return ;
         } else if (componentType != Object.class) {
             // Not an Object[]
@@ -1398,7 +1348,8 @@ public class XSDHandler {
 
         Object[] objArr = (Object[]) val;
         for (int i = 0; i < objArr.length; i++) {
-            parseSchemaJAXP(XSD2XMLInputSource(objArr[i], xer));
+            parseSchema(null, XSD2XMLInputSource(objArr[i], xer),
+                        XSDDescription.CONTEXT_PREPARSE);
         }
     }
 
