@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -123,7 +123,7 @@ public class DocumentImpl
     /** Document element. */
     protected ElementImpl docElement;
 
-    
+
     /**Experimental DOM Level 3 feature: Document encoding */
     protected String encoding;
 
@@ -144,7 +144,7 @@ public class DocumentImpl
      /** Ranges */
     // REVISIT: Should this be transient? -Ac
     protected Vector ranges;
-    
+
     /** Table for quick check of child insertion. */
     protected static int[] kidOK;
 
@@ -212,7 +212,7 @@ public class DocumentImpl
         kidOK[DOCUMENT_NODE] =
             1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
             1 << COMMENT_NODE | 1 << DOCUMENT_TYPE_NODE;
-			
+
         kidOK[DOCUMENT_FRAGMENT_NODE] =
         kidOK[ENTITY_NODE] =
         kidOK[ENTITY_REFERENCE_NODE] =
@@ -220,11 +220,11 @@ public class DocumentImpl
             1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
             1 << COMMENT_NODE | 1 << TEXT_NODE |
             1 << CDATA_SECTION_NODE | 1 << ENTITY_REFERENCE_NODE ;
-			
-			
+
+
         kidOK[ATTRIBUTE_NODE] =
             1 << TEXT_NODE | 1 << ENTITY_REFERENCE_NODE;
-			
+
         kidOK[DOCUMENT_TYPE_NODE] =
         kidOK[PROCESSING_INSTRUCTION_NODE] =
         kidOK[COMMENT_NODE] =
@@ -277,7 +277,7 @@ public class DocumentImpl
             try {
                 doctypeImpl = (DocumentTypeImpl) doctype;
             } catch (ClassCastException e) {
-                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
             }
             doctypeImpl.ownerDocument = this;
@@ -407,7 +407,7 @@ public class DocumentImpl
     public Node removeChild(Node oldChild)
         throws DOMException {
         super.removeChild(oldChild);
-	
+
     	// If remove succeeded, un-cache the kid appropriately
         int type = oldChild.getNodeType();
         if(type == Node.ELEMENT_NODE) {
@@ -430,7 +430,7 @@ public class DocumentImpl
      */
     public Node replaceChild(Node newChild, Node oldChild)
         throws DOMException {
-	
+
         super.replaceChild(newChild, oldChild);
 
         int type = oldChild.getNodeType();
@@ -518,7 +518,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(tagName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
     	return new ElementImpl(this, tagName);
@@ -539,7 +539,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
     	return new EntityReferenceImpl(this, name);
@@ -596,8 +596,8 @@ public class DocumentImpl
 
 
    /**
-    * DOM Level 3 WD - Experimental.      
-    * The encoding of this document (part of XML Declaration)     
+    * DOM Level 3 WD - Experimental.
+    * The encoding of this document (part of XML Declaration)
     */
     public String getEncoding() {
 	return encoding;
@@ -605,15 +605,15 @@ public class DocumentImpl
 
     /**
       * DOM Level 3 WD - Experimental.
-      * The version of this document (part of XML Declaration)     
+      * The version of this document (part of XML Declaration)
       */
     public String getVersion() {
 	return version;
     }
 
      /**
-      * DOM Level 3 WD - Experimental.    
-      * standalone that specifies whether this document is standalone (part of XML Declaration)     
+      * DOM Level 3 WD - Experimental.
+      * standalone that specifies whether this document is standalone (part of XML Declaration)
       */
     public boolean getStandalone() {
         return standalone;
@@ -667,7 +667,7 @@ public class DocumentImpl
 
     // properties
 
-    /** 
+    /**
      * Sets whether the DOM implementation performs error checking
      * upon operations. Turning off error checking only affects
      * the following DOM checks:
@@ -685,7 +685,7 @@ public class DocumentImpl
      * <li>Checks related to DOM events
      * </ul>
      */
-    
+
     public void setErrorChecking(boolean check) {
         errorChecking = check;
     }
@@ -697,10 +697,10 @@ public class DocumentImpl
         errorChecking = check;
     }
 
-    
+
     /**
       * DOM Level 3 WD - Experimental.
-      * An attribute specifying, as part of the XML declaration, 
+      * An attribute specifying, as part of the XML declaration,
       * the encoding of this document. This is null when unspecified.
       */
     public void setEncoding(String value) {
@@ -709,22 +709,22 @@ public class DocumentImpl
 
     /**
       * DOM Level 3 WD - Experimental.
-      * version - An attribute specifying, as part of the XML declaration, 
+      * version - An attribute specifying, as part of the XML declaration,
       * the version number of this document. This is null when unspecified
       */
     public void setVersion(String value) {
-       version = value;    
+       version = value;
     }
 
     /**
       * DOM Level 3 WD - Experimental.
-      * standalone - An attribute specifying, as part of the XML declaration, 
+      * standalone - An attribute specifying, as part of the XML declaration,
       * whether this document is standalone
       */
     public void setStandalone(boolean value) {
         standalone = value;
-    } 
-    
+    }
+
 
     /**
      * Returns true if the DOM implementation performs error checking.
@@ -741,7 +741,7 @@ public class DocumentImpl
     }
 
 
-    /** 
+    /**
      * Sets whether the DOM implementation generates mutation events
      * upon operations.
      */
@@ -757,7 +757,7 @@ public class DocumentImpl
     }
 
     // non-DOM factory methods
-    
+
     /**
      * NON-DOM
      * Factory method; creates a DocumentType having this Document
@@ -775,7 +775,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
     	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
@@ -798,7 +798,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
     	return new EntityImpl(this, name);
@@ -821,7 +821,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
     	return new NotationImpl(this, name);
@@ -836,7 +836,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
         return new ElementDefinitionImpl(this, name);
@@ -887,9 +887,9 @@ public class DocumentImpl
         // }
         // else
 
-        DOMImplementation  domImplementation     = 
+        DOMImplementation  domImplementation     =
                   source.getOwnerDocument().getImplementation(); // get source implementation
-        boolean   domLevel20                     = 
+        boolean   domLevel20                     =
                   domImplementation.hasFeature("XML", "2.0" ); //DOM Level 2.0 implementation
 
 
@@ -1186,7 +1186,7 @@ public class DocumentImpl
 
     // identifier maintenence
     /**
-     *  Introduced in DOM Level 2 
+     *  Introduced in DOM Level 2
      *  Returns the Element whose ID is given by elementId. If no such element
      *  exists, returns null. Behavior is not defined if more than one element has this ID.
      *  <p>
@@ -1291,11 +1291,11 @@ public class DocumentImpl
 
     /**
      * Introduced in DOM Level 2. <p>
-     * Creates an element of the given qualified name and namespace URI. 
-     * If the given namespaceURI is null or an empty string and the 
-     * qualifiedName has a prefix that is "xml", the created element 
+     * Creates an element of the given qualified name and namespace URI.
+     * If the given namespaceURI is null or an empty string and the
+     * qualifiedName has a prefix that is "xml", the created element
      * is bound to the predefined namespace
-     * "http://www.w3.org/XML/1998/namespace" [Namespaces]. 
+     * "http://www.w3.org/XML/1998/namespace" [Namespaces].
      * @param namespaceURI The namespace URI of the element to
      *                     create.
      * @param qualifiedName The qualified name of the element type to
@@ -1304,10 +1304,10 @@ public class DocumentImpl
      * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
                             name contains an invalid character.
      * @throws DOMException NAMESPACE_ERR: Raised if the qualifiedName has a
-     *                      prefix that is "xml" and the namespaceURI is 
-     *                      neither null nor an empty string nor 
+     *                      prefix that is "xml" and the namespaceURI is
+     *                      neither null nor an empty string nor
      *                      "http://www.w3.org/XML/1998/namespace", or
-     *                      if the qualifiedName has a prefix different 
+     *                      if the qualifiedName has a prefix different
      *                      from "xml" and the namespaceURI is null or an empty string.
      * @since WD-DOM-Level-2-19990923
      */
@@ -1315,7 +1315,7 @@ public class DocumentImpl
         throws DOMException
     {
     	if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
         return new ElementNSImpl( this, namespaceURI, qualifiedName);
@@ -1323,11 +1323,11 @@ public class DocumentImpl
 
     /**
      * Introduced in DOM Level 2. <p>
-     * Creates an attribute of the given qualified name and namespace URI. 
-     * If the given namespaceURI is null or an empty string and the 
-     * qualifiedName has a prefix that is "xml", the created element 
+     * Creates an attribute of the given qualified name and namespace URI.
+     * If the given namespaceURI is null or an empty string and the
+     * qualifiedName has a prefix that is "xml", the created element
      * is bound to the predefined namespace
-     * "http://www.w3.org/XML/1998/namespace" [Namespaces]. 
+     * "http://www.w3.org/XML/1998/namespace" [Namespaces].
      *
      * @param namespaceURI  The namespace URI of the attribute to
      *                      create. When it is null or an empty string,
@@ -1343,7 +1343,7 @@ public class DocumentImpl
         throws DOMException
     {
     	if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
         return new AttrNSImpl( this, namespaceURI, qualifiedName);
@@ -1388,10 +1388,10 @@ public class DocumentImpl
     public NodeIterator createNodeIterator(Node root,
                                            short whatToShow,
                                            NodeFilter filter)
-    {                                           
+    {
         return createNodeIterator(root,whatToShow,filter,true);
-    }    
-     
+    }
+
     /**
      * Create and return a NodeIterator. The NodeIterator is
      * added to a list of NodeIterators so that it can be
@@ -1455,7 +1455,7 @@ public class DocumentImpl
     {
     	if (root==null) {
             throw new DOMException(
-    			DOMException.NOT_SUPPORTED_ERR, 
+    			DOMException.NOT_SUPPORTED_ERR,
 			"DOM007 Not supported");
         }
         return new TreeWalkerImpl(root, whatToShow, filter,
@@ -1466,10 +1466,10 @@ public class DocumentImpl
     // Not DOM Level 2. Support DocumentTraversal methods.
     //
 
-    /** This is not called by the developer client. The 
-     *  developer client uses the detach() function on the 
+    /** This is not called by the developer client. The
+     *  developer client uses the detach() function on the
      *  NodeIterator itself. <p>
-     *  
+     *
      *  This function is called from the NodeIterator#detach().
      */
      void removeNodeIterator(NodeIterator nodeIterator) {
@@ -1486,19 +1486,19 @@ public class DocumentImpl
     /**
      */
     public Range createRange() {
-        
+
         if (ranges == null) {
             ranges = new Vector();
         }
 
         Range range = new RangeImpl(this);
-        
+
         ranges.addElement(range);
 
         return range;
-        
+
     }
-    
+
     /** Not a client function. Called by Range.detach(),
      *  so a Range can remove itself from the list of
      *  Ranges.
@@ -1510,7 +1510,7 @@ public class DocumentImpl
 
         ranges.removeElement(range);
     }
-    
+
     /**
      * A method to be called when some text was changed in a text node,
      * so that live objects can be notified.
@@ -1586,7 +1586,7 @@ public class DocumentImpl
                 ((NodeIteratorImpl)enum.nextElement()).removeNode(oldChild);
             }
         }
-        
+
         // notify ranges
         if (ranges != null) {
             Enumeration enum = ranges.elements();
@@ -1604,7 +1604,7 @@ public class DocumentImpl
     /**
      * Introduced in DOM Level 2. Optional. <p>
      * Create and return Event objects.
-     * 
+     *
      * @param type
      *               The eventType parameter specifies the type of Event interface to be created.
      *               If the Event interface specified is supported by the implementation this
@@ -1621,9 +1621,9 @@ public class DocumentImpl
      *                   type of Event interface requested
      * @since WD-DOM-Level-2-19990923
      */
-    public Event createEvent(String type) 
+    public Event createEvent(String type)
 	throws DOMException {
-	    if(type.equalsIgnoreCase("Events") || ("Event".equals(type))
+	    if(type.equalsIgnoreCase("Events") || "Event".equals(type))
 	        return new EventImpl();
 	    if(type.equalsIgnoreCase("MutationEvents") ||  "MutationEvent".equals(type))
 	        return new MutationEventImpl();
@@ -1631,7 +1631,7 @@ public class DocumentImpl
 	        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
 					   "DOM007 Not supported");
 	}
-     
+
     //
     // Object methods
     //
@@ -1659,7 +1659,7 @@ public class DocumentImpl
             return false;
         }
         return XMLCharacterProperties.validName(s);
-    	
+
     } // isXMLName(String):boolean
 
     /**
