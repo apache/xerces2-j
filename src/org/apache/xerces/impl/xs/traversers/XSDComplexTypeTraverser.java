@@ -142,7 +142,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
                                                           complexTypeName, attrValues, schemaDoc, grammar);
         // need to add the type to the grammar for later constraint checking
-        grammar.addComplexTypeDecl(type);
+        grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));
         type.setIsAnonymous();
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
@@ -172,7 +172,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             grammar.addGlobalTypeDecl(type);
         }
         // need to add the type to the grammar for later constraint checking
-        grammar.addComplexTypeDecl(type);
+        grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;

@@ -64,6 +64,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.util.SymbolHash;
 import java.util.Vector;
@@ -301,6 +302,19 @@ public class XSConstraints {
         return actualValue;
     }
 
+    static void reportSchemaError(XMLErrorReporter errorReporter,
+                                  SimpleLocator loc,
+                                  String key, Object[] args) {
+        if (loc != null) {
+            errorReporter.reportError(loc, XSMessageFormatter.SCHEMA_DOMAIN,
+                                      key, args, XMLErrorReporter.SEVERITY_ERROR);
+        }
+        else {
+            errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                      key, args, XMLErrorReporter.SEVERITY_ERROR);
+        }
+    }
+
     /**
      * used to check the 3 constraints against each complex type
      * (should be each model group):
@@ -322,6 +336,7 @@ public class XSConstraints {
         // groups redefined by restriction out of the way.
         for (int g = grammars.length-1; g >= 0; g--) {
             XSGroupDecl [] redefinedGroups = grammars[g].getRedefinedGroupDecls();
+            SimpleLocator [] rgLocators = grammars[g].getRGLocators();
             for(int i=0; i<redefinedGroups.length; ) {
                 XSGroupDecl derivedGrp = redefinedGroups[i++];
                 XSParticleDecl derivedParticle = derivedGrp.fParticle;
@@ -329,10 +344,9 @@ public class XSConstraints {
                 XSParticleDecl baseParticle = baseGrp.fParticle;
                 if(baseParticle == null) {
                     if(derivedParticle != null) { // can't be a restriction!
-                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                        "src-redefine.6.2.2",
-                                        new Object[]{derivedGrp.fName, "rcase-Recurse.2"},
-                                        XMLErrorReporter.SEVERITY_ERROR);
+                        reportSchemaError(errorReporter, rgLocators[i/2-1],
+                                          "src-redefine.6.2.2",
+                                          new Object[]{derivedGrp.fName, "rcase-Recurse.2"});
                     } 
                 } else {
                     try {
@@ -340,14 +354,12 @@ public class XSConstraints {
                             derivedParticle, baseParticle);
                     } catch (XMLSchemaException e) {
                         String key = e.getKey();
-                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                        key,
-                                        e.getArgs(),
-                                        XMLErrorReporter.SEVERITY_ERROR);
-                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                        "src-redefine.6.2.2",
-                                        new Object[]{derivedGrp.fName, key},
-                                        XMLErrorReporter.SEVERITY_ERROR);
+                        reportSchemaError(errorReporter, rgLocators[i/2-1],
+                                          key,
+                                          e.getArgs());
+                        reportSchemaError(errorReporter, rgLocators[i/2-1],
+                                          "src-redefine.6.2.2",
+                                          new Object[]{derivedGrp.fName, key});
                     }
                 }
             }
@@ -356,6 +368,7 @@ public class XSConstraints {
         // for each complex type, check the 3 constraints.
         // types need to be checked
         XSComplexTypeDecl[] types;
+        SimpleLocator [] ctLocators;
         // to hold the errors
         // REVISIT: do we want to report all errors? or just one?
         //XMLSchemaError1D errors = new XMLSchemaError1D();
@@ -368,13 +381,15 @@ public class XSConstraints {
         // for all grammars
         SymbolHash elemTable = new SymbolHash();
         for (int i = grammars.length-1, j, k; i >= 0; i--) {
-            // get whether only check UPA, and types need to be checked
+            // get whether to skip EDC, and types need to be checked
             keepType = 0;
             fullChecked = grammars[i].fFullChecked;
             types = grammars[i].getUncheckedComplexTypeDecls();
+            ctLocators = grammars[i].getUncheckedCTLocators();
             // for each type
             for (j = types.length-1; j >= 0; j--) {
-                // if only do UPA checking, skip the other two constraints
+                // if we've already full-checked this grammar, then
+                // skip the EDC constraint
                 if (!fullChecked) {
                 // 1. Element Decl Consistent
                   if (types[j].fParticle!=null) {
@@ -384,10 +399,9 @@ public class XSConstraints {
                                                   elemTable, SGHandler);
                     }
                     catch (XMLSchemaException e) {
-                      errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                e.getKey(),
-                                                e.getArgs(),
-                                                XMLErrorReporter.SEVERITY_ERROR);
+                      reportSchemaError(errorReporter, ctLocators[j],
+                                        e.getKey(),
+                                        e.getArgs());
                     }
                   }
                 }
@@ -403,14 +417,12 @@ public class XSConstraints {
                       particleValidRestriction(SGHandler, types[j].fParticle,
                          ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle);
                   } catch (XMLSchemaException e) {
-                      errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                e.getKey(),
-                                                e.getArgs(),
-                                                XMLErrorReporter.SEVERITY_ERROR);
-                      errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                "derivation-ok-restriction.5.3",
-                                                new Object[]{types[j].fName},
-                                                XMLErrorReporter.SEVERITY_ERROR);
+                      reportSchemaError(errorReporter, ctLocators[j],
+                                        e.getKey(),
+                                        e.getArgs());
+                      reportSchemaError(errorReporter, ctLocators[j],
+                                        "derivation-ok-restriction.5.3",
+                                        new Object[]{types[j].fName});
                   }
                 }
 
@@ -422,19 +434,17 @@ public class XSConstraints {
                     try {
                         further = cm.checkUniqueParticleAttribution(SGHandler);
                     } catch (XMLSchemaException e) {
-                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                  e.getKey(),
-                                                  e.getArgs(),
-                                                  XMLErrorReporter.SEVERITY_ERROR);
+                        reportSchemaError(errorReporter, ctLocators[j],
+                                          e.getKey(),
+                                          e.getArgs());
                     }
                 }
                 // now report all errors
                 // REVISIT: do we want to report all errors? or just one?
                 /*for (k = errors.getErrorCodeNum()-1; k >= 0; k--) {
-                    errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                              errors.getErrorCode(k),
-                                              errors.getArgs(k),
-                                              XMLErrorReporter.SEVERITY_ERROR);
+                    reportSchemaError(errorReporter, ctLocators[j],
+                                      errors.getErrorCode(k),
+                                      errors.getArgs(k));
                 }*/
 
                 // if we are doing all checkings, and this one needs further

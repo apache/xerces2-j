@@ -208,7 +208,8 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 schemaDoc, elmNode);
             if(redefinedGrp != null) {
                 // store in grammar
-                grammar.addRedefinedGroupDecl(group, (XSGroupDecl)redefinedGrp);
+                grammar.addRedefinedGroupDecl(group, (XSGroupDecl)redefinedGrp,
+                                              fSchemaHandler.element2Locator(elmNode));
             }
         }
 

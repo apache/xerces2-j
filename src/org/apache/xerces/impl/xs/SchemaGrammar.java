@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 
@@ -117,7 +118,7 @@ public class SchemaGrammar implements Grammar {
      * 		at the least a systemId should always be known.
      */
     public SchemaGrammar(SymbolTable symbolTable, String targetNamespace,
-    		XSDDescription grammarDesc) {
+                XSDDescription grammarDesc) {
         fSymbolTable = symbolTable;
         fTargetNamespace = targetNamespace;
         fGrammarDescription = grammarDesc;
@@ -148,8 +149,8 @@ public class SchemaGrammar implements Grammar {
     protected SchemaGrammar(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
         fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-	//REVISIT:  will we ever need non-null values in this XSDDescription object?
-	fGrammarDescription = new XSDDescription();
+        //REVISIT:  will we ever need non-null values in this XSDDescription object?
+        fGrammarDescription = new XSDDescription();
 
         fGlobalAttrDecls  = new SymbolHash(1);
         fGlobalAttrGrpDecls = new SymbolHash(1);
@@ -296,12 +297,14 @@ public class SchemaGrammar implements Grammar {
 
     private int fCTCount = 0;
     private XSComplexTypeDecl[] fComplexTypeDecls = new XSComplexTypeDecl[INITIAL_SIZE];
+    private SimpleLocator[] fCTLocators = new SimpleLocator[INITIAL_SIZE];
 
     // an array to store groups being redefined by restriction
     // even-numbered elements are the derived groups, odd-numbered ones their bases
     private static final int REDEFINED_GROUP_INIT_SIZE = 2; 
     private int fRGCount = 0;
     private XSGroupDecl[] fRedefinedGroupDecls = new XSGroupDecl[REDEFINED_GROUP_INIT_SIZE];
+    private SimpleLocator[] fRGLocators = new SimpleLocator[REDEFINED_GROUP_INIT_SIZE/2];
 
     // a flag to indicate whether we have checked the 3 constraints on this
     // grammar.
@@ -310,19 +313,25 @@ public class SchemaGrammar implements Grammar {
     /**
      * add one complex type decl: for later constraint checking
      */
-    public final void addComplexTypeDecl(XSComplexTypeDecl decl) {
-        if (fCTCount == fComplexTypeDecls.length)
+    public final void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
+        if (fCTCount == fComplexTypeDecls.length) {
             fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount+INC_SIZE);
+            fCTLocators = resize(fCTLocators, fCTCount+INC_SIZE);
+        }
+        fCTLocators[fCTCount] = locator;
         fComplexTypeDecls[fCTCount++] = decl;
     }
 
     /**
      * add a group redefined by restriction: for later constraint checking
      */
-    public final void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base) {
-        if (fRGCount == fRedefinedGroupDecls.length)
+    public final void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base, SimpleLocator locator) {
+        if (fRGCount == fRedefinedGroupDecls.length) {
             // double array size each time.
             fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount << 1);
+            fRGLocators = resize(fRGLocators, fRGCount);
+        }
+        fRGLocators[fCTCount/2] = locator;
         fRedefinedGroupDecls[fRGCount++] = derived;
         fRedefinedGroupDecls[fRGCount++] = base;
     }
@@ -331,21 +340,46 @@ public class SchemaGrammar implements Grammar {
      * get all complex type decls: for later constraint checking
      */
     final XSComplexTypeDecl[] getUncheckedComplexTypeDecls() {
-        if (fCTCount < fComplexTypeDecls.length)
+        if (fCTCount < fComplexTypeDecls.length) {
             fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
+            fCTLocators = resize(fCTLocators, fCTCount);
+        }
         return fComplexTypeDecls;
     }
 
     /**
+     * get the error locator of all complex type decls
+     */
+    final SimpleLocator[] getUncheckedCTLocators() {
+        if (fCTCount < fCTLocators.length) {
+            fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
+            fCTLocators = resize(fCTLocators, fCTCount);
+        }
+        return fCTLocators;
+    }
+    
+    /**
      * get all redefined groups: for later constraint checking
      */
     final XSGroupDecl[] getRedefinedGroupDecls() {
-        if (fRGCount < fRedefinedGroupDecls.length)
+        if (fRGCount < fRedefinedGroupDecls.length) {
             fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount);
+            fRGLocators = resize(fRGLocators, fRGCount/2);
+        }
         return fRedefinedGroupDecls;
     }
 
-
+    /**
+     * get the error locator of all redefined groups
+     */
+    final SimpleLocator[] getRGLocators() {
+        if (fRGCount < fRedefinedGroupDecls.length) {
+            fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount);
+            fRGLocators = resize(fRGLocators, fRGCount/2);
+        }
+        return fRGLocators;
+    }
+    
     /**
      * after the first-round checking, some types don't need to be checked
      * against UPA again. here we trim the array to the proper size.
@@ -353,6 +387,7 @@ public class SchemaGrammar implements Grammar {
     final void setUncheckedTypeNum(int newSize) {
         fCTCount = newSize;
         fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
+        fCTLocators = resize(fCTLocators, fCTCount);
     }
 
     // used to store all substitution group information declared in
@@ -408,6 +443,12 @@ public class SchemaGrammar implements Grammar {
 
     static final XSElementDecl[] resize(XSElementDecl[] oldArray, int newSize) {
         XSElementDecl[] newArray = new XSElementDecl[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
+        return newArray;
+    }
+
+    static final SimpleLocator[] resize(SimpleLocator[] oldArray, int newSize) {
+        SimpleLocator[] newArray = new SimpleLocator[newSize];
         System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
         return newArray;
     }

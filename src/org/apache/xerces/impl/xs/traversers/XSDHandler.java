@@ -85,6 +85,7 @@ import org.apache.xerces.xni.XMLLocator;
 
 import org.apache.xerces.impl.xs.dom.DOMParser;
 import org.apache.xerces.impl.xs.dom.ElementNSImpl;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -114,7 +115,6 @@ import java.io.Reader;
  * @author Neil Graham, IBM
  * @version $Id$
  */
-
 public class XSDHandler {
 
     // data
@@ -1824,51 +1824,43 @@ public class XSDHandler {
         // if it's visible already than so must be its children
     } // setSchemasVisible(XSDocumentInfo): void
 
-    // a locator used to convert a DOM element node to location information:
-    // line/column number, system id, etc.
-    private class MyLocator implements XMLLocator {
-        int line, column;
-        String pid, lsid, esid, bsid;
-        
-        void init(ElementNSImpl ele) {
-            // line/column numbers are stored in the element node
-            line = ele.getLineNumber();
-            column = ele.getColumnNumber();
-            // get system id from document object
-            Document doc = ele.getOwnerDocument();
-            lsid = esid = (String)fDoc2SystemId.get(doc);
-        }
-        
-        public int getLineNumber() {
-            return line;
-        }
-        
-        public int getColumnNumber() {
-            return column;
-        }
-
-        public String getPublicId() {
-            return pid;
-        }
+    private SimpleLocator xl = new SimpleLocator();
     
-        public String getExpandedSystemId() {
-            return esid;
-        }
+    /**
+     * Extract location information from an Element node, and create a
+     * new SimpleLocator object from such information. Returning null means
+     * no information can be retrieved from the element.
+     */
+    public SimpleLocator element2Locator(Element e) {
+        if (!(e instanceof ElementNSImpl))
+            return null;
+        
+        SimpleLocator l = new SimpleLocator();
+        return element2Locator(e, l) ? l : null;
+    }
     
-        public String getLiteralSystemId() {
-            return lsid;
-        }
-    
-        public String getBaseSystemId() {
-            return bsid;
-        }
-    };
-    private MyLocator xl = new MyLocator();
+    /**
+     * Extract location information from an Element node, store such
+     * information in the passed-in SimpleLocator object, then return
+     * true. Returning false means can't extract or store such information.
+     */
+    public boolean element2Locator(Element e, SimpleLocator l) {
+        if (!(e instanceof ElementNSImpl) || l == null)
+            return false;
+            
+        ElementNSImpl ele = (ElementNSImpl)e;
+        // get system id from document object
+        Document doc = ele.getOwnerDocument();
+        String sid = (String)fDoc2SystemId.get(doc);
+        // line/column numbers are stored in the element node
+        int line = ele.getLineNumber();
+        int column = ele.getColumnNumber();
+        l.setValues(sid, sid, line, column);
+        return true;
+    }
     
     void reportSchemaError(String key, Object[] args, Element ele) {
-        if (ele instanceof ElementNSImpl) {
-            ElementNSImpl e = (ElementNSImpl)ele;
-            xl.init(e);
+        if (element2Locator(ele, xl)) {
             fErrorReporter.reportError(xl, XSMessageFormatter.SCHEMA_DOMAIN,
                                        key, args, XMLErrorReporter.SEVERITY_ERROR);
         }
@@ -1879,9 +1871,7 @@ public class XSDHandler {
     }
 
     void reportSchemaWarning(String key, Object[] args, Element ele) {
-        if (ele instanceof ElementNSImpl) {
-            ElementNSImpl e = (ElementNSImpl)ele;
-            xl.init(e);
+        if (element2Locator(ele, xl)) {
             fErrorReporter.reportError(xl, XSMessageFormatter.SCHEMA_DOMAIN,
                                        key, args, XMLErrorReporter.SEVERITY_WARNING);
         }
