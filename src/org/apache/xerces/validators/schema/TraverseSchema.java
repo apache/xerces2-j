@@ -689,8 +689,8 @@ public class TraverseSchema implements
                 //traverseAttributeGroupDecl(child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null, false );
-            } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
-                //traverseGroupDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
+                traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
                 ; //TO DO
             }
@@ -4400,6 +4400,9 @@ public class TraverseSchema implements
         String maxOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MAXOCCURS);
         String dflt = elementDecl.getAttribute(SchemaSymbols.ATT_DEFAULT);
         String fixed = elementDecl.getAttribute(SchemaSymbols.ATT_FIXED);
+		if(!(dflt.equals("") || fixed.equals(""))) 
+			// REVISIT:  localize
+			reportGenericSchemaError("an element cannot have both \"fixed\" and \"default\" present at the same time");
         String substitutionGroup = elementDecl.getAttribute(SchemaSymbols.ATT_SUBSTITUTIONGROUP);
         // form attribute
         String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_FORM);
@@ -4443,6 +4446,9 @@ public class TraverseSchema implements
 					|| (finalSet > 0) || (blockSet > 0)
 					|| !dflt.equals("") || !fixed.equals(""))
             	reportSchemaError(SchemaMessageProvider.BadAttWithRef, null);
+			if (!name.equals(""))
+                // REVISIT: Localize
+                reportGenericSchemaError("element " + name + " cannot also have a ref attribute");
 
             Element child = XUtil.getFirstChildElement(elementDecl);
         	if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
