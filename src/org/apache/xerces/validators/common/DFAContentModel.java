@@ -899,7 +899,7 @@ public class DFAContentModel
                 //}
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
                 fElemMapSize++;
-            }
+            } 
         }
         // set up the fLeafNameTypeVector object if there is one.
         if (fLeafNameTypeVector != null) {
@@ -918,6 +918,7 @@ public class DFAContentModel
 	for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
 	    for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
 		final QName leaf = fLeafList[leafIndex].getElement();
+final int leafType = fLeafListType[leafIndex];
 		final QName element = fElemMap[elemIndex];
 		if (fDTD) {
 		    if (leaf.rawname == element.rawname) {
@@ -926,12 +927,16 @@ public class DFAContentModel
 		}
 		else {
 		    if (leaf.uri == element.uri &&
-			leaf.localpart == element.localpart)
+			leaf.localpart == element.localpart) {
+        if (!((leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            (leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            (leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER))
 			fLeafSorter[fSortCount++] = leafIndex;
+}
 		}
 	    }
 	    fLeafSorter[fSortCount++] = -1;
-	}
+	} 
 
 	/* Optimization(Jan, 2001) */
 
@@ -1351,7 +1356,7 @@ public class DFAContentModel
             (nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
             (nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
             // REVISIT: Don't waste these structures.
-            QName qname = new QName(-1, -1, -1, ((CMAny)nodeCur).getURI());
+			QName qname = new QName(-1, -1, -1, ((CMAny)nodeCur).getURI());
             fLeafList[curIndex] = new CMLeaf(qname, ((CMAny)nodeCur).getPosition());
             fLeafListType[curIndex] = nodeCur.type();
             curIndex++;

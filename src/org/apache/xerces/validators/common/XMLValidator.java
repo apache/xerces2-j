@@ -306,7 +306,7 @@ public final class XMLValidator
    private final int TOP_LEVEL_SCOPE = -1;
    private int fCurrentScope = TOP_LEVEL_SCOPE;
    private int fCurrentSchemaURI = -1;
-   private int fEmptyURI = - 1; 
+   private int fEmptyURI = StringPool.EMPTY_STRING; 
    private int fXsiPrefix = - 1;
    private int fXsiURI = -2; 
    private int fXsiTypeAttValue = -1;
@@ -1868,7 +1868,7 @@ public final class XMLValidator
       fCheckedForSchema = false;
 
       fCurrentScope = TOP_LEVEL_SCOPE;
-      fCurrentSchemaURI = -1;
+      fCurrentSchemaURI = StringPool.EMPTY_STRING;
       fEmptyURI = StringPool.EMPTY_STRING; 
       fXsiPrefix = - 1;
       fXsiTypeValidator = null;

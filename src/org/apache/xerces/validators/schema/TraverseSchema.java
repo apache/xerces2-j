@@ -1554,8 +1554,10 @@ public class TraverseSchema implements
             //          to StringPool.EMPTY_STRING instead of -1? -Ac
             // REVISIT: is this the right way to do it? EMPTY_STRING does not 
             //          seem to work in this case -el 
-            String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
-            int uriIndex = fStringPool.addSymbol(uri);
+			// Simplify! - ng
+            //String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+			String uri = fTargetNSURIString;
+			int uriIndex = fStringPool.addSymbol(uri);
             anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
         }
         else if (namespace.equals("##other")) {
@@ -1564,7 +1566,7 @@ public class TraverseSchema implements
             anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyOther, -1, uriIndex, false);
         }
         else if (namespace.equals("##local")) {
-            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, -1, false);
+            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, StringPool.EMPTY_STRING, false);
         }
         else if (namespace.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(namespace);

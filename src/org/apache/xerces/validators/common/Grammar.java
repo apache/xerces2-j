@@ -732,6 +732,9 @@ implements XMLContentSpec.Provider {
         // We will build a node at this level for the new tree
         CMNode nodeRet = null;
         getContentSpec(startNode, contentSpec);
+        if (((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) ||
+        ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER)  ||
+        ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) )
         if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) {
             //nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
             nodeRet = new CMAny(contentSpec.type, contentSpec.otherValue, fLeafCount++);
@@ -740,7 +743,7 @@ implements XMLContentSpec.Provider {
             nodeRet = new CMAny(contentSpec.type, contentSpec.otherValue, fLeafCount++);
         }
         else if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-            nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
+            nodeRet = new CMAny(contentSpec.type, 0, fLeafCount++);
         }
         //
         //  If this node is a leaf, then its an easy one. We just add it
