@@ -161,6 +161,7 @@ public final class XMLDocumentScanner {
     XMLDTDScanner fDTDScanner = null;
     boolean fNamespacesEnabled = false;
     boolean fValidationEnabled = false;
+    boolean fLoadExternalDTD = true;
     QName fElementQName = new QName();
     QName fAttributeQName = new QName();
     QName fCurrentElementQName = new QName();
@@ -2046,6 +2047,19 @@ public final class XMLDocumentScanner {
         return fValidationEnabled;
     }
 
+    /** Sets whether the parser loads the external DTD. */
+    public void setLoadExternalDTD(boolean enabled) {
+        fLoadExternalDTD = enabled;
+        if (fDTDScanner != null) {
+            fDTDScanner.setLoadExternalDTD(enabled);
+        }
+    }
+
+    /** Returns true if loading the external DTD is turned on. */
+    public boolean getLoadExternalDTD() {
+        return fLoadExternalDTD;
+    }
+
     // old EventHandler methods pushed back into scanner
 
     /** Scans element type. */
@@ -2167,6 +2181,7 @@ public final class XMLDocumentScanner {
             fDTDScanner = new XMLDTDScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
             fDTDScanner.setValidationEnabled(fValidationEnabled);
             fDTDScanner.setNamespacesEnabled(fNamespacesEnabled);
+            fDTDScanner.setLoadExternalDTD(fLoadExternalDTD);
         }
         else {
             fDTDScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));

@@ -185,6 +185,7 @@ public final class XMLDTDScanner {
     private GrammarResolver fGrammarResolver = null;
     private boolean fNamespacesEnabled = false;
     private boolean fValidationEnabled = false;
+    private boolean fLoadExternalDTD = true;
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
     private QName fElementQName = new QName();
@@ -262,6 +263,11 @@ public final class XMLDTDScanner {
     /** set fValidationEnabled  **/
     public void setValidationEnabled(boolean enabled) {
         fValidationEnabled = enabled;
+    }
+
+    /** Sets whether the parser loads the external DTD. */
+    public void setLoadExternalDTD(boolean enabled) {
+        fLoadExternalDTD = enabled;
     }
 
     /**
@@ -1099,7 +1105,9 @@ public final class XMLDTDScanner {
                     skipPastEndOfCurrentMarkup();
                     return false;
                 }
-                scanExternalSubset = true;
+                if (fValidationEnabled || fLoadExternalDTD) {
+                    scanExternalSubset = true;
+                }
                 publicId = fPubidLiteral;
                 systemId = fSystemLiteral;
                 fEntityReader.skipPastSpaces();

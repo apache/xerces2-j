@@ -130,11 +130,24 @@ try {
 		<anchor name="load-dtd-grammar"/>
 		<p>http://apache.org/xml/features/nonvalidating/load-dtd-grammar</p>
 		<table>
-			<tr><th>True:</th><td> Will load the DTD Grammar, based on the information provided in DTD, 
-			                       add default attribute information and set the attribute type when parsing.</td></tr>
-			<tr><th>False:</th><td>Will ignore the DTD grammar.</td></tr>
+			<tr><th>True:</th><td>Load the DTD and use it to
+			                       add default attributes and set
+attribute types when parsing.</td></tr>
+			<tr><th>False:</th><td>Build the grammar but do not use
+the default attributes and attribute types information it contains.</td></tr>
 			<tr><th>Default:</th><td>true</td></tr>
-			<tr><th>Note:</th>		<td>This feature functions only when the validation is turned off.</td></tr>
+			<tr><th>Note:</th> <td>This feature is always on when
+validation is on.</td></tr>
+		</table>	
+
+		<anchor name="load-external-dtd"/>
+		<p>http://apache.org/xml/features/nonvalidating/load-dtd</p>
+		<table>
+			<tr><th>True:</th><td>Load the external DTD.</td></tr>
+			<tr><th>False:</th><td>Ignore the external DTD completely.</td></tr>
+			<tr><th>Default:</th><td>true</td></tr>
+			<tr><th>Note:</th>		<td>This feature is
+always on when validation is on.</td></tr>
 		</table>	
 	</s2>
 	<s2 title="DOM Features">

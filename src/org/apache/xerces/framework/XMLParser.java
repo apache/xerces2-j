@@ -132,7 +132,8 @@ public abstract class XMLParser
         "http://apache.org/xml/features/validation/warn-on-undeclared-elemdef",
         "http://apache.org/xml/features/allow-java-encodings",
         "http://apache.org/xml/features/continue-after-fatal-error",
-        "http://apache.org/xml/features/nonvalidating/load-dtd-grammar"
+        "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
+        "http://apache.org/xml/features/nonvalidating/load-external-dtd"
     };
 
     /** Properties recognized by this parser. */
@@ -638,6 +639,45 @@ public abstract class XMLParser
     protected boolean getLoadDTDGrammar() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getLoadDTDGrammar();
+    }
+
+    /**
+     * Allows the parser to have the choice to load the external DTD when 
+     * validation is off.
+     * <p>
+     * This method is the equivalent to the feature:
+     * <pre>
+     * http://apache.org/xml/features/nonvalidating/load-external-dtd
+     * </pre>
+     *
+     * @param loadExternalDTD True to turn on the feature; false to
+     *                turn off the feature.
+     *
+     * @see #getLoadExternalDTD
+     * @see #setFeature
+     */
+    protected void setLoadExternalDTD(boolean loadExternalDTD) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            // REVISIT: Localize message
+            throw new SAXNotSupportedException("http://apache.org/xml/features/nonvalidating/load-external-dtd: parse is in progress");
+        }
+        try {
+            fScanner.setLoadExternalDTD(loadExternalDTD);
+        }
+        catch (Exception ex) {
+            throw new SAXNotSupportedException(ex.getMessage());
+        }
+    }
+
+    /**
+     * Returns true if loading of the external DTD is on.
+     *
+     * @see #setLoadExternalDTD
+     */
+    protected boolean getLoadExternalDTD() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        return fScanner.getLoadExternalDTD();
     }
 
     /**
@@ -1174,6 +1214,13 @@ public abstract class XMLParser
                 setLoadDTDGrammar(state);
                 return;
             }
+            //
+            // http://apache.org/xml/features/validation/nonvalidating/load-external-dtd
+            //
+            if (feature.equals("nonvalidating/load-external-dtd")) {
+                setLoadExternalDTD(state);
+                return;
+            }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
@@ -1325,10 +1372,16 @@ public abstract class XMLParser
                 throw new SAXNotRecognizedException(featureId);
             }
             //
-            // http://apache.org/xml/features/validation/load-dtd-grammar
+            // http://apache.org/xml/features/nonvalidating/load-dtd-grammar
             //
-            if (feature.equals("load-dtd-grammar")) {
+            if (feature.equals("nonvalidating/load-dtd-grammar")) {
                 return getLoadDTDGrammar();
+            }
+            //
+            // http://apache.org/xml/features/nonvalidating/load-external-dtd
+            //
+            if (feature.equals("nonvalidating/load-external-dtd")) {
+                return getLoadExternalDTD();
             }
             //
             // http://apache.org/xml/features/validation/validate-datatypes

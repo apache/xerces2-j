@@ -4,7 +4,6 @@
 <s1 title="Releases">
   <s2 title='December 06, 2000'>
          <ul>
-           <li>Bug fix release</li>
            <li>Fixed Memory leak bug was reported by Tosiki IGA where parser runs out of memory [ericye]</li>
            <li>Rampant object creation even when not validating fix patch send by Elena Litani[Elena Litani]</li>
            <li>ListDatatypeValidator enumeration bug fix by Elena Litani[Elena Litani]</li>
@@ -12,6 +11,9 @@
            <li>Fixed misc. Schema Structures miscelaneous bugs since last release [ericye]</li>
            <li>Fixed DOM misc. bugs and other patches since last release [lehors]</li>
            <li>Miscelaneous DOM patches by Lynn Monson [Lynn Monson]</li>
+           <li>Added new 'load-external-dtd' feature, so that when non
+validating, applications can ask the parser not to load the external subset at
+all [Arnaud Le Hors]</li>
         </ul>
   </s2>
   <s2 title='November 22, 2000'>
