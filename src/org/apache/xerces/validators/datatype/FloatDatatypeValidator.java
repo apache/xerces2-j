@@ -204,7 +204,18 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                                                                                     DatatypeMessageProvider.MSG_NONE,
                                                                                     new Object [] { v.elementAt(i)}));
                         } catch (NumberFormatException nfe) {
-                            System.out.println("Internal Error parsing enumerated values for real type");
+                            if( v.elementAt(i).equals("INF") ){
+                                fEnumFloats[i] = Float.POSITIVE_INFINITY;
+                            } else if( v.elementAt(i).equals("-INF")){
+                                fEnumFloats[i] = Float.NEGATIVE_INFINITY;
+                            } else if( v.elementAt(i).equals("NaN")) {
+                                fEnumFloats[i] = Float.NaN;
+                            } else {
+                                //REVISIT: parser will reparse and report error several times
+                                throw new InvalidDatatypeFacetException( getErrorString(
+                                    DatatypeMessageProvider.IllegalFacetValue, 
+                                    DatatypeMessageProvider.MSG_NONE, new Object [] {v.elementAt(i), "enumeration"}));
+                            }
                         }
                 }
             }
@@ -230,9 +241,84 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
      */
     public Object validate(String content, Object state) 
     throws InvalidDatatypeValueException {
-        checkContent(  content );
+        checkContentEnum (content, state, null);
         return null;
     }
+
+     /**
+     * validate if the content is valid against base datatype and facets (if any)
+     * this function might be called directly from UnionDatatype or ListDatatype 
+     * 
+     * @param content A string containing the content to be validated
+     * @param enumeration A vector with enumeration strings  
+     * @exception throws InvalidDatatypeException if the content is
+     *  is not a W3C decimal type;
+     * @exception throws InvalidDatatypeFacetException if enumeration is not float
+     */
+     protected void checkContentEnum(String content, Object state, Vector enumeration) 
+                                                      throws InvalidDatatypeValueException{
+       if ( this.fBaseValidator != null ) { //validate against parent type if any
+             ((FloatDatatypeValidator)this.fBaseValidator).checkContentEnum( content, state, enumeration);
+       }
+
+       if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+               if ( fRegex == null || fRegex.matches( content) == false )
+                   throw new InvalidDatatypeValueException("Value'"+content+
+                                                           "does not match regular expression facet" + fPattern );
+       }
+
+        float f = 0;
+        try {
+                f = Float.valueOf(content).floatValue();
+        } catch (NumberFormatException nfe) {
+                if( content.equals("INF") ){
+                    f=Float.POSITIVE_INFINITY;
+                } else if( content.equals("-INF") ){
+                    f=Float.NEGATIVE_INFINITY;
+                } else if( content.equals("NaN" ) ) {
+                    f=Float.NaN;
+                } else {
+                    throw new InvalidDatatypeValueException(
+                                  getErrorString(DatatypeMessageProvider.NotFloat,
+                                                 DatatypeMessageProvider.MSG_NONE,
+                                                           new Object [] { content}));
+                }
+        }
+        
+        //enumeration is passed from List or Union datatypes
+        if (enumeration != null) {
+            int size =  enumeration.size();
+            float[]     enumFloats = new float[size];
+            int i=0;
+            try {
+                for (; i < size; i++)
+                    enumFloats[i] = Float.valueOf((String) enumeration.elementAt(i)).floatValue();
+            
+            } catch (NumberFormatException nfe) {
+                if( enumeration.elementAt(i).equals("INF") ){
+                    enumFloats[i] = Float.POSITIVE_INFINITY;
+                } else if( enumeration.elementAt(i).equals("-INF")){
+                    enumFloats[i] = Float.NEGATIVE_INFINITY;
+                } else if( enumeration.elementAt(i).equals("NaN")) {
+                    enumFloats[i] = Float.NaN;
+                } else {
+                    throw new InvalidDatatypeValueException(
+                                    getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                                   DatatypeMessageProvider.MSG_NONE,
+                                                   new Object [] { enumeration.elementAt(i)}));
+                }
+            }
+            enumCheck(f, enumFloats);
+        }
+
+        boundsCheck(f);
+
+        if (((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) )
+                enumCheck(f, fEnumFloats);
+    }
+
+
+
 
     /*
      * check that a facet is in range, assumes that facets are compatible -- compatibility ensured by setFacets
@@ -329,9 +415,9 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     }
 
 
-    private void enumCheck(float v) throws InvalidDatatypeValueException {
-       for (int i = 0; i < fEnumFloats.length; i++) {
-           if (v == fEnumFloats[i]) return;
+    private void enumCheck(float v, float[] enumFloats) throws InvalidDatatypeValueException {
+       for (int i = 0; i < enumFloats.length; i++) {
+           if (v == enumFloats[i]) return;
        }
        throw new InvalidDatatypeValueException(
                                               getErrorString(DatatypeMessageProvider.NotAnEnumValue,
@@ -353,38 +439,6 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
         fBaseValidator =  base;
     }
 
-    private  void checkContent( String content )throws InvalidDatatypeValueException {
-        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-                if ( fRegex == null || fRegex.matches( content) == false )
-                    throw new InvalidDatatypeValueException("Value'"+content+
-                                                            "does not match regular expression facet" + fPattern );
-            }
-
-
-            float f = 0;
-            try {
-                //System.out.println("content = " + content );
-                f = Float.valueOf(content).floatValue();
-                //System.out.println("f = " + f );
-            } catch (NumberFormatException nfe) {
-                if( content.equals("INF") ){
-                    f=Float.POSITIVE_INFINITY;
-                } else if( content.equals("-INF") ){
-                    f=Float.NEGATIVE_INFINITY;
-                } else if( content.equals("NaN" ) ) {
-                    f=Float.NaN;
-                } else {
-                    throw new InvalidDatatypeValueException(
-                                  getErrorString(DatatypeMessageProvider.NotFloat,
-                                                 DatatypeMessageProvider.MSG_NONE,
-                                                           new Object [] { content}));
-                }
-            }
-            boundsCheck(f);
-
-            if (((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) )
-                enumCheck(f);
-
-    }
+    
 
 }

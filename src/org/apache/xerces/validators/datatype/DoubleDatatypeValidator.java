@@ -216,14 +216,33 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
      *  is not a W3C real type
      */
 
-    public Object validate(String content, Object state) 
-    throws InvalidDatatypeValueException {
+    public Object validate(String content, Object state) throws InvalidDatatypeValueException {
+              
+        checkContentEnum (content, state, null);
+        return null;
+    }
+
+
+     /**
+     * validate if the content is valid against base datatype and facets (if any)
+     * this function might be called directly from UnionDatatype or ListDatatype  
+     * 
+     * @param content A string containing the content to be validated
+     * @param enumeration A vector with enumeration strings  
+     * @exception throws InvalidDatatypeException if the content is
+     *  is not a W3C decimal type;
+     * @exception throws InvalidDatatypeFacetException if enumeration is not double
+     */
+
+    protected void checkContentEnum(String content, Object state, Vector enumeration) throws InvalidDatatypeValueException {
+        if ( this.fBaseValidator != null ) { //validate against parent type if any
+            ((DoubleDatatypeValidator)this.fBaseValidator).checkContentEnum( content, state, enumeration);
+        }
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             if ( fRegex == null || fRegex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
                                                         "does not match regular expression facet" + fPattern );
         }
-
 
         double d = 0.0;
         try {
@@ -242,13 +261,42 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
                                                           new Object [] { content}));
                }
         }
+
+        if (enumeration != null) { //the call was made from List or union
+           int size = enumeration.size();
+           double[] enumDoubles = new double[size];
+           int i=0;
+           try {
+                for (; i < size; i++)
+                     enumDoubles[i] = Double.valueOf((String) enumeration.elementAt(i)).doubleValue();
+           }  catch (NumberFormatException nfe) {
+                 if( content.equals("INF") ){
+                   enumDoubles[i]=Double.POSITIVE_INFINITY;
+               } else if( content.equals("-INF") ){
+                   enumDoubles[i]=Double.NEGATIVE_INFINITY;
+               } else if( content.equals("NaN" ) ) {
+                   enumDoubles[i]=Double.NaN;
+               } else {
+                   throw new InvalidDatatypeValueException(
+                   getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                  DatatypeMessageProvider.MSG_NONE,
+                                  new Object [] { enumeration.elementAt(i)}));
+               }
+           }
+
+
+
+           enumCheck(d, enumDoubles);
+       }
+
         boundsCheck(d);
 
         if (((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) )
-            enumCheck(d);
+            enumCheck(d, fEnumDoubles);
 
-        return null;
+        
     }
+
 
     // Private Methods start here
 
@@ -322,9 +370,9 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
 
     }
 
-    private void enumCheck(double v) throws InvalidDatatypeValueException {
-        for (int i = 0; i < fEnumDoubles.length; i++) {
-            if (v == fEnumDoubles[i]) return;
+    private void enumCheck(double v, double[] enumDoubles) throws InvalidDatatypeValueException {
+        for (int i = 0; i < enumDoubles.length; i++) {
+            if (v == enumDoubles[i]) return;
         }
         throw new InvalidDatatypeValueException(
                                                getErrorString(DatatypeMessageProvider.NotAnEnumValue,

@@ -261,12 +261,28 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
      */
 
     public Object validate(String content, Object state) throws InvalidDatatypeValueException {
+        //REVISIT: should we pass state?
+        checkContentEnum(content, state, null);
+        return null;
+    }
 
+
+    /**
+     * validate if the content is valid against base datatype and facets (if any)
+     * this function might be called directly from UnionDatatype or ListDatatype     
+     * 
+     * @param content A string containing the content to be validated
+     * @param enumeration A vector with enumeration strings  
+     * @exception throws InvalidDatatypeException if the content is
+     *  is not a W3C decimal type;
+     * @exception throws InvalidDatatypeFacetException if enumeration is not BigDecimal
+     */
+
+    protected void checkContentEnum(String content, Object state, Vector enumeration) 
+                                           throws InvalidDatatypeValueException{
         if ( this.fBaseValidator != null ) {//validate against parent type if any
-            //System.out.println( "validator = " + this.fBaseValidator );
-            this.fBaseValidator.validate( content, state );
+            ((DecimalDatatypeValidator)this.fBaseValidator).checkContentEnum( content, state, enumeration );
         }
-
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             if ( fRegex == null || fRegex.matches( content) == false )
@@ -274,6 +290,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                     "' does not match regular expression facet " + fRegex.getPattern() );
         }
 
+         
         BigDecimal d = null; // Is content a Decimal 
         try {
             d = new BigDecimal( stripPlusIfPresent( content));
@@ -283,14 +300,22 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                                                                     DatatypeMessageProvider.MSG_NONE,
                                                                     new Object[] { "'" + content +"'"}));
         }
-        //} 
-        //catch (IOException ex ) {
-        //  throw new InvalidDatatypeValueException(
-        //  getErrorString(DatatypeMessageProvider.NotDecimal,
-        // DatatypeMessageProvider.MSG_NONE,
-        //                       new Object[] { "'" + content +"'"}));
-        //}
-
+        
+        if (enumeration != null) { //the call was made from List or Union
+            int size= enumeration.size();
+            BigDecimal[]     enumDecimal  = new BigDecimal[size];
+            int i = 0;
+            try {
+                for ( ; i < size; i++) 
+                    enumDecimal[i] = new BigDecimal( stripPlusIfPresent(((String) enumeration.elementAt(i))));
+            } catch (NumberFormatException nfe) {
+                   throw new InvalidDatatypeValueException(
+                                                                getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                                                                DatatypeMessageProvider.MSG_NONE,
+                                                                                new Object [] { enumeration.elementAt(i)}));
+            }
+            enumCheck(d, enumDecimal);
+        }
 
         if ( isScaleDefined == true ) {
             if (d.scale() > fScale)
@@ -311,9 +336,10 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         }
         boundsCheck(d);
         if (  fEnumDecimal != null )
-            enumCheck(d);
+            enumCheck(d, fEnumDecimal);
             
-        return null;
+        return;
+
     }
 
     /*
@@ -381,9 +407,9 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
     }
 
-    private void enumCheck(BigDecimal v) throws InvalidDatatypeValueException {
-        for (int i = 0; i < fEnumDecimal.length; i++) {
-            if (v.equals(fEnumDecimal[i] ))
+    private void enumCheck(BigDecimal v, BigDecimal[] enum) throws InvalidDatatypeValueException {
+        for (int i = 0; i < enum.length; i++) {
+            if (v.equals(enum[i] ))
             {
                 return;
             }

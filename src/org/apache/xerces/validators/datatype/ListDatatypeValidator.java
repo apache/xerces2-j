@@ -84,12 +84,11 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
     private String     fPattern          = null;
     private Vector     fEnumeration      = null;
     private int        fFacetsDefined    = 0;
-    private boolean    fDerivedByList    = false;//default
-
+    private boolean    fDerivedByList    = false; //false: derivation by restriction
+                                                  //true: list decl
     private RegularExpression fRegex         = null;
 
-
-
+    
 
     public  ListDatatypeValidator () throws InvalidDatatypeFacetException{
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -97,7 +96,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
     }
 
     public ListDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
+    boolean derivedByList ) throws InvalidDatatypeFacetException {
 
         setBasetype( base ); // Set base type 
 
@@ -143,18 +142,18 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                 if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                     throw new InvalidDatatypeFacetException(
-                                                            "It is an error for both length and maxLength to be members of facets." );  
+                    "It is an error for both length and maxLength to be members of facets." );  
                 } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                     throw new InvalidDatatypeFacetException(
-                                                            "It is an error for both length and minLength to be members of facets." );
+                    "It is an error for both length and minLength to be members of facets." );
                 }
             }
 
             if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                        DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
+            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                 if ( fMinLength > fMaxLength ) {
                     throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                                "must be greater that the value of maxLength" + fMaxLength );
+                    "must be greater that the value of maxLength" + fMaxLength );
                 }
             }
         }// End of Facets Setting
@@ -174,13 +173,13 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
      */
     public Object validate(String content, Object state)  throws InvalidDatatypeValueException
     {
-         if ( content == null && state != null ) {
+        if ( content == null && state != null ) {
             this.fBaseValidator.validate( content, state );//Passthrough setup information
                                                           //for state validators
-         }else{
-            checkContent( content, state );
-         }
-         return null;
+        } else{
+            checkContentEnum( content, state , null); 
+        }
+        return null;
     }
 
 
@@ -233,61 +232,166 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
         return newObj;
     }
 
-    // Private methods
-    private void checkContent( String content,  Object state )throws InvalidDatatypeValueException
-    {
-        StringTokenizer parsedList = new StringTokenizer( content );
-        try {
-            int numberOfTokens =  parsedList.countTokens();
-            if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                if ( numberOfTokens > fMaxLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+  numberOfTokens + "' tokens"+
-                                                            "' exceeds maximum length facet of '"+fMaxLength+"' tokens.");
-                }
-            }
-            if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                if ( numberOfTokens < fMinLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+ numberOfTokens+ "' tokens" +
-                                                            "' is less than minimum length facet of '"+fMinLength+"' tokens." );
-                }
-            }
-
-            if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                if ( numberOfTokens != fLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+ numberOfTokens+ "' tokens" +
-                                                            "' is not equal to length facet of '"+fLength+"' tokens.");
-                }
-            }
-
-            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                // Enumerations are defined in the value space so the contains method
-                // of vector doesn't really do the right thing, we really should check using compare
-                if ( fEnumeration.contains( content ) == false )
-                    throw new InvalidDatatypeValueException("Value '"+
-                                                            content+"' must be one of "+fEnumeration);
-            }
+    /**
+     * validate that a content is valid against base datatype and facets (if any) 
+     * 
+     * @param content A string containing the content to be validated
+     * @param state used with IDREF(s) datatypes
+     * @param enumeration enumeration facet
+     * @exception throws InvalidDatatypeException if the content is not valid
+     * @exception InvalidDatatypeValueException
+     */
+     protected void checkContentEnum( String content,  Object state, Vector enumeration )
+                                throws InvalidDatatypeValueException {
             
-            if (this.fDerivedByList) {
-                while ( parsedList.hasMoreTokens() ) {       //Check each token in list against base type
+            //REVISIT: attemt to make enumeration to be validated against value space.
+            //a redesign of Datatypes might help to reduce complexity of this validation
+        StringTokenizer parsedList = null;
+        int numberOfTokens = 0;
+        parsedList= new StringTokenizer( content );
+        numberOfTokens =  parsedList.countTokens();
+        
+        if (!this.fDerivedByList) { 
+            //<simpleType name="fRestriction"><restriction base="fList">...</restriction></simpleType>
+            try {
+                if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
+                    if ( numberOfTokens > fMaxLength ) {
+                        throw new InvalidDatatypeValueException("Value '"+content+
+                        "' with length ='"+  numberOfTokens + "' tokens"+
+                        "' exceeds maximum length facet of '"+fMaxLength+"' tokens.");
+                    }
+                }
+                if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
+                    if ( numberOfTokens < fMinLength ) {
+                        throw new InvalidDatatypeValueException("Value '"+content+
+                        "' with length ='"+ numberOfTokens+ "' tokens" +
+                        "' is less than minimum length facet of '"+fMinLength+"' tokens." );
+                    }
+                }
+
+                if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
+                    if ( numberOfTokens != fLength ) {
+                        throw new InvalidDatatypeValueException("Value '"+content+
+                        "' with length ='"+ numberOfTokens+ "' tokens" +
+                        "' is not equal to length facet of '"+fLength+"' tokens.");
+                    }
+                }
+                if (enumeration!=null) {
+                    if (!verifyEnum(enumeration)) {
+                        throw new InvalidDatatypeValueException("Enumeration '" +enumeration+"' for value '" +content+
+                        "' is based on enumeration '"+fEnumeration+"'");
+                    }
+                }else {
+                    enumeration = (fEnumeration!=null) ? fEnumeration : null;
+                }
+                                      
+                // enumeration must be passed till we know what "itemType" is
+                // to be able to validate against value space
+                ((ListDatatypeValidator)this.fBaseValidator).checkContentEnum( content, state, enumeration );
+            } catch ( NoSuchElementException e ) {
+                e.printStackTrace();
+            }
+        } 
+        else { 
+            //the case:
+            //<simpleType name="fList"><list itemType="float"/></simpleType>
+            if (enumeration !=null) {
+                StringTokenizer eTokens = null; //temporary list of enumeration tokens 
+                StringTokenizer cTokens = null; //list of content tokens
+                String token= null;  //content token
+                String eToken= null; //enumeration token
+                boolean valid = true;
+
+                int eSize = enumeration.size(); 
+                Vector enumTemp = new Vector(); //temporary vector to store enumeration token
+                enumTemp.setSize(1);
+                String currentEnumeration = null; //enum value: <enumeration value="1 2 3"/>
+                
+                for (int i=0;i<eSize;i++) { //loop through each enumeration
+                    currentEnumeration = (String)enumeration.elementAt(i);
+                    eTokens = new StringTokenizer (currentEnumeration);
+                    valid = true;
+                    cTokens=parsedList;
+                    
+                    if (numberOfTokens == eTokens.countTokens()) {
+                        try {
+                            //try string comparison first
+                            if (currentEnumeration.equals(content)) {
+                                for (int k=0; k<numberOfTokens;k++) { //validate against base type each token
+                                    if ( this.fBaseValidator != null ) {
+                                        this.fBaseValidator.validate( cTokens.nextToken(), state );
+                                    }
+                                }
+                            } else  { //content="1.0 2" ; enumeration = "1 2"
+                                for (int j=0;j<numberOfTokens;j++) {
+                                    token = cTokens.nextToken();
+                                    eToken = eTokens.nextToken();
+                                    enumTemp.setElementAt(eToken,0);
+                                    //REVISIT: RecurringDuration..
+                                    if (fBaseValidator instanceof DecimalDatatypeValidator) {
+                                        ((DecimalDatatypeValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
+                                    } else if (fBaseValidator instanceof FloatDatatypeValidator) {
+                                        ((FloatDatatypeValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
+                                    } else if (fBaseValidator instanceof DoubleDatatypeValidator) {
+                                        ((DoubleDatatypeValidator)fBaseValidator).checkContentEnum(token, state, enumTemp);
+                                    } else { 
+                                        if (!token.equals(eToken)) { //validate enumeration for all other types
+                                            throw new InvalidDatatypeValueException("Value '"+content+ "' must be one of "+enumeration);
+                                        }
+                                        this.fBaseValidator.validate( token, state );
+                                    }
+                                }
+                            }
+                        } catch (InvalidDatatypeValueException e) {
+                            valid = false;
+                        }
+                    } else //numOfTokens in enumeration != numOfTokens in content
+                        valid = false;
+                    if (valid) break;
+                } //end for loop
+                if (!valid) {
+                    throw new InvalidDatatypeValueException("Value '"+content+ "' does not match list type");
+                }
+            }//enumeration != null
+            else {   //no enumeration
+                for (int k=0; k<numberOfTokens;k++) {
                     if ( this.fBaseValidator != null ) {//validate against parent type if any
                         this.fBaseValidator.validate( parsedList.nextToken(), state );
                     }
                 }
             }
-            else {
-                if ( this.fBaseValidator != null ) {//validate against parent type if any
-                    this.fBaseValidator.validate( content, state );
+
+        } //end native list type
+
+    } //end checkContentEnum
+
+
+
+    // Private methods
+    /**
+    * check if enum is subset of fEnumeration
+    * enum 1: <enumeration value="1 2"/>
+    * enum 2: <enumeration value="1.0 2"/>
+    *
+    * @param enumeration facet
+    *
+    * @returns true if enumeration is subset of fEnumeration, false otherwise
+    */    
+    private boolean verifyEnum (Vector enum){
+
+        /* REVISIT: won't work for list datatypes in some cases: */
+        if ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0) {
+            for (Enumeration e = enum.elements() ; e.hasMoreElements() ;) {
+                if (fEnumeration.contains(e.nextElement()) == false) {
+                    return false;                             
                 }
             }
-                
-        } catch ( NoSuchElementException e ) {
-            e.printStackTrace();
         }
+        return true;
     }
 
+
+    
     private void setBasetype( DatatypeValidator base) {
         fBaseValidator = base;
     }

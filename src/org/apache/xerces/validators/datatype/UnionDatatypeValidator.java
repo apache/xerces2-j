@@ -84,7 +84,6 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     private String     fPattern          = null;
     private Vector     fEnumeration      = null;
     private int        fFacetsDefined    = 0;
-    private boolean    fDerivedByUnion    = false; //default
 
     private StringBuffer errorMsg = null;   
     private RegularExpression fRegex         = null;
@@ -95,11 +94,9 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
     }
 
-    public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                    boolean derivedBy ) throws InvalidDatatypeFacetException {
-        setBasetype( base ); // Set base type 
-        fDerivedByUnion = derivedBy;  // always false - derived datatype
 
+    public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets, boolean derivedBy ) throws InvalidDatatypeFacetException {
+        setBasetype( base );  
         //facets allowed are: pattern & enumeration
         if ( facets != null ) {
             for ( Enumeration e = facets.keys(); e.hasMoreElements(); ) {
@@ -107,13 +104,15 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
                 if ( key.equals(SchemaSymbols.ELT_ENUMERATION) ) {
                     fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration    = (Vector)facets.get(key);
-                } else if ( key.equals(SchemaSymbols.ELT_PATTERN) ) {
+                }
+                else if ( key.equals(SchemaSymbols.ELT_PATTERN) ) {
                     fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     fRegex   = new RegularExpression(fPattern, "X");
 
 
-                } else {
+                }
+                else {
                     throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                 }
             } //end for
@@ -127,7 +126,6 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         if ( base !=null ) {
             fValidatorsSize = base.size();
             fBaseValidators = new Vector(fValidatorsSize);
-            fDerivedByUnion = true;  //native union decl
             fBaseValidators = base;
 
         }
@@ -150,8 +148,9 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         if ( content == null && state != null ) {
             this.fBaseValidator.validate( content, state );//Passthrough setup information
             //for state validators
-        } else {
-            checkContent( content, state);
+        }
+        else {
+            checkContentEnum( content, state, false , null );
         }
         return(null);
     }
@@ -196,92 +195,122 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
             newObj.fPattern          =  this.fPattern;
             newObj.fEnumeration      =  this.fEnumeration;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-            newObj.fDerivedByUnion   =  this.fDerivedByUnion;
-        } catch ( InvalidDatatypeFacetException ex ) {
+        }
+        catch ( InvalidDatatypeFacetException ex ) {
             ex.printStackTrace();
         }
         return(newObj);
 
     }
 
-    // Private methods
 
-
-    private void checkContent( String content,  Object state ) throws InvalidDatatypeValueException
-    {
-        //Facet pattern can be checked here
-        //Facet enumeration requires to know if valiadation occurs against ListDatatype
-        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            if ( fRegex == null || fRegex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' does not match regular expression facet '" + fPattern + "'." );
+    /**
+    * check if enum is subset of fEnumeration
+    * enum 1: <enumeration value="1 2"/>
+    * enum 2: <enumeration value="1.0 2"/>
+    *
+    * @param enumeration facet
+    *
+    * @returns true if enumeration is subset of fEnumeration, false otherwise
+    */
+    private boolean verifyEnum (Vector enum){
+        /* REVISIT: won't work for list datatypes in some cases: */
+        if ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0) {
+            for (Enumeration e = enum.elements() ; e.hasMoreElements() ;) {
+                if (fEnumeration.contains(e.nextElement()) == false) {
+                    return false;                             
+                }
+            }
         }
-
-        //validate against parent type
-        if ( this.fBaseValidator != null ) {
-            ((UnionDatatypeValidator)this.fBaseValidator).checkContent( content, state , fPattern, fEnumeration );
-        }
+        return true;
     }
 
-
-    private void checkContent( String content,  Object state, String pattern, Vector enum ) throws InvalidDatatypeValueException
+    /**
+     * validate if the content is valid against base datatype and facets (if any) 
+     * 
+     * @param content A string containing the content to be validated
+     * @param pattern: true if pattern facet was applied, false otherwise
+     * @param enumeration enumeration facet
+     * @exception throws InvalidDatatypeException if the content is not valid
+     */
+    private void checkContentEnum( String content,  Object state, boolean pattern, Vector enumeration ) throws InvalidDatatypeValueException
     {
+        // for UnionDatatype we have to wait till the union baseValidators are known, thus
+        // if the content is valid "against" ListDatatype, but pattern was applied - report an error. To do so we pass @param pattern;
+        // pass @param enumeration so that when base Datatype is known, we would validate enumeration/content
+        // against value space as well
         int index = -1; //number of validators
         boolean valid=false; 
         DatatypeValidator currentDV = null;
-        while ( (fValidatorsSize-1) > index++ ) {  //check content against each validator in Union     
-            currentDV =  (DatatypeValidator)this.fBaseValidators.elementAt(index);
-            if ( valid ) {//content is valid
-                break;
+        if (fBaseValidator !=null) {  //restriction  of union datatype
+            if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+                if ( fRegex == null || fRegex.matches( content) == false )
+                    throw new InvalidDatatypeValueException("Value '"+content+
+                    "' does not match regular expression facet '" + fPattern + "'." );
+                pattern = true;
             }
+
+            if (enumeration!=null) {
+                if (!verifyEnum(enumeration)) {
+                    throw new InvalidDatatypeValueException("Enumeration '" +enumeration+"' for value '" +content+
+                    "' is based on enumeration '"+fEnumeration+"'");
+                }
+            }
+            else {
+                enumeration = (fEnumeration!=null) ? fEnumeration : null;
+            }
+            ((UnionDatatypeValidator)this.fBaseValidator).checkContentEnum( content, state, pattern, enumeration  );
+            return;
+        }
+        // native union type
+        while ( (fValidatorsSize-1) > index++ ) {  
+
+            // check content against each base validator in Union
+            // report an error only in case content is not valid against all base datatypes.
+            currentDV =  (DatatypeValidator)this.fBaseValidators.elementAt(index);
+            if ( valid ) break;
             try {
                 if ( currentDV instanceof ListDatatypeValidator ) {
-                    if ( pattern != null ) {
+                    if ( pattern ) {
                         throw new InvalidDatatypeValueException("Facet \"Pattern\" can not be applied to a list datatype" );  
-                    } else if ( enum != null ) {  //Check each token against enumeration  
-                        StringTokenizer parsedList = new StringTokenizer( content );
-                        String token = null;
-                        while ( parsedList.hasMoreTokens() ) {       //Check each token in list against base type
-                            token = parsedList.nextToken();
-                            if ( enum.contains( token ) == false ) {
-                                throw new InvalidDatatypeValueException("Value '"+
-                                                                        content+"' must be one of "+enum);
-                            }
-                        }
                     }
-                    ((ListDatatypeValidator)currentDV).validate( content, state );
+                    ((ListDatatypeValidator)currentDV).checkContentEnum( content, state, enumeration );
                 }
-
                 else if ( currentDV instanceof UnionDatatypeValidator ) {
-                    ((UnionDatatypeValidator)currentDV).checkContent( content, state, pattern, enum );
-                } else {
-                    if ( enum != null ) {
-                        if ( enum.contains( content ) == false )
-                            throw new InvalidDatatypeValueException("Value '"+
-                                                                    content+"' must be one of " 
-                                                                    + enum);
-
+                    ((UnionDatatypeValidator)currentDV).checkContentEnum( content, state, pattern, enumeration );
+                }
+                else {
+                    if (enumeration!=null) {
+                        if (currentDV instanceof DecimalDatatypeValidator) {
+                            ((DecimalDatatypeValidator)currentDV).checkContentEnum(content, state, enumeration);
+                        }
+                        else if (currentDV instanceof FloatDatatypeValidator) {
+                            ((FloatDatatypeValidator)currentDV).checkContentEnum(content, state, enumeration);
+                        }
+                        else if (currentDV instanceof DoubleDatatypeValidator) {
+                            ((DoubleDatatypeValidator)currentDV).checkContentEnum(content, state, enumeration);
+                        }
+                        else {
+                            if (enumeration.contains( content ) == false) {
+                                throw new InvalidDatatypeValueException("Value '"+content+ "' must be one of "+ enumeration);
+                            }
+                            ((DatatypeValidator)currentDV).validate( content, state );
+                        }   
                     }
-                    ((DatatypeValidator)currentDV).validate( content, state );
+                    else {
+                        ((DatatypeValidator)currentDV).validate( content, state );
+                    }
                 }
                 valid=true;
 
-            } catch ( InvalidDatatypeValueException e ) {
-                //REVIST: is it the right way to record error messages?
-                if ( errorMsg == null ) {
-                    errorMsg = new StringBuffer();
-                }
-                errorMsg.append('\n');
-                errorMsg.append(e.getMessage());
-                valid=false;
+            }
+            catch ( InvalidDatatypeValueException e ) {
             }
         }
         if ( !valid ) {
-            throw new InvalidDatatypeValueException( this.errorMsg.toString());  
+            throw new InvalidDatatypeValueException( "Content '"+content+"' does not match any union types" );  
         }
     }
-
-
 
 
     private void setBasetype( DatatypeValidator base) {
