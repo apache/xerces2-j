@@ -97,7 +97,6 @@ import org.w3c.dom.*;
 
 import org.apache.xerces.dom3.DOMErrorHandler;
 
-
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.Locator;
