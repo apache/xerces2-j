@@ -196,7 +196,7 @@ catalog2.xml:
       No, the parser has no built in support for these processing instructions,
       however the XML Commons Resolver includes a SAX XMLFilter called
       <code>org.apache.xml.resolver.tools.ResolvingXMLFilter</code> which
-      is able to process them. 
+      is able to process them.
      </p>
     </a>
   </faq>
