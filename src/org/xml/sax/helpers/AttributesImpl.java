@@ -430,7 +430,11 @@ public class AttributesImpl implements Attributes
     public void removeAttribute (int index)
     {
 	if (index >= 0 && index < length) {
-	    data[index] = null;
+	    data[index*5] = null;
+	    data[index*5+1] = null;
+	    data[index*5+2] = null;
+	    data[index*5+3] = null;
+	    data[index*5+4] = null;
 	    if (index < length - 1) {
 		System.arraycopy(data, (index+1)*5, data, index*5,
 				 (length-index)*5);
