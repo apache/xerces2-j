@@ -193,7 +193,7 @@ public final class SchemaSymbols {
     public static final String ATTVAL_COLLAPSE          = "collapse";
     public static final String ATTVAL_DATE              = "date";
     public static final String ATTVAL_DATETIME          = "dateTime";
-    public static final String ATTVAL_DAY               = "day";
+    public static final String ATTVAL_DAY               = "gDay";
     public static final String ATTVAL_DECIMAL           = "decimal";
     public static final String ATTVAL_DOUBLE            = "double";
     public static final String ATTVAL_DURATION          = "duration";
@@ -214,8 +214,8 @@ public final class SchemaSymbols {
     public static final String ATTVAL_LONG              = "long";
     public static final String ATTVAL_NAME              = "name";
     public static final String ATTVAL_NEGATIVEINTEGER   = "negativeInteger";
-    public static final String ATTVAL_MONTH             = "month";
-    public static final String ATTVAL_MONTHDAY          = "monthDay";
+    public static final String ATTVAL_MONTH             = "gMonth";
+    public static final String ATTVAL_MONTHDAY          = "gMonthDay";
     public static final String ATTVAL_NCNAME            = "NCName";
     public static final String ATTVAL_NMTOKEN           = "NMTOKEN";
     public static final String ATTVAL_NMTOKENS          = "NMTOKENS";
@@ -247,8 +247,8 @@ public final class SchemaSymbols {
     public static final String ATTVAL_UNSIGNEDINT       = "unsignedInt";
     public static final String ATTVAL_UNSIGNEDLONG      = "unsignedLong";
     public static final String ATTVAL_UNSIGNEDSHORT     = "unsignedShort";
-    public static final String ATTVAL_YEAR              = "year";
-    public static final String ATTVAL_YEARMONTH         = "yearMonth";
+    public static final String ATTVAL_YEAR              = "gYear";
+    public static final String ATTVAL_YEARMONTH         = "gYearMonth";
 
     // block/final values
     public static final short EMPTY_SET    = 0;
