@@ -268,8 +268,11 @@ public class OutputFormat
      * specify otherwise, or specify the default behavior.
      */
     private boolean _preserve = false;
-
-
+	/** If true, an empty string valued attribute is output as "". If false and
+	 * and we are using the HTMLSerializer, then only the attribute name is 
+	 * serialized. Defaults to false for backwards compatibility.
+	 */
+	private boolean _preserveEmptyAttributes = false;
 
     /**
      * Constructs a new output format with the default values.
@@ -825,6 +828,24 @@ public class OutputFormat
             _lineWidth = lineWidth;
     }
 
+	/**
+	 * Returns the preserveEmptyAttribute flag. If flag is false, then'
+	 * attributes with empty string values are output as the attribute 
+	 * name only (in HTML mode).
+	 * @return preserve the preserve flag
+	 */
+	public boolean getPreserveEmptyAttributes () {
+		return _preserveEmptyAttributes;
+	}
+	/**
+	 * Sets the preserveEmptyAttribute flag. If flag is false, then'
+	 * attributes with empty string values are output as the attribute 
+	 * name only (in HTML mode).
+	 * @param preserve the preserve flag
+	 */
+	public void setPreserveEmptyAttributes (boolean preserve) {
+		_preserveEmptyAttributes = preserve;
+	}
 
     /**
      * Returns the last printable character based on the selected
