@@ -127,6 +127,12 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/xml/sax/ext
 	${CP}  ../src/org/xml/sax/ext/*.class			../class/org/xml/sax/ext
 
+#-src/org/apache/wml
+	${MKDIR} ../class/org/apache/wml
+	${CP}  ../src/org/apache/wml/*.class                  ../class/org/apache/wml
+	${MKDIR} ../class/org/apache/wml/dom
+	${CP}  ../src/org/apache/wml/dom/*.class                  ../class/org/apache/wml/dom
+
 #make the first jar file
 	echo ${PRODUCTVERSION}> ../class/Xerces_Ver_${PRODUCTVERSION}.info
 	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org; cd ../src        
@@ -177,6 +183,14 @@ package_src:
 
 ##################################################
 #copy the .java .dtd files under src
+
+#-src/org/apache/wml
+	${MKDIR} ../source/src/org/apache/wml
+	${CP}  ../src/org/apache/wml/*.java  			../source/src/org/apache/wml
+
+#-src/org/apache/wml/dom
+	${MKDIR} ../source/src/org/apache/wml/dom
+	${CP}  ../src/org/apache/wml/dom/*.java  			../source/src/org/apache/wml/dom
 
 #-src/org/apache/html/dom
 	${MKDIR} ../source/src/org/apache/html/dom
