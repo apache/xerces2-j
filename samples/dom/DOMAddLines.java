@@ -58,19 +58,24 @@
 package dom;                    
 
 import java.io.*;
+
+import org.apache.xerces.dom.NodeImpl;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLString;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.w3c.dom.NamedNodeMap;
+
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.*;
-import org.apache.xerces.dom.NodeImpl;
-import org.apache.xerces.framework.XMLAttrList;
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.utils.QName;
 
 /**
  * A sample of Adding lines to the DOM Node. This sample program illustrates:
@@ -80,7 +85,7 @@ import org.apache.xerces.utils.QName;
  * - How to attach user defined Objects to Nodes using method setUserData
  * This example relies on the following:
  * - Turning off the "fast" DOM so we can use set expansion to FULL 
- * @version
+ * @version $Id$
  */
 
 public class DOMAddLines extends DOMParser  {
@@ -227,9 +232,9 @@ public class DOMAddLines extends DOMParser  {
 
    /*   We override startElement callback  from DocumentHandler */
 
-   public void startElement(QName elementQName, XMLAttrList attrList, int attrListIndex) throws Exception 
-   {
-      super.startElement(elementQName, attrList, attrListIndex);
+   public void startElement(QName elementQName, XMLAttributes attrList) 
+    throws SAXException {
+      super.startElement(elementQName, attrList);
 
       NodeImpl node = null;
       try {
@@ -242,14 +247,12 @@ public class DOMAddLines extends DOMParser  {
       }
       //NodeImpl node = (NodeImpl)getCurrentNode();       // Get current node
       if( node != null )
-          node.setUserData(  String.valueOf( getLocator().getLineNumber() ) ); // Save location String into node
+          node.setUserData(  String.valueOf( fEntityManager.getEntityScanner().getLineNumber() ) ); // Save location String into node
    } //startElement 
 
    /* We override startDocument callback from DocumentHandler */
 
-   public void startDocument(int versionIndex, int encodingIndex,
-                                   int standAloneIndex)
-   {
+   public void startDocument() throws SAXException {
      //super.startDocument( versionIndex, encodingIndex,
      //                               standAloneIndex);
      super.startDocument();
@@ -265,14 +268,14 @@ public class DOMAddLines extends DOMParser  {
      
 //     NodeImpl node = (NodeImpl)getCurrentNode();       // Get current node
      if( node != null )
-          node.setUserData(  String.valueOf( getLocator().getLineNumber() ) ); // Save location String into node
+          node.setUserData(  String.valueOf( fEntityManager.getEntityScanner().getLineNumber() ) ); // Save location String into node
   } //startDocument 
    
 
-   public void ignorableWhitespace(int dataIndex) throws Exception
+   public void ignorableWhitespace(XMLString text) throws SAXException
     {
     if(! NotIncludeIgnorableWhiteSpaces )
-       super.ignorableWhitespace( dataIndex);
+       super.ignorableWhitespace( text);
     else
        ;// Ignore ignorable white spaces
     }// ignorableWhitespace

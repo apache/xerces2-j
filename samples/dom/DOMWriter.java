@@ -67,7 +67,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.apache.xerces.readers.MIME2Java;
+import org.apache.xerces.util.EncodingMap;
 
 
 /**
@@ -165,7 +165,7 @@ public class DOMWriter {
       else if( encoding.equalsIgnoreCase( "UTF-16" ) )
          PRINTWRITER_ENCODING  = "Unicode";
       else
-         PRINTWRITER_ENCODING = MIME2Java.convert( encoding ); 
+         PRINTWRITER_ENCODING = EncodingMap.getIANA2JavaMapping( encoding ); 
    }// setWriterEncoding 
 
 
@@ -214,7 +214,7 @@ public class DOMWriter {
                   else if( Encoding.equalsIgnoreCase( "Unicode" ) )
                      Encoding = "UTF-16";
                   else 
-                     Encoding = MIME2Java.reverse( Encoding );
+                     Encoding = EncodingMap.getJava2IANAMapping( Encoding );
 
                   out.println("<?xml version=\"1.0\" encoding=\""+
                            Encoding + "\"?>");
