@@ -1102,15 +1102,14 @@ public class RangeImpl  implements Range {
         
         DocumentFragment frag = fDocument.createDocumentFragment();
         
-        
         Node current = fStartContainer;
         Node cloneCurrent = null;
         Node cloneParent = null;
         Node partialNode = null;
         int partialInt = START;
+        boolean traverse = true; //special case
         
-        Vector d = new Vector();
-        
+                
         // if same container, simplify case
         if (fStartContainer == fEndContainer) {
             if (fStartOffset == fEndOffset) { // eg collapsed
@@ -1143,6 +1142,9 @@ public class RangeImpl  implements Range {
                     }
                     current = newCurrent;
                 }
+                if (traversalType == EXTRACT_CONTENTS ) {
+                    fEndOffset-=n; // update fEndOffset!
+                }
             }
             return frag;
         }
@@ -1151,7 +1153,9 @@ public class RangeImpl  implements Range {
    
         Node root = getCommonAncestorContainer();
         Node parent = null;
-        
+        Node startRoot = null;
+        Node startKid = null; //middle fully selected nodes
+        Node endKid = null;  //middle fully selected nodes
         // go up the start tree...
         current = fStartContainer;
         
@@ -1173,28 +1177,37 @@ public class RangeImpl  implements Range {
             if (current==null) { //"after"
                 current = fStartContainer;
             }
-        
+            //special case! Ex. <foo><moo><cool>ef</cool></moo></foo>; fStartContainer=foo;fStartOffset=0;
+            //fEndContainer=cool;fEndOffset=1;
+            //must be careful not to add same node twice!
+            if (current!=fStartContainer && isAncestorOf(current,fEndContainer)) {
+                traverse=false; //don't traverse from fStartContainer up; only traverse from fEndContainer up;
+                startRoot = current; 
+            }
             if (traversalType == CLONE_CONTENTS) {
                 cloneCurrent = current.cloneNode(true);
             } else
             if (traversalType == EXTRACT_CONTENTS ) {
-                cloneCurrent = current;
+                if (current == fStartContainer) { //partially selected node
+                    cloneCurrent = current.cloneNode(false);
+                }
+                else{
+                    cloneCurrent = current; //fully selected node
+                }
             }
         }
-        
-        Node startRoot = null;
-        parent = null;
-        
+              
         // going up in a direct line from boundary point 
         // through parents to the common ancestor,
         // all these nodes are partially selected, and must
         // be cloned.
-        while (current != root) {
+        while (current != root && traverse) {
             parent = current.getParentNode();
 
             if (parent == root) {
                 cloneParent = frag;
                 startRoot = current;
+                startKid = current.getNextSibling();//fully selected middle child
             } else {
                 if (parent == null) System.out.println("parent==null: current="+current);
                 cloneParent = parent.cloneNode(false);
@@ -1236,7 +1249,8 @@ public class RangeImpl  implements Range {
         // go up the end tree...
         Node endRoot = null;
         current = fEndContainer;
-        
+        traverse=true; //reset traverse
+
         if (current.getNodeType() == Node.TEXT_NODE) {
             cloneCurrent = current.cloneNode(false);
             cloneCurrent.setNodeValue(
@@ -1257,19 +1271,29 @@ public class RangeImpl  implements Range {
                     current = fEndContainer.getLastChild();
                 }
             }
+            if (current!=fEndContainer && isAncestorOf(current,fStartContainer)) {
+                traverse=false; //this tree was already covered
+                endRoot = current; //no middle kids here
+            }
             if (traversalType == CLONE_CONTENTS) {
                 cloneCurrent = current.cloneNode(true);
             } else
             if (traversalType == EXTRACT_CONTENTS ) {
-                cloneCurrent = current;
+                if (current == fEndContainer) { //node is partially selected
+                     cloneCurrent = current.cloneNode(false);
+                }
+                else {
+                    cloneCurrent = current; //node is fully selected
+                }
             }
         }
                 
-        while (current != root && current != null) {
+        while (traverse && current != root && current != null) {
             parent = current.getParentNode();
             if (parent == root) {
                 cloneParent = frag;
                 endRoot = current;
+                endKid= current.getPreviousSibling();//middle fully selected kid
             } else {
                 cloneParent = parent.cloneNode(false);
                 if (partialNode==null && parent != root) {
@@ -1306,29 +1330,28 @@ public class RangeImpl  implements Range {
             cloneCurrent = cloneParent;
         
         }
-        
-        d.removeAllElements();
-        
+                
         // traverse the "fully-selected" middle...
         Node clonedPrevious = frag.getLastChild();
-        current = endRoot.getPreviousSibling();
         Node prev = null;
-        while (current != startRoot && current != null) {
-            prev = current.getPreviousSibling();
-            
-            if (traversalType == CLONE_CONTENTS) {
-                cloneCurrent = current.cloneNode(true);
-            } else
-            if (traversalType == EXTRACT_CONTENTS) {
-                cloneCurrent = current;
-            } 
-                        
-            frag.insertBefore(cloneCurrent, clonedPrevious);
-            
-            current = prev;
-            clonedPrevious = cloneCurrent;
+        if (endRoot!=startRoot && startKid.getPreviousSibling()!=endKid) {  //if middle kids exist 
+             current = endKid;    
+             while (current != null) {
+                 prev = current.getPreviousSibling();
+                 if (traversalType == CLONE_CONTENTS) {
+                     cloneCurrent = current.cloneNode(true);
+                 } else if (traversalType == EXTRACT_CONTENTS) {
+                         cloneCurrent = current;
+                 }                 
+                 frag.insertBefore(cloneCurrent, clonedPrevious);
+                 if (current==startKid) {    //no more middle kids
+                     break;
+                 }
+                 current = prev;
+                 clonedPrevious = cloneCurrent;
+             }
+             
         }
-
         // collapse the range...
         if (traversalType == EXTRACT_CONTENTS ) {
             if (partialNode == null) {
