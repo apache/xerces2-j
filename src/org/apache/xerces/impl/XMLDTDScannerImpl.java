@@ -502,6 +502,11 @@ public class XMLDTDScannerImpl
 
         super.endEntity(name);
 
+        // if there is no data after the doctype
+        //  
+        if (fScannerState == SCANNER_STATE_END_OF_INPUT)
+            return;
+
         // Handle end of PE
         boolean reportEntity = fReportEntity;
         if (name.startsWith("%")) {
@@ -1834,7 +1839,7 @@ public class XMLDTDScannerImpl
                     }
                     else if (fEntityScanner.skipString("ATTLIST")) {
                         scanAttlistDecl();
-                    }
+                    }                                               
                     else if (fEntityScanner.skipString("ENTITY")) {
                         scanEntityDecl();
                     }
