@@ -1771,8 +1771,19 @@ public class TraverseSchema implements
                  reportGenericSchemaError("imported schema '"+location+"' has a different targetNameSpace '"
                                           +targetNSURI+"' from what is declared '"+namespaceString+"'.");
              }
-             else
-                 new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking);
+             else {
+                 TraverseSchema impSchema = new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking);
+                 Enumeration ics = impSchema.fIdentityConstraints.keys();
+                 while(ics.hasMoreElements()) {
+                    Object icsKey = ics.nextElement();
+                    fIdentityConstraints.put(icsKey, impSchema.fIdentityConstraints.get(icsKey));
+                }
+                 Enumeration icNames = impSchema.fIdentityConstraintNames.keys();
+                 while(icNames.hasMoreElements()) {
+                    String icsNameKey = (String)icNames.nextElement();
+                    fIdentityConstraintNames.put(icsNameKey, impSchema.fIdentityConstraintNames.get(icsNameKey));
+                }
+            }
          }
          else {
              reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
