@@ -9,7 +9,7 @@
            <li>Fixed misc. Schema Datatype bugs. [jeffreyr]</li>
            <li>Fixed misc. DOM implementation bugs. [lehors]</li>
            <li>Fixed Makefiles and documentations. [andyc]<li>
-           <li>Added "&lt;any processContents='lax|skip'/&gt;" support for Schema. [ericye]</li>           
+           <li>Added "any" with "processContents='lax|skip'" support for Schema. [ericye]</li>           
            <li>Added feature "load-dtd-grammar" [ericye]</li>
            <li>Fixed a bug in reset() method of XMLValidator. [ericye]</li>
            <li>Fixed misc. Schema Structures bugs. [ericye]</li>
