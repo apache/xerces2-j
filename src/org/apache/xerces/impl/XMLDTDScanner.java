@@ -534,9 +534,21 @@ public class XMLDTDScanner
 
             // standard Text declaration
             else {
+                // pseudo-attribute values
+                String version = null;
+                String encoding = null;
+
                 scanXMLDeclOrTextDecl(true, fPseudoAttributeValues);
-                String encoding = fPseudoAttributeValues[1];
+
+                version = fPseudoAttributeValues[0];
+                encoding = fPseudoAttributeValues[1];
+
                 fEntityScanner.setEncoding(encoding);
+
+                // call handler
+                if (fDTDHandler != null) {
+                    fDTDHandler.textDecl(version, encoding);
+                }
             }
             return complete;
         }
