@@ -79,6 +79,7 @@ public class ValidationState implements ValidationContext {
     private boolean fExtraChecking              = true;
     private boolean fFacetChecking              = true;
     private boolean fNormalize                  = true;
+    private boolean fNamespaces                 = true;
 
     private EntityState fEntityState            = null;
     private NamespaceContext fNamespaceContext  = null;
@@ -102,6 +103,10 @@ public class ValidationState implements ValidationContext {
 
     public void setNormalizationRequired (boolean newValue) {
           fNormalize = newValue;
+    }
+
+    public void setUsingNamespaces (boolean newValue) {
+          fNamespaces = newValue;
     }
 
     public void setEntityState(EntityState state) {
@@ -136,6 +141,7 @@ public class ValidationState implements ValidationContext {
     public void reset () {
         fExtraChecking = true;
         fFacetChecking = true;
+        fNamespaces = true;
         fIdTable.clear();
         fIdRefTable.clear();
         fEntityState = null;
@@ -170,6 +176,10 @@ public class ValidationState implements ValidationContext {
 
     public boolean needToNormalize (){
         return fNormalize;
+    }
+
+    public boolean useNamespaces() {
+        return fNamespaces;
     }
 
     // entity

@@ -203,6 +203,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         public boolean needToNormalize() {
             return true;
         }
+        public boolean useNamespaces () {
+            return true;
+        }
         public boolean isEntityDeclared (String name) {
             return false;
         }
@@ -2092,6 +2095,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         public boolean needToNormalize() {
             return false;
         }
+        public boolean useNamespaces() {
+            return true;
+        }
 
         public boolean isEntityDeclared(String name) {
             return false;
@@ -2144,6 +2150,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
         public boolean needToNormalize() {
             return fExternal.needToNormalize();
+        }
+        // schema validation is predicated upon namespaces
+        public boolean useNamespaces() {
+            return true;
         }
 
         public boolean isEntityDeclared (String name) {

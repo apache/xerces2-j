@@ -74,6 +74,9 @@ public interface ValidationContext {
     // whether we need to normalize the value that is passed!
     public boolean needToNormalize();
 
+    // are namespaces relevant in this context?
+    public boolean useNamespaces();
+
     // entity
     public boolean isEntityDeclared (String name);
     public boolean isEntityUnparsed (String name);
