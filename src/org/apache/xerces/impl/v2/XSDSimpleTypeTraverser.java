@@ -423,8 +423,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_RESTRICTION, "(annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern)*))"});
             fFacetData = fi.facetdata;
         }
+        // REVISIT: constructors in the datatypes rely on the fact that facets hashtable is not null.
+        //          (see inheriting base type facets).         
+        if (fFacetData== null) {
+            fFacetData = new Hashtable();
+        }
         DatatypeValidator newDV = null;
-
         if (list) {
                 newDV = new ListDatatypeValidator(baseValidator, fFacetData, true, fErrorReporter);
         }
