@@ -2628,8 +2628,8 @@ public class TraverseSchema implements
                                                   new Object [] {"The facet '" + facet + "' is defined more than once."} );
                              fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
 
-                             if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals("true") ||
-                                 content.getAttribute( SchemaSymbols.ATT_FIXED).equals("1")){
+                             if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE) ||
+                                 content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE_1)){
                                  // --------------------------------------------
                                  // set fixed facet flags
                                  // length - must remain const through derivation
@@ -3299,6 +3299,7 @@ public class TraverseSchema implements
         String typeId = complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID );
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME);
         String mixed = complexTypeDecl.getAttribute(SchemaSymbols.ATT_MIXED);
+        boolean isMixed = mixed.equals(SchemaSymbols.ATTVAL_TRUE) || mixed.equals(SchemaSymbols.ATTVAL_TRUE_1);
         boolean isNamedType = false;
         Stack savedGroupNameStack = null;
 
@@ -3376,8 +3377,7 @@ public class TraverseSchema implements
               //
               // EMPTY complexType with complexContent
               //
-              processComplexContent(typeNameIndex, child, typeInfo, null,
-                                    mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
+              processComplexContent(typeNameIndex, child, typeInfo, null, isMixed);
           }
           else {
               String childName = child.getLocalName();
@@ -3396,8 +3396,7 @@ public class TraverseSchema implements
                   //
                   // COMPLEX CONTENT element
                   //
-                  traverseComplexContentDecl(typeNameIndex, child, typeInfo,
-                        mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
+                  traverseComplexContentDecl(typeNameIndex, child, typeInfo, isMixed);
                   if (XUtil.getNextSiblingElement(child) != null)
                      throw new ComplexTypeRecoverableError(
                       "Invalid child following the complexContent child in the complexType");
@@ -3408,8 +3407,7 @@ public class TraverseSchema implements
                   // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
                   // Note that it's possible that only attributes are specified.
                   //
-                  processComplexContent(typeNameIndex, child, typeInfo, null,
-                        mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
+                  processComplexContent(typeNameIndex, child, typeInfo, null, isMixed);
 
               }
           }
@@ -3439,7 +3437,8 @@ public class TraverseSchema implements
         // ------------------------------------------------------------------
         // Finish the setup of the typeInfo and register the type
         // ------------------------------------------------------------------
-        if (isAbstract.equals(SchemaSymbols.ATTVAL_TRUE))
+        if (isAbstract.equals(SchemaSymbols.ATTVAL_TRUE) ||
+            isAbstract.equals(SchemaSymbols.ATTVAL_TRUE_1))
           typeInfo.setIsAbstractType();
         if (!forwardRef)
           typeInfo.setDeclSeen();
@@ -3861,9 +3860,11 @@ public class TraverseSchema implements
         // Setting here overrides any setting on the complex type decl
         // -----------------------------------------------------------------------
         boolean isMixed = mixedOnComplexTypeDecl;
-        if (mixed.equals(SchemaSymbols.ATTVAL_TRUE))
+        if (mixed.equals(SchemaSymbols.ATTVAL_TRUE) ||
+            mixed.equals(SchemaSymbols.ATTVAL_TRUE_1))
            isMixed = true;
-        else if (mixed.equals(SchemaSymbols.ATTVAL_FALSE))
+        else if (mixed.equals(SchemaSymbols.ATTVAL_FALSE) ||
+                 mixed.equals(SchemaSymbols.ATTVAL_FALSE_0))
            isMixed = false;
 
         // -----------------------------------------------------------------------
@@ -4314,12 +4315,25 @@ public class TraverseSchema implements
            // LM.
 
            if (typeInfo.contentSpecHandle == -2) {
-
              //throw new ComplexTypeRecoverableError("Type '" + typeName + "': The content of a mixed complexType must not be empty");
-             typeInfo.contentSpecHandle = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-                                                                            fStringPool.EMPTY_STRING,
-                                                                            fStringPool.EMPTY_STRING,
-                                                                            false);
+
+             // for "mixed" complex type with empty content
+             // we add an optional leaf node to the content model
+             // with empty namespace and -1 name (which won't match any element)
+             // so that the result content model is emptible and only match
+             // with cdata
+             int emptyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                                -1,
+                                                                fStringPool.EMPTY_STRING,
+                                                                false);
+             if (fSchemaGrammar.getDeferContentSpecExpansion()) {
+                 fSchemaGrammar.setContentSpecMinOccurs(emptyIndex, 0);
+                 fSchemaGrammar.setContentSpecMaxOccurs(emptyIndex, 1);
+                 typeInfo.contentSpecHandle = emptyIndex;
+             } else {
+                 typeInfo.contentSpecHandle = fSchemaGrammar.expandContentModel(emptyIndex,0,1);
+             }
+
              typeInfo.contentType = XMLElementDecl.TYPE_MIXED_SIMPLE;
            }
 
@@ -6501,8 +6515,8 @@ throws Exception {
                 (((finalSet & SchemaSymbols.RESTRICTION) == 0) &&
                 ((finalSet & SchemaSymbols.EXTENSION) == 0))))
             reportGenericSchemaError("The values of the 'final' attribute of an element must be either #all or a list of 'restriction' and 'extension'; " + finalStr + " was found");
-        boolean isNillable = nillableStr.equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
-        boolean isAbstract = abstractStr.equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
+        boolean isNillable = nillableStr.equals(SchemaSymbols.ATTVAL_TRUE) || nillableStr.equals(SchemaSymbols.ATTVAL_TRUE_1);
+        boolean isAbstract = abstractStr.equals(SchemaSymbols.ATTVAL_TRUE) || abstractStr.equals(SchemaSymbols.ATTVAL_TRUE_1);
         int elementMiscFlags = 0;
         if (isNillable) {
             elementMiscFlags += SchemaSymbols.NILLABLE;
@@ -8128,7 +8142,7 @@ throws Exception {
 
           ComplexTypeInfo typeInfo = fSchemaGrammar.getElementComplexTypeInfo(eltNdx);
           int scopeDefined = typeInfo != null ? typeInfo.scopeDefined : fCurrentScope;
-          
+
           fSchemaGrammar.cloneElementDecl(eltNdx, fCurrentScope, scopeDefined);
 
         }
