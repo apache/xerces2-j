@@ -98,8 +98,15 @@ public class XML11IDREFDatatypeValidator extends IDREFDatatypeValidator {
     public void validate(String content, ValidationContext context) throws InvalidDatatypeValueException {
 
         //Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-        if (!XML11Char.isXML11ValidName(content)) {
-            throw new InvalidDatatypeValueException("IDREFInvalid", new Object[]{content});
+        if(context.useNamespaces()) {
+            if (!XML11Char.isXML11ValidNCName(content)) {
+                throw new InvalidDatatypeValueException("IDREFInvalidWithNamespaces", new Object[]{content});
+            }
+        }
+        else {
+            if (!XML11Char.isXML11ValidName(content)) {
+                throw new InvalidDatatypeValueException("IDREFInvalid", new Object[]{content});
+            }
         }
 
         context.addIdRef(content);

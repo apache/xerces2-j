@@ -96,8 +96,15 @@ public class IDREFDatatypeValidator implements DatatypeValidator {
     public void validate(String content, ValidationContext context) throws InvalidDatatypeValueException {
 
         //Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-        if (!XMLChar.isValidName(content)) {
-            throw new InvalidDatatypeValueException("IDREFInvalid", new Object[]{content});
+        if(context.useNamespaces()) {
+            if (!XMLChar.isValidNCName(content)) {
+                throw new InvalidDatatypeValueException("IDREFInvalidWithNamespaces", new Object[]{content});
+            }
+        }
+        else {
+            if (!XMLChar.isValidName(content)) {
+                throw new InvalidDatatypeValueException("IDREFInvalid", new Object[]{content});
+            }
         }
 
         context.addIdRef(content);
