@@ -426,15 +426,17 @@ final class UTF8Reader extends XMLEntityReader {
         // if (ch >= 0x110000)
         boolean result = false;
 
-        if (( 0xf8 & b0 ) == 0xf0 ) {
-            if (!(b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90))) { // [#x10000-#x10FFFF]
-                if (skipPastChar) {
+        //if (( 0xf8 & b0 ) == 0xf0 ) {
+            //if (!(b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90))) { // [#x10000-#x10FFFF]
+        if( ((b0&0xf8) == 0xf0) && ((b1&0xc0)==0x80) &&
+            ((b2&0xc0) == 0x80) && ((b3&0xc0)==0x80)){
+            if (skipPastChar) {
                     fCharacterCounter++;
                     loadNextByte();
                     return true;
-                }
-                result = true;
             }
+            result = true;
+            //}
             fCurrentChunk = saveChunk;
             fCurrentIndex = saveIndex;
             fCurrentOffset = saveOffset;
