@@ -66,6 +66,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
@@ -151,7 +152,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
     protected SymbolTable fSymbolTable;
     /** error handler. may be null. */
     protected DOMErrorHandler fErrorHandler;
-
+    
+    /**
+     * Cached {@link DOMError} impl.
+     * The same object is re-used to report multiple errors.
+     */
+    private final DOMErrorImpl fError = new DOMErrorImpl();
+    
     // Validation against namespace aware grammar
     protected boolean fNamespaceValidation = false;
 
@@ -914,15 +921,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
      */
     protected final void reportDOMError(String message, short severity, Node node, String type ){
         if( fErrorHandler!=null ) {
-            DOMErrorImpl error = new DOMErrorImpl();
-            error.reset();
-            error.fMessage = message;
-            error.fSeverity = severity;
-            error.fLocator = fLocator;
-            error.fType = type;
+            fError.reset();
+            fError.fMessage = message;
+            fError.fSeverity = severity;
+            fError.fLocator = fLocator;
+            fError.fType = type;
             fLocator.fRelatedNode = node;
     
-            if(!fErrorHandler.handleError(error))
+            if(!fErrorHandler.handleError(fError))
                 throw abort;
         }
         if( severity==DOMError.SEVERITY_FATAL_ERROR )
