@@ -32,18 +32,10 @@
             <li> year and seconds values in date/time datatypes are limited to the 
             value 2147483647. Items larger than this limit will not be validated 
             correctly. </li>
-            <li>There is currently no checking for constraint ct-cos-extends.1.5</li>
         </ul>
     </s2>
     <s2 title='Problem Areas/Known Bugs'>
         <ul>
-            <li> Handling of &lt;any&gt; schema information items is
-            not completely correct;</li>
-            <li> &apos;id&apos; attributes appearing on schema 
-            element information items are not treated
-            correctly--uniqueness of their values is not
-            mandated;</li>
-            <li> relative URIs are not handled correctly;</li>
             <li> Due to changes in the specification for Decimals in
             JDK1.3, not all decimals that should be invalid according
             to the Schema specs may be found by the parser;</li>
