@@ -239,8 +239,15 @@ public class AttrImpl
      * @param id
      */
     public void setIdAttribute(boolean id){
-        this.isIdAttribute(id);
+        isIdAttribute(id);
     }
+    /** DOM Level 3: isId*/
+    public boolean getIsId(){
+        // REVISIT: should an attribute that is not in the tree return
+        // isID true?
+        return isIdAttribute();
+    }
+
 
     //
     // Node methods

@@ -1631,19 +1631,28 @@ public class CoreDocumentImpl
      * @see #putIdentifier
      * @see #removeIdentifier
      */
-    public Element getIdentifier(String idName) {
+	public Element getIdentifier(String idName) {
 
-        if (needsSyncData()) {
-            synchronizeData();
-        }
+		if (needsSyncData()) {
+			synchronizeData();
+		}
 
-        if (identifiers == null) {
-            return null;
-        }
-
-        return (Element)identifiers.get(idName);
-
-    } // getIdentifier(String):Element
+		if (identifiers == null) {
+			return null;
+		}
+		Element elem = (Element) identifiers.get(idName);
+		if (elem != null) {
+			// check that the element is in the tree
+			Node parent = elem.getParentNode();
+			while (parent != null) {
+				if (parent == this) {
+					return elem;
+				}
+				parent = parent.getParentNode();
+			}
+		}
+		return null;
+	} // getIdentifier(String):Element
 
     /**
      * Removes a previously registered element with the specified

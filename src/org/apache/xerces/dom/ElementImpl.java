@@ -478,33 +478,37 @@ public class ElementImpl
      * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR) if the node is
      * readonly.
      */
-    public void setAttribute(String name, String value) {
+	public void setAttribute(String name, String value) {
 
-    	if (ownerDocument.errorChecking && isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
-        }
+		if (ownerDocument.errorChecking && isReadOnly()) {
+			String msg =
+				DOMMessageFormatter.formatMessage(
+					DOMMessageFormatter.DOM_DOMAIN,
+					"NO_MODIFICATION_ALLOWED_ERR",
+					null);
+			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+		}
 
-        if (needsSyncData()) {
-            synchronizeData();
-        }
+		if (needsSyncData()) {
+			synchronizeData();
+		}
 
-    	Attr newAttr = getAttributeNode(name);
-        if (newAttr == null) {
-            newAttr = getOwnerDocument().createAttribute(name);
+		Attr newAttr = getAttributeNode(name);
+		if (newAttr == null) {
+			newAttr = getOwnerDocument().createAttribute(name);
 
-            if (attributes == null) {
-                attributes = new AttributeMap(this, null);
-            }
+			if (attributes == null) {
+				attributes = new AttributeMap(this, null);
+			}
 
-	    newAttr.setNodeValue(value);
-            attributes.setNamedItem(newAttr);
-        }
-	else {
-	    newAttr.setNodeValue(value);
-	}
+			newAttr.setNodeValue(value);
+			attributes.setNamedItem(newAttr);
+		}
+		else {
+			newAttr.setNodeValue(value);
+		}
 
-    } // setAttribute(String,String)
+	} // setAttribute(String,String)
  
     /**
      * Add a new attribute/value pair, or replace the value of the
@@ -668,6 +672,7 @@ public class ElementImpl
 		}
 
     } // setAttributeNS(String,String,String)
+    
     
     /**
      * Introduced in DOM Level 2. <p>
@@ -898,6 +903,93 @@ public class ElementImpl
         }
         return true;
     }
+    
+    /**
+     * DOM Level 3: register the given attribute node as an ID attribute
+     */
+    public void setIdAttributeNode(Attr at) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     msg);
+            }
+        
+            if (at.getOwnerElement() != this) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+            }
+        }
+        ((AttrImpl) at).isIdAttribute(true);
+        ownerDocument.putIdentifier(at.getValue(), this);
+    }
+    
+    /**
+     * DOM Level 3: register the given attribute node as an ID attribute
+     */
+    public void setIdAttribute(String name, boolean makeId) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        Attr at = getAttributeNode(name);
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     msg);
+            }
+        
+            if (at.getOwnerElement() != this) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+            }
+        }
+        
+        ((AttrImpl) at).isIdAttribute(makeId);
+        if (!makeId) {
+            ownerDocument.removeIdentifier(at.getValue());
+        }
+        else {
+            ownerDocument.putIdentifier(at.getValue(), this);
+        }
+    }
+
+    /**
+     * DOM Level 3: register the given attribute node as an ID attribute
+     */
+    public void setIdAttributeNS(String namespaceURI, String localName,
+                                    boolean makeId) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        Attr at = getAttributeNodeNS(namespaceURI, localName);
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     msg);
+            }
+        
+            if (at.getOwnerElement() != this) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+            }
+        }
+        ((AttrImpl) at).isIdAttribute(makeId);
+        if (!makeId) {
+            ownerDocument.removeIdentifier(at.getValue());
+        }
+        else {
+            ownerDocument.putIdentifier(at.getValue(), this);
+        }
+   }
+
 
     //
     // Public methods
@@ -914,29 +1006,6 @@ public class ElementImpl
         }
     }
 
-    /**
-     * NON-DOM: register the given attribute node as an ID attribute
-     */
-    public void setIdAttributeNode(Attr at) {
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-    	if (ownerDocument.errorChecking) {
-            if (isReadOnly()) {
-                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-                throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                     msg);
-            }
-    	
-            if (at.getOwnerElement() != this) {
-                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
-                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
-            }
-        }
-        ((AttrImpl) at).isIdAttribute(true);
-        ownerDocument.putIdentifier(at.getValue(), this);
-    }
 
 
     //
