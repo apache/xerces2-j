@@ -75,6 +75,14 @@ import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.framework.XMLContentSpec;
 import  org.apache.xerces.utils.QName;
+import  org.apache.xerces.parsers.SAXParser;
+import  org.apache.xerces.framework.XMLParser;
+import  org.apache.xerces.framework.XMLDocumentScanner;
+import org.apache.xerces.readers.DefaultEntityHandler;
+import org.apache.xerces.readers.XMLDeclRecognizer;
+import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.readers.XMLEntityReaderFactory;
+import org.apache.xerces.utils.ChunkyCharArray;
 
 import  org.xml.sax.InputSource;
 import  org.xml.sax.SAXParseException;
@@ -372,13 +380,16 @@ public class TraverseSchema {
 
     //REVISIT: fValidator needs to be initialized somehow
     private XMLValidator        fValidator     = null;
+    protected DefaultEntityHandler fEntityHandler = null;
+    protected XMLDocumentScanner fScanner = null;
 
+    private Element fSchemaRootElement;
     private NodeList fGlobalGroups;
     private NodeList fGlobalAttrs;
     private NodeList fGlobalAttrGrps;
 
     private DatatypeValidatorRegistry fDatatypeRegistry = new DatatypeValidatorRegistry();
-    private Hashtable fComplexTypeRegistry;
+    private Hashtable fComplexTypeRegistry = new Hashtable();
 
     private int fAnonTypeCount =0;
     private int fScopeCount=0;
@@ -389,45 +400,55 @@ public class TraverseSchema {
     private String targetNSUriString = "";
 
     class ComplexTypeInfo {
-	public String typeName;
-	
-	public String base;
-	public int derivedBy;
-	public int blockSet;
-	public int finalSet;
+        public String typeName;
+        
+        public String base;
+        public int derivedBy;
+        public int blockSet;
+        public int finalSet;
 
-	public int scopeDefined;
+        public int scopeDefined = -1;
 
-	public int contentType;
-	public int contentSpecHandle;
-	public int attlistHead;
+        public int contentType;
+        public int contentSpecHandle = -1;
+        public int attlistHead = -1;
     }
+
 
     //REVISIT: verify the URI.
     public final static String SchemaForSchemaURI = "http://www.w3.org/TR-1/Schema";
 
 
     public  TraverseSchema(Element root ) throws Exception {
+        
+        fSchemaRootElement = root;
+
+        fStringPool = new StringPool();
+        fErrorReporter = new SAXParser();
+        fEntityHandler = new DefaultEntityHandler(fStringPool, fErrorReporter);
+        fScanner = new XMLDocumentScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
+        fValidator = new XMLValidator(fStringPool,fErrorReporter,fEntityHandler,fScanner);
+
         if (root == null) { // Anything to do?
             return;
         }
 
-	//Retrieve the targetnamespace URI information
-	targetNSUriString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
-	if (targetNSUriString==null) {
-	    targetNSUriString="";
-	}
-	targetNSURI = fStringPool.addSymbol(targetNSUriString);
+        //Retrieve the targetnamespace URI information
+        targetNSUriString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+        if (targetNSUriString==null) {
+            targetNSUriString="";
+        }
+        targetNSURI = fStringPool.addSymbol(targetNSUriString);
 
-	defaultQualified = 
-	    root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+        defaultQualified = 
+            root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
 
-	fScopeCount++;
-	fCurrentScope = 0;
+        fScopeCount++;
+        fCurrentScope = 0;
 
-	//fGlobalGroups = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_GROUP);
-	//fGlobalAttrs  = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTE);
-	//fGlobalAttrGrps = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTEGROUP);
+        //fGlobalGroups = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_GROUP);
+        //fGlobalAttrs  = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTE);
+        //fGlobalAttrGrps = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTEGROUP);
 
 
         for (Element child = XUtil.getFirstChildElement(root); child != null;
@@ -529,12 +550,12 @@ public class TraverseSchema {
      *         final = #all or (possibly empty) subset of {extension, restriction} 
      *         id = ID 
      *         name = NCName>
-     * 	      	Content: (annotation? , (((minExclusive | minInclusive | maxExclusive
+     *          Content: (annotation? , (((minExclusive | minInclusive | maxExclusive
      *                    | maxInclusive | precision | scale | length | minLength 
      *                    | maxLength | encoding | period | duration | enumeration 
-     *			  | pattern)* | (element | group | all | choice | sequence | any)*) , 
-     *			  ((attribute | attributeGroup)* , anyAttribute?)))
-     *	      </complexType>
+     *                    | pattern)* | (element | group | all | choice | sequence | any)*) , 
+     *                    ((attribute | attributeGroup)* , anyAttribute?)))
+     *        </complexType>
      * @param complexTypeDecl
      * @return 
      */
@@ -543,401 +564,401 @@ public class TraverseSchema {
     private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception{ 
         int complexTypeAbstract  = fStringPool.addSymbol(
                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
-	String isAbstract = complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
+        String isAbstract = complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
 
         int complexTypeBase      = fStringPool.addSymbol(
                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ));
-	String base = complexTypeDecl.getAttribute(SchemaSymbols.ATT_BASE);
+        String base = complexTypeDecl.getAttribute(SchemaSymbols.ATT_BASE);
 
         int complexTypeBlock     = fStringPool.addSymbol(
                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK ));
-	String blockSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK );
+        String blockSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK );
 
         int complexTypeContent   = fStringPool.addSymbol(
                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_CONTENT ));
-	String content = complexTypeDecl.getAttribute(SchemaSymbols.ATT_CONTENT);
+        String content = complexTypeDecl.getAttribute(SchemaSymbols.ATT_CONTENT);
 
         int complexTypeDerivedBy =  fStringPool.addSymbol(
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY ));
-	String derivedBy = complexTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
+        String derivedBy = complexTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
 
         int complexTypeFinal     =  fStringPool.addSymbol(
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL ));
-	String finalSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL );
+        String finalSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL );
 
         int complexTypeID        = fStringPool.addSymbol(
                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
-	String typeId = complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID );
+        String typeId = complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID );
 
         int complexTypeName      =  fStringPool.addSymbol(
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
-	String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME);	
+        String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
 
 
 
-	if (typeName.equals("")) { // gensym a unique name
-	    //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
-	    typeName = "#"+fAnonTypeCount++;
-	}
+        if (typeName.equals("")) { // gensym a unique name
+            //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
+            typeName = "#"+fAnonTypeCount++;
+        }
 
-	int scopeDefined = fScopeCount++;
-	int previousScope = fCurrentScope;
-	fCurrentScope = scopeDefined;
+        int scopeDefined = fScopeCount++;
+        int previousScope = fCurrentScope;
+        fCurrentScope = scopeDefined;
 
-	Element child = null;
-	int contentSpecType = 0;
-	int csnType = 0;
-	int left = -2;
-	int right = -2;
-	Vector uses = new Vector();
+        Element child = null;
+        int contentSpecType = 0;
+        int csnType = 0;
+        int left = -2;
+        int right = -2;
+        Vector uses = new Vector();
 
 
-	// skip refinement and annotations
-	child = null;
-	for (child = XUtil.getFirstChildElement(complexTypeDecl);
-	     child != null && (child.getNodeName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
+        // skip refinement and annotations
+        child = null;
+        for (child = XUtil.getFirstChildElement(complexTypeDecl);
+             child != null && (child.getNodeName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
                                child.getNodeName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
                                child.getNodeName().equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_PRECISION) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_SCALE) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_LENGTH) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_MINLENGTH) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_ENCODING) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_PERIOD) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_DURATION) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_PATTERN) ||
-			       child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION));
-	     child = XUtil.getNextSiblingElement(child)) 
-	{
-	    //REVISIT: SimpleType restriction handling
-	    //if (child.getNodeName().equals(SchemaSymbols.ELT_RESTRICTIONS))
-		reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-				  new Object [] { "Restriction" });
-	}
+                               child.getNodeName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_PRECISION) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_SCALE) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_LENGTH) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_MINLENGTH) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_ENCODING) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_PERIOD) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_DURATION) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_PATTERN) ||
+                               child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION));
+             child = XUtil.getNextSiblingElement(child)) 
+        {
+            //REVISIT: SimpleType restriction handling
+            //if (child.getNodeName().equals(SchemaSymbols.ELT_RESTRICTIONS))
+                reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
+                                  new Object [] { "Restriction" });
+        }
 
-	    // if content = textonly, base is a datatype
-	if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
+            // if content = textonly, base is a datatype
+        if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
             if (fDatatypeRegistry.getValidatorFor(base) == null) // must be datatype
-	    		reportSchemaError(SchemaMessageProvider.NotADatatype,
-					  new Object [] { base }); //REVISIT check forward refs
+                        reportSchemaError(SchemaMessageProvider.NotADatatype,
+                                          new Object [] { base }); //REVISIT check forward refs
             //handle datatypes
-	    contentSpecType = fStringPool.addSymbol("DATATYPE");
-	    left = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-						 fStringPool.addSymbol(base),
-						 -1, false);
+            contentSpecType = fStringPool.addSymbol("DATATYPE");
+            left = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                 fStringPool.addSymbol(base),
+                                                 -1, false);
 
-	} 
-	else {   
+        } 
+        else {   
             contentSpecType = fStringPool.addSymbol("CHILDREN");
             csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
             boolean mixedContent = false;
-	    boolean elementContent = false;
-	    boolean textContent = false;
-	    left = -2;
-	    right = -2;
-	    boolean hadContent = false;
+            boolean elementContent = false;
+            boolean textContent = false;
+            left = -2;
+            right = -2;
+            boolean hadContent = false;
 
-	    if (content.equals(SchemaSymbols.ATTVAL_EMPTY)) {
-		contentSpecType = fStringPool.addSymbol("EMPTY");
-		left = -1; // no contentSpecNode needed
-	    } else if (content.equals(SchemaSymbols.ATTVAL_MIXED) || content.equals("")) {
+            if (content.equals(SchemaSymbols.ATTVAL_EMPTY)) {
+                contentSpecType = fStringPool.addSymbol("EMPTY");
+                left = -1; // no contentSpecNode needed
+            } else if (content.equals(SchemaSymbols.ATTVAL_MIXED) ) {
                 contentSpecType = fStringPool.addSymbol("MIXED");
-		mixedContent = true;
-		csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
-	    } else if (content.equals(SchemaSymbols.ATTVAL_ELEMENTONLY)) {
-		elementContent = true;
-	    } else if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
-		textContent = true;
-	    }
+                mixedContent = true;
+                csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
+            } else if (content.equals(SchemaSymbols.ATTVAL_ELEMENTONLY) || content.equals("")) {
+                elementContent = true;
+            } else if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
+                textContent = true;
+            }
 
-	    if (mixedContent) {
-		// add #PCDATA leaf
+            if (mixedContent) {
+                // add #PCDATA leaf
 
-		left = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-						     -1, // -1 means "#PCDATA" is name
+                left = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                     -1, // -1 means "#PCDATA" is name
                                                            -1, false);
-		csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
-	    }
+                csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
+            }
 
-	    for (;
-		 child != null;
-		 child = XUtil.getNextSiblingElement(child)) {
+            for (;
+                 child != null;
+                 child = XUtil.getNextSiblingElement(child)) {
 
-		int index = -2;  // to save the particle's contentSpec handle 
-		hadContent = true;
+                int index = -2;  // to save the particle's contentSpec handle 
+                hadContent = true;
 
-		boolean seeParticle = false;
+                boolean seeParticle = false;
 
-		String childName = child.getNodeName();
+                String childName = child.getNodeName();
 
-		if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-		    //if (child.getAttribute(SchemaSymbols.ATT_REF).equals("") ) {
+                if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+                    //if (child.getAttribute(SchemaSymbols.ATT_REF).equals("") ) {
 
-			if (mixedContent || elementContent) {
-			    //REVISIT: unfinished
-			    QName eltQName = traverseElementDecl(child);
-			    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-								   eltQName.localpart,
-								   eltQName.uri, 
-								   false);
-			    seeParticle = true;
+                        if (mixedContent || elementContent) {
+                            //REVISIT: unfinished
+                            QName eltQName = traverseElementDecl(child);
+                            index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                                   eltQName.localpart,
+                                                                   eltQName.uri, 
+                                                                   false);
+                            seeParticle = true;
 
-			} 
-			else {
-			    reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
-			}
+                        } 
+                        else {
+                            reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
+                        }
 
-		    //} 
-		    //else // REVISIT: do we really need this? or
-			 // should it be done in the traverseElementDecl
-			 // SchemaSymbols.ATT_REF != ""
-			//index = traverseElementRef(child);
+                    //} 
+                    //else // REVISIT: do we really need this? or
+                         // should it be done in the traverseElementDecl
+                         // SchemaSymbols.ATT_REF != ""
+                        //index = traverseElementRef(child);
 
-		} 
-		else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-		    /* //if (elementContent) {
-			int groupNameIndex = 0;
-			if (child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
-			    groupNameIndex = traverseGroup(child);
-			} else
-			    groupNameIndex = traverseGroupRef(child);
-			index = getContentSpecHandleForElementType(groupNameIndex);
-		    //} else if (!elementContent)
-			//reportSchemaError(SchemaMessageProvider.OnlyInEltContent,
-				//	  new Object [] { "group" });
-		     */
-		    index = traverseGroupDecl(child);
-		    seeParticle = true;
-		  
-		} 
-		else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-		    index = traverseAll(child);
-		    seeParticle = true;
-		  
-		} 
-		else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-		    index = traverseChoice(child);
-		    seeParticle = true;
-		  
-		} 
-		else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-		    index = traverseSequence(child);
-		    seeParticle = true;
-		  
-		} 
-		else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
-			   childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-		    break; // attr processing is done below
-		} 
-		else if (childName.equals(SchemaSymbols.ELT_ANY)) {
-		    contentSpecType = fStringPool.addSymbol("ANY");
-		    left = -1;
-		} 
-		else { // datatype qual   
-		    if (base.equals(""))
-			reportSchemaError(SchemaMessageProvider.DatatypeWithType, null);
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                    /* //if (elementContent) {
+                        int groupNameIndex = 0;
+                        if (child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+                            groupNameIndex = traverseGroup(child);
+                        } else
+                            groupNameIndex = traverseGroupRef(child);
+                        index = getContentSpecHandleForElementType(groupNameIndex);
+                    //} else if (!elementContent)
+                        //reportSchemaError(SchemaMessageProvider.OnlyInEltContent,
+                                //        new Object [] { "group" });
+                     */
+                    index = traverseGroupDecl(child);
+                    seeParticle = true;
+                  
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+                    index = traverseAll(child);
+                    seeParticle = true;
+                  
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                    index = traverseChoice(child);
+                    seeParticle = true;
+                  
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                    index = traverseSequence(child);
+                    seeParticle = true;
+                  
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
+                           childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                    break; // attr processing is done below
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_ANY)) {
+                    contentSpecType = fStringPool.addSymbol("ANY");
+                    left = -1;
+                } 
+                else { // datatype qual   
+                    if (base.equals(""))
+                        reportSchemaError(SchemaMessageProvider.DatatypeWithType, null);
                     else
-			reportSchemaError(SchemaMessageProvider.DatatypeQualUnsupported,
-					  new Object [] { childName });
-		}
+                        reportSchemaError(SchemaMessageProvider.DatatypeQualUnsupported,
+                                          new Object [] { childName });
+                }
 
-		// check the minOccurs and maxOccurs of the particle, and fix the  
-		// contentspec accordingly
-		if (seeParticle) {
-		    index = expandContentModel(index, child);
+                // check the minOccurs and maxOccurs of the particle, and fix the  
+                // contentspec accordingly
+                if (seeParticle) {
+                    index = expandContentModel(index, child);
 
-		} //end of if (seeParticle)
+                } //end of if (seeParticle)
 
-		uses.addElement(new Integer(index));
-		if (left == -2) {
-		    left = index;
-		} else if (right == -2) {
-		    right = index;
-		} else {
-		    left = fValidator.addContentSpecNode(csnType, left, right, false);
-		    right = index;
-		}
-	    } //end looping through the children
+                uses.addElement(new Integer(index));
+                if (left == -2) {
+                    left = index;
+                } else if (right == -2) {
+                    right = index;
+                } else {
+                    left = fValidator.addContentSpecNode(csnType, left, right, false);
+                    right = index;
+                }
+            } //end looping through the children
 
-	    if (hadContent && right != -2)
+            if (hadContent && right != -2)
                 left = fValidator.addContentSpecNode(csnType, left, right, false);
 
-	    if (mixedContent && hadContent) {
-		// set occurrence count
-		left = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-						     left, -1, false);
-	    }
-	}
-	
-	// stick in ElementDeclPool as a hack
-	//int typeIndex = fValidator.addElementDecl(typeNameIndex, contentSpecType, left, false);
+            if (mixedContent && hadContent) {
+                // set occurrence count
+                left = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
+                                                     left, -1, false);
+            }
+        }
+        
+        // stick in ElementDeclPool as a hack
+        //int typeIndex = fValidator.addElementDecl(typeNameIndex, contentSpecType, left, false);
 
-	if (!typeName.startsWith("#")) {
-	    typeName = targetNSUriString + "," + typeName;
-	}
-	ComplexTypeInfo typeInfo = new ComplexTypeInfo();
-	typeInfo.base = base;
-	typeInfo.derivedBy = parseComplexDerivedBy(complexTypeDecl.getAttribute(SchemaSymbols.ATT_DERIVEDBY));
-	typeInfo.scopeDefined = scopeDefined; 
-	typeInfo.contentSpecHandle = left;
-	typeInfo.contentType = contentSpecType;
-	typeInfo.blockSet = parseBlockSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_BLOCK));
-	typeInfo.finalSet = parseFinalSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL));
+        if (!typeName.startsWith("#")) {
+            typeName = targetNSUriString + "," + typeName;
+        }
+        ComplexTypeInfo typeInfo = new ComplexTypeInfo();
+        typeInfo.base = base;
+        typeInfo.derivedBy = parseComplexDerivedBy(complexTypeDecl.getAttribute(SchemaSymbols.ATT_DERIVEDBY));
+        typeInfo.scopeDefined = scopeDefined; 
+        typeInfo.contentSpecHandle = left;
+        typeInfo.contentType = contentSpecType;
+        typeInfo.blockSet = parseBlockSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_BLOCK));
+        typeInfo.finalSet = parseFinalSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL));
 
-	fComplexTypeRegistry.put(typeName,typeInfo);
+        fComplexTypeRegistry.put(typeName,typeInfo);
 
-	//for (int x = 0; x < uses.size(); x++)
-	    //addUse(typeNameIndex, (Integer)uses.elementAt(x));
+        //for (int x = 0; x < uses.size(); x++)
+            //addUse(typeNameIndex, (Integer)uses.elementAt(x));
 
-	
-	int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
-	
-	// REVISIT: this part is definitely broken!!!
+        
+        int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
+        
+        // REVISIT: this part is definitely broken!!!
         // (attribute | attrGroupRef)*
-	for (;
-	     child != null;
-	     child = XUtil.getNextSiblingElement(child)) {
+        for (;
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
 
-	    String childName = child.getNodeName();
+            String childName = child.getNodeName();
 
-	    if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
-		traverseAttributeDecl(child, typeInfo);
-	    } 
-	/*    else if (childName.equals(SchemaSymbols.ELT_ATTRGROUPDECL) 
-		     && !child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+            if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+                traverseAttributeDecl(child, typeInfo);
+            } 
+        /*    else if (childName.equals(SchemaSymbols.ELT_ATTRGROUPDECL) 
+                     && !child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
 
-		int index = traverseAttrGroupRef(child);
+                int index = traverseAttrGroupRef(child);
 
-		if (getContentSpecHandleForElementType(index) == -1) {
-		    reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-				      new Object [] { "Forward References to attrGroup" });
-		    Vector v = null;
-		    Integer i = new Integer(index);
-		    if ((v = (Vector) fForwardRefs.get(i)) == null)
-			v = new Vector();
-		    v.addElement(new Integer(typeNameIndex));
-		    fForwardRefs.put(i,v);
-		    addUse(typeNameIndex, index);
-		} else
-		    fValidator.copyAtts(index, typeNameIndex);
-	    }*/
-	}
+                if (getContentSpecHandleForElementType(index) == -1) {
+                    reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
+                                      new Object [] { "Forward References to attrGroup" });
+                    Vector v = null;
+                    Integer i = new Integer(index);
+                    if ((v = (Vector) fForwardRefs.get(i)) == null)
+                        v = new Vector();
+                    v.addElement(new Integer(typeNameIndex));
+                    fForwardRefs.put(i,v);
+                    addUse(typeNameIndex, index);
+                } else
+                    fValidator.copyAtts(index, typeNameIndex);
+            }*/
+        }
 
-	fCurrentScope = previousScope;
+        fCurrentScope = previousScope;
 
-	return typeNameIndex;
+        return typeNameIndex;
 
 
     } // end of method: traverseComplexTypeDecl
 
     int expandContentModel ( int index, Element particle) throws Exception {
-	
-	String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);
-	String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);    
+        
+        String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);
+        String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);    
 
-	int min=1, max=1;
+        int min=1, max=1;
 
-	if (minOccurs.equals("")) {
-	    minOccurs = "1";
-	}
-	if (maxOccurs.equals("") ){
-	    if ( minOccurs.equals("0")) {
-		maxOccurs = "1";
-	    }
-	    else {
-		maxOccurs = minOccurs;
-	    }
-	}
+        if (minOccurs.equals("")) {
+            minOccurs = "1";
+        }
+        if (maxOccurs.equals("") ){
+            if ( minOccurs.equals("0")) {
+                maxOccurs = "1";
+            }
+            else {
+                maxOccurs = minOccurs;
+            }
+        }
 
 
-	int leafIndex = index;
-	//REVISIT: !!! minoccurs, maxoccurs.
-	if (minOccurs.equals("1")&& maxOccurs.equals("1")) {
+        int leafIndex = index;
+        //REVISIT: !!! minoccurs, maxoccurs.
+        if (minOccurs.equals("1")&& maxOccurs.equals("1")) {
 
-	}
-	else if (minOccurs.equals("0")&& maxOccurs.equals("1")) {
-	    //zero or one
-	    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
-						   index,
-						   -1,
-						   false);
-	}
-	else if (minOccurs.equals("0")&& maxOccurs.equals("unbounded")) {
-	    //zero or more
-	    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-						   index,
-						   -1,
-						   false);
-	}
-	else if (minOccurs.equals("1")&& maxOccurs.equals("unbounded")) {
-	    //one or more
-	    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
-						   index,
-						   -1,
-						   false);
-	}
-	else if (maxOccurs.equals("unbounded") ) {
-	    // >=2 or more
-	    try {
-		min = Integer.parseInt(minOccurs);
-	    }
-	    catch (Exception e) {
-		//REVISIT; error handling
-		e.printStackTrace();
-	    }
-	    if (min<2) {
-		//REVISIT: report Error here
-	    }
+        }
+        else if (minOccurs.equals("0")&& maxOccurs.equals("1")) {
+            //zero or one
+            index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
+                                                   index,
+                                                   -1,
+                                                   false);
+        }
+        else if (minOccurs.equals("0")&& maxOccurs.equals("unbounded")) {
+            //zero or more
+            index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
+                                                   index,
+                                                   -1,
+                                                   false);
+        }
+        else if (minOccurs.equals("1")&& maxOccurs.equals("unbounded")) {
+            //one or more
+            index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
+                                                   index,
+                                                   -1,
+                                                   false);
+        }
+        else if (maxOccurs.equals("unbounded") ) {
+            // >=2 or more
+            try {
+                min = Integer.parseInt(minOccurs);
+            }
+            catch (Exception e) {
+                //REVISIT; error handling
+                e.printStackTrace();
+            }
+            if (min<2) {
+                //REVISIT: report Error here
+            }
 
-	    // => a,a,..,a+
-	    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
-		   index,
-		   -1,
-		   false);
+            // => a,a,..,a+
+            index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
+                   index,
+                   -1,
+                   false);
 
-	    for (int i=0; i < (min-1); i++) {
-		index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-						      index,
-						      leafIndex,
-						      false);
-	    }
+            for (int i=0; i < (min-1); i++) {
+                index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                      index,
+                                                      leafIndex,
+                                                      false);
+            }
 
-	}
-	else {
-	    // {n,m} => a,a,a,...(a),(a),...
-	    try {
-    		min = Integer.parseInt(minOccurs);
-	    	max = Integer.parseInt(maxOccurs);
-	    }
-	    catch (Exception e){
-		//REVISIT; error handling
-		e.printStackTrace();
-	    }
-	    for (int i=0; i<(min-1); i++) {
-		index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-						      index,
-						      leafIndex,
-						      false);
+        }
+        else {
+            // {n,m} => a,a,a,...(a),(a),...
+            try {
+                min = Integer.parseInt(minOccurs);
+                max = Integer.parseInt(maxOccurs);
+            }
+            catch (Exception e){
+                //REVISIT; error handling
+                e.printStackTrace();
+            }
+            for (int i=0; i<(min-1); i++) {
+                index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                      index,
+                                                      leafIndex,
+                                                      false);
 
-	    }
-	    if (max>min ) {
-		int optional = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-							     leafIndex,
-							     -1,
-							     false);
-		for (int i=0; i < (max-min); i++) {
-		    index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-							  index,
-							  optional,
-							  false);
-		}
-	    }
-	}
+            }
+            if (max>min ) {
+                int optional = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
+                                                             leafIndex,
+                                                             -1,
+                                                             false);
+                for (int i=0; i < (max-min); i++) {
+                    index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                          index,
+                                                          optional,
+                                                          false);
+                }
+            }
+        }
 
-	return index;
+        return index;
     }
 
     /**
@@ -980,129 +1001,129 @@ public class TraverseSchema {
         int attributeValue =  fStringPool.addSymbol(
                                                    attrDecl.getAttribute( SchemaSymbols.ATT_VALUE ));
 
-	// attribute name
-	int attName = fStringPool.addSymbol(attrDecl.getAttribute(SchemaSymbols.ATT_NAME));
-	// form attribute
-	String isQName = attrDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
+        // attribute name
+        int attName = fStringPool.addSymbol(attrDecl.getAttribute(SchemaSymbols.ATT_NAME));
+        // form attribute
+        String isQName = attrDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
 
-	// attribute type
-	int attType = -1;
-	int enumeration = -1;
+        // attribute type
+        int attType = -1;
+        int enumeration = -1;
 
-	String datatype = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
+        String datatype = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
 
-	if (datatype.equals("")) {
-	    Element child = XUtil.getFirstChildElement(attrDecl);
-	    while (child != null && !child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE))
-		child = XUtil.getNextSiblingElement(child);
-	    if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-		attType = fStringPool.addSymbol("DATATYPE");
-		enumeration = traverseSimpleTypeDecl(child);
-	    } else 
-		attType = fStringPool.addSymbol("CDATA");
-	} else {
-	    if (datatype.equals("string")) {
-		attType = fStringPool.addSymbol("CDATA");
-	    } else if (datatype.equals("ID")) {
-		attType = fStringPool.addSymbol("ID");
-	    } else if (datatype.equals("IDREF")) {
-		attType = fStringPool.addSymbol("IDREF");
-	    } else if (datatype.equals("IDREFS")) {
-		attType = fStringPool.addSymbol("IDREFS");
-	    } else if (datatype.equals("ENTITY")) {
-		attType = fStringPool.addSymbol("ENTITY");
-	    } else if (datatype.equals("ENTITIES")) {
-		attType = fStringPool.addSymbol("ENTITIES");
-	    } else if (datatype.equals("NMTOKEN")) {
-		Element e = XUtil.getFirstChildElement(attrDecl, "enumeration");
-		if (e == null) {
-		    attType = fStringPool.addSymbol("NMTOKEN");
-		} else {
-		    attType = fStringPool.addSymbol("ENUMERATION");
-		    enumeration = fStringPool.startStringList();
-		    for (Element literal = XUtil.getFirstChildElement(e, "literal");
-			 literal != null;
-			 literal = XUtil.getNextSiblingElement(literal, "literal")) {
-			int stringIndex = fStringPool.addSymbol(literal.getFirstChild().getNodeValue());
-			fStringPool.addStringToList(enumeration, stringIndex);
-		    }
-		    fStringPool.finishStringList(enumeration);
-		}
-	    } else if (datatype.equals("NMTOKENS")) {
-		attType = fStringPool.addSymbol("NMTOKENS");
-	    } else if (datatype.equals(SchemaSymbols.ELT_NOTATION)) {
-		attType = fStringPool.addSymbol("NOTATION");
-	    } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
-		//REVISIT check against list of validators to ensure valid type name
-		attType = fStringPool.addSymbol("DATATYPE");
-		enumeration = fStringPool.addSymbol(datatype);
-	    }
-	}
+        if (datatype.equals("")) {
+            Element child = XUtil.getFirstChildElement(attrDecl);
+            while (child != null && !child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE))
+                child = XUtil.getNextSiblingElement(child);
+            if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+                attType = fStringPool.addSymbol("DATATYPE");
+                enumeration = traverseSimpleTypeDecl(child);
+            } else 
+                attType = fStringPool.addSymbol("CDATA");
+        } else {
+            if (datatype.equals("string")) {
+                attType = fStringPool.addSymbol("CDATA");
+            } else if (datatype.equals("ID")) {
+                attType = fStringPool.addSymbol("ID");
+            } else if (datatype.equals("IDREF")) {
+                attType = fStringPool.addSymbol("IDREF");
+            } else if (datatype.equals("IDREFS")) {
+                attType = fStringPool.addSymbol("IDREFS");
+            } else if (datatype.equals("ENTITY")) {
+                attType = fStringPool.addSymbol("ENTITY");
+            } else if (datatype.equals("ENTITIES")) {
+                attType = fStringPool.addSymbol("ENTITIES");
+            } else if (datatype.equals("NMTOKEN")) {
+                Element e = XUtil.getFirstChildElement(attrDecl, "enumeration");
+                if (e == null) {
+                    attType = fStringPool.addSymbol("NMTOKEN");
+                } else {
+                    attType = fStringPool.addSymbol("ENUMERATION");
+                    enumeration = fStringPool.startStringList();
+                    for (Element literal = XUtil.getFirstChildElement(e, "literal");
+                         literal != null;
+                         literal = XUtil.getNextSiblingElement(literal, "literal")) {
+                        int stringIndex = fStringPool.addSymbol(literal.getFirstChild().getNodeValue());
+                        fStringPool.addStringToList(enumeration, stringIndex);
+                    }
+                    fStringPool.finishStringList(enumeration);
+                }
+            } else if (datatype.equals("NMTOKENS")) {
+                attType = fStringPool.addSymbol("NMTOKENS");
+            } else if (datatype.equals(SchemaSymbols.ELT_NOTATION)) {
+                attType = fStringPool.addSymbol("NOTATION");
+            } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
+                //REVISIT check against list of validators to ensure valid type name
+                attType = fStringPool.addSymbol("DATATYPE");
+                enumeration = fStringPool.addSymbol(datatype);
+            }
+        }
 
-	// attribute default type
-	int attDefaultType = -1;
-	int attDefaultValue = -1;
+        // attribute default type
+        int attDefaultType = -1;
+        int attDefaultValue = -1;
 
-	String use = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
-	boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
+        String use = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
+        boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
-	if (required) {
-	    attDefaultType = fStringPool.addSymbol("#REQUIRED");
-	} else {
-	    if (use.equals(SchemaSymbols.ATTVAL_FIXED)) {
-		String fixed = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
-		if (!fixed.equals("")) {
-		    attDefaultType = fStringPool.addSymbol("#FIXED");
-		    attDefaultValue = fStringPool.addString(fixed);
-		} 
-	    }
-	    else if (use.equals(SchemaSymbols.ATTVAL_DEFAULT)) {
-		// attribute default value
-		String defaultValue = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
-		if (!defaultValue.equals("")) {
-		    attDefaultType = fStringPool.addSymbol("");
-		    attDefaultValue = fStringPool.addString(defaultValue);
-		} 
-	    }
-	    else if (use.equals(SchemaSymbols.ATTVAL_PROHIBITED)) {
-		attDefaultType = fStringPool.addSymbol("#PROHIBITED");
-		attDefaultValue = fStringPool.addString("");
-	    }
-	    else {
-		attDefaultType = fStringPool.addSymbol("#IMPLIED");
-	    }	    // check default value is valid for the datatype.
-	    if (attType == fStringPool.addSymbol("DATATYPE") && attDefaultValue != -1) {
-		try { // REVISIT - integrate w/ error handling
-		    String type = fStringPool.toString(enumeration);
-		    DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);
-		    if (v != null)
-			v.validate(fStringPool.toString(attDefaultValue));
-		    else
-			reportSchemaError(SchemaMessageProvider.NoValidatorFor,
-					  new Object [] { type });
-		} catch (InvalidDatatypeValueException idve) {
-		    reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
-				      new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
-		} catch (Exception e) {
-		    e.printStackTrace();
-		    System.out.println("Internal error in attribute datatype validation");
-		}
-	    }
-	}
+        if (required) {
+            attDefaultType = fStringPool.addSymbol("#REQUIRED");
+        } else {
+            if (use.equals(SchemaSymbols.ATTVAL_FIXED)) {
+                String fixed = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
+                if (!fixed.equals("")) {
+                    attDefaultType = fStringPool.addSymbol("#FIXED");
+                    attDefaultValue = fStringPool.addString(fixed);
+                } 
+            }
+            else if (use.equals(SchemaSymbols.ATTVAL_DEFAULT)) {
+                // attribute default value
+                String defaultValue = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
+                if (!defaultValue.equals("")) {
+                    attDefaultType = fStringPool.addSymbol("");
+                    attDefaultValue = fStringPool.addString(defaultValue);
+                } 
+            }
+            else if (use.equals(SchemaSymbols.ATTVAL_PROHIBITED)) {
+                attDefaultType = fStringPool.addSymbol("#PROHIBITED");
+                attDefaultValue = fStringPool.addString("");
+            }
+            else {
+                attDefaultType = fStringPool.addSymbol("#IMPLIED");
+            }       // check default value is valid for the datatype.
+            if (attType == fStringPool.addSymbol("DATATYPE") && attDefaultValue != -1) {
+                try { // REVISIT - integrate w/ error handling
+                    String type = fStringPool.toString(enumeration);
+                    DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);
+                    if (v != null)
+                        v.validate(fStringPool.toString(attDefaultValue));
+                    else
+                        reportSchemaError(SchemaMessageProvider.NoValidatorFor,
+                                          new Object [] { type });
+                } catch (InvalidDatatypeValueException idve) {
+                    reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
+                                      new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Internal error in attribute datatype validation");
+                }
+            }
+        }
 
-	int uriIndex = -1;
-	if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-	     defaultQualified || isTopLevel(attrDecl) ) {
-	    uriIndex = targetNSURI;
-	}
+        int uriIndex = -1;
+        if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+             defaultQualified || isTopLevel(attrDecl) ) {
+            uriIndex = targetNSURI;
+        }
 
-	QName attQName = new QName(-1,attName,attName,uriIndex);
+        QName attQName = new QName(-1,attName,attName,uriIndex);
 
-	// add attribute to attr decl pool in fValidator, and get back the head
-	typeInfo.attlistHead = fValidator.addAttDef( typeInfo.attlistHead, 
-						      attQName, attType, 
-						      enumeration, attDefaultType, 
-						      attDefaultValue, true);
+        // add attribute to attr decl pool in fValidator, and get back the head
+        typeInfo.attlistHead = fValidator.addAttDef( typeInfo.attlistHead, 
+                                                      attQName, attType, 
+                                                      enumeration, attDefaultType, 
+                                                      attDefaultValue, true);
 
         return -1;
     }
@@ -1202,180 +1223,213 @@ public class TraverseSchema {
         int elementType       =  fStringPool.addSymbol(
                                                       elementDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
 
-	int contentSpecType      = -1;
-	int contentSpecNodeIndex = -1;
-	int typeNameIndex = -1;
-	int scopeDefined = -1; //signal a error if -1 gets gets through 
-	                        //cause scope can never be -1.
+        int contentSpecType      = -1;
+        int contentSpecNodeIndex = -1;
+        int typeNameIndex = -1;
+        int scopeDefined = -1; //signal a error if -1 gets gets through 
+                                //cause scope can never be -1.
 
-	String name = elementDecl.getAttribute(SchemaSymbols.ATT_NAME);
-	String ref = elementDecl.getAttribute(SchemaSymbols.ATT_REF);
-	String type = elementDecl.getAttribute(SchemaSymbols.ATT_TYPE);
-	String minOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MINOCCURS);
-	String maxOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MAXOCCURS);
-	String dflt = elementDecl.getAttribute(SchemaSymbols.ATT_DEFAULT);
-	String fixed = elementDecl.getAttribute(SchemaSymbols.ATT_FIXED);
-	String equivClass = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
-	// form attribute
-	String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
+        String name = elementDecl.getAttribute(SchemaSymbols.ATT_NAME);
+        String ref = elementDecl.getAttribute(SchemaSymbols.ATT_REF);
+        String type = elementDecl.getAttribute(SchemaSymbols.ATT_TYPE);
+        String minOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MINOCCURS);
+        String maxOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MAXOCCURS);
+        String dflt = elementDecl.getAttribute(SchemaSymbols.ATT_DEFAULT);
+        String fixed = elementDecl.getAttribute(SchemaSymbols.ATT_FIXED);
+        String equivClass = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
+        // form attribute
+        String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
 
         int attrCount = 0;
-	if (!ref.equals("")) attrCount++;
-	if (!type.equals("")) attrCount++;
-		//REVISIT top level check for ref & archref
-	if (attrCount > 1)
-	    reportSchemaError(SchemaMessageProvider.OneOfTypeRefArchRef, null);
+        if (!ref.equals("")) attrCount++;
+        if (!type.equals("")) attrCount++;
+                //REVISIT top level check for ref & archref
+        if (attrCount > 1)
+            reportSchemaError(SchemaMessageProvider.OneOfTypeRefArchRef, null);
 
-	if (!ref.equals("")) {
-	    if (XUtil.getFirstChildElement(elementDecl) != null)
-		reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
-	    String prefix = "";
-	    String localpart = ref;
-	    int colonptr = ref.indexOf(":");
-	    if ( colonptr > 0) {
-		prefix = ref.substring(0,colonptr);
-		localpart = ref.substring(colonptr+1);
-	    }
+        if (!ref.equals("")) {
+            if (XUtil.getFirstChildElement(elementDecl) != null)
+                reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+            String prefix = "";
+            String localpart = ref;
+            int colonptr = ref.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = ref.substring(0,colonptr);
+                localpart = ref.substring(colonptr+1);
+            }
             int localpartIndex = fStringPool.addSymbol(localpart);
-	    QName eltName = new QName(  fStringPool.addSymbol(prefix),
-				      localpartIndex,
-				      fStringPool.addSymbol(ref),
-				      fStringPool.addSymbol(resolvePrefixToURI(prefix)) );
- 	    int elementIndex = fValidator.getDeclaration(localpartIndex, 0);
-	    //if not found, traverse the top level element that if referenced
-	    if (elementIndex == -1 ) {
-		eltName= traverseElementDecl(getTopLevelElementByName(localpart));
-	    }
-	    return eltName;
-	}
-		
-	
-	ComplexTypeInfo typeInfo = new ComplexTypeInfo();
+            QName eltName = new QName(  fStringPool.addSymbol(prefix),
+                                      localpartIndex,
+                                      fStringPool.addSymbol(ref),
+                                      fStringPool.addSymbol(resolvePrefixToURI(prefix)) );
+            int elementIndex = fValidator.getDeclaration(localpartIndex, 0);
+            //if not found, traverse the top level element that if referenced
+            if (elementIndex == -1 ) {
+                eltName= 
+                    traverseElementDecl(
+                        getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT,localpart)
+                        );
+            }
+            return eltName;
+        }
+                
+        
+        ComplexTypeInfo typeInfo = new ComplexTypeInfo();
 
-	// element has a single child element, either a datatype or a type, null if primitive
-	Element content = XUtil.getFirstChildElement(elementDecl);
-	
-	while (content != null && content.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+        // element has a single child element, either a datatype or a type, null if primitive
+        Element content = XUtil.getFirstChildElement(elementDecl);
+        
+        while (content != null && content.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
             content = XUtil.getNextSiblingElement(content);
-	
-	boolean typeSet = false;
+        
+        boolean typeSet = false;
 
-	if (content != null) {
-	    
-	    String contentName = content.getNodeName();
-	    
-	    if (contentName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-		
-		typeNameIndex = traverseComplexTypeDecl(content);
-		typeInfo = (ComplexTypeInfo)
-		    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+        if (content != null) {
+            
+            String contentName = content.getNodeName();
+            
+            if (contentName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
+                
+                typeNameIndex = traverseComplexTypeDecl(content);
+                typeInfo = (ComplexTypeInfo)
+                    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
 
-		contentSpecNodeIndex = typeInfo.contentSpecHandle;
-		contentSpecType = typeInfo.contentType;
-		scopeDefined = typeInfo.scopeDefined;
+                contentSpecNodeIndex = typeInfo.contentSpecHandle;
+                contentSpecType = typeInfo.contentType;
+                scopeDefined = typeInfo.scopeDefined;
 
-		typeSet = true;
+                typeSet = true;
 
-	    } 
-	    else if (contentName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-		//REVISIT: TO-DO, contenttype and simpletypevalidator.
-		
-		traverseSimpleTypeDecl(content);
-		typeSet = true;
-		reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-				  new Object [] { "Nesting datatype declarations" });
-		// contentSpecNodeIndex = traverseDatatypeDecl(content);
-		// contentSpecType = fStringPool.addSymbol("DATATYPE");
-	    } else if (type.equals("")) { // "ur-typed" leaf
-		contentSpecType = fStringPool.addSymbol("UR_TYPE");
-		// set occurrence count
-		contentSpecNodeIndex = -1;
-	    } else {
-		System.out.println("unhandled case in TraverseElementDecl");
-	    }
-	} 
-	if (typeSet && (type.length()>0)) {
-	    reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-			      new Object [] { "can have type when have a annoymous type" });
-	}
-	else if (!type.equals("")) { // type specified as an attribute, 
-	    String prefix = "";
-	    String localpart = type;
-	    int colonptr = ref.indexOf(":");
-	    if ( colonptr > 0) {
-		prefix = type.substring(0,colonptr);
-		localpart = type.substring(colonptr+1);
-	    }
-	    String typeURI = resolvePrefixToURI(prefix);
-	    if (!typeURI.equals(targetNSUriString)) {
-		typeInfo = getTypeInfoFromNS(typeURI, localpart);
-	    }
-	    typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
-	    if (typeInfo == null) {
-		//REVISIT try to find in the DataTypeRegistry first;
-		typeNameIndex = traverseComplexTypeDecl(getTopLevelComplexTypeByName(localpart));
-		typeInfo = (ComplexTypeInfo)
-		    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
-	    }
-	    contentSpecNodeIndex = typeInfo.contentSpecHandle;
-	    contentSpecType = typeInfo.contentType;
-	    scopeDefined = typeInfo.scopeDefined;
+            } 
+            else if (contentName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+                //REVISIT: TO-DO, contenttype and simpletypevalidator.
+                
+                traverseSimpleTypeDecl(content);
+                typeSet = true;
+                reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
+                                  new Object [] { "Nesting datatype declarations" });
+                // contentSpecNodeIndex = traverseDatatypeDecl(content);
+                // contentSpecType = fStringPool.addSymbol("DATATYPE");
+            } else if (type.equals("")) { // "ur-typed" leaf
+                contentSpecType = fStringPool.addSymbol("UR_TYPE");
+                // set occurrence count
+                contentSpecNodeIndex = -1;
+            } else {
+                System.out.println("unhandled case in TraverseElementDecl");
+            }
+        } 
+        if (typeSet && (type.length()>0)) {
+            reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
+                              new Object [] { "can have type when have a annoymous type" });
+        }
+        else if (!type.equals("")) { // type specified as an attribute, 
+            String prefix = "";
+            String localpart = type;
+            int colonptr = ref.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = type.substring(0,colonptr);
+                localpart = type.substring(colonptr+1);
+            }
+            String typeURI = resolvePrefixToURI(prefix);
+            if (!typeURI.equals(targetNSUriString)) {
+                typeInfo = getTypeInfoFromNS(typeURI, localpart);
+            }
+            typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
+            if (typeInfo == null) {
+                DatatypeValidator dv = fDatatypeRegistry.getValidatorFor(typeURI+","+localpart);
+                if (dv == null) {
+                    Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
+                    if (topleveltype != null) {
+                        typeNameIndex = traverseComplexTypeDecl( topleveltype );
+                        typeInfo = (ComplexTypeInfo)
+                            fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                    }
+                    else {
+                        topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                        if (topleveltype != null) {
+                            typeNameIndex = traverseSimpleTypeDecl( topleveltype );
+                            dv = fDatatypeRegistry.getValidatorFor(typeURI+","+localpart);
+                            // REVISIT ??do somthing for Simple type here:
+                        }
+                        else {
+                            reportGenericSchemaError("type not found : " + localpart);
+                        }
+
+                    }
+
+                }
+            }
+            if (typeInfo!=null) {
+                contentSpecNodeIndex = typeInfo.contentSpecHandle;
+                contentSpecType = typeInfo.contentType;
+                scopeDefined = typeInfo.scopeDefined;
+            }
    
-	}
+        }
+ 
+        //
+        // Create element decl
+        //
 
-	//
-	// Create element decl
-	//
+        int elementNameIndex     = fStringPool.addSymbol(elementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+        int localpartIndex = elementNameIndex;
+        int uriIndex = -1;
+        int enclosingScope = fCurrentScope;
 
-	int elementNameIndex     = fStringPool.addSymbol(elementDecl.getAttribute(SchemaSymbols.ATT_NAME));
-	int localpartIndex = elementNameIndex;
-	int uriIndex = -1;
-	int enclosingScope = fCurrentScope;
+        if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+             defaultQualified || isTopLevel(elementDecl) ) {
+            uriIndex = targetNSURI;
+            enclosingScope = 0;
+        }
 
-	if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-	     defaultQualified || isTopLevel(elementDecl) ) {
-	    uriIndex = targetNSURI;
-	    enclosingScope = 0;
-	}
+        QName eltQName = new QName(-1,localpartIndex,elementNameIndex,uriIndex);
+        // add element decl to pool
+        fValidator.setCurrentScope(enclosingScope);
+        int elementIndex = fValidator.addElementDecl(eltQName, scopeDefined, contentSpecType, contentSpecNodeIndex, true);
+        //        System.out.println("elementIndex:"+elementIndex+" "+elementDecl.getAttribute(ATT_NAME)+" eltType:"+elementName+" contentSpecType:"+contentSpecType+
+        //                           " SpecNodeIndex:"+ contentSpecNodeIndex);
 
-	QName eltQName = new QName(-1,localpartIndex,elementNameIndex,uriIndex);
-	// add element decl to pool
-	fValidator.setCurrentScope(enclosingScope);
-	int elementIndex = fValidator.addElementDecl(eltQName, scopeDefined, contentSpecType, contentSpecNodeIndex, true);
-    //        System.out.println("elementIndex:"+elementIndex+" "+elementDecl.getAttribute(ATT_NAME)+" eltType:"+elementName+" contentSpecType:"+contentSpecType+
-    //                           " SpecNodeIndex:"+ contentSpecNodeIndex);
-
-	// copy up attribute decls from type object
-	if (typeInfo != null) {
-	    fValidator.setCurrentScope(enclosingScope);
+        // copy up attribute decls from type object
+        if (typeInfo != null) {
+            fValidator.setCurrentScope(enclosingScope);
             fValidator.copyAttsForSchema(typeInfo.attlistHead, eltQName);
-	}
-	else {
-	    // REVISIT: should we report error from here?
-	}
+        }
+        else {
+            // REVISIT: should we report error from here?
+        }
 
         return eltQName;
 
     }
 
-    Element getTopLevelElementByName(String name) {
-        return null;
-    }
+    Element getTopLevelComponentByName(String componentCategory, String name) throws Exception {
+        Element child = XUtil.getFirstChildElement(fSchemaRootElement);
 
-    Element getTopLevelComplexTypeByName(String name) {
-        return null;
-    }
+        if (child == null) {
+            return null;
+        }
 
-    Element getTopLevelGroupByName(String name) {
+        while (child != null ){
+            if ( child.getNodeName().equals(componentCategory)) {
+                if (child.getAttribute(SchemaSymbols.ATT_NAME).equals(name)) {
+                    return child;
+                }
+            }
+            child = XUtil.getNextSiblingElement(child);
+        }
+
         return null;
     }
 
     boolean isTopLevel(Element component) {
-        return true;
+        if (component.getParentNode() == fSchemaRootElement ) {
+            return true;
+        }
+        return false;
     }
     
     ComplexTypeInfo getTypeInfoFromNS(String typeURI, String localpart){
-	return null;
+        return null;
     }
     /**
      * Traverse attributeGroup Declaration
@@ -1418,118 +1472,121 @@ public class TraverseSchema {
      */
     private int traverseGroupDecl( Element groupDecl ) throws Exception {
         int groupID         =  fStringPool.addSymbol(
-	    groupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+            groupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
         int groupMaxOccurs  =  fStringPool.addSymbol(
-	    groupDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
+            groupDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
         int groupMinOccurs  =  fStringPool.addSymbol(
-	    groupDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
+            groupDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
 
         //int groupName      =  fStringPool.addSymbol(
-	    //groupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+            //groupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
         int grouRef        =  fStringPool.addSymbol(
-	    groupDecl.getAttribute( SchemaSymbols.ATT_REF ));
+            groupDecl.getAttribute( SchemaSymbols.ATT_REF ));
 
-	String groupName = groupDecl.getAttribute(SchemaSymbols.ATT_NAME);
-	String ref = groupDecl.getAttribute(SchemaSymbols.ATT_REF);
+        String groupName = groupDecl.getAttribute(SchemaSymbols.ATT_NAME);
+        String ref = groupDecl.getAttribute(SchemaSymbols.ATT_REF);
 
-	if (!ref.equals("")) {
-	    if (XUtil.getFirstChildElement(groupDecl) != null)
-		reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
-	    String prefix = "";
-	    String localpart = ref;
-	    int colonptr = ref.indexOf(":");
-	    if ( colonptr > 0) {
-		prefix = ref.substring(0,colonptr);
-		localpart = ref.substring(colonptr+1);
-	    }
+        if (!ref.equals("")) {
+            if (XUtil.getFirstChildElement(groupDecl) != null)
+                reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+            String prefix = "";
+            String localpart = ref;
+            int colonptr = ref.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = ref.substring(0,colonptr);
+                localpart = ref.substring(colonptr+1);
+            }
             int localpartIndex = fStringPool.addSymbol(localpart);
-	    int contentSpecIndex = traverseGroupDecl(getTopLevelGroupByName(localpart));
-	    
-	    return contentSpecIndex;
-	}
+            int contentSpecIndex = 
+                traverseGroupDecl(
+                    getTopLevelComponentByName(SchemaSymbols.ELT_GROUP,localpart)
+                    );
+            
+            return contentSpecIndex;
+        }
 
-	boolean traverseElt = true; 
-	if (fCurrentScope == 0) {
-	    traverseElt = false;
-	}
+        boolean traverseElt = true; 
+        if (fCurrentScope == 0) {
+            traverseElt = false;
+        }
 
-	Element child = XUtil.getFirstChildElement(groupDecl);
-	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
-	    child = XUtil.getNextSiblingElement(child);
+        Element child = XUtil.getFirstChildElement(groupDecl);
+        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+            child = XUtil.getNextSiblingElement(child);
 
-	int contentSpecType = 0;
-	int csnType = 0;
-	int allChildren[] = null;
-	int allChildCount = 0;
+        int contentSpecType = 0;
+        int csnType = 0;
+        int allChildren[] = null;
+        int allChildCount = 0;
 
-	csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
-	contentSpecType = fStringPool.addSymbol("CHILDREN");
-	
-	int left = -2;
-	int right = -2;
-	boolean hadContent = false;
+        csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
+        contentSpecType = fStringPool.addSymbol("CHILDREN");
+        
+        int left = -2;
+        int right = -2;
+        boolean hadContent = false;
 
-	for (;
-	     child != null;
-	     child = XUtil.getNextSiblingElement(child)) {
-	    int index = -2;
-	    hadContent = true;
+        for (;
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
+            int index = -2;
+            hadContent = true;
 
-	    boolean seeParticle = false;
-	    String childName = child.getNodeName();
-	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-		QName eltQName = traverseElementDecl(child);
-		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-						       eltQName.localpart,
-						       eltQName.uri, 
-						       false);
-		seeParticle = true;
+            boolean seeParticle = false;
+            String childName = child.getNodeName();
+            if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+                QName eltQName = traverseElementDecl(child);
+                index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                       eltQName.localpart,
+                                                       eltQName.uri, 
+                                                       false);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-		index = traverseGroupDecl(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                index = traverseGroupDecl(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-		index = traverseAll(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+                index = traverseAll(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-		index = traverseChoice(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                index = traverseChoice(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-		index = traverseSequence(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                index = traverseSequence(child);
+                seeParticle = true;
 
-	    } 
-	    else {
-		reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-				  new Object [] { "group", childName });
-	    }
+            } 
+            else {
+                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                                  new Object [] { "group", childName });
+            }
 
-	    if (seeParticle) {
-		index = expandContentModel( index, child);
-	    }
-	    if (left == -2) {
-		left = index;
-	    } else if (right == -2) {
-		right = index;
-	    } else {
-		left = fValidator.addContentSpecNode(csnType, left, right, false);
-		right = index;
-	    }
-	}
-	if (hadContent && right != -2)
-	    left = fValidator.addContentSpecNode(csnType, left, right, false);
+            if (seeParticle) {
+                index = expandContentModel( index, child);
+            }
+            if (left == -2) {
+                left = index;
+            } else if (right == -2) {
+                right = index;
+            } else {
+                left = fValidator.addContentSpecNode(csnType, left, right, false);
+                right = index;
+            }
+        }
+        if (hadContent && right != -2)
+            left = fValidator.addContentSpecNode(csnType, left, right, false);
 
 
-	return left;
+        return left;
     }
     
     /**
@@ -1545,80 +1602,80 @@ public class TraverseSchema {
     * 
     **/
     int traverseSequence (Element sequenceDecl) throws Exception {
-	    
-	Element child = XUtil.getFirstChildElement(sequenceDecl);
-	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
-	    child = XUtil.getNextSiblingElement(child);
+            
+        Element child = XUtil.getFirstChildElement(sequenceDecl);
+        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+            child = XUtil.getNextSiblingElement(child);
 
-	int contentSpecType = 0;
-	int csnType = 0;
+        int contentSpecType = 0;
+        int csnType = 0;
 
-	csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
-	contentSpecType = fStringPool.addSymbol("CHILDREN");
+        csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
+        contentSpecType = fStringPool.addSymbol("CHILDREN");
 
-	int left = -2;
-	int right = -2;
-	boolean hadContent = false;
+        int left = -2;
+        int right = -2;
+        boolean hadContent = false;
 
-	for (;
-	     child != null;
-	     child = XUtil.getNextSiblingElement(child)) {
-	    int index = -2;
-	    hadContent = true;
+        for (;
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
+            int index = -2;
+            hadContent = true;
 
-	    boolean seeParticle = false;
-	    String childName = child.getNodeName();
-	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-		QName eltQName = traverseElementDecl(child);
-		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-						       eltQName.localpart,
-						       eltQName.uri, 
-						       false);
-		seeParticle = true;
+            boolean seeParticle = false;
+            String childName = child.getNodeName();
+            if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+                QName eltQName = traverseElementDecl(child);
+                index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                       eltQName.localpart,
+                                                       eltQName.uri, 
+                                                       false);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-		index = traverseGroupDecl(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                index = traverseGroupDecl(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-		index = traverseAll(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+                index = traverseAll(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-		index = traverseChoice(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                index = traverseChoice(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-		index = traverseSequence(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                index = traverseSequence(child);
+                seeParticle = true;
 
-	    } 
-	    else {
-		reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-				  new Object [] { "group", childName });
-	    }
+            } 
+            else {
+                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                                  new Object [] { "group", childName });
+            }
 
-	    if (seeParticle) {
-		index = expandContentModel( index, child);
-	    }
-	    if (left == -2) {
-		left = index;
-	    } else if (right == -2) {
-		right = index;
-	    } else {
-		left = fValidator.addContentSpecNode(csnType, left, right, false);
-		right = index;
-	    }
-	}
+            if (seeParticle) {
+                index = expandContentModel( index, child);
+            }
+            if (left == -2) {
+                left = index;
+            } else if (right == -2) {
+                right = index;
+            } else {
+                left = fValidator.addContentSpecNode(csnType, left, right, false);
+                right = index;
+            }
+        }
 
-	if (hadContent && right != -2)
-	    left = fValidator.addContentSpecNode(csnType, left, right, false);
+        if (hadContent && right != -2)
+            left = fValidator.addContentSpecNode(csnType, left, right, false);
 
-	return left;
+        return left;
     }
     
     /**
@@ -1634,81 +1691,81 @@ public class TraverseSchema {
     * 
     **/
     int traverseChoice (Element choiceDecl) throws Exception {
-	    
-	// REVISIT: traverseChoice, traverseSequence can be combined
-	Element child = XUtil.getFirstChildElement(choiceDecl);
-	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
-	    child = XUtil.getNextSiblingElement(child);
+            
+        // REVISIT: traverseChoice, traverseSequence can be combined
+        Element child = XUtil.getFirstChildElement(choiceDecl);
+        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+            child = XUtil.getNextSiblingElement(child);
 
-	int contentSpecType = 0;
-	int csnType = 0;
+        int contentSpecType = 0;
+        int csnType = 0;
 
-	csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
-	contentSpecType = fStringPool.addSymbol("CHILDREN");
+        csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
+        contentSpecType = fStringPool.addSymbol("CHILDREN");
 
-	int left = -2;
-	int right = -2;
-	boolean hadContent = false;
+        int left = -2;
+        int right = -2;
+        boolean hadContent = false;
 
-	for (;
-	     child != null;
-	     child = XUtil.getNextSiblingElement(child)) {
-	    int index = -2;
-	    hadContent = true;
+        for (;
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
+            int index = -2;
+            hadContent = true;
 
-	    boolean seeParticle = false;
-	    String childName = child.getNodeName();
-	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-		QName eltQName = traverseElementDecl(child);
-		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-						       eltQName.localpart,
-						       eltQName.uri, 
-						       false);
-		seeParticle = true;
+            boolean seeParticle = false;
+            String childName = child.getNodeName();
+            if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+                QName eltQName = traverseElementDecl(child);
+                index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                       eltQName.localpart,
+                                                       eltQName.uri, 
+                                                       false);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-		index = traverseGroupDecl(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                index = traverseGroupDecl(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-		index = traverseAll(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+                index = traverseAll(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-		index = traverseChoice(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                index = traverseChoice(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-		index = traverseSequence(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                index = traverseSequence(child);
+                seeParticle = true;
 
-	    } 
-	    else {
-		reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-				  new Object [] { "group", childName });
-	    }
+            } 
+            else {
+                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                                  new Object [] { "group", childName });
+            }
 
-	    if (seeParticle) {
-		index = expandContentModel( index, child);
-	    }
-	    if (left == -2) {
-		left = index;
-	    } else if (right == -2) {
-		right = index;
-	    } else {
-		left = fValidator.addContentSpecNode(csnType, left, right, false);
-		right = index;
-	    }
-	}
+            if (seeParticle) {
+                index = expandContentModel( index, child);
+            }
+            if (left == -2) {
+                left = index;
+            } else if (right == -2) {
+                right = index;
+            } else {
+                left = fValidator.addContentSpecNode(csnType, left, right, false);
+                right = index;
+            }
+        }
 
-	if (hadContent && right != -2)
-	    left = fValidator.addContentSpecNode(csnType, left, right, false);
+        if (hadContent && right != -2)
+            left = fValidator.addContentSpecNode(csnType, left, right, false);
 
-	return left;
+        return left;
     }
     
 
@@ -1722,74 +1779,74 @@ public class TraverseSchema {
     *   minOccurs = nonNegativeInteger>
     *   Content: (annotation? , (element | group | choice | sequence | any)*)
     * </all>
-    * 	
+    *   
     **/
 
     int traverseAll( Element allDecl) throws Exception {
 
 
-	Element child = XUtil.getFirstChildElement(allDecl);
+        Element child = XUtil.getFirstChildElement(allDecl);
 
-	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
-	    child = XUtil.getNextSiblingElement(child);
+        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+            child = XUtil.getNextSiblingElement(child);
 
-	int allChildren[] = null;
-	int allChildCount = 0;
+        int allChildren[] = null;
+        int allChildCount = 0;
 
-	int left = -2;
+        int left = -2;
 
-	for (;
-	     child != null;
-	     child = XUtil.getNextSiblingElement(child)) {
+        for (;
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
 
-	    int index = -2;
-	    boolean seeParticle = false;
+            int index = -2;
+            boolean seeParticle = false;
 
-	    String childName = child.getNodeName();
+            String childName = child.getNodeName();
 
-	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-		QName eltQName = traverseElementDecl(child);
-		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-						       eltQName.localpart,
-						       eltQName.uri, 
-						       false);
-		seeParticle = true;
+            if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+                QName eltQName = traverseElementDecl(child);
+                index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                       eltQName.localpart,
+                                                       eltQName.uri, 
+                                                       false);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-		index = traverseGroupDecl(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                index = traverseGroupDecl(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-		index = traverseAll(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+                index = traverseAll(child);
+                seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-		    index = traverseChoice(child);
-		    seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                    index = traverseChoice(child);
+                    seeParticle = true;
 
-	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-		index = traverseSequence(child);
-		seeParticle = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                index = traverseSequence(child);
+                seeParticle = true;
 
-	    } 
-	    else {
-		reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-				  new Object [] { "group", childName });
-	    }
+            } 
+            else {
+                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                                  new Object [] { "group", childName });
+            }
 
-	    if (seeParticle) {
-		index = expandContentModel( index, child);
-	    }
-	    allChildren[allChildCount++] = index;
-	}
+            if (seeParticle) {
+                index = expandContentModel( index, child);
+            }
+            allChildren[allChildCount++] = index;
+        }
 
-	left = buildAllModel(allChildren,allChildCount);
+        left = buildAllModel(allChildren,allChildCount);
 
-	return left;
+        return left;
     }
     
     /** builds the all content model */
@@ -1969,252 +2026,252 @@ public class TraverseSchema {
 
     private int parseInt (String intString) throws Exception
     {
-	    if ( intString.equals("*") ) {
-		    return Schema.INFINITY;
-	    } else {
-		    return Integer.parseInt (intString);
-	    }
+            if ( intString.equals("*") ) {
+                    return Schema.INFINITY;
+            } else {
+                    return Integer.parseInt (intString);
+            }
     }
 
     private int parseSimpleDerivedBy (String derivedByString) throws Exception
     {
-	    if ( derivedByString.equals (Schema.VAL_LIST) ) {
-		    return Schema.LIST;
-	    } else if ( derivedByString.equals (Schema.VAL_RESTRICTION) ) {
-		    return Schema.RESTRICTION;
-	    } else if ( derivedByString.equals (Schema.VAL_REPRODUCTION) ) {
-		    return Schema.REPRODUCTION;
-	    } else {
-		    reportGenericSchemaError ("Invalid value for 'derivedBy'");
-		    return -1;
-	    }
+            if ( derivedByString.equals (Schema.VAL_LIST) ) {
+                    return Schema.LIST;
+            } else if ( derivedByString.equals (Schema.VAL_RESTRICTION) ) {
+                    return Schema.RESTRICTION;
+            } else if ( derivedByString.equals (Schema.VAL_REPRODUCTION) ) {
+                    return Schema.REPRODUCTION;
+            } else {
+                    reportGenericSchemaError ("Invalid value for 'derivedBy'");
+                    return -1;
+            }
     }
 
     private int parseComplexDerivedBy (String derivedByString)  throws Exception
     {
-	    if ( derivedByString.equals (Schema.VAL_EXTENSION) ) {
-		    return Schema.EXTENSION;
-	    } else if ( derivedByString.equals (Schema.VAL_RESTRICTION) ) {
-		    return Schema.RESTRICTION;
-	    } else if ( derivedByString.equals (Schema.VAL_REPRODUCTION) ) {
-		    return Schema.REPRODUCTION;
-	    } else {
-		    reportGenericSchemaError ( "Invalid value for 'derivedBy'" );
-		    return -1;
-	    }
+            if ( derivedByString.equals (Schema.VAL_EXTENSION) ) {
+                    return Schema.EXTENSION;
+            } else if ( derivedByString.equals (Schema.VAL_RESTRICTION) ) {
+                    return Schema.RESTRICTION;
+            } else if ( derivedByString.equals (Schema.VAL_REPRODUCTION) ) {
+                    return Schema.REPRODUCTION;
+            } else {
+                    reportGenericSchemaError ( "Invalid value for 'derivedBy'" );
+                    return -1;
+            }
     }
 
     private int parseSimpleFinal (String finalString) throws Exception
     {
-	    if ( finalString.equals (Schema.VAL_POUNDALL) ) {
-		    return Schema.ENUMERATION+Schema.RESTRICTION+Schema.LIST+Schema.REPRODUCTION;
-	    } else {
-		    int enumerate = 0;
-		    int restrict = 0;
-		    int list = 0;
-		    int reproduce = 0;
+            if ( finalString.equals (Schema.VAL_POUNDALL) ) {
+                    return Schema.ENUMERATION+Schema.RESTRICTION+Schema.LIST+Schema.REPRODUCTION;
+            } else {
+                    int enumerate = 0;
+                    int restrict = 0;
+                    int list = 0;
+                    int reproduce = 0;
 
-		    StringTokenizer t = new StringTokenizer (finalString, " ");
-		    while (t.hasMoreTokens()) {
-			    String token = t.nextToken ();
+                    StringTokenizer t = new StringTokenizer (finalString, " ");
+                    while (t.hasMoreTokens()) {
+                            String token = t.nextToken ();
 
-			    if ( token.equals (Schema.VAL_ENUMERATION) ) {
-				    if ( enumerate == 0 ) {
-					    enumerate = Schema.ENUMERATION;
-				    } else {
-					    reportGenericSchemaError ("enumeration in set twice");
-				    }
-			    } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
-				    if ( restrict == 0 ) {
-					    restrict = Schema.RESTRICTION;
-				    } else {
-					    reportGenericSchemaError ("restriction in set twice");
-				    }
-			    } else if ( token.equals (Schema.VAL_LIST) ) {
-				    if ( list == 0 ) {
-					    list = Schema.LIST;
-				    } else {
-					    reportGenericSchemaError ("list in set twice");
-				    }
-			    } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-				    if ( reproduce == 0 ) {
-					    reproduce = Schema.REPRODUCTION;
-				    } else {
-					    reportGenericSchemaError ("reproduction in set twice");
-				    }
-			    } else {
-					    reportGenericSchemaError (	"Invalid value (" + 
-												    finalString +
-												    ")" );
-			    }
-		    }
+                            if ( token.equals (Schema.VAL_ENUMERATION) ) {
+                                    if ( enumerate == 0 ) {
+                                            enumerate = Schema.ENUMERATION;
+                                    } else {
+                                            reportGenericSchemaError ("enumeration in set twice");
+                                    }
+                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+                                    if ( restrict == 0 ) {
+                                            restrict = Schema.RESTRICTION;
+                                    } else {
+                                            reportGenericSchemaError ("restriction in set twice");
+                                    }
+                            } else if ( token.equals (Schema.VAL_LIST) ) {
+                                    if ( list == 0 ) {
+                                            list = Schema.LIST;
+                                    } else {
+                                            reportGenericSchemaError ("list in set twice");
+                                    }
+                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
+                                    if ( reproduce == 0 ) {
+                                            reproduce = Schema.REPRODUCTION;
+                                    } else {
+                                            reportGenericSchemaError ("reproduction in set twice");
+                                    }
+                            } else {
+                                            reportGenericSchemaError (  "Invalid value (" + 
+                                                                                                    finalString +
+                                                                                                    ")" );
+                            }
+                    }
 
-		    return enumerate+restrict+list+reproduce;
-	    }
+                    return enumerate+restrict+list+reproduce;
+            }
     }
 
     private int parseComplexContent (String contentString)  throws Exception
     {
-	    if ( contentString.equals (Schema.VAL_EMPTY) ) {
-		    return Schema.EMPTY;
-	    } else if ( contentString.equals (Schema.VAL_ELEMENTONLY) ) {
-		    return Schema.ELEMENT_ONLY;
-	    } else if ( contentString.equals (Schema.VAL_TEXTONLY) ) {
-		    return Schema.TEXT_ONLY;
-	    } else if ( contentString.equals (Schema.VAL_MIXED) ) {
-		    return Schema.MIXED;
-	    } else {
-		    reportGenericSchemaError ( "Invalid value for content" );
-		    return -1;
-	    }
+            if ( contentString.equals (Schema.VAL_EMPTY) ) {
+                    return Schema.EMPTY;
+            } else if ( contentString.equals (Schema.VAL_ELEMENTONLY) ) {
+                    return Schema.ELEMENT_ONLY;
+            } else if ( contentString.equals (Schema.VAL_TEXTONLY) ) {
+                    return Schema.TEXT_ONLY;
+            } else if ( contentString.equals (Schema.VAL_MIXED) ) {
+                    return Schema.MIXED;
+            } else {
+                    reportGenericSchemaError ( "Invalid value for content" );
+                    return -1;
+            }
     }
 
     private int parseDerivationSet (String finalString)  throws Exception
     {
-	    if ( finalString.equals ("#all") ) {
-		    return Schema.EXTENSION+Schema.RESTRICTION+Schema.REPRODUCTION;
-	    } else {
-		    int extend = 0;
-		    int restrict = 0;
-		    int reproduce = 0;
+            if ( finalString.equals ("#all") ) {
+                    return Schema.EXTENSION+Schema.RESTRICTION+Schema.REPRODUCTION;
+            } else {
+                    int extend = 0;
+                    int restrict = 0;
+                    int reproduce = 0;
 
-		    StringTokenizer t = new StringTokenizer (finalString, " ");
-		    while (t.hasMoreTokens()) {
-			    String token = t.nextToken ();
+                    StringTokenizer t = new StringTokenizer (finalString, " ");
+                    while (t.hasMoreTokens()) {
+                            String token = t.nextToken ();
 
-			    if ( token.equals (Schema.VAL_EXTENSION) ) {
-				    if ( extend == 0 ) {
-					    extend = Schema.EXTENSION;
-				    } else {
-					    reportGenericSchemaError ( "extension already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
-				    if ( restrict == 0 ) {
-					    restrict = Schema.RESTRICTION;
-				    } else {
-					    reportGenericSchemaError ( "restriction already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-				    if ( reproduce == 0 ) {
-					    reproduce = Schema.REPRODUCTION;
-				    } else {
-					    reportGenericSchemaError ( "reproduction already in set" );
-				    }
-			    } else {
-				    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
-			    }
-		    }
+                            if ( token.equals (Schema.VAL_EXTENSION) ) {
+                                    if ( extend == 0 ) {
+                                            extend = Schema.EXTENSION;
+                                    } else {
+                                            reportGenericSchemaError ( "extension already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+                                    if ( restrict == 0 ) {
+                                            restrict = Schema.RESTRICTION;
+                                    } else {
+                                            reportGenericSchemaError ( "restriction already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
+                                    if ( reproduce == 0 ) {
+                                            reproduce = Schema.REPRODUCTION;
+                                    } else {
+                                            reportGenericSchemaError ( "reproduction already in set" );
+                                    }
+                            } else {
+                                    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
+                            }
+                    }
 
-		    return extend+restrict+reproduce;
-	    }
+                    return extend+restrict+reproduce;
+            }
     }
 
     private int parseBlockSet (String finalString)  throws Exception
     {
-	    if ( finalString.equals ("#all") ) {
-		    return Schema.EQUIVCLASS+Schema.EXTENSION+Schema.LIST+Schema.RESTRICTION+Schema.REPRODUCTION;
-	    } else {
-		    int extend = 0;
-		    int restrict = 0;
-		    int reproduce = 0;
+            if ( finalString.equals ("#all") ) {
+                    return Schema.EQUIVCLASS+Schema.EXTENSION+Schema.LIST+Schema.RESTRICTION+Schema.REPRODUCTION;
+            } else {
+                    int extend = 0;
+                    int restrict = 0;
+                    int reproduce = 0;
 
-		    StringTokenizer t = new StringTokenizer (finalString, " ");
-		    while (t.hasMoreTokens()) {
-			    String token = t.nextToken ();
+                    StringTokenizer t = new StringTokenizer (finalString, " ");
+                    while (t.hasMoreTokens()) {
+                            String token = t.nextToken ();
 
-			    if ( token.equals (Schema.VAL_EQUIVCLASS) ) {
-				    if ( extend == 0 ) {
-					    extend = Schema.EQUIVCLASS;
-				    } else {
-					    reportGenericSchemaError ( "'equivClass' already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_EXTENSION) ) {
-				    if ( extend == 0 ) {
-					    extend = Schema.EXTENSION;
-				    } else {
-					    reportGenericSchemaError ( "extension already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_LIST) ) {
-				    if ( extend == 0 ) {
-					    extend = Schema.LIST;
-				    } else {
-					    reportGenericSchemaError ( "'list' already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
-				    if ( restrict == 0 ) {
-					    restrict = Schema.RESTRICTION;
-				    } else {
-					    reportGenericSchemaError ( "restriction already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-				    if ( reproduce == 0 ) {
-					    reproduce = Schema.REPRODUCTION;
-				    } else {
-					    reportGenericSchemaError ( "reproduction already in set" );
-				    }
-			    } else {
-				    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
-			    }
-		    }
+                            if ( token.equals (Schema.VAL_EQUIVCLASS) ) {
+                                    if ( extend == 0 ) {
+                                            extend = Schema.EQUIVCLASS;
+                                    } else {
+                                            reportGenericSchemaError ( "'equivClass' already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_EXTENSION) ) {
+                                    if ( extend == 0 ) {
+                                            extend = Schema.EXTENSION;
+                                    } else {
+                                            reportGenericSchemaError ( "extension already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_LIST) ) {
+                                    if ( extend == 0 ) {
+                                            extend = Schema.LIST;
+                                    } else {
+                                            reportGenericSchemaError ( "'list' already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+                                    if ( restrict == 0 ) {
+                                            restrict = Schema.RESTRICTION;
+                                    } else {
+                                            reportGenericSchemaError ( "restriction already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
+                                    if ( reproduce == 0 ) {
+                                            reproduce = Schema.REPRODUCTION;
+                                    } else {
+                                            reportGenericSchemaError ( "reproduction already in set" );
+                                    }
+                            } else {
+                                    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
+                            }
+                    }
 
-		    return extend+restrict+reproduce;
-	    }
+                    return extend+restrict+reproduce;
+            }
     }
 
     private int parseFinalSet (String finalString)  throws Exception
     {
-	    if ( finalString.equals ("#all") ) {
-		    return Schema.EQUIVCLASS+Schema.EXTENSION+Schema.LIST+Schema.RESTRICTION+Schema.REPRODUCTION;
-	    } else {
-		    int extend = 0;
-		    int restrict = 0;
-		    int reproduce = 0;
+            if ( finalString.equals ("#all") ) {
+                    return Schema.EQUIVCLASS+Schema.EXTENSION+Schema.LIST+Schema.RESTRICTION+Schema.REPRODUCTION;
+            } else {
+                    int extend = 0;
+                    int restrict = 0;
+                    int reproduce = 0;
 
-		    StringTokenizer t = new StringTokenizer (finalString, " ");
-		    while (t.hasMoreTokens()) {
-			    String token = t.nextToken ();
+                    StringTokenizer t = new StringTokenizer (finalString, " ");
+                    while (t.hasMoreTokens()) {
+                            String token = t.nextToken ();
 
-			    if ( token.equals (Schema.VAL_EQUIVCLASS) ) {
-				    if ( extend == 0 ) {
-					    extend = Schema.EQUIVCLASS;
-				    } else {
-					    reportGenericSchemaError ( "'equivClass' already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_EXTENSION) ) {
-				    if ( extend == 0 ) {
-					    extend = Schema.EXTENSION;
-				    } else {
-					    reportGenericSchemaError ( "extension already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_LIST) ) {
-				    if ( extend == 0 ) {
-					    extend = Schema.LIST;
-				    } else {
-					    reportGenericSchemaError ( "'list' already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
-				    if ( restrict == 0 ) {
-					    restrict = Schema.RESTRICTION;
-				    } else {
-					    reportGenericSchemaError ( "restriction already in set" );
-				    }
-			    } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-				    if ( reproduce == 0 ) {
-					    reproduce = Schema.REPRODUCTION;
-				    } else {
-					    reportGenericSchemaError ( "reproduction already in set" );
-				    }
-			    } else {
-				    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
-			    }
-		    }
+                            if ( token.equals (Schema.VAL_EQUIVCLASS) ) {
+                                    if ( extend == 0 ) {
+                                            extend = Schema.EQUIVCLASS;
+                                    } else {
+                                            reportGenericSchemaError ( "'equivClass' already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_EXTENSION) ) {
+                                    if ( extend == 0 ) {
+                                            extend = Schema.EXTENSION;
+                                    } else {
+                                            reportGenericSchemaError ( "extension already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_LIST) ) {
+                                    if ( extend == 0 ) {
+                                            extend = Schema.LIST;
+                                    } else {
+                                            reportGenericSchemaError ( "'list' already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+                                    if ( restrict == 0 ) {
+                                            restrict = Schema.RESTRICTION;
+                                    } else {
+                                            reportGenericSchemaError ( "restriction already in set" );
+                                    }
+                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
+                                    if ( reproduce == 0 ) {
+                                            reproduce = Schema.REPRODUCTION;
+                                    } else {
+                                            reportGenericSchemaError ( "reproduction already in set" );
+                                    }
+                            } else {
+                                    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
+                            }
+                    }
 
-		    return extend+restrict+reproduce;
-	    }
+                    return extend+restrict+reproduce;
+            }
     }
 
     private void reportGenericSchemaError (String error) throws Exception {
-	    reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
+            reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
     }
 
     private void reportSchemaError(int major, Object args[]) {
@@ -2231,16 +2288,16 @@ public class TraverseSchema {
     }
 
     class DatatypeValidatorRegistry {
-	Hashtable fRegistry = new Hashtable();
+        Hashtable fRegistry = new Hashtable();
 
-	String integerSubtypeTable[][] = {
-	    { "non-negative-integer", DatatypeValidator.MININCLUSIVE , "0"},
-	    { "positive-integer", DatatypeValidator.MININCLUSIVE, "1"},
-	    { "non-positive-integer", DatatypeValidator.MAXINCLUSIVE, "0"},
-	    { "negative-integer", DatatypeValidator.MAXINCLUSIVE, "-1"}
+        String integerSubtypeTable[][] = {
+            { "non-negative-integer", DatatypeValidator.MININCLUSIVE , "0"},
+            { "positive-integer", DatatypeValidator.MININCLUSIVE, "1"},
+            { "non-positive-integer", DatatypeValidator.MAXINCLUSIVE, "0"},
+            { "negative-integer", DatatypeValidator.MAXINCLUSIVE, "-1"}
         };
 
-	void initializeRegistry() {
+        void initializeRegistry() {
             Hashtable facets = null;
             //fRegistry.put("boolean", new BooleanValidator());
             //DatatypeValidator integerValidator = new IntegerValidator();
@@ -2289,7 +2346,7 @@ public class TraverseSchema {
 
 
     //Unit Test here
-    public static void main( String args[] ) {
+    public static void main(String args[] ) {
 
         if( args.length != 1 ) {
             System.out.println( "Error: Usage java TraverseSchema yourFile.xsd" );
@@ -2323,12 +2380,14 @@ public class TraverseSchema {
         Document     document   = parser.getDocument(); //Our Grammar
 
         OutputFormat    format  = new OutputFormat( document );
-        XMLSerializer    serial = new XMLSerializer( System.out, format );
+        java.io.StringWriter outWriter = new java.io.StringWriter();
+        XMLSerializer    serial = new XMLSerializer( outWriter,format);
 
         TraverseSchema tst = null;
         try {
             Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
-            serial.serialize( root );
+            //serial.serialize( root );
+            //System.out.println(outWriter.toString());
             tst = new TraverseSchema( root );
             }
             catch (Exception e) {
