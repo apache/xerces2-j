@@ -408,8 +408,22 @@ Copyright:
         <fileset dir="${build.docs}" />
     </copy>
 
+    <!--
     <copy todir="${distbin.dir}/docs/apiDocs" >
         <fileset dir="${build.javadocs}" />
+    </copy>
+    -->
+    <copy todir="${distbin.dir}/docs/api" >
+        <fileset dir="${build.dir}/docs/api" />
+    </copy>
+    <copy todir="${distbin.dir}/docs/xni" >
+        <fileset dir="${build.dir}/docs/xni" />
+    </copy>
+    <copy todir="${distbin.dir}/docs/xerces2" >
+        <fileset dir="${build.dir}/docs/xerces2" />
+    </copy>
+    <copy todir="${distbin.dir}/docs/other" >
+        <fileset dir="${build.dir}/docs/other" />
     </copy>
 
     <copy file="${build.dir}/${name}.jar" tofile="${distbin.dir}/${name}.jar"/>
