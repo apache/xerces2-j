@@ -359,6 +359,7 @@ public abstract class BaseMarkupSerializer
         state.preserveSpace = _format.getPreserveSpace();
         state.empty = true;
         state.afterElement = false;
+        state.afterComment = false;
         state.doCData = state.inCData = false;
         state.prefixes = null;
 
@@ -598,10 +599,17 @@ public abstract class BaseMarkupSerializer
                 _preRoot = new Vector();
             _preRoot.addElement( buffer.toString() );
         } else {
-            _printer.indent();
+            // Indent this element on a new line if the first
+            // content of the parent element or immediately
+            // following an element.
+            if ( _indenting && ! state.preserveSpace)
+                _printer.breakLine();
+      _printer.indent();
             printText( buffer.toString(), false, true );
-            _printer.unindent();
+      _printer.unindent();
         }
+    state.afterComment = true;
+    state.afterElement = false;
     }
 
 
@@ -883,7 +891,8 @@ public abstract class BaseMarkupSerializer
 
             text = node.getNodeValue();
             if ( text != null )
-                characters( node.getNodeValue() );
+        if ( !_indenting || getElementState().preserveSpace || !(text.replace('\n',' ').trim() != ""))
+          characters( node.getNodeValue() );
             break;
         }
 
@@ -1034,6 +1043,10 @@ public abstract class BaseMarkupSerializer
             // are not last element. That one content
             // type will take care of itself.
             state.afterElement = false;
+            // Except for one content type, all of them
+            // are not last comment. That one content
+            // type will take care of itself.
+            state.afterComment = false;
         }
         return state;
     }
@@ -1366,6 +1379,7 @@ public abstract class BaseMarkupSerializer
         state.preserveSpace = preserveSpace;
         state.empty = true;
         state.afterElement = false;
+        state.afterComment = false;
         state.doCData = state.inCData = false;
         state.unescaped = false;
         state.prefixes = _prefixes;

@@ -214,9 +214,9 @@ public class XMLSerializer
             }
             // Indent this element on a new line if the first
             // content of the parent element or immediately
-            // following an element.
+            // following an element or a comment
             if ( _indenting && ! state.preserveSpace &&
-                 ( state.empty || state.afterElement ) )
+                 ( state.empty || state.afterElement || state.afterComment) )
                 _printer.breakLine();
         }
         preserveSpace = state.preserveSpace;
@@ -332,7 +332,7 @@ public class XMLSerializer
             // This element is not empty and that last content was
             // another element, so print a line break before that
             // last element and this element's closing tag.
-            if ( _indenting && ! state.preserveSpace && state.afterElement )
+            if ( _indenting && ! state.preserveSpace && (state.afterElement || state.afterComment) )
                 _printer.breakLine();
             _printer.printText( "</" );
             _printer.printText( state.rawName );
@@ -342,6 +342,7 @@ public class XMLSerializer
         // (if we're not root) to not empty and after element.
         state = leaveElementState();
         state.afterElement = true;
+        state.afterComment = false;
         state.empty = false;
         if ( isDocumentState() )
             _printer.flush();
@@ -388,7 +389,7 @@ public class XMLSerializer
             // content of the parent element or immediately
             // following an element.
             if ( _indenting && ! state.preserveSpace &&
-                 ( state.empty || state.afterElement ) )
+                 ( state.empty || state.afterElement || state.afterComment) )
                 _printer.breakLine();
         }
         preserveSpace = state.preserveSpace;
@@ -582,7 +583,7 @@ public class XMLSerializer
             // content of the parent element or immediately
             // following an element.
             if ( _indenting && ! state.preserveSpace &&
-                 ( state.empty || state.afterElement ) )
+                 ( state.empty || state.afterElement || state.afterComment) )
                 _printer.breakLine();
         }
         preserveSpace = state.preserveSpace;
@@ -645,6 +646,7 @@ public class XMLSerializer
             _printer.printText( "/>" );
             // After element but parent element is no longer empty.
             state.afterElement = true;
+            state.afterComment = false;
             state.empty = false;
             if ( isDocumentState() )
                 _printer.flush();

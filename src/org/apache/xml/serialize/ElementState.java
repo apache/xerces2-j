@@ -112,6 +112,12 @@ class ElementState
 
 
     /**
+     * True if the last serialized node was a comment node.
+     */
+    boolean afterComment;
+
+
+    /**
      * True if textual content of current element should be
      * serialized as CDATA section.
      */
