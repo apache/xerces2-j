@@ -125,7 +125,7 @@ public class IDValue {
         return(fValue.equals(value.fValue));
     } // end compare(IDValue):boolean
 
-    static final ValidationState VS = new ValidationState();
+    private static final ValidationState VS = new ValidationState();
     static {
         VS.setExtraChecking(false);
         VS.setFacetChecking(false);

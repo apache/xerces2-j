@@ -92,24 +92,24 @@ class Token implements java.io.Serializable {
 
     int type;
 
-    static protected Token token_dot;
-    static protected Token token_0to9;
-    static protected Token token_wordchars;
-    static protected Token token_not_0to9;
-    static protected Token token_not_wordchars;
-    static protected Token token_spaces;
-    static protected Token token_not_spaces;
-    static protected Token token_empty;
-    static protected Token token_linebeginning;
-    static protected Token token_linebeginning2;
-    static protected Token token_lineend;
-    static protected Token token_stringbeginning;
-    static protected Token token_stringend;
-    static protected Token token_stringend2;
-    static protected Token token_wordedge;
-    static protected Token token_not_wordedge;
-    static protected Token token_wordbeginning;
-    static protected Token token_wordend;
+    static Token token_dot;
+    static Token token_0to9;
+    static Token token_wordchars;
+    static Token token_not_0to9;
+    static Token token_not_wordchars;
+    static Token token_spaces;
+    static Token token_not_spaces;
+    static Token token_empty;
+    static Token token_linebeginning;
+    static Token token_linebeginning2;
+    static Token token_lineend;
+    static Token token_stringbeginning;
+    static Token token_stringend;
+    static Token token_stringend2;
+    static Token token_wordedge;
+    static Token token_not_wordedge;
+    static Token token_wordbeginning;
+    static Token token_wordend;
     static {
         Token.token_empty = new Token(Token.EMPTY);
 
@@ -633,9 +633,9 @@ class Token implements java.io.Serializable {
     }
 
     // ------------------------------------------------------
-    static protected Hashtable categories = new Hashtable();
-    static protected Hashtable categories2 = null;
-    static final String[] categoryNames = {
+    private final static Hashtable categories = new Hashtable();
+    private final static Hashtable categories2 = new Hashtable();
+    private static final String[] categoryNames = {
         "Cn", "Lu", "Ll", "Lt", "Lm", "Lo", "Mn", "Me", "Mc", "Nd",
         "Nl", "No", "Zs", "Zl", "Zp", "Cc", "Cf", null, "Co", "Cs",
         "Pd", "Ps", "Pe", "Pc", "Po", "Sm", "Sc", "Sk", "So", // 28
@@ -655,7 +655,7 @@ class Token implements java.io.Serializable {
     static final int CHAR_SYMBOL = 37;
     
     //blockNames in UNICODE 3.1 that supported by XML Schema REC             
-    static final String[] blockNames = {
+    private static final String[] blockNames = {
         /*0000..007F;*/ "Basic Latin",
         /*0080..00FF;*/ "Latin-1 Supplement",
         /*0100..017F;*/ "Latin Extended-A",
@@ -860,7 +860,6 @@ class Token implements java.io.Serializable {
                 } // for all characters
                 ranges[Character.UNASSIGNED].addRange(0x10000, Token.UTF16_MAX);
 
-                Token.categories2 = new Hashtable();
                 for (int i = 0;  i < ranges.length;  i ++) {
                     if (Token.categoryNames[i] != null) {
                         if (i == Character.UNASSIGNED) { // Unassigned
@@ -1071,7 +1070,7 @@ class Token implements java.io.Serializable {
     +"\u0F84";//;TIBETAN MARK HALANTA;Mn;9;ON;;;;;N;TIBETAN VIRAMA;;;;
 
     static private Token token_grapheme = null;
-    static synchronized protected Token getGraphemePattern() {
+    static synchronized Token getGraphemePattern() {
         if (Token.token_grapheme != null)
             return Token.token_grapheme;
 
@@ -1111,7 +1110,7 @@ class Token implements java.io.Serializable {
      * Combing Character Sequence in Perl 5.6.
      */
     static private Token token_ccs = null;
-    static synchronized protected Token getCombiningCharacterSequence() {
+    static synchronized Token getCombiningCharacterSequence() {
         if (Token.token_ccs != null)
             return Token.token_ccs;
 

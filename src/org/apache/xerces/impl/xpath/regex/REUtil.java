@@ -279,7 +279,7 @@ public final class REUtil {
     }
 
     static final int CACHESIZE = 20;
-    static RegularExpression[] regexCache = new RegularExpression[CACHESIZE];
+    static final RegularExpression[] regexCache = new RegularExpression[CACHESIZE];
     /**
      * Creates a RegularExpression instance.
      * This method caches created instances.

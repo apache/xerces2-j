@@ -871,7 +871,7 @@ public class XPath {
             //
             EXPRTOKEN_VARIABLE_REFERENCE            =  48;
 
-        public static final String[] fgTokenNames = {
+        private static final String[] fgTokenNames = {
             "EXPRTOKEN_OPEN_PAREN",
             "EXPRTOKEN_CLOSE_PAREN",
             "EXPRTOKEN_OPEN_BRACKET",
@@ -1278,7 +1278,7 @@ public class XPath {
             CHARTYPE_UNION              = 24,   // '|' (0x7C)
             CHARTYPE_NONASCII           = 25;   // Non-ASCII Unicode codepoint (>= 0x80)
 
-        private static byte[] fASCIICharMap = {
+        private static final byte[] fASCIICharMap = {
             0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  0,  0,  2,  0,  0,
             0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
             2,  3,  4,  1,  5,  1,  1,  4,  6,  7,  8,  9, 10, 11, 12, 13,

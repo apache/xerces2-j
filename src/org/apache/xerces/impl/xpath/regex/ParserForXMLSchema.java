@@ -371,8 +371,8 @@ class ParserForXMLSchema extends RegexParser {
         return c;
     }
 
-    static protected Hashtable ranges = null;
-    static protected Hashtable ranges2 = null;
+    static private Hashtable ranges = null;
+    static private Hashtable ranges2 = null;
     static synchronized protected RangeToken getRange(String name, boolean positive) {
         if (ranges == null) {
             ranges = new Hashtable();

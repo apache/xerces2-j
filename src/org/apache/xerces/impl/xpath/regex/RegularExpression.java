@@ -3112,13 +3112,10 @@ public class RegularExpression implements java.io.Serializable {
     private static final int WT_IGNORE = 0;
     private static final int WT_LETTER = 1;
     private static final int WT_OTHER = 2;
-    transient static Token wordchar = null;
     private static final int getWordType0(char ch, int opts) {
         if (!isSet(opts, UNICODE_WORD_BOUNDARY)) {
             if (isSet(opts, USE_UNICODE_CATEGORY)) {
-                if (RegularExpression.wordchar == null)
-                    RegularExpression.wordchar = Token.getRange("IsWord", true);
-                return RegularExpression.wordchar.match(ch) ? WT_LETTER : WT_OTHER;
+                return (Token.getRange("IsWord", true).match(ch)) ? WT_LETTER : WT_OTHER;
             }
             return isWordChar(ch) ? WT_LETTER : WT_OTHER;
         }

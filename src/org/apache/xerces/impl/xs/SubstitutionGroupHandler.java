@@ -181,7 +181,7 @@ public class SubstitutionGroupHandler {
     //   substitution group affilication
     // - an array, which contains its substitution group.
     Hashtable fSubGroups = new Hashtable();
-    private static XSElementDecl[] EMPTY_VECTOR = new XSElementDecl[0];
+    private static final XSElementDecl[] EMPTY_VECTOR = new XSElementDecl[0];
 
     /**
      * clear the internal registry of substitutionGroup information

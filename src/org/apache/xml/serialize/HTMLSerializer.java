@@ -137,10 +137,10 @@ public class HTMLSerializer
     /**
      * True if serializing in XHTML format.
      */
-    private static boolean _xhtml;
+    private boolean _xhtml;
 
 
-    public static String XHTMLNamespace = "";
+    public static final String XHTMLNamespace = "";
 
 
 

@@ -92,7 +92,7 @@ public final class SchemaSymbols {
     // these are used within schema traversers (including XSDHandler).
     // when a new DOM parser is created to parse schema document,
     // XSDHandler is responsible for passing this symbol table to that parser.
-    public static final SymbolTable fSymbolTable = new SymbolTable();
+    private static final SymbolTable fSymbolTable = new SymbolTable();
 
     // xmlns and schema namespace is also added to the schema symbol table
     public static final String XMLNS                    = fSymbolTable.addSymbol(O_XMLNS);
@@ -277,7 +277,7 @@ public final class SchemaSymbols {
         //
 
         /** Main symbol table. */
-        protected SymbolTable fSymbolTable = SchemaSymbols.fSymbolTable;
+        SymbolTable fSymbolTable = SchemaSymbols.fSymbolTable;
 
         //
         // Constructors
