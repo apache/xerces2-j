@@ -74,10 +74,10 @@ import java.util.Locale;
 class ParserForXMLSchema extends RegexParser {
 
     public ParserForXMLSchema() {
-        this.setLocale(Locale.getDefault());
+        //this.setLocale(Locale.getDefault());
     }
     public ParserForXMLSchema(Locale locale) {
-        this.setLocale(locale);
+        //this.setLocale(locale);
     }
 
     Token processCaret() throws ParseException {
