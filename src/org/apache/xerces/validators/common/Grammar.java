@@ -179,19 +179,13 @@ public class Grammar
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
 
-       
         XMLContentSpec  contentSpecNode   = new XMLContentSpec();         
 
-        int  hContentSpecNode = contentSpec.getHandle();
+        contentSpecNode.type       = fContentSpecType[chunk][index];
+        contentSpecNode.value      = fContentSpecValue[chunk][index];
+        contentSpecNode.otherValue = fContentSpecOtherValue[chunk][index];
 
-        if ( hContentSpecNode != -1) {
-           contentSpec.getNode( hContentSpecNode, contentSpecNode );
-
-           contentSpecNode.type       = fContentSpecType[chunk][index];
-           contentSpecNode.value      = fContentSpecValue[chunk][index];
-           contentSpecNode.otherValue = fContentSpecOtherValue[chunk][index];
-
-           if( contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
+        if( contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
                    contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_SEQ ){
                if (++contentSpecIndex == CHUNK_SIZE ) {
                    chunk++;
@@ -201,9 +195,7 @@ public class Grammar
            } else {
                contentSpecNode.otherValue = -1;
            }
-           return true;
-        } 
-       return false;
+        return true;
     }
 
 
@@ -283,29 +275,21 @@ public class Grammar
     }
 
     protected void setContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
-
         int   chunk = contentSpecIndex >> CHUNK_SHIFT;
         int   index = contentSpecIndex & CHUNK_MASK;
         
-        fContentSpecType[chunk][index]         = contentSpec.getType();
-        XMLContentSpec  contentSpecNode   = new XMLContentSpec(); 
-
-        int  hContentSpecNode = contentSpec.getHandle();
-
-        if ( hContentSpecNode != -1) {
-            contentSpec.getNode( hContentSpecNode, contentSpecNode );
-            fContentSpecValue[chunk][index]      = contentSpecNode.value;
-            fContentSpecOtherValue[chunk][index] = contentSpecNode.otherValue;
-        }
-
+        fContentSpecType[chunk][index]       = contentSpec.type;
+        fContentSpecValue[chunk][index]      = contentSpec.value;
+        fContentSpecOtherValue[chunk][index] = contentSpec.otherValue;
     }
 
     protected int createAttributeDecl() {
+
         return fAttributeDeclCount++;
     }
 
 
-    protected void setContentSpec(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
+    protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
     }
 
     //
