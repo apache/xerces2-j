@@ -77,11 +77,10 @@ public class XMLEntityManager
     // Data
     //
 
-    private static XMLEntityManager fEntityManagerInstance = new XMLEntityManager();
 
 
     /** fEntityResolver */
-    protected EntityResolver fEntityResolver;
+    protected EntityResolver   fEntityResolver;
 
     /** fEntityReader */
     protected XMLEntityScanner fEntityReader;
@@ -93,8 +92,8 @@ public class XMLEntityManager
     /**
      * 
      */
-    private XMLEntityManager() {
-
+    public XMLEntityManager() {
+        fEntityReader = new XMLEntityScanner();
     }
 
     //
@@ -178,19 +177,11 @@ public class XMLEntityManager
      * @return 
      */
     public XMLEntityScanner getEntityScanner() {
-        return XMLEntityScanner.getEntityScanner();
+        return this.fEntityReader;
     } // getEntityScanner
 
 
-    /**
-     * XMLEntityManager accessor
-     * 
-     * @return  Returns singlenton instance of  entity manager.
-     */
-    static public XMLEntityManager getEntityManager() {
-        return fEntityManagerInstance;//return the only instance of it
-    }
-
+    
 
     //
     // XMLComponent methods

@@ -101,7 +101,7 @@ public class XMLEntityScanner
     /**
      * 
      */
-    private XMLEntityScanner() {
+    public XMLEntityScanner() {
 
     }
 
