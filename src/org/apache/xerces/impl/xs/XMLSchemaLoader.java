@@ -221,10 +221,6 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             errorReporter.setProperty(ERROR_HANDLER, new DefaultErrorHandler());
         }
         fErrorReporter = errorReporter;
-        // make sure it knows about schema errors...
-        if(fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
-            errorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
-        } 
         fEntityResolver = entityResolver;
         if(grammarBucket == null ) {
             grammarBucket = new XSGrammarBucket();
@@ -408,6 +404,11 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         fGrammarBucket.reset(); 
         //we should retreive the initial grammar set given by the application
         //to the parser and put it in local grammar bucket.
+
+        // make sure error reporter knows about schemas...
+        if(fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
+        } 
 
         if(fGrammarPool != null) {
 
