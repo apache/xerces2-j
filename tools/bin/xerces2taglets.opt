@@ -1,0 +1,2 @@
+-taglet org.apache.xerces.util.ExperimentalTaglet
+-taglet org.apache.xerces.util.InternalTaglet
