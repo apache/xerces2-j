@@ -113,6 +113,9 @@ public class Counter
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
     protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
 
+    /** Dynamic validation feature id (http://apache.org/xml/features/validation/dynamic). */
+    protected static final String DYNAMIC_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/dynamic";
+
     // default settings
 
     /** Default parser name. */
@@ -132,6 +135,9 @@ public class Counter
     
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+
+    /** Default dynamic validation support (false). */
+    protected static final boolean DEFAULT_DYNAMIC_VALIDATION = false;
 
     /** Default memory usage report (false). */
     protected static final boolean DEFAULT_MEMORY_USAGE = false;
@@ -358,6 +364,7 @@ public class Counter
         boolean namespacePrefixes = DEFAULT_NAMESPACE_PREFIXES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
         boolean memoryUsage = DEFAULT_MEMORY_USAGE;
         boolean tagginess = DEFAULT_TAGGINESS;
         
@@ -426,6 +433,10 @@ public class Counter
                     schemaValidation = option.equals("s");
                     continue;
                 }
+                if (option.equalsIgnoreCase("dv")) {
+                    dynamicValidation = option.equals("dv");
+                    continue;
+                }
                 if (option.equalsIgnoreCase("m")) {
                     memoryUsage = option.equals("m");
                     continue;
@@ -492,6 +503,15 @@ public class Counter
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
             }
+            try {
+                parser.setFeature(DYNAMIC_VALIDATION_FEATURE_ID, dynamicValidation);
+            }
+            catch (SAXNotRecognizedException e) {
+                // ignore
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+DYNAMIC_VALIDATION_FEATURE_ID+")");
+            }
 
             // parse file
             parser.setContentHandler(counter);
@@ -549,6 +569,8 @@ public class Counter
         System.err.println("  -v  | -V    Turn on/off validation.");
         System.err.println("  -s  | -S    Turn on/off Schema validation support.");
         System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
+        System.err.println("              NOTE: Requires use of -v and not supported by all parsers.");
         System.err.println("  -m  | -M    Turn on/off memory usage report");
         System.err.println("  -t  | -T    Turn on/off \"tagginess\" report.");
         System.err.println("  --rem text  Output user defined comment before next parse.");
@@ -566,6 +588,8 @@ public class Counter
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.err.print("  Dynamic:    ");
+        System.err.println(DEFAULT_DYNAMIC_VALIDATION ? "on" : "off");
         System.err.print("  Memory:     ");
         System.err.println(DEFAULT_MEMORY_USAGE ? "on" : "off");
         System.err.print("  Tagginess:  ");
