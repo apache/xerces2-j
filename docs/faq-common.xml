@@ -22,7 +22,7 @@
  </faq>
  <faq title='Parsing HTML Generated an Error.'>
   <q>
-   I tried to use &javaparsername; to parse an HTML file and it
+   I tried to use &ParserName; to parse an HTML file and it
    generated an error. What did I do wrong?
   </q>
   <a>
@@ -49,7 +49,8 @@
    </ul>
    <p>
     HTML must match the XHTML standard for well-formedness before it 
-    can be parsed by Xerces-J or any other XML parser. You can find the 
+    can be parsed by &ParserName; or any other XML parser. You can 
+    find the 
     <jump href="http://www.w3c.org/TR/1999/PR-xhtml1-19991210">XHTML 
     standard</jump> on the 
     <jump href="http://www.w3c.org">W3C web site</jump>.
@@ -106,7 +107,7 @@
     automatically inserts an End-of-file character (0x1A) at the end 
     of your XML document (other editors might do this as well). 
     Unfortunately, the EOF character (0x1A) is an illegal character 
-    according to the XML specification, and &javaparsername; 
+    according to the XML specification, and &ParserName; 
     correctly generates an error.
    </p>
   </a>

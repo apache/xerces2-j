@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
-<s1 title='&javaparsernamelong; Readme'>
- <s2 title='&javaparsernamelong; &javaparserversion; Release'>
+<s1 title='&ParserNameLong; Readme'>
+ <s2 title='&ParserNameLong; &ParserVersion; Release'>
   <p>
    Welcome to the future! Xerces2 is the next generation of
    high performance, fully compliant XML parsers in the Apache
@@ -26,7 +26,7 @@
  </s2>
  <s2 title='Features of This Release'>
   <p>
-   The &javaparsernamelong; &javaparserversion; supports the
+   The &ParserNameLong; &ParserVersion; supports the
    following standards and APIs:
   </p>
   <ul>
@@ -91,9 +91,9 @@
  </s2>
  <s2 title='License Information'>
   <p>
-   The &javaparsername; &javaparserversion; release is available
+   The &ParserName; &ParserVersion; release is available
    in both source code and precompiled binary (JAR files) form. 
-   Both &javaparsername; packages are made available under the 
+   Both &ParserName; packages are made available under the 
    <jump href='http://xml.apache.org/LICENSE'>Apache Software
    License</jump>.
   </p>

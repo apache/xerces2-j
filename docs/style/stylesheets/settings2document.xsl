@@ -76,7 +76,7 @@
    <th>Access:</th>
    <td>
     <xsl:choose>
-     <xsl:when test='general'>
+     <xsl:when test='@general'>
       <xsl:value-of select='@general'/>
      </xsl:when>
      <xsl:otherwise>
@@ -110,7 +110,8 @@
   <tr>
    <th>See:</th>
    <td>
-    <jump href='#{@idref}'><xsl:value-of select='id(@idref)/@name'/></jump>
+    <xsl:variable name='idref'><xsl:value-of select='@idref'/></xsl:variable>
+    <jump href='#{$idref}'><xsl:value-of select='//*[@id=$idref]/@name'/></jump>
    </td>
   </tr>
  </xsl:template>

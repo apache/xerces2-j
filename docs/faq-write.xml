@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
   ...
 
-String xmlFile = &quot;file:///&javaparserdirectory;/data/personal.xml&quot;; 
+String xmlFile = &quot;file:///&parserdir;/data/personal.xml&quot;; 
 try {
     DocumentBuilderFactory factory = 
         DocumentBuilderFactory.newInstance();
@@ -58,7 +58,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
   ...
 
-String xmlFile = &quot;file:///&javaparserdirectory;/data/personal.xml&quot;; 
+String xmlFile = &quot;file:///&parserdir;/data/personal.xml&quot;; 
 try {
     SAXParserFactory factory = SAXParserFactory.newInstance();
     SAXParser parser = factory.newSAXParser();
@@ -187,7 +187,7 @@ parser.getXMLReader().setErrorHandler(handler);</source>
    </p>
    <p>
     This table describes what &quot;non-validating&quot; really
-    means for &javaparsername; parsers. In this table, "no DTD" 
+    means for &ParserName; parsers. In this table, "no DTD" 
     means no internal or external DTD subset is present.
    </p>
    <table>

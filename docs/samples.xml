@@ -3,10 +3,11 @@
 <s1 title='Sample Programs'>
  <s2 title='Overview'>
   <p>
-   Xerces contains many useful samples to help you get up-and-running
-   with writing XML applications. Many of the sample programs are
-   even useful as standalone programs to help in testing the validity
-   of XML documents and/or debugging applications.
+   &ParserName; contains many useful samples to help you get 
+   up-and-running with writing XML applications. Many of the sample
+   programs are even useful as standalone programs to help in 
+   testing the validity of XML documents and/or debugging 
+   applications.
   </p>
   <p>
    The samples are organized either by API or by programming area in
@@ -25,7 +26,7 @@
    Running the sample applications requires that you have already
    installed the Java Development Kit (JDK) or Java Runtime
    Environment (JRE) on you computer and extracted the 
-   &javaparsername; software.
+   &ParserName; software.
   </p>
   <p>
    If you do not already have a JDK already on your computer download

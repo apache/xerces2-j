@@ -1,11 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
- <release version='2.0.0 beta (NOT YET RELEASED!)'>
+ <release version='&ParserName; 2.0.0 (beta)'>
   <desc>
    First beta release of the Xerces2 code. Besides numerous bug 
    fixes, this release has changes and additions to XNI. The new
    XNI parser configuration framework has been added in this release.
+   Refer to the <link idref='xni'>XNI Manual</link> for complete
+   information.
   </desc>
   <changes>
    <add>
@@ -52,7 +54,7 @@
    </update>
   </changes>
  </release>
- <release version='2.0.0 alpha'>
+ <release version='&ParserName; 2.0.0 (alpha)'>
   <desc>Initial alpha release of Xerces2 code.</desc>
  </release>
 </releases>

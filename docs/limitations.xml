@@ -3,7 +3,7 @@
 <s1 title='Limitations'>
  <s2 title='Known Limitations'>
   <p>
-   This is a list of the limitations in this release of &javaparsername;:
+   This is a list of the limitations in this release of &ParserName;:
   </p>
   <ul>
    <li>
@@ -11,7 +11,7 @@
     handling of EBCDIC data (specifically, end of line characters), you 
     must use IBM's JDK 1.1.6, if you want to use EBCDIC support. The IBM 
     JDK has the bug fixed.  We don't know when the bug fix will get into 
-    the Sun JDK's.
+    the Sun JDKs.
    </li>
   </ul>
  </s2>

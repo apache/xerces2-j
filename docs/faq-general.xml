@@ -21,7 +21,7 @@
   </a>
  </faq>
  <faq title='International Encodings'>
-  <q>What international encodings are supported by &javaparsername;?</q>
+  <q>What international encodings are supported by &ParserName;?</q>
   <a>
    <ul>
     <li>UTF-8</li>

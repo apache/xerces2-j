@@ -1,6 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!ENTITY javaparsernamelong 'Xerces2 Java Parser'>
-<!ENTITY javaparsername 'Xerces-J'>
-<!ENTITY javaparserversion '2.0.0.beta'>
-<!ENTITY javaparserdirectory 'xerces-2_0_0_beta'>
-<!ENTITY javaparserdistname 'Xerces-J-bin'>
+<!-- upper case versions of names and versions -->
+<!ENTITY ParserNameLong 'Xerces2 Java Parser'>
+<!ENTITY ParserName 'Xerces-J'>
+<!ENTITY ParserVersion '2.0.0 (beta)'>
+
+<!-- lower case versions of names and versions -->
+<!ENTITY parsername 'xerces-j'>
+<!ENTITY parserversion '2.0.0.beta'>
+
+<!-- packaging names -->
+<!ENTITY parserdir 'xerces-2_0_0_beta'>
+<!ENTITY parserdistname 'Xerces-J-bin'>

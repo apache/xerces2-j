@@ -3,25 +3,25 @@
 <s1 title='Installation'>
  <s2 title='Unpacking the Files'>
   <p>
-   &javaparsername; is packaged as a ZIP file for all platforms 
+   &ParserName; is packaged as a ZIP file for all platforms 
    and operating systems. The parser release is also packaged
    as Tar GZip files as a convenience for UNIX users. You can
    extract the ZIP files using the Java <ref>jar</ref> command
    to unpack the distribution.
   </p>
-  <source>jar xf &javaparsername;-bin.&javaparserversion;.zip
-jar xf &javaparsername;-src.&javaparserversion;.zip
-jar xf &javaparsername;-tools.&javaparserversion;.zip</source>
+  <source>jar xf &ParserName;-bin.&parserversion;.zip
+jar xf &ParserName;-src.&parserversion;.zip
+jar xf &ParserName;-tools.&parserversion;.zip</source>
   <p>
    All of these commands creates a sub-directory called
-   "&javaparserdirectory;" in the current directory.
+   "&parserdir;" in the current directory.
   </p>
  </s2>
  <s2 title='Files in the Binary Package'>
   <table>
    <tr>
     <td>LICENSE</td>
-    <td>License for &javaparsername;</td>
+    <td>License for &ParserName;</td>
    </tr>
    <tr>
     <td>Readme.html</td>
@@ -53,7 +53,7 @@ jar xf &javaparsername;-tools.&javaparserversion;.zip</source>
    </tr>
   </table>
   <note>
-   To use &javaparsername; you do not need the source files. 
+   To use &ParserName; you do not need the source files. 
    However, if you want to recompile the sources you need to
    download the source package.
   </note>
@@ -62,7 +62,7 @@ jar xf &javaparsername;-tools.&javaparserversion;.zip</source>
   <table>
    <tr>
     <td>LICENSE</td>
-    <td>License for &javaparsername;</td>
+    <td>License for &ParserName;</td>
    </tr>
    <tr>
     <td>build.bat</td>
@@ -111,7 +111,7 @@ jar xf &javaparsername;-tools.&javaparserversion;.zip</source>
   <note>
    In order to compile the source code using Ant or build the
    release packages, you must download the 
-   <code>&javaparsername;-tools.&javaparserversion;.zip</code>
+   <code>&ParserName;-tools.&parserversion;.zip</code>
    package and extract it in the same directory where you
    extracted the source package.
   </note>

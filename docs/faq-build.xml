@@ -14,27 +14,35 @@
   <q>How do I recompile the source files?</q>
   <a>
    <p>
-    To build &javaparsername; you need the Java Development
+    To build &ParserName; you need the Java Development
     Kit (JDK) version 1.2 (or higher) installed on your machine.
     The actual build is performed by the Ant program which is
     written in Java and is a subproject of the Apache
     <jump href='http://jakarta.apache.org/'>Jakarta</jump>
     project. The build also requires a few other tools but
     all of the tools you need (including Ant) are contained
-    in the <ref>&javaparsername;-tools.&javaparserversion;.zip</ref>
-    file, packaged separately. Go to the Xerces-J 
+    in the <ref>&ParserName;-tools.&parserversion;.zip</ref>
+    file, packaged separately. Go to the &ParserName; 
     <jump href='http://xml.apache.org/dist/xerces-j/'>download</jump>
     page to download the tools package and then extract it in the
     same location as the source package.
    </p>
    <p>
-    On Windows machines, you can start the build by running
-    the <ref>build.bat</ref> file from an MS-DOS Prompt. On a
-    UNIX machine, use the <ref>build.sh</ref> shell script.
-    If the build process complains about a missing 
-    <ref>JAVA_HOME</ref> environment variable, set the
-    environment variable to the location where JDK 1.2 (or higher)
-    is installed on your system, and run the build script again.
+    Once you have extracted both the source and tools packages
+    in the same directory, you can invoke a build by either
+    using the "build.bat" file for Windows platforms or the
+    "build.sh" file for UNIX platforms. Before invoking either
+    one of these scripts, though, be sure to set the JAVA_HOME
+    environment variable to the installed location of your JDK.
+   </p>
+   <p>
+    The script will invoke the Ant build program for you which
+    displays the list of allowed build targets. To only compile
+    the source files, type "build compile" (on Windows platforms)
+    at the command line in the directory where you extracted 
+    &ParserName;; to build the Jar files, type "build jars"; and
+    to build everything, including documentation, type "build
+    all".
    </p>
   </a>
  </faq>
@@ -43,20 +51,20 @@
   <a>
    <p>
     To regenerate the api documentation, you need to set up
-    your environment to build &javaparsername;.  Instead of typing 'make', you
-type 'make apidocs'.
-			</p>
-		</a>
-	</faq>
+    your environment to build &ParserName;.  Instead of typing 
+    "build all", you type "build javadocs".
+   </p>
+  </a>
+ </faq>
  <faq title="How do I use Visual Age?">
-  <q>How do I import &javaparsername; into Visual Age for Java</q>
+  <q>How do I import &ParserName; into Visual Age for Java</q>
   <a>
    <ul>
     <li>
      Why does VisualAge for Java 2.0 report problems when I import
-     the &javaparsername; parser?
+     the &ParserName; parser?
      <br/>
-     The current version of the &javaparsername; parser uses Swing 
+     The current version of the &ParserName; parser uses Swing 
      1.1, while VisualAge for Java 2.0 comes with Swing 1.0.2. The 
      free update for the Professional version of VisualAge for Java 
      2.0 installs Swing 1.0.3. The most important difference between
@@ -75,7 +83,7 @@ type 'make apidocs'.
      code to your workspace.
     </li>
     <li>
-     Are there any other tips for importing the &javaparsername; 
+     Are there any other tips for importing the &ParserName; 
      parser into VisualAge for Java 2.0?
      <br/>
      The most useful tip applies to <em>any</em> updated code that you
@@ -107,10 +115,10 @@ type 'make apidocs'.
    - REVISIT: This needs to be re-run and re-verified before we
    -          put this FAQ item back in.
  <faq title='100% Pure Java compliant?'>
-  <q>Is this &javaparsername; version 100% pure Java compliant?</q>
+  <q>Is this &ParserName; version 100% pure Java compliant?</q>
   <a>
    <p>
-    Running JavaPureCheck on the Xerces-J parser code indicated 339 
+    Running JavaPureCheck on the &ParserName; parser code indicated 339 
     pure Java classes, 9 warnings, and 0 errors. The nine warnings are 
     enumerated below with explanations. To see the entire report, click 
     <link idref="jpc">here</link>. 
@@ -174,8 +182,8 @@ type 'make apidocs'.
       load impure Java class files. However, the purpose of this
       utility class is to load parser classes by name and therefore
       cannot dynamically check the pureness of parser classes loaded 
-      in this fashion. Since the Xerces-J parser does not use this
-      method directly, it is not a problem that concerns the Xerces-J
+      in this fashion. Since the &ParserName; parser does not use this
+      method directly, it is not a problem that concerns the &ParserName;
       parser.
      </li>
     </ul>
@@ -300,7 +308,7 @@ type 'make apidocs'.
  </faq>
  -->
  <faq title='Running on the Mac?'>
-  <q>How do I get &javaparsername; to run on the Mac under MRJ?</q>
+  <q>How do I get &ParserName; to run on the Mac under MRJ?</q>
   <a>
    <p>
     <em>Prerequisites</em> (available from 
@@ -317,7 +325,7 @@ type 'make apidocs'.
     <em>Instructions </em>(other variations would work also):
    </p>
    <ol>
-    <li>Download the .tar.gz file containing &javaparsername;.</li>
+    <li>Download the .tar.gz file containing &ParserName;.</li>
     <li>
      Use Stuffit Expander(tm), Suntar, or some other Macintosh tool 
      that supports the .tar.gz format to expand the downloaded file.
@@ -333,16 +341,16 @@ type 'make apidocs'.
      <li>Click on the Classpath panel.</li>
      <li>
       Click on the &quot;Add .zip File&quot; button and add both the 
-      &quot;Xerces-J.jar&quot; and &quot;Xerces-JSamples.jar&quot; files.
+      &quot;xerces.jar&quot; and &quot;xercesSamples.jar&quot; files.
      </li>
      <li>Click on the Command panel.</li>
      <li>
-      Enter &quot;dom.DOMWriter&quot; as the Class name. Enter 
+      Enter &quot;dom.Writer&quot; as the Class name. Enter 
       &quot;data/personal.xml&quot; in the Optional parameters box.
      </li>
      <li>
       Click on Save Settings button, pick a name such as &quot;Run
-      <code>dom.DOMWriter</code>&quot; for the file, and <em>be 
+      <code>dom.Writer</code>&quot; for the file, and <em>be 
       sure</em> that &quot;Save as Application&quot; is selected 
       (this is the default) and save the file.
      </li>
@@ -364,10 +372,10 @@ type 'make apidocs'.
    <p>
     The Visual Cafe debugger is set to trap 
     <code>ArrayIndexOutOfBoundsException</code> exceptions by 
-    default. &javaparsername; uses 
+    default. &ParserName; sometimes uses 
     <code>ArrayIndexOutOfBoundsException</code> internally to 
     signal exceptional, but not erroneous conditions. In order to 
-    run &javaparsername; inside Visual Cafe's debugger, you need to
+    run &ParserName; inside Visual Cafe's debugger, you need to
     turn off the trapping of these exceptions.
    </p>
    <p><em>To do this:</em></p>

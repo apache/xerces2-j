@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE book SYSTEM 'dtd/book.dtd'>
-<book title='Xerces-J Documentation' 
+<book title='&ParserName; Documentation' 
       copyright='1999-2001 The Apache Software Foundation'>
  <external label='Home' href='http://xml.apache.org/'/>
  <separator/>
- <document label='Readme' title='Xerces2 Java Parser Readme'
+ <document label='Readme' title='&ParserNameLong; Readme'
            id='index' source='readme.xml'/>
  <document label='Installation' title='Installation Instructions'
            id='install' source='install.xml'/>
