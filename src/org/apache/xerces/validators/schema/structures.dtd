@@ -11,7 +11,7 @@
      are defined in XML Schema: Part 2: Datatypes -->
 <!-- Note %p is defined in datatypes.dtd -->
 <!ENTITY % xs-datatypes PUBLIC 'datatypes'
-                     'datatypes.dtd' >
+                     "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/datatypes.dtd" >
 %xs-datatypes;
 
 <!ENTITY % s ''> <!-- if %p is defined (e.g. as foo:) then you must

@@ -21,10 +21,10 @@
 <!ENTITY XMLSchemaInstanceNS "http://www.w3.org/1999/XMLSchema/instance">
 <!ENTITY % reldatadtd "'../datatypes/datatypes.dtd'">
 
-<!ENTITY % schemaProper '"structures/structures.xsd"'>
+<!ENTITY % schemaProper '"http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/structures.dtd"'>
 <!ENTITY schemaProper SYSTEM %schemaProper; NDATA xmlschema>
 
-<!ENTITY % datatypeSchemaProper '"datatypes.xsd"'>
+<!ENTITY % datatypeSchemaProper '"http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/datatypes.dtd"'>
 <!ENTITY datatypeSchemaProper SYSTEM %datatypeSchemaProper; NDATA xmlschema>
 <!ENTITY % datatypeSchemaDump '"datatypes.xsd,dmp"'>
 <!ENTITY datatypeSchemaDump SYSTEM %datatypeSchemaDump; NDATA xmlschema>
