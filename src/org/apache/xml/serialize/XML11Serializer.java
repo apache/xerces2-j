@@ -327,58 +327,77 @@ extends XMLSerializer {
         }
     }
 
-    protected final void printCDATAText( String text ) throws IOException {
+    protected final void printCDATAText(String text) throws IOException {
         int length = text.length();
         char ch;
 
-        for ( int index = 0 ; index <  length; ++index ) {
-            ch = text.charAt( index );
-            
-            if ( ch ==']' && index + 2 < length && 
-                 text.charAt (index + 1) == ']' && text.charAt (index + 2) == '>' ) { // check for ']]>'
+        for (int index = 0; index < length; ++index) {
+            ch = text.charAt(index);
 
-                // DOM Level 3 Load and Save
-                //
-                if (fFeatures != null && fDOMErrorHandler != null) {
-                    if (!getFeature(Constants.DOM_SPLIT_CDATA)) {
-                        // issue fatal error
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "EndingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR, fCurrentNode);
-                        boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                        if (!continueProcess) {
-                            throw new IOException();
-                        }
-                    } else {
-                        // issue warning
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "SplittingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_WARNING, fCurrentNode);
+            if (ch == ']'
+                && index + 2 < length
+                && text.charAt(index + 1) == ']'
+                && text.charAt(index + 2) == '>') { // check for ']]>'
+                if (fDOMErrorHandler != null){
+                    // REVISIT: this means that if DOM Error handler is not registered we don't report any
+                    // fatal errors and might serialize not wellformed document
+                if ((features & DOMSerializerImpl.SPLITCDATA) == 0
+                    && (features & DOMSerializerImpl.WELLFORMED) == 0) {
+                    // issue fatal error
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.SERIALIZER_DOMAIN,
+                            "EndingCDATA",
+                            null);
+                    modifyDOMError(
+                        msg,
+                        DOMError.SEVERITY_FATAL_ERROR,
+                        fCurrentNode);
+                    boolean continueProcess =
                         fDOMErrorHandler.handleError(fDOMError);
+                    if (!continueProcess) {
+                        throw new IOException();
                     }
+                } else {
+                    // issue warning
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.SERIALIZER_DOMAIN,
+                            "SplittingCDATA",
+                            null);
+                    modifyDOMError(
+                        msg,
+                        DOMError.SEVERITY_WARNING,
+                        fCurrentNode);
+                    fDOMErrorHandler.handleError(fDOMError);
                 }
-
+                }
                 // split CDATA section
                 _printer.printText("]]]]><![CDATA[>");
-                index +=2; 
+                index += 2;
                 continue;
             }
-            
+
             if (!XML11Char.isXML11Valid(ch)) {
                 // check if it is surrogate
-                if (++index <length) {
+                if (++index < length) {
                     surrogates(ch, text.charAt(index));
-                } 
-                else {
-                    fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                } else {
+                    fatalError(
+                        "The character '"
+                            + (char) ch
+                            + "' is an invalid XML character");
                 }
                 continue;
             } else {
-                if ( _encodingInfo.isPrintable((char)ch) && XML11Char.isXML11ValidLiteral(ch)) {
-                    _printer.printText((char)ch);
+                if (_encodingInfo.isPrintable((char) ch)
+                    && XML11Char.isXML11ValidLiteral(ch)) {
+                    _printer.printText((char) ch);
                 } else {
 
                     // The character is not printable -- split CDATA section
-                    _printer.printText("]]>&#x");                        
-                    _printer.printText(Integer.toHexString(ch));                        
+                    _printer.printText("]]>&#x");
+                    _printer.printText(Integer.toHexString(ch));
                     _printer.printText(";<![CDATA[");
                 }
             }

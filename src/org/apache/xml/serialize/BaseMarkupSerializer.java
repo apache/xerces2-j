@@ -95,7 +95,6 @@ import org.apache.xerces.dom.DOMLocatorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.XMLChar;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -171,7 +170,7 @@ public abstract class BaseMarkupSerializer
 {
 
     // DOM L3 implementation
-    protected Hashtable fFeatures;
+    protected short features;
     protected DOMErrorHandler fDOMErrorHandler;
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
     protected LSSerializerFilter fDOMFilter;
@@ -1064,32 +1063,37 @@ public abstract class BaseMarkupSerializer
         }
 
         case Node.CDATA_SECTION_NODE : {
-            String text;
-
-            text = node.getNodeValue();
-            if ( text != null ) {
-              if (fDOMFilter !=null && 
-                    (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_CDATA_SECTION)!= 0) {
-                    short code = fDOMFilter.acceptNode(node);
-                    switch (code) {
-                        case NodeFilter.FILTER_REJECT:
-                        case NodeFilter.FILTER_SKIP: { 
-                            // skip the CDATA node
-                            return;
-                        }
-
-                        default: {
-                            //fall through..
+            String text = node.getNodeValue();
+            if ((features & DOMSerializerImpl.CDATA) != 0) {
+                if (text != null) {
+                    if (fDOMFilter != null
+                        && (fDOMFilter.getWhatToShow()
+                            & NodeFilter.SHOW_CDATA_SECTION)
+                            != 0) {
+                        short code = fDOMFilter.acceptNode(node);
+                        switch (code) {
+                            case NodeFilter.FILTER_REJECT :
+                            case NodeFilter.FILTER_SKIP :
+                                {
+                                    // skip the CDATA node
+                                    return;
+                                }
+                            default :
+                                {
+                                    //fall through..
+                                }
                         }
                     }
+                    startCDATA();
+                    characters(text);
+                    endCDATA();
                 }
-                startCDATA();
-                characters( text );
-                endCDATA();
+            } else {
+                // transform into a text node
+                characters(text);
             }
             break;
         }
-
         case Node.COMMENT_NODE : {
             String text;
 
@@ -1122,41 +1126,43 @@ public abstract class BaseMarkupSerializer
 
             endCDATA();
             content();
-
-            if (fDOMFilter !=null && 
-                  (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ENTITY_REFERENCE)!= 0) {
-                  short code = fDOMFilter.acceptNode(node);
-                  switch (code) {
-                    case NodeFilter.FILTER_REJECT:{
-                        return; // remove the node
-                      }
-                      case NodeFilter.FILTER_SKIP: { 
-                          child = node.getFirstChild();
-                          while ( child != null ) {
-                              serializeNode( child );
-                              child = child.getNextSibling();
+            
+            if ( ((features & DOMSerializerImpl.ENTITIES) != 0)){
+                if (fDOMFilter !=null && 
+                      (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ENTITY_REFERENCE)!= 0) {
+                      short code = fDOMFilter.acceptNode(node);
+                      switch (code) {
+                        case NodeFilter.FILTER_REJECT:{
+                            return; // remove the node
                           }
-                          return;
-                      }
+                          case NodeFilter.FILTER_SKIP: { 
+                              child = node.getFirstChild();
+                              while ( child != null ) {
+                                  serializeNode( child );
+                                  child = child.getNextSibling();
+                              }
+                              return;
+                          }
 
-                      default: {
-                           // fall through
+                          default: {
+                               // fall through
+                          }
                       }
-                  }
-              }			
-            child = node.getFirstChild();
-            if ( child == null || (fFeatures !=null && getFeature(Constants.DOM_ENTITIES))){
-				checkUnboundNamespacePrefixedNode(node);
+                  }         
+                checkUnboundNamespacePrefixedNode(node);
+              
                 _printer.printText("&");
                 _printer.printText(node.getNodeName());
                 _printer.printText(";");
             }
             else {
+                child = node.getFirstChild();
                 while ( child != null ) {
                     serializeNode( child );
                     child = child.getNextSibling();
                 }
             }
+
             break;
         }
 
@@ -1168,11 +1174,8 @@ public abstract class BaseMarkupSerializer
                   switch (code) {
                     case NodeFilter.FILTER_REJECT:                      
                     case NodeFilter.FILTER_SKIP: { 
-                          // REVISIT: the constant FILTER_SKIP should be changed when new
-                          // DOM LS specs gets published
                           return;  // skip this node                      
                     }
-
                     default: { // fall through
                     }
                   }
@@ -1190,9 +1193,6 @@ public abstract class BaseMarkupSerializer
                         return;                     
                     }
                     case NodeFilter.FILTER_SKIP: { 
-                        // REVISIT: the constant FILTER_SKIP should be changed when new
-                        // DOM LS specs gets published
-
                         Node child = node.getFirstChild();
                         while ( child != null ) {
                             serializeNode( child );
@@ -1444,33 +1444,48 @@ public abstract class BaseMarkupSerializer
         char ch;
 
         for ( int index = 0 ; index <  length; ++index ) {
-            ch = text.charAt( index );
-            
-            if ( ch ==']' && index + 2 < length && 
-                 text.charAt (index + 1) == ']' && text.charAt (index + 2) == '>' ) { // check for ']]>'
-
-                // DOM Level 3 Load and Save
-                //
-                if (fFeatures != null && fDOMErrorHandler != null) {
-                    if (!getFeature(Constants.DOM_SPLIT_CDATA)) {
-                        // issue fatal error
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "EndingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR, fCurrentNode);
-                        boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                        if (!continueProcess) {
-                            throw new IOException();
-                        }
-                    } else {
-                        // issue warning
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "SplittingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_WARNING, fCurrentNode);
+            ch = text.charAt( index );            
+            if (ch == ']'
+                && index + 2 < length
+                && text.charAt(index + 1) == ']'
+                && text.charAt(index + 2) == '>') { // check for ']]>'
+                if (fDOMErrorHandler != null){
+                // REVISIT: this means that if DOM Error handler is not registered we don't report any
+                // fatal errors and might serialize not wellformed document
+                if ((features & DOMSerializerImpl.SPLITCDATA) == 0 && 
+                    (features & DOMSerializerImpl.WELLFORMED) == 0) {
+                    // issue fatal error
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.SERIALIZER_DOMAIN,
+                            "EndingCDATA",
+                            null);
+                    modifyDOMError(
+                        msg,
+                        DOMError.SEVERITY_FATAL_ERROR,
+                        fCurrentNode);
+                    boolean continueProcess =
                         fDOMErrorHandler.handleError(fDOMError);
+                    if (!continueProcess) {
+                        throw new IOException();
                     }
+                } else {
+                    // issue warning
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.SERIALIZER_DOMAIN,
+                            "SplittingCDATA",
+                            null);
+                    modifyDOMError(
+                        msg,
+                        DOMError.SEVERITY_WARNING,
+                        fCurrentNode);
+                    fDOMErrorHandler.handleError(fDOMError);
                 }
-
+                }
                 // split CDATA section
                 _printer.printText("]]]]><![CDATA[>");
-                index +=2; 
+                index += 2;
                 continue;
             }
             
@@ -1512,8 +1527,6 @@ public abstract class BaseMarkupSerializer
                     fatalError("The character '"+(char)supplemental+"' is an invalid XML character"); 
                 }
                 else {
-                    // REVISIT: For XML 1.1 should we perform extra checks here?
-                    //          Should it be serialized as entity reference?
                     if (content().inCData ) {
                         _printer.printText("]]>&#x");                        
                         _printer.printText(Integer.toHexString(supplemental));                        
@@ -1847,10 +1860,6 @@ public abstract class BaseMarkupSerializer
             fDOMError.fLocator = new DOMLocatorImpl(-1, -1, -1, node, null);
             return fDOMError;
         
-    }
-
-    protected boolean getFeature(String feature){
-        return ((Boolean)fFeatures.get(feature)).booleanValue();
     }
 
 

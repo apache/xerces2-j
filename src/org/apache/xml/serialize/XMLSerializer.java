@@ -81,7 +81,6 @@ import java.util.Enumeration;
 
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom3.DOMError;
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
@@ -900,7 +899,6 @@ extends BaseMarkupSerializer {
             } else { // Element has no namespace
                 if (elem.getLocalName() == null) {
                     //  DOM Level 1 node!
-
                     if (fDOMErrorHandler != null) {
                         // REVISIT: MSG modify error message
                         modifyDOMError("DOM Level 1 Node: "+elem.getNodeName(), 
@@ -1157,8 +1155,7 @@ extends BaseMarkupSerializer {
      */
     private void printAttribute (String name, String value, boolean isSpecified) throws IOException{
 
-        if (isSpecified || (fFeatures != null && 
-                            !((Boolean)fFeatures.get(Constants.DOM_DISCARD_DEFAULT_CONTENT)).booleanValue())) {
+        if (isSpecified || (features & DOMSerializerImpl.DISCARDDEFAULT) != 0) {
             _printer.printSpace();
             _printer.printText( name );
             _printer.printText( "=\"" );
