@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,56 +57,40 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.xs.XSGrammarBucket;
-import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.XSDeclarationPool;
-import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
-import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.apache.xerces.impl.xs.XMLSchemaValidator;
-import org.apache.xerces.impl.xs.XMLSchemaLoader;
-import org.apache.xerces.impl.xs.XSDDescription;
-import org.apache.xerces.impl.xs.XMLSchemaException;
-import org.apache.xerces.parsers.StandardParserConfiguration;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLResourceIdentifier;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.util.XMLResourceIdentifierImpl;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.util.DOMUtil;
-import org.apache.xerces.xni.XMLLocator;
-
-import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
-
-import org.apache.xerces.impl.xs.dom.DOMParser;
-import org.apache.xerces.impl.xs.dom.DOMNodePool;
-import org.apache.xerces.impl.xs.dom.ElementNSImpl;
-import org.apache.xerces.impl.xs.opti.ElementImpl;
-import org.apache.xerces.impl.xs.util.SimpleLocator;
-import org.w3c.dom.Document;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-
-import org.xml.sax.InputSource;
-
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
-import java.io.IOException;
+
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
+import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XMLSchemaException;
+import org.apache.xerces.impl.xs.XMLSchemaLoader;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.XSDDescription;
+import org.apache.xerces.impl.xs.XSDeclarationPool;
+import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSGrammarBucket;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.dom.ElementNSImpl;
+import org.apache.xerces.impl.xs.opti.ElementImpl;
+import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * The purpose of this class is to co-ordinate the construction of a
@@ -1650,6 +1634,13 @@ public class XSDHandler {
                 collidedWithRedefine = false;
             }
             if (redefinedSchema != null) { //redefinition involved somehow
+                // If both components belong to the same document then
+                // report an error and return.
+                if (fDoc2XSDocumentMap.get(DOMUtil.getDocument(collidingElem)) == currSchema) {
+                    reportSchemaError("sch-props-correct.2", new Object[]{qName}, currComp);
+                    return;
+                }
+
                 String newName = qName.substring(qName.lastIndexOf(',')+1)+REDEF_IDENTIFIER;
                 if (redefinedSchema == currSchema) { // object comp. okay here
                     // now have to do some renaming...
@@ -1694,7 +1685,6 @@ public class XSDHandler {
                                             Element child, String componentType,
                                             String oldName, String newName) {
 
-        SchemaNamespaceSupport currNSMap = currSchema.fNamespaceSupport;
         if (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
@@ -1862,7 +1852,6 @@ public class XSDHandler {
     // being redefined.
     private int changeRedefineGroup(String originalQName, String elementSought,
                                     String newName, Element curr, XSDocumentInfo schemaDoc) {
-        SchemaNamespaceSupport currNSMap = schemaDoc.fNamespaceSupport;
         int result = 0;
         for (Element child = DOMUtil.getFirstChildElement(curr);
             child != null; child = DOMUtil.getNextSiblingElement(child)) {
@@ -1875,7 +1864,6 @@ public class XSDHandler {
                     String processedRef = findQName(ref, schemaDoc);
                     if (originalQName.equals(processedRef)) {
                         String prefix = XMLSymbols.EMPTY_STRING;
-                        String localpart = ref;
                         int colonptr = ref.indexOf(":");
                         if (colonptr > 0) {
                             prefix = ref.substring(0,colonptr);
