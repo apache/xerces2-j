@@ -170,6 +170,7 @@ try {
 			<tr><th>False:</th>		<td>Does not create create grammar access nodes in the DOM
    										tree. This setting makes the DOM behave as a standard
    										DOM Level 1 implementation.</td></tr>
+			<tr><th>Default:</th>		<td>false</td></tr>
 			<tr><th>Note:</th>		<td>The grammar access nodes are appended as children of the
 									   DocumentType node. The grammar is specified as an
 									   XML Schema document tree, whether it was read from a 
