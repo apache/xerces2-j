@@ -144,8 +144,6 @@ public class CMBuilder {
             throw new RuntimeException("Unknown content type for a element decl "
                                        + "in getElementContentModelValidator() in Grammar class");
         }
-        // Add the new model to the content model for this element
-        typeDecl.fCMValidator = cmValidator;
 
         return cmValidator;
     }
@@ -165,12 +163,6 @@ public class CMBuilder {
         short type = particle.fType;
         if ((type == XSParticleDecl.PARTICLE_WILDCARD) ||
             (type == XSParticleDecl.PARTICLE_ELEMENT)) {
-
-            // When checking Unique Particle Attribution, rename leaf elements
-            //if (grammar.fUPAChecking) {
-            // REVISIT: implement
-            //}
-
             return expandContentModel(particle, minOccurs, maxOccurs);
         }
         else if (type == XSParticleDecl.PARTICLE_CHOICE ||
@@ -203,16 +195,7 @@ public class CMBuilder {
         else if (type == XSParticleDecl.PARTICLE_EMPTY) {
             return null;
         }
-        else {
-            // When checking Unique Particle Attribution, we have to rename
-            // uri even on zero_or_one, zero_or_more and one_or_more
-            //if (grammar.fUPAChecking)
-            //REVISIT:
-            //return addContentSpecNode (type,
-            //                           convertContentSpecTree(particle.fValue),
-            //                           convertContentSpecTree(particle.fOtherValue),
-            //                           false);
-        }
+
         return particle;
     }
 
