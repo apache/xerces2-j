@@ -3,6 +3,10 @@
 <releases>
  <release version='NOT YET RELEASED'>
   <desc/>
+  <fix>
+   <note>Fixed several SAX bugs.</note>
+   <submitter name='Andy Clark'/>
+  </fix>
   <update>
    <note>
     Synchronized DOM implementation code from Xerces 1.x codebase.
