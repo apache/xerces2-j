@@ -683,9 +683,12 @@ public class DOMUtil {
         return node.getNodeName();
     } // getLocalName(Element):  String
 
-    // return the local name of this element
+    /** returns local name of this element if not null, otherwise
+        returns the name of the node
+    */
     public static String getLocalName(Node node) {
-        return node.getLocalName();
+        String name = node.getLocalName();
+        return (name!=null)? name:node.getNodeName();
     } // getLocalName(Element):  String
 
     public static Element getParent(Element elem) {
