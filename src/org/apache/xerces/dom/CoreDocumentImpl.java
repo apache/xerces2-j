@@ -1175,7 +1175,7 @@ extends ParentNode implements Document  {
     public String getBaseURI() {
         if (fDocumentURI != null && fDocumentURI.length() != 0 ) {// attribute value is always empty string
             try {
-                fDocumentURI = new URI(fDocumentURI).toString();
+                return new URI(fDocumentURI).toString();
             }
             catch (org.apache.xerces.util.URI.MalformedURIException e){
                 // REVISIT: what should happen in this case?
