@@ -308,15 +308,11 @@ implements XMLContentSpec.Provider {
               //
 
               Vector vQName = new Vector();
-              try {
-                  ChildrenList children = new ChildrenList();
-                  contentSpecTree(expendedIndex, contentSpec, children);
-                  contentModel = new MixedContentModel(children.qname,
-                                                       children.type,
-                                                       0, children.length, false, isDTD());
-              }catch(  CMException ex ){
-                  ex.printStackTrace();
-              }
+              ChildrenList children = new ChildrenList();
+              contentSpecTree(expendedIndex, contentSpec, children);
+              contentModel = new MixedContentModel(children.qname,
+                                                   children.type,
+                                                   0, children.length, false, isDTD());
         }
         else if (contentType == XMLElementDecl.TYPE_MIXED_COMPLEX) {
               //
@@ -324,12 +320,7 @@ implements XMLContentSpec.Provider {
               // per the element-only case, unless there are actually no children in
               // the model.  If that's the case, we can use the Mixed Content Model for
               // DTDs.
-              try {
-                contentModel = createChildModel(expendedIndex, true);
-              }
-              catch (CMException ex) {
-                ex.printStackTrace();
-              }
+              contentModel = createChildModel(expendedIndex, true);
         }
 
 
@@ -340,11 +331,7 @@ implements XMLContentSpec.Provider {
             //  create a SimpleListContentModel object. If it's complex, it
             //  will create a DFAContentModel object.
             //
-            try {
             contentModel = createChildModel(expendedIndex, false);
-            }catch( CMException ex ) {
-                 ex.printStackTrace();
-            }
         } else {
             throw new CMException(ImplementationMessages.VAL_CST);
         }
