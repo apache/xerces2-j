@@ -194,8 +194,6 @@ implements XMLParserConfiguration {
 	protected static final String EXTERNAL_PARAMETER_ENTITIES =
 		Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
 		
-	protected static final String PARSER_SETTINGS = 
-	    Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;	
     
 
     // property identifiers
@@ -468,7 +466,7 @@ implements XMLParserConfiguration {
 
         // add default recognized features
         final String[] recognizedFeatures =
-            {   PARSER_SETTINGS,
+            {   
             	CONTINUE_AFTER_FATAL_ERROR, LOAD_EXTERNAL_DTD, // from XMLDTDScannerImpl
 				VALIDATION,                 
 				NAMESPACES,
@@ -480,20 +478,20 @@ implements XMLParserConfiguration {
             	XMLSCHEMA_VALIDATION, XMLSCHEMA_FULL_CHECKING, 			
 				EXTERNAL_GENERAL_ENTITIES,  
 				EXTERNAL_PARAMETER_ENTITIES,
+				PARSER_SETTINGS
 			};
         addRecognizedFeatures(recognizedFeatures);
 		// set state for default features
-		super.setFeature(VALIDATION, false);
-		super.setFeature(NAMESPACES, true);
-		super.setFeature(EXTERNAL_GENERAL_ENTITIES, true);
-		super.setFeature(EXTERNAL_PARAMETER_ENTITIES, true);
-		super.setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
-		super.setFeature(LOAD_EXTERNAL_DTD, true); // from XMLDTDScannerImpl
-        // set state for default features
-		super.setFeature(SCHEMA_ELEMENT_DEFAULT, true);
-		super.setFeature(NORMALIZE_DATA, true);
-		super.setFeature(SCHEMA_AUGMENT_PSVI, true);
-		super.setFeature(PARSER_SETTINGS, true);
+		fFeatures.put(VALIDATION, Boolean.FALSE);
+		fFeatures.put(NAMESPACES, Boolean.TRUE);
+		fFeatures.put(EXTERNAL_GENERAL_ENTITIES, Boolean.TRUE);
+		fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
+		fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
+		fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
+		fFeatures.put(SCHEMA_ELEMENT_DEFAULT, Boolean.TRUE);
+		fFeatures.put(NORMALIZE_DATA, Boolean.TRUE);
+		fFeatures.put(SCHEMA_AUGMENT_PSVI, Boolean.TRUE);
+		fFeatures.put(PARSER_SETTINGS, Boolean.TRUE);
 
         // add default recognized properties
         final String[] recognizedProperties =
@@ -525,43 +523,43 @@ implements XMLParserConfiguration {
 			symbolTable = new SymbolTable();
 		}
 		fSymbolTable = symbolTable;
-		super.setProperty(SYMBOL_TABLE, fSymbolTable);
+		fProperties.put(SYMBOL_TABLE, fSymbolTable);
 		
         fGrammarPool = grammarPool;
         if (fGrammarPool != null) {
-			super.setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+			fProperties.put(XMLGRAMMAR_POOL, fGrammarPool);
         }
 
         fEntityManager = new XMLEntityManager();
-		super.setProperty(ENTITY_MANAGER, fEntityManager);
+		fProperties.put(ENTITY_MANAGER, fEntityManager);
         addCommonComponent(fEntityManager);
 
         fErrorReporter = new XMLErrorReporter();
         fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
-		super.setProperty(ERROR_REPORTER, fErrorReporter);
+		fProperties.put(ERROR_REPORTER, fErrorReporter);
         addCommonComponent(fErrorReporter);
 
         fNamespaceScanner = new XMLNSDocumentScannerImpl();
-		super.setProperty(DOCUMENT_SCANNER, fNamespaceScanner);
+		fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
         addComponent((XMLComponent) fNamespaceScanner);
 
         fDTDScanner = new XMLDTDScannerImpl();
-        super.setProperty(DTD_SCANNER, fDTDScanner);
+		fProperties.put(DTD_SCANNER, fDTDScanner);
         addComponent((XMLComponent) fDTDScanner);
 
         fDTDProcessor = new XMLDTDProcessor();
-        super.setProperty(DTD_PROCESSOR, fDTDProcessor);
+		fProperties.put(DTD_PROCESSOR, fDTDProcessor);
         addComponent((XMLComponent) fDTDProcessor);
 
         fDTDValidator = new XMLNSDTDValidator();
-        super.setProperty(DTD_VALIDATOR, fDTDValidator);
+		fProperties.put(DTD_VALIDATOR, fDTDValidator);
         addComponent(fDTDValidator);
 
         fDatatypeValidatorFactory = DTDDVFactory.getInstance();
-        super.setProperty(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
+		fProperties.put(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
 
         fValidationManager = new ValidationManager();
-        super.setProperty(VALIDATION_MANAGER, fValidationManager);
+		fProperties.put(VALIDATION_MANAGER, fValidationManager);
         
         fVersionDetector = new XMLVersionDetector();
         
@@ -848,6 +846,28 @@ implements XMLParserConfiguration {
     } // parse(boolean):boolean
     
 	/**
+	 * Returns the state of a feature.
+	 * 
+	 * @param featureId The feature identifier.
+		 * @return true if the feature is supported
+	 * 
+	 * @throws XMLConfigurationException Thrown for configuration error.
+	 *                                   In general, components should
+	 *                                   only throw this exception if
+	 *                                   it is <strong>really</strong>
+	 *                                   a critical error.
+	 */
+	public boolean getFeature(String featureId)
+		throws XMLConfigurationException {
+			// make this feature special
+        if (featureId.equals(PARSER_SETTINGS)){
+        	return fConfigUpdated;
+        }
+        return super.getFeature(featureId);
+
+	} // getFeature(String):boolean
+    
+	/**
 	 * Set the state of a feature.
 	 *
 	 * Set the state of any feature in a SAX2 parser.  The parser
@@ -940,14 +960,7 @@ implements XMLParserConfiguration {
 	 * reset all XML 1.0 components before parsing and namespace context
 	 */
 	protected void reset() throws XNIException {
-		// reset every component
 		int count = fComponents.size();
-		if (fConfigUpdated){
-			super.setFeature(PARSER_SETTINGS, true);
-		}
-		else {
-			super.setFeature(PARSER_SETTINGS, false);
-		}
 		for (int i = 0; i < count; i++) {
 			XMLComponent c = (XMLComponent) fComponents.elementAt(i);
 			c.reset(this);
@@ -959,13 +972,6 @@ implements XMLParserConfiguration {
 	 * reset all common components before parsing
 	 */
 	protected void resetCommon() throws XNIException {
-		
-		if (fConfigUpdated){
-			super.setFeature(PARSER_SETTINGS, true);
-		}
-		else {
-			super.setFeature(PARSER_SETTINGS, false);
-		}
 		// reset common components
 		int count = fCommonComponents.size();
 		for (int i = 0; i < count; i++) {
@@ -980,12 +986,6 @@ implements XMLParserConfiguration {
 	 * reset all components before parsing and namespace context
 	 */
 	protected void resetXML11() throws XNIException {
-		if (fConfigUpdated){
-			super.setFeature(PARSER_SETTINGS, true);
-		}
-		else {
-			super.setFeature(PARSER_SETTINGS, false);
-		}
 		// reset every component
 		int count = fXML11Components.size();
 		for (int i = 0; i < count; i++) {			
@@ -1044,6 +1044,14 @@ implements XMLParserConfiguration {
             fLastComponent = fXML11NSDTDValidator;
 
         } else {
+			// create components
+			  if (fXML11DocScanner == null) {
+					// non namespace document pipeline
+					fXML11DocScanner = new XML11DocumentScannerImpl();
+					addXML11Component(fXML11DocScanner);
+					fXML11DTDValidator = new XML11DTDValidator();
+					addXML11Component(fXML11DTDValidator);
+			  }
             if (fCurrentScanner != fXML11DocScanner) {
                 fCurrentScanner = fXML11DocScanner;
                 setProperty(DOCUMENT_SCANNER, fXML11DocScanner);
@@ -1269,6 +1277,12 @@ implements XMLParserConfiguration {
 			 // http://apache.org/xml/features/validation/schema/element-default
 			 if(feature.equals(Constants.SCHEMA_ELEMENT_DEFAULT)) {
 				 return;
+			 }
+			 
+			 // special performance feature: only component manager is allowed to set it.			 
+			 if (feature.equals(Constants.PARSER_SETTINGS)) {
+				short type = XMLConfigurationException.NOT_SUPPORTED;
+				throw new XMLConfigurationException(type, featureId);
 			 }
 
         }
@@ -1502,17 +1516,12 @@ implements XMLParserConfiguration {
             fXML11DTDProcessor = new XML11DTDProcessor();
             addXML11Component(fXML11DTDProcessor);
 
-            // setup XML 1.1. document pipeline
+            // setup XML 1.1. document pipeline - namespace aware
             fXML11NSDocScanner = new XML11NSDocumentScannerImpl();
             addXML11Component(fXML11NSDocScanner);
             fXML11NSDTDValidator = new XML11NSDTDValidator();
             addXML11Component(fXML11NSDTDValidator);
 
-            // non namespace document pipeline
-            fXML11DocScanner = new XML11DocumentScannerImpl();
-            addXML11Component(fXML11DocScanner);
-            fXML11DTDValidator = new XML11DTDValidator();
-            addXML11Component(fXML11DTDValidator);
             
             if (fSchemaValidator != null)
 				addXML11Component(fSchemaValidator);
