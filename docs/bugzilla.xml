@@ -24,14 +24,14 @@
           xerces-j-user</jump> list for clarification.
          </li>
 	<li>To help to eliminate duplicate or invalid bug reports, such as the
-	    <jump href="http://nagoya.apache.org/jira/browse/XERCESJ-581">external-schemaLocation</jump> bug, 
+	    <jump href="http://issues.apache.org/jira/browse/XERCESJ-581">external-schemaLocation</jump> bug, 
 	    <em>please take a quick look at bugs in JIRA</em> opened against the version you're working 
         with to see whether the bug has been already reported and/or fixed.
 	    You can also download the 
 	    <jump href='http://brutus.apache.org/gump/public-jars/xml-xerces2/'>latest code</jump> 
 	    in CVS and check if you can reproduce the bug.</li>
 	  <li>Report bugs against the newest release.</li>
-	  <li>Read <jump href="http://nagoya.apache.org/jira">JIRA Notes</jump></li>
+	  <li>Read <jump href="http://issues.apache.org/jira">JIRA Notes</jump></li>
       </ul>
       <p>We strongly encourage you write patches for problems you find and submit 
          them to <jump href="http://xml.apache.org/mail.html#xerces-j-dev">xerces-j-dev@xml.apache.org</jump>.
@@ -45,7 +45,7 @@
 
 <s2 title="Report a bug">
 <p> Have you read the instructions above?
-If yes, please click <jump href="http://nagoya.apache.org/jira/browse/XERCESJ">here</jump>
+If yes, please click <jump href="http://issues.apache.org/jira/browse/XERCESJ">here</jump>
 to submit a bug report.  </p>
 </s2>
 </s1>
