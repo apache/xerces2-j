@@ -361,7 +361,9 @@ public class NamedNodeMapImpl
     	if (nodes != null) {
             newmap.nodes = new Vector(nodes.size());
             for (int i = 0; i < nodes.size(); ++i) {
-                Node clone = ((Node)nodes.elementAt(i)).cloneNode(true);
+                NodeImpl n = (NodeImpl) nodes.elementAt(i);
+                NodeImpl clone = (NodeImpl) n.cloneNode(true);
+                clone.specified(n.specified());
                 newmap.setNamedItem(clone);
             }
         }

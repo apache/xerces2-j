@@ -140,6 +140,12 @@ public class AttrImpl
     // Node methods
     //
     
+    public Node cloneNode(boolean deep) {
+        AttrImpl clone = (AttrImpl) super.cloneNode(deep);
+        clone.specified(true);
+        return clone;
+    }
+
     /**
      * A short integer indicating what type of node this is. The named
      * constants for this value are defined in the org.w3c.dom.Node interface.
