@@ -72,6 +72,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
 import java.util.Hashtable;
+import java.util.Stack;
 import java.util.Vector;
 import java.io.IOException;
 
@@ -85,8 +86,9 @@ import java.io.IOException;
  * schema, other grammars may be constructed as a side-effect.
  *
  * @author Neil Graham, IBM
- * @version $ID$
+ * @version $Id$
  */
+
 class XSDHandler {
 
     // data
@@ -102,8 +104,11 @@ class XSDHandler {
     public final static int NOTATION_TYPE = 64;
     public final static int SIMPLETYPE_TYPE = 128;
 
+    // this string gets appended to redefined names; it's purpose is to be
+    // as unlikely as possible to cause collisions.
+    public final static String REDEF_IDENTIFIER = "_fn3dktizrknc9pi";
+
     //REVISIT: should we have this constant in symbolTable?
-    //
     public final static String EMPTY_STRING="";
 
     // These tables correspond to the symbol spaces defined in the
@@ -120,7 +125,6 @@ class XSDHandler {
     private Hashtable fUnparsedIdentityConstraintRegistry = new Hashtable();
     private Hashtable fUnparsedNotationRegistry = new Hashtable();
     private Hashtable fUnparsedTypeRegistry = new Hashtable();
-    private Hashtable fRedefine2XSDMap = new Hashtable();
     // this is keyed with a documentNode (or the schemaRoot nodes
     // contained in the XSDocumentInfo objects) and its value is the
     // XSDocumentInfo object corresponding to that document.
@@ -141,6 +145,10 @@ class XSDHandler {
 
     // the primary XSDocumentInfo we were called to parse
     private XSDocumentInfo fRoot = null;
+
+    // map between <redefine> elements and the XSDocumentInfo 
+    // objects that correspond to the documents being redefined.  
+    private Hashtable fRedefine2XSDMap = new Hashtable();
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -284,6 +292,128 @@ class XSDHandler {
     // components, and to record which components redefine others (so
     // that implicit redefinitions of groups and attributeGroups can be handled).
     protected void buildGlobalNameRegistries() {
+        /* Starting with fRoot, we examine each child of the schema
+         * element.  Skipping all imports and includes, we record the names
+         * of all other global components (and children of <redefine>).  We
+         * also put <redefine> names in a registry that we look through in
+         * case something needs renaming.  Once we're done with a schema we
+         * set its Document node to hidden so that we don't try to traverse
+         * it again; then we look to its Dependency map entry.  We keep a
+         * stack of schemas that we haven't yet finished processing; this
+         * is a depth-first traversal.  
+         */
+        Stack schemasToProcess = new Stack();
+        schemasToProcess.push(fRoot);
+        while(!schemasToProcess.empty()) {
+            XSDocumentInfo currSchemaDoc =
+                (XSDocumentInfo)schemasToProcess.pop();
+            Document currDoc = currSchemaDoc.fSchemaDoc;
+            if(XMLManipulator.isHidden(currDoc)) {
+                // must have processed this already!
+                continue;
+            }
+            Element currRoot = XMLManipulator.getRoot(currDoc);
+
+            // process this schema's global decls
+            boolean dependenciesCanOccur = true;
+            for(Element globalComp =
+                    XMLManipulator.getFirstChildElement(currRoot);
+                    globalComp != null;
+                    globalComp = XMLManipulator.getNextSiblingElement(globalComp)){
+                // this loop makes sure the <schema> element ordering is
+                // also valid.
+                if(XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    //skip it; traverse it later
+                    continue;
+                } else if(XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
+                        XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
+                    if(!dependenciesCanOccur) {
+                        // REVISIT:  schema element ordreing violation
+                    }
+                    // we've dealt with this; mark as traversed
+                    XMLManipulator.setHidden(globalComp);
+                } else if(XMLManipulator.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
+                    if(!dependenciesCanOccur) {
+                        // REVISIT:  schema element ordreing violation
+                    }
+                    for(Element redefineComp = XMLManipulator.getFirstChildElement(globalComp);
+                            redefineComp != null;
+                            redefineComp = XMLManipulator.getNextSiblingElement(redefineComp)) {
+                        String lName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                        if(lName.length() == 0) // an error we'll catch later
+                            continue;
+                        String qName = currSchemaDoc.fTargetNamespace +","+lName;
+                        String componentType = XMLManipulator.getLocalName(globalComp);
+                        if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                            checkForDuplicateNames(qName, fUnparsedAttributeGroupRegistry, globalComp, currSchemaDoc);
+                            // the check will have changed our name;
+                            String targetLName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            // and all we need to do is error-check+rename our kkids:
+                            // REVISIT!!!
+//                            renameRedefiningComponents(SchemaSymbols.ELT_ATTRIBUTEGROUP), 
+//                                lName, targetLName);
+                        } else if((componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) ||
+                                (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE))) {
+                            checkForDuplicateNames(qName, fUnparsedTypeRegistry, globalComp, currSchemaDoc);
+                            // the check will have changed our name;
+                            String targetLName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            // and all we need to do is error-check+rename our kkids:
+                            // REVISIT!!!
+                            if(componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
+//                            renameRedefiningComponents(SchemaSymbols.ELT_COMPLEXTYPE), 
+//                                lName, targetLName);
+                            } else { // must be simpleType
+//                            renameRedefiningComponents(SchemaSymbols.ELT_SIMPLETYPE), 
+//                                lName, targetLName);
+                            }
+                        } else if(componentType.equals(SchemaSymbols.ELT_GROUP)) {
+                            checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
+                            // the check will have changed our name;
+                            String targetLName = XMLManipulator.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            // and all we need to do is error-check+rename our kkids:
+                            // REVISIT!!!
+//                            renameRedefiningComponents(SchemaSymbols.ELT_GROUP), 
+//                                lName, targetLName);
+                        } else {
+                            // REVISIT:  report schema element ordering error
+                        }
+                    } // end march through <redefine> children
+                    // and now set as traversed
+                    XMLManipulator.setHidden(globalComp);
+                } else {
+                    dependenciesCanOccur = false;
+                    String lName = XMLManipulator.getAttrValue(globalComp, SchemaSymbols.ATT_NAME); 
+                    if(lName.length() == 0) // an error we'll catch later
+                        continue;
+                    String qName = currSchemaDoc.fTargetNamespace +","+lName;
+                    String componentType = XMLManipulator.getLocalName(globalComp);
+                    if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+                        checkForDuplicateNames(qName, fUnparsedAttributeRegistry, globalComp, currSchemaDoc);
+                    } else if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                        checkForDuplicateNames(qName, fUnparsedAttributeGroupRegistry, globalComp, currSchemaDoc);
+                    } else if((componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) ||
+                            (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE))) {
+                        checkForDuplicateNames(qName, fUnparsedTypeRegistry, globalComp, currSchemaDoc);
+                    } else if(componentType.equals(SchemaSymbols.ELT_ELEMENT)) {
+                        checkForDuplicateNames(qName, fUnparsedElementRegistry, globalComp, currSchemaDoc);
+                    } else if(componentType.equals(SchemaSymbols.ELT_GROUP)) {
+                        checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
+                    } else if(componentType.equals(SchemaSymbols.ELT_NOTATION)) {
+                        checkForDuplicateNames(qName, fUnparsedNotationRegistry, globalComp, currSchemaDoc);
+                    } else {
+                        // REVISIT:  report schema element ordering error
+                    }
+                }
+            } // end for
+
+            // now we're done with this one!
+            XMLManipulator.setHidden(currDoc);
+            // now add the schemas this guy depends on
+            Vector currSchemaDepends = (Vector)fDependencyMap.get(currSchemaDoc);
+            for(int i = 0; i < currSchemaDepends.size(); i++) {
+                schemasToProcess.push(currSchemaDepends.elementAt(i));
+            } 
+        } // while 
     } // end buildGlobalNameRegistries
 
     // Beginning at the first schema processing was requested for
@@ -415,4 +545,33 @@ class XSDHandler {
 
     } // reset
 
+    /** This method makes sure that 
+     * if this component is being redefined that it lives in the
+     * right schema.  It then renames the component correctly.  If it
+     * detects a collision--a duplicate definition--then it complains.  
+     */
+    private void checkForDuplicateNames(String qName,
+            Hashtable registry, Element currComp, 
+            XSDocumentInfo currSchema) {
+        Object objElem = null;
+        if((objElem = registry.get(qName)) == null) {
+            // just add it in!
+            registry.put(qName, currComp);
+        } else {
+            Element collidingElem = (Element)objElem;
+            XSDocumentInfo redefinedSchema = (XSDocumentInfo)(fRedefine2XSDMap.get(XMLManipulator.getParent(collidingElem)));
+            if(redefinedSchema == currSchema) { // object comp. okay here
+                // now have to do some renaming...
+                String newName = qName.substring(qName.lastIndexOf(','));
+                currComp.setAttribute(SchemaSymbols.ATT_NAME, newName);
+                // and take care of nested redefines by calling recursively:
+                checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
+            } else if (redefinedSchema != null) { // we're apparently redefining the wrong schema
+                // REVISIT:  error that redefined element in wrong schema
+            } else { // we've just got a flat-out collision
+                // REVISIT:  report error for duplicate declarations
+            } 
+        }
+    } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
+    
 } // XSDHandler
