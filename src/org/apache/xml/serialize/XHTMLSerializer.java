@@ -122,7 +122,7 @@ public final class XHTMLSerializer
 	try {
 	    init( output, format );
 	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend, we use UTF8 by default
+	    // Should never happend, we use UTF-8 by default
 	}
     }
 

@@ -94,7 +94,7 @@ import org.xml.sax.DocumentHandler;
  * The {@link OutputFormat} dictates what underlying serialized is used
  * to serialize the document based on the specified method. If the output
  * format or method are missing, the default is an XML serializer with
- * UTF8 encoding and now indentation.
+ * UTF-8 encoding and now indentation.
  * 
  *
  * @version
@@ -133,7 +133,7 @@ public abstract class Serializer
     /**
      * Creates a compatible serialized for the specified writer
      * and output format. If the output format is missing,
-     * the default is an XML format with UTF8 encoding.
+     * the default is an XML format with UTF-8 encoding.
      *
      * @param writer The writer
      * @param format The output format
@@ -152,7 +152,7 @@ public abstract class Serializer
     /**
      * Creates a compatible serializer for the specified output stream
      * and output format. If the output format is missing, the default
-     * is an XML format with UTF8 encoding.
+     * is an XML format with UTF-8 encoding.
      *
      * @param output The output stream
      * @param format The output format
@@ -174,7 +174,7 @@ public abstract class Serializer
     /**
      * Creates a compatible SAX serializer for the specified writer
      * and output format. If the output format is missing, the default
-     * is an XML format with UTF8 encoding.
+     * is an XML format with UTF-8 encoding.
      *
      * @param writer The writer
      * @param format The output format
@@ -193,7 +193,7 @@ public abstract class Serializer
     /**
      * Creates a compatible SAX serializer for the specified output stream
      * and output format. If the output format is missing, the default
-     * is an XML format with UTF8 encoding.
+     * is an XML format with UTF-8 encoding.
      *
      * @param output The output stream
      * @param format The output format
@@ -269,7 +269,7 @@ public abstract class Serializer
 	BaseSerializer serializer;
 
 	if ( format == null ) {
-	    format = new OutputFormat( "xml", "UTF8", false );
+	    format = new OutputFormat( "xml", "UTF-8", false );
 	    serializer = new XMLSerializer();
 	} else {
 	    if ( format.getMethod().equalsIgnoreCase( "html" ) )
@@ -277,6 +277,9 @@ public abstract class Serializer
 	    else
 	    if ( format.getMethod().equalsIgnoreCase( "xhtml" ) )
 		serializer = new HTMLSerializer();
+	    else
+	    if ( format.getMethod().equalsIgnoreCase( "fop" ) )
+		serializer = new FOPSerializer();
 	    else
 		serializer = new XMLSerializer();
 	}

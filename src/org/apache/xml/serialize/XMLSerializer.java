@@ -74,7 +74,7 @@ import org.xml.sax.AttributeList;
  * serializing. For usage instructions see {@link Serializer}.
  * <p>
  * If an output stream is used, the encoding is taken from the
- * output format (defaults to <tt>UTF8</tt>). If a writer is
+ * output format (defaults to <tt>UTF-8</tt>). If a writer is
  * used, make sure the writer uses the same encoding (if applies)
  * as specified in the output format.
  * <p>
@@ -146,7 +146,7 @@ public final class XMLSerializer
 	try {
 	    init( output, format );
 	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend, we use UTF8 by default
+	    // Should never happend, we use UTF-8 by default
 	}
     }
 

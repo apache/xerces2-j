@@ -192,11 +192,11 @@ public class OutputFormat
 
 
     /**
-     * The default encoding for Web documents it UTF8.
+     * The default encoding for Web documents it UTF-8.
      *
      * @see #getEncoding()
      */
-    public static final String DEFAULT_ENCODING = "UTF8";
+    public static final String DEFAULT_ENCODING = "UTF-8";
 
 
     /**
@@ -228,6 +228,12 @@ public class OutputFormat
      * The output method for text documents.
      */
     public static final String METHOD_TEXT = "text";
+
+
+    /**
+     * The output method for FO documents as PDF.
+     */
+    public static final String METHOD_FOP = "fop";
 
 
     /**
@@ -469,7 +475,7 @@ public class OutputFormat
 
     /**
      * Returns the specified encoding. If no encoding was
-     * specified, the default is always "UTF8".
+     * specified, the default is always "UTF-8".
      *
      * @return The encoding
      */
@@ -481,7 +487,7 @@ public class OutputFormat
 
     /**
      * Sets the encoding for this output method. If no
-     * encoding was specified, the default is always "UTF8".
+     * encoding was specified, the default is always "UTF-8".
      * Make sure the encoding is compatible with the one
      * used by the {@link java.io.Writer}.
      *
@@ -811,30 +817,35 @@ public class OutputFormat
         if ( doc instanceof HTMLDocument )
             return METHOD_HTML;
         */
+        
 	// Lookup the root element and the text nodes preceding it.
 	// If root element is html and all text nodes contain whitespace
 	// only, the method is html.
+	
+	// FIXME (SM) should we care about namespaces here?
+	
         node = doc.getFirstChild();
-        while ( node != null ) {
-	    // If the root element is html, the method is html.
-	    if ( node.getNodeType() == Node.ELEMENT_NODE ) {
-		if ( node.getNodeName().equalsIgnoreCase( "html" ) )
-		    return METHOD_HTML;
-		else
-		    return METHOD_XML;
-	    }
-	    else
-	    if ( node.getNodeType() == Node.TEXT_NODE ) {
-		// If a text node preceding the root element contains
-		// only whitespace, this might be html, otherwise it's
-		// definitely xml.
-		value = node.getNodeValue();
-		for ( i = 0 ; i < value.length() ; ++i )
-		    if ( value.charAt( i ) != 0x20 && value.charAt( i ) != 0x0A &&
-			 value.charAt( i ) != 0x09 && value.charAt( i ) != 0x0D )
-			return METHOD_XML;
-	    }
-	    node = node.getNextSibling();
+        while (node != null) {
+		// If the root element is html, the method is html.
+		if ( node.getNodeType() == Node.ELEMENT_NODE ) {
+			if ( node.getNodeName().equalsIgnoreCase( "html" ) ) {
+				return METHOD_HTML;
+			} else if ( node.getNodeName().equalsIgnoreCase( "root" ) ) {		         
+				return METHOD_FOP;
+			} else {
+				return METHOD_XML;
+			}
+		} else if ( node.getNodeType() == Node.TEXT_NODE ) {
+			// If a text node preceding the root element contains
+			// only whitespace, this might be html, otherwise it's
+			// definitely xml.
+			value = node.getNodeValue();
+			for ( i = 0 ; i < value.length() ; ++i )
+				if ( value.charAt( i ) != 0x20 && value.charAt( i ) != 0x0A &&
+				     value.charAt( i ) != 0x09 && value.charAt( i ) != 0x0D )
+				return METHOD_XML;
+		}
+		node = node.getNextSibling();
 	}
 	// Anything else, the method is xml.
 	return METHOD_XML;
@@ -907,7 +918,5 @@ public class OutputFormat
 	    return "text/plain";
 	return null;
     }
-
-
 }
 
