@@ -107,6 +107,30 @@ public class DTDParser
     } // getDTDGrammar
 
     //
+    // XMLEntityHandler methods
+    //
+
+    /**
+     * startEntity
+     * 
+     * @param name 
+     * @param publicId 
+     * @param systemId 
+     */
+    public void startEntity(String name, String publicId, String systemId)
+        throws SAXException {
+    }
+
+    /**
+     * endEntity
+     * 
+     * @param name 
+     */
+    public void endEntity(String name)
+        throws SAXException {
+    }
+
+    //
     // XMLDTDHandler methods
     //
 
