@@ -57,6 +57,7 @@
 
 package org.apache.xerces.validators.common;
 
+import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
 
 /**
@@ -88,6 +89,9 @@ public class MixedContentModel
     /** The list of possible children that we have to accept. */
     private QName fChildren[];
 
+    /** The type of the children to support ANY. */
+    private int fChildrenType[];
+
     /** 
      * True if mixed content model is ordered. DTD mixed content models
      * are <em>always</em> unordered.
@@ -106,8 +110,10 @@ public class MixedContentModel
      *
      * @exception CMException Thrown if content model can't be built.
      */
-    public MixedContentModel(int count, QName childList[]) throws CMException {
-        this(count, childList, false);
+    public MixedContentModel(QName childList[],
+                             int childListType[],
+                             int offset, int length) throws CMException {
+        this(childList, childListType, offset, length, false);
     }
 
     /**
@@ -119,15 +125,20 @@ public class MixedContentModel
      *
      * @exception CMException Thrown if content model can't be built.
      */
-    public MixedContentModel(int count, QName childList[],
+    public MixedContentModel(QName childList[],
+                             int childListType[],
+                             int offset, int length,
                              boolean ordered) throws CMException {
 
         // Make our own copy now, which is exactly the right size
-        fCount = count;
+        fCount = length;
         fChildren = new QName[fCount];
+        fChildrenType = new int[fCount];
         for (int i = 0; i < fCount; i++) {
-            fChildren[i] = new QName(childList[i]);
+            fChildren[i] = new QName(childList[offset + i]);
+            fChildrenType[i] = childListType[offset + i];
         }
+        fOrdered = ordered;
 
     } // <init>(int,QName[],boolean)
 
@@ -174,9 +185,28 @@ public class MixedContentModel
                 }
 
                 // element must match
-                if (fChildren[inIndex].uri != children[offset + outIndex].uri &&
-                    fChildren[inIndex].localpart != children[offset + outIndex].localpart) {
-                    return outIndex;
+                int type = fChildrenType[inIndex];
+                if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    if (fChildren[inIndex].uri != children[offset + outIndex].uri &&
+                        fChildren[inIndex].localpart != children[offset + outIndex].localpart) {
+                        return outIndex;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+                    int uri = fChildren[inIndex].uri;
+                    if (uri != -1 && uri != children[outIndex].uri) {
+                        return outIndex;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+                    if (children[outIndex].uri != -1) {
+                        return outIndex;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                    if (fChildren[inIndex].uri == children[outIndex].uri) {
+                        return outIndex;
+                    }
                 }
                 
                 // advance index
@@ -199,9 +229,32 @@ public class MixedContentModel
                 int inIndex = 0;
                 for (; inIndex < fCount; inIndex++)
                 {
-                    if (curChild.uri == fChildren[inIndex].uri &&
-                        curChild.localpart == fChildren[inIndex].localpart)
-                        break;
+                    int type = fChildrenType[inIndex];
+                    if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                        if (curChild.uri == fChildren[inIndex].uri &&
+                            curChild.localpart == fChildren[inIndex].localpart)
+                            break;
+                    }
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+                        int uri = fChildren[inIndex].uri;
+                        if (uri == -1 || uri == children[outIndex].uri) {
+                            break;
+                        }
+                    }
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+                        if (children[outIndex].uri == -1) {
+                            break;
+                        }
+                    }
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                        if (fChildren[inIndex].uri != children[outIndex].uri) {
+                            break;
+                        }
+                    }
+                    // REVISIT: What about checking for multiple ANY matches?
+                    //          The content model ambiguity *could* be checked
+                    //          by the caller before constructing the mixed
+                    //          content model.
                 }
 
                 // We did not find this one, so the validation failed

@@ -366,7 +366,7 @@ public class DFAContentModel
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                    if (fElemMap[elemIndex].uri == -1) {
+                    if (curElem.uri == -1) {
                         break;
                     }
                 }

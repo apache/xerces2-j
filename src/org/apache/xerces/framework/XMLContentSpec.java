@@ -286,6 +286,9 @@ public class XMLContentSpec {
                     else if (contentSpec.otherValue != -1) {
                         str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
                     }
+                    else if (contentSpec.value == -1) {
+                        str.append("##any");
+                    }
                     else {
                         str.append(stringPool.toString(contentSpec.value));
                     }
@@ -315,6 +318,9 @@ public class XMLContentSpec {
                         else if (contentSpec.otherValue != -1) {
                             str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
                         }
+                        else if (contentSpec.value == -1) {
+                            str.append("##any");
+                        }
                         else {
                             str.append(stringPool.toString(contentSpec.value));
                         }
@@ -336,6 +342,9 @@ public class XMLContentSpec {
                         else if (contentSpec.otherValue != -1) {
                             str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
                         }
+                        else if (contentSpec.value == -1) {
+                            str.append("##any");
+                        }
                         else {
                             str.append(stringPool.toString(contentSpec.value));
                         }
@@ -353,10 +362,12 @@ public class XMLContentSpec {
                                       contentSpec, str, true);
                     break;
                 }
-                // REVISIT
                 case XMLContentSpec.CONTENTSPECNODE_ANY: {
-                    str.append("##any:uri=");
-                    str.append(stringPool.toString(contentSpec.otherValue));
+                    str.append("##any");
+                    if (contentSpec.otherValue != -1) {
+                        str.append(":uri=");
+                        str.append(stringPool.toString(contentSpec.otherValue));
+                    }
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER: {
@@ -369,7 +380,7 @@ public class XMLContentSpec {
                     break;
                 }
                 default: {
-                    return null;
+                    str.append("???");
                 }
 
             } // switch type
@@ -426,8 +437,11 @@ public class XMLContentSpec {
                 if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                     str.append("#PCDATA");
                 }
-                else if (contentSpec.otherValue != -1) {
+                else if (contentSpec.value == -1 && contentSpec.otherValue != -1) {
                     str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
+                }
+                else if (contentSpec.value == -1) {
+                    str.append("##any");
                 }
                 else {
                     str.append(stringPool.toString(contentSpec.value));
@@ -484,6 +498,27 @@ public class XMLContentSpec {
                 if (parens) {
                     str.append(')');
                 }
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ANY: {
+                str.append("##any");
+                if (contentSpec.otherValue != -1) {
+                    str.append(":uri=");
+                    str.append(stringPool.toString(contentSpec.otherValue));
+                }
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER: {
+                str.append("##other:uri=");
+                str.append(stringPool.toString(contentSpec.otherValue));
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL: {
+                str.append("##local");
+                break;
+            }
+            default: {
+                str.append("???");
                 break;
             }
 

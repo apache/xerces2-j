@@ -245,12 +245,11 @@ implements XMLContentSpec.Provider {
 
             Vector vQName = new Vector(); 
             try {
-                contentSpecTree( contentSpecIndex, vQName, contentSpec ); //traverse content spec and build QName vector
-
-                QName[] childList            = new QName[ vQName.size()];
-                vQName.copyInto( childList );
-                vQName = null;
-                contentModel = new MixedContentModel(childList.length, childList);
+                ChildrenList children = new ChildrenList();
+                contentSpecTree(contentSpecIndex, contentSpec, children);
+                contentModel = new MixedContentModel(children.qname,
+                                                     children.type,
+                                                     0, children.length);
             }catch(  CMException ex ){
                 ex.printStackTrace();
             }
@@ -707,9 +706,6 @@ implements XMLContentSpec.Provider {
         return nodeRet;
     }
 
-
-
-
     /**
      * Build a vector of valid QNames from Content Spec
      * table.
@@ -720,14 +716,31 @@ implements XMLContentSpec.Provider {
      *               Array of QName
      * @exception CMException
      */
+    private void contentSpecTree(int contentSpecIndex, 
+                                XMLContentSpec contentSpec,
+                                ChildrenList children) throws CMException {
 
-    private void contentSpecTree( int contentSpecIndex, Vector vectorQName,
-                                  XMLContentSpec contentSpec ) throws CMException {
-
+        // Handle any and leaf nodes
         getContentSpec( contentSpecIndex, contentSpec);
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
 
-        if ( contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-            vectorQName.addElement( new QName( -1, contentSpec.value, -1, contentSpec.otherValue ) );
+            // resize arrays, if needed
+            if (children.length == children.qname.length) {
+                QName[] newQName = new QName[children.length * 2];
+                System.arraycopy(children.qname, 0, newQName, 0, children.length);
+                children.qname = newQName;
+                int[] newType = new int[children.length * 2];
+                System.arraycopy(children.type, 0, newType, 0, children.length);
+                children.type = newType;
+            }
+
+            // save values and return length
+            children.qname[children.length] = new QName(-1, contentSpec.value, -1, contentSpec.otherValue);
+            children.type[children.length] = contentSpec.type;
+            children.length++;
             return;
         }
 
@@ -738,17 +751,22 @@ implements XMLContentSpec.Provider {
         final int leftNode  = contentSpec.value;
         final int rightNode = contentSpec.otherValue;
 
-        if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE) ||
-            (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
-            contentSpecTree(leftNode, vectorQName, contentSpec); // recurse to left
-            contentSpecTree(rightNode, vectorQName, contentSpec);// recurse to right
-        } else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
-                   ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
-                   ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)) {
-            contentSpecTree(leftNode, vectorQName, contentSpec);//only recurse to left on this node 
-        } else {
-            throw new CMException(ImplementationMessages.VAL_CST);
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ) {
+            contentSpecTree(leftNode, contentSpec, children);
+            contentSpecTree(rightNode, contentSpec, children);
+            return;
+        } 
+
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+            contentSpecTree(leftNode, contentSpec, children);
+            return;
         }
+
+        // error
+        throw new CMException(ImplementationMessages.VAL_CST);
     }
 
 
@@ -851,5 +869,17 @@ implements XMLContentSpec.Provider {
         return newarray;
     }
 
+    //
+    // Classes
+    //
+
+    /**
+     * Children list for <code>contentSpecTree</code> method.
+     */
+    static class ChildrenList {
+        public int length = 0;
+        public QName[] qname = new QName[2];
+        public int[] type = new int[2];
+    }
 
 } // class Grammar
