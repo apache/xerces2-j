@@ -10,7 +10,7 @@ Authors:
   Andy Clark, IBM
 
 Copyright:
-  Copyright (c) 2000-2002 The Apache Software Foundation.
+  Copyright (c) 2000-2003 The Apache Software Foundation.
 
    $Id$
 
@@ -44,7 +44,7 @@ Copyright:
     <property name='jar.samples' value='xercesSamples.jar'/>
     <property name='jar.dv' value='xercesDV.jar'/>
 
-    <property name="year" value="1999-2002"/>
+    <property name="year" value="1999-2003"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
@@ -80,8 +80,7 @@ Copyright:
     <property name="distsrc.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
     <property name="disttools.dir" value="${build.dir}/tools"/>
     <property name="distbin.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
-    <property name='src.apis.tgz' value="${tools.dir}/xml-apis--src.tar.gz"/>
-    <property name='src.apis.tar' value="${tools.dir}/xml-apis--src.tar"/>
+    <property name='src.apis.zip' value="${tools.dir}/xml-apis--src.zip"/>
 
     <filter token="year" value="${year}"/>
     <filter token="version" value="${parser.Version}"/>
@@ -190,9 +189,7 @@ Copyright:
     </copy>
 
     <!-- now deal with API's:  -->
-    <gunzip src="${src.apis.tgz}"
-        dest="${src.apis.tar}"/>
-    <untar src="${src.apis.tar}" dest="${build.src}">
+    <unzip src="${src.apis.zip}" dest="${build.src}">
         <patternset
             includes="org/xml/sax/** 
                 javax/xml/parsers/**
@@ -202,8 +199,7 @@ Copyright:
                 org/w3c/dom/ranges/**
                 org/w3c/dom/traversal/**"
         />
-    </untar>
-    <delete file="${src.apis.tar}"/>
+    </unzip>
     
     <!-- substitute tokens as needed -->
     <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
@@ -477,7 +473,7 @@ Copyright:
     <copy todir="${disttools.dir}" >
         <fileset
             dir="${tools.dir}"  
-            includes="**/*.txt, **/*.bat, **/*.jar, **/*.tar.gz"
+            includes="**/*.txt, **/*.bat, **/*.jar, **/*.zip"
             excludes="**/CVS*, **/.#*, **/*.class"
         />
     </copy>
