@@ -62,9 +62,6 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.Augmentations;
 
-import org.xml.sax.AttributeList;
-import org.xml.sax.Attributes;
-
 /**
  * The XMLAttributesImpl class is an implementation of the XMLAttributes
  * interface which defines a collection of attributes for an element. 
@@ -84,7 +81,7 @@ import org.xml.sax.Attributes;
  * @version $Id$
  */
 public class XMLAttributesImpl
-    implements XMLAttributes, AttributeList, Attributes {
+    implements XMLAttributes {
 
     //
     // Data

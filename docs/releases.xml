@@ -9,6 +9,14 @@
   <changes>
     <update>
      <note>
+      Removed dependence on SAX attribute interfaces from XMLAttributesImpl
+      utility class. The AbstractSAXParser already defines a SAX attribute
+      proxy class so that the parser and components can be properly layered.
+     </note>
+     <submitter name='Andy Clark'/>
+    </update>
+    <update>
+     <note>
       Improved handling of settings in parser classes making it easier
       to re-use the parsers with other parser configurations. Previously,
       the parser instances assumed that all configurations supported
