@@ -2017,7 +2017,6 @@ public class XMLEntityManager
                         }
                     }
                     else if (c == '\n') {
-                        System.out.println("hit \\n");
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
