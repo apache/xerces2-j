@@ -59,6 +59,18 @@ event.
  </p>
   </a>
   </faq>
+  
+  <faq title="Namespace of xmlns attributes">
+    <q>Why does the SAX parser report that xmlns attributes have no namespace?</q>
+    <a>
+       <p>An erratum for the Namespaces in XML recommendation put namespace declaration 
+          attributes in the namespace "http://www.w3.org/2000/xmlns/". SAX2 does not 
+          accept this change so conforming parsers must report that these 
+          attributes have no namespace. Xerces behaves according to SAX2. Your code
+          must handle this discrepancy when interacting with APIs such as DOM and
+          applications which expect a namespace for xmlns attributes.</p>
+    </a>
+  </faq>
 
   <faq title="Encodings and XML Version Via SAX">
     <q>Is there any way I can determine what encoding an entity was
