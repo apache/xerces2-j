@@ -415,7 +415,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     // The list of children #text -> &ent;
                     // and entity has a first child as a text
                     // we should not advance
-                    if (prevSibling !=null && prevSibling.getNodeType() == Node.TEXT_NODE && 
+                    if (prevSibling != null && next != null && prevSibling.getNodeType() == Node.TEXT_NODE && 
                         next.getNodeType() == Node.TEXT_NODE) {
                         return prevSibling;  // Don't advance                          
                     }
