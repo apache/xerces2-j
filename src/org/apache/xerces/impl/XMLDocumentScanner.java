@@ -246,11 +246,11 @@ public class XMLDocumentScanner
     /** Element QName. */
     private QName fElementQName = new QName();
 
-    /** Element QName. */
-    private QName fElementQName2 = new QName();
-
     /** Attribute QName. */
     private QName fAttributeQName = new QName();
+
+    /** Another QName. */
+    private QName fQName = new QName();
 
     /** Element attributes. */
     private XMLAttributesImpl fAttributes = new XMLAttributesImpl();
@@ -698,6 +698,9 @@ public class XMLDocumentScanner
         }
         String rawname = fElementQName.rawname;
 
+        // push element stack
+        fCurrentElement = fElementStack.pushElement(fElementQName);
+
         // attributes
         boolean empty = false;
         fAttributes.removeAllAttributes();
@@ -731,9 +734,6 @@ public class XMLDocumentScanner
         } while (true);
         fInMarkup = false;
 
-        // push element stack
-        fCurrentElement = fElementStack.pushElement(fElementQName);
-
         // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(fElementQName, fAttributes);
@@ -757,6 +757,10 @@ public class XMLDocumentScanner
      * <strong>Note:</strong> This method assumes that the next 
      * character on the stream is the first character of the attribute
      * name.
+     * <p>
+     * <strong>Note:</strong> This method uses the fAttributeQName and
+     * fQName variables. The contents of these variables will be
+     * destroyed.
      *
      * @param attributes The attributes list for the scanned attribute.
      */
@@ -783,13 +787,19 @@ public class XMLDocumentScanner
         fEntityScanner.skipSpaces();
 
         // content
+        int oldLen = attributes.getLength();
         attributes.addAttribute(fAttributeQName, fCDATASymbol, null);
 
+        // WFC: Unique Att Spec
+        if (oldLen == attributes.getLength()) {
+            reportFatalError("AttributeNotUnique",
+                             new Object[]{fCurrentElement.rawname,
+                                          fAttributeQName.rawname});
+        }
         // REVISIT: we need the type from the Grammar to do the correct value
         // normalization
         scanAttributeValue(fString, fAttributeQName.rawname,
                            attributes, attributes.getLength() - 1, true);
-
         attributes.setValue(attributes.getLength() - 1, fString.toString());
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
@@ -1033,7 +1043,7 @@ public class XMLDocumentScanner
      * the handler about the end of the element and the end of any
      * relevent prefix mappings.
      * <p>
-     * <strong>Note:</strong> This method uses the fElementQName2 variable.
+     * <strong>Note:</strong> This method uses the fQName variable.
      * The contents of this variable will be destroyed.
      *
      * @param element The element.
@@ -1047,7 +1057,7 @@ public class XMLDocumentScanner
     protected int handleEndElement(QName element) throws SAXException {
 
         // make sure the elements match
-        QName startElement = fElementQName2;
+        QName startElement = fQName;
         fElementStack.popElement(startElement);
         if (element.rawname != startElement.rawname) {
             reportFatalError("ETagRequired",
