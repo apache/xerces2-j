@@ -138,7 +138,9 @@ public class SAXParser
     //
 
     /** Default constructor. */
-    public SAXParser() {}
+    public SAXParser() {
+        setSendCharDataAsCharArray(true);
+    }
 
     //
     // Public methods
@@ -738,7 +740,6 @@ public class SAXParser
     /** Sets the document handler. */
     public void setDocumentHandler(DocumentHandler handler) {
         fDocumentHandler = handler;
-        setSendCharDataAsCharArray(true);
     }
 
     //
