@@ -22,7 +22,7 @@
     <link anchor='pass-through-filter'>Pass-Through Document 
     Handler Filter</link>
    </li>
-   <li><link anchor=''></link></li>
+   <li><link anchor='upper-case-filter'>Upper-Case Filter</link></li>
   </ul>
   <p>
    For information regarding the parser configuration framework, 
@@ -1158,71 +1158,71 @@ public class PassThroughFilter
     public void startDocument(<link anchor='locator'>XMLLocator</link> locator, String encoding)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.startDocument(locator, encoding);
-	}
+            fDocumentHandler.startDocument(locator, encoding);
+        }
     }
     
     public void xmlDecl(String version, String encoding, 
                         String standalone) throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.xmlDecl(version, encoding, standalone);
-	}
+            fDocumentHandler.xmlDecl(version, encoding, standalone);
+        }
     }
     
     public void doctypeDecl(String rootElement, String publicId, 
                             String systemId) throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
-	}
+            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
+        }
     }
     
     public void comment(<link anchor='string'>XMLString</link> text)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.comment(text);
-	}
+            fDocumentHandler.comment(text);
+        }
     }
     
     public void processingInstruction(String target, <link anchor='string'>XMLString</link> data)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.processingInstruction(target, data);
-	}
+            fDocumentHandler.processingInstruction(target, data);
+        }
     }
     
     public void startPrefixMapping(String prefix, String uri)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.startPrefixMapping(prefix, uri);
-	}
+            fDocumentHandler.startPrefixMapping(prefix, uri);
+        }
     }
     
     public void endPrefixMapping(String prefix)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.endPrefixMapping(prefix);
-	}
+            fDocumentHandler.endPrefixMapping(prefix);
+        }
     }
     
     public void startElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.startElement(element, attributes);
-	}
+            fDocumentHandler.startElement(element, attributes);
+        }
     }
     
     public void emptyElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.emptyElement(element, attributes);
-	}
+            fDocumentHandler.emptyElement(element, attributes);
+        }
     }
     
     public void endElement(<link anchor='qname'>QName</link> element)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.endElement(element);
-	}
+            fDocumentHandler.endElement(element);
+        }
     }
     
     public void startEntity(String name, 
@@ -1230,63 +1230,64 @@ public class PassThroughFilter
                             String baseSystemId, String encoding) 
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.startEntity(name, 
+            fDocumentHandler.startEntity(name, 
                                          publicId, systemId, 
                                          baseSystemId, encoding);
-	}
+        }
     }
     
     public void textDecl(String version, String encoding)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.textDecl(version, encoding);
-	}
+            fDocumentHandler.textDecl(version, encoding);
+        }
     }
     
     public void endEntity(String name)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.endEntity(name);
-	}
+            fDocumentHandler.endEntity(name);
+        }
     }
     
     public void characters(<link anchor='string'>XMLString</link> text)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.characters(text);
-	}
+            fDocumentHandler.characters(text);
+        }
     }
     
     public void ignorableWhitespace(<link anchor='string'>XMLString</link> text)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.ignorableWhitespace(text);
-	}
+            fDocumentHandler.ignorableWhitespace(text);
+        }
     }
     
     public void startCDATA()
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.startCDATA();
-	}
+            fDocumentHandler.startCDATA();
+        }
     }
     
     public void endCDATA()
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.endCDATA();
-	}
+            fDocumentHandler.endCDATA();
+        }
     }
     
     public void endDocument()
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-	    fDocumentHandler.endDocument();
-	}
+            fDocumentHandler.endDocument();
+        }
     }
     
 } // class PassThroughFilter</source>
   </s3>
+  <anchor name='upper-case-filter'/>
   <s3 title='Upper-Case Filter'>
    <p>
     The following code extends the pass-through document handler
@@ -1305,19 +1306,19 @@ public class UpperCaseFilter
 
     // XMLDocumentHandler methods
     
-    public void startElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes attributes</link>)
+    public void startElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
         throws <link anchor='exception'>XNIException</link> {
-	super.startElement(toUpperCase(element), attributes);
+        super.startElement(toUpperCase(element), attributes);
     }
     
-    public void emptyElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes attributes</link>)
+    public void emptyElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
         throws <link anchor='exception'>XNIException</link> {
-	super.emptyElement(toUpperCase(element), attributes);
+        super.emptyElement(toUpperCase(element), attributes);
     }
     
     public void endElement(<link anchor='qname'>QName</link> element)
         throws <link anchor='exception'>XNIException</link> {
-	super.endElement(toUpperCase(element));
+        super.endElement(toUpperCase(element));
     }
     
     // Protected methods
