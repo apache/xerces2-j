@@ -57,6 +57,8 @@
 
 package org.apache.xerces.xni;
 
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
+
 /**
  * The DTD content model handler interface defines callback methods 
  * to report information items in DTD content models of an element
@@ -299,5 +301,11 @@ public interface XMLDTDContentModelHandler {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endContentModel(Augmentations augmentations) throws XNIException;
+
+    // set content model source
+    public void setDTDContentModelSource(XMLDTDContentModelSource source);
+
+    // get content model source
+    public XMLDTDContentModelSource getDTDContentModelSource();
 
 } // interface XMLDTDContentModelHandler

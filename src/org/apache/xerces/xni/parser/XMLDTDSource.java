@@ -81,4 +81,7 @@ public interface XMLDTDSource {
     /** Sets the DTD handler. */
     public void setDTDHandler(XMLDTDHandler handler);
 
+    /** Returns the DTD handler. */
+    public XMLDTDHandler getDTDHandler();
+
 } // interface XMLDTDSource

@@ -57,6 +57,8 @@
 
 package org.apache.xerces.xni;
 
+import org.apache.xerces.xni.parser.XMLDTDSource;
+
 /**
  * The DTD handler interface defines callback methods to report
  * information items in the DTD of an XML document. Parser components
@@ -404,5 +406,11 @@ public interface XMLDTDHandler {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endDTD(Augmentations augmentations) throws XNIException;
+
+    // set the source of this handler
+    public void setDTDSource(XMLDTDSource source);
+
+    // return the source from which this handler derives its events
+    public XMLDTDSource getDTDSource();
 
 } // interface XMLDTDHandler
