@@ -8,7 +8,8 @@
            id='index' source='readme.xml'/>
  <document label='Installation' title='Installation Instructions'
            id='install' source='install.xml'/>
- <external label='Download' href='http://xml.apache.org/dist/xerces-j/'/>
+ <external label='Download' href='http://xml.apache.org/xerces2-j/download.cgi'/>
+ <hidden  title='Download' id='download' source='download.xml'/>
  <external label='CVS Repository'
            href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/'/>
  <separator/>

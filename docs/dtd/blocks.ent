@@ -1,7 +1,7 @@
 <?xml encoding='UTF-8'?>
 
 <!-- BLOCKS ENTITY -->
-<!ENTITY % blocks "p|note|ul|ol|gloss|table|source|anchor">
+<!ENTITY % blocks "p|note|ul|ol|gloss|table|source|anchor|form">
 <!ENTITY % relBlocks "p|note|ul|ol|gloss|table|source">
 
 <!-- import the external markup.ent dtd -->
@@ -39,3 +39,17 @@
 <!ATTLIST td colspan CDATA "1"
              rowspan CDATA "1">
              
+<!ELEMENT form (#PCDATA|select|input)*>
+<!ATTLIST form action CDATA #REQUIRED
+               method CDATA #REQUIRED
+               id     CDATA #REQUIRED>
+
+<!ELEMENT select (#PCDATA|option)*>
+<!ATTLIST select name CDATA #REQUIRED>
+
+<!ELEMENT option (#PCDATA)>
+<!ATTLIST option value CDATA #REQUIRED>
+
+<!ELEMENT input EMPTY>
+<!ATTLIST input type  CDATA #REQUIRED
+                value CDATA #REQUIRED>
