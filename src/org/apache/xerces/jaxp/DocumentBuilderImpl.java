@@ -164,17 +164,17 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                     domParser.setFeature(name, ((Boolean)val).booleanValue());
                 } else {
                     // Assume property
-
-                    // Translate JAXP schemaLanguage property to Xerces
-                    // validation feature
                     if (JAXP_SCHEMA_LANGUAGE.equals(name)
                             && W3C_XML_SCHEMA.equals(val)) {
+                        // Translate JAXP schemaLanguage property to Xerces
+                        // validation feature
                         domParser.setFeature(
                             Constants.XERCES_FEATURE_PREFIX +
                             Constants.SCHEMA_VALIDATION_FEATURE, true);
+                    } else {
+                        // Assume it's a Xerces property
+                        domParser.setProperty(name, val);
                     }
-
-                    domParser.setProperty(name, val);
                 }
             }
         }
