@@ -393,8 +393,8 @@ public class XML11Configuration extends ParserConfigurationSettings
     /** Current DTD scanner. */
     protected XMLDTDScanner fCurrentDTDScanner;
 
-
-    private boolean fInitalized = false;
+    /** Flag indiciating whether XML11 components have been initialized. */
+    private boolean f11Initialized = false;
 
     //
     // Constructors
@@ -1503,7 +1503,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 
 
     private void initXML11Components() {
-        if (!fInitalized) {
+        if (!f11Initialized) {
 
             // create datatype factory
             fXML11DatatypeFactory = DTDDVFactory.getInstance(XML11_DATATYPE_VALIDATOR_FACTORY);
@@ -1522,7 +1522,9 @@ public class XML11Configuration extends ParserConfigurationSettings
 
             
             if (fSchemaValidator != null)
-				addXML11Component(fSchemaValidator);
+                addXML11Component(fSchemaValidator);
+				
+            f11Initialized = true;
         }
     }
 
