@@ -700,6 +700,13 @@ public class EncodingMap {
         fIANA2JavaMap.put("CSEUCPKDFMTJAPANESE",          "EUCJIS");
         fIANA2JavaMap.put("EXTENDED_UNIX_CODE_PACKED_FORMAT_FOR_JAPANESE",          "EUCJIS");
         fIANA2JavaMap.put("EUC-KR",          "KSC5601");
+        fIANA2JavaMap.put("CSEUCKR",          "KSC5601");
+        fIANA2JavaMap.put("KS_C_5601-1987",          "KS_C_5601-1987");
+        fIANA2JavaMap.put("ISO-IR-149",          "KS_C_5601-1987");
+        fIANA2JavaMap.put("KS_C_5601-1989",          "KS_C_5601-1987");
+        fIANA2JavaMap.put("KSC_5601",          "KS_C_5601-1987");
+        fIANA2JavaMap.put("KOREAN",          "KS_C_5601-1987");
+        fIANA2JavaMap.put("CSKSC56011987",          "KS_C_5601-1987");
         fIANA2JavaMap.put("GB2312",          "GB2312");
         fIANA2JavaMap.put("CSGB2312",          "GB2312");
         fIANA2JavaMap.put("ISO-2022-JP",     "JIS");
@@ -944,6 +951,7 @@ public class EncodingMap {
         fJava2IANAMap.put("Cp01148",     "IBM01148");
         fJava2IANAMap.put("Cp01149",     "IBM01149");
         fJava2IANAMap.put("EUCJIS",    "EUC-JP");
+        fJava2IANAMap.put("KS_C_5601-1987",          "KS_C_5601-1987");
         fJava2IANAMap.put("GB2312",    "GB2312");
         fJava2IANAMap.put("ISO2022KR", "ISO-2022-KR");
         fJava2IANAMap.put("ISO2022CN", "ISO-2022-CN");
