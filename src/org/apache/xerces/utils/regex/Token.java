@@ -842,21 +842,28 @@ class Token implements java.io.Serializable {
                     }
                 }
 
-                                                // TR#18 1.2
+                // REVISIT: remove this code later 
+                // the following does not match the XML Schema definition
+                // for Regular Expressions 
+                
+                /*
+                // TR#18 1.2
                 Token.setAlias("ASSIGNED", "Cn", false);
                 Token.setAlias("UNASSIGNED", "Cn", true);
                 Token all = Token.createRange();
                 all.addRange(0, Token.UTF16_MAX);
                 Token.categories.put("ALL", all);
                 Token.categories2.put("ALL", Token.complementRanges(all));
-
+                */
+                
+                /*
                 Token isalpha = Token.createRange();
                 isalpha.mergeRanges(ranges[Character.UPPERCASE_LETTER]); // Lu
                 isalpha.mergeRanges(ranges[Character.LOWERCASE_LETTER]); // Ll
                 isalpha.mergeRanges(ranges[Character.OTHER_LETTER]); // Lo
                 Token.categories.put("IsAlpha", isalpha);
                 Token.categories2.put("IsAlpha", Token.complementRanges(isalpha));
-
+                
                 Token isalnum = Token.createRange();
                 isalnum.mergeRanges(isalpha);   // Lu Ll Lo
                 isalnum.mergeRanges(ranges[Character.DECIMAL_DIGIT_NUMBER]); // Nd
@@ -913,7 +920,7 @@ class Token implements java.io.Serializable {
                 Token.setAlias("upper", "IsUpper", true);
                 Token.setAlias("word", "IsWord", true); // Perl extension
                 Token.setAlias("xdigit", "IsXDigit", true);
-
+                 */
             } // synchronized
         } // if null
         RangeToken tok = positive ? (RangeToken)Token.categories.get(name)
