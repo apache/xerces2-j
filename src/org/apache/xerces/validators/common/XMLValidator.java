@@ -121,6 +121,7 @@ public final class XMLValidator
     private static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
     private static final boolean DEBUG_PRINT_ATTRIBUTES = false;
     private static final boolean DEBUG_PRINT_CONTENT = false;
+    private static final boolean DEBUG_SCHEMA_VALIDATION = false;
 
     // Chunk size constants
 
@@ -743,8 +744,9 @@ public final class XMLValidator
 
     /** Call start element. */
     public void callStartElement(QName element) throws Exception {
-//debugging
-//System.out.println("\n=======StartElement : " + fStringPool.toString(element.localpart));
+
+        if ( DEBUG_SCHEMA_VALIDATION )
+            System.out.println("\n=======StartElement : " + fStringPool.toString(element.localpart));
 
         if (fAttrListHandle != -1) {
             fAttrList.endAttrList();
@@ -860,8 +862,8 @@ public final class XMLValidator
 
     /** Call end element. */
     public void callEndElement(int readerId) throws Exception {
-//debugging
-//System.out.println("=======EndElement : " + fStringPool.toString(fCurrentElement.localpart)+"\n");
+        if ( DEBUG_SCHEMA_VALIDATION )
+            System.out.println("=======EndElement : " + fStringPool.toString(fCurrentElement.localpart)+"\n");
 
                 //****DEBUG****
                 if (DEBUG) print("(VAL) XMLValidator.callEndElement: " + param("readerId",readerId) + "\n");
@@ -885,8 +887,10 @@ public final class XMLValidator
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
                 int childCount = peekChildCount();
                 int result = checkContent(elementIndex, childCount, peekChildren());
-//debugging
-//System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
+
+                if ( DEBUG_SCHEMA_VALIDATION )
+                    System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
+
                 if (result != -1) {
                     int majorCode = result != childCount ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
                     reportRecoverableXMLError(majorCode,
@@ -933,14 +937,17 @@ public final class XMLValidator
         //REVISIT: Validation
         fCurrentScope = fScopeStack[fElementDepth];
 
-//debugging
+        if ( DEBUG_SCHEMA_VALIDATION ) {
+        
 /****
 System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
                    "\n fCurrentElementIndex : " + fCurrentElementIndex +
                    "\n fCurrentScope : " + fCurrentScope +
                    "\n fCurrentContentSpecType : " + fCurrentContentSpecType +
                    "\n++++++++++++++++++++++++++++++++++++++++++++++++" );
-/****/                   
+/****/  
+        }
+
         // if enclosing element's Schema is different, need to switch "context"
         if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
             fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
@@ -1346,9 +1353,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 contentSpecType = fTempElementDecl.type;
             }
         }
-//debugging
-//System.out.println("*******In XMLValidator#getContentSpecType, eltIndex:"
-//                   +elementIndex+","+"contentSpecType:"+contentSpecType);
         return contentSpecType;
     }
 
@@ -3178,11 +3182,16 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         // REVISIT
                     } 
                     else {
-//debugging
+                        if ( DEBUG_SCHEMA_VALIDATION ) {
 //System.out.println("deal with XSI");
 //System.out.println("before find XSI: "+fStringPool.toString(attPrefix)+","+fStringPool.toString(fXsiPrefix) );
+                        }
                         if (attPrefix == fXsiPrefix && fXsiPrefix != -1 ) {
+
+                            if (DEBUG_SCHEMA_VALIDATION) {
 //System.out.println("find XSI: "+fStringPool.toString(attPrefix)+","+fStringPool.toString(attName) );
+                            }
+
 
                             int localpart = attrList.getAttrLocalpart(index);
                             if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_SCHEMALOCACTION)) {
@@ -3335,7 +3344,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         TraverseSchema tst = null;
         try {
-            System.out.println("I am geting the Schema Document");
+            if (DEBUG_SCHEMA_VALIDATION) {
+                System.out.println("I am geting the Schema Document");
+            }
+
             Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
             if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
                 //TO DO : consistent report error here
@@ -3501,7 +3513,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
                 /****/
                 if (elementIndex == -1)
-                    System.out.println("!!! can not find elementDecl in the grammar, " +
+                    if (DEBUG_SCHEMA_VALIDATION)
+                        System.out.println("!!! can not find elementDecl in the grammar, " +
                                        " the element localpart: " + element.localpart+"["+fStringPool.toString(element.localpart) +"]" +
                                        " the element uri: " + element.uri+"["+fStringPool.toString(element.uri) +"]" +
                                        " and the current enclosing scope: " + fCurrentScope );
@@ -3600,6 +3613,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     else  {
 
                         fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
+
                         if (fTempAttDecl.datatypeValidator == null) {
                             Object[] args = { fStringPool.toString(element.rawname),
                                               fStringPool.toString(attrList.getAttrName(index)) };
