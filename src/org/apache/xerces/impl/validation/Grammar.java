@@ -1051,8 +1051,8 @@ public class Grammar {
    }
 
    protected void setEntityDecl(int entityDeclIndex, XMLEntityDecl entityDecl) {
-       int chunk = fEntityCount >> CHUNK_SHIFT;
-       int index = fEntityCount & CHUNK_MASK;
+       int chunk = entityDeclIndex >> CHUNK_SHIFT;
+       int index = entityDeclIndex & CHUNK_MASK;
 
        fEntityName[chunk][index] = entityDecl.name;
        fEntityValue[chunk][index] = null;
@@ -1074,8 +1074,8 @@ public class Grammar {
    }
 
    protected void setNotationDecl(int notationDeclIndex, XMLNotationDecl notationDecl) {
-       int chunk = fNotationCount >> CHUNK_SHIFT;
-       int index = fNotationCount & CHUNK_MASK;
+       int chunk = notationDeclIndex >> CHUNK_SHIFT;
+       int index = notationDeclIndex & CHUNK_MASK;
 
        fNotationName[chunk][index] = notationDecl.name;
        fNotationPublicId[chunk][index] = notationDecl.publicId;
