@@ -118,9 +118,14 @@ public class XPathMatcher {
 
     // constants describing whether a match was made,
     // and if so how.  
+    // matched any way
     protected static final int MATCHED = 1;
+    // matched on the attribute axis
     protected static final int MATCHED_ATTRIBUTE = 3;
+    // matched on the descendant-or-self axixs
     protected static final int MATCHED_DESCENDANT = 5;
+    // matched some previous (ancestor) node on the descendant-or-self-axis, but not this node
+    protected static final int MATCHED_DESCENDANT_PREVIOUS = 13;
 
     //
     // Data
@@ -183,7 +188,9 @@ public class XPathMatcher {
     public int isMatched() {
         // xpath has been matched if any one of the members of the union have matched.
         for (int i=0; i < fLocationPaths.length; i++)
-            if ((fMatched[i] & MATCHED) == MATCHED) return fMatched[i];
+            if (((fMatched[i] & MATCHED) == MATCHED) && 
+                    ((fMatched[i] & MATCHED_DESCENDANT_PREVIOUS) != MATCHED_DESCENDANT_PREVIOUS)) 
+                return fMatched[i];
         return 0;
     } // isMatched():int
 
@@ -275,6 +282,9 @@ public class XPathMatcher {
             if ((fMatched[i] & MATCHED_DESCENDANT) == MATCHED || fNoMatchDepth[i] > 0) {
                 fNoMatchDepth[i]++;
                 continue;
+            }
+            if((fMatched[i] & MATCHED_DESCENDANT) == MATCHED_DESCENDANT) {
+                fMatched[i] = MATCHED_DESCENDANT_PREVIOUS;
             }
 
             if (DEBUG_STACK) {
