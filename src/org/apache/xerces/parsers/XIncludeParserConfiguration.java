@@ -164,6 +164,7 @@ public class XIncludeParserConfiguration extends XML11Configuration {
         fDTDProcessor.setDTDSource(fDTDScanner);
         fDTDProcessor.setDTDHandler(fXIncludeHandler);
         fXIncludeHandler.setDTDSource(fDTDProcessor);
+		fXIncludeHandler.setDTDHandler(fDTDHandler);
         if (fDTDHandler != null) {
             fDTDHandler.setDTDSource(fXIncludeHandler);
         }
@@ -200,6 +201,7 @@ public class XIncludeParserConfiguration extends XML11Configuration {
 		fXML11DTDProcessor.setDTDSource(fXML11DTDScanner);
 		fXML11DTDProcessor.setDTDHandler(fXIncludeHandler);
 		fXIncludeHandler.setDTDSource(fXML11DTDProcessor);
+		fXIncludeHandler.setDTDHandler(fDTDHandler);
 		if (fDTDHandler != null) {
 			fDTDHandler.setDTDSource(fXIncludeHandler);
 		}
