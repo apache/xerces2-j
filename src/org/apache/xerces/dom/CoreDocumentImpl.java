@@ -1171,7 +1171,7 @@ public class CoreDocumentImpl
     public String saveXML(Node node)
                           throws DOMException {
         if ( node != null &&
-             getOwnerDocument() != node.getOwnerDocument() ) {
+             this != node.getOwnerDocument() ) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
