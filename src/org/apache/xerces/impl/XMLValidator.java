@@ -891,7 +891,6 @@ public class XMLValidator
      */
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
-
         // call handlers
         if (fInDTD) {
             fDTDGrammar.startEntity(name, publicId, systemId, encoding);
@@ -1668,6 +1667,25 @@ public class XMLValidator
           boolean declared = false;
 
           if (fCurrentGrammar != null) {
+              // check VC: Standalone Document Declartion, entities references appear in the document.
+              // REVISIT: this can be combined to a single check in startEntity 
+              // if we add one more argument in startEnity, inAttrValue
+              if (fValidation && fStandaloneIsYes) {
+                  for (int j=0;  j<attributes.getEntityCount(i); j++) {
+                      String entityName= attributes.getEntityName(i, j);
+                      int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
+                      if (entIndex > -1) {
+                          fCurrentGrammar.getEntityDecl(entIndex, fEntityDecl);
+                          if ( fEntityDecl.inExternal ) {
+                              fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                          "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
+                                                          new Object[]{entityName}, XMLErrorReporter.SEVERITY_ERROR);
+                          }
+                      }
+
+                  }
+              }
+
               int attDefIndex = -1;
               int position = fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
               while (position != -1) {
