@@ -87,6 +87,7 @@ import org.apache.xerces.impl.validation.datatypes.ENTITYDatatypeValidator;
 import org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator;
 import org.apache.xerces.impl.validation.datatypes.IDREFDatatypeValidator;
 import org.apache.xerces.impl.validation.datatypes.ListDatatypeValidator;
+import org.apache.xerces.impl.validation.datatypes.NOTATIONDatatypeValidator;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 
@@ -244,11 +245,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     private ListDatatypeValidator        fValIDRefs;
     private ENTITYDatatypeValidator      fValENTITY;
     private ListDatatypeValidator        fValENTITIES;
-    /*
     private DatatypeValidator            fValNMTOKEN;
     private DatatypeValidator            fValNMTOKENS;
-    private DatatypeValidator            fValNOTATION;
-    */
+    private NOTATIONDatatypeValidator    fValNOTATION;
 
     private Hashtable fTableOfIDs; //This table has to be own by instance of XMLValidator and shared among ID, IDREF and IDREFS
                                    //Only ID has read/write access
@@ -2073,21 +2072,22 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                         }
                     }
                 }
-                /*
                 try {
                     if (isAlistAttribute) {
-                        fValNMTOKENS.validate( value, null );
-                    } else {
                         fValNMTOKEN.validate( value, null );
+                    } else {
+                        fValNMTOKENS.validate( value, null );
                     }
                 } catch (InvalidDatatypeValueException ex) {
-                    
-                    reportRecoverableXMLError(XMLMessages.MSG_NMTOKEN_INVALID,
-                                              XMLMessages.VC_NAME_TOKEN,
-                                              fStringPool.toString(attributeDecl.name.rawname), value);//TODO NMTOKENS messge
-                                             
+                    System.out.println("ex = " + ex.getMessage() );
+                    /*
+                    String  key = ex.getKeyIntoReporter();
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                    key,
+                    new Object[]{ },
+                    XMLErrorReporter.SEVERITY_ERROR );
+                    */
                 }
-                */
 
                 /*
                 if (fNormalizeAttributeValues) {
@@ -2503,11 +2503,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             fValIDRefs   = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREFS" );
             fValENTITY   = (ENTITYDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITY" );
             fValENTITIES = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITIES" );
-            /*
             fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
             fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
-            fValNOTATION = fDataTypeReg.getDatatypeValidator("NOTATION" );
-            */
+            fValNOTATION = (NOTATIONDatatypeValidator) fDataTypeReg.getDatatypeValidator("NOTATION" );
 
 
             //Initialize ID, IDREF, IDREFS validators
