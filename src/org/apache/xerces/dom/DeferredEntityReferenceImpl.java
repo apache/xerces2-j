@@ -205,17 +205,8 @@ public class DeferredEntityReferenceImpl
 
         // if not found, create entity at this reference
         if (!found) {
-            DeferredDocumentImpl ownerDocument =
-                (DeferredDocumentImpl)this.ownerDocument;
-            int index = ownerDocument.getLastChild(fNodeIndex);
             readOnly(false);
-            Node last = null;
-            while (index != -1) {
-                Node child = ownerDocument.getNodeObject(index);
-                insertBefore(child, last);
-                last = child;
-                index = ownerDocument.getPrevSibling(index);
-            }
+            synchronizeChildren(fNodeIndex);
             setReadOnly(true, true);
         }
 

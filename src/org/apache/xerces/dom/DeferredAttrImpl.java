@@ -174,37 +174,7 @@ public final class DeferredAttrImpl
      * editing the tree -- this makes it a lot easier.
      */
     protected void synchronizeChildren() {
-
-        // no need to sync in the future
-        syncChildren(false);
-
-        // create children and link them as siblings
-        DeferredDocumentImpl ownerDocument =
-            (DeferredDocumentImpl)this.ownerDocument;
-        ChildNode first = null;
-        ChildNode last = null;
-        for (int index = ownerDocument.getLastChild(fNodeIndex);
-             index != -1;
-             index = ownerDocument.getPrevSibling(index)) {
-
-            ChildNode node = (ChildNode)ownerDocument.getNodeObject(index);
-            if (last == null) {
-                last = node;
-            }
-            else {
-                first.previousSibling = node;
-            }
-            node.ownerNode = this;
-            node.owned(true);
-            node.nextSibling = first;
-            first = node;
-        }
-        if (last != null) {
-            firstChild = first;
-            first.firstChild(true);
-            lastChild(last);
-        }
-
+        synchronizeChildren(fNodeIndex);
     } // synchronizeChildren()
 
 } // class DeferredAttrImpl

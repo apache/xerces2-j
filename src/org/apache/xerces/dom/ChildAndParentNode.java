@@ -887,6 +887,48 @@ public abstract class ChildAndParentNode
      */
     protected void synchronizeChildren() {}
 
+    /**
+     * Synchronizes the node's children with the internal structure.
+     * Fluffing the children at once solves a lot of work to keep
+     * the two structures in sync. The problem gets worse when
+     * editing the tree -- this makes it a lot easier.
+     * Even though this is only used in deferred classes this method is
+     * put here so that it can be shared by all deferred classes.
+     */
+    protected final void synchronizeChildren(int nodeIndex) {
+
+        // no need to sync in the future
+        syncChildren(false);
+
+        // create children and link them as siblings
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl)this.ownerDocument;
+        ChildNode first = null;
+        ChildNode last = null;
+        for (int index = ownerDocument.getLastChild(nodeIndex);
+             index != -1;
+             index = ownerDocument.getPrevSibling(index)) {
+
+            ChildNode node = (ChildNode)ownerDocument.getNodeObject(index);
+            if (last == null) {
+                last = node;
+            }
+            else {
+                first.previousSibling = node;
+            }
+            node.ownerNode = this;
+            node.owned(true);
+            node.nextSibling = first;
+            first = node;
+        }
+        if (last != null) {
+            firstChild = first;
+            first.firstChild(true);
+            lastChild(last);
+        }
+
+    } // synchronizeChildren()
+
     //
     // Serialization methods
     //
