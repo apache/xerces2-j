@@ -2133,6 +2133,12 @@ public class XMLSchemaValidator
                 fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_FULL;
             }
     
+            if (fDefaultValue != null)
+                fCurrentPSVI.fSpecified = true;
+            fCurrentPSVI.fNil = fNil;
+            fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
+            fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
+
             // pop error reporter context: get all errors for the current
             // element, and remove them from the error list
             String[] errors = fXSIErrorReporter.popContext();
@@ -2760,14 +2766,6 @@ public class XMLSchemaValidator
             fNormalizedStr.offset = 0;
             fNormalizedStr.length = bufLen;
             fDocumentHandler.characters(fNormalizedStr, null);
-        }
-        
-        if (fAugPSVI) {
-            if (this.fDefaultValue != null)
-                fCurrentPSVI.fSpecified = true;
-            fCurrentPSVI.fNil = fNil;
-            fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
-            fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
         }
     } // processElementContent
 
