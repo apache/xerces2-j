@@ -937,10 +937,10 @@ public class DOMParser
                         fDocument = (Document)documentClass.newInstance();
                     }
                     catch (Exception e) {
-                        // REVISIT: We've already checked the type of the factory
-                        //          in the setDocumentClassName() method. The only
-                        //          exception that can occur here is if the class
-                        //          doesn't have a zero-arg constructor. -Ac
+                        // REVISIT: Localize this message.
+                        throw new RuntimeException(
+                                 "Failed to create document object of class: "
+                                 + documentClassName);
                     }
                 }
                 fCurrentElementNode = fDocument;
