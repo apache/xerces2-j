@@ -1935,13 +1935,16 @@ public class DeferredDocumentImpl
     //
     // Private methods
     //
-
+    private static final int[] INIT_ARRAY = new int[CHUNK_SIZE + 1];
+    static {
+        for (int i = 0; i < CHUNK_SIZE; i++) {
+            INIT_ARRAY[i] = -1;
+        }
+    }
     /** Creates the specified chunk in the given array of chunks. */
     private final void createChunk(int data[][], int chunk) {
         data[chunk] = new int[CHUNK_SIZE + 1];
-        for (int i = 0; i < CHUNK_SIZE; i++) {
-            data[chunk][i] = -1;
-        }
+        System.arraycopy(INIT_ARRAY, 0, data[chunk], 0, CHUNK_SIZE);
     }
 
     class RefCount {
