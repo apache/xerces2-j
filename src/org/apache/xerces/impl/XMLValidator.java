@@ -2202,12 +2202,13 @@ public class XMLValidator
             else {
                 // simply shift non space chars if needed
                 if (current != i) {
-                    value.ch[current++] = value.ch[i];
+                    value.ch[current] = value.ch[i];
                 }
+                current++;
                 skipSpace = false;
             }
         }
-        if (current != value.offset) {
+        if (current != end) {
             if (skipSpace) {
                 // if we finished on a space trim it
                 current--;
