@@ -231,10 +231,13 @@ public class AttrImpl
 
         if(MUTATIONEVENTS)
         {
-   		    // Can no longer just discard the kids; they may have
-		    // event listeners waiting for them to disconnect.
-		    while(firstChild!=null)
-		        internalRemoveChild(firstChild,MUTATION_LOCAL);
+            // Can no longer just discard the kids; they may have
+            // event listeners waiting for them to disconnect.
+            if (syncChildren()) {
+                synchronizeChildren();
+            }
+            while(firstChild!=null)
+                internalRemoveChild(firstChild,MUTATION_LOCAL);
         }
         else
         {
@@ -249,16 +252,16 @@ public class AttrImpl
             syncChildren(false);
         }
 
-		// Create and add the new one, generating only non-aggregate events
-		// (There are no listeners on the new Text, but there may be
-		// capture/bubble listeners on the Attr.
-		// Note that aggregate events are NOT dispatched here,
-		// since we need to combine the remove and insert.
+        // Create and add the new one, generating only non-aggregate events
+        // (There are no listeners on the new Text, but there may be
+        // capture/bubble listeners on the Attr.
+        // Note that aggregate events are NOT dispatched here,
+        // since we need to combine the remove and insert.
     	specified(true);
-		if (value != null) {
-			internalInsertBefore(ownerDocument.createTextNode(value),null,
-			    MUTATION_LOCAL);
-		}
+        if (value != null) {
+            internalInsertBefore(ownerDocument.createTextNode(value),null,
+                                 MUTATION_LOCAL);
+        }
 		
     	changed(); // ***** Is this redundant?
 
@@ -276,6 +279,9 @@ public class AttrImpl
      */
     public String getValue() {
 
+        if (syncChildren()) {
+            synchronizeChildren();
+        }
     	StringBuffer value = new StringBuffer();
     	ChildNode node = firstChild;
     	while (node != null) {
