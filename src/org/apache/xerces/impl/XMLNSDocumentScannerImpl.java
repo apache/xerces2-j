@@ -242,12 +242,14 @@ extends XMLDocumentScannerImpl {
                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
 
-
             // bind the element
             String prefix = fElementQName.prefix != null
                             ? fElementQName.prefix : XMLSymbols.EMPTY_STRING;
-
+            // assign uri to the element
             fElementQName.uri = fNamespaceContext.getURI(prefix);
+            // make sure that object in the element stack is updated as well
+            fCurrentElement.uri = fElementQName.uri;
+
             if (fElementQName.prefix == null && fElementQName.uri != null) {
                 fElementQName.prefix = XMLSymbols.EMPTY_STRING;
             }
@@ -287,13 +289,11 @@ extends XMLDocumentScannerImpl {
             }
         }
 
-        //handleStartElement(fElementQName, fAttributes); 
 
         // call handler
         if (fDocumentHandler != null) {
             if (empty) {
                 fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
-                // handleEndElement(fElementQName, null);
 
                 if (fBindNamespaces) {
                     int count = fNamespaceContext.getDeclaredPrefixCount();
@@ -387,8 +387,6 @@ extends XMLDocumentScannerImpl {
         }
         fEntityScanner.skipSpaces();
 
-
-
         // content
         int oldLen = attributes.getLength();
         attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
@@ -411,9 +409,6 @@ extends XMLDocumentScannerImpl {
         attributes.setValue(oldLen, value);
         attributes.setNonNormalizedValue(oldLen, fTempString2.toString());
         attributes.setSpecified(oldLen, true);
-
-
-
 
         // record namespace declarations if any.
         if (fBindNamespaces) {
