@@ -70,6 +70,8 @@ import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.NotationImpl;
+import org.apache.xerces.dom3.UserDataHandler;
+
 import java.lang.reflect.*;
 import dom.util.Assertion;
 
@@ -98,7 +100,6 @@ public class Test {
     {
 	boolean asExpected = false;
 	Method method;
-
 	try {
 	    method = node.getClass().getMethod(methodName,methodSignature);
 	    method.invoke(node, parameters);
@@ -675,11 +676,11 @@ public class Test {
         Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
 			new Class[]{String.class, String.class, String.class},
 			new Object[]{"<doc::Name", pubId, sysId},
-			DOMException.INVALID_CHARACTER_ERR));     
+			DOMException.NAMESPACE_ERR));     
         Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
 			new Class[]{String.class, String.class, String.class},
 			new Object[]{"<doc:N:ame", pubId, sysId},
-			DOMException.INVALID_CHARACTER_ERR));     
+			DOMException.NAMESPACE_ERR));     
     }
 
     //
@@ -804,30 +805,35 @@ public class Test {
         // xml:a must have namespaceURI == "http://www.w3.org/XML/1998/namespace"
 	String xmlURI = "http://www.w3.org/XML/1998/namespace";
 	Assertion.equals(doc.createElementNS(xmlURI, "xml:a").getNamespaceURI(), xmlURI);
-	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+	
+        Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{"http://nsa", "xml:a"},
 				      DOMException.NAMESPACE_ERR));
-	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+        
+        Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{"", "xml:a"},
 				      DOMException.NAMESPACE_ERR));
+
 	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{null, "xml:a"},
 				      DOMException.NAMESPACE_ERR));
 
-        //unlike Attribute, xmlns (no different from foo) can have any namespaceURI for Element
-        Assertion.equals(doc.createElementNS("http://nsa", "xmlns").getNamespaceURI(), "http://nsa");
-        Assertion.equals(doc.createElementNS(xmlURI, "xmlns").getNamespaceURI(), xmlURI);
-        // REVISIT: We test for empty string being there!!!!!!
-        //Assertion.equals(doc.createElementNS("", "xmlns").getNamespaceURI(), "");
-        Assertion.assert(doc.createElementNS(null, "xmlns").getNamespaceURI() == null);
+        //xmlns prefix must be bound to the xmlns namespace
+        Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+                                           new Class[]{String.class, String.class},
+				           new Object[]{"http://nsa", "xmlns"},
+				           DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+                                           new Class[]{String.class, String.class},
+				           new Object[]{xmlURI, "xmlns"},
+				           DOMException.NAMESPACE_ERR));
+        
+        
+    Assertion.assert(doc.createElementNS(null, "noNamespace").getNamespaceURI() == null);
 
-        //unlike Attribute, xmlns:a (no different from foo:a) can have any
-	// namespaceURI for Element except null
-        Assertion.equals(doc.createElementNS("http://nsa", "xmlns:a").getNamespaceURI(), "http://nsa");
-        Assertion.equals(doc.createElementNS(xmlURI, "xmlns:a").getNamespaceURI(), xmlURI);
 	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{null, "xmlns:a"},
@@ -959,6 +965,7 @@ public class Test {
 
         // xml:a must have namespaceURI == "http://www.w3.org/XML/1998/namespace"
         String xmlURI = "http://www.w3.org/XML/1998/namespace";
+
         Assertion.equals(doc.createAttributeNS(xmlURI, "xml:a").getNamespaceURI(), xmlURI);
         Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
 				      new Class[]{String.class, String.class},
@@ -973,7 +980,7 @@ public class Test {
 				      new Object[]{null,  "xml:a"},
 				      DOMException.NAMESPACE_ERR));
 
-        //unlike Element, xmlns must have namespaceURI == "http://www.w3.org/2000/xmlns/"
+        //xmlns must have namespaceURI == "http://www.w3.org/2000/xmlns/"
         String xmlnsURI = "http://www.w3.org/2000/xmlns/";
         Assertion.equals(doc.createAttributeNS(xmlnsURI, "xmlns").getNamespaceURI(), xmlnsURI);
         Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
@@ -993,7 +1000,7 @@ public class Test {
 				      new Object[]{null,  "xmlns"},
 				      DOMException.NAMESPACE_ERR));
 
-        //unlike Element, xmlns:a must have namespaceURI == "http://www.w3.org/2000/xmlns/"
+        //xmlns:a must have namespaceURI == "http://www.w3.org/2000/xmlns/"
         Assertion.equals(doc.createAttributeNS(xmlnsURI, "xmlns:a").getNamespaceURI(), xmlnsURI);
         Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
 				      new Class[]{String.class, String.class},
@@ -1310,7 +1317,7 @@ public class Test {
         Assertion.assert(el.getUserData("mykey") == null);
         el.setUserData("mykey2", null, null);
         Assertion.assert(el.getUserData("mykey2") == null);
-
+ 
         MyHandler h = new MyHandler("mykey", c, el);
         el.setUserData("mykey", c, h);
         MyHandler h2 = new MyHandler("mykey2", el2, el);
@@ -1355,6 +1362,23 @@ public class Test {
         ((Element) n2).setAttribute("a1", "v1");
         ((Element) n2).setAttributeNS("uri", "a2", "v2");
         Assertion.assert(n1.isEqualNode(n2) == true);
+        
+        Element elem = doc.createElementNS(null, "e2");
+        root.appendChild(elem);
+        Attr attr = doc.createAttributeNS("http://attr", "attr1");
+        elem.setAttributeNode(attr);
+        
+        // check that setAttribute sets both name and value
+        elem.setAttributeNS("http://attr","p:attr1","v2");
+        Attr attr2 = elem.getAttributeNodeNS("http://attr", "attr1");
+        Assertion.assert(attr2.getNodeName().equals("p:attr1"), "p:attr1");
+        Assertion.assert(attr2.getNodeValue().equals("v2"), "value v2");
+        
+        // check that prefix is not null
+        elem.setAttributeNS("http://attr","attr1","v2");
+        attr2 = elem.getAttributeNodeNS("http://attr", "attr1");
+        Assertion.assert(attr2.getNodeName().equals("attr1"), "attr1");
+        
 
         ((Element) n2).setAttribute("a1", "v2");
         Assertion.assert(n1.isEqualNode(n2) == false);
