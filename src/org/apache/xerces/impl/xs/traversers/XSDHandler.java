@@ -636,10 +636,10 @@ public class XSDHandler {
                     if (importComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
                         fElementTraverser.traverseAnnotationDecl(importChild, importAttrs, true, currSchemaInfo);
                     } else {
-                        reportSchemaError("src-import", new Object [] {importComponentType}, importChild);
+                        reportSchemaError("s4s-elt-must-match.1", new Object [] {localName, "annotation?", importComponentType}, child);
                     }
                     if(DOMUtil.getNextSiblingElement(importChild) != null) {
-                        reportSchemaError("src-import", new Object [] {importComponentType}, importChild);
+                        reportSchemaError("s4s-elt-must-match.1", new Object [] {localName, "annotation?", DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(importChild))}, child);
                     }
                 }
                 fAttributeChecker.returnAttrArray(importAttrs, currSchemaInfo);
@@ -703,10 +703,10 @@ public class XSDHandler {
                         if (includeComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
                             fElementTraverser.traverseAnnotationDecl(includeChild, includeAttrs, true, currSchemaInfo);
                         } else {
-                            reportSchemaError("src-include", new Object [] {includeComponentType}, includeChild);
+                            reportSchemaError("s4s-elt-must-match.1", new Object [] {localName, "annotation?", includeComponentType}, child);
                         }
                         if(DOMUtil.getNextSiblingElement(includeChild) != null) {
-                            reportSchemaError("src-include", new Object [] {includeComponentType}, includeChild);
+                            reportSchemaError("s4s-elt-must-match.1", new Object [] {localName, "annotation?", DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(includeChild))}, child);
                         }
                     }
                 }
