@@ -143,7 +143,7 @@ public final class StringPool {
     public StringPool() {
         fSymbolCache = new SymbolCache();
         if (addSymbol("") != EMPTY_STRING)
-            throw new RuntimeException("UTL001 cannot happen 20");
+            throw new RuntimeException("UTL002 cannot happen");
     }
     //
     //
@@ -171,7 +171,7 @@ public final class StringPool {
         fSymbolCache.reset();
         fShuffleCount = 0;
         if (addSymbol("") != EMPTY_STRING)
-            throw new RuntimeException("UTL002 cannot happen 21");
+            throw new RuntimeException("UTL002 cannot happen");
     }
     //
     // String interfaces

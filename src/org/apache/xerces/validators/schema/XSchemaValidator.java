@@ -458,19 +458,19 @@ public class XSchemaValidator implements XMLValidator {
         return name;
     }
     public int lookupParameterEntity(int peNameIndex) throws Exception {
-        throw new RuntimeException("VAL003 cannot happen 26"); // not called
+        throw new RuntimeException("VAL003 cannot happen"); // not called
     }
     public boolean isExternalParameterEntity(int peIndex) {
-        throw new RuntimeException("VAL004 cannot happen 27"); // not called
+        throw new RuntimeException("VAL003 cannot happen"); // not called
     }
     public int getParameterEntityValue(int peIndex) {
-        throw new RuntimeException("VAL005 cannot happen 28"); // not called
+        throw new RuntimeException("VAL003 cannot happen"); // not called
     }
     public String getPublicIdOfParameterEntity(int peIndex) {
-        throw new RuntimeException("VAL006 cannot happen 29"); // not called
+        throw new RuntimeException("VAL003 cannot happen"); // not called
     }
     public String getSystemIdOfParameterEntity(int peIndex) {
-        throw new RuntimeException("VAL007 cannot happen 30"); // not called
+        throw new RuntimeException("VAL003 cannot happen"); // not called
     }
     public void rootElementSpecified(int rootElementType) throws Exception {
         if (fValidating) {
@@ -796,7 +796,7 @@ public class XSchemaValidator implements XMLValidator {
                 System.out.println("Internal error in attribute datatype validation");
             }
         } else {
-            throw new RuntimeException("VAL008 cannot happen 1");
+            throw new RuntimeException("VAL003 cannot happen");
         }
         return attValueIndex;
     }
