@@ -103,7 +103,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                     if ( fLength < 0 )
                         throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
-                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                } 
+                else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
                     fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                     String minLengthValue = (String)facets.get(key);
                     try {
@@ -111,7 +112,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                     } catch (NumberFormatException nfe) {
                         throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
                     }
-                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
+                } 
+                else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
                     fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
                     try {
@@ -119,14 +121,21 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                     } catch (NumberFormatException nfe) {
                         throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
                     }
-                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                } 
+                else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration    = (Vector)facets.get(key);
-            }
-            else {
+                }
+                else if ( key.equals(SchemaSymbols.ELT_PATTERN) ) {
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
+                    fPattern = (String)facets.get(key);
+                    if ( fPattern != null )
+                        fRegex = new RegularExpression(fPattern, "X");
+                }            
+               else {
                 throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_LIST_FACET,
                                                                         DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
-            }
+               }
             }
             if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                 if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
