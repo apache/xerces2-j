@@ -83,10 +83,11 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
  * This component requires the following features and properties from the
  * component manager that uses it:
  * <ul>
+ *  <li>http://xml.org/sax/features/validation</li>
+ *  <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
- *  <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
  * </ul>
  *
  * @author Andy Clark, IBM
@@ -99,6 +100,34 @@ public abstract class XMLScanner
     implements XMLComponent {
 
     //
+    // Constants
+    //
+
+    // feature identifiers
+
+    /** Feature identifier: validation. */
+    protected static final String VALIDATION =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+
+    /** Feature identifier: notify character references. */
+    protected static final String NOTIFY_CHAR_REFS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
+
+    // property identifiers
+
+    /** Property identifier: symbol table. */
+    protected static final String SYMBOL_TABLE = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+
+    /** Property identifier: error reporter. */
+    protected static final String ERROR_REPORTER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+
+    /** Property identifier: entity manager. */
+    protected static final String ENTITY_MANAGER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+
+    //
     // Data
     //
 
@@ -108,12 +137,18 @@ public abstract class XMLScanner
      * Validation. This feature identifier is:
      * http://xml.org/sax/features/validation
      */
-    protected boolean fValidation;
+    protected boolean fValidation = false;
     
+    /** Character references notification. */
+    protected boolean fNotifyCharRefs = false;
+
     // properties
 
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
+
+    /** Error reporter. */
+    protected XMLErrorReporter fErrorReporter;
 
     /** Entity manager. */
     protected XMLEntityManager fEntityManager;
@@ -138,13 +173,7 @@ public abstract class XMLScanner
     /** Array of 3 strings. */
     protected String[] fStrings = new String[3];
 
-    /** Error reporter. */
-    protected XMLErrorReporter fErrorReporter;
-
-    /** Character references resolution. */
-    protected boolean fNotifyCharRefs = false;
-
-     /** Literal value of the last character refence scanned. */
+    /** Literal value of the last character refence scanned. */
     protected String fCharRefLiteral = null;
 
     /** Attribute entity stack. */
@@ -192,19 +221,6 @@ public abstract class XMLScanner
     /** Symbol: "apos". */
     protected String fAposSymbol;
 
-    // feature identifiers
-    protected static final String VALIDATION =
-        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
-    protected static final String NOTIFY_CHAR_REFS =
-        Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
-
-    // recognized features
-    /** has to be declared in subclasses to avoid having to concatenate
-    private static final String[] RECOGNIZED_FEATURES = {
-        VALIDATION, NOTIFY_CHAR_REFS, 
-    };
-    /***/
-
     //
     // XMLComponent methods
     //
@@ -221,11 +237,8 @@ public abstract class XMLScanner
         throws XMLConfigurationException {
 
         // Xerces properties
-        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-        final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
         fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
 
         // initialize scanner
@@ -245,12 +258,17 @@ public abstract class XMLScanner
         fAposSymbol = fSymbolTable.addSymbol("apos");
         
         // sax features
-        fValidation = componentManager.getFeature(VALIDATION);
+        try {
+            fValidation = componentManager.getFeature(VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fValidation = false;
+        }
         try {
             fNotifyCharRefs = componentManager.getFeature(NOTIFY_CHAR_REFS);
         }
         catch (XMLConfigurationException e) {
-            // ignore
+            fNotifyCharRefs = false;
         }
 
     } // reset(XMLComponentManager)

@@ -4,6 +4,13 @@
  <release version='NOT YET RELEASED'>
   <desc/>
   <changes>
+   <fix>
+    <note>
+     Fixed Xerces2 standard components to properly recognize and use
+     the features and properties that they are documented to accept.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
    <add>
     <note>
      Added documentation to the XNI Manual for re-using the Xerces2

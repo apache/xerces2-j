@@ -358,6 +358,7 @@ public class MyComponent
   <p>Recognized features:</p>
   <ul>
    <li>http://xml.org/sax/features/validation</li>
+   <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
   </ul>
   <p>
    The <code>org.apache.xerces.impl.XMLDTDScannerImpl</code>

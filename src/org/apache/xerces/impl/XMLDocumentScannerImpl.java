@@ -92,10 +92,14 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * component manager that uses it:
  * <ul>
  *  <li>http://xml.org/sax/features/namespaces</li>
+ *  <li>http://xml.org/sax/features/validation</li>
+ *  <li>http://apache.org/xml/features/nonvalidating/load-external-dtd</li>
  *  <li>http://apache.org/xml/features/scanner/notify-char-refs</li>
+ *  <li>http://apache.org/xml/features/scanner/notify-builtin-refs</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
+ *  <li>http://apache.org/xml/properties/internal/dtd-scanner</li>
  * </ul>
  *
  * @author Glenn Marcy, IBM
@@ -191,15 +195,18 @@ public class XMLDocumentScannerImpl
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        VALIDATION, 
         NAMESPACES, 
+        VALIDATION, 
         LOAD_EXTERNAL_DTD,
-        NOTIFY_CHAR_REFS, 
         NOTIFY_BUILTIN_REFS,
+        NOTIFY_CHAR_REFS, 
     };
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
+        SYMBOL_TABLE,
+        ERROR_REPORTER,
+        ENTITY_MANAGER,
         DTD_SCANNER,
     };
 
@@ -276,6 +283,7 @@ public class XMLDocumentScannerImpl
     /** Namespaces. */
     protected boolean fNamespaces;
 
+    /** Load external DTD. */
     protected boolean fLoadExternalDTD = true;
 
     /** Notify built-in references. */
@@ -409,16 +417,30 @@ public class XMLDocumentScannerImpl
         fDoctypeSystemId = null;
 
         // sax features
-        fNamespaces = componentManager.getFeature(NAMESPACES);
+        try {
+            fNamespaces = componentManager.getFeature(NAMESPACES);
+        }
+        catch (XMLConfigurationException e) {
+            fNamespaces = true;
+        }
         fAttributes.setNamespaces(fNamespaces);
 
         // xerces features
-        fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
+        try {
+            fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
+        }
+        catch (XMLConfigurationException e) {
+            fNotifyBuiltInRefs = false;
+        }
+        try {
+            fLoadExternalDTD = componentManager.getFeature(LOAD_EXTERNAL_DTD);
+        }
+        catch (XMLConfigurationException e) {
+            fLoadExternalDTD = true;
+        }
 
         // xerces properties
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
-
-        fLoadExternalDTD = componentManager.getFeature(LOAD_EXTERNAL_DTD);
 
         // initialize vars
         fMarkupDepth = 0;

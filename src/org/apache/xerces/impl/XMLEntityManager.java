@@ -104,9 +104,9 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  *  <li>http://xml.org/sax/features/external-general-entities</li>
  *  <li>http://xml.org/sax/features/external-parameter-entities</li>
  *  <li>http://apache.org/xml/features/allow-java-encodings</li>
- *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
+ *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  * </ul>
  *
  *
@@ -146,10 +146,6 @@ public class XMLEntityManager
 
     // property identifiers
 
-    /** Property identifier: entity resolver. */
-    protected static final String ENTITY_RESOLVER = 
-        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
-
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -158,18 +154,25 @@ public class XMLEntityManager
     protected static final String ERROR_REPORTER = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
+    /** Property identifier: entity resolver. */
+    protected static final String ENTITY_RESOLVER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        VALIDATION,                     EXTERNAL_GENERAL_ENTITIES,
-        EXTERNAL_PARAMETER_ENTITIES,    ALLOW_JAVA_ENCODINGS,
+        VALIDATION,                     
+        EXTERNAL_GENERAL_ENTITIES,
+        EXTERNAL_PARAMETER_ENTITIES,    
+        ALLOW_JAVA_ENCODINGS,
     };
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
-        ENTITY_RESOLVER,    SYMBOL_TABLE,
+        SYMBOL_TABLE,
         ERROR_REPORTER,
+        ENTITY_RESOLVER,    
     };
 
     // debugging
@@ -197,34 +200,6 @@ public class XMLEntityManager
     // features
 
     /** 
-     * Buffer size. This feature does not have a feature identifier, yet. 
-     * Should it?
-     */
-    protected int fBufferSize = DEFAULT_BUFFER_SIZE;
-
-    // properties
-
-    /** 
-     * Entity resolver. This property identifier is:
-     * http://apache.org/xml/properties/internal/entity-resolver
-     */
-    protected XMLEntityResolver fEntityResolver;
-
-    /** 
-     * Symbol table. This property identifier is:
-     * http://apache.org/xml/properties/internal/symbol-table
-     */
-    protected SymbolTable fSymbolTable;
-
-    /**
-     * Error reporter. This property identifier is:
-     * http://apache.org/xml/properties/internal/error-reporter
-     */
-    protected XMLErrorReporter fErrorReporter;
-
-    // features
-
-    /** 
      * Validation. This feature identifier is:
      * http://xml.org/sax/features/validation
      */
@@ -248,7 +223,33 @@ public class XMLEntityManager
      */
     protected boolean fAllowJavaEncodings;
 
+    // properties
+
+    /** 
+     * Symbol table. This property identifier is:
+     * http://apache.org/xml/properties/internal/symbol-table
+     */
+    protected SymbolTable fSymbolTable;
+
+    /**
+     * Error reporter. This property identifier is:
+     * http://apache.org/xml/properties/internal/error-reporter
+     */
+    protected XMLErrorReporter fErrorReporter;
+
+    /** 
+     * Entity resolver. This property identifier is:
+     * http://apache.org/xml/properties/internal/entity-resolver
+     */
+    protected XMLEntityResolver fEntityResolver;
+
     // settings
+
+    /** 
+     * Buffer size. This feature does not have a feature identifier, yet. 
+     * Should it?
+     */
+    protected int fBufferSize = DEFAULT_BUFFER_SIZE;
 
     /** 
      * True if the document entity is standalone. This should really
@@ -788,17 +789,42 @@ public class XMLEntityManager
         throws XMLConfigurationException {
 
         // sax features
-        fValidation = componentManager.getFeature(VALIDATION);
-        fExternalGeneralEntities = componentManager.getFeature(EXTERNAL_GENERAL_ENTITIES);
-        fExternalParameterEntities = componentManager.getFeature(EXTERNAL_PARAMETER_ENTITIES);
+        try {
+            fValidation = componentManager.getFeature(VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fValidation = false;
+        }
+        try {
+            fExternalGeneralEntities = componentManager.getFeature(EXTERNAL_GENERAL_ENTITIES);
+        }
+        catch (XMLConfigurationException e) {
+            fExternalGeneralEntities = true;
+        }
+        try {
+            fExternalParameterEntities = componentManager.getFeature(EXTERNAL_PARAMETER_ENTITIES);
+        }
+        catch (XMLConfigurationException e) {
+            fExternalParameterEntities = true;
+        }
 
         // xerces features
-        fAllowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
+        try {
+            fAllowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
+        }
+        catch (XMLConfigurationException e) {
+            fAllowJavaEncodings = false;
+        }
 
         // xerces properties
-        fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+        try {
+            fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
+        }
+        catch (XMLConfigurationException e) {
+            fEntityResolver = null;
+        }
 
         // initialize state
         fStandalone = false;
@@ -894,16 +920,16 @@ public class XMLEntityManager
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
-                fEntityResolver = (XMLEntityResolver)value;
-                return;
-            }
             if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
                 fSymbolTable = (SymbolTable)value;
                 return;
             }
             if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {
                 fErrorReporter = (XMLErrorReporter)value;
+                return;
+            }
+            if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
+                fEntityResolver = (XMLEntityResolver)value;
                 return;
             }
         }
