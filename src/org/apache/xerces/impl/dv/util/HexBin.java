@@ -68,8 +68,8 @@ import java.io.UnsupportedEncodingException;
 public final class  HexBin {
     static private final int  BASELENGTH   = 255;
     static private final int  LOOKUPLENGTH = 16;
-    static private byte [] hexNumberTable    = new byte[BASELENGTH];
-    static private byte [] lookUpHexAlphabet = new byte[LOOKUPLENGTH];
+    static final private byte [] hexNumberTable    = new byte[BASELENGTH];
+    static final private byte [] lookUpHexAlphabet = new byte[LOOKUPLENGTH];
 
 
     static {

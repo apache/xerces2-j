@@ -86,8 +86,8 @@ public final class  Base64 {
     static private final int  SIGN               = -128;
     static private final byte PAD                = ( byte ) '=';
     static private final boolean fDebug          = false;
-    static private byte [] base64Alphabet        = new byte[BASELENGTH];
-    static private byte [] lookUpBase64Alphabet  = new byte[LOOKUPLENGTH];
+    static final private byte [] base64Alphabet        = new byte[BASELENGTH];
+    static final private byte [] lookUpBase64Alphabet  = new byte[LOOKUPLENGTH];
 
     static {
 
