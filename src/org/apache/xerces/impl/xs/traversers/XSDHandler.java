@@ -1016,6 +1016,21 @@ public class XSDHandler {
         } // while
     } // end traverseSchemas
 
+    // store whether we have reported an error about that no grammar
+    // is found for the given namespace uri
+    private Vector fReportedTNS = null;
+    // check whether we need to report an error against the given uri.
+    // if we have reported an error, then we don't need to report again;
+    // otherwise we reported the error, and remember this fact.
+    private final boolean needReportTNSError(String uri) {
+        if (fReportedTNS == null)
+            fReportedTNS = new Vector();
+        else if (fReportedTNS.contains(uri))
+            return false;
+        fReportedTNS.addElement(uri);
+        return true;
+    }
+    
     private static final String[] COMP_TYPE = {
         null,               // index 0
         "attribute declaration",
@@ -1069,14 +1084,16 @@ public class XSDHandler {
         // now check whether this document can access the requsted namespace
         if (!currSchema.isAllowedNS(declToTraverse.uri)) {
             // cannot get to this schema from the one containing the requesting decl
-            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
+            if (currSchema.needReportTNSError(declToTraverse.uri))
+                reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
             return null;
         }
 
         // check whether there is grammar for the requested namespace
         SchemaGrammar sGrammar = fGrammarBucket.getGrammar(declToTraverse.uri);
         if (sGrammar == null) {
-            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]}, elmNode);
+            if (needReportTNSError(declToTraverse.uri))
+                reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]}, elmNode);
             return null;
         }
 

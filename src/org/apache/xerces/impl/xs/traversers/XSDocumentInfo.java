@@ -192,4 +192,19 @@ class XSDocumentInfo {
         return fImportedNS.contains(namespace == null ? "" : namespace);
     }
     
+    // store whether we have reported an error about that this document
+    // can't access components from the given namespace
+    private Vector fReportedTNS = null;
+    // check whether we need to report an error against the given uri.
+    // if we have reported an error, then we don't need to report again;
+    // otherwise we reported the error, and remember this fact.
+    final boolean needReportTNSError(String uri) {
+        if (fReportedTNS == null)
+            fReportedTNS = new Vector();
+        else if (fReportedTNS.contains(uri))
+            return false;
+        fReportedTNS.addElement(uri);
+        return true;
+    }
+    
 } // XSDocumentInfo
