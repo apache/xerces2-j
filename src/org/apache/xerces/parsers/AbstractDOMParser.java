@@ -966,7 +966,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 						// DTD 
                         type = attributes.getType(i);
 						attrImpl.setType(type);
-						id = isIDType((String)type);
+						id = (type.equals("ID")) ? true : false;
 					}
                 
 					if (id) {
@@ -1059,7 +1059,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 				else {
 					// DTD 
 					type = attributes.getType(i);
-					id = isIDType((String)type);
+					id = (type.equals("ID")) ? true : false;
 				}
                 
                 // create attribute
@@ -2390,7 +2390,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 }
                 attr.setValue(defaultValue.toString());
                 attr.setSpecified(false);
-                attr.setIdAttribute(isIDType(type));
+                attr.setIdAttribute(type.equals("ID"));
 
                 // add default attribute to element definition
                 if (nsEnabled){
@@ -2550,10 +2550,5 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
            throw new RuntimeException();
     }
 
-	private boolean isIDType(String type) {
-		if ( type == null )
-			return false;
-		return (type.equals("ID")) ? true : false;
-	}
     
 } // class AbstractDOMParser
