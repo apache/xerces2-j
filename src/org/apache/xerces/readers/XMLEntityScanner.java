@@ -322,8 +322,10 @@ implements Locator {
      * 
      */
     public void skipSpaces() throws IOException {
-        while (  XMLChar.isSpace( this.fPushbackReader.read() ) == true ) {
+        int readChar = this.fPushbackReader.read();
+        while (  XMLChar.isSpace( readChar ) == true ) {
             fCharPosition++;
+            readChar = this.fPushbackReader.read();
         }
     } // skipSpaces
 
