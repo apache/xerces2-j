@@ -2775,6 +2775,9 @@ public class XMLSchemaValidator
                     AttributePSVImpl attrPSVI = new AttributePSVImpl();
                     augs.putItem(Constants.ATTRIBUTE_PSVI, attrPSVI);
 
+                    attrPSVI.fDeclaration = currDecl;
+                    attrPSVI.fTypeDecl = currDecl.fType;
+                    attrPSVI.fMemberType = defaultValue.memberType;
                     attrPSVI.fNormalizedValue = normalized;
                     attrPSVI.fSchemaDefault = normalized;
                     attrPSVI.fValidationContext = fValidationRoot;
