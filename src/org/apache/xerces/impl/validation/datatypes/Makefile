@@ -24,7 +24,7 @@ TARGETS=\
 	TimeDurationDatatypeValidator.class\
 	DatatypeValidatorFactoryImpl.class
 
-DIRS = regex 
+DIRS = regex eTypes
 
 TOP = ../../../../../../..
 include $(TOP)/src/Makefile.incl
