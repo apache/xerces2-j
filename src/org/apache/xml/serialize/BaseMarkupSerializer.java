@@ -109,6 +109,7 @@ import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMLocator;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
+import org.apache.xerces.impl.Constants;
 
 import org.w3c.dom.ls.DOMWriterFilter;
 import org.w3c.dom.traversal.NodeFilter;
@@ -1141,8 +1142,7 @@ public abstract class BaseMarkupSerializer
               }
 
             child = node.getFirstChild();
-            if ( child == null || (fFeatures !=null && 
-                 !((Boolean)fFeatures.get("entities")).booleanValue() )) {
+            if ( child == null || (fFeatures !=null && getFeature(Constants.DOM_ENTITIES))){
                 _printer.printText("&");
                 _printer.printText(node.getNodeName());
                 _printer.printText(";");
@@ -1357,25 +1357,24 @@ public abstract class BaseMarkupSerializer
                 state.inCData = true;
             }
             index = text.indexOf( "]]>" );
-            if (index >=0 && (fFeatures != null && !((Boolean)fFeatures.get("split-cdata-sections")).booleanValue())) {
-               // issue fatal error
-                if (fDOMErrorHandler != null) {
-                    modifyDOMError("The character sequence \"]]>\" must not appear in content"+
-                                   " unless used to mark the end of a CDATA section.", DOMError.SEVERITY_FATAL_ERROR);
-                    boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                    // Should we always terminate the serialization?
-                    // otherwise should we split CDATA section..?
-                    if (!continueProcess) {
-                        throw new IOException();
+            if (index >=0) {               
+                // DOM Level 3 Load and Save
+                //
+                if (fFeatures != null && fDOMErrorHandler != null) {
+                    if (!getFeature(Constants.DOM_SPLIT_CDATA)) {
+                        // issue fatal error
+                         modifyDOMError("The character sequence \"]]>\" must not appear in content"+
+                                  " unless used to mark the end of a CDATA section.", DOMError.SEVERITY_FATAL_ERROR);
+                         boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
+                         if (!continueProcess) {
+                                throw new IOException();
+                        }
+                    } else {
+                        // issue warning
+                            modifyDOMError("Spliting a CDATA section containing the CDATA section termination marker ']]>' ", 
+                                           DOMError.SEVERITY_WARNING);
+                            fDOMErrorHandler.handleError(fDOMError);
                     }
-                }
-            }
-            else if (index >=0 && (fFeatures !=null &&((Boolean)fFeatures.get("split-cdata-sections")).booleanValue())) {
-               // issue warning
-               if (fDOMErrorHandler != null) {
-                   modifyDOMError("Spliting a CDATA section containing the CDATA section termination marker ']]>' ", 
-                                  DOMError.SEVERITY_WARNING);
-                   fDOMErrorHandler.handleError(fDOMError);
                 }
             }
 
@@ -1584,7 +1583,6 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
         String charRef;
-
         // If there is a suitable entity reference for this
         // character, print it. The list of available entity
         // references is almost but not identical between
@@ -1596,7 +1594,6 @@ public abstract class BaseMarkupSerializer
             _printer.printText( ';' );
         } else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
-            // If the character is not printable, print as character reference.
             // Non printables are below ASCII space but not tab or line
             // terminator, ASCII delete, or above a certain Unicode threshold.
             if (ch < 0x10000) {
@@ -1605,8 +1602,8 @@ public abstract class BaseMarkupSerializer
                 _printer.printText((char)(((ch-0x10000)>>10)+0xd800));
                 _printer.printText((char)(((ch-0x10000)&0x3ff)+0xdc00));
             }
-
         } else {
+            // The character is not printable, print as character reference.
             _printer.printText( "&#x" );
             _printer.printText(Integer.toHexString(ch));
             _printer.printText( ';' );
@@ -1702,7 +1699,7 @@ public abstract class BaseMarkupSerializer
      * Leave the current element state and return to the
      * state of the parent element. If this was the root
      * element, return to the state of the document.
-     *
+     *                                                                             
      * @return Previous element state
      */
     protected ElementState leaveElementState()
@@ -1777,5 +1774,10 @@ public abstract class BaseMarkupSerializer
             return fDOMError;
         
     }
+
+    private boolean getFeature(String feature){
+        return ((Boolean)fFeatures.get(feature)).booleanValue();
+    }
+
 
 }
