@@ -681,8 +681,7 @@ public class XMLDTDScanner
         skipSeparator(false, !scanningInternalSubset());
         // end
         if (!fEntityScanner.skipChar('>')) {
-            System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
-            reportFatalError("ElementdeclUnterminated",
+            reportFatalError("ElementDeclUnterminated",
                              new Object[]{name});
         }
 
@@ -707,8 +706,6 @@ public class XMLDTDScanner
     private final void scanMixed(String elName)
         throws IOException, SAXException {
 
-        boolean sawName = false;
-
         fStringBuffer.append("#PCDATA");
         skipSeparator(false, !scanningInternalSubset());
         while (fEntityScanner.skipChar('|')) {
@@ -720,7 +717,6 @@ public class XMLDTDScanner
                 reportFatalError("MSG_ELEMENT_TYPE_REQUIRED_IN_MIXED_CONTENT",
                                  new Object[]{elName});
             }
-            sawName = true;
             fStringBuffer.append(childName);
             // call handler
             if (fDTDContentModelHandler != null) {
@@ -728,19 +724,15 @@ public class XMLDTDScanner
             }
             skipSeparator(false, !scanningInternalSubset());
         }
-        if (!fEntityScanner.skipChar(')')) {
+        if (fEntityScanner.skipString(")*")) {
+            fStringBuffer.append(")*");
+        }
+        else if (fEntityScanner.skipChar(')')){
+            fStringBuffer.append(')');
+        }
+        else {
             reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
                              new Object[]{elName});
-        }
-        fStringBuffer.append(')');
-        // occurrence operator
-        if (sawName && fEntityScanner.skipChar('*')) {
-            // call handler
-            if (fDTDContentModelHandler != null) {
-                short oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
-                fDTDContentModelHandler.childrenOccurrence(oc);
-            }
-            fStringBuffer.append('*');
         }
         // we are done
     }
@@ -1372,8 +1364,7 @@ public class XMLDTDScanner
 
         // end
         if (!fEntityScanner.skipChar('>')) {
-            System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
-            reportFatalError("NotationdeclUnterminated",
+            reportFatalError("NotationDeclUnterminated",
                              new Object[]{name});
         }
 
