@@ -2,9 +2,9 @@
                       "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd">
 <HTML>
  <HEAD>
-  <TITLE>Design</TITLE>
-  <LINK href="index.css" rel="stylesheet" type="text/css">
-  <LINK href="design.css" rel="stylesheet" type="text/css">
+  <TITLE>Xerces 2 | Design</TITLE>
+  <LINK href="css/index.css" rel="stylesheet" type="text/css">
+  <LINK href="css/design.css" rel="stylesheet" type="text/css">
  </HEAD>
  <BODY>
   <H1 align="center">Xerces-J 2.0       Design     </H1>
@@ -675,7 +675,7 @@
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="class-title">InputSource</SPAN> <SPAN class="field-title">fInputSource</SPAN>
-       <LI>int <SPAN class="field-title">fRowNumber</SPAN>
+       <LI>int <SPAN class="field-title">fLineNumber</SPAN>
        <LI>int <SPAN class="field-title">fColumnNumber</SPAN>
        <LI>long <SPAN class="field-title">fBytePosition</SPAN>
        <LI>long <SPAN class="field-title">fCharPosition</SPAN>
@@ -730,12 +730,6 @@
        <LI>
         <SPAN class="constructor-title">XMLValidator</SPAN>      (
         )
-      </UL>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">setDocumentHandler</SPAN>      (
-         <SPAN class="interface-title">XMLDocumentHandler</SPAN> <SPAN
-        class="param-title">documentHandler</SPAN>          )
       </UL>
     </DL>
    </A></BLOCKQUOTE>
@@ -826,7 +820,7 @@
         )       :    int
        <LI>
         <SPAN class="method-title">getNextEntityDeclIndex</SPAN>      (
-        int <SPAN class="param-title">elementDeclIndex</SPAN>          )
+        int <SPAN class="param-title">entityDeclIndex</SPAN>          )
         :    int
        <LI>
         <SPAN class="method-title">getEntityDeclIndex</SPAN>      (
@@ -842,7 +836,7 @@
         (             )       :    int
        <LI>
         <SPAN class="method-title">getNextNotationDeclIndex</SPAN>
-        (   int <SPAN class="param-title">elementDeclIndex</SPAN>
+        (   int <SPAN class="param-title">notationDeclIndex</SPAN>
         )       :    int
        <LI>
         <SPAN class="method-title">getNotationDeclIndex</SPAN>      (

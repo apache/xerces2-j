@@ -2,7 +2,7 @@
 <html>
  <head>
   <title>Xerces 2 | Architecture</title>
-  <link rel='stylesheet' type='text/css' href='site.css'>
+  <link rel='stylesheet' type='text/css' href='css/site.css'>
   <style type='text/css'>
    .diagram { color: black; background: white; 
               font-weight: normal;
@@ -103,9 +103,8 @@
    This architecture can also be used to implement upcoming 
    standards like <a href='http://www.w3.org/TR/xinclude'>XInclude</a>.
    A new XInclude filter can be written that includes document
-   fragments into the pipeline stream before the validator. In this
-   way, the document inclusion would be expanded without the validator
-   ever knowing that there was an inclusion.
+   fragments into the pipeline stream before or after the validator.
+   <sup><a href='#note.2'>[2]</a></sup>
   </p>
   <p>
    Parsing of DTDs can also be viewed as a pipeline. Since the
@@ -154,7 +153,8 @@
    transmits settings to each component, and controls their actions.
    The configuration is managed by the parser object and the values are 
    communicated to the components. The following diagram shows a
-   general parser configuration and its components.
+   general parser configuration and its components. (No ordering or
+   direct connection between components should be implied.)
   </p>
   <p>
    <table border='2' cellspacing='0' cellpadding='7'>
@@ -178,6 +178,17 @@
      </td>
     </tr>
    </table>
+  </p>
+  <p>
+   In the parser configuration, the parser object acts both as the 
+   configuration manager and as a component in the pipeline.
+   The parser object does <strong>not</strong> have to be the final
+   stage in the pipeline, though. Most users of the parser will not
+   need to create new parsers by assembling the components but may
+   want to change some part of the behavior of the parser (e.g. 
+   capitalize element names that get created in the DOM tree). By 
+   having the parser be the last stage, the user can extend the
+   parser class and override the necessary methods.
   </p>
   <a name='Configuration.FeaturesAndProperties'></a>
   <h3>Features &amp; Properties</h3>
@@ -316,6 +327,31 @@
       For the purposes of discussion, any component that implements
       both the document handler and document source interfaces will
       be known as a "filter".
+     </td>
+    </tr>
+    <tr>
+     <td><a name='note.2'></a>[2]</td>
+     <td>
+      XInclude is defined to work on the 
+      <a href='http://www.w3.org/TR/xml-infoset'>XML Infoset</a> which
+      means that it <em>should</em> occur after validation but there
+      may be situations where the application wants to validate the
+      included material. In this case, the filter would be inserted
+      before the validator so that the document inclusion would 
+      be expanded without the validator ever knowing that there was an 
+      inclusion. However, since the pipeline does not buffer the
+      document, there is a problem with supporting features of 
+      specifications that operate on the Infoset.
+      <a href='http://www.w3.org/TR/xinclude#IDwgAq1'>Section 3.1</a>
+      of the XInclude specification highlights this problem in the
+      example. Any use of 
+      <a href='http://www.w3.org/TR/xptr'>XPointer</a>
+      to reference parts of the document containing the XInclude could
+      not be supported without buffering the document in some way.
+      Perhaps this means that the best way to support XInclude, and
+      other specifications that rely on the XML Infoset, is to 
+      operate on the document model (such as DOM) and not to try to
+      do it in the parser pipeline.
      </td>
     </tr>
    </table>

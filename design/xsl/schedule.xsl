@@ -6,7 +6,7 @@
   <HTML>
    <HEAD>
     <TITLE>Xerces 2 | Schedule</TITLE>
-    <LINK rel='stylesheet' type='text/css' href='site.css'/>
+    <LINK rel='stylesheet' type='text/css' href='css/site.css'/>
    </HEAD>
    <BODY>
     <SPAN class='netscape'>
