@@ -19,36 +19,37 @@
  <desc name='Setting Properties'>
   <p>
    If you have created a DOM document builder or a SAX parser using
-   the JAXP interfaces, you may have difficulty setting features and
-   properties directly using those interfaces. The following
-   instructions tell you how to set properties on document builders
-   and SAX parsers created from the JAXP interfaces.
+   the JAXP interfaces, the following instructions tell you how to
+   set properties on document builders and SAX parsers created from
+   the JAXP interfaces.
   </p>
   <p>
    The DocumentBuilderFactory interface contains a 
    <code>setAttribute(String,Object)</code> method which <em>may</em>
-   provide a means to set features and properties on the underyling
-   parser. However, it cannot be relied upon. Therefore, you must
-   use the Xerces DOMParser object directly. For example:
+   provide a means to set properties on the underyling parser. When 
+   using Xerces, you can set the value of a property with this method.
+   For example:
   </p>
-  <source>import org.apache.xerces.parsers.DOMParser;
-import org.xml.sax.SAXException;
+  <source>import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
   
-DOMParser parser = new DOMParser();
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
 String id    = "http://apache.org/xml/properties/dom/document-class-name";
 Object value = "org.apache.xerces.dom.DocumentImpl";
 try {
-    parser.setProperty(id, value);
+    dbf.setAttribute(id, value);
 } 
-catch (SAXException e) {
+catch (IllegalArgumentException e) {
     System.err.println("could not set parser property");
 }</source>
   <p>
-   Using the SAXParser interface in JAXP is better because you can
-   query the underlying XMLReader implementation directly and that
-   interface contains methods to set and query features and 
-   properties. For example:
+   The SAXParser interface contains a
+   <code>setProperty(String,Object)</code> method which can be used
+   to set properties on the underlying implementation of <code>XMLReader</code>.
+   You can also retrieve the underlying <code>XMLReader</code> from the
+   SAXParser allowing you to set and query properties on it directly.
+   For example:
   </p>
   <source>import javax.xml.parsers.SAXParser;
 import org.xml.sax.SAXException;

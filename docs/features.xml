@@ -19,34 +19,36 @@
  <desc name='Setting Features'>
   <p>
    If you have created a DOM document builder or a SAX parser using
-   the JAXP interfaces, you may have difficulty setting features and
-   properties directly using those interfaces. The following
-   instructions tell you how to set features on document builders
-   and SAX parsers created from the JAXP interfaces.
+   the JAXP interfaces, the following instructions tell you how to
+   set features on document builders and SAX parsers created from
+   the JAXP interfaces.
   </p>
   <p>
    The DocumentBuilderFactory interface contains a 
    <code>setAttribute(String,Object)</code> method which <em>may</em>
-   provide a means to set features and properties on the underyling
-   parser. However, it cannot be relied upon. Therefore, you must
-   use the Xerces DOMParser object directly. For example:
+   provide a means to set features on the underyling parser. When using
+   Xerces, to set a feature you specify an instance of
+   <code>java.lang.Boolean</code> as the value of the attribute.
+   For example:
   </p>
-  <source>import org.apache.xerces.parsers.DOMParser;
-import org.xml.sax.SAXException;
+  <source>import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
   
-DOMParser parser = new DOMParser();
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 try {
-    parser.setFeature("http://apache.org/xml/features/allow-java-encodings", 
-                      true);
+    dbf.setAttribute("http://apache.org/xml/features/allow-java-encodings", 
+                     Boolean.TRUE);
 } 
-catch (SAXException e) {
+catch (IllegalArgumentException e) {
     System.err.println("could not set parser feature");
 }</source>
   <p>
-   Using the SAXParser interface in JAXP is better because you can
-   query the underlying XMLReader implementation directly and that
-   interface contains methods to set and query features and 
-   properties. For example:
+   The SAXParserFactory interface contains a
+   <code>setFeature(String,boolean)</code> method which can be used
+   to set features on the underlying implementation of <code>XMLReader</code>.
+   Once you create the SAXParser you can retrieve the underlying
+   <code>XMLReader</code> allowing you to set and query features on it directly.
+   For example:
   </p>
   <source>import javax.xml.parsers.SAXParser;
 import org.xml.sax.SAXException;
