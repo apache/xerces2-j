@@ -1031,14 +1031,16 @@ public class DOMParser
             int attrHandle = xmlAttrList.getFirstAttr(attrListIndex);
             while (attrHandle != -1) {
                 if (nsEnabled) {
-                    String attNameStr = xmlAttrList.getName(attrHandle);
-		    String namespaceURI = xmlAttrList.getURI(attrHandle);
+                    int attName = xmlAttrList.getAttrName(attrHandle);
+                    String attNameStr = fStringPool.toString(attName);
+		    int nsURIIndex = xmlAttrList.getAttrURI(attrHandle);
+		    String namespaceURI = fStringPool.toString(nsURIIndex);
 		    // DOM Level 2 wants all namespace declaration attributes
 		    // to be bound to "http://www.w3.org/2000/xmlns/"
 		    // So as long as the XML parser doesn't do it, it needs to
-		    // be done here.
-		    //int prefixIndex = fStringPool.getPrefixForQName(attName);
-		    String prefix = xmlAttrList.getPrefix(attrHandle);
+		    // done here.
+		    int prefixIndex = xmlAttrList.getAttrPrefix(attrHandle);
+		    String prefix = fStringPool.toString(prefixIndex);
 		    if (namespaceURI == null) {
 			if (prefix != null) {
 			    if (prefix.equals("xmlns")) {
@@ -1052,8 +1054,8 @@ public class DOMParser
 				     attNameStr,
                                      xmlAttrList.getValue(attrHandle));
                 } else {
-                    String attrName = xmlAttrList.getName(attrHandle);
-                    String attrValue = xmlAttrList.getValue(attrHandle);
+                    String attrName = fStringPool.toString(xmlAttrList.getAttrName(attrHandle));
+                    String attrValue = fStringPool.toString(xmlAttrList.getAttValue(attrHandle));
                     e.setAttribute(attrName, attrValue);
                     if (fDocumentImpl != null
                         && !xmlAttrList.isSpecified(attrHandle)) {
