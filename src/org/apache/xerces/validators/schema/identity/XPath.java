@@ -215,7 +215,7 @@ public class XPath {
                     
                     // build step
                     Axis axis = new Axis(Axis.ATTRIBUTE);
-                    NodeTest nodeTest = new NodeTest(new QName(prefix, localpart, rawname, uri));
+                    NodeTest nodeTest = new NodeTest(fStringPool, new QName(prefix, localpart, rawname, uri));
                     Step step = new Step(axis, nodeTest);
                     stepsVector.addElement(step);
                     break;
@@ -255,7 +255,7 @@ public class XPath {
                     
                     // build step
                     Axis axis = new Axis(Axis.CHILD);
-                    NodeTest nodeTest = new NodeTest(new QName(prefix, localpart, rawname, uri));
+                    NodeTest nodeTest = new NodeTest(fStringPool, new QName(prefix, localpart, rawname, uri));
                     Step step = new Step(axis, nodeTest);
                     stepsVector.addElement(step);
                     break;
@@ -312,7 +312,7 @@ public class XPath {
      *
      * @author Andy Clark, IBM
      */
-    public class LocationPath 
+    public static class LocationPath 
         implements Cloneable {
 
         //
@@ -367,7 +367,7 @@ public class XPath {
      *
      * @author Andy Clark, IBM
      */
-    public class Step 
+    public static class Step 
         implements Cloneable {
 
         //
@@ -417,7 +417,7 @@ public class XPath {
      *
      * @author Andy Clark, IBM
      */
-    public class Axis 
+    public static class Axis 
         implements Cloneable {
 
         //
@@ -480,7 +480,7 @@ public class XPath {
      *
      * @author Andy Clark, IBM
      */
-    public class NodeTest 
+    public static class NodeTest 
         implements Cloneable {
 
         //
@@ -500,6 +500,9 @@ public class XPath {
         // Data
         //
 
+        /** String pool. */
+        protected StringPool fStringPool;
+
         /** Node test type. */
         public short type;
 
@@ -516,7 +519,8 @@ public class XPath {
         } // <init>(int)
 
         /** Constructs a node test of type QName. */
-        public NodeTest(QName name) {
+        public NodeTest(StringPool stringPool, QName name) {
+            fStringPool = stringPool;
             this.type = QNAME;
             this.name.setValues(name);
         } // <init>(QName)

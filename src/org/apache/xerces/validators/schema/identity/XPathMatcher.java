@@ -606,7 +606,16 @@ public class XPathMatcher {
     // MAIN
     //
 
+    // NOTE: The main of this class is here for debugging purposes.
+    //       However, javac (JDK 1.1.8) has an internal compiler
+    //       error when compiling. Jikes has no problem, though.
+    //
+    //       If you want to use this main, use Jikes to compile but
+    //       *never* check in this code to CVS without commenting it
+    //       out. -Ac
+    
     /** Main program. */
+    /***
     public static void main(String[] argv) throws Exception {
 
         if (DEBUG_ANY) {
@@ -641,5 +650,6 @@ public class XPathMatcher {
         }
 
     } // main(String[])
+    /***/
 
 } // class XPathMatcher
