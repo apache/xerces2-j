@@ -71,7 +71,7 @@ import org.apache.xerces.xni.psvi.ElementPSVI;
  *
  * The following information will be available at the endElement call:
  * nil, specified, normalized value, member type, validity, error codes,
- * default(?)
+ * default
  *
  * @author Elena Litani IBM
  */

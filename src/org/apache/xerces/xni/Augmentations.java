@@ -107,6 +107,11 @@ public interface Augmentations {
      */
     public Object removeItem (String key);
 
+    /**
+     * Remove all objects from the Augmentations structure.
+     */
+    public void clear ();
+
     //
     // REVISIT:
     // provide a way to iterate through all of the items in the augmentations.

@@ -106,10 +106,18 @@ class XSDocumentInfo {
 
     protected ValidationState fValidationContext = new ValidationState();
 
+    SymbolTable fSymbolTable = null;
+
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable) {
         fSchemaDoc = schemaDoc;
         fNamespaceSupport = new SchemaNamespaceSupport();
         fIsChameleonSchema = false;
+        
+        fSymbolTable = symbolTable;
+        // During XML Schema traversal bind "xml" prefix to 
+        // "http://www.w3.org/XML/1998/namespace"
+        // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
+        fNamespaceSupport.declarePrefix(symbolTable.addSymbol("xml"), symbolTable.addSymbol("http://www.w3.org/XML/1998/namespace"));
 
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
@@ -130,6 +138,7 @@ class XSDocumentInfo {
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
+
             //set namespace support
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
             fValidationContext.setSymbolTable(symbolTable);
@@ -141,6 +150,11 @@ class XSDocumentInfo {
     void backupNSSupport() {
         SchemaNamespaceSupportStack.push(fNamespaceSupport);
         fNamespaceSupport = new SchemaNamespaceSupport(fNamespaceSupportRoot);
+
+        // bind "xml" prefix to "http://www.w3.org/XML/1998/namespace"
+        // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
+        fNamespaceSupport.declarePrefix(fSymbolTable.addSymbol("xml"), fSymbolTable.addSymbol("http://www.w3.org/XML/1998/namespace"));
+
         fValidationContext.setNamespaceSupport(fNamespaceSupport);
     }
 

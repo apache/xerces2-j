@@ -168,7 +168,7 @@ public class NamespaceSupport
 
         // bind "xml" prefix to the XMLNS uri
         fNamespace[fNamespaceSize++] = fXmlSymbol;
-        fNamespace[fNamespaceSize++] = symbolTable.addSymbol(XMLNS);
+        fNamespace[fNamespaceSize++] = symbolTable.addSymbol(XML_URI);
         ++fCurrentContext;
 
     } // reset(SymbolTable)

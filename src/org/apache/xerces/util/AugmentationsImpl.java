@@ -111,4 +111,11 @@ public class AugmentationsImpl implements Augmentations{
     public Object removeItem (String key){
         return fAugmentations.remove(key);
     }
+
+    /**
+     * Remove all objects from the Augmentations structure.
+     */
+    public void clear (){
+        fAugmentations.clear();
+    }
 }

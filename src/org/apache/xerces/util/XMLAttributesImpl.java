@@ -192,6 +192,9 @@ public class XMLAttributesImpl
             }
         }
 
+        // clear augmentations
+        fAugmentations[index].clear();
+
         // set values
         Attribute attribute = fAttributes[index];
         attribute.name.setValues(name);
@@ -235,7 +238,6 @@ public class XMLAttributesImpl
             // by tucking it after the Attributes that are still in use
             fAttributes[fLength-1] = removedAttr;
 
-            //REVISIT: should all augmentations be removed here?
             fAugmentations[fLength-1] = removedAug;
         }
         fLength--;
