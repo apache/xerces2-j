@@ -75,10 +75,10 @@ import java.util.Vector;
 public class AttributePSVImpl implements AttributePSVI {
 
     /** attribute declaration */
-    protected XSAttributeDecl fDeclaration = null;
+    protected XSAttributeDeclaration fDeclaration = null;
 
     /** type of attribute, simpleType */
-    protected XSTypeDecl fTypeDecl = null;
+    protected XSTypeDefinition fTypeDecl = null;
 
     /** If this attribute was explicitly given a 
      * value in the original document, this is true; otherwise, it is false  */
@@ -88,7 +88,7 @@ public class AttributePSVImpl implements AttributePSVI {
     protected String fNormalizedValue = null;
 
     /** member type definition against which attribute was validated */
-    protected XSSimpleType fMemberType = null;
+    protected XSSimpleTypeDefinition fMemberType = null;
 
     /** validation attempted: none, partial, full */
     protected short fValidationAttempted = AttributePSVI.VALIDATION_NONE;
@@ -112,12 +112,8 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return The canonical lexical representation of the declaration's {value constraint} value.
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default>XML Schema Part 1: Structures [schema default]</a>
      */
-    public String   getSchemaDefault() {
-        Object dValue = null;
-        if( fDeclaration !=null ) {
-            dValue = fDeclaration.fDefault;
-        }
-        return(dValue != null)?dValue.toString():null;
+    public String getSchemaDefault() {
+        return fDeclaration == null ? null : fDeclaration.getConstraintValue();
     }
 
     /**

@@ -585,13 +585,6 @@ public class XMLSchemaValidator
 
         Augmentations modifiedAugs = handleStartElement(element, attributes, augs);
 
-        // we need to save PSVI information: because it will be reset in the
-        // handleEndElement(): decl, type, notation, validation context
-        XSElementDecl decl = fCurrentPSVI.fDeclaration;
-        XSTypeDecl type = fCurrentPSVI.fTypeDecl;
-        XSNotationDecl notation = fCurrentPSVI.fNotation;
-        String vContext = fCurrentPSVI.fValidationContext;
-
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, change emptyElement call to
         // start + characters + end
@@ -599,11 +592,6 @@ public class XMLSchemaValidator
 
         // call handlers
         if (fDocumentHandler != null) {
-            fCurrentPSVI.fDeclaration = decl;
-            fCurrentPSVI.fTypeDecl = type;
-            fCurrentPSVI.fNotation = notation;
-            fCurrentPSVI.fValidationContext = vContext;
-
             if (!fSchemaElementDefault || fDefaultValue == null) {
                 fDocumentHandler.emptyElement(element, attributes, modifiedAugs);
             } else {
@@ -611,7 +599,7 @@ public class XMLSchemaValidator
                 fDocumentHandler.characters(fDefaultValue, modifiedAugs);
                 fDocumentHandler.endElement(element, modifiedAugs);
             }
-       }
+        }
     } // emptyElement(QName,XMLAttributes, Augmentations)
 
     /**
@@ -1113,6 +1101,12 @@ public class XMLSchemaValidator
     /** nil value stack */
     boolean[] fNilStack = new boolean[INITIAL_STACK_SIZE];
 
+    /** notation value of the current element */
+    XSNotationDecl fNotation;
+    
+    /** notation stack */
+    XSNotationDecl[] fNotationStack = new XSNotationDecl[INITIAL_STACK_SIZE];
+    
     /** Current type. */
     XSTypeDecl fCurrentType;
 
@@ -1338,6 +1332,7 @@ public class XMLSchemaValidator
         // initialize state
         fCurrentElemDecl = null;
         fNil = false;
+        fNotation = null;
         fCurrentPSVI = null;
         fCurrentType = null;
         fCurrentCM = null;
@@ -1461,6 +1456,10 @@ public class XMLSchemaValidator
             System.arraycopy(fNilStack, 0, newArrayB, 0, fElementDepth);
             fNilStack = newArrayB;
 
+            XSNotationDecl[] newArrayN = new XSNotationDecl[newSize];
+            System.arraycopy(fNotationStack, 0, newArrayN, 0, fElementDepth);
+            fNotationStack = newArrayN;
+            
             XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
             System.arraycopy(fTypeStack, 0, newArrayT, 0, fElementDepth);
             fTypeStack = newArrayT;
@@ -1829,6 +1828,7 @@ public class XMLSchemaValidator
             fChildCount = 0;
             fElemDeclStack[fElementDepth] = fCurrentElemDecl;
             fNilStack[fElementDepth] = fNil;
+            fNotationStack[fElementDepth] = fNotation;
             fTypeStack[fElementDepth] = fCurrentType;
             fCMStack[fElementDepth] = fCurrentCM;
             fCMStateStack[fElementDepth] = fCurrCMState;
@@ -1843,6 +1843,7 @@ public class XMLSchemaValidator
         XSWildcardDecl wildcard = null;
         fCurrentType = null;
         fNil = false;
+        fNotation = null;
 
         // and the buffer to hold the value of the element
         fBuffer.setLength(0);
@@ -2060,6 +2061,7 @@ public class XMLSchemaValidator
                 fChildCount = fChildCountStack[fElementDepth];
                 fCurrentElemDecl = fElemDeclStack[fElementDepth];
                 fNil = fNilStack[fElementDepth];
+                fNotation = fNotationStack[fElementDepth];
                 fCurrentType = fTypeStack[fElementDepth];
                 fCurrentCM = fCMStack[fElementDepth];
                 fCurrCMState = fCMStateStack[fElementDepth];
@@ -2090,6 +2092,11 @@ public class XMLSchemaValidator
             fDefaultValue = null;
             return augs;
         }
+
+        fCurrentPSVI.fDeclaration = this.fCurrentElemDecl;
+        fCurrentPSVI.fTypeDecl = this.fCurrentType;
+        fCurrentPSVI.fNotation = this.fNotation;
+        fCurrentPSVI.fValidationContext = this.fValidationRoot;
 
         // now validate the content of the element
         XMLString defaultValue = processElementContent(element);
@@ -2175,6 +2182,7 @@ public class XMLSchemaValidator
             fChildCount = fChildCountStack[fElementDepth];
             fCurrentElemDecl = fElemDeclStack[fElementDepth];
             fNil = fNilStack[fElementDepth];
+            fNotation = fNotationStack[fElementDepth];
             fCurrentType = fTypeStack[fElementDepth];
             fCurrentCM = fCMStack[fElementDepth];
             fCurrCMState = fCMStateStack[fElementDepth];
@@ -2611,17 +2619,19 @@ public class XMLSchemaValidator
             // PSVI: element notation
             if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
                 attDV.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION){
-               QName qName = (QName)actualValue;
-               SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
+                QName qName = (QName)actualValue;
+                SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
     
-               //REVISIT: is it possible for the notation to be in different namespace than the attribute
-               //with which it is associated, CHECK !!  <fof n1:att1 = "n2:notation1" ..>
-               // should we give chance to the application to be able to  retrieve a grammar - nb
-               //REVISIT: what would be the triggering component here.. if it is attribute value that
-               // triggered the loading of grammar ?? -nb
+                //REVISIT: is it possible for the notation to be in different namespace than the attribute
+                //with which it is associated, CHECK !!  <fof n1:att1 = "n2:notation1" ..>
+                // should we give chance to the application to be able to  retrieve a grammar - nb
+                //REVISIT: what would be the triggering component here.. if it is attribute value that
+                // triggered the loading of grammar ?? -nb
     
-               if (grammar != null)
-                   fCurrentPSVI.fNotation = grammar.getGlobalNotationDecl(qName.localpart);
+                if (grammar != null) {
+                    fNotation = grammar.getGlobalNotationDecl(qName.localpart);
+                    fCurrentPSVI.fNotation = fNotation;
+                }
             }
         }
         catch (InvalidDatatypeValueException idve) {

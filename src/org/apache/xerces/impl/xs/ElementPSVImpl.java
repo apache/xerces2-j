@@ -78,10 +78,10 @@ import org.apache.xerces.impl.xs.psvi.*;
 public class ElementPSVImpl implements ElementPSVI {
 
     /** element declaration */
-    protected XSElementDecl fDeclaration = null;
+    protected XSElementDeclaration fDeclaration = null;
 
     /** type of element, could be xsi:type */
-    protected XSTypeDecl fTypeDecl = null;
+    protected XSTypeDefinition fTypeDecl = null;
 
     /** true if clause 3.2 of Element Locally Valid (Element) (3.3.4) 
       * is satisfied, otherwise false 
@@ -96,10 +96,10 @@ public class ElementPSVImpl implements ElementPSVI {
     protected String fNormalizedValue = null;
 
     /** http://www.w3.org/TR/xmlschema-1/#e-notation*/
-    protected XSNotationDecl fNotation = null;
+    protected XSNotationDeclaration fNotation = null;
 
     /** member type definition against which element was validated */
-    protected XSSimpleType fMemberType = null;
+    protected XSSimpleTypeDefinition fMemberType = null;
 
     /** validation attempted: none, partial, full */
     protected short fValidationAttempted = ElementPSVI.VALIDATION_NONE;
@@ -127,11 +127,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default>XML Schema Part 1: Structures [schema default]</a>
      */
     public String getSchemaDefault() {
-        Object dValue = null;
-        if( fDeclaration !=null ) {
-            dValue = fDeclaration.fDefault;
-        }
-        return(dValue != null)?dValue.toString():null;
+        return fDeclaration == null ? null : fDeclaration.getConstraintValue();
     }
 
     /**
