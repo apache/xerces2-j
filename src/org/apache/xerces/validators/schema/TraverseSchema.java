@@ -197,6 +197,7 @@ public class TraverseSchema implements
     private int fCurrentScope=TOP_LEVEL_SCOPE;
     private int fSimpleTypeAnonCount = 0;
     private Stack fCurrentTypeNameStack = new Stack();
+    private Stack fCurrentGroupNameStack = new Stack();
     private Hashtable fElementRecurseComplex = new Hashtable();
 
     private boolean fElementDefaultQualified = false;
@@ -5698,9 +5699,16 @@ int aaaa= 1;
             if (!uriStr.equals(fTargetNSURIString)) {
                 return traverseGroupDeclFromAnotherSchema(localpart, uriStr);
             }
-			Object contentSpecHolder = fGroupNameRegistry.get(uriStr + "," + localpart);
-			if(contentSpecHolder != null ) 	// we've already traversed this group
-				return ((Integer)contentSpecHolder).intValue();
+            Object contentSpecHolder = fGroupNameRegistry.get(uriStr + "," + localpart);
+            if(contentSpecHolder != null ) 	// we've already traversed this group
+		return ((Integer)contentSpecHolder).intValue();
+
+            // Check if we are in the middle of traversing this group (i.e. circular references)
+            if (fCurrentGroupNameStack.search((Object)localpart) > - 1) {
+                reportGenericSchemaError("mg-props-correct: Circular definition for group " + localpart); 
+                return -2;
+            }
+
             int contentSpecIndex = -1;
             Element referredGroup = getTopLevelComponentByName(SchemaSymbols.ELT_GROUP,localpart);
             if (referredGroup == null) {
@@ -5722,7 +5730,10 @@ int aaaa= 1;
 		if(contentSpecHolder != null ) 	// we've already traversed this group
 			return ((Integer)contentSpecHolder).intValue();
 
-		// if we're here then we're traversing a top-level group that we've never seen before.
+	// if we're here then we're traversing a top-level group that we've never seen before.
+        // Push the group name onto a stack, so that we can check for circular groups
+        fCurrentGroupNameStack.push(groupName);
+
         int index = -2;
 
         boolean illegalChild = false;
@@ -5751,8 +5762,9 @@ int aaaa= 1;
             index = expandContentModel( index, child);
         }
 
-		contentSpecHolder = new Integer(index);
-		fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
+	contentSpecHolder = new Integer(index);
+        fCurrentGroupNameStack.pop();
+	fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
         return index;
     }
 
@@ -5788,7 +5800,9 @@ int aaaa= 1;
 	if(contentSpecHolder != null ) 	// we've already traversed this group
 		return ((Integer)contentSpecHolder).intValue();
 
-		// if we're here then we're traversing a top-level group that we've never seen before.
+        // ------------------------------------
+	// if we're here then we're traversing a top-level group that we've never seen before.
+
         int index = -2;
 
         boolean illegalChild = false;
