@@ -254,8 +254,7 @@ public class DeferredDocumentImpl
 
     /** Creates a notation in the table. */
     public int createDeferredNotation(String notationName,
-                                      String publicId, String systemId)
-        throws Exception {
+                                      String publicId, String systemId) {
 
         // create node
         int nodeIndex = createNode(Node.NOTATION_NODE);
@@ -274,8 +273,7 @@ public class DeferredDocumentImpl
 
     /** Creates an entity in the table. */
     public int createDeferredEntity(String entityName, String publicId,
-                                    String systemId, String notationName)
-        throws Exception {
+                                    String systemId, String notationName) {
         // create node
         int nodeIndex = createNode(Node.ENTITY_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
@@ -486,6 +484,39 @@ public class DeferredDocumentImpl
 
     } // createDeferredComment(String):int
 
+    /** Creates a clone of the specified node. */
+    public int cloneNode(int nodeIndex, boolean deep) {
+
+        // clone immediate node
+        int nchunk = nodeIndex >> CHUNK_SHIFT;
+        int nindex = nodeIndex & CHUNK_MASK;
+        int nodeType = fNodeType[nchunk][nindex];
+        int cloneIndex = createNode((short)nodeType);
+        int cchunk = cloneIndex >> CHUNK_SHIFT;
+        int cindex = cloneIndex & CHUNK_MASK;
+        fNodeName[cchunk][cindex] = getChunkValue(fNodeName, nchunk, nindex);
+        fNodeValue[cchunk][cindex] = getChunkValue(fNodeValue, nchunk, nindex);
+        fNodeURI[cchunk][cindex] = getChunkValue(fNodeURI, nchunk, nindex);
+        int extraIndex = fNodeExtra[nchunk][nindex];
+        if (extraIndex != -1) {
+            int cloneExtraIndex = cloneNode(extraIndex, false);
+            fNodeExtra[cchunk][cindex] = cloneExtraIndex;
+        }
+
+        // clone and attach children
+        if (deep) {
+            int childIndex = getLastChild(nodeIndex, false);
+            while (childIndex != -1) {
+                int cloneChildNode = cloneNode(childIndex, deep);
+                appendChild(nodeIndex, childIndex);
+            }
+        }
+
+        // return cloned node index
+        return cloneIndex;
+
+    } // cloneNode(int,boolean):int
+
     /** Appends a child to the specified parent in the table. */
     public void appendChild(int parentIndex, int childIndex) {
 
@@ -502,7 +533,6 @@ public class DeferredDocumentImpl
 
         // update parent's last child
         setChunkIndex(fNodeLastChild, childIndex, pchunk, pindex);
-
 
     } // appendChild(int,int)
 

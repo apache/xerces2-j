@@ -241,6 +241,11 @@ public class EntityReferenceImpl
      * This doesn't really support editing the Entity though.
      */
     protected void synchronize() {
+        /***
+        // NOTE: This should *not* be done here because if the user
+        //       access the Entity *before* the entity reference, then
+        //       it will be out of sync. Therefore, the code that builds
+        //       the DOM tree must handle filling in the entity node. -Ac
         if (firstChild != null) {
             return;
         }
@@ -266,6 +271,7 @@ public class EntityReferenceImpl
             }
             setReadOnly(true, true);
     	}
+        /***/
     }
 
 

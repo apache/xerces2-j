@@ -59,7 +59,11 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xerces.dom.DocumentTypeImpl;
+import org.apache.xerces.dom.EntityImpl;
 import org.apache.xerces.dom.EntityReferenceImpl;
+import org.apache.xerces.dom.NodeImpl;
+import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.TextImpl;
 
 import org.apache.xerces.impl.Constants;
@@ -78,6 +82,7 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Element;
 import org.w3c.dom.EntityReference;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
@@ -148,6 +153,9 @@ public abstract class AbstractDOMParser
 
     /** The document class name to use. */
     protected String  fDocumentClassName;
+
+    /** The document type node. */
+    protected DocumentType fDocumentType;
 
     /** Current node. */
     protected Node fCurrentNode;
@@ -303,6 +311,8 @@ public abstract class AbstractDOMParser
         // reset dom information
         fDocument = null;
         fDocumentImpl = null;
+        fDocumentType = null;
+        fDocumentTypeIndex = -1;
         fDeferredDocumentImpl = null;
         fCurrentNode = null;
 
@@ -493,16 +503,15 @@ public abstract class AbstractDOMParser
 
         if (!fDeferNodeExpansion) {
             if (fDocumentImpl != null) {
-                DocumentType doctype =
-                    fDocumentImpl.createDocumentType(rootElement,
-                                                     publicId, systemId);
-                fCurrentNode.appendChild(doctype);
+                fDocumentType = fDocumentImpl.createDocumentType(
+                                    rootElement, publicId, systemId);
+                fCurrentNode.appendChild(fDocumentType);
             }
         }
         else {
-            int doctype = fDeferredDocumentImpl.
+            fDocumentTypeIndex = fDeferredDocumentImpl.
                 createDeferredDocumentType(rootElement, publicId, systemId);
-            fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, doctype);
+            fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, fDocumentTypeIndex);
         }
 
     } // doctypeDecl(String,String,String)
@@ -608,7 +617,7 @@ public abstract class AbstractDOMParser
                         createDeferredTextNode(text.toString(), false);
                     fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, txt);
                 }
-            } if (!fInDTD) {
+            } else if (!fInDTD) {
                 int txt = fDeferredDocumentImpl.
                     createDeferredTextNode(text.toString(), false);
                 fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, txt);
@@ -653,6 +662,7 @@ public abstract class AbstractDOMParser
             }
             else {
                 Text textNode = fDocument.createTextNode(text.toString());
+                System.out.println("2) "+((TextImpl)textNode).getReadOnly());
                 if (fDocumentImpl != null) {
                     TextImpl textNodeImpl = (TextImpl)textNode;
                     textNodeImpl.setIgnorableWhitespace(true);
@@ -774,9 +784,47 @@ public abstract class AbstractDOMParser
 
         if (fInDocument && !fInDTD && fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
+                if (fDocumentImpl != null && fDocumentType != null) {
+                    NamedNodeMap entities = fDocumentType.getEntities();
+                    NodeImpl entity = (NodeImpl)entities.getNamedItem(name);
+                    if (entity != null && entity.getFirstChild() == null) {
+                        entity.setReadOnly(false, true);
+                        Node child = fCurrentNode.getFirstChild();
+                        while (child != null) {
+                            Node copy = child.cloneNode(true);
+                            entity.appendChild(copy);
+                            child = child.getNextSibling();
+                        }
+                        entity.setReadOnly(true, true);
+                        entities.setNamedItem(entity);
+                    }
+                }
                 fCurrentNode = fCurrentNode.getParentNode();
             }
             else {
+                int entityIndex = -1;
+                int dtChildIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+                while (dtChildIndex != -1) {
+                    short nodeType = fDeferredDocumentImpl.getNodeType(dtChildIndex, false);
+                    if (nodeType == Node.ENTITY_NODE) {
+                        String nodeName = fDeferredDocumentImpl.getNodeName(dtChildIndex, false);
+                        if (nodeName.equals(name)) {
+                            entityIndex = dtChildIndex;
+                            break;
+                        }
+                    }
+                    dtChildIndex = fDeferredDocumentImpl.getRealPrevSibling(dtChildIndex, false);
+                }
+                if (entityIndex != -1) {
+                    int prevIndex = -1;
+                    int childIndex = fDeferredDocumentImpl.getLastChild(fCurrentNodeIndex, false);
+                    while (childIndex != -1) {
+                        int cloneIndex = fDeferredDocumentImpl.cloneNode(childIndex, true);
+                        fDeferredDocumentImpl.insertBefore(entityIndex, cloneIndex, prevIndex);
+                        prevIndex = childIndex;
+                        childIndex = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
+                    }
+                }
                 fCurrentNodeIndex =
                     fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex,
                                                         false);
@@ -784,5 +832,238 @@ public abstract class AbstractDOMParser
         }
 
     } // endEntity(String)
+
+    //
+    // XMLDTDHandler methods
+    //
+
+    /**
+     * An internal entity declaration.
+     * 
+     * @param name The name of the entity. Parameter entity names start with
+     *             '%', whereas the name of a general entity is just the 
+     *             entity name.
+     * @param text The value of the entity.
+     * @param nonNormalizedText The non-normalized value of the entity. This
+     *             value contains the same sequence of characters that was in 
+     *             the internal entity declaration, without any entity
+     *             references expanded.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void internalEntityDecl(String name, XMLString text, 
+                                   XMLString nonNormalizedText) 
+        throws XNIException {
+
+        // NOTE: We only know how to create these nodes for the Xerces
+        //       DOM implementation because DOM Level 2 does not specify 
+        //       that functionality. -Ac
+
+        // create full node
+        if (fDocumentType != null) {
+            NamedNodeMap entities = fDocumentType.getEntities();
+            EntityImpl entity = (EntityImpl)entities.getNamedItem(name);
+            if (entity == null) {
+                entity = (EntityImpl)fDocumentImpl.createEntity(name);
+                Text textNode = fDocumentImpl.createTextNode(text.toString());
+                System.out.println("3) "+((TextImpl)textNode).getReadOnly());
+                entity.appendChild(textNode);
+                entities.setNamedItem(entity);
+            }
+        }
+            
+        // create deferred node        
+        if (fDocumentTypeIndex != -1) {
+            boolean found = false;
+            int nodeIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+            while (nodeIndex != -1) {
+                short nodeType = fDeferredDocumentImpl.getNodeType(nodeIndex, false);
+                if (nodeType == Node.ENTITY_NODE) {
+                    String nodeName = fDeferredDocumentImpl.getNodeName(nodeIndex, false);
+                    if (nodeName.equals(name)) {
+                        found = true;
+                        break;
+                    }
+                }
+                nodeIndex = fDeferredDocumentImpl.getRealPrevSibling(nodeIndex, false);
+            }
+            if (!found) {
+                int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
+                                    name, null, null, null);
+                int textIndex = fDeferredDocumentImpl.createDeferredTextNode(text.toString(), false);
+                fDeferredDocumentImpl.appendChild(entityIndex, textIndex);
+                fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
+            }
+        }
+    
+    } // internalEntityDecl(String,XMLString,XMLString)
+
+    /**
+     * An external entity declaration.
+     * 
+     * @param name     The name of the entity. Parameter entity names start
+     *                 with '%', whereas the name of a general entity is just
+     *                 the entity name.
+     * @param publicId The public identifier of the entity or null if the
+     *                 the entity was specified with SYSTEM.
+     * @param systemId The system identifier of the entity.
+     * @param baseSystemId The base system identifier where this entity
+     *                     is declared.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void externalEntityDecl(String name, 
+                                   String publicId, String systemId,
+                                   String baseSystemId) throws XNIException {
+
+        // NOTE: We only know how to create these nodes for the Xerces
+        //       DOM implementation because DOM Level 2 does not specify 
+        //       that functionality. -Ac
+
+        // create full node
+        if (fDocumentType != null) {
+            NamedNodeMap entities = fDocumentType.getEntities();
+            EntityImpl entity = (EntityImpl)entities.getNamedItem(name);
+            if (entity == null) {
+                entity = (EntityImpl)fDocumentImpl.createEntity(name);
+                entity.setPublicId(publicId);
+                entity.setSystemId(systemId);
+                entities.setNamedItem(entity);
+            }
+        }
+            
+        // create deferred node        
+        if (fDocumentTypeIndex != -1) {
+            boolean found = false;
+            int nodeIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+            while (nodeIndex != -1) {
+                short nodeType = fDeferredDocumentImpl.getNodeType(nodeIndex, false);
+                if (nodeType == Node.ENTITY_NODE) {
+                    String nodeName = fDeferredDocumentImpl.getNodeName(nodeIndex, false);
+                    if (nodeName.equals(name)) {
+                        found = true;
+                        break;
+                    }
+                }
+                nodeIndex = fDeferredDocumentImpl.getRealPrevSibling(nodeIndex, false);
+            }
+            if (!found) {
+                int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
+                                    name, publicId, systemId, null);
+                fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
+            }
+        }
+    
+    } // externalEntityDecl(String,String,String,String)
+
+    /**
+     * An unparsed entity declaration.
+     * 
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity, or null if not
+     *                 specified.
+     * @param systemId The system identifier of the entity, or null if not
+     *                 specified.
+     * @param notation The name of the notation.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void unparsedEntityDecl(String name, 
+                                   String publicId, String systemId, 
+                                   String notation) throws XNIException {
+
+        // NOTE: We only know how to create these nodes for the Xerces
+        //       DOM implementation because DOM Level 2 does not specify 
+        //       that functionality. -Ac
+
+        // create full node
+        if (fDocumentType != null) {
+            NamedNodeMap entities = fDocumentType.getEntities();
+            EntityImpl entity = (EntityImpl)entities.getNamedItem(name);
+            if (entity == null) {
+                entity = (EntityImpl)fDocumentImpl.createEntity(name);
+                entity.setPublicId(publicId);
+                entity.setSystemId(systemId);
+                entity.setNotationName(notation);
+                entities.setNamedItem(entity);
+            }
+        }
+            
+        // create deferred node        
+        if (fDocumentTypeIndex != -1) {
+            boolean found = false;
+            int nodeIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+            while (nodeIndex != -1) {
+                short nodeType = fDeferredDocumentImpl.getNodeType(nodeIndex, false);
+                if (nodeType == Node.ENTITY_NODE) {
+                    String nodeName = fDeferredDocumentImpl.getNodeName(nodeIndex, false);
+                    if (nodeName.equals(name)) {
+                        found = true;
+                        break;
+                    }
+                }
+                nodeIndex = fDeferredDocumentImpl.getRealPrevSibling(nodeIndex, false);
+            }
+            if (!found) {
+                int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
+                                    name, publicId, systemId, notation);
+                fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
+            }
+        }
+    
+    } // unparsedEntityDecl(String,String,String,String)
+
+    /**
+     * A notation declaration
+     * 
+     * @param name     The name of the notation.
+     * @param publicId The public identifier of the notation, or null if not
+     *                 specified.
+     * @param systemId The system identifier of the notation, or null if not
+     *                 specified.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void notationDecl(String name, String publicId, String systemId)
+        throws XNIException {
+
+        // NOTE: We only know how to create these nodes for the Xerces
+        //       DOM implementation because DOM Level 2 does not specify 
+        //       that functionality. -Ac
+
+        // create full node
+        if (fDocumentType != null) {
+            NamedNodeMap notations = fDocumentType.getNotations();
+            if (notations.getNamedItem(name) == null) {
+                NotationImpl notation = (NotationImpl)fDocumentImpl.createNotation(name);
+                notation.setPublicId(publicId);
+                notation.setSystemId(systemId);
+                notations.setNamedItem(notation);
+            }
+        }
+
+        // create deferred node
+        if (fDocumentTypeIndex != -1) {
+            boolean found = false;
+            int nodeIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+            while (nodeIndex != -1) {
+                short nodeType = fDeferredDocumentImpl.getNodeType(nodeIndex, false);
+                if (nodeType == Node.NOTATION_NODE) {
+                    String nodeName = fDeferredDocumentImpl.getNodeName(nodeIndex, false);
+                    if (nodeName.equals(name)) {
+                        found = true;
+                        break;
+                    }
+                }
+                nodeIndex = fDeferredDocumentImpl.getPrevSibling(nodeIndex, false);
+            }
+            if (!found) {
+                int notationIndex = fDeferredDocumentImpl.createDeferredNotation(
+                                        name, publicId, systemId);
+                fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, notationIndex);
+            }
+        }
+
+    } // notationDecl(String,String,String)
 
 } // class AbstractDOMParser

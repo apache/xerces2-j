@@ -147,7 +147,7 @@ public class DeferredElementNSImpl
 
 	namespaceURI = ownerDocument.getNodeURI(fNodeIndex);
         // hide the fact that our parser uses an empty string for null
-        if (namespaceURI.length() == 0) {
+        if (namespaceURI != null && namespaceURI.length() == 0) {
             namespaceURI = null;
         }
 
