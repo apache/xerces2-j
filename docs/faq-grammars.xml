@@ -393,7 +393,7 @@ import org.apache.xerces.xs.XSLoader;
    
 // Get DOM Implementation using DOM Registry
 System.setProperty(DOMImplementationRegistry.PROPERTY,
-    "org.apache.xerces.dom.DOMImplementationSourceImpl");
+    "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
 DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
 
 XSImplementation impl = 
