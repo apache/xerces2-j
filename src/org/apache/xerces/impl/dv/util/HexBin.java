@@ -149,14 +149,19 @@ public final class  HexBin {
         if (binaryData == null)
             return null;
 
-	byte[] decoded = null;
- 	try {
+	    byte[] decoded = null;
+ 	    try {
           decoded = decode(binaryData.getBytes("utf-8"));
-	}
-	catch(UnsupportedEncodingException e) {
- 	}
-	finally {
-        return decoded == null ? null : new String(decoded);
-	}
+	    }
+	    catch(UnsupportedEncodingException e) {
+ 	    }
+	    finally {
+            String retVal = null;
+            try {
+                retVal = decoded == null ? null : new String(decoded, "8859_1");
+            } catch (UnsupportedEncodingException e) {
+            }
+            return retVal;
+	    }
     }
 }

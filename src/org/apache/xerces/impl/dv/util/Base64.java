@@ -337,15 +337,20 @@ public final class  Base64 {
         if (base64Data == null)
             return null;
 
-        byte[] decoded = null;	
-        try {
-            decoded = decode(base64Data.getBytes("utf-8"));
-        }
-        catch(UnsupportedEncodingException e) {	
-        }
-        finally {
-            return decoded == null ? null : new String(decoded);
-        }
+            byte[] decoded = null;	
+            try {
+                decoded = decode(base64Data.getBytes("utf-8"));
+            }
+            catch(UnsupportedEncodingException e) {	
+            }
+            finally {
+                String retVal = null;
+                try {
+                    retVal = decoded == null ? null : new String(decoded, "8859_1");
+                } catch (UnsupportedEncodingException e) {
+                }
+                return retVal;
+            }
     }
 
     /**
