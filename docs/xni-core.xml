@@ -468,7 +468,7 @@
   <p>
     This interface serves to gather together information relevant to 
     any kind of XML resource (external entity, notation, schema 
-    grammar, etc.).  There are four fields in this interface:</p>
+    grammar, etc.).  There are five fields in this interface:</p>
     <ul>
       <li>baseSystemId:  The URI against which the literal systemId 
         in the entity (or the URI to be resolved in the 
@@ -488,6 +488,10 @@
       </li>
       <li> publicId:  the publicId of the entity. 
       </li>
+      <li> namespace:  the namespace of the entity. This is useful
+        when the resource is some kind of namespace-aware grammar
+        (an XML Schema, for example).
+      </li>
       </ul>
       <p> As in the case of other XNI objects, XMLResourceIdentifiers
       cannot be depended upon to retain their values between calls;
@@ -502,7 +506,6 @@
     the various handler interfaces. The application can use the
     methods on this interface to query the public, literal system, and expanded system
     base system identifier as well as the line and column number.
-   This interface extends the <link anchor="resource">XMLResourceIdentifier</link> interface.
    </p>
    <p>
     A locator is passed as a parameter in the first method called
