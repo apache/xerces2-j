@@ -36,12 +36,12 @@
    <ol>
     <li>
      First, the <code>org.apache.xerces.xni.parser.XMLParserConfiguration</code>
-     file is requested from the <code>META-INF/services/</code> directory. 
-     This file contains the class name of the parser configuration.
+     system property is queried for the class name of the parser configuration.
     </li>
     <li>
      Next, the <code>org.apache.xerces.xni.parser.XMLParserConfiguration</code>
-     system property is queried for the class name of the parser configuration.
+     file is requested from the <code>META-INF/services/</code> directory. 
+     This file contains the class name of the parser configuration.
     </li>
     <li>
      Finally, the <code>org.apache.xerces.parsers.StandardParserConfiguration</code>
@@ -60,7 +60,7 @@
     the Xerces JAR files, the parser will use the new parser configuration.
    </p>
    <p>
-    The second method can always be used on the command line for the JVM
+    The first method can always be used on the command line for the JVM
     by using the <code>-D</code> option. For example, to override the
     default parser configuration using a custom configuration named
     <code>MyConfig</code>, use the following command line:
