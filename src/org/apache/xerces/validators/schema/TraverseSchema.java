@@ -3383,7 +3383,23 @@ public class TraverseSchema implements
     }
     
     private Element getTopLevelComponentByName(String componentCategory, String name) throws Exception {
-        Element child = XUtil.getFirstChildElement(fSchemaRootElement);
+        Element child = null;
+
+        if ( componentCategory.equals(SchemaSymbols.ELT_GROUP) ) {
+            child = (Element) fSchemaGrammar.topLevelGroupDecls.get(name);
+        }
+        else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP ) ) {
+            child = (Element) fSchemaGrammar.topLevelAttrGrpDecls.get(name);
+        }
+        else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTE ) ) {
+            child = (Element) fSchemaGrammar.topLevelAttrDecls.get(name);
+        }
+
+        if (child != null ) {
+            return child;
+        }
+            
+        child = XUtil.getFirstChildElement(fSchemaRootElement);
 
         if (child == null) {
             return null;
@@ -3564,7 +3580,7 @@ public class TraverseSchema implements
                 // REVISIT: Localize
                 reportGenericSchemaError("Group " + localpart + " not found in the Schema");
                 //REVISIT, this should be some custom Exception
-                throw new Exception("Group " + localpart + " not found in the Schema");
+                throw new RuntimeException("Group " + localpart + " not found in the Schema");
             }
             else {
                 contentSpecIndex = traverseGroupDecl(referredGroup);
