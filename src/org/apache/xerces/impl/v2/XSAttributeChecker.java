@@ -1092,7 +1092,7 @@ public class XSAttributeChecker {
                     // the object representation of the value.
                     switch (oneAttr.dvIndex) {
                     case DT_QNAME:
-                        retValue = resolveQName(attrVal, schemaDoc.fNamespaceSupport);
+                        retValue = resolveQName(attrVal, schemaDoc);
                         break;
                     default:
                         retValue = attrVal;
@@ -1302,7 +1302,7 @@ public class XSAttributeChecker {
                     retValue = fExtraDVs[DT_QNAME].validate(token, null);
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
-                    retValue = resolveQName(token, schemaDoc.fNamespaceSupport);
+                    retValue = resolveQName(token, schemaDoc);
                     memberType.addElement(retValue);
                 }
                 retValue = memberType;
@@ -1526,7 +1526,8 @@ public class XSAttributeChecker {
         return sb.toString();
     }
 
-    protected QName resolveQName (String attrVal, SchemaNamespaceSupport nsSupport) {
+    protected QName resolveQName (String attrVal, XSDocumentInfo currSchema) {
+        SchemaNamespaceSupport nsSupport = currSchema.fNamespaceSupport;
         String prefix = fSchemaHandler.EMPTY_STRING;
         String localpart = attrVal;
         int colonptr = attrVal.indexOf(":");
@@ -1535,6 +1536,9 @@ public class XSAttributeChecker {
             localpart = attrVal.substring(colonptr+1);
         }
         String uri = nsSupport.getURI(prefix);
+        // kludge to handle chameleon includes/redefines...
+        if(prefix == fSchemaHandler.EMPTY_STRING && uri == null && currSchema.fIsChameleonSchema)
+            uri = currSchema.fTargetNamespace;
         return new QName(prefix, localpart, attrVal, uri);
     }
 

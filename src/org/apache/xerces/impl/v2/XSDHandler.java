@@ -341,6 +341,7 @@ class XSDHandler {
             // only set if we were included or redefined in.
             if(currSchemaInfo.fTargetNamespace == null) {
                 currSchemaInfo.fTargetNamespace = callerTNS;
+                currSchemaInfo.fIsChameleonSchema = true;
             } else if(callerTNS != currSchemaInfo.fTargetNamespace) {
                 fElementTraverser.reportSchemaError("src-include.2", new Object [] {callerTNS, currSchemaInfo.fTargetNamespace});
             }
@@ -458,13 +459,13 @@ class XSDHandler {
                 } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
                         DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
                     if(!dependenciesCanOccur) {
-                        fElementTraverser.reportSchemaError("schema-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
+                        fElementTraverser.reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                     // we've dealt with this; mark as traversed
                     DOMUtil.setHidden(globalComp);
                 } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
                     if(!dependenciesCanOccur) {
-                        fElementTraverser.reportSchemaError("schema-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
+                        fElementTraverser.reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                     for(Element redefineComp = DOMUtil.getFirstChildElement(globalComp);
                             redefineComp != null;
@@ -533,7 +534,7 @@ class XSDHandler {
                     } else if(componentType.equals(SchemaSymbols.ELT_NOTATION)) {
                         checkForDuplicateNames(qName, fUnparsedNotationRegistry, globalComp, currSchemaDoc);
                     } else {
-                        fElementTraverser.reportSchemaError("schema-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
+                        fElementTraverser.reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                 }
             } // end for
@@ -742,8 +743,13 @@ class XSDHandler {
         if (retObj != null)
             return retObj;
 
-        // decl must not be null if we're here...
-        if (DOMUtil.isHidden(decl)) {
+		 // decl can be null, if the grammar picked was SG_SchemaNS
+		 if (decl == null) {
+		         fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " +declToTraverse.uri+":"+declToTraverse.localpart);
+		 		 return null;
+		 }
+        else if (DOMUtil.isHidden(decl)) {
+            // decl must not be null if we're here...
             //REVISIT: report an error: circular reference
             fElementTraverser.reportGenericSchemaError("Circular reference detected in schema component named " + declToTraverse.prefix+":"+declToTraverse.localpart);
             return null;
@@ -1037,27 +1043,39 @@ class XSDHandler {
             XSDocumentInfo redefinedSchema = null;
             // case where we've collided with a redefining element
             // (the parent of the colliding element is a redefine)
+            boolean collidedWithRedefine = true;
             if((DOMUtil.getLocalName((elemParent = DOMUtil.getParent(collidingElem))).equals(SchemaSymbols.ELT_REDEFINE))) {
                 redefinedSchema = (XSDocumentInfo)(fRedefine2XSDMap.get(elemParent));
             // case where we're a redefining element.
             } else if((DOMUtil.getLocalName(DOMUtil.getParent(currComp)).equals(SchemaSymbols.ELT_REDEFINE))){
                 redefinedSchema = (XSDocumentInfo)(fDoc2XSDocumentMap.get(DOMUtil.getDocument(collidingElem)));
+                collidedWithRedefine = false;
             }
             if(redefinedSchema != null) { //redefinition involved somehow
+                String newName = qName.substring(qName.lastIndexOf(',')+1)+REDEF_IDENTIFIER;
                 if(redefinedSchema == currSchema) { // object comp. okay here
                     // now have to do some renaming...
-                    String newName = qName.substring(qName.lastIndexOf(',')+1)+REDEF_IDENTIFIER;
                     currComp.setAttribute(SchemaSymbols.ATT_NAME, newName);
-                    registry.put(qName+REDEF_IDENTIFIER, currComp);
+                    if(currSchema.fTargetNamespace == null) 
+                        registry.put(","+newName, currComp);
+                    else
+                        registry.put(currSchema.fTargetNamespace+","+newName, currComp); 
                     // and take care of nested redefines by calling recursively:
                     if(currSchema.fTargetNamespace == null)
                         checkForDuplicateNames(","+newName, registry, currComp, currSchema);
                     else
                         checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
-                } else { // we're apparently redefining the wrong schema
-                    // REVISIT:  error that redefined element in wrong schema
-                    fElementTraverser.reportSchemaError("src-redefine.1", new Object [] {qName});
-                }
+                } else { // we may be redefining the wrong schema
+                    if(collidedWithRedefine) {
+                        if(currSchema.fTargetNamespace == null) 
+                            checkForDuplicateNames(","+newName, registry, currComp, currSchema);
+                        else 
+                            checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
+                    } else {
+                        // REVISIT:  error that redefined element in wrong schema
+                        fElementTraverser.reportSchemaError("src-redefine.1", new Object [] {qName});
+                    }
+                } 
             } else { // we've just got a flat-out collision
                 fElementTraverser.reportSchemaError("sch-props-correct.2", new Object []{qName});
             }
@@ -1112,7 +1130,7 @@ class XSDHandler {
                     fElementTraverser.reportSchemaError("src-redefine.5", null);
                 } else {
                     String derivedBase = grandKid.getAttribute( SchemaSymbols.ATT_BASE );
-                    String processedDerivedBase = findQName(derivedBase, currNSMap);
+                    String processedDerivedBase = findQName(derivedBase, currSchema);
                     if(!processedTypeName.equals(processedDerivedBase)) {
                         // fRedefineSucceeded = false;
                         fElementTraverser.reportSchemaError("src-redefine.5", null);
@@ -1163,7 +1181,7 @@ class XSDHandler {
                             fElementTraverser.reportSchemaError("src-redefine.5", null);
                         } else {
                             String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
-                            String processedDerivedBase = findQName(derivedBase, currSchema.fNamespaceSupport);
+                            String processedDerivedBase = findQName(derivedBase, currSchema);
                             if(!processedTypeName.equals(processedDerivedBase)) {
                                 // fRedefineSucceeded = false;
                                 fElementTraverser.reportSchemaError("src-redefine.5", null);
@@ -1185,7 +1203,7 @@ class XSDHandler {
         } else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
             String processedBaseName = (currSchema.fTargetNamespace == null)?
                 ","+oldName:currSchema.fTargetNamespace+","+oldName;
-            int attGroupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
+            int attGroupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema);
             if(attGroupRefsCount > 1) {
                 // fRedefineSucceeded = false;
                 fElementTraverser.reportSchemaError("src-redefine.7.1", new Object []{new Integer(attGroupRefsCount)});
@@ -1199,7 +1217,7 @@ class XSDHandler {
         } else if (componentType.equals(SchemaSymbols.ELT_GROUP)) {
             String processedBaseName = (currSchema.fTargetNamespace == null)?
                 ","+oldName:currSchema.fTargetNamespace+","+oldName;
-            int groupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
+            int groupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema);
             if(groupRefsCount > 1) {
                 // fRedefineSucceeded = false;
                 fElementTraverser.reportSchemaError("src-redefine.6.1.1", new Object []{new Integer(groupRefsCount)});
@@ -1224,17 +1242,20 @@ class XSDHandler {
     // to by a in the current SchemaNamespaceSupport object, and returns this
     // information in the form (nsURI,b) suitable for lookups in the global
     // decl Hashtables.
-    private String findQName(String name, SchemaNamespaceSupport currNSMap) {
+    private String findQName(String name, XSDocumentInfo schemaDoc) {
+        SchemaNamespaceSupport currNSMap = schemaDoc.fNamespaceSupport;
         int colonPtr = name.indexOf(':');
         String prefix = EMPTY_STRING;
         if (colonPtr > 0)
             prefix = name.substring(0, colonPtr);
         String uri = currNSMap.getURI(fSymbolTable.addSymbol(prefix));
         String localpart = (colonPtr == 0)?name:name.substring(colonPtr+1);
+        if(prefix == this.EMPTY_STRING && uri == null && schemaDoc.fIsChameleonSchema) 
+            uri = schemaDoc.fTargetNamespace; 
         if(uri == null)
             return ","+localpart;
         return uri+","+localpart;
-    } // findQName(String, SchemaNamespaceSupport):  String
+    } // findQName(String, XSDocumentInfo):  String
 
     // This function looks among the children of curr for an element of type elementSought.
     // If it finds one, it evaluates whether its ref attribute contains a reference
@@ -1244,17 +1265,18 @@ class XSDHandler {
     // It also resets the value of ref so that it will refer to the renamed type from the schema
     // being redefined.
     private int changeRedefineGroup(String originalQName, String elementSought,
-            String newName, Element curr, SchemaNamespaceSupport currNSMap) {
+            String newName, Element curr, XSDocumentInfo schemaDoc) {
+        SchemaNamespaceSupport currNSMap = schemaDoc.fNamespaceSupport;
         int result = 0;
         for (Element child = DOMUtil.getFirstChildElement(curr);
                 child != null; child = DOMUtil.getNextSiblingElement(child)) {
             String name = child.getLocalName();
             if (!name.equals(elementSought))
-                result += changeRedefineGroup(originalQName, elementSought, newName, child, currNSMap);
+                result += changeRedefineGroup(originalQName, elementSought, newName, child, schemaDoc);
             else {
                 String ref = child.getAttribute( SchemaSymbols.ATT_REF );
                 if (ref.length() != 0) {
-                    String processedRef = findQName(ref, currNSMap);
+                    String processedRef = findQName(ref, schemaDoc);
                     if(originalQName.equals(processedRef)) {
                         String prefix = EMPTY_STRING;
                         String localpart = ref;

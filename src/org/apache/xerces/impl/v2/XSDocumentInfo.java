@@ -98,6 +98,9 @@ class XSDocumentInfo {
     // targetNamespace
     protected String fTargetNamespace;
 
+    // represents whether this is a chameleon schema (i.e., whether its TNS is natural or comes from without)
+    protected boolean fIsChameleonSchema;
+
     // the root of the schema Document tree itself
     protected Document fSchemaDoc;
 
@@ -108,6 +111,7 @@ class XSDocumentInfo {
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable) {
         fSchemaDoc = schemaDoc;
         fNamespaceSupport = new SchemaNamespaceSupport();
+        fIsChameleonSchema = false;
 
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
