@@ -1048,13 +1048,8 @@ public abstract class BaseMarkupSerializer
                     switch (code) {
                         case NodeFilter.FILTER_REJECT:
                         case NodeFilter.FILTER_SKIP: { 
-                            // REVISIT: the constant FILTER_SKIP should be changed when new
-                            // DOM LS specs gets published
-
-                            // skip the text node
                             break;
                         }
-
                         default: {
                             characters(text);
                         }
@@ -1079,9 +1074,6 @@ public abstract class BaseMarkupSerializer
                     switch (code) {
                         case NodeFilter.FILTER_REJECT:
                         case NodeFilter.FILTER_SKIP: { 
-                            // REVISIT: the constant FILTER_SKIP should be changed when new
-                            // DOM LS specs gets published
-
                             // skip the CDATA node
                             return;
                         }
@@ -1111,9 +1103,6 @@ public abstract class BaseMarkupSerializer
                           switch (code) {
                               case NodeFilter.FILTER_REJECT:
                               case NodeFilter.FILTER_SKIP: { 
-                                  // REVISIT: the constant FILTER_SKIP should be changed when new
-                                  // DOM LS specs gets published
-
                                   // skip the comment node
                                   return;
                               }
@@ -1142,9 +1131,6 @@ public abstract class BaseMarkupSerializer
                         return; // remove the node
                       }
                       case NodeFilter.FILTER_SKIP: { 
-                          // REVISIT: the constant FILTER_SKIP should be changed when new
-                          // DOM LS specs gets published
-
                           child = node.getFirstChild();
                           while ( child != null ) {
                               serializeNode( child );
@@ -1154,19 +1140,13 @@ public abstract class BaseMarkupSerializer
                       }
 
                       default: {
-                          child = node.getFirstChild();
-                          if (child !=null) {
-                              _printer.printText("&");
-                              _printer.printText(node.getNodeName());
-                              _printer.printText(";");
-                          }
-                          return;
+                           // fall through
                       }
                   }
-              }
-
+              }			
             child = node.getFirstChild();
             if ( child == null || (fFeatures !=null && getFeature(Constants.DOM_ENTITIES))){
+				checkUnboundNamespacePrefixedNode(node);
                 _printer.printText("&");
                 _printer.printText(node.getNodeName());
                 _printer.printText(";");
@@ -1540,9 +1520,7 @@ public abstract class BaseMarkupSerializer
                         _printer.printText(";<![CDATA[");
                     }  
                     else {
-                        _printer.printText("&#x");                        
-                        _printer.printText(Integer.toHexString(supplemental));                        
-                        _printer.printText(";");
+                        printHex(supplemental);
                     }
                 }
             }
@@ -1690,12 +1668,19 @@ public abstract class BaseMarkupSerializer
                 _printer.printText((char)(((ch-0x10000)&0x3ff)+0xdc00));
             }
         } else {
-            // The character is not printable, print as character reference.
-            _printer.printText( "&#x" );
-            _printer.printText(Integer.toHexString(ch));
-            _printer.printText( ';' );
+			printHex(ch);
         }
     }
+    
+	/**
+	 * Escapes chars
+	 */ 
+	 final void printHex( int ch) throws IOException {	
+		 _printer.printText( "&#x" );
+		 _printer.printText(Integer.toHexString(ch));
+		 _printer.printText( ';' );
+      	
+	 }
 
 
     /**
@@ -1878,4 +1863,14 @@ public abstract class BaseMarkupSerializer
             throw new IOException(message);
         }
     }
+    
+	/**
+	 * DOM level 3: 
+	 * Check a node to determine if it contains unbound namespace prefixes.
+	 *
+	 * @param node The node to check for unbound namespace prefices
+	 */
+	 protected void checkUnboundNamespacePrefixedNode (Node node) throws IOException{
+	 	
+	 }
 }

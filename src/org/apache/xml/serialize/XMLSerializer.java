@@ -1235,30 +1235,42 @@ extends BaseMarkupSerializer {
     }
 
     //
-    // overwrite printing functions to make sure serializer prints out valid XML
+    // Printing attribute value
     //
-    protected void printEscaped( String source ) throws IOException {
+    protected void printEscaped(String source) throws IOException {
         int length = source.length();
-        for ( int i = 0 ; i < length ; ++i ) {
+        for (int i = 0; i < length; ++i) {
             int ch = source.charAt(i);
             if (!XMLChar.isValid(ch)) {
-                if (++i <length) {
+                if (++i < length) {
                     surrogates(ch, source.charAt(i));
                 } else {
-                    fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                    fatalError("The character '" + (char) ch + "' is an invalid XML character");
                 }
                 continue;
             }
-            printXMLChar(ch, false);
+            // escape NL, CR, TAB
+            if (ch == '\n' || ch == '\r' || ch == '\t') {
+                printHex(ch);
+            } else if (ch == '<') {
+                _printer.printText("&lt;");
+            } else if (ch == '&') {
+                _printer.printText("&amp;");
+            } else if (ch == '"') {
+                _printer.printText("&quot;");
+            } else if ((ch >= ' ' && _encodingInfo.isPrintable((char) ch))) {
+                _printer.printText((char) ch);
+            } else {
+                printHex(ch);
+            }
         }
     }
 
-    // note that this "int" should, in all cases, be a char.
-    // if printing out attribute values, the double quotes mark is converted to
-    // quot, otherwise keep quotations as is.
-    protected void printXMLChar( int ch, boolean keepQuot) throws IOException {
-        
-        if ( ch == '<') {
+    /** print text data */
+    protected void printXMLChar( int ch) throws IOException {
+    	if (ch == '\r') {
+			printHex(ch);
+    	} else if ( ch == '<') {
             _printer.printText("&lt;");
         } else if (ch == '&') {
             _printer.printText("&amp;");
@@ -1266,17 +1278,11 @@ extends BaseMarkupSerializer {
         	// character sequence "]]>" can't appear in content, therefore
         	// we should escape '>' 
 			_printer.printText("&gt;");        	
-        } else if ( ch == '"' && ! keepQuot) {
-            _printer.printText("&quot;");
-        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch)) ||
-                    ch == '\n' || ch == '\r' || ch == '\t' ) {
-                    	// REVISIT: new line characters must be escaped
+        } else if ( ch == '\n' ||  ch == '\t' ||
+                    ( ch >= ' ' && _encodingInfo.isPrintable((char)ch))) {
             _printer.printText((char)ch);
         } else {
-            // The character is not printable, print as character reference.
-            _printer.printText( "&#x" );
-            _printer.printText(Integer.toHexString(ch));
-            _printer.printText( ';' );
+			printHex(ch);
         }
     }
 
@@ -1304,7 +1310,7 @@ extends BaseMarkupSerializer {
                 if ( unescaped ) {
                     _printer.printText( ch );
                 } else
-                    printXMLChar( ch, true );
+                    printXMLChar( ch );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -1323,12 +1329,11 @@ extends BaseMarkupSerializer {
                     }
                     continue;
                 }
-                if ( XMLChar.isSpace(ch))
-                    _printer.printSpace();
-                else if ( unescaped )
+
+				if ( unescaped )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch, true);
+                    printXMLChar( ch);
             }
         }
     }
@@ -1360,7 +1365,7 @@ extends BaseMarkupSerializer {
                 if ( unescaped )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch, true );
+                    printXMLChar( ch );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -1381,16 +1386,83 @@ extends BaseMarkupSerializer {
                     }
                     continue;
                 }
-                if ( XMLChar.isSpace(ch))
-                    _printer.printSpace();
-                else if ( unescaped )
+                if ( unescaped )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch, true );
+                    printXMLChar( ch );
             }
         }
     }
 
+
+   /**
+    * DOM Level 3:
+    * Check a node to determine if it contains unbound namespace prefixes.
+    *
+    * @param node The node to check for unbound namespace prefices
+    */
+	protected void checkUnboundNamespacePrefixedNode (Node node) throws IOException{
+
+		if (fNamespaces) {
+
+   			if (DEBUG) {
+			    System.out.println("==>serializeNode("+node.getNodeName()+") [Entity Reference - Namespaces on]");
+				System.out.println("==>Declared Prefix Count: " + fNSBinder.getDeclaredPrefixCount());
+				System.out.println("==>Node Name: " + node.getNodeName());
+				System.out.println("==>First Child Node Name: " + node.getFirstChild().getNodeName());
+				System.out.println("==>First Child Node Prefix: " + node.getFirstChild().getPrefix());
+				System.out.println("==>First Child Node NamespaceURI: " + node.getFirstChild().getNamespaceURI());			
+			}
+
+		
+			Node child, next;
+	        for (child = node.getFirstChild(); child != null; child = next) {
+	            next = child.getNextSibling();
+			    if (DEBUG) {
+			        System.out.println("==>serializeNode("+child.getNodeName()+") [Child Node]");
+			        System.out.println("==>serializeNode("+child.getPrefix()+") [Child Node Prefix]");
+	            }    
+	
+		 	    //If a NamespaceURI is not declared for the current
+		 	    //node's prefix, raise a fatal error.
+		 	    String prefix = child.getPrefix();
+		 	    if (fNSBinder.getURI(prefix) == null && prefix != null) {
+					fatalError("The replacement text of the entity node '" 
+								+ node.getNodeName()  
+								+ "' contains an element node '" 
+								+ child.getNodeName() 
+								+ "' with an undeclared prefix '" 
+								+ prefix + "'.");
+		 	    }	
+
+				if (child.getNodeType() == Node.ELEMENT_NODE) {
+					
+					NamedNodeMap attrs = child.getAttributes();
+					
+					for (int i = 0; i< attrs.getLength(); i++ ) {
+						
+				 	    String attrPrefix = attrs.item(i).getPrefix();
+				 	    if (fNSBinder.getURI(attrPrefix) == null && attrPrefix != null) {
+							fatalError("The replacement text of the entity node '" 
+										+ node.getNodeName()  
+										+ "' contains an element node '" 
+										+ child.getNodeName() 
+										+ "' with an attribute '" 
+										+ attrs.item(i).getNodeName() 										
+										+ "' an undeclared prefix '" 
+										+ attrPrefix + "'.");
+				 	    }	
+						
+					}	
+
+				}
+					
+				if (child.hasChildNodes()) {
+					checkUnboundNamespacePrefixedNode(child);
+				}	
+	        }
+		}    
+	}	
 
     public boolean reset() {
         super.reset();

@@ -311,7 +311,19 @@ extends XMLSerializer {
                 }
                 continue;
             }
-            printXMLChar(ch, false);
+            if (ch == '\n' || ch == '\r' || ch == '\t' || ch == 0x0085 || ch == 0x2028){
+				printHex(ch);
+			} else if (ch == '<') {
+				_printer.printText("&lt;");
+			} else if (ch == '&') {
+				_printer.printText("&amp;");
+			} else if (ch == '"') {
+				_printer.printText("&quot;");
+			} else if ((ch >= ' ' && _encodingInfo.isPrintable((char) ch))) {
+				_printer.printText((char) ch);
+			} else {
+				printHex(ch);
+			}
         }
     }
 
@@ -376,9 +388,11 @@ extends XMLSerializer {
 
     // note that this "int" should, in all cases, be a char.
     // REVISIT:  make it a char...
-    protected final void printXMLChar( int ch, boolean keepQuot ) throws IOException {
-
-        if ( ch == '<') {
+    protected final void printXMLChar( int ch ) throws IOException {
+    	
+    	if (ch == '\r' || ch == 0x0085 || ch == 0x2028) {
+			printHex(ch);
+    	} else if ( ch == '<') {
             _printer.printText("&lt;");
         } else if (ch == '&') {
             _printer.printText("&amp;");
@@ -386,15 +400,10 @@ extends XMLSerializer {
 			// character sequence "]]>" can't appear in content, therefore
 			// we should escape '>' 
 			_printer.printText("&gt;");
-        } else if ( ch == '"' && !keepQuot) {
-            _printer.printText("&quot;");
         } else if ( _encodingInfo.isPrintable((char)ch) && XML11Char.isXML11ValidLiteral(ch)) { 
             _printer.printText((char)ch);
         } else {
-            // The character is not printable, print as character reference.
-            _printer.printText( "&#x" );
-            _printer.printText(Integer.toHexString(ch));
-            _printer.printText( ';' );
+             printHex(ch);
         }
     }
 
@@ -419,9 +428,7 @@ extends XMLSerializer {
                         _printer.printText(";<![CDATA[");
                     }  
                     else {
-                        _printer.printText("&#x");                        
-                        _printer.printText(Integer.toHexString(supplemental));                        
-                        _printer.printText(";");
+						printHex(supplemental);
                     }
                 }
             }
@@ -456,7 +463,7 @@ extends XMLSerializer {
                 if ( unescaped  && XML11Char.isXML11ValidLiteral(ch)) {
                     _printer.printText( ch );
                 } else
-                    printXMLChar( ch, true );
+                    printXMLChar( ch );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -475,18 +482,11 @@ extends XMLSerializer {
                     }
                     continue;
                 }
-                // Nonterminal S is unchanged in XML 1.1, so NEL (0x85) 
-                // and LSEP (0x2028) are not space characters.
-                //
-                // REVISIT: NEL and LSEP need to be escaped in order for
-                // them to be roundtripped, otherwise they will be
-                // normalized to LF when the document is read back. - mrglavas
-                if ( XMLChar.isSpace(ch))
-                    _printer.printSpace();
-                else if ( unescaped && XML11Char.isXML11ValidLiteral(ch) )
+
+                if ( unescaped && XML11Char.isXML11ValidLiteral(ch) )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch, true);
+                    printXMLChar( ch);
             }
         }
     }
@@ -518,7 +518,7 @@ extends XMLSerializer {
                 if ( unescaped && XML11Char.isXML11ValidLiteral(ch))
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch, true );
+                    printXMLChar( ch );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -539,18 +539,11 @@ extends XMLSerializer {
                     }
                     continue;
                 }
-                // Nonterminal S is unchanged in XML 1.1, so NEL (0x85) 
-                // and LSEP (0x2028) are not space characters.
-                //
-                // REVISIT: NEL and LSEP need to be escaped in order for
-                // them to be roundtripped, otherwise they will be
-                // normalized to LF when the document is read back. - mrglavas
-                if (XMLChar.isSpace(ch))
-                    _printer.printSpace();
-                else if ( unescaped && XML11Char.isXML11ValidLiteral(ch))
+              
+                if ( unescaped && XML11Char.isXML11ValidLiteral(ch))
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch, true );
+                    printXMLChar( ch );
             }
         }
     }
