@@ -18,7 +18,7 @@ STYLEBOOK_CLPATH = $(TOP)/tools/xalan-0.19.2.jar$(CLPATHSEP)$(TOP)/tools/xerces-
 SB_CLPATH = $(STYLEBOOK_CLPATH)$(CLPATHSEP)$(CLASSPATH)
 
 JAR = jar
-JAVAC = javac
+JAVAC = jikes +E -g
 ifeq ($(JDK12BIN),)
 JAVA12 = java
 JAVADOC12 = javadoc
@@ -36,8 +36,8 @@ MV = mv
 #
 # Define the version strings
 #
-PRODUCTVERSION = 1_1_1
-PRODUCTVERSION_DOT = 1.1.1
+PRODUCTVERSION = 1_1_2
+PRODUCTVERSION_DOT = 1.1.2
 PRODUCTNAME = Xerces
 
 #define the jar file names
@@ -46,22 +46,24 @@ JARFILE = xerces.jar
 SAMPLESJARFILE = xercesSamples.jar
 
 #define the package value	
-PACKAGES = org.apache.xerces.parsers \
-           org.apache.xerces.dom \
-           org.apache.xerces.dom.events \
-           org.apache.xml.serialize \
-           org.apache.html.dom \
-           org.apache.wml \
-           org.apache.wml.dom \
-           org.w3c.dom \
-           org.w3c.dom.events \
-           org.w3c.dom.range \
-           org.w3c.dom.traversal \
-           org.w3c.dom.html \
-           org.xml.sax \
-           org.xml.sax.ext \
-           org.xml.sax.helpers \
-           javax.xml.parsers
+PACKAGES = \
+	org.apahce.xerces.framework \
+	org.apache.xerces.parsers \
+	org.apache.xerces.dom \
+	org.apache.xerces.dom.events \
+	org.apache.xml.serialize \
+	org.apache.html.dom \
+	org.apache.wml \
+	org.apache.wml.dom \
+	org.w3c.dom \
+	org.w3c.dom.events \
+	org.w3c.dom.range \
+	org.w3c.dom.traversal \
+	org.w3c.dom.html \
+	org.xml.sax \
+	org.xml.sax.ext \
+	org.xml.sax.helpers \
+	javax.xml.parsers
 
 
 BINZIPFILE = ${PRODUCTNAME}-J-bin.${PRODUCTVERSION_DOT}.zip
