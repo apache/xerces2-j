@@ -542,7 +542,6 @@ public class DeferredDocumentImpl
     } // setAttributeNode(int,int):int
 
     /** Inserts a child before the specified node in the table. */
-    /*
     public int insertBefore(int parentIndex, int newChildIndex, int refChildIndex) {
 
         if (refChildIndex == -1) {
@@ -557,40 +556,32 @@ public class DeferredDocumentImpl
         int rchunk = refChildIndex >> CHUNK_SHIFT;
         int rindex = refChildIndex & CHUNK_MASK;
 
-        // 1) if ref.parent.first = ref then
+        // 1) if ref.prev != null then
         //      begin
-        //        ref.parent.first := new;
+        //        new.prev := ref.prev;
         //      end;
-        int firstIndex = getChunkIndex(fNodeFirstChild, pchunk, pindex);
-        if (firstIndex == refChildIndex) {
-            setChunkIndex(fNodeFirstChild, newChildIndex, pchunk, pindex);
-        }
-        // 2) if ref.prev != null then
-        //      begin
-        //        ref.prev.next := new;
-        //      end;
-        int prevIndex = -1;
-        for (int index = getChunkIndex(fNodeFirstChild, pchunk, pindex);
+        int nextIndex = -1;
+        int index = -1;
+        for (index = getChunkIndex(fNodeLastChild, pchunk, pindex);
              index != -1;
-             index = getChunkIndex(fNodeNextSib, index >> CHUNK_SHIFT, index & CHUNK_MASK)) {
+             index = getChunkIndex(fNodePrevSib, index >> CHUNK_SHIFT, index & CHUNK_MASK)) {
 
-            if (index == refChildIndex) {
+            if (nextIndex == refChildIndex) {
                 break;
             }
-            prevIndex = index;
+            nextIndex = index;
         }
-        if (prevIndex != -1) {
-            int chunk = prevIndex >> CHUNK_SHIFT;
-            int index = prevIndex & CHUNK_MASK;
-            setChunkIndex(fNodeNextSib, newChildIndex, chunk, index);
+        if (index != -1) {
+            int ochunk = index >> CHUNK_SHIFT;
+            int oindex = index & CHUNK_MASK;
+            setChunkIndex(fNodePrevSib, newChildIndex, ochunk, oindex);
         }
-        // 3) new.next := ref;
-        setChunkIndex(fNodeNextSib, refChildIndex, nchunk, nindex);
+        // 2) ref.prev := new;
+        setChunkIndex(fNodePrevSib, refChildIndex, nchunk, nindex);
 
         return newChildIndex;
 
     } // insertBefore(int,int,int):int
-    */
 
     /** Sets the last child of the parentIndex to childIndex. */
     public void setAsLastChild(int parentIndex, int childIndex) {
@@ -609,6 +600,25 @@ public class DeferredDocumentImpl
             index = prev & CHUNK_MASK;
         }
 
+    } // setAsLastChild(int,int)
+
+    /** Sets the first child of the parentIndex to childIndex. */
+    public void setAsFirstChild(int parentIndex, int childIndex) {
+        /*
+        int pchunk = parentIndex >> CHUNK_SHIFT;
+        int pindex = parentIndex & CHUNK_MASK;
+        int chunk = childIndex >> CHUNK_SHIFT;
+        int index = childIndex & CHUNK_MASK;
+        setChunkIndex(fNodeLastChild, childIndex, pchunk, pindex);
+
+        int prev = childIndex;
+        while (prev != -1) {
+            childIndex = prev;
+            prev = getChunkIndex(fNodePrevSib, chunk, index);
+            chunk = prev >> CHUNK_SHIFT;
+            index = prev & CHUNK_MASK;
+        }
+        */
     } // setAsLastChild(int,int)
 
     // methods used when objects are "fluffed-up"
@@ -718,6 +728,39 @@ public class DeferredDocumentImpl
                     : getChunkIndex(fNodePrevSib, chunk, index);
 
     } // getReadPrevSibling(int,boolean):int
+
+    /** 
+     * Returns the first child of the given node at an EXTREME PRICE!!
+     * @param free True to free child index.
+     */
+    public int getFirstChild(int nodeIndex, boolean free) {
+        if (nodeIndex == -1) {
+            return -1;
+        }
+        int index = getLastChild(nodeIndex, false);
+        while (index != -1) {
+            index = getPrevSibling(index, false);
+        }
+        return index;
+    } // getLastChild(int,boolean):int
+
+    /** 
+     * Returns the next sibling of the given node at an EXTREME PRICE!!
+     * @param free True to free child index.
+     */
+    public int getNextSibling(int nodeIndex, boolean free) {
+        if (nodeIndex == -1) {
+            return -1;
+        }
+        int pindex = getParentNode(nodeIndex, false);
+        int index = getLastChild(pindex, false);
+        int next = -1;
+        while (index != nodeIndex && index != -1) {
+            next = index;
+            index = getPrevSibling(next, false);
+        }
+        return next;
+    } // getNextSibling(int,boolean):int
 
     /**
      * Returns the index of the element definition in the table
