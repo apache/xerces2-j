@@ -186,6 +186,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     private String fExternalSchemas = null;
     private String fExternalNoNSSchema = null;
     private Object fJAXPSource = null;
+    private Hashtable fJAXPCache;
     private Locale fLocale = Locale.getDefault();
 
     private XSDHandler fSchemaHandler;
@@ -243,6 +244,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         fCMBuilder = builder;
         fSchemaHandler = new XSDHandler(fGrammarBucket);
         fDeclPool = new XSDeclarationPool();
+        fJAXPCache = new Hashtable();
     }
 
     /**
@@ -448,6 +450,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             fSchemaHandler.setDeclPool(null);
         }
         fSubGroupHandler.reset();
+        fJAXPProcessed = false;
     } // reset()
 
     /**
@@ -576,6 +579,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
      * that it should.  - NG
      */
     private void processJAXPSchemaSource(Hashtable locationPairs) throws IOException {
+        fJAXPProcessed = true;
         if (fJAXPSource == null) {
             return;
         }
@@ -585,6 +589,14 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         String sid = null;
         if (componentType == null) {
             // Not an array
+            if(fJAXPSource instanceof InputStream ||
+                    fJAXPSource instanceof InputSource) {
+                SchemaGrammar g = (SchemaGrammar)fJAXPCache.get(fJAXPSource);
+                if(g != null) {
+                    fGrammarBucket.putGrammar(g);
+                    return;
+                }
+            }
             fXSDDescription.reset();
             xis = xsdToXMLInputSource(fJAXPSource);
             sid = xis.getSystemId();
@@ -594,8 +606,12 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 fXSDDescription.setExpandedSystemId(sid);
                 fXSDDescription.fLocationHints = new String[]{sid};
             }
-            fJAXPProcessed = true;
-            fGrammarBucket.putGrammar(loadSchema(fXSDDescription, xis, locationPairs));
+            SchemaGrammar g = loadSchema(fXSDDescription, xis, locationPairs);
+            if(fJAXPSource instanceof InputStream ||
+                    fJAXPSource instanceof InputSource) {
+                fJAXPCache.put(fJAXPSource, g);
+            }
+            fGrammarBucket.putGrammar(g);
             return ;
         } else if ( (componentType != Object.class) &&
                     (componentType != String.class) &&
@@ -614,10 +630,17 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         // JAXP spec. allow []s of type String, File, InputStream,
         // InputSource also, apart from [] of type Object.
         Object[] objArr = (Object[]) fJAXPSource;
-        fJAXPProcessed = true;
         //make local vector for storing targetn namespaces of schemasources specified in object arrays.
         Vector jaxpSchemaSourceNamespaces = new Vector() ;
         for (int i = 0; i < objArr.length; i++) {
+            if(objArr[i] instanceof InputStream ||
+                    objArr[i] instanceof InputSource) {
+                SchemaGrammar g = (SchemaGrammar)fJAXPCache.get(objArr[i]);
+                if (g != null) {
+                    fGrammarBucket.putGrammar(g);
+                    continue;
+                }
+            }
             fXSDDescription.reset();
             xis = xsdToXMLInputSource(objArr[i]);
             sid = xis.getSystemId();
@@ -639,6 +662,10 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 }
                 else{
                     jaxpSchemaSourceNamespaces.add(targetNamespace) ;
+                }
+                if(objArr[i] instanceof InputStream ||
+                        objArr[i] instanceof InputSource) {
+                    fJAXPCache.put(objArr[i], grammar);
                 }
                 fGrammarBucket.putGrammar(grammar);
             }
