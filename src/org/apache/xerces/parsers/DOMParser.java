@@ -945,6 +945,8 @@ public class DOMParser
                         Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
                     if (defaultDocClass.isAssignableFrom(documentClass)) {
                         fDocumentImpl = (DocumentImpl)fDocument;
+                        // set DOM error checking off
+                        fDocumentImpl.setErrorChecking(false);
                     }
                 }
                 fCurrentElementNode = fDocument;
