@@ -85,7 +85,19 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
 
         // create identity constraint
         String krName = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
+        if(krName == null){
+            reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_KEYREF , SchemaSymbols.ATT_NAME });
+            //return this array back to pool
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+            return;
+        }
         QName kName = (QName)attrValues[XSAttributeChecker.ATTIDX_REFER];
+        if(kName == null){
+            reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_KEYREF , SchemaSymbols.ATT_REFER });
+            //return this array back to pool
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+            return;
+        }
         UniqueOrKey key = (UniqueOrKey)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.IDENTITYCONSTRAINT_TYPE, kName);
 
         if(key == null) {

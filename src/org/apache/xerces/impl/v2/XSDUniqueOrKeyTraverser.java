@@ -86,6 +86,14 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
 
         // create identity constraint
         String uName = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
+
+        if(uName == null){
+            reportSchemaError("s4s-att-must-appear", new Object [] {DOMUtil.getLocalName(uElem) , SchemaSymbols.ATT_NAME });
+            //return this array back to pool
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+            return;
+        }
+
         UniqueOrKey uniqueOrKey = null;
         if(DOMUtil.getLocalName(uElem).equals(SchemaSymbols.ELT_UNIQUE)) {
             uniqueOrKey = new UniqueOrKey(uName, element.fName, IdentityConstraint.UNIQUE);
