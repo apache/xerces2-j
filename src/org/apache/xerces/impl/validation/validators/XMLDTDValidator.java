@@ -587,6 +587,8 @@ public class XMLDTDValidator
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -594,23 +596,28 @@ public class XMLDTDValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException {
 
         // call handlers
         if (fInDTD) {
-            fDTDGrammar.startEntity(name, publicId, systemId, encoding);
+            fDTDGrammar.startEntity(name, publicId, systemId, 
+                                    baseSystemId, encoding);
             if (fDTDHandler != null) {
-                fDTDHandler.startEntity(name, publicId, systemId, encoding);
+                fDTDHandler.startEntity(name, publicId, systemId, 
+                                        baseSystemId, encoding);
             }
         }
         else {
             if (fDocumentHandler != null) {
-                fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+                fDocumentHandler.startEntity(name, publicId, systemId, 
+                                             baseSystemId, encoding);
             }
         }
 
-    } // startEntity(String,String,String,String)
+    } // startEntity(String,String,String,String,String)
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -889,20 +896,22 @@ public class XMLDTDValidator
      * @param publicId The public identifier of the entity or null if the
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, 
-                                   String publicId, String systemId) 
-        throws XNIException {
+                                   String publicId, String systemId,
+                                   String baseSystemId) throws XNIException {
 
         // call handlers
-        fDTDGrammar.externalEntityDecl(name, publicId, systemId);
+        fDTDGrammar.externalEntityDecl(name, publicId, systemId, baseSystemId);
         if (fDTDHandler != null) {
-            fDTDHandler.externalEntityDecl(name, publicId, systemId);
+            fDTDHandler.externalEntityDecl(name, publicId, systemId, baseSystemId);
         }
 
-    } // externalEntityDecl(String,String,String)
+    } // externalEntityDecl(String,String,String,String)
 
     /**
      * An unparsed entity declaration.
@@ -1024,161 +1033,139 @@ public class XMLDTDValidator
      * startContentModel method and the call to the endContentModel method.
      * 
      * @param elementName The name of the element.
-     * @param type        The content model type.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
      */
-    public void startContentModel(String elementName, short type)
-        throws XNIException {
+    public void startContentModel(String elementName) throws XNIException {
 
         // call handlers
-        fDTDGrammar.startContentModel(elementName, type);
+        fDTDGrammar.startContentModel(elementName);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.startContentModel(elementName, type);
+            fDTDContentModelHandler.startContentModel(elementName);
         }
 
-    } // startContentModel(String,short)
+    } // startContentModel(String)
 
-    /**
-     * A referenced element in a mixed content model. If the mixed content 
-     * model only allows text content, then this method will not be called
-     * for that model. However, if this method is called for a mixed
-     * content model, then the zero or more occurrence count is implied.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to 
-     * the startContentModel method where the type is TYPE_MIXED.
-     * 
-     * @param elementName The name of the referenced element. 
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_MIXED
-     */
-    public void mixedElement(String elementName) throws XNIException {
+    /** Any. */
+    public void any() throws XNIException {
 
         // call handlers
-        fDTDGrammar.mixedElement(elementName);
+        fDTDGrammar.any();
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.mixedElement(elementName);
+            fDTDContentModelHandler.any();
         }
 
-    } // mixedElement(elementName)
+    } // any()
+
+    /** Empty. */
+    public void empty() throws XNIException {
+
+        // call handlers
+        fDTDGrammar.empty();
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.empty();
+        }
+
+    } // empty()
+
 
     /**
-     * The start of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
+     * The start of a group.
      * <p>
      * <strong>Note:</strong> Children groups can be nested and have
      * associated occurrence counts.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
      */
-    public void childrenStartGroup() throws XNIException {
+    public void startGroup() throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenStartGroup();
+        fDTDGrammar.startGroup();
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenStartGroup();
+            fDTDContentModelHandler.startGroup();
         }
 
-    } // childrenStartGroup()
+    } // startGroup()
+
+    /** #PCDATA. */
+    public void pcdata() throws XNIException {
+
+        // call handlers
+        fDTDGrammar.pcdata();
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.pcdata();
+        }
+    
+    } // pcdata()
 
     /**
-     * A referenced element in a children content model.
+     * A referenced element.
      * 
      * @param elementName The name of the referenced element.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
      */
-    public void childrenElement(String elementName) throws XNIException {
+    public void element(String elementName) throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenElement(elementName);
+        fDTDGrammar.element(elementName);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenElement(elementName);
+            fDTDContentModelHandler.element(elementName);
         }
 
     } // childrenElement(String)
 
     /**
-     * The separator between choices or sequences of a children content
-     * model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
+     * The separator between choices or sequences.
      * 
-     * @param separator The type of children separator.
+     * @param separator The type of separator.
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see SEPARATOR_CHOICE
      * @see SEPARATOR_SEQUENCE
-     * @see TYPE_CHILDREN
      */
-    public void childrenSeparator(short separator) throws XNIException {
+    public void separator(short separator) throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenSeparator(separator);
+        fDTDGrammar.separator(separator);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenSeparator(separator);
+            fDTDContentModelHandler.separator(separator);
         }
 
-    } // childrenSeparator(short)
+    } // separator(short)
 
     /**
-     * The occurrence count for a child in a children content model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
+     * The occurrence count for a child.
      * 
-     * @param occurrence The occurrence count for the last children element
-     *                   or children group.
+     * @param occurrence The occurrence count.
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see OCCURS_ZERO_OR_ONE
      * @see OCCURS_ZERO_OR_MORE
      * @see OCCURS_ONE_OR_MORE
-     * @see TYPE_CHILDREN
      */
-    public void childrenOccurrence(short occurrence) throws XNIException {
+    public void occurrence(short occurrence) throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenOccurrence(occurrence);
+        fDTDGrammar.occurrence(occurrence);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenOccurrence(occurrence);
+            fDTDContentModelHandler.occurrence(occurrence);
         }
 
-    } // childrenOccurrence(short)
+    } // occurrence(short)
 
-    /**
-     * The end of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenEndGroup() throws XNIException {
+    /** The end of a group. */
+    public void endGroup() throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenEndGroup();
+        fDTDGrammar.endGroup();
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenEndGroup();
+            fDTDContentModelHandler.endGroup();
         }
 
-    } // childrenEndGroup()
+    } // endGroup()
 
     /**
      * The end of a content model.

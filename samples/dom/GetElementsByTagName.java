@@ -57,7 +57,6 @@
 
 package dom;                    
                     
-import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -360,7 +359,7 @@ public class GetElementsByTagName {
     /** Prints the usage. */
     private static void printUsage() {
 
-        System.err.println("usage: java dom.Counter (options) uri ...");
+        System.err.println("usage: java dom.GetElementsByTagName (options) uri ...");
         System.err.println();
         
         System.err.println("options:");

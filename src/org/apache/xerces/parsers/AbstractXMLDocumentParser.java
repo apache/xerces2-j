@@ -306,6 +306,8 @@ public abstract class AbstractXMLDocumentParser
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -313,9 +315,11 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException {
-    } // startEntity(String,String,String,String)
+    } // startEntity(String,String,String,String,String)
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -487,13 +491,15 @@ public abstract class AbstractXMLDocumentParser
      * @param publicId The public identifier of the entity or null if the
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
+     * @param baseSystemId The base system identifier where this entity
+     *                     is declared.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, 
-                                   String publicId, String systemId) 
-        throws XNIException {
-    } // externalEntityDecl(String,String,String)
+                                   String publicId, String systemId,
+                                   String baseSystemId) throws XNIException {
+    } // externalEntityDecl(String,String,String,String)
 
     /**
      * An unparsed entity declaration.
