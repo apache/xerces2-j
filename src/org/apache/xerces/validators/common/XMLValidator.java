@@ -2385,8 +2385,19 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                              /****/   
                         }
                         else{
-                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                            try {
+                                fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                            }
+                            catch (InvalidDatatypeValueException idve) {
+                                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                           SchemaMessageProvider.SCHEMA_DOMAIN,
+                                                           SchemaMessageProvider.DatatypeError,
+                                                           SchemaMessageProvider.MSG_NONE,
+                                                           new Object [] { idve.getMessage() },
+                                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                            }
                         }
+
                     }
                 }
                 index = fAttrList.getNextAttr(index);
