@@ -70,8 +70,7 @@ import dom.ParserWrapper;
 /**
  * A simple program to test Document.getElementById() and the management
  * of ID attributes. Originally based on dom.Counter.
- * CAVEAT: Although any document can be given in argument, the test assumes
- * it is given personal.xml and relies on that to function properly.
+ * This test takes as input input.xml file
  *
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM
