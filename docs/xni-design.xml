@@ -66,12 +66,6 @@
   <p>
    <img alt='Xerces2 Pipeline Configuration' src='xni-pipeline-detailed.gif'/>
   </p>
-  <note>
-   The diagram shows what we <em>want</em> the Xerces2 pipeline
-   implementation to be. As of this writing, the actual configuration
-   is missing the Schema Validator component because XML Schema is not
-   yet supported in the Xerces2 reference implementation.
-  </note>
   <p>
    As the diagram shows, the "Document Scanner" is the source for
    document information and the "DTD Scanner" is the source for DTD

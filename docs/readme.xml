@@ -60,12 +60,6 @@
     <jump href='http://java.sun.com/xml/xml_jaxp.html'>Java APIs for 
     XML Processing</jump> (JAXP) 1.1
    </li>
-  </ul>
-  <p>
-   This release does <strong>NOT</strong> yet support the following
-   standards and/or APIs:
-  </p>
-  <ul>
    <li>
     <jump href='http://www.w3.org/XML/Schema'>XML Schema</jump> 1.0
     <jump href='http://www.w3.org/TR/xmlschema-1/'>Structures</jump>
@@ -77,7 +71,13 @@
  </s2>
  <s2 title='Changes from Previous Release'>
   <p>
-   This release introduces some changes to the Xerces Native
+   This is the first Xerces2 release to include support for validating
+   XML documents against XML Schema grammars. The XML Schema validation 
+   engine was completely redesigned and rewritten for Xerces2. Therefore,
+   the XML Schema support in this release should be considered alpha.
+  </p>
+  <p>
+   This release also introduces some changes to the Xerces Native
    Interface. The following list enumerates the important changes:
   </p>
   <ul>
@@ -113,18 +113,13 @@
    Xerces2 is a nearly complete rewrite of the Xerces 1.x codebase
    in order to make the code cleaner, more modular, and easier to
    maintain. Applications using only the standard interfaces such as
-   JAXP, DOM, and SAX should not see any differences. However, the
-   following list details some of the more visible changes between
-   Xerces 1.x and Xerces2:
+   JAXP, DOM, and SAX should not see any differences.
   </p>
-  <ul>
-   <li>XML Schema support not yet implemented</li>
-  </ul>
  </s2>
  <s2 title='License Information'>
   <p>
    The &ParserName; &ParserVersion; release is available
-   in both source code and precompiled binary (JAR files) form. 
+   in source code and precompiled binary (JAR files) form. 
    Both &ParserName; packages are made available under the 
    <jump href='http://xml.apache.org/LICENSE'>Apache Software
    License</jump>.

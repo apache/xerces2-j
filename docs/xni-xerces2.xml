@@ -30,11 +30,7 @@
     <li><link anchor='entity-manager'>Entity Manager</link></li>
     <li><link anchor='dtd-validator'>DTD Validator</link></li>
     <li><link anchor='namespace-binder'>Namespace Binder</link></li>
-    <!--
-      - NOTE: This is to be added in when XML Schema support is
-      -       implemented in the Xerces2 reference implementation.
     <li><link anchor='schema-validator'>Schema Validator</link></li>
-    -->
    </ul>
    <!-- NOTE:
      - More components and their dependencies may be added as
@@ -70,12 +66,6 @@
    <li>Namespace Binder (*)</li>
    <li>Schema Validator (*)</li>
   </ul>
-  <note>
-   As of this writing, the Schema Validator does not exist in the
-   Xerces2 standard configuration because XML Schema is not yet
-   supported. When it is supported, the Schema Validator will be
-   added to this documentation.
-  </note>
   <note>
    There are additional components other than those in the above
    list, such as the "Grammar Pool" and "Datatype Validator
@@ -485,6 +475,43 @@ public class MyComponent
    occur <em>after</em> DTD validation (since namespace bindings may
    have been defaulted from an attribute declaration in the DTD) and
    <em>before</em> Schema validation.
+  </p>
+ </s2>
+ <anchor name='schema-validator'/>
+ <s2 title='Schema Validator'>
+  <p>Property information:</p>
+  <table>
+   <tr>
+    <th>Property Id</th>
+    <td>http://apache.org/xml/properties/internal/validator/schema</td>
+   </tr>
+   <tr>
+    <th>Type</th>
+    <td>org.apache.xerces.impl.XMLSchemaValidator</td>
+   </tr>
+  </table>
+  <p>Required properties:</p>
+  <ul>
+   <li>http://apache.org/xml/properties/internal/symbol-table</li>
+   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+   <!--
+     - NOTE: The following properties are also required but the
+     -       validation engine is being redesigned so I'm not
+     -       listing them in the documentation.
+   <li>http://apache.org/xml/properties/internal/grammar-pool</li>
+   <li>http://apache.org/xml/properties/internal/datatype-validator-factory</li>
+   -->
+  </ul>
+  <p>Recognized features:</p>
+  <ul>
+   <li>http://xml.org/sax/features/namespaces</li>
+   <li>http://xml.org/sax/features/validation</li>
+   <li>http://apache.org/xml/features/validation/dynamic</li>
+  </ul>
+  <p>
+   The Schema Validator performs validation of the document events that 
+   it receives which may augment the streaming information set with
+   default simple type values and normalizing simple type values.
   </p>
  </s2>
 </s1> 

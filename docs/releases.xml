@@ -1,12 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
- <release version='NOT YET RELEASED'>
+ <release version='Xerces 2.0.0 (beta3)'>
   <desc>
-   This releases fixes a number of bugs and introduces some changes to
-   the Xerces Native Interface.
+   This releases fixes a number of bugs, introduces some changes to
+   the Xerces Native Interface, and is the first Xerces2 release to
+   include XML Schema validation support. Please note that the XML
+   Schema validation code was completely rewritten for Xerces2 and
+   should be considered alpha at this time.
   </desc>
   <changes>
+   <add>
+    <note>
+     Redesigned and rewrote XML Schema validation code. Also updated
+     standard parser configuration to include the XML Schema validator 
+     in the document pipeline by default.
+    </note>
+    <submitter name='IBM Toronto team w/ help from Sun'/>
+   </add>
    <fix>
     <note>
      Fixed newline normalization bug. Previously, the sequence #x0A #x0D

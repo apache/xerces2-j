@@ -9,11 +9,9 @@ There are lots of things that need to be done:
 * Conformance, conformance, conformance!
 * Kill bugs
 
-* W3C XML Schema support
 * Grammar caching
 * Grammar access
 * Re-validation
-* Pull parsing
 
 * Documentation
 * Samples
