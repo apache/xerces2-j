@@ -61,7 +61,7 @@ import org.apache.xerces.xni.QName;
 
 /**
  * This class is an unsynchronized hash table primary used for String
- * to int mapping.
+ * to Object mapping.
  * <p>
  * The hash code uses the same algorithm as SymbolTable class.
  * 
@@ -112,7 +112,7 @@ public class SymbolHash {
      * 
      * @param key The new key.
      */
-    public String put (String key, int value ) {
+    public String put (String key, Object value ) {
 
         int bucket = hash(key) % fTableSize;
         Entry entry = search (key, bucket);
@@ -136,7 +136,7 @@ public class SymbolHash {
      * @param qName The QName which is the key
      * @param value 
      */
-    public String put(QName qName, int value) {
+    public String put(QName qName, Object value) {
 
         String key = qName.uri.concat(qName.localpart);
 
@@ -154,17 +154,17 @@ public class SymbolHash {
 
     } 
 
-    public int get (String key){
+    public Object get (String key){
 
         int bucket = hash(key) % fTableSize;
         Entry entry = search (key, bucket);
         if (entry !=null) {
             return entry.value;
         }
-        return -1;
+        return null;
     }
 
-    public int get (QName qName){
+    public Object get (QName qName){
 
         String key = qName.uri.concat(qName.localpart);
         
@@ -174,7 +174,7 @@ public class SymbolHash {
         if (entry !=null) {
             return entry.value;
         }
-        return -1;
+        return null;
     }
 
     protected Entry search (String key, int bucket){
@@ -228,7 +228,7 @@ public class SymbolHash {
         */
 	public String key;
 
-	public int value;
+	public Object value;
 	
         /** 
          * key characters. This information is duplicated here for
@@ -240,7 +240,7 @@ public class SymbolHash {
         public Entry next;
 
 
-	public Entry(String key, int value, Entry next) {
+	public Entry(String key, Object value, Entry next) {
 	    this.key = key;
 	    this.value = value;
 	    this.next = next;
