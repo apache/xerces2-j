@@ -64,7 +64,7 @@ try {
 					  				 property allows the application to specify a delimiter string for 
 					  				 separating the URI part and the local part.</td></tr>
 			<tr><th>False:</th>		<td>Do not perform namespace processing.</td></tr>
-			<tr><th>Default:</th>	<td>false</td></tr>
+			<tr><th>Default:</th>	<td>true</td></tr>
 			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
 			<tr><th>Note:</th>		<td>If the validation feature is set to true, then the document must contain 
    									a grammar that supports the use of namespaces.</td></tr>
