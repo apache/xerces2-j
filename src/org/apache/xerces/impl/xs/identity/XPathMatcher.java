@@ -416,7 +416,7 @@ public class XPathMatcher {
                         if (type != null) {
                           if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
                             XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-                            attrGrp = ctype.fAttrGrp;
+                            attrGrp = ctype.getAttrGrp();
                           }
                         }
                     }
@@ -533,7 +533,7 @@ public class XPathMatcher {
                       if (type != null) {
                         if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
                           XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-                          val = ctype.fXSSimpleType;
+                          val = (XSSimpleType)ctype.getSimpleType();
                         }
                         else {
                           val = (XSSimpleType)(type);

@@ -110,13 +110,13 @@ public class CMBuilder {
 
         // for complex type with empty or simple content,
         // there is no content model validator
-        short contentType = typeDecl.fContentType;
+        short contentType = typeDecl.getContentType();
         if (contentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE ||
             contentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
             return null;
         }
 
-        XSParticleDecl particle = typeDecl.fParticle;
+        XSParticleDecl particle = (XSParticleDecl)typeDecl.getParticle();
         
         // if the content is element only or mixed, but no particle
         // is defined, return the empty content model

@@ -1989,7 +1989,7 @@ public class XMLSchemaValidator
         XSAttributeGroupDecl attrGrp = null;
         if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-            attrGrp = ctype.fAttrGrp;
+            attrGrp = ctype.getAttrGrp();
         }
         processAttributes(element, attributes, attrGrp);
 
@@ -2975,7 +2975,7 @@ public class XMLSchemaValidator
                 }
                 if (fCurrCMState[0] >= 0 &&
                     !fCurrentCM.endContentModel(fCurrCMState)) {
-                    reportSchemaError("cvc-complex-type.2.4.b", new Object[]{element.rawname, ctype.fParticle.toString()});
+                    reportSchemaError("cvc-complex-type.2.4.b", new Object[]{element.rawname, ((XSParticleDecl)ctype.getParticle()).toString()});
                 }
             }
         }

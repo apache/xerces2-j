@@ -73,41 +73,67 @@ import org.apache.xerces.impl.xs.models.CMBuilder;
 public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
 
     // name of the complexType
-    public String fName = null;
+    String fName = null;
 
     // target namespace of the complexType
-    public String fTargetNamespace = null;
+    String fTargetNamespace = null;
 
     // base type of the complexType
-    public XSTypeDecl fBaseType = null;
+    XSTypeDecl fBaseType = null;
 
     // derivation method of the complexType
-    public short fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
+    short fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
 
     // final set of the complexType
-    public short fFinal = XSConstants.DERIVATION_NONE;
+    short fFinal = XSConstants.DERIVATION_NONE;
 
     // block set (prohibited substitution) of the complexType
-    public short fBlock = XSConstants.DERIVATION_NONE;
+    short fBlock = XSConstants.DERIVATION_NONE;
 
     // flags: whether is abstract; whether contains ID type;
     //        whether it's an anonymous tpye
-    public short fMiscFlags = 0;
+    short fMiscFlags = 0;
 
     // the attribute group that holds the attribute uses and attribute wildcard
-    public XSAttributeGroupDecl fAttrGrp = new XSAttributeGroupDecl();
+    XSAttributeGroupDecl fAttrGrp = null;
 
     // the content type of the complexType
-    public short fContentType = CONTENTTYPE_EMPTY;
+    short fContentType = CONTENTTYPE_EMPTY;
 
     // if the content type is simple, then the corresponding simpleType
-    public XSSimpleType fXSSimpleType = null;
+    XSSimpleType fXSSimpleType = null;
 
     // if the content type is element or mixed, the particle
-    public XSParticleDecl fParticle = null;
+    XSParticleDecl fParticle = null;
 
     // if there is a particle, the content model corresponding to that particle
-    public XSCMValidator fCMValidator = null;
+    XSCMValidator fCMValidator = null;
+
+    public XSComplexTypeDecl() {
+        // do-nothing constructor for now.
+    }
+
+    public void setValues(String name, String targetNamespace,
+            XSTypeDecl baseType, short derivedBy, short schemaFinal, 
+            short block, short contentType,
+            boolean isAbstract, XSAttributeGroupDecl attrGrp, 
+            XSSimpleType simpleType, XSParticleDecl particle) {
+        fTargetNamespace = targetNamespace;
+        fBaseType = baseType;
+        fDerivedBy = derivedBy;
+        fFinal = schemaFinal;
+        fBlock = block;
+        fContentType = contentType;
+        if(isAbstract)
+            fMiscFlags |= CT_IS_ABSTRACT;
+        fAttrGrp = attrGrp;
+        fXSSimpleType = simpleType;
+        fParticle = particle;
+   }
+
+   public void setName(String name) {
+        fName = name;
+   }
 
     public short getTypeCategory() {
         return COMPLEX_TYPE;
@@ -151,6 +177,13 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
             fCMValidator = cmBuilder.getContentModel(this);
 
         return fCMValidator;
+    }
+
+    // some utility methods:
+
+    // return the attribute group for this complex type
+    public XSAttributeGroupDecl getAttrGrp() {
+        return fAttrGrp;
     }
 
     public String toString() {

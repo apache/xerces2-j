@@ -278,7 +278,7 @@ public class XSConstraints {
             }
             // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be emptiable as defined by Particle Emptiable (3.9.6).
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-                if (!ctype.fParticle.emptiable())
+                if (!((XSParticleDecl)ctype.getParticle()).emptiable())
                     return null;
             }
             else {

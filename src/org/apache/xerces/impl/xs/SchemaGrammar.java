@@ -475,38 +475,90 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
 
     // anyType and anySimpleType: because there are so many places where
     // we need direct access to these two types
-    public final static XSComplexTypeDecl fAnyType;
-    static {
-        fAnyType = new XSComplexTypeDecl();
-        fAnyType.fName = SchemaSymbols.ATTVAL_ANYTYPE;
-        fAnyType.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-        fAnyType.fBaseType = fAnyType;
-        fAnyType.fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
-        fAnyType.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+    public final static XSComplexTypeDecl fAnyType = new XSAnyType();
+    private static class XSAnyType extends XSComplexTypeDecl {
+        public XSAnyType () {
+            fName = SchemaSymbols.ATTVAL_ANYTYPE;
+            super.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+            fBaseType = this;
+            fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
+            fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
 
-        // the wildcard used in anyType (content and attribute)
-        // the spec will change strict to lax for anyType
-        XSWildcardDecl wildcard = new XSWildcardDecl();
-        wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
-        // the particle for the content wildcard
-        XSParticleDecl particleW = new XSParticleDecl();
-        particleW.fMinOccurs = 0;
-        particleW.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-        particleW.fType = XSParticleDecl.PARTICLE_WILDCARD;
-        particleW.fValue = wildcard;
-        // the model group of a sequence of the above particle
-        XSModelGroupImpl group = new XSModelGroupImpl();
-        group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-        group.fParticleCount = 1;
-        group.fParticles = new XSParticleDecl[1];
-        group.fParticles[0] = particleW;
-        // the content of anyType: particle of the above model group
-        XSParticleDecl particleG = new XSParticleDecl();
-        particleG.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-        particleG.fValue = group;
+            fParticle = null;
+            fAttrGrp = null;
+        }
+
+        // overridden methods
+        public void setValues(String name, String targetNamespace,
+                XSTypeDecl baseType, short derivedBy, short schemaFinal, 
+                short block, short contentType,
+                boolean isAbstract, XSAttributeGroupDecl attrGrp, 
+                XSSimpleType simpleType, XSParticleDecl particle) {
+            // don't allow this.
+        }
+
+        public void setName(String name){
+            // don't allow this.
+        }
+
+        public void setIsAbstractType() {
+            // null implementation
+        }
+
+        public void setContainsTypeID() {
+            // null implementation
+        }
+
+        public void setIsAnonymous() {
+            // null implementation
+        }
+
+        public void reset() {
+            // null implementation
+        }
+
+        public XSObjectList getAttributeUses() {
+            return new XSObjectListImpl(null, 0);
+        }
+
+        public XSAttributeGroupDecl getAttrGrp() {
+            XSWildcardDecl wildcard = new XSWildcardDecl();
+            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+            XSAttributeGroupDecl attrGrp = new XSAttributeGroupDecl();
+            attrGrp.fAttributeWC = wildcard;
+            return attrGrp;
+        }
+
+        public XSWildcard getAttributeWildcard() {
+            XSWildcardDecl wildcard = new XSWildcardDecl();
+            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+            return wildcard;
+        }
+
+        public XSParticle getParticle() {
+            // the wildcard used in anyType (content and attribute)
+            // the spec will change strict to lax for anyType
+            XSWildcardDecl wildcard = new XSWildcardDecl();
+            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+            // the particle for the content wildcard
+            XSParticleDecl particleW = new XSParticleDecl();
+            particleW.fMinOccurs = 0;
+            particleW.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            particleW.fType = XSParticleDecl.PARTICLE_WILDCARD;
+            particleW.fValue = wildcard;
+            // the model group of a sequence of the above particle
+            XSModelGroupImpl group = new XSModelGroupImpl();
+            group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+            group.fParticleCount = 1;
+            group.fParticles = new XSParticleDecl[1];
+            group.fParticles[0] = particleW;
+            // the content of anyType: particle of the above model group
+            XSParticleDecl particleG = new XSParticleDecl();
+            particleG.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            particleG.fValue = group;
         
-        fAnyType.fParticle = particleG;
-        fAnyType.fAttrGrp.fAttributeWC = wildcard;
+            return particleG;
+        }
     }
 
     // the grammars to hold components of the schema namespace

@@ -419,14 +419,14 @@ abstract class XSDAbstractTraverser {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     if (idName != null) {
                         String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
-                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.fName;
+                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                         reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.fName, idName}, child);
                     }
                 }
                 else {
                     // REVISIT: what if one of the attribute uses is "prohibited"
                     String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
-                    String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.fName;
+                    String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
                     reportSchemaError(code, new Object[]{name, tempAttrUse.fAttrDecl.fName}, child);
                 }
             }
