@@ -374,12 +374,13 @@ public class XMLDocumentFragmentScannerImpl
         // sax features
         fAttributes.setNamespaces(fNamespaces);
 
-		// initialize vars
-		fMarkupDepth = 0;
-		fCurrentElement = null;
-		fElementStack.clear();
-		fHasExternalDTD = false;
-		fStandalone = false;
+        // initialize vars
+        fMarkupDepth = 0;
+        fCurrentElement = null;
+        fElementStack.clear();
+        fHasExternalDTD = false;
+        fStandalone = false;
+        fInScanContent = false;
 
 		// setup dispatcher
 		setScannerState(SCANNER_STATE_CONTENT);
