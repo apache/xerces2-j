@@ -238,7 +238,7 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
             int length = map.getLength();
             for (int i = 0; i < length; ++i) {
                 XSElementDecl decl = (XSElementDecl) map.item(i);
-                if (cachedGrammar.getElementDeclaration(decl.getName()) == null) {
+                if (cachedGrammar.getGlobalElementDecl(decl.getName()) == null) {
                     cachedGrammar.addGlobalElementDecl(decl);
                 }
             }
@@ -248,7 +248,7 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
             length = map.getLength();
             for (int i = 0; i < length; ++i) {
                 XSAttributeDecl decl = (XSAttributeDecl) map.item(i);
-                if (cachedGrammar.getAttributeDeclaration(decl.getName()) == null) {
+                if (cachedGrammar.getGlobalAttributeDecl(decl.getName()) == null) {
                     cachedGrammar.addGlobalAttributeDecl(decl);
                 }
             }
@@ -268,7 +268,7 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
             length = map.getLength();
             for (int i = 0; i < length; ++i) {
                 XSAttributeGroupDecl decl = (XSAttributeGroupDecl) map.item(i);
-                if (cachedGrammar.getAttributeDeclaration(decl.getName()) == null) {
+                if (cachedGrammar.getGlobalAttributeGroupDecl(decl.getName()) == null) {
                     cachedGrammar.addGlobalAttributeGroupDecl(decl);
                 }
             }
