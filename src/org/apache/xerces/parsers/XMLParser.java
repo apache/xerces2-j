@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,9 @@ public abstract class XMLParser {
 
     // properties
 
+    /** Property identifier: entity resolver. */
+    protected static final String ENTITY_RESOLVER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER = 
@@ -102,6 +105,7 @@ public abstract class XMLParser {
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
+        ENTITY_RESOLVER,
         ERROR_HANDLER,
     };
 

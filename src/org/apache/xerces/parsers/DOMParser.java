@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -301,7 +301,8 @@ public class DOMParser
     public void setEntityResolver(EntityResolver resolver) {
 
         try {
-            fConfiguration.setEntityResolver( new EntityResolverWrapper(resolver));
+            fConfiguration.setProperty(ENTITY_RESOLVER, 
+                                       new EntityResolverWrapper(resolver));
         }
         catch (XMLConfigurationException e) {
             // do nothing
@@ -321,7 +322,7 @@ public class DOMParser
         EntityResolver entityResolver = null;
         try {
             XMLEntityResolver xmlEntityResolver = 
-                (XMLEntityResolver)fConfiguration.getEntityResolver();
+                (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
             if (xmlEntityResolver != null &&
                 xmlEntityResolver instanceof EntityResolverWrapper) {
                 entityResolver = ((EntityResolverWrapper)xmlEntityResolver).getEntityResolver();

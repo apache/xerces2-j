@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -403,7 +403,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 			else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
 				if (value instanceof DOMEntityResolver) {
 					try {
-                        fConfiguration.setEntityResolver(new DOMEntityResolverWrapper((DOMEntityResolver) value));
+                        fConfiguration.setProperty(ENTITY_RESOLVER, new DOMEntityResolverWrapper((DOMEntityResolver) value));
 					}
 					catch (XMLConfigurationException e) {}
 				}
@@ -564,7 +564,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
 			try {               
                 XMLEntityResolver entityResolver = 
-               (XMLEntityResolver) fConfiguration.getEntityResolver();
+               (XMLEntityResolver) fConfiguration.getProperty(ENTITY_RESOLVER);
                 if (entityResolver != null
                     && entityResolver instanceof DOMEntityResolverWrapper) {
                     return ((DOMEntityResolverWrapper) entityResolver).getEntityResolver();
