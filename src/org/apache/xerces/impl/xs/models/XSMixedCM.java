@@ -96,7 +96,7 @@ public class XSMixedCM  implements XSCMValidator {
      * @return Start state of the content model
      */
     public int[] startContentModel(){
-        return (new int[] {STATE_START});    
+        return (new int[] {STATE_START});
     }
 
 
@@ -140,5 +140,14 @@ public class XSMixedCM  implements XSCMValidator {
         return true;
     }
 
+    /**
+     * check whether this content violates UPA constraint.
+     *
+     * @param errors to hold the UPA errors
+     * @return true if this content model contains other or list wildcard
+     */
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException {
+        return false;
+    }
 
 } // class XSMixedCM
