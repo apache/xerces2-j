@@ -2073,7 +2073,22 @@ public class DOMParser
                 catch (SAXException s) {}
                 AttrImpl attr;
                 if (nsEnabled) {
-                    attr = (AttrImpl)fDocumentImpl.createAttributeNS(fStringPool.toString(attributeDecl.uri),attrName);
+		    String namespaceURI = fStringPool.toString(attributeDecl.uri);
+		    // DOM Level 2 wants all namespace declaration attributes
+		    // to be bound to "http://www.w3.org/2000/xmlns/"
+		    // So as long as the XML parser doesn't do it, it needs to
+		    // done here.
+		    String prefix = fStringPool.toString(attributeDecl.prefix);
+		    if (namespaceURI == null) {
+			if (prefix != null) {
+			    if (prefix.equals("xmlns")) {
+				namespaceURI = "http://www.w3.org/2000/xmlns/";
+			    }
+			} else if (attrName.equals("xmlns")) {
+			    namespaceURI = "http://www.w3.org/2000/xmlns/";
+			}
+		    }
+                    attr = (AttrImpl)fDocumentImpl.createAttributeNS(namespaceURI,attrName);
                 }
                 else{
                     attr = (AttrImpl)fDocumentImpl.createAttribute(attrName);
