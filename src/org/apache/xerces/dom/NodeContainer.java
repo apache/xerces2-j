@@ -211,6 +211,7 @@ public abstract class NodeContainer
     	
     	NodeContainer newnode = (NodeContainer) super.cloneNode(deep);
 
+        // REVISIT: Do we need to synchronize at this point? -Ac
         if (syncChildren) {
             synchronizeChildren();
         }
@@ -219,7 +220,13 @@ public abstract class NodeContainer
     	newnode.firstChild      = null;
         newnode.lastChild       = null;
 
-    	// Then, if deep, clone the kids too.
+        // invalidate cache for children NodeList
+        newnode.nodeListChanges = -1;
+        newnode.nodeListLength = -1;
+
+        newnode.kidOK = kidOK;
+    	
+        // Then, if deep, clone the kids too.
     	if (deep) {
     		for (NodeImpl child = (NodeImpl)getFirstChild();
     			child != null;

@@ -100,14 +100,6 @@ public class ProcessingInstructionImpl
         return Node.PROCESSING_INSTRUCTION_NODE;
     }
 
-    /** Clones this node. */
-    public Node cloneNode(boolean deep) {
-        if (syncData) {
-            synchronizeData();
-        }
-        return ownerDocument.createProcessingInstruction(name, value);
-    }
-
     //
     // ProcessingInstruction methods
     //

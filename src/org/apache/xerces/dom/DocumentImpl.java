@@ -215,18 +215,36 @@ public class DocumentImpl
      */
     public Node cloneNode(boolean deep) {
 
-        // NOTE: Cloning causing full fluffing. -Ac
-        DocumentImpl newdoc = new DocumentImpl();
+        // clone node
+        DocumentImpl newdoc = (DocumentImpl)super.cloneNode(deep);
 
-    	if (deep) {
-    		for(NodeImpl n = (NodeImpl)getFirstChild();
-                n != null;
-                n = n.nextSibling)
-                {
-    			newdoc.appendChild(newdoc.importNode(n,true));
+        /*
+        // set doctype and root element
+        Node child = newdoc.getFirstChild();
+        while (child != null) {
+            short type = child.getNodeType();
+            if (type == Node.DOCUMENT_TYPE_NODE) {
+                newdoc.docType = (DocumentTypeImpl)child;
             }
+            else if (type == Node.ELEMENT_NODE) {
+                newdoc.docElement = (ElementImpl)child;
+            }
+            child = child.getNextSibling();
         }
+        */
 
+        // REVISIT: What to do about identifiers that are cloned? -Ac
+        //newdoc.identifiers = (Hashtable)identifiers.clone(); // WRONG!
+        newdoc.identifiers = null;
+        newdoc.iterators = null;
+        newdoc.treeWalkers = null;
+        newdoc.ranges = null;
+
+        // experimental
+        newdoc.allowGrammarAccess = allowGrammarAccess;
+        newdoc.errorChecking = errorChecking;
+
+        // return new document
     	return newdoc;
 
     } // cloneNode(boolean):Node
@@ -859,6 +877,7 @@ public class DocumentImpl
 
         if (element == null) {
             removeIdentifier(idName);
+            return;
         }
 
         if (syncData) {
@@ -1231,7 +1250,17 @@ public class DocumentImpl
 					   "DOM007 Not supported");
 	}
      
+    //
+    // Object methods
+    //
 
+    /** Clone. */
+    public Object clone() throws CloneNotSupportedException {
+        DocumentImpl newdoc = (DocumentImpl)super.clone();
+        newdoc.docType = null;
+        newdoc.docElement = null;
+        return newdoc;
+    }
 
     //
     // Public static methods

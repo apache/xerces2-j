@@ -119,11 +119,6 @@ public class TextImpl
         return "#text";
     }
     
-    /** Clones this node. */
-    public Node cloneNode(boolean deep) {
-        return ownerDocument.createTextNode(getNodeValue());
-    }  
-
     /**
      * NON-DOM: Set whether this Text is ignorable whitespace.
      */

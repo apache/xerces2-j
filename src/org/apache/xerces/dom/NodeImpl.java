@@ -409,15 +409,24 @@ public abstract class NodeImpl
     		return null;
     	}
     	
-    	newnode.readOnly = false;
+        // set owner document
+        newnode.ownerDocument = ownerDocument;
 
-    	// Need to break the association w/ original kids
+        // Need to break the association w/ original kids
     	newnode.parentNode      = null;
     	newnode.previousSibling = null;
         newnode.nextSibling     = null;
 
-        // REVISIT: Should the user data be cloned?
+        // set other values
+        newnode.name = name;
+        newnode.value = value;
+        // REVISIT: What to do when readOnly? -Ac
+        newnode.readOnly = false;
+        newnode.fInternalSetNodeValue = fInternalSetNodeValue;
 
+        // REVISIT: Should the user data be cloned?
+        newnode.userData = null;
+    	
     	return newnode;
 
     } // cloneNode(boolean):Node

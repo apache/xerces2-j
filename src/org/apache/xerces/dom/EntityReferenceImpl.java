@@ -157,6 +157,12 @@ public class EntityReferenceImpl
         return Node.ENTITY_REFERENCE_NODE;
     }
 
+    /** Clone node. */
+    public Node cloneNode(boolean deep) {
+        EntityReferenceImpl newentityref = (EntityReferenceImpl)super.cloneNode(deep);
+        return newentityref;
+    }
+
     // REVISIT: Return original entity reference code. -Ac
 
     /**

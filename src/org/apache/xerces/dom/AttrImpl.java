@@ -174,6 +174,14 @@ public class AttrImpl
         return null;
     }
 
+    /** Clone node. */
+    public Node cloneNode(boolean deep) {
+        AttrImpl newattr = (AttrImpl)super.cloneNode(deep);
+        newattr.owned = owned;
+        newattr.specified = specified;
+        return newattr;
+    }
+
     //
     // Attr methods
     //

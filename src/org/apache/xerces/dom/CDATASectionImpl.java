@@ -121,26 +121,4 @@ public class CDATASectionImpl
         return "#cdata-section";
     }
 
-    /** 
-     * Returns a duplicate of a given node. You can consider this a
-     * generic "copy constructor" for nodes. The newly returned object should
-     * be completely independent of the source object's subtree, so changes
-     * in one after the clone has been made will not affect the other.
-     * <p>
-     * Example: Cloning a Text node will copy both the node and the text it
-     * contains.
-     * <p>
-     * Example: Cloning something that has children -- Element or Attr, for
-     * example -- will _not_ clone those children unless a "deep clone"
-     * has been requested. A shallow clone of an Attr node will yield an
-     * empty Attr of the same name.
-     * <p>
-     * NOTE: Clones will always be read/write, even if the node being cloned
-     * is read-only, to permit applications using only the DOM API to obtain
-     * editable copies of locked portions of the tree.
-     */
-    public Node cloneNode(boolean deep) {
-        return ownerDocument.createCDATASection(getNodeValue());
-    }  
-
 } // class CDATASectionImpl

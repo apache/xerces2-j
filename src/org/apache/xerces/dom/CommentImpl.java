@@ -102,8 +102,4 @@ public class CommentImpl
         return "#comment";
     }
 
-    public Node cloneNode(boolean deep) {        
-    	return ownerDocument.createComment(getNodeValue());
-    }
-
 } // class CommentImpl

@@ -152,6 +152,22 @@ public class EntityImpl
     	                           "DOM001 Modification not allowed");
     }
 
+    /** Clone node. */
+    public Node cloneNode(boolean deep) {
+        EntityImpl newentity = (EntityImpl)super.cloneNode(deep);
+        // NOTE: This explicit setting of the public id, system id, and
+        //       notation name isn't necessary because at the base of
+        //       the cloning operation, the object's clone() method will
+        //       copy these directly. And since java.lang.String objects
+        //       are immutable, this doesn't cause a problem sharing the
+        //       references. But we'll leave this here anyway to prevent
+        //       accidental breakage in the future. -Ac
+        newentity.publicId = publicId;
+        newentity.systemId = systemId;
+        newentity.notationName = notationName;
+        return newentity;
+    }
+
     //
     // Entity methods
     //
