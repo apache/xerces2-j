@@ -2525,6 +2525,14 @@ public class TraverseSchema implements
                typeInfo.baseDataTypeValidator = typeInfo.baseComplexTypeInfo.datatypeValidator;
             }
 
+            //
+            // Check that the base's final set does not include RESTRICTION
+            //
+            if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.RESTRICTION) != 0) {
+               throw new ComplexTypeRecoverableError("Derivation by restriction is forbidden by either the base type " + base + " or the schema");
+            }
+               
+
             // -----------------------------------------------------------------------
             // There may be a simple type definition in the restriction element
             // The data type validator will be based on it, if specified          
@@ -2632,8 +2640,16 @@ public class TraverseSchema implements
         // EXTENSION
         //
         else {
-            if (typeInfo.baseComplexTypeInfo != null)
+            if (typeInfo.baseComplexTypeInfo != null) {
                typeInfo.baseDataTypeValidator = typeInfo.baseComplexTypeInfo.datatypeValidator;
+              //
+              // Check that the base's final set does not include EXTENSION
+              //
+              if((typeInfo.baseComplexTypeInfo.finalSet & 
+                   SchemaSymbols.EXTENSION) != 0) {
+                 throw new ComplexTypeRecoverableError("Derivation by extension is forbidden by either the base type " + base + " or the schema");
+              }
+            }
 
             typeInfo.datatypeValidator = typeInfo.baseDataTypeValidator;
 
