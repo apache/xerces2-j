@@ -57,20 +57,15 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.IOException;
-
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xni.XMLLocator;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
-import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
  * This is the "standard" parser configuration. It extends the DTD

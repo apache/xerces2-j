@@ -57,8 +57,6 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.IOException;
-
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLVersionDetector;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -67,9 +65,7 @@ import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentScanner;
 import org.apache.xerces.xni.parser.XMLDTDScanner;
 
