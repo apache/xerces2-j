@@ -440,4 +440,61 @@ public class XMLChar {
         return c < 0x10000 && (CHARS[c] & MASK_PUBID) != 0;
     } // isPubid(int):boolean
 
+    // encodings
+
+    /**
+     * Returns true if the encoding name is a valid IANA encoding.
+     * This method does not verify that there is a decoder available
+     * for this encoding, only that the characters are valid for an
+     * IANA encoding name.
+     *
+     * @param ianaEncoding The IANA encoding name.
+     */
+    public static boolean isValidIANAEncoding(String ianaEncoding) {
+        if (ianaEncoding != null) {
+            int length = ianaEncoding.length();
+            if (length > 0) {
+                char c = ianaEncoding.charAt(0);
+                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                    for (int i = 1; i < length; i++) {
+                        c = ianaEncoding.charAt(i);
+                        if ((c < 'A' || c > 'Z') && (c < 'a' || c > 'z') &&
+                            (c < '0' || c > '9') && c != '.' && c != '_' &&
+                            c != '-') {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    } // isValidIANAEncoding(String):boolean
+
+    /**
+     * Returns true if the encoding name is a valid Java encoding.
+     * This method does not verify that there is a decoder available
+     * for this encoding, only that the characters are valid for an
+     * Java encoding name.
+     *
+     * @param javaEncoding The Java encoding name.
+     */
+    public static boolean isValidJavaEncoding(String javaEncoding) {
+        if (javaEncoding != null) {
+            int length = javaEncoding.length();
+            if (length > 0) {
+                for (int i = 1; i < length; i++) {
+                    char c = javaEncoding.charAt(i);
+                    if ((c < 'A' || c > 'Z') && (c < 'a' || c > 'z') &&
+                        (c < '0' || c > '9') && c != '.' && c != '_' &&
+                        c != '-') {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    } // isValidIANAEncoding(String):boolean
+
 } // class XMLChar

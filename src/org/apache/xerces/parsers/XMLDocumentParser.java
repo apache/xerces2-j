@@ -326,57 +326,6 @@ public abstract class XMLDocumentParser
     } // parse(InputSource)
 
     //
-    // XMLParser methods
-    //
-
-    /**
-     * Check a property. If the property is know and supported, this method
-     * simply returns. Otherwise, the appropriate exception is thrown.
-     *
-     * @param propertyId The unique identifier (URI) of the property
-     *                   being set.
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested property is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested property is known, but the requested
-     *            value is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
-     */
-    protected void checkProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        //
-        // SAX2 Properties
-        //
-
-        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
-        }
-
-        //
-        // Xerces Properties
-        //
-
-        else if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
-                return;
-            }
-            /***
-            if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
-                return;
-            }   
-            /***/
-        }
-
-        super.checkProperty(propertyId);
-
-    } // checkProperty(String)
-
-    //
     // XMLDocumentHandler methods
     //
 
@@ -919,5 +868,121 @@ public abstract class XMLDocumentParser
      */
     public void endContentModel() throws SAXException {
     } // endContentModel()
+
+    //
+    // XMLParser methods
+    //
+
+    /**
+     * Check a feature. If feature is know and supported, this method simply
+     * returns. Otherwise, the appropriate exception is thrown.
+     *
+     * @param featureId The unique identifier (URI) of the feature.
+     *
+     * @exception org.xml.sax.SAXNotRecognizedException If the
+     *            requested feature is not known.
+     * @exception org.xml.sax.SAXNotSupportedException If the
+     *            requested feature is known, but the requested
+     *            state is not supported.
+     * @exception org.xml.sax.SAXException If there is any other
+     *            problem fulfilling the request.
+     */
+    protected void checkFeature(String featureId)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        //
+        // Xerces Features
+        //
+
+        if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
+            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            //
+            // http://apache.org/xml/features/validation/schema
+            //   Lets the user turn Schema validation support on/off.
+            //
+            if (feature.equals(Constants.SCHEMA_VALIDATION_FEATURE)) {
+                return;
+            }
+            //
+            // http://apache.org/xml/features/validation/dynamic
+            //   Allows the parser to validate a document only when it
+            //   contains a grammar. Validation is turned on/off based
+            //   on each document instance, automatically.
+            //
+            if (feature.equals(Constants.DYNAMIC_VALIDATION_FEATURE)) {
+                return;
+            }
+            //
+            // http://apache.org/xml/features/validation/default-attribute-values
+            //
+            if (feature.equals(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
+                // REVISIT
+                throw new SAXNotSupportedException(featureId);
+            }
+            //
+            // http://apache.org/xml/features/validation/default-attribute-values
+            //
+            if (feature.equals(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
+                // REVISIT
+                throw new SAXNotSupportedException(featureId);
+            }
+            //
+            // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
+            //
+            if (feature.equals(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
+                return;
+            }
+
+            //
+            // http://apache.org/xml/features/validation/default-attribute-values
+            //
+            if (feature.equals(Constants.VALIDATE_DATATYPES_FEATURE)) {
+                throw new SAXNotSupportedException(featureId);
+            }
+        }
+
+        //
+        // Not recognized
+        //
+
+        super.checkFeature(featureId);
+
+    } // checkFeature(String)
+
+    /**
+     * Check a property. If the property is know and supported, this method
+     * simply returns. Otherwise, the appropriate exception is thrown.
+     *
+     * @param propertyId The unique identifier (URI) of the property
+     *                   being set.
+     * @exception org.xml.sax.SAXNotRecognizedException If the
+     *            requested property is not known.
+     * @exception org.xml.sax.SAXNotSupportedException If the
+     *            requested property is known, but the requested
+     *            value is not supported.
+     * @exception org.xml.sax.SAXException If there is any other
+     *            problem fulfilling the request.
+     */
+    protected void checkProperty(String propertyId)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        //
+        // Xerces Properties
+        //
+
+        if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
+            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
+            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
+                return;
+            }
+        }
+
+        //
+        // Not recognized
+        //
+
+        super.checkProperty(propertyId);
+
+    } // checkProperty(String)
 
 } // class XMLDocumentParser

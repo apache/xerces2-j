@@ -105,6 +105,7 @@ import org.xml.sax.SAXNotSupportedException;
  *  <li>http://xml.org/sax/features/validation</li>
  *  <li>http://xml.org/sax/features/external-general-entities</li>
  *  <li>http://xml.org/sax/features/external-parameter-entities</li>
+ *  <li>http://apache.org/xml/features/allow-java-encodings</li>
  *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
@@ -192,6 +193,12 @@ public class XMLEntityManager
      * http://xml.org/sax/features/external-parameter-entities
      */
     protected boolean fExternalParameterEntities;
+
+    /**
+     * Allow Java encoding names. This feature identifier is:
+     * http://apache.org/xml/features/allow-java-encodings
+     */
+    protected boolean fAllowJavaEncodings;
 
     // settings
 
@@ -577,6 +584,10 @@ public class XMLEntityManager
         final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
         fExternalParameterEntities = componentManager.getFeature(EXTERNAL_PARAMETER_ENTITIES);
 
+        // xerces features
+        final String ALLOW_JAVA_ENCODINGS = Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
+        fAllowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
+
         // xerces properties
         final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
         fEntityResolver = (EntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
@@ -631,6 +642,15 @@ public class XMLEntityManager
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        // xerces features
+        if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
+            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            if (feature.equals(Constants.ALLOW_JAVA_ENCODINGS_FEATURE)) {
+                fAllowJavaEncodings = state;
+            }
+        }
+
     } // setFeature(String,boolean)
 
     /**
@@ -975,42 +995,56 @@ public class XMLEntityManager
      * the specified encoding.
      *
      * @param inputStream  The input stream.
-     * @param ianaEncoding The IANA encoding name that the input stream
-     *                     is encoded using.
+     * @param encoding     The encoding name that the input stream is
+     *                     encoded using. If the user has specified that
+     *                     Java encoding names are allowed, then the
+     *                     encoding name may be a Java encoding name;
+     *                     otherwise, it is an ianaEncoding name.
      *
      * @return Returns a reader.
      */
-    protected Reader createReader(InputStream inputStream, String ianaEncoding)
-        throws IOException {
+    protected Reader createReader(InputStream inputStream, String encoding)
+        throws IOException, SAXException {
 
         // normalize encoding name
-        if (ianaEncoding == null) {
-            ianaEncoding = "UTF-8";
+        if (encoding == null) {
+            encoding = "UTF-8";
         }
 
         // try to use an optimized reader
-        String IANAEncoding = ianaEncoding.toUpperCase();
-        if (IANAEncoding.equals("UTF-8")) {
+        String ENCODING = encoding.toUpperCase();
+        if (ENCODING.equals("UTF-8")) {
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating UTF8Reader");
             }
             return new UTF8Reader(inputStream, fBufferSize);
         }
-        if (IANAEncoding.equals("US-ASCII")) {
+        if (ENCODING.equals("US-ASCII")) {
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating ASCIIReader");
             }
             return new ASCIIReader(inputStream, fBufferSize);
         }
 
+        // check for valid name
+        boolean validIANA = XMLChar.isValidIANAEncoding(encoding);
+        boolean validJava = XMLChar.isValidJavaEncoding(encoding);
+        if (!validIANA || (fAllowJavaEncodings && !validJava)) {
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "EncodingDeclInvalid",
+                                       new Object[] { encoding },
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            encoding = "UTF-8";
+        }
+
         // try to use a Java reader
-        String javaEncoding = EncodingMap.getIANA2JavaMapping(ianaEncoding);
+        String javaEncoding = EncodingMap.getIANA2JavaMapping(encoding);
         if (javaEncoding == null) {
-            javaEncoding = ianaEncoding;
+            javaEncoding = encoding;
         }
         if (DEBUG_ENCODINGS) {
             System.out.print("$$$ creating Java InputStreamReader: encoding="+javaEncoding);
-            if (javaEncoding == ianaEncoding) {
+            if (javaEncoding == encoding) {
                 System.out.print(" (IANA encoding)");
             }
             System.out.println();
@@ -1435,7 +1469,9 @@ public class XMLEntityManager
          *
          * @see org.apache.xerces.util.EncodingMap
          */
-        public void setEncoding(String encoding) throws IOException {
+        public void setEncoding(String encoding) 
+            throws IOException, SAXException {
+
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ setEncoding: "+encoding);
             }
@@ -1445,6 +1481,7 @@ public class XMLEntityManager
                 }
                 fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding);
             }
+
         } // setEncoding(String)
 
         /** Returns true if the current entity being scanned is external. */

@@ -105,11 +105,16 @@ public abstract class XMLEntityScanner
      *
      * @param encoding The IANA encoding name of the new encoding.
      *
-     * @throws IOException Thrown if the new encoding is not supported.                     
+     * @throws IOException  Thrown if the new encoding is not supported.                     
+     * @throws SAXException Thrown by error handler if encoding name is
+     *                      reported as invalid to signal an error.
      *
      * @see org.apache.xerces.util.EncodingMap
+     * @see org.apache.xerces.util.XMLChar#isValidIANAEncoding
+     * @see org.apache.xerces.util.XMLChar#isValidJavaEncoding
      */
-    public abstract void setEncoding(String encoding) throws IOException;
+    public abstract void setEncoding(String encoding) 
+        throws IOException, SAXException;
 
     /** Returns true if the current entity being scanned is external. */
     public abstract boolean isExternal();
