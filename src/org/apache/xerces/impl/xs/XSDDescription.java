@@ -74,6 +74,10 @@ public class XSDDescription extends XMLResourceIdentifierImpl
                 implements XMLGrammarDescription {
     // used to indicate what triggered the call
     /**
+     * Indicate that this description was just initialized. 
+     */
+    public final static short CONTEXT_INITIALIZE = -1;
+    /**
      * Indicate that the current schema document is <include>d by another
      * schema document.
      */
@@ -274,7 +278,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      *  resets all the fields
      */
     public void reset(){
-        fContextType = 0 ;
+        fContextType = CONTEXT_INITIALIZE;
         fTargetNamespace = null ;
         fLocationHints  = null ;
         fTriggeringComponent = null ;

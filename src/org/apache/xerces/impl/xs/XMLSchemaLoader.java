@@ -585,7 +585,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 fXSDDescription.setExpandedSystemId(sid);
                 fXSDDescription.fLocationHints = new String[]{sid};
             }
-            loadSchema(fXSDDescription, xis, locationPairs);
+            fJAXPProcessed = true;
+            fGrammarBucket.putGrammar(loadSchema(fXSDDescription, xis, locationPairs));
             return ;
         } else if (componentType != Object.class) {
             // Not an Object[]
@@ -604,7 +605,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 fXSDDescription.setExpandedSystemId(sid);
                 fXSDDescription.fLocationHints = new String[]{sid};
             }
-            loadSchema(fXSDDescription, xis, locationPairs);
+            fGrammarBucket.putGrammar(loadSchema(fXSDDescription, xis, locationPairs));
         }
     }
 
