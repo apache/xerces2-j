@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII"?>
 <!ELEMENT XCatalog ANY>
-<!-- version: 1.0 or 2.0 -->
 <!ATTLIST XCatalog
-  Version CDATA "0.2"
+  Version (0.1|0.2) "0.2"
   >
 
 <!ELEMENT Map EMPTY>
