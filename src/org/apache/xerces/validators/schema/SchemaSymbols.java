@@ -1,3 +1,4 @@
+
 /*
  * The Apache Software License, Version 1.1
  *
@@ -110,6 +111,10 @@ public final  class SchemaSymbols {
     public static final String ELT_SEQUENCE =  "sequence";
     public static final String ELT_SIMPLETYPE =  "simpleType";
     public static final String ELT_UNIQUE = "unique";
+    public static final String ELT_COMPLEXCONTENT = "complexContent";
+    public static final String ELT_SIMPLECONTENT = "simpleContent";
+    public static final String ELT_RESTRICTION = "restriction";
+    public static final String ELT_EXTENSION = "extension";
     public static final String ATT_ABSTRACT =  "abstract";
     public static final String ATT_ATTRIBUTEFORMDEFAULT =  "attributeFormDefault";
     public static final String ATT_BASE =  "base";
@@ -140,6 +145,7 @@ public final  class SchemaSymbols {
     public static final String ATT_TYPE =  "type";
     public static final String ATT_USE =  "use";
     public static final String ATT_VALUE = "value";
+    public static final String ATT_MIXED = "mixed";
     public static final String ATTVAL_TWOPOUNDANY =  "##any";
     public static final String ATTVAL_TWOPOUNDLOCAL =  "##local";
     public static final String ATTVAL_TWOPOUNDOTHER =  "##other";
