@@ -55,14 +55,27 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
-
 package org.apache.xerces.validators.schema;
+
+import  org.apache.xerces.framework.XMLErrorReporter;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
+
+//Unit Test 
+import  org.apache.xerces.parsers.DOMParser;
+import  org.xml.sax.InputSource;
+import  org.xml.sax.SAXParseException;
+import  org.xml.sax.EntityResolver;
+import  org.xml.sax.ErrorHandler;
+import  org.xml.sax.SAXException;
+import  java.io.IOException;
+import  org.w3c.dom.Document;
+import  org.apache.xml.serialize.OutputFormat;
+import  org.apache.xml.serialize.XMLSerializer;
+
 
 
 /**
@@ -337,7 +350,7 @@ import  org.w3c.dom.Element;
      *   Content: ( annotation? )
      * </period>
      * 
-* 
+ * 
  * @author Jeffrey Rodriguez
  * @see                  org.apache.xerces.validators.common.Grammar
  */
@@ -349,14 +362,15 @@ public class TraverseSchema {
      * @param root
      * @exception Exception
      */
-    StringPool fStringPool = null;
+    private XMLErrorReporter    fErrorReporter = null;
+    private StringPool          fStringPool    = null;
 
     public  TraverseSchema(Element root ) throws Exception {
         if (root == null) { // Anything to do?
             return;
         }
         for (Element child = XUtil.getFirstChildElement(root); child != null;
-                                  child = XUtil.getNextSiblingElement(child)) {
+            child = XUtil.getNextSiblingElement(child)) {
 
             String name = child.getNodeName();
 
@@ -406,20 +420,20 @@ public class TraverseSchema {
      * @return 
      */
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) {
-        int simpleTypeAbstract   =  fStringPool.addSymbol( 
-                 simpleTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
+        int simpleTypeAbstract   =  fStringPool.addSymbol(
+                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
 
-        int simpleTypeBasetype   = fStringPool.addSymbol( 
-                simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ));
+        int simpleTypeBasetype   = fStringPool.addSymbol(
+                                                        simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ));
 
         int simpleTypeDerivedBy  =  fStringPool.addSymbol(
-                simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY ));
+                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY ));
 
         int simpleTypeID         =  fStringPool.addSymbol(
-                 simpleTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
         int simpleTypeName       =  fStringPool.addSymbol(
-                 simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+                                                         simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
         Element simpleTypeChild = XUtil.getFirstChildElement(simpleTypeDecl);
 
@@ -427,12 +441,13 @@ public class TraverseSchema {
         //REVISIT: how do we do the extension mechanism? hardwired type name?
 
         //DatatypeValidator baseValidator = 
-         //  fDatatypeRegistry.getValidatorFor(simpleTypeChild.getAttribute(ATT_NAME));
+       // fDatatypeRegistry.getValidatorFor(simpleTypeChild.getAttribute(ATT_NAME));
         //if (baseValidator == null) {
-          //  reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-           //                   new Object [] { simpleTypeChild.getAttribute(ATT_NAME), simpleTypeDecl.getAttribute(ATT_NAME)});
-           // return -1;
-       // }
+         //   reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+          //                    new Object [] { simpleTypeChild.getAttribute(ATT_NAME), simpleTypeDecl.getAttribute(ATT_NAME)});
+
+        //    return -1;
+        //}
 
         // build facet list
 
@@ -458,29 +473,29 @@ public class TraverseSchema {
      * @return 
      */
     private int traverseComplexTypeDecl( Element complexTypeDecl ) { 
-        int complexTypeAbstract  = fStringPool.addSymbol( 
-            complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
+        int complexTypeAbstract  = fStringPool.addSymbol(
+                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
 
-        int complexTypeBase      = fStringPool.addSymbol( 
-            complexTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ));
+        int complexTypeBase      = fStringPool.addSymbol(
+                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ));
 
-        int complexTypeBlock     = fStringPool.addSymbol( 
-            complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK ));
+        int complexTypeBlock     = fStringPool.addSymbol(
+                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK ));
 
-        int complexTypeContent   = fStringPool.addSymbol( 
-            complexTypeDecl.getAttribute( SchemaSymbols.ATT_CONTENT ));
+        int complexTypeContent   = fStringPool.addSymbol(
+                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATT_CONTENT ));
 
         int complexTypeDerivedBy =  fStringPool.addSymbol(
-            complexTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY ));
+                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY ));
 
         int complexTypeFinal     =  fStringPool.addSymbol(
-            complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL ));
+                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL ));
 
         int complexTypeID        = fStringPool.addSymbol(
-            complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+                                                        complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
         int complexTypeName      =  fStringPool.addSymbol(
-            complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
         return -1;
     }
@@ -504,29 +519,29 @@ public class TraverseSchema {
      * @exception Exception
      */
     private int traverseAttributeDecl( Element attributeDecl ) throws Exception {
-      int attributeForm  =  fStringPool.addSymbol(
-               attributeDecl.getAttribute( SchemaSymbols.ATT_FORM ));
+        int attributeForm  =  fStringPool.addSymbol(
+                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_FORM ));
 
-      int attributeID    =  fStringPool.addSymbol(
-               attributeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+        int attributeID    =  fStringPool.addSymbol(
+                                                   attributeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
-      int attributeName  =  fStringPool.addSymbol(
-               attributeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+        int attributeName  =  fStringPool.addSymbol(
+                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
-      int attributeRef   =  fStringPool.addSymbol(
-               attributeDecl.getAttribute( SchemaSymbols.ATT_REF ));
+        int attributeRef   =  fStringPool.addSymbol(
+                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_REF ));
 
-      int attributeType  =  fStringPool.addSymbol(
-               attributeDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
+        int attributeType  =  fStringPool.addSymbol(
+                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
 
-      int attributeUse   =  fStringPool.addSymbol( 
-               attributeDecl.getAttribute( SchemaSymbols.ATT_USE ));
+        int attributeUse   =  fStringPool.addSymbol(
+                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_USE ));
 
-      int attributeValue =  fStringPool.addSymbol(    
-               attributeDecl.getAttribute( SchemaSymbols.ATT_VALUE ));
+        int attributeValue =  fStringPool.addSymbol(
+                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_VALUE ));
 
 
-      return -1;
+        return -1;
     }
 
 
@@ -584,49 +599,49 @@ public class TraverseSchema {
      * @exception Exception
      */
     private int traverseElementDecl(Element elementDecl) throws Exception {
-       int elementBlock      =  fStringPool.addSymbol( 
-                elementDecl.getAttribute( SchemaSymbols.ATT_BLOCK ) );
+        int elementBlock      =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_BLOCK ) );
 
-       int elementDefault    =  fStringPool.addSymbol( 
-                elementDecl.getAttribute( SchemaSymbols.ATT_DEFAULT ));
+        int elementDefault    =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_DEFAULT ));
 
-       int elementEquivClass =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_EQUIVCLASS ));
+        int elementEquivClass =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_EQUIVCLASS ));
 
-       int elementFinal      =  fStringPool.addSymbol( 
-                elementDecl.getAttribute( SchemaSymbols.ATT_FINAL ));
+        int elementFinal      =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_FINAL ));
 
-       int elementFixed      =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_FIXED ));
+        int elementFixed      =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_FIXED ));
 
-       int elementForm       =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_FORM ));
+        int elementForm       =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_FORM ));
 
-       int elementID          =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+        int elementID          =  fStringPool.addSymbol(
+                                                       elementDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
-       int elementMaxOccurs   =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
+        int elementMaxOccurs   =  fStringPool.addSymbol(
+                                                       elementDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
 
-       int elementMinOccurs  =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
+        int elementMinOccurs  =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
 
-       int elemenName        =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+        int elemenName        =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
-       int elementNullable   =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_NULLABLE ));
+        int elementNullable   =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_NULLABLE ));
 
-       int elementRef        =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_REF ));
+        int elementRef        =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_REF ));
 
-       int elementType       =  fStringPool.addSymbol(
-                elementDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
-
-
+        int elementType       =  fStringPool.addSymbol(
+                                                      elementDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
 
 
-       return -1;
+
+
+        return -1;
 
     }
 
@@ -645,11 +660,11 @@ public class TraverseSchema {
      */
     private int traverseAttributeGroupDecl( Element attributeGroupDecl ) throws Exception {
         int attributeGroupID         =  fStringPool.addSymbol(
-                attributeGroupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+                                                             attributeGroupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
         int attributeGroupName      =  fStringPool.addSymbol(
-                attributeGroupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
-        
+                                                            attributeGroupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+
         return -1;
     }
 
@@ -670,21 +685,21 @@ public class TraverseSchema {
      * @exception Exception
      */
     private int traverseGroupDecl( Element groupDecl ) throws Exception {
-       int groupID         =  fStringPool.addSymbol(
-                groupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+        int groupID         =  fStringPool.addSymbol(
+                                                    groupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
-       int groupMaxOccurs  =  fStringPool.addSymbol(
-                groupDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
-       int groupMinOccurs  =  fStringPool.addSymbol(
-                groupDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
+        int groupMaxOccurs  =  fStringPool.addSymbol(
+                                                    groupDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
+        int groupMinOccurs  =  fStringPool.addSymbol(
+                                                    groupDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
 
-       int groupName      =  fStringPool.addSymbol(
-                groupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+        int groupName      =  fStringPool.addSymbol(
+                                                   groupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
-       int grouRef        =  fStringPool.addSymbol(
-                groupDecl.getAttribute( SchemaSymbols.ATT_REF ));
+        int grouRef        =  fStringPool.addSymbol(
+                                                   groupDecl.getAttribute( SchemaSymbols.ATT_REF ));
 
-       return -1;
+        return -1;
     }
 
 
@@ -704,28 +719,172 @@ public class TraverseSchema {
      * @exception Exception
      */
     private int traverseWildcardDecl( Element wildcardDecl ) throws Exception {
-       int wildcardID         =  fStringPool.addSymbol(
-                wildcardDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+        int wildcardID         =  fStringPool.addSymbol(
+                                                       wildcardDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
-       int wildcardMaxOccurs  =  fStringPool.addSymbol(
-                wildcardDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
+        int wildcardMaxOccurs  =  fStringPool.addSymbol(
+                                                       wildcardDecl.getAttribute( SchemaSymbols.ATT_MAXOCCURS ));
 
-       int wildcardMinOccurs  =  fStringPool.addSymbol(
-                wildcardDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
+        int wildcardMinOccurs  =  fStringPool.addSymbol(
+                                                       wildcardDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
 
-       int wildcardNamespace  =  fStringPool.addSymbol(
-                wildcardDecl.getAttribute( SchemaSymbols.ATT_NAMESPACE ));
+        int wildcardNamespace  =  fStringPool.addSymbol(
+                                                       wildcardDecl.getAttribute( SchemaSymbols.ATT_NAMESPACE ));
 
-       int wildcardProcessContents =  fStringPool.addSymbol(
-                wildcardDecl.getAttribute( SchemaSymbols.ATT_PROCESSCONTENTS ));
-
-
-       int wildcardContent =  fStringPool.addSymbol(
-                wildcardDecl.getAttribute( SchemaSymbols.ATT_CONTENT ));
+        int wildcardProcessContents =  fStringPool.addSymbol(
+                                                            wildcardDecl.getAttribute( SchemaSymbols.ATT_PROCESSCONTENTS ));
 
 
-       return -1;
+        int wildcardContent =  fStringPool.addSymbol(
+                                                    wildcardDecl.getAttribute( SchemaSymbols.ATT_CONTENT ));
+
+
+        return -1;
     }
+
+
+    private void reportSchemaError(int major, Object args[]) {
+        try {
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                       SchemaMessageProvider.SCHEMA_DOMAIN,
+                                       major,
+                                       SchemaMessageProvider.MSG_NONE,
+                                       args,
+                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Unit Test here
+    public static void main( String args[] ) {
+
+        if( args.length != 1 ) {
+            System.out.println( "Error: Usage java TraverseSchema yourFile.xsd" );
+            System.exit(0);
+        }
+
+        DOMParser parser = new DOMParser() {
+            public void ignorableWhitespace(char ch[], int start, int length) {}
+            public void ignorableWhitespace(int dataIdx) {}
+        };
+        parser.setEntityResolver( new Resolver() );
+        parser.setErrorHandler(  new ErrorHandler() );
+
+        try {
+        parser.setFeature("http://xml.org/sax/features/validation", true);
+        parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+        }catch(  org.xml.sax.SAXNotRecognizedException e ) {
+            e.printStackTrace();
+        }catch( org.xml.sax.SAXNotSupportedException e ) {
+            e.printStackTrace();
+        }
+
+        try {
+        parser.parse( args[0]);
+        }catch( IOException e ) {
+            e.printStackTrace();
+        }catch( SAXException e ) {
+            e.printStackTrace();
+        }
+
+        Document     document   = parser.getDocument(); //Our Grammar
+
+        OutputFormat    format  = new OutputFormat( document );
+        XMLSerializer    serial = new XMLSerializer( System.out, format );
+
+        TraverseSchema tst = null;
+        try {
+            Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
+            serial.serialize( root );
+            tst = new TraverseSchema( root );
+            }
+            catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
+    }
+
+    static class Resolver implements EntityResolver {
+        private static final String SYSTEM[] = {
+            "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/structures.dtd",
+            "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/datatypes.dtd",
+            "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/versionInfo.ent",
+        };
+        private static final String PATH[] = {
+            "structures.dtd",
+            "datatypes.dtd",
+            "versionInfo.ent",
+        };
+
+        public InputSource resolveEntity(String publicId, String systemId)
+        throws IOException {
+
+            // looking for the schema DTDs?
+            for (int i = 0; i < SYSTEM.length; i++) {
+                if (systemId.equals(SYSTEM[i])) {
+                    InputSource source = new InputSource(getClass().getResourceAsStream(PATH[i]));
+                    source.setPublicId(publicId);
+                    source.setSystemId(systemId);
+                    return source;
+                }
+            }
+
+            // use default resolution
+            return null;
+
+        } // resolveEntity(String,String):InputSource
+
+    } // class Resolver
+
+    static class ErrorHandler implements org.xml.sax.ErrorHandler {
+
+        /** Warning. */
+        public void warning(SAXParseException ex) {
+            System.err.println("[Warning] "+
+                               getLocationString(ex)+": "+
+                               ex.getMessage());
+        }
+
+        /** Error. */
+        public void error(SAXParseException ex) {
+            System.err.println("[Error] "+
+                               getLocationString(ex)+": "+
+                               ex.getMessage());
+        }
+
+        /** Fatal error. */
+        public void fatalError(SAXParseException ex) throws SAXException {
+            System.err.println("[Fatal Error] "+
+                               getLocationString(ex)+": "+
+                               ex.getMessage());
+            throw ex;
+        }
+
+        //
+        // Private methods
+        //
+
+        /** Returns a string of the location. */
+        private String getLocationString(SAXParseException ex) {
+            StringBuffer str = new StringBuffer();
+
+            String systemId_ = ex.getSystemId();
+            if (systemId_ != null) {
+                int index = systemId_.lastIndexOf('/');
+                if (index != -1)
+                    systemId_ = systemId_.substring(index + 1);
+                str.append(systemId_);
+            }
+            str.append(':');
+            str.append(ex.getLineNumber());
+            str.append(':');
+            str.append(ex.getColumnNumber());
+
+            return str.toString();
+
+        } // getLocationString(SAXParseException):String
+    }
+
 
 }
 
