@@ -57,6 +57,7 @@
 
 package org.apache.xerces.xni.parser;
 
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 
 /**
@@ -95,30 +96,25 @@ public class XMLParseException
     //
 
     /** Constructs a parse exception. */
-    public XMLParseException(String publicId, String systemId,
-                             String baseSystemId,
-                             int lineNumber, int columnNumber,
-                             String message) {
+    public XMLParseException(XMLLocator locator, String message) {
         super(message);
-        fPublicId = publicId;
-        fSystemId = systemId;
-        fBaseSystemId = baseSystemId;
-        fLineNumber = lineNumber;
-        fColumnNumber = columnNumber;
-    } // <init>(String,String,String,int,int,String)
+        fPublicId = locator.getPublicId();
+        fSystemId = locator.getSystemId();
+        fBaseSystemId = locator.getBaseSystemId();
+        fLineNumber = locator.getLineNumber();
+        fColumnNumber = locator.getColumnNumber();
+    } // <init>(XMLLocator,String)
 
     /** Constructs a parse exception. */
-    public XMLParseException(String publicId, String systemId,
-                             String baseSystemId,
-                             int lineNumber, int columnNumber,
+    public XMLParseException(XMLLocator locator,
                              String message, Exception exception) {
         super(message, exception);
-        fPublicId = publicId;
-        fSystemId = systemId;
-        fBaseSystemId = baseSystemId;
-        fLineNumber = lineNumber;
-        fColumnNumber = columnNumber;
-    } // <init>(String,String,String,int,int,String,Exception)
+        fPublicId = locator.getPublicId();
+        fSystemId = locator.getSystemId();
+        fBaseSystemId = locator.getBaseSystemId();
+        fLineNumber = locator.getLineNumber();
+        fColumnNumber = locator.getColumnNumber();
+    } // <init>(XMLLocator,String,Exception)
 
     //
     // Public methods

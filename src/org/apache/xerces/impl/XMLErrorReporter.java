@@ -322,12 +322,7 @@ public class XMLErrorReporter
         MessageFormatter messageFormatter = getMessageFormatter(domain);
         String message = messageFormatter.formatMessage(fLocale, key, arguments);
         XMLParseException parseException = 
-            new XMLParseException(location.getPublicId(),
-                                  location.getSystemId(),
-                                  location.getBaseSystemId(),
-                                  location.getLineNumber(),
-                                  location.getColumnNumber(),
-                                  message);
+            new XMLParseException(location, message);
 
         // get error handler
         XMLErrorHandler errorHandler = fErrorHandler;

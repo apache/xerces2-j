@@ -61,6 +61,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
@@ -229,12 +230,18 @@ public class ErrorHandlerWrapper
 
     /** Creates a XMLParseException from an SAXParseException. */
     protected static XMLParseException createXMLParseException(SAXParseException exception) {
-        return new XMLParseException(exception.getPublicId(),
-                                     exception.getSystemId(),
-                                     null,
-                                     exception.getLineNumber(),
-                                     exception.getColumnNumber(),
-                                     exception.getMessage(),
+        final String fPublicId = exception.getPublicId();
+        final String fSystemId = exception.getSystemId();
+        final int fLineNumber = exception.getLineNumber();
+        final int fColumnNumber = exception.getColumnNumber();
+        XMLLocator location = new XMLLocator() {
+            public String getPublicId() { return fPublicId; }
+            public String getSystemId() { return fSystemId; }
+            public String getBaseSystemId() { return null; }
+            public int getColumnNumber() { return fColumnNumber; }
+            public int getLineNumber() { return fLineNumber; }
+        };
+        return new XMLParseException(location, exception.getMessage(),
                                      exception.getException());
     } // createXMLParseException(SAXParseException):XMLParseException
 
