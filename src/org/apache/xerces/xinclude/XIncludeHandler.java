@@ -28,6 +28,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.AugmentationsImpl;
+import org.apache.xerces.util.HTTPInputSource;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SecurityManager;
@@ -1377,6 +1378,16 @@ public class XIncludeHandler
 
                 includedSource =
                     fEntityResolver.resolveEntity(resourceIdentifier);
+                
+                if (includedSource != null &&
+                    !(includedSource instanceof HTTPInputSource) &&
+                    (accept != null || acceptLanguage != null) &&
+                    includedSource.getCharacterStream() == null &&
+                    includedSource.getByteStream() == null) {
+                    
+                    includedSource = createInputSource(includedSource.getPublicId(), includedSource.getSystemId(), 
+                        includedSource.getBaseSystemId(), accept, acceptLanguage);
+                }
             }
             catch (IOException e) {
                 reportResourceError(
@@ -1387,12 +1398,15 @@ public class XIncludeHandler
         }
 
         if (includedSource == null) {
-            includedSource =
-                new XMLInputSource(
-                    null,
-                    href,
-                    fCurrentBaseURI.getExpandedSystemId());
+            // setup an HTTPInputSource if either of the content negotation attributes were specified.
+            if (accept != null || acceptLanguage != null) {
+                includedSource = createInputSource(null, href, fCurrentBaseURI.getExpandedSystemId(), accept, acceptLanguage);
+            }
+            else {
+                includedSource = new XMLInputSource(null, href, fCurrentBaseURI.getExpandedSystemId());
+            }
         }
+        
         if (parse.equals(XINCLUDE_PARSE_XML)) {
             // Instead of always creating a new configuration, the first one can be reused
             if (fChildConfig == null) {
@@ -1429,15 +1443,6 @@ public class XIncludeHandler
             copyFeatures(fSettings, fChildConfig);
 
             try {
-                // REVISIT: If we're going to support content negotation for
-                // parse=xml we need to find a clean way to propogate the
-                // parameters to the child parser. We cannot set those parameters
-                // here because we may lose some information if we process the
-                // URLConnection and then open a stream. The parser needs a
-                // URLConnection to follow HTTP redirects and may also need
-                // this object in the future to read external encoding information
-                // which may be available in the Content-Type. -- mrglavas
-
                 fNamespaceContext.pushScope();
                 fChildConfig.parse(includedSource);
                 // necessary to make sure proper location is reported in errors
@@ -1494,10 +1499,6 @@ public class XIncludeHandler
                         fXInclude11TextReader.setInputSource(includedSource);
                     }
                     textReader = fXInclude11TextReader;
-                }
-                if (includedSource.getCharacterStream() == null
-                    && includedSource.getByteStream() == null) {
-                	textReader.setHttpProperties(accept, acceptLanguage);
                 }
                 textReader.setErrorReporter(fErrorReporter);
                 textReader.parse();
@@ -2565,4 +2566,20 @@ public class XIncludeHandler
         return true;
     }
     
+    /**
+     * Returns a new <code>XMLInputSource</code> from the given parameters.
+     */
+    private XMLInputSource createInputSource(String publicId, 
+            String systemId, String baseSystemId, 
+            String accept, String acceptLanguage) {
+
+        HTTPInputSource httpSource = new HTTPInputSource(publicId, systemId, baseSystemId);
+        if (accept != null && accept.length() > 0) {
+            httpSource.setHTTPRequestProperty(XIncludeHandler.HTTP_ACCEPT, accept);
+        }
+        if (acceptLanguage != null && acceptLanguage.length() > 0) {
+            httpSource.setHTTPRequestProperty(XIncludeHandler.HTTP_ACCEPT_LANGUAGE, acceptLanguage);
+        }
+        return httpSource;
+    }
 }

@@ -25,6 +25,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Stack;
 
@@ -35,6 +37,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.EncodingMap;
+import org.apache.xerces.util.HTTPInputSource;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
@@ -923,18 +926,43 @@ public class XMLEntityManager
             if (stream == null) {
                 URL location = new URL(expandedSystemId);
                 URLConnection connect = location.openConnection();
-                stream = connect.getInputStream();
-                
-                // REVISIT: If the URLConnection has external encoding
-                // information, we should be reading it here. It's located
-                // in the charset parameter of Content-Type. -- mrglavas
-                if (connect instanceof HttpURLConnection) {
-                    String redirect = connect.getURL().toString();
-                    // E43: Check if the URL was redirected, and then
-                    // update literal and expanded system IDs if needed.
-                    if (!redirect.equals(expandedSystemId)) {
-                        literalSystemId = redirect;
-                        expandedSystemId = redirect;
+                if (!(connect instanceof HttpURLConnection)) {
+                    stream = connect.getInputStream();
+                }
+                else {
+                    boolean followRedirects = true;
+                    
+                    // setup URLConnection if we have an HTTPInputSource
+                    if (xmlInputSource instanceof HTTPInputSource) {
+                        final HttpURLConnection urlConnection = (HttpURLConnection) connect;
+                        final HTTPInputSource httpInputSource = (HTTPInputSource) xmlInputSource;
+                        
+                        // set request properties
+                        Iterator propIter = httpInputSource.getHTTPRequestProperties();
+                        while (propIter.hasNext()) {
+                            Map.Entry entry = (Map.Entry) propIter.next();
+                            urlConnection.setRequestProperty((String) entry.getKey(), (String) entry.getValue());
+                        }
+                        
+                        // set preference for redirection
+                        followRedirects = httpInputSource.getFollowHTTPRedirects();
+                        urlConnection.setInstanceFollowRedirects(followRedirects);
+                    }
+                    
+                    stream = connect.getInputStream();
+                    
+                    // REVISIT: If the URLConnection has external encoding
+                    // information, we should be reading it here. It's located
+                    // in the charset parameter of Content-Type. -- mrglavas
+                    
+                    if (followRedirects) {
+                        String redirect = connect.getURL().toString();
+                        // E43: Check if the URL was redirected, and then
+                        // update literal and expanded system IDs if needed.
+                        if (!redirect.equals(expandedSystemId)) {
+                            literalSystemId = redirect;
+                            expandedSystemId = redirect;
+                        }
                     }
                 }
             }
