@@ -103,6 +103,9 @@ import org.apache.xerces.validators.schema.TraverseSchema;
 import org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
+import org.apache.xerces.validators.datatype.StateMessageDatatype;
+import org.apache.xerces.validators.datatype.IDREFDatatypeValidator;
+import org.apache.xerces.validators.datatype.IDDatatypeValidator;
 
 /**
  * This class is the super all-in-one validator used by the parser.
@@ -134,6 +137,38 @@ public final class XMLValidator
     private static final int CHUNK_MASK = CHUNK_SIZE - 1;
     private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT));   // 2^10 = 1k
 
+    private  StateMessageDatatype fStoreIDRef = new StateMessageDatatype() {
+        private Hashtable fIdDefs;
+        public Object getDatatypeObject(){
+            return(Object) fIdDefs;
+        }
+        public int    getDatatypeState(){
+            return IDREFDatatypeValidator.IDREF_STORE;
+        }
+    };
+
+    private StateMessageDatatype fResetIDRef = new StateMessageDatatype() {
+       public Object getDatatypeObject(){
+           Hashtable t = null;
+           return(Object) t;
+       }
+       public int    getDatatypeState(){
+           return IDREFDatatypeValidator.IDREF_CLEAR;
+       }
+   };
+
+   private  StateMessageDatatype fValidateIDRef = new StateMessageDatatype() {
+          public Object getDatatypeObject(){
+              Hashtable t = null;
+              return(Object) t;
+          }
+          public int    getDatatypeState(){
+              return IDREFDatatypeValidator.IDREF_VALIDATE;
+          }
+      };
+
+
+
     //
     // Data
     //
@@ -154,9 +189,6 @@ public final class XMLValidator
     // attribute validators
 
     private AttributeValidator fAttValidatorCDATA = null;
-    private AttributeValidator fAttValidatorID = new AttValidatorID();
-    private AttributeValidator fAttValidatorIDREF = new AttValidatorIDREF();
-    private AttributeValidator fAttValidatorIDREFS = new AttValidatorIDREFS();
     private AttributeValidator fAttValidatorENTITY = new AttValidatorENTITY();
     private AttributeValidator fAttValidatorENTITIES = new AttValidatorENTITIES();
     private AttributeValidator fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
@@ -280,6 +312,19 @@ public final class XMLValidator
     private int fFIXEDSymbol = -1;
     private int fDATATYPESymbol = -1;
     private int fEpsilonIndex = -1;
+
+
+    //Datatype Registry
+
+    private DatatypeValidatorFactoryImpl fDataTypeReg = 
+                                         DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+
+    private DatatypeValidator     fValID = this.fDataTypeReg.getDatatypeValidator("ID" );
+    private DatatypeValidator fValIDRef  = this.fDataTypeReg.getDatatypeValidator("IDREF" );
+    private DatatypeValidator fValIDRefs = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
+
+
+
 
     //
     // Constructors
@@ -933,7 +978,7 @@ public final class XMLValidator
             //   IDREF and IDREFS attr (V_IDREF0)
             //
             if (fValidating && fIdRefs != null) {
-                checkIdRefs();
+                this.fValIDRefs.validate( null, this.fValidateIDRef );   
             }
             return;
         }
@@ -1053,18 +1098,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     // attributes
 
-    /** Normalize attribute value. */
-    public int normalizeAttValue(QName element, QName attribute, 
-                                int attValue, int attType, boolean list,
-                                 int enumHandle) throws Exception {
-
-        AttributeValidator av = getValidatorForAttType(attType, list);
-        if (av != null) {
-            return av.normalize(element, attribute, attValue, attType, enumHandle);
-        }
-        return -1;
-
-    } // normalizeAttValue(QName,QName,int,int,boolean,int):int
 
     // other
 
@@ -1305,43 +1338,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         return false;
     }
 
-    /** addId. */
-    protected boolean addId(int idIndex) {
 
-        Integer key = new Integer(idIndex);
-        if (fIdDefs == null) {
-            fIdDefs = new Hashtable();
-        }
-        else if (fIdDefs.containsKey(key)) {
-            return false;
-        }
-        if (fNullValue == null) {
-            fNullValue = new Object();
-        }
-        fIdDefs.put(key, fNullValue/*new Integer(elementType)*/);
-        return true;
-
-    } // addId(int):boolean
-
-    /** addIdRef. */
-    protected void addIdRef(int idIndex) {
-
-        Integer key = new Integer(idIndex);
-        if (fIdDefs != null && fIdDefs.containsKey(key)) {
-            return;
-        }
-        if (fIdRefs == null) {
-            fIdRefs = new Hashtable();
-        }
-        else if (fIdRefs.containsKey(key)) {
-            return;
-        }
-        if (fNullValue == null) {
-            fNullValue = new Object();
-        }
-        fIdRefs.put(key, fNullValue/*new Integer(elementType)*/);
-
-    } // addIdRef(int)
 
     //
     // Private methods
@@ -1567,14 +1564,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                    XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                     }
                     if (attType == fIDREFSymbol) {
-                        addIdRef(attValue);
+                         this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
                     } 
                     else if (attType == fIDREFSSymbol) {
-                        StringTokenizer tokenizer = new StringTokenizer(fStringPool.toString(attValue));
-                        while (tokenizer.hasMoreTokens()) {
-                            String idName = tokenizer.nextToken();
-                            addIdRef(fStringPool.addSymbol(idName));
-                        }
+                         this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
                     }
                     if (attrIndex == -1) {
                         attrIndex = attrList.startAttrList();
@@ -1720,14 +1713,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                    XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                     }
                     if (attType == fIDREFSymbol) {
-                        addIdRef(attValue);
+                        this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
                     } 
                     else if (attType == fIDREFSSymbol) {
-                        StringTokenizer tokenizer = new StringTokenizer(fStringPool.toString(attValue));
-                        while (tokenizer.hasMoreTokens()) {
-                            String idName = tokenizer.nextToken();
-                            addIdRef(fStringPool.addSymbol(idName));
-                        }
+                        this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
                     }
                     if (attrIndex == -1) {
                         attrIndex = attrList.startAttrList();
@@ -1773,27 +1762,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 fAttValidatorCDATA = new AttValidatorCDATA();
             }
             return fAttValidatorCDATA;
-        }
-        if (attType == XMLAttributeDecl.TYPE_ID) {
-            if (fAttValidatorID == null) {
-                fAttValidatorID = new AttValidatorID();
-            }
-            return fAttValidatorID;
-        }
-        if (attType == XMLAttributeDecl.TYPE_IDREF) {
-            if (!list) {
-            
-                if (fAttValidatorIDREF == null) {
-                    fAttValidatorIDREF = new AttValidatorIDREF();
-                }
-                return fAttValidatorIDREF;
-            }
-            else {
-                if (fAttValidatorIDREFS == null) {
-                    fAttValidatorIDREFS = new AttValidatorIDREFS();
-                }
-                return fAttValidatorIDREFS;
-            }
         }
         if (attType == XMLAttributeDecl.TYPE_ENTITY) {
             if (!list) {
@@ -2980,15 +2948,55 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 av = fAttValidatorENUMERATION;
                 break;
         case XMLAttributeDecl.TYPE_ID:
-            av = fAttValidatorID;
+            {
+                String  unTrimValue = fStringPool.toString(attValue);
+                String  value       = unTrimValue.trim();
+                if (fValidationEnabled){
+                    if (value != unTrimValue) {
+                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                        }
+                    }
+                }
+                try{
+                    fValID.validate( value, null );
+                } catch ( InvalidDatatypeValueException ex ){
+                    reportRecoverableXMLError(ex.getMajorCode(),
+                                              ex.getMinorCode(),
+                                              fStringPool.toString( attributeDecl.name.rawname), value );
+                }
+            }
             break;
         case XMLAttributeDecl.TYPE_IDREF:
-            if (attributeDecl.list) {
-                av = fAttValidatorIDREFS;
+            {
+                String  unTrimValue = fStringPool.toString(attValue);
+                String  value       = unTrimValue.trim();
+                if (fValidationEnabled){
+                    if (value != unTrimValue) {
+                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                        }
+                    }
+                }
+                try{
+                    fValIDRef.validate( value, this.fStoreIDRef );
+                } catch ( InvalidDatatypeValueException ex ){
+                    if( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
+                    reportRecoverableXMLError(ex.getMajorCode(),
+                                              ex.getMinorCode(),
+                                              fStringPool.toString( attributeDecl.name.rawname), value );
+                    } else {
+                        System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+                    }
+                }
             }
-            else {
-                av = fAttValidatorIDREF;
-            }
+
+
+
             break;
         case XMLAttributeDecl.TYPE_NOTATION:
             av = fAttValidatorNOTATION;
@@ -3002,7 +3010,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             break;
         }
-
+        if ( av != null )
         av.normalize(element, attributeDecl.name, attValue, 
                      attributeDecl.type, attributeDecl.enumeration);
     }
@@ -3307,6 +3315,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
     }
     
+
     //
     // Interfaces
     //
@@ -3326,6 +3335,20 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         throws Exception;
 
     } // interface AttributeValidator
+
+
+     /** Returns true if invalid standalone attribute definition. */
+        boolean invalidStandaloneAttDef(QName element, QName attribute) {
+            if (fStandaloneReader == -1) {
+                return false;
+            }
+            // we are normalizing a default att value...  this ok?
+            if (element.rawname == -1) {
+                return false;
+            }
+            return getAttDefIsExternal(element, attribute);
+        }
+
 
     //
     // Classes
@@ -3351,227 +3374,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // class AttValidatorCDATA
 
-        /**
-     *  AttValidatorID.
-     */
-    final class AttValidatorID 
-        implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-        
-        /** Normalize. */
-        
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            //
-            // Normalize attribute based upon attribute type...
-            //
-            String attValue = fStringPool.toString(attValueHandle);
-            String newAttValue = attValue.trim();
-            if (fValidating) {
-                // REVISIT - can we release the old string?
-                if (newAttValue != attValue) {
-                    if (invalidStandaloneAttDef(element, attribute)) {
-                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                  fStringPool.toString(attribute.rawname), attValue, newAttValue);
-                    }
-                    attValueHandle = fStringPool.addSymbol(newAttValue);
-                } 
-                else {
-                    attValueHandle = fStringPool.addSymbol(attValueHandle);
-                }
-                if (!XMLCharacterProperties.validName(newAttValue)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_ID_INVALID,
-                                              XMLMessages.VC_ID,
-                                              fStringPool.toString(attribute.rawname), newAttValue);
-                }
-                //
-                // ID - check that the id value is unique within the document (V_TAG8)
-                //
-                if (element.rawname != -1 && !addId(attValueHandle)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_ID_NOT_UNIQUE,
-                                              XMLMessages.VC_ID,
-                                              fStringPool.toString(attribute.rawname), newAttValue);
-                }
-            } 
-            else if (newAttValue != attValue) {
-                // REVISIT - can we release the old string?
-                attValueHandle = fStringPool.addSymbol(newAttValue);
-            }
-            return attValueHandle;
-
-        } // normalize(QName,QName,int,int,int):int
-
-        //
-        // Package methods
-        //
-
-        /** Returns true if invalid standalong attribute definition. */
-        
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
-        }
-
-    } // class AttValidatorID
-
-    /**
-     * AttValidatorIDREF.
-     */
-    final class AttValidatorIDREF 
-        implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-
-        /** Normalize. */
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            //
-            // Normalize attribute based upon attribute type...
-            //
-            String attValue = fStringPool.toString(attValueHandle);
-            String newAttValue = attValue.trim();
-            if (fValidating) {
-                // REVISIT - can we release the old string?
-                if (newAttValue != attValue) {
-                    if (invalidStandaloneAttDef(element, attribute)) {
-                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                  fStringPool.toString(attribute.rawname), attValue, newAttValue);
-                    }
-                    attValueHandle = fStringPool.addSymbol(newAttValue);
-                } 
-                else {
-                    attValueHandle = fStringPool.addSymbol(attValueHandle);
-                }
-                if (!XMLCharacterProperties.validName(newAttValue)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_IDREF_INVALID,
-                                              XMLMessages.VC_IDREF,
-                                              fStringPool.toString(attribute.rawname), newAttValue);
-                }
-                //
-                // IDREF - remember the id value
-                //
-                if (element.rawname != -1)
-                    addIdRef(attValueHandle);
-            } 
-            else if (newAttValue != attValue) {
-                // REVISIT - can we release the old string?
-                attValueHandle = fStringPool.addSymbol(newAttValue);
-            }
-            return attValueHandle;
-
-        } // normalize(QName,QName,int,int,int):int
-
-        //
-        // Package methods
-        //
-
-        /** Returns true if invalid standalone attribute definition. */
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
-        }
-
-    } // class AttValidatorIDREF
-
-    /**
-     * AttValidatorIDREFS.
-     */
-    final class AttValidatorIDREFS 
-        implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-
-        /** Normalize. */
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            //
-            // Normalize attribute based upon attribute type...
-            //
-            String attValue = fStringPool.toString(attValueHandle);
-            StringTokenizer tokenizer = new StringTokenizer(attValue);
-            StringBuffer sb = new StringBuffer(attValue.length());
-            boolean ok = true;
-            if (tokenizer.hasMoreTokens()) {
-                while (true) {
-                    String idName = tokenizer.nextToken();
-                    if (fValidating) {
-                        if (!XMLCharacterProperties.validName(idName)) {
-                            ok = false;
-                        }
-                        //
-                        // IDREFS - remember the id values
-                        //
-                        if (element.rawname != -1) {
-                            addIdRef(fStringPool.addSymbol(idName));
-                        }
-                    }
-                    sb.append(idName);
-                    if (!tokenizer.hasMoreTokens())
-                        break;
-                    sb.append(' ');
-                }
-            }
-            String newAttValue = sb.toString();
-            if (fValidating && (!ok || newAttValue.length() == 0)) {
-                reportRecoverableXMLError(XMLMessages.MSG_IDREFS_INVALID,
-                                          XMLMessages.VC_IDREF,
-                                          fStringPool.toString(attribute.rawname), newAttValue);
-            }
-            if (!newAttValue.equals(attValue)) {
-                attValueHandle = fStringPool.addString(newAttValue);
-                if (fValidating && invalidStandaloneAttDef(element, attribute)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                              XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                              fStringPool.toString(attribute.rawname), attValue, newAttValue);
-                }
-            }
-            return attValueHandle;
-
-        } // normalize(QName,QName,int,int,int):int
-
-        //
-        // Package methods
-        //
-
-        /** Returns true if invalid standalone attribute definition. */
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
-        }
-
-    } // class AttValidatorIDREFS
-        
-    /**
+      /**
      * AttValidatorENTITY.
      */
     final class AttValidatorENTITY 
