@@ -26,7 +26,7 @@ Copyright:
     <property name='parser.version' value='2.0.0.beta4'/>
     <property name='parser_version' value='2_0_0_beta4'/>
 
-    <property name='oldjar.parser' value='xerces.jar'/>
+    <property name='deprecatedjar.parser' value='xerces.jar'/>
     <property name='jar.apis' value='xmlParserAPIs.jar'/>
     <property name='jar.parser' value='xercesImpl.jar'/>
     <property name='jar.samples' value='xercesSamples.jar'/>
@@ -87,26 +87,26 @@ Copyright:
     <echo message=""/>
     <echo message=" available targets are:"/>
     <echo message=""/>
-    <echo message="   compile  --> compiles the source code"/>
-    <echo message="   jar      --> generates the xercesImpl.jar file"/>
-    <echo message="   oldjar      --> generates the old-style xerces.jar file"/>
-    <echo message="   samples  --> compiles the samples source code"/>
-    <echo message="   tests    --> compiles the tests source code"/>
-    <echo message="   sampjar  --> generates the xercesSamples.jar file"/>
-    <echo message="   apijar  --> generates the xmlParserAPIs.jar file"/>
-    <echo message="   oldjars     --> generates the xerces and xercesSamples jar files"/>
-    <echo message="   jars     --> generates the xercesImpl, xercesSamples and xmlParserAPIs jar files"/>
-    <echo message="   docs     --> generates the HTML documentation"/>
-    <echo message="   javadocs --> generates the API documentation (needs Java 1.2 or higher)"/>
-    <echo message="   pack-tools --> generates the tools distributions of Xerces-Java (zip and tar.gz)"/>
-    <echo message="   pack-src --> generates the source distributions of Xerces-Java (zip and tar.gz)"/>
-    <echo message="   oldpack-bin --> generates the old-style binary distributions of Xerces-Java (zip and tar.gz)"/>
-    <echo message="   pack-bin --> generates the binary distributions of Xerces-Java (zip and tar.gz)"/>
-    <echo message="   all      --> generates the binary, source and tools distributions of Xerces-Java"/>
-    <echo message="   oldall      --> generates the binary, source and tools distributions of Xerces-Java with the old-style xerces.jar"/>
-    <echo message="   test     --> runs a sanity test on the sample files"/>
-    <echo message="   clean    --> cleans up all generated files and directories"/>
-    <echo message="   usage    --> provides help on using the build tool (default)"/>
+    <echo message=" compile  --> compiles the source code"/>
+    <echo message=" jar      --> generates the xercesImpl.jar file"/>
+    <echo message=" deprecatedjar  --> generates the xerces.jar file"/>
+    <echo message=" samples  --> compiles the samples source code"/>
+    <echo message=" tests    --> compiles the tests source code"/>
+    <echo message=" sampjar  --> generates the xercesSamples.jar file"/>
+    <echo message=" apijar   --> generates the xmlParserAPIs.jar file"/>
+    <echo message=" deprecatedjars --> generates xerces.jar and sampes jar"/>
+    <echo message=" jars --> generates xercesImpl, xercesSamples &amp; xmlParserAPIs jars"/>
+    <echo message=" docs     --> generates the HTML documentation"/>
+    <echo message=" javadocs --> generates the API docs (needs Java 1.2 or higher)"/>
+    <echo message=" pack-tools --> generates the tools distributions (zip and tar.gz)"/>
+    <echo message=" pack-src   --> generates the source distributions (zip and tar.gz)"/>
+    <echo message=" deprecated-bin --> generates the binary distributions (zip and tar.gz)"/>
+    <echo message=" pack-bin --> generates the binary distributions (zip and tar.gz)"/>
+    <echo message=" all      --> generates the binary, source and tools distributions"/>
+    <echo message=" deprecatedall --> generates the binary, source and tools distributions with the xerces.jar"/>
+    <echo message=" test     --> runs a sanity test on the sample files"/>
+    <echo message=" clean    --> cleans up all generated files and directories"/>
+    <echo message=" usage    --> provides help on using the build tool (default)"/>
     <echo message=""/>
     <echo message=" See comments inside the build.xml file for more details."/>
     <echo message="-------------------------------------------------------------"/>
@@ -184,8 +184,8 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Creates the omnibus class package                                           -->
   <!-- =================================================================== -->
-  <target name="oldjar" depends="compile">
-    <jar jarfile="${build.dir}/${oldjar.parser}"
+  <target name="deprecatedjar" depends="compile">
+    <jar jarfile="${build.dir}/${deprecatedjar.parser}"
          basedir="${build.dest}"
          compress="false"
          includes="org/**, javax/**,META-INF/**"/>
@@ -508,11 +508,11 @@ Copyright:
     <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
          includes="${parser.shortname}-${parser_version}/**" 
-         excludes="*.class, **/${oldjar.parser}"/>
+         excludes="*.class, **/${deprecatedjar.parser}"/>
     <tar tarfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar" 
          basedir="${build.dir}"
          includes="${parser.shortname}-${parser_version}/**" 
-         excludes="*.class, **/${oldjar.parser}"/>
+         excludes="*.class, **/${deprecatedjar.parser}"/>
     <gzip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar.gz"
           src="${build.dir}/${parser.Name}-bin.${parser.version}.tar" />
     <!-- as before, let's kill of the ungzip'd tarball! -->
@@ -521,23 +521,23 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Prepares the old binary distribution                                    -->
+  <!-- Prepares the deprecated binary distribution                                    -->
   <!-- =================================================================== -->
-  <target name="oldpack-bin" depends="pack-bin-common, oldjars">
-    <copy file="${build.dir}/${oldjar.parser}" tofile="${distbin.dir}/${oldjar.parser}"/>
+  <target name="deprecated-bin" depends="pack-bin-common, deprecatedjars">
+    <copy file="${build.dir}/${deprecatedjar.parser}" tofile="${distbin.dir}/${deprecatedjar.parser}"/>
 
-    <zip zipfile="${build.dir}/old${parser.Name}-bin.${parser.version}.zip" 
+    <zip zipfile="${build.dir}/deprecated${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
          includes="${parser.shortname}-${parser_version}/**" 
          excludes="*.class, **/${jar.parser}, **/${jar.apis}"/>
-    <tar tarfile="${build.dir}/old${parser.Name}-bin.${parser.version}.tar" 
+    <tar tarfile="${build.dir}/deprecated${parser.Name}-bin.${parser.version}.tar" 
          basedir="${build.dir}"
          includes="${parser.shortname}-${parser_version}/**" 
          excludes="*.class, **/${jar.parser}, **/${jar.apis}"/>
-    <gzip zipfile="${build.dir}/old${parser.Name}-bin.${parser.version}.tar.gz"
-          src="${build.dir}/old${parser.Name}-bin.${parser.version}.tar" />
+    <gzip zipfile="${build.dir}/deprecated${parser.Name}-bin.${parser.version}.tar.gz"
+          src="${build.dir}/deprecated${parser.Name}-bin.${parser.version}.tar" />
     <!-- as before, let's kill of the ungzip'd tarball! -->
-    <delete file="${build.dir}/old${parser.Name}-bin.${parser.version}.tar"/>
+    <delete file="${build.dir}/deprecated${parser.Name}-bin.${parser.version}.tar"/>
 
   </target>
 
@@ -608,9 +608,9 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds both old xerces and sample jar files                             -->
+  <!-- Builds both deprecated xerces and sample jar files                             -->
   <!-- =================================================================== -->
-  <target name="oldjars" depends="oldjar, sampjar">
+  <target name="deprecatedjars" depends="deprecatedjar, sampjar">
   </target>
 
   <!-- =================================================================== -->
@@ -622,13 +622,13 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Builds and packages tools, sources and binary distributions                -->
   <!-- =================================================================== -->
-  <target name="all" depends="pack-bin, oldpack-bin, pack-src, pack-tools">
+  <target name="all" depends="pack-bin, deprecated-bin, pack-src, pack-tools">
   </target>
 
   <!-- =================================================================== -->
   <!-- Builds and packages tools, sources and binary distributions                -->
   <!-- =================================================================== -->
-  <target name="oldall" depends="pack-src, oldpack-bin, pack-tools">
+  <target name="deprecatedall" depends="pack-src, deprecated-bin, pack-tools">
   </target>
 
   <target name="prepare-schema-src">
