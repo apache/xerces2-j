@@ -97,7 +97,7 @@ public abstract class NodeContainer
     protected transient int nodeListChanges = -1;
 
     /** Cached node list length. */
-    protected transient int nodeListLength;
+    protected transient int nodeListLength = -1;
 
     /** Last requested node. */
     protected transient NodeImpl nodeListNode;
@@ -740,7 +740,7 @@ public abstract class NodeContainer
      */
     public int getLength() {
 
-        if (nodeListChanges != changes) {
+        if (nodeListChanges != changes || nodeListLength == -1) {
             nodeListChanges = changes;
             nodeListLength = 0;
             nodeListIndex = 0;
