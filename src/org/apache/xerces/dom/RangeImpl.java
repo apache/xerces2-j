@@ -61,7 +61,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.CharacterData;
 import org.apache.xerces.dom.DocumentImpl;
-import org.w3c.dom.range.*;
+import org.w3c.dom.ranges.*;
 import java.util.Vector;
 
 /** The RangeImpl class implements the org.w3c.dom.range.Range interface.

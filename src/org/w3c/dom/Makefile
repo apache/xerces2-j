@@ -20,7 +20,7 @@ TARGETS=\
 	ProcessingInstruction.class\
 	Text.class
 
-DIRS = events html traversal range
+DIRS = events html traversal ranges
 
 TOP = ../../../..
 include $(TOP)/src/Makefile.incl

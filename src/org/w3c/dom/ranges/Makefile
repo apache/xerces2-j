@@ -1,4 +1,4 @@
-# Makefile for directory ./org/w3c/dom/traversal
+# Makefile for directory ./org/w3c/dom/ranges
 
 TARGETS=\
      DocumentRange.class\
