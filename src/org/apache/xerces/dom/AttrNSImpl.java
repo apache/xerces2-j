@@ -303,18 +303,29 @@ public class AttrNSImpl
     }
 
     /**
-     * DOM Level 3 Experimental 
-     *
-     * @see org.apache.xerces.dom3.TypeInfo#isDerivedFrom()
+     * Introduced in DOM Level 3. <p>
+     * Checks if a type is derived from another by restriction. See:
+     * http://www.w3.org/TR/DOM-Level-3-Core/core.html#TypeInfo-isDerivedFrom
+     * 
+     * @param ancestorNS 
+     *        The namspace of the ancestor type declaration
+     * @param ancestorName
+     *        The name of the ancestor type declaration
+     * @param type
+     *        The reference type definition
+     * 
+     * @return boolean True if the type is derived by restriciton for the
+     *         reference type
      */
     public boolean isDerivedFrom(String typeNamespaceArg, 
                                  String typeNameArg, 
                                  int derivationMethod) {
-        if (type !=null){
-            if (type instanceof XSSimpleTypeDefinition){
-                return ((XSSimpleTypeDefinition)type).derivedFrom(typeNamespaceArg,typeNameArg,(short)derivationMethod);
-            }
-        }                                	
+        if (type != null) {
+            if (type instanceof XSSimpleTypeDefinition) {
+                return ((XSSimpleTypeDecl) type).isDOMDerivedFrom(
+                        typeNamespaceArg, typeNameArg, derivationMethod);
+            }    
+        } 
         return false;
     }
 

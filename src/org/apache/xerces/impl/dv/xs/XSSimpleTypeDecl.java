@@ -36,6 +36,7 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
@@ -161,6 +162,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
     static final String ANY_TYPE = "anyType";
 
+    // DOM Level 3 TypeInfo Derivation Method constants
+    static final int DERIVATION_ANY = 0;
+    static final int DERIVATION_RESTRICTION = 1;
+    static final int DERIVATION_EXTENSION = 2;
+    static final int DERIVATION_UNION = 4;
+    static final int DERIVATION_LIST = 8;
+    
     static final ValidationContext fEmptyContext = new ValidationContext() {
         public boolean needFacetChecking() {
             return true;
@@ -2297,6 +2305,229 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return type != fAnySimpleType;
     }
 
+    /**
+     * Checks if a type is derived from another by restriction, given the name
+     * and namespace. See:
+     * http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#TypeInfo-isDerivedFrom
+     * 
+     * @param ancestorNS
+     *            The namspace of the ancestor type declaration
+     * @param ancestorName
+     *            The name of the ancestor type declaration
+     * @param derivation
+     *            The derivation method
+     * 
+     * @return boolean True if the ancestor type is derived from the reference type by the specifiied derivation method. 
+     */
+    public boolean isDOMDerivedFrom(String ancestorNS, String ancestorName, int derivationMethod) {
+        
+        // ancestor is null, return false
+        if (ancestorName == null)
+            return false;
+        
+        // ancestor is anyType, return true
+        if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(ancestorNS)
+                && SchemaSymbols.ATTVAL_ANYTYPE.equals(ancestorName)
+                && (((derivationMethod  & DERIVATION_RESTRICTION) != 0) 
+                        || (derivationMethod  == DERIVATION_ANY))) {
+            return true;
+        }
+        
+        // restriction
+        if ((derivationMethod & DERIVATION_RESTRICTION) != 0) {
+            if (isDerivedByRestriction(ancestorNS, ancestorName, this)) {
+                return true;
+            }
+        }
+        
+        // list
+        if ((derivationMethod & DERIVATION_LIST) != 0) {
+            if (isDerivedByList(ancestorNS, ancestorName, this)) {
+                return true;
+            }
+        }
+        
+        // union
+        if ((derivationMethod & DERIVATION_UNION) != 0) {
+            if (isDerivedByUnion(ancestorNS, ancestorName, this)) {
+                return true;
+            }
+        }
+        
+        // extension
+        if (((derivationMethod & DERIVATION_EXTENSION) != 0)
+                && (((derivationMethod & DERIVATION_RESTRICTION) == 0)
+                    && ((derivationMethod & DERIVATION_LIST) == 0) 
+                    && ((derivationMethod & DERIVATION_UNION) == 0))) {
+            return false;
+        }
+        
+        // If the value of the parameter is 0 i.e. no bit (corresponding to
+        // restriction, list, extension or union) is set to 1 for the 
+        // derivationMethod parameter.   
+        if (((derivationMethod & DERIVATION_EXTENSION) == 0)
+                && (((derivationMethod & DERIVATION_RESTRICTION) == 0)
+                    && ((derivationMethod & DERIVATION_LIST) == 0) 
+                    && ((derivationMethod & DERIVATION_UNION) == 0))) {
+            return isDerivedByAny(ancestorNS, ancestorName, this);
+        }
+        
+        return false;
+    }
+    
+    
+    /**
+     * Checks if a type is derived from another by any combination of restriction, list ir union. See:
+     * http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#TypeInfo-isDerivedFrom
+     * 
+     * @param ancestorNS
+     *            The namspace of the ancestor type declaration
+     * @param ancestorName
+     *            The name of the ancestor type declaration
+     * @param type
+     *            The reference type definition
+     * 
+     * @return boolean True if the type is derived by restriciton for the reference type
+     */
+    private boolean isDerivedByAny(String ancestorNS, String ancestorName,
+            XSTypeDefinition type) {
+        
+        boolean derivedFrom = false;
+        
+        // for each base, item or member type
+        while (type != null)  {
+            
+            // If the ancestor type is reached or is the same as this type.
+            if ((ancestorName.equals(type.getName()))
+                    && ((ancestorNS == null && type.getNamespace() == null) 
+                        || (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) {
+                derivedFrom = true;
+                break;
+            }
+            
+            // check if derived by restriction or list or union
+            if (isDerivedByRestriction(ancestorNS, ancestorName, type)) {
+                return true;
+            } else if (isDerivedByList(ancestorNS, ancestorName, type)) {
+                return true;
+            } else  if (isDerivedByUnion(ancestorNS, ancestorName, type)) {
+                return true;
+            }
+            
+            // get the base, item or member type depending on the variety
+            if (((XSSimpleTypeDecl) type).getVariety() == VARIETY_ABSENT
+                    || ((XSSimpleTypeDecl) type).getVariety() == VARIETY_ATOMIC) {
+                type = type.getBaseType();
+            } else if (((XSSimpleTypeDecl) type).getVariety() == VARIETY_UNION) {
+                for (int i = 0; i < ((XSSimpleTypeDecl) type).getMemberTypes().getLength(); i++) {
+                    return isDerivedByAny(ancestorNS, ancestorName,
+                            (XSTypeDefinition) ((XSSimpleTypeDecl) type)
+                            .getMemberTypes().item(i));
+                }
+            } else if (((XSSimpleTypeDecl) type).getVariety() == VARIETY_LIST) {
+                type = ((XSSimpleTypeDecl) type).getItemType();
+            }
+        }
+        
+        return derivedFrom;
+    }
+    
+    /**
+     * DOM Level 3 
+     * Checks if a type is derived from another by restriction. See:
+     * http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#TypeInfo-isDerivedFrom
+     * 
+     * @param ancestorNS
+     *            The namspace of the ancestor type declaration
+     * @param ancestorName
+     *            The name of the ancestor type declaration
+     * @param type
+     *            The reference type definition
+     * 
+     * @return boolean True if the type is derived by restriciton for the
+     *         reference type
+     */
+    private boolean isDerivedByRestriction (String ancestorNS, String ancestorName, XSTypeDefinition type) {
+        while (type != null) {
+            if ((ancestorName.equals(type.getName()))
+                    && ((ancestorNS != null && ancestorNS.equals(type.getNamespace())) 
+                            || (type.getNamespace() == null && ancestorNS == null))) { 
+                
+                return true;
+            }
+            type = type.getBaseType();
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Checks if a type is derived from another by list. See:
+     * http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#TypeInfo-isDerivedFrom
+     * 
+     * @param ancestorNS
+     *            The namspace of the ancestor type declaration
+     * @param ancestorName
+     *            The name of the ancestor type declaration
+     * @param type
+     *            The reference type definition
+     * 
+     * @return boolean True if the type is derived by list for the reference type
+     */    
+    private boolean isDerivedByList (String ancestorNS, String ancestorName, XSTypeDefinition type) {
+        // If the variety is union
+        if (type !=null && ((XSSimpleTypeDefinition)type).getVariety() == VARIETY_LIST) {
+            
+            // get the {item type}
+            XSTypeDefinition itemType = ((XSSimpleTypeDefinition)type).getItemType();
+            
+            // T2 is the {item type definition}
+            if (itemType != null) {
+                
+                // T2 is derived from the other type definition by DERIVATION_RESTRICTION
+                if (isDerivedByRestriction(ancestorNS, ancestorName, itemType)) {
+                    return true;
+                } 
+            }
+        }
+        return false;
+   }
+    
+    /**
+     * Checks if a type is derived from another by union.  See:
+     * http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#TypeInfo-isDerivedFrom
+     * 
+     * @param ancestorNS
+     *            The namspace of the ancestor type declaration
+     * @param ancestorName
+     *            The name of the ancestor type declaration
+     * @param type
+     *            The reference type definition
+     * 
+     * @return boolean True if the type is derived by union for the reference type
+     */    
+    private boolean isDerivedByUnion (String ancestorNS, String ancestorName, XSTypeDefinition type) {
+        
+        // If the variety is union
+        if (type !=null && ((XSSimpleTypeDefinition)type).getVariety() == VARIETY_UNION) {
+            
+            // get member types
+            XSObjectList memberTypes = ((XSSimpleTypeDefinition)type).getMemberTypes();
+            
+            for (int i = 0; i < memberTypes.getLength(); i++) {
+                // One of the {member type definitions} is T2.
+                if (memberTypes.item(i) != null) {
+                    // T2 is derived from the other type definition by DERIVATION_RESTRICTION
+                    if (isDerivedByRestriction(ancestorNS, ancestorName,(XSSimpleTypeDefinition)memberTypes.item(i))) {
+                        return true;
+                    } 
+                }
+            }   
+        }
+        return false;
+    }
+
+    
     static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true, XSConstants.ANYSIMPLETYPE_DT);
 
     /**

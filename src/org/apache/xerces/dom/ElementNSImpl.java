@@ -16,7 +16,10 @@
 
 package org.apache.xerces.dom;
 
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.xni.NamespaceContext;
 import org.w3c.dom.Attr;
@@ -430,20 +433,33 @@ public class ElementNSImpl
     }
 
     /**
-     * DOM Level 3 CR - Experimental
-     *
-     * @see org.apache.xerces.dom3.TypeInfo#isDerivedFrom()
+     * Introduced in DOM Level 2. <p>
+     * Checks if a type is derived from another by restriction. See:
+     * http://www.w3.org/TR/DOM-Level-3-Core/core.html#TypeInfo-isDerivedFrom
+     * 
+     * @param ancestorNS 
+     *        The namspace of the ancestor type declaration
+     * @param ancestorName
+     *        The name of the ancestor type declaration
+     * @param type
+     *        The reference type definition
+     * 
+     * @return boolean True if the type is derived by restriciton for the
+     *         reference type
      */
-    public boolean isDerivedFrom(String typeNamespaceArg, 
-                                 String typeNameArg, 
-                                 int derivationMethod) {
-        //REVISIT: XSSimpleTypeDecl and XSComplexTypeDecl .derivedFrom
-        //derivationMethod constants in DOM vs Xerces                                 	
-        if (type !=null){
-            return type.derivedFrom(typeNamespaceArg, typeNameArg,(short)derivationMethod);
-        } 
+    public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, 
+            int derivationMethod) {
+        if (type != null) {
+            if (type instanceof XSSimpleTypeDefinition) {
+                return ((XSSimpleTypeDecl) type).isDOMDerivedFrom(
+                        typeNamespaceArg, typeNameArg, derivationMethod);
+            } else {
+                return ((XSComplexTypeDecl) type).isDOMDerivedFrom(
+                        typeNamespaceArg, typeNameArg, derivationMethod);
+            }
+        }
         return false;
-    }
+    }    
 
     /**
      * NON-DOM: setting type used by the DOM parser
