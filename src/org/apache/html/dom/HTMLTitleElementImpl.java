@@ -35,20 +35,20 @@ public class HTMLTitleElementImpl
     
     public String getText()
     {
-        Node    child;
-        String    text;
+        Node child;
+        StringBuffer text = new StringBuffer();
         
         // Find the Text nodes contained within this element and return their
         // concatenated value. Required to go around comments, entities, etc.
         child = getFirstChild();
-        text = "";
         while ( child != null )
         {
-            if ( child instanceof Text )
-                text = text + ( (Text) child ).getData();
+            if ( child instanceof Text ) {
+                text.append(( (Text) child ).getData());
+            }
             child = child.getNextSibling();
         }
-        return text;
+        return text.toString();
     }
     
     
