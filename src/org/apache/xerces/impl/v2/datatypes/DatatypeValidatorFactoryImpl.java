@@ -321,7 +321,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     public DatatypeValidator createDatatypeValidator(String typeName, Vector validators) {
         DatatypeValidator simpleType = null;
         if ( validators!=null ) {
-            simpleType = new UnionDatatypeValidator(validators);
+            simpleType = new UnionDatatypeValidator(validators, null);
         }
         if ( simpleType !=null ) {
             registerUserDefinedValidator(typeName, simpleType);
