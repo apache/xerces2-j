@@ -61,7 +61,9 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XIntPool;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.impl.v2.datatypes.*;
 import org.w3c.dom.Element;
+import java.util.Hashtable;
 
 /**
  * A complex type definition schema component traverser.
@@ -196,8 +198,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else if (DOMUtil.getLocalName(child).equals
                     (SchemaSymbols.ELT_SIMPLECONTENT)) {
               //
-              // SIMPLE CONTENT - to be done
+              // SIMPLE CONTENT                 
               //
+              traverseSimpleContent(child, complexType, schemaDoc, grammar);
             }
             else if (DOMUtil.getLocalName(child).equals
                     (SchemaSymbols.ELT_COMPLEXCONTENT)) {
@@ -224,6 +227,197 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        }
        return complexType;
 
+
+    }
+
+
+    private void traverseSimpleContent(Element simpleContentElement, 
+                                        XSComplexTypeDecl typeInfo,
+                                        XSDocumentInfo schemaDoc, 
+                                        SchemaGrammar grammar) 
+                                  throws ComplexTypeRecoverableError {
+
+  
+       String typeName = typeInfo.fName;
+       Object[] attrValues = fAttrChecker.checkAttributes(simpleContentElement, false,
+                              schemaDoc);
+
+       // -----------------------------------------------------------------------
+       // Set content type 
+       // -----------------------------------------------------------------------
+       typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_SIMPLE; 
+       typeInfo.fParticle = null;
+
+       Element simpleContent = checkContent(DOMUtil.getFirstChildElement(simpleContentElement), attrValues, schemaDoc);
+
+       fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+
+       // If there are no children, return
+       if (simpleContent==null) {
+          throw new ComplexTypeRecoverableError();
+       }
+
+       // -----------------------------------------------------------------------
+       // The content should be either "restriction" or "extension"
+       // -----------------------------------------------------------------------
+       String simpleContentName = simpleContent.getLocalName();
+       if (simpleContentName.equals(SchemaSymbols.ELT_RESTRICTION))
+         typeInfo.fDerivedBy = SchemaSymbols.RESTRICTION;
+       else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
+         typeInfo.fDerivedBy = SchemaSymbols.EXTENSION;
+       else {
+          // REVISIT - should create a msg in properties file 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "Child of simpleContent must be restriction or extension"); 
+          throw new ComplexTypeRecoverableError();   
+       }
+       if (DOMUtil.getNextSiblingElement(simpleContent) != null) {
+          // REVISIT - should create a msg in properties file 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "Invalid child of simpleContent"); 
+          throw new ComplexTypeRecoverableError();   
+       }
+
+       attrValues = fAttrChecker.checkAttributes(simpleContent, false,
+                              schemaDoc);
+       QName baseTypeName = (QName)  attrValues[XSAttributeChecker.ATTIDX_BASE];
+       fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+
+
+       // -----------------------------------------------------------------------
+       // Need a base type.  
+       // -----------------------------------------------------------------------
+       if (baseTypeName==null)  {
+          // REVISIT - should create a msg in properties file 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "The base attribute must be specified for the restriction or extension");
+          throw new ComplexTypeRecoverableError();   
+       }
+
+       XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, 
+                                         XSDHandler.TYPEDECL_TYPE, baseTypeName);
+
+       typeInfo.fBaseType = type;
+
+       
+       DatatypeValidator baseValidator = null;
+       XSComplexTypeDecl baseComplexType = null;
+       // If the base type is complex, it must have simpleContent
+       if ((type instanceof XSComplexTypeDecl)) {
+
+          baseComplexType = (XSComplexTypeDecl)type; 
+          if (baseComplexType.fContentType != XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+            // REVISIT - should create a msg in properties file 
+            reportGenericSchemaError("ComplexType " + typeName + ": " + 
+             "The base type must be complex");
+            throw new ComplexTypeRecoverableError();   
+          }
+          baseValidator = baseComplexType.fDatatypeValidator;
+       }
+       else {
+          baseValidator = (DatatypeValidator)type;         
+          if (typeInfo.fDerivedBy == SchemaSymbols.RESTRICTION) {
+             reportGenericSchemaError("ComplexTYpe " + typeName + ": " +
+             "ct-props-correct.2:  The base is a simple type.   It cannot be used in a derivation by restriction");
+             throw new ComplexTypeRecoverableError();
+          }
+       }
+
+       // -----------------------------------------------------------------------
+       // Check that the base permits the derivation       
+       // -----------------------------------------------------------------------
+       if ((baseValidator.getFinalSet() & typeInfo.fDerivedBy)!=0) {
+          //REVISIT - generate error 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "The base type has a final value that prohibits this derivation");
+          throw new ComplexTypeRecoverableError();   
+       }
+
+       // -----------------------------------------------------------------------
+       // Skip over any potential annotations  
+       // -----------------------------------------------------------------------
+       simpleContent = checkContent(DOMUtil.getFirstChildElement(simpleContent), 
+                                     null, schemaDoc);
+
+       // -----------------------------------------------------------------------
+       // Process a RESTRICTION   
+       // -----------------------------------------------------------------------
+       if (typeInfo.fDerivedBy == SchemaSymbols.RESTRICTION) {
+
+          // -----------------------------------------------------------------------
+          // There may be a simple type definition in the restriction element
+          // The data type validator will be based on it, if specified
+          // -----------------------------------------------------------------------
+          if (simpleContent.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) {
+              DatatypeValidator dv =fSchemaHandler.fSimpleTypeTraverser.traverseLocal(simpleContent, schemaDoc, grammar); 
+
+              //check that this datatype validator is validly derived from the base
+              //according to derivation-ok-restriction 5.1.1
+              // Need to check with Elena/Sandy if there's a new method for this - REVISIT
+              //if  (!checkSimpleTypeDerivationOK(dv,baseValidator)) {
+              //    reportGenericSchemaError("ComplexType " + typeName + ": " + 
+              //    "derivation-ok-restriction.5.1.1:  The content type is not a valid restriction of the content type of the base");
+              //   }
+              baseValidator = dv;
+              simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
+          }
+
+          // -----------------------------------------------------------------------
+          // Traverse any facets 
+          // -----------------------------------------------------------------------
+          Hashtable fFacetData = null;
+          Element attrNode = null;
+          if (simpleContent!=null) {
+            fFacetInfo fi = traverseFacets(simpleContent, null, typeName, baseValidator, 
+                            schemaDoc, grammar);
+            fFacetData = fi.facetdata;
+            attrNode = fi.nodeAfterFacets;
+          }
+
+
+          typeInfo.fDatatypeValidator = createRestrictedValidator(baseValidator, fFacetData); 
+          if (typeInfo.fDatatypeValidator == null) {
+            // REVISIT error msg
+            reportGenericSchemaError("Internal error - could not create a new validator");
+            throw new ComplexTypeRecoverableError();
+          }
+
+          // -----------------------------------------------------------------------
+          // Traverse any attributes 
+          // -----------------------------------------------------------------------
+          if (!isAttrOrAttrGroup(attrNode)) {
+             throw new ComplexTypeRecoverableError("src-ct",  
+              new Object[]{typeInfo.fName});
+          }
+          traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
+                                   schemaDoc,grammar);
+          mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
+          if (!typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp)) {
+            throw new ComplexTypeRecoverableError();
+          }
+
+       }
+       // -----------------------------------------------------------------------
+       // Process a EXTENSION   
+       // -----------------------------------------------------------------------
+       else {
+          typeInfo.fDatatypeValidator = baseValidator; 
+          if (simpleContent != null) {
+            // -----------------------------------------------------------------------
+            // Traverse any attributes 
+            // -----------------------------------------------------------------------
+            Element attrNode = simpleContent; 
+            if (!isAttrOrAttrGroup(attrNode)) {
+               throw new ComplexTypeRecoverableError("src-ct",  
+                new Object[]{typeInfo.fName});
+            }
+            traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
+                                     schemaDoc,grammar);
+            if (baseComplexType != null) {
+              mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, true);
+            }
+          }
+       } 
 
     }
 
@@ -309,13 +503,16 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           throw new ComplexTypeRecoverableError();   
        }
        XSComplexTypeDecl baseType = (XSComplexTypeDecl)type; 
+       typeInfo.fBaseType = baseType;
 
        // -----------------------------------------------------------------------
        // Check that the base permits the derivation       
        // -----------------------------------------------------------------------
        if ((baseType.fFinal & typeInfo.fDerivedBy)!=0) {
           //REVISIT - generate error 
-
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "The base type has a final value that prohibits this derivation");
+          throw new ComplexTypeRecoverableError();   
        }
 
        // -----------------------------------------------------------------------
@@ -412,8 +609,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private void mergeAttributes(XSAttributeGroupDecl fromAttrGrp, 
                                  XSAttributeGroupDecl toAttrGrp,
                                  String typeName,
-                                 boolean duplicatesAreError)  
+                                 boolean extension)  
                                  throws ComplexTypeRecoverableError {
+
        XSAttributeUse[] attrUseS = fromAttrGrp.getAttributeUses();
        XSAttributeUse existingAttrUse, duplicateAttrUse =  null;
        for (int i=0; i<attrUseS.length; i++) {
@@ -423,13 +621,24 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     	   toAttrGrp.addAttributeUse(attrUseS[i]);
 	 }
          else {
-           if (duplicatesAreError) {
+           if (extension) {
               //REVISIT - should create a msg in properties file 
               reportGenericSchemaError("ComplexType " + typeName + ": " + 
                 "Duplicate attribute use " + existingAttrUse.fAttrDecl.fName );
               throw new ComplexTypeRecoverableError();   
            }
          }
+       }
+
+       // For extension, the wildcard must be formed by doing a union of the wildcards
+       if (extension) {
+         if (toAttrGrp.fAttributeWC==null) {
+           toAttrGrp.fAttributeWC = fromAttrGrp.fAttributeWC;
+         }
+         else {
+           toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC);
+         }
+
        }
     }
 
