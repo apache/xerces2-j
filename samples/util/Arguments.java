@@ -58,11 +58,7 @@
 
 
 package util;
-
 import java.lang.Integer;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
 
 
 
@@ -89,10 +85,10 @@ import java.util.NoSuchElementException;
 
 public class Arguments {
     private  boolean      fDbug          = false;
-    private  Queue        stackOfOptions = new Queue();
+    private  Queue        stackOfOptions = new Queue(20);
 
-    private  Queue        argumentList   = new Queue();
-    private  Queue        listOfFiles    = new Queue();
+    private  Queue        argumentList   = new Queue(20);
+    private  Queue        listOfFiles    = new Queue(20);
     private  String[]     messageArray   = null; 
     private  int          lastPopArgument = 0;
 
@@ -193,11 +189,7 @@ public class Arguments {
 
     public String getlistFiles(){
         String    s = null;
-        try {
-          s = (String) listOfFiles.pop(); 
-        } catch( NoSuchElementException ex ){
-            ;
-        }
+        s = (String) listOfFiles.pop(); 
         return s;
     }
 
@@ -280,42 +272,81 @@ public class Arguments {
 */
     // Private methods
 
+
     // Private inner classes
 
-    public  class Queue   {
-        private LinkedList queue;
-        public Queue() {
-            queue = new LinkedList();
-        }
-        public void push( Object token ) {
-            queue.addLast( token );
-        }
-        public Object pop() {
-            Object token = queue.removeFirst(); 
-            return token; 
-        }
-        public boolean empty(){
-            return queue.isEmpty();
-        }
-
-        public int size(){
-            return queue.size();
-        }
-
-        public void clear(){
-            queue.clear();
-        }
+private  class Queue   {
+       //private LinkedList queue;
+       private static final int  maxIncrement = 10;
+       private Object[]   queue;
+       private int      max;
+       private int      front;
+       private int      rear;
+       private int      items;
 
 
-        public void print(){
-            System.out.println("we are here " );
-            ListIterator it          =  queue.listIterator();
-            int      tokenNumber = 0;
-            while ( it.hasNext()  ){
-                System.out.println( "token[ " +  tokenNumber++
-                                    + "] = " +   ( it.next().toString()));
-            }
-        }
+       public Queue( int size) {
+            queue  = new Object[size];
+            front  = 0;
+            rear   = -1;
+            items  = 0;
+            max    = size;
+           //queue = new LinkedList();
+       }
+       public void push( Object token ) {
+           try {
+           queue[++rear] = token;
+           items++;
+           } catch( ArrayIndexOutOfBoundsException ex ){
+             Object[] holdQueue = new Object[max + maxIncrement]; 
+             System.arraycopy(queue, 0, holdQueue,0,max );
+             queue = holdQueue;
+             max   += maxIncrement;
+             queue[rear] = token;
+             items++;
+           }
 
-    }
+           //queue.addLast( token );
+       }
+       public Object pop() {
+           Object token = null;
+           if( items != 0 ) {
+               token = queue[front++];
+               items--;
+           }
+           return token; 
+       }
+       public boolean empty(){
+           return (items==0);
+       }
+
+       public int size(){
+           return items;
+       }
+
+       public void clear(){
+ //          queue.clear();
+           front  = 0;
+           rear   = -1;
+           items  = 0;
+       }
+
+
+       public void print(){
+
+           //ListIterator it          =  queue.listIterator();
+           //int      tokenNumber = 0;
+          // while ( it.hasNext()  ){
+            //   System.out.println( "token[ " +  tokenNumber++
+            //                       + "] = " +   ( it.next().toString()));
+           //}
+
+           for( int i = front; i <= rear;i++ ){ 
+                 System.out.println( "token[ " +  i
+                                   + "] = " +  queue[i] ) ;
+           }
+
+       }
+
+   }
 }
