@@ -193,14 +193,13 @@ public final class XMLValidator
     private int[] fScopeStack = new int[8];
     private int[] fGrammarNameSpaceIndexStack = new int[8];
 
-    private int[] fElementTypeStack = new int[8];
     private int[] fElementEntityStack = new int[8];
     private int[] fElementIndexStack = new int[8];
     private int[] fContentSpecTypeStack = new int[8];
 
-    private int[] fElementLocalPartStack = new int[8];
+    private static final int sizeQNameParts      = 8;
+    private QName[] fElementQNamePartsStack      = new QName[sizeQNameParts];
 
-    
     private QName[] fElementChildren = new QName[32];
     private int fElementChildrenLength = 0;
     private int[] fElementChildrenOffsetStack = new int[32];
@@ -299,6 +298,10 @@ public final class XMLValidator
         entityHandler.setEventHandler(this);
         entityHandler.setCharDataHandler(this);
         fDocumentScanner.setEventHandler(this);
+
+        for (int i = 0; i < sizeQNameParts; i++) {
+             fElementQNamePartsStack[i] = new QName();
+        }
         init();
 
     } // <init>(StringPool,XMLErrorReporter,DefaultEntityHandler,XMLDocumentScanner)
@@ -747,8 +750,9 @@ public final class XMLValidator
         ensureStackCapacity(fElementDepth);
         fCurrentElement.setValues(element);
         fCurrentElementEntity = fEntityHandler.getReaderId();
-        fElementTypeStack[fElementDepth] = fCurrentElement.rawname;
-        fElementLocalPartStack[fElementDepth]=fCurrentElement.localpart;
+       
+        fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
+
         fElementEntityStack[fElementDepth] = fCurrentElementEntity;
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
@@ -760,7 +764,7 @@ public final class XMLValidator
 
     private void ensureStackCapacity ( int newElementDepth) {
   
-        if (newElementDepth == fElementTypeStack.length) {
+        if (newElementDepth == fElementQNamePartsStack.length ) {
             int[] newStack = new int[newElementDepth * 2];
             System.arraycopy(fScopeStack, 0, newStack, 0, newElementDepth);
             fScopeStack = newStack;
@@ -769,14 +773,16 @@ public final class XMLValidator
             System.arraycopy(fGrammarNameSpaceIndexStack, 0, newStack, 0, newElementDepth);
             fGrammarNameSpaceIndexStack = newStack;
 
-            newStack = new int[newElementDepth * 2];
-            System.arraycopy(fElementTypeStack, 0, newStack, 0, newElementDepth);
-            fElementTypeStack = newStack;
-
-            newStack = new int[newElementDepth * 2];
-            System.arraycopy( this.fElementLocalPartStack , 0, newStack, 0, newElementDepth);
-            fElementLocalPartStack = newStack;
-
+            QName[] newStackOfQueue = new QName[newElementDepth * 2];
+            System.arraycopy(this.fElementQNamePartsStack, 0, newStackOfQueue, 0, newElementDepth );
+            fElementQNamePartsStack      = newStackOfQueue;
+            
+            QName qname = fElementQNamePartsStack[newElementDepth];
+            if (qname == null) {
+               for (int i = newElementDepth; i < fElementQNamePartsStack.length; i++) {
+                  fElementQNamePartsStack[i] = new QName();
+               }
+            }
 
             newStack = new int[newElementDepth * 2];
             System.arraycopy(fElementEntityStack, 0, newStack, 0, newElementDepth);
@@ -880,13 +886,17 @@ public final class XMLValidator
         // REVISIT: Validation. This information needs to be stored.
         fCurrentElement.prefix = -1;
 
-        if (fNamespacesEnabled) { //If Namespace enable then localName != rawName
-           fCurrentElement.localpart = fElementLocalPartStack[fElementDepth];
-        } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off 
-           fCurrentElement.localpart = fElementTypeStack[fElementDepth];
-        }
 
-        fCurrentElement.rawname = fElementTypeStack[fElementDepth];
+        if (fNamespacesEnabled) { //If Namespace enable then localName != rawName
+           fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
+        } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off 
+           fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
+        }
+        fCurrentElement.rawname      = fElementQNamePartsStack[fElementDepth].rawname;
+        fCurrentElement.uri          = fElementQNamePartsStack[fElementDepth].uri;
+        fCurrentElement.prefix       = fElementQNamePartsStack[fElementDepth].prefix;
+
+
         fCurrentElementEntity = fElementEntityStack[fElementDepth];
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
