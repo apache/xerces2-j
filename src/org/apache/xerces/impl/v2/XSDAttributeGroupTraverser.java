@@ -162,43 +162,17 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             child = DOMUtil.getNextSiblingElement(child);
         }
 
-        XSAttributeGroupDecl tempAttrGrp = null;
-        XSAttributeUse tempAttrUse = null;
+        // Traverse the attribute and attribute group elements and fill in the 
+        // attributeGroup structure
 
-        for (; child != null; child = DOMUtil.getNextSiblingElement(child)) {
-            childName = child.getLocalName();
-            if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
-                tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child, schemaDoc, grammar);
-                attrGrp.addAttributeUse(tempAttrUse);
-            }
-            else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                //REVISIT: do we need to save some state at this point??
-                tempAttrGrp = traverseLocal(child, schemaDoc, grammar);
-                XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
-                for (int i=0; i<attrUseS.length; i++) {
-                    attrGrp.addAttributeUse(attrUseS[i]);
-                }
-            }
-            else
-                break;
-        } // for
-
-        if (child != null) {
-            childName = child.getLocalName();
-            if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
-                XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.traverseAnyAttribute(child, schemaDoc, grammar);
-                attrGrp.fAttributeWC = tempAttrWC;
-                child = DOMUtil.getNextSiblingElement(child);
-            }
-
-            if (child != null) {
-                Object[] args = new Object [] { "attributeGroup", childName};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                               "AttributeGroupContentRestricted",
-                               args,
-                               XMLErrorReporter.SEVERITY_ERROR);
-            }
-        } // if
+        if (!traverseAttrsAndAttrGrps(child, attrGrp, schemaDoc, grammar)) {
+            // An invalid element was found...
+            Object[] args = new Object [] { "attributeGroup", childName};
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                           "AttributeGroupContentRestricted",
+                           args,
+                           XMLErrorReporter.SEVERITY_ERROR);
+        } 
 
         // make an entry in global declarations.
         grammar.addGlobalAttributeGroupDecl(attrGrp);

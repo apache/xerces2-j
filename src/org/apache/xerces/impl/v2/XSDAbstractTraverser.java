@@ -155,6 +155,59 @@ abstract class XSDAbstractTraverser {
         // REVISIT: an annotation decl should be returned when we support PSVI
     }
 
+
+    // 
+    // Traverse a set of attribute and attribute group elements 
+    // Needed by complexType and attributeGroup traversal
+    //
+    boolean traverseAttrsAndAttrGrps(Element firstAttr, XSAttributeGroupDecl attrGrp,
+                                     XSDocumentInfo schemaDoc, SchemaGrammar grammar ) {
+
+        Element child=null;
+        XSAttributeGroupDecl tempAttrGrp = null;
+        XSAttributeUse tempAttrUse = null;
+        String childName;
+
+        for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
+            childName = child.getLocalName();
+            if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+                tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child, 
+                              schemaDoc, grammar);
+                attrGrp.addAttributeUse(tempAttrUse);
+            }
+            else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                //REVISIT: do we need to save some state at this point??
+                tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
+                              child, schemaDoc, grammar);
+                XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
+                for (int i=0; i<attrUseS.length; i++) {
+                    attrGrp.addAttributeUse(attrUseS[i]);
+                }
+            }
+            else
+                break;
+        } // for
+
+        if (child != null) {
+            childName = child.getLocalName();
+            if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
+                XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.traverseAnyAttribute(child, schemaDoc, grammar);
+                attrGrp.fAttributeWC = tempAttrWC;
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+
+            if (child != null) {
+                // Error - the element is not an attribute, attributeGroup or anyAttr
+                return false;
+            }
+        } 
+
+        // Success
+        return true;
+
+    }
+
+
     // REVISIT: is it how we want to handle error reporting?
     void reportGenericSchemaError (String error) {
         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
