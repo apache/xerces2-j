@@ -1120,6 +1120,15 @@ public class TraverseSchema implements
             isNamedType = true;
         }
 
+        if (isTopLevel(complexTypeDecl)) {
+        
+            String fullName = fTargetNSURIString+","+typeName;
+            ComplexTypeInfo temp = (ComplexTypeInfo) fComplexTypeRegistry.get(fullName);
+            if (temp != null ) {
+                return fStringPool.addSymbol(fullName);
+            }
+        }
+
         int scopeDefined = fScopeCount++;
         int previousScope = fCurrentScope;
         fCurrentScope = scopeDefined;
@@ -1389,6 +1398,7 @@ public class TraverseSchema implements
                 csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
             }
 
+            boolean seeParticle = false;
             boolean seeOtherParticle = false;                
             boolean seeAll = false;
 
@@ -1399,7 +1409,7 @@ public class TraverseSchema implements
                 int index = -2;  // to save the particle's contentSpec handle 
                 hadContent = true;
 
-                boolean seeParticle = false;
+                seeParticle = false;
 
                 String childName = child.getNodeName();
 
@@ -1496,6 +1506,14 @@ public class TraverseSchema implements
                     right = index;
                 }
             } //end looping through the children
+
+            if ( ! ( seeOtherParticle || seeAll ) && (elementContent || mixedContent)
+                 && base.length() == 0 ) {
+                contentSpecType = XMLElementDecl.TYPE_SIMPLE;
+                simpleTypeValidator = fDatatypeRegistry.getDatatypeValidator(SchemaSymbols.ATTVAL_STRING);
+                reportGenericSchemaError ( " complexType '"+typeName+"' with a elementOnly or mixed content "
+                                           +"need to have at least one particle child");
+            }
 
             if (hadContent && right != -2)
                 left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
@@ -1911,12 +1929,23 @@ public class TraverseSchema implements
                     dv = getTypeValidatorFromNS(typeURI, localpart);
                     if (dv == null) {
                         //TO DO: report error here;
-                        System.out.println("Counld not find base type " +localpart 
+                        System.out.println("Counld not find simpleType " +localpart 
                                            + " in schema " + typeURI);
                     }
                 }
                 else {
-                        dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                    dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                    if ( dv == null )  {
+                        Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                        if (topleveltype != null) {
+                            traverseSimpleTypeDecl( topleveltype );
+                            dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                            //   TO DO:  the Default and fixed attribute handling should be here.
+                        }
+                        else {
+                            reportGenericSchemaError("simpleType not found : " + localpart);
+                        }
+                    }
                 }
 
                 attType = XMLAttributeDecl.TYPE_SIMPLE;
@@ -2343,9 +2372,12 @@ public class TraverseSchema implements
         }
                 
         Element equivClassElementDecl = null;
+        boolean noErrorSoFar = true;
+
         if ( equivClass.length() > 0 ) {
             equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, getLocalPart(equivClass));
             if (equivClassElementDecl == null) {
+                noErrorSoFar = false;
                 reportGenericSchemaError("Equivclass affiliation element "
                                          +equivClass
                                          +" in element declaration " 
@@ -2370,6 +2402,7 @@ public class TraverseSchema implements
             
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
+                    noErrorSoFar = false;
                     reportGenericSchemaError("anonymous complexType in element '" + name +"' has a name attribute"); 
                 }
                 else 
@@ -2379,6 +2412,7 @@ public class TraverseSchema implements
                         fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
                 }
                 else {
+                    noErrorSoFar = false;
                     reportGenericSchemaError("traverse complexType error in element '" + name +"'"); 
                 }
                 //System.out.println("typeInfo.scopeDefined : " + typeInfo.typeName+","+"["+typeInfo.scopeDefined+"]"
@@ -2388,6 +2422,7 @@ public class TraverseSchema implements
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //   TO DO:  the Default and fixed attribute handling should be here.                
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
+                    noErrorSoFar = false;
                     reportGenericSchemaError("anonymous simpleType in element '" + name +"' has a name attribute"); 
                 }
                 else 
@@ -2396,6 +2431,7 @@ public class TraverseSchema implements
                     dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
                 }
                 else {
+                    noErrorSoFar = false;
                     reportGenericSchemaError("traverse simpleType error in element '" + name +"'"); 
                 }
                 contentSpecType = XMLElementDecl.TYPE_SIMPLE; 
@@ -2412,6 +2448,7 @@ public class TraverseSchema implements
         } 
 
         if (haveAnonType && (type.length()>0)) {
+            noErrorSoFar = false;
             reportGenericSchemaError( "Element '"+ name +
                                       "' have both a type attribute and a annoymous type child" );
         }
@@ -2437,6 +2474,7 @@ public class TraverseSchema implements
                     dv = getTypeValidatorFromNS(typeURI, localpart);
                     if (dv == null) {
                         //TO DO: report error here;
+                        noErrorSoFar = false;
                         System.out.println("Counld not find base type " +localpart 
                                            + " in schema " + typeURI);
                     }
@@ -2469,6 +2507,7 @@ public class TraverseSchema implements
                                 //   TO DO:  the Default and fixed attribute handling should be here.
                             }
                             else {
+                                noErrorSoFar = false;
                                 reportGenericSchemaError("type not found : " + localpart);
                             }
 
@@ -2501,7 +2540,16 @@ public class TraverseSchema implements
         }
 
         if (typeInfo == null && dv==null) {
-            reportGenericSchemaError ("untyped element : " + name );
+            if (noErrorSoFar) {
+                // Actually this Element's type definition is ur-type;
+                contentSpecType = XMLElementDecl.TYPE_ANY;
+                // REVISIT, need to wait till we have wildcards implementation.
+                // ADD attribute wildcards here
+            }
+            else {
+                noErrorSoFar = false;
+                reportGenericSchemaError ("untyped element : " + name );
+            }
         }
         // if element belongs to a compelx type
         if (typeInfo!=null) {
@@ -2510,7 +2558,7 @@ public class TraverseSchema implements
             scopeDefined = typeInfo.scopeDefined;
             dv = typeInfo.datatypeValidator;
         }
-        
+
         // if element belongs to a simple type
         if (dv!=null) {
             contentSpecType = XMLElementDecl.TYPE_SIMPLE;
@@ -2534,6 +2582,7 @@ public class TraverseSchema implements
 
         //There can never be two elements with the same name in the same scope.
         if (fSchemaGrammar.getElementDeclIndex(localpartIndex, enclosingScope) > -1) {
+            noErrorSoFar = false;
             reportGenericSchemaError("duplicate element decl in the same scope : " + 
                               fStringPool.toString(localpartIndex));
         }
