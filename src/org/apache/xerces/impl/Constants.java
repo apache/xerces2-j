@@ -174,7 +174,10 @@ public final class Constants {
     // DOM Level 3 features defined in Core:
     public static final String DOM_DISCARD_DEFAULT_CONTENT = "discard-default-content";
     public static final String DOM_NORMALIZE_CHARACTERS    = "normalize-characters";
+    public static final String DOM_CHECK_CHAR_NORMALIZATION  = "check-character-normalization";
+	public static final String DOM_WELLFORMED  = "well-formed";
     public static final String DOM_SPLIT_CDATA = "split-cdata-sections";
+    public static final String DOM_IGNORE_CHAR_DENORMALIZATION = "ignore-unknown-character-denomalizations";
 
     // Load and Save
     public static final String DOM_FORMAT_PRETTY_PRINT = "format-pretty-print";
