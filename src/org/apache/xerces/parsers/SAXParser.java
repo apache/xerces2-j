@@ -1023,7 +1023,7 @@ public class SAXParser
                     }
                 }
             }
-            String aDefaultType = "";
+            String aDefaultType = null;
             switch (attDefaultType) {
                 case XMLAttributeDecl.DEFAULT_TYPE_FIXED: {
                     aDefaultType = "#FIXED";
