@@ -891,11 +891,12 @@ class XSDHandler {
      */
     void traverseLocalElements() {
         fElementTraverser.fDeferTraversingLocalElements = false;
+        
         for (int i = 0; i < fLocalElemStackPos; i++) {
             Element currElem = fLocalElementDecl[i];
             XSDocumentInfo currSchema = (XSDocumentInfo)fDoc2XSDocumentMap.get(DOMUtil.getDocument(currElem));
             SchemaGrammar currGrammar = fGrammarResolver.getGrammar(currSchema.fTargetNamespace);
-            fElementTraverser.traverseLocal (currElem, currSchema, currGrammar, fAllContext[i]);
+            fElementTraverser.traverseLocal (fParticle[i], currElem, currSchema, currGrammar, fAllContext[i]);
         }
     }
 
@@ -925,7 +926,7 @@ class XSDHandler {
         fParticle[fLocalElemStackPos] = particle;
         fLocalElementDecl[fLocalElemStackPos] = elmDecl;
         fAllContext[fLocalElemStackPos] = allContextFlags;
-        fLocalElemNamespaceContext[fLocalElemStackPos] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
+        fLocalElemNamespaceContext[fLocalElemStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // end fillInLocalElemInfo(...)
 
     /** This method makes sure that
