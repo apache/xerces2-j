@@ -389,6 +389,13 @@ public class RangeImpl  implements Range {
             offsetA = sourceRange.getEndOffset();
             offsetB = fEndOffset;
         }
+
+        // The DOM Spec outlines four cases that need to be tested
+        // to compare two range boundary points:
+        //   case 1: same container
+        //   case 2: Child C of container A is ancestor of B
+        //   case 3: Child C of container B is ancestor of A
+        //   case 4: preorder traversal of context tree.
         
         // case 1: same container
         if (endPointA == endPointB) {
@@ -397,23 +404,31 @@ public class RangeImpl  implements Range {
             return 1;
         }
         // case 2: Child C of container A is ancestor of B
-        for (Node node=endPointA.getFirstChild(); node != null; node=node.getNextSibling()) {
-            if (isAncestorOf(node, endPointB)) {
-                int index = indexOf(node, endPointA);
-                if (offsetA <  index) return -1;
-                if (offsetA == index) return 0;
+        // This can be quickly tested by walking the parent chain of B
+        for ( Node c = endPointB, p = c.getParentNode();
+             p != null;
+             c = p, p = p.getParentNode())
+        {
+            if (p == endPointA) {
+                int index = indexOf(c, endPointA);
+                if (offsetA <= index) return -1;
                 return 1;
             }
         }
+
         // case 3: Child C of container B is ancestor of A
-        for (Node node=endPointB.getFirstChild(); node != null; node=node.getNextSibling()) {
-            if (isAncestorOf(node, endPointA)) {
-                int index = indexOf(node, endPointB);
-                if (offsetB <  index) return -1;
-                if (offsetB == index) return 0;
+        // This can be quickly tested by walking the parent chain of A
+        for ( Node c = endPointA, p = c.getParentNode();
+             p != null;
+             c = p, p = p.getParentNode())
+        {
+            if (p == endPointB) {
+                int index = indexOf(c, endPointB);
+                if (index < offsetB) return -1;
                 return 1;
             }
         }
+
         // case 4: preorder traversal of context tree.
         // Instead of literally walking the context tree in pre-order,
         // we use relative node depth walking which is usually faster
