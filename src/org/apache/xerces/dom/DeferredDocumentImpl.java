@@ -1346,8 +1346,12 @@ public class DeferredDocumentImpl
                 fIdName[i] = -1;
 
                 // see if there are more IDs on this element
-                while (fIdElement[i + 1] == elementNodeIndex) {
-                    name = fStringPool.toString(fIdName[++i]);
+                while (i + 1 < fIdCount && fIdElement[i + 1] == elementNodeIndex) {
+                    idNameIndex = fIdName[++i];
+                    if (idNameIndex == -1) {
+                        continue;
+                    }
+                    name = fStringPool.toString(idNameIndex);
                     putIdentifier0(name, element);
                 }
             }
