@@ -345,14 +345,21 @@ public class DFAContentModel
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                if (fElemMap[elemIndex] == curElem)
+                if (isEqual(fElemMap[elemIndex], curElem))
                     break;
             }
 
             // If we didn't find it, then obviously not valid
             if (elemIndex == fElemMapSize) {
-                if (DEBUG_VALIDATE_CONTENT) 
+                if (DEBUG_VALIDATE_CONTENT) {
                     System.out.println("!!! didn't find it");
+
+                    System.out.println("curElem : " +curElem );
+                    for (int i=0; i<fElemMapSize; i++) {
+                        System.out.println("fElemMap["+i+"] = " +fElemMap[i] );
+                    }
+                }
+
                 return childIndex;
             }
 
@@ -382,6 +389,17 @@ public class DFAContentModel
 
         // success!
         return -1;
+    }
+
+    private boolean isEqual(QName name1, QName name2) {
+        if (name1 != null && name2 != null) {
+        
+            return name1.localpart == name2.localpart &&
+                name1.uri == name2.uri;
+
+        }
+        return false;
+
     }
 
     /**
