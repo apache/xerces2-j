@@ -1230,14 +1230,14 @@ public class XMLEntityManager
     private static char gAfterEscaping1[] = new char[128];
     // the second hex character if a character needs to be escaped
     private static char gAfterEscaping2[] = new char[128];
+    private static char[] gHexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     // initialize the above 3 arrays
     static {
-        char[] hexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
-                         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
         for (int i = 0; i <= 0x1f; i++) {
             gNeedEscaping[i] = true;
-            gAfterEscaping1[i] = hexChs[i/16];
-            gAfterEscaping2[i] = hexChs[i%16];
+            gAfterEscaping1[i] = gHexChs[i >> 4];
+            gAfterEscaping2[i] = gHexChs[i & 0xf];
         }
         gNeedEscaping[0x7f] = true;
         gAfterEscaping1[0x7f] = '7';
@@ -1249,8 +1249,8 @@ public class XMLEntityManager
         for (int i = 0; i < len; i++) {
             ch = escChs[i];
             gNeedEscaping[ch] = true;
-            gAfterEscaping1[ch] = hexChs[ch/16];
-            gAfterEscaping2[ch] = hexChs[ch%16];
+            gAfterEscaping1[ch] = gHexChs[ch >> 4];
+            gAfterEscaping2[ch] = gHexChs[ch & 0xf];
         }
     }
     // To escape the "user.dir" system property, by using %HH to represent
@@ -1264,46 +1264,98 @@ public class XMLEntityManager
     // REVISIT: don't know how to escape non-ASCII characters, especially
     // which encoding to use. Leave them for now.
     private static synchronized String getUserDir() {
-        String userDir = System.getProperty("user.dir");
-        // return null if property value is null.
-        if (userDir == null)
-            return null;
+        // get the user.dir property
+        String userDir = "";
+        try {
+            userDir = System.getProperty("user.dir");
+        }
+        catch (SecurityException se) {
+        }
+
+        // return empty string if property value is empty string.
+        if (userDir.length() == 0)
+            return "";
+        
         // compute the new escaped value if the new property value doesn't
         // match the previous one
-        if (!userDir.equals(gUserDir)) {
-            // record the new value as the global property value
-            gUserDir = userDir;
-            int len = userDir.length();
-            StringBuffer buffer = new StringBuffer(len*3);
-            char ch, separator = java.io.File.separatorChar;
-            boolean escaped = false;
-            // for each character in the property value, check whether it
-            // needs escaping.
-            for (int i = 0; i < len; i++) {
-                ch = userDir.charAt(i);
-                if (ch == separator && ch != '/') {
-                    buffer.append('/');
-                    escaped = true;
-                }
-                else if (ch < 128 && gNeedEscaping[ch]) {
+        if (userDir.equals(gUserDir)) {
+            return gEscapedUserDir;
+        }
+
+        // record the new value as the global property value
+        gUserDir = userDir;
+
+        char separator = java.io.File.separatorChar;
+        userDir = userDir.replace(separator, '/');
+
+        int len = userDir.length(), ch;
+        StringBuffer buffer = new StringBuffer(len*3);
+        buffer.append("file://");
+        // change C:/blah to /C:/blah
+        if (len >= 2 && userDir.charAt(1) == ':') {
+            ch = Character.toUpperCase(userDir.charAt(0));
+            if (ch >= 'A' && ch <= 'Z') {
+                buffer.append('/');
+            }
+        }
+
+        // for each character in the path
+        int i = 0;
+        for (; i < len; i++) {
+            ch = userDir.charAt(i);
+            // if it's not an ASCII character, break here, and use UTF-8 encoding
+            if (ch >= 128)
+                break;
+            if (gNeedEscaping[ch]) {
+                buffer.append('%');
+                buffer.append(gAfterEscaping1[ch]);
+                buffer.append(gAfterEscaping2[ch]);
+                // record the fact that it's escaped
+            }
+            else {
+                buffer.append((char)ch);
+            }
+        }
+
+        // we saw some non-ascii character
+        if (i < len) {
+            // get UTF-8 bytes for the remaining sub-string
+            byte[] bytes = null;
+            byte b;
+            try {
+                bytes = userDir.substring(i).getBytes("UTF-8");
+            } catch (java.io.UnsupportedEncodingException e) {
+                // should never happen
+                return userDir;
+            }
+            len = bytes.length;
+
+            // for each byte
+            for (i = 0; i < len; i++) {
+                b = bytes[i];
+                // for non-ascii character: make it positive, then escape
+                if (b < 0) {
+                    ch = b + 256;
                     buffer.append('%');
-                    buffer.append(gAfterEscaping1[ch]);
-                    buffer.append(gAfterEscaping2[ch]);
-                    // record the fact that it's escaped
-                    escaped = true;
+                    buffer.append(gHexChs[ch >> 4]);
+                    buffer.append(gHexChs[ch & 0xf]);
+                }
+                else if (gNeedEscaping[b]) {
+                    buffer.append('%');
+                    buffer.append(gAfterEscaping1[b]);
+                    buffer.append(gAfterEscaping2[b]);
                 }
                 else {
-                    buffer.append(ch);
+                    buffer.append((char)b);
                 }
             }
-            
-            // only create a new string if some characters were escaped,
-            // otherwise use the property value.
-            gEscapedUserDir = escaped ? buffer.toString() : userDir;
         }
+
+        gEscapedUserDir = buffer.toString();
+
         return gEscapedUserDir;
     }
-    
+
     /**
      * Expands a system id and returns the system id as a URI, if
      * it can be expanded. A return value of null means that the
@@ -1342,13 +1394,7 @@ public class XMLEntityManager
         try {
             if (baseSystemId == null || baseSystemId.length() == 0 ||
                 baseSystemId.equals(systemId)) {
-                String dir;
-                try {
-                    dir = fixURI(getUserDir());
-                }
-                catch (SecurityException se) {
-                    dir = "";
-                }
+                String dir = getUserDir();
                 if (!dir.endsWith("/")) {
                     dir = dir + "/";
                 }
@@ -1359,13 +1405,7 @@ public class XMLEntityManager
                     base = new URI(fixURI(baseSystemId));
                 }
                 catch (URI.MalformedURIException e) {
-                    String dir;
-                    try {
-                        dir = fixURI(getUserDir());
-                    }
-                    catch (SecurityException se) {
-                        dir = "";
-                    }
+                    String dir = getUserDir();
                     if (baseSystemId.indexOf(':') != -1) {
                         // for xml schemas we might have baseURI with
                         // a specified drive
