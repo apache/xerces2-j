@@ -18,6 +18,7 @@
    <li><link anchor='DocumentTracer'>xni.DocumentTracer</link></li>
    <li><link anchor='Writer'>xni.Writer</link></li>
    <li><link anchor='PSVIWriter'>xni.PSVIWriter</link></li>
+   <li><link anchor='XMLGrammarBuilder'>xni.XMLGrammarBuilder</link></li>
   </ul>
   <ul>
    <li><link anchor='PassThroughFilter'>xni.PassThroughFilter</link></li>
@@ -206,6 +207,52 @@
 </p>
 </s2>
 
+ <anchor name='XMLGrammarBuilder'/>
+ <s2 title='Sample xni.XMLGrammarBuilder'>
+  <p>
+    This sample illustrates how to use Xerces's grammar
+    preparsing functionality to build a compiled representation of a grammar
+    and use it to parse instance documents.  It is also meant
+    to replace the DOM ASBuilder sample (which
+    implements the DOM AS interfaces which have been discontinued by W3C).  It
+    handles both XML Schema grammars and DTD external subsets.
+  </p>
+  <s3 title='usage'>
+   <source>java xni.XMLGrammarBuilder [-p config_file] -d uri ... | [-f|-F] -a uri ... [-i uri ...]</source>
+  </s3>
+  <s3 title='options'>
+   <table>
+    <tr><th>Option</th><th>Description</th></tr>
+    <tr><td>-p name</td><td>Select parser configuration by name.</td></tr>
+    <tr><td>-d</td><td>URI of file(s) to be compiled as DTD external
+        subsets</td></tr>
+    <tr><td>-a</td><td>URI of file(s) to be compiled as XML Schema grammars</td></tr>
+     <tr>
+     <td>-f  | -F</td>
+     <td>
+      Turn on/off Schema full checking when validating instances against schemas.<br/>
+      <strong>NOTE:</strong> Requires use of -a and not supported by all parsers.
+     </td>
+    </tr>
+    <tr><td>-i</td><td>List of instance documents to validate.  The preparsed grammars will be
+        used first, but if a reference is made to a non-preparsed grammar,
+        it will be resolved.</td></tr>
+   </table>
+  </s3>
+  <s3 title='notes'>
+   <p>
+    No two schema grammars preparsed by this class should share the
+    same targetNamespace (or have no targetNamespace).  If this condition is
+    not meant, results are undefined--but, very likely, one of the schemas
+    will simply be ignored.
+    </p>
+   <p>
+    Not all features are supported by different parser configurations.
+    Particularly, if a parser configuration is specified, it would be wise to
+    ensure it supports the kind of grammars to be preparsed.
+   </p>
+  </s3>
+ </s2>
 
  <anchor name='PassThroughFilter'/>
  <s2 title='Sample xni.PassThroughFilter'>
