@@ -67,11 +67,15 @@ import java.lang.*;
  * Part One: Format of Internet Message Bodies. Reference
  * 1996 Available at: http://www.ietf.org/rfc/rfc2045.txt
  * This class is used by XML Schema binary format validation
- *
+ * 
+ * This implementation does not encode/decode streaming 
+ * data. You need the data that you will encode/decode
+ * already on a byte arrray.
+ * 
  * @author Jeffrey Rodriguez
- * @version     $Id$
+ * @author Sandy Gao
+ * @version $Id$
  */
-
 public final class  Base64 {
     static private final int  BASELENGTH         = 255;
     static private final int  LOOKUPLENGTH       = 64;
@@ -89,76 +93,96 @@ public final class  Base64 {
 
     static {
 
-        for (int i = 0; i<BASELENGTH; i++ ) {
+        for (int i = 0; i<BASELENGTH; i++) {
             base64Alphabet[i] = -1;
         }
-        for ( int i = 'Z'; i >= 'A'; i-- ) {
+        for (int i = 'Z'; i >= 'A'; i--) {
             base64Alphabet[i] = (byte) (i-'A');
         }
-        for ( int i = 'z'; i>= 'a'; i--) {
+        for (int i = 'z'; i>= 'a'; i--) {
             base64Alphabet[i] = (byte) ( i-'a' + 26);
         }
 
-        for ( int i = '9'; i >= '0'; i--) {
+        for (int i = '9'; i >= '0'; i--) {
             base64Alphabet[i] = (byte) (i-'0' + 52);
         }
 
         base64Alphabet['+']  = 62;
         base64Alphabet['/']  = 63;
 
-        for (int i = 0; i<=25; i++ )
+        for (int i = 0; i<=25; i++)
             lookUpBase64Alphabet[i] = (byte) ('A'+i );
 
-        for (int i = 26,  j = 0; i<=51; i++, j++ )
+        for (int i = 26,  j = 0; i<=51; i++, j++)
             lookUpBase64Alphabet[i] = (byte) ('a'+ j );
 
-        for (int i = 52,  j = 0; i<=61; i++, j++ )
+        for (int i = 52,  j = 0; i<=61; i++, j++)
             lookUpBase64Alphabet[i] = (byte) ('0' + j );
         lookUpBase64Alphabet[62] = (byte) '+';
         lookUpBase64Alphabet[63] = (byte) '/';
 
     }
 
-    protected static boolean isWS (byte octect) {
-        return (octect == 0x20 || octect == 0xd || octect == 0xa || octect == 0x9);
+    protected static boolean isWhiteSpace (byte octect) {
+        return(octect == 0x20 || octect == 0xd || octect == 0xa || octect == 0x9);
     }
 
     protected static boolean isPad (byte octect) {
-        return (octect == PAD);
+        return(octect == PAD);
     }
 
     protected static boolean isData (byte octect) {
-        return (base64Alphabet[octect] != -1);
+        return( base64Alphabet[octect] != -1);
     }
 
-    public static boolean isBase64( String isValidString ){
+    public static boolean isBase64( String isValidString ) {
         return( isArrayByteBase64( isValidString.getBytes()));
     }
 
 
     public static boolean isBase64( byte octect ) {
-        //shall we ignore white space? JEFF??
-        return ( isWS(octect) || isPad(octect) || isData(octect));
+        return( isWhiteSpace(octect) || isPad(octect) || isData(octect));
     }
 
 
-    protected static int removeWS (byte[] arrayOctect) {
-        if (arrayOctect == null || arrayOctect.length == 0)
-            return 0;
-
-        int len = arrayOctect.length, i=0, j=0;
-        for (i=0,j=0; i<len; i++) {
-            if (!isWS(arrayOctect[i])) {
-                if (i>j)
-                    arrayOctect[j] = arrayOctect[i];
-                j++;
-            }
+    /**
+     * remove WhiteSpace from MIME containing encoded Base64
+     * data.
+     * e.g.
+     * "   sdffferererrereresfsdfsdfsdff\n\r
+     * iiiiiiiiierejrlkwjerklwjerwerwr==\n\r"
+     * 
+     * @param data
+     * @return 
+     */
+    public static synchronized byte[] removeWhiteSpace( byte[] data ) {
+        int newSize = 0;
+        int len     = data.length;
+        int i =0;
+        for (; i<data.length; i++) {
+            if (!isWhiteSpace( data[i] ))
+                newSize++;
         }
-        return j;
+
+        if (newSize == 0)
+            return data;//return input array since no whiteSpace
+
+
+        byte[] arrayWithoutSpaces = new byte[newSize];//Allocate new array without whiteSpace
+
+        i=0;
+        for (int j =0;i<data.length;i++) {
+            if (isWhiteSpace( data[i] ))
+                continue;
+            else
+                arrayWithoutSpaces[j++] = data[i];//copy non-WhiteSpace 
+        }
+        return arrayWithoutSpaces;
+
     }
 
-    public static boolean isArrayByteBase64( byte[] arrayOctect ) {
-        return (getDataLength(arrayOctect) > 0);
+    public static synchronized boolean isArrayByteBase64( byte[] arrayOctect ) {
+        return(getDataLength(arrayOctect) > 0);
     }
 
     /**
@@ -167,14 +191,14 @@ public final class  Base64 {
      * @param binaryData Array containing binaryData
      * @return Encoded Base64 array
      */
-    public static byte[] encode( byte[] binaryData ) {
+    public static synchronized byte[] encode( byte[] binaryData ) {
         int      lengthDataBits    = binaryData.length*EIGHTBIT;
         int      fewerThan24bits   = lengthDataBits%TWENTYFOURBITGROUP;
         int      numberTriplets    = lengthDataBits/TWENTYFOURBITGROUP;
         byte     encodedData[]     = null;
 
 
-        if ( fewerThan24bits != 0 ) //data not divisible by 24 bit
+        if (fewerThan24bits != 0) //data not divisible by 24 bit
             encodedData = new byte[ (numberTriplets + 1 )*4  ];
         else // 16 or 8 bit
             encodedData = new byte[ numberTriplets*4 ];
@@ -184,10 +208,10 @@ public final class  Base64 {
         int encodedIndex = 0;
         int dataIndex   = 0;
         int i           = 0;
-        if (fDebug ) {
+        if (fDebug) {
             System.out.println("number of triplets = " + numberTriplets );
         }
-        for ( i = 0; i<numberTriplets; i++ ) {
+        for (i = 0; i<numberTriplets; i++) {
 
             dataIndex = i*3;
             b1 = binaryData[dataIndex];
@@ -222,10 +246,10 @@ public final class  Base64 {
         // form integral number of 6-bit groups
         dataIndex    = i*3;
         encodedIndex = i*4;
-        if (fewerThan24bits == EIGHTBIT ) {
+        if (fewerThan24bits == EIGHTBIT) {
             b1 = binaryData[dataIndex];
             k = (byte) ( b1 &0x03 );
-            if (fDebug ) {
+            if (fDebug) {
                 System.out.println("b1=" + b1);
                 System.out.println("b1<<2 = " + (b1>>2) );
             }
@@ -234,7 +258,7 @@ public final class  Base64 {
             encodedData[encodedIndex + 1] = lookUpBase64Alphabet[ k<<4 ];
             encodedData[encodedIndex + 2] = PAD;
             encodedData[encodedIndex + 3] = PAD;
-        } else if ( fewerThan24bits == SIXTEENBIT ) {
+        } else if (fewerThan24bits == SIXTEENBIT) {
 
             b1 = binaryData[dataIndex];
             b2 = binaryData[dataIndex +1 ];
@@ -252,153 +276,138 @@ public final class  Base64 {
         return encodedData;
     }
 
-
     /**
      * Decodes Base64 data into octects
      *
      * @param binaryData Byte array containing Base64 data
      * @return Array containind decoded data.
      */
-    public static byte[] decode( byte[] base64Data ) {
+    public static synchronized byte[] decode( byte[] base64Data ) {
+
         if (base64Data == null)
             return null;
 
-        int length = base64Data.length;
-        if ( length == 0 )
+        byte[]   normalizedBase64Data = removeWhiteSpace( base64Data );
+
+        if (normalizedBase64Data.length%FOURBYTE != 0) {
+            return null;//should be divisible by four
+        }
+
+        int      numberQuadruple    = (normalizedBase64Data.length/FOURBYTE );
+
+        if (numberQuadruple == 0)
             return null;
 
-        // remove all whitespaces
-        byte    arrayOctect[] = new byte[length];
-        System.arraycopy(base64Data,0,arrayOctect,0,length);
-        length = removeWS(arrayOctect);
-        if (length == 0 || length % FOURBYTE != 0)
-            return null;
+        byte     decodedData[]      = null;
+        byte     b1=0,b2=0,b3=0, b4=0, marker0=0, marker1=0;
+        byte     d1=0,d2=0,d3=0,d4=0;
 
-        // calculate the decoded value length
-        int numberQuadruple    = length/FOURBYTE*3;
-        if (isPad(arrayOctect[length-2]))
-            numberQuadruple -= 2;
-        else if (isPad(arrayOctect[length-1]))
-            numberQuadruple--;
 
-        byte     decodedData[]      = new byte[ numberQuadruple];
-        byte     b1=0,b2=0,b3=0,b4=0, d1=0,d2=0,d3=0,d4=0;
 
-        int decodedIndex    = 0;
-
-        boolean b3isp = false, b4isp = false;
+        // Throw away anything not in normalizedBase64Data
+        // Adjust size
         int i = 0;
+        int encodedIndex = 0;
+        int dataIndex    = 0;
+        decodedData      = new byte[ (numberQuadruple)*3];
 
-        while (i < length) {
-            // the first byte must be real data
-            d1 = arrayOctect[i];
-            if (!isData(d1))
-                return null;
-            i++;
-            // the second byte must be real data
-            d2 = arrayOctect[i];
-            if (!isData(d2))
-                return null;
-            i++;
-            // the third byte must be real data or pad
-            d3 = arrayOctect[i];
-            b3isp = isPad(d3);
-            if (!isData(d3) && !b3isp)
-                return null;
-            i++;
-            if (b3isp && (d2&0xf) != 0)
-                return null;
-            // the forth byte must be real data or pad
-            // and if the third is pad, the forth must be pad
-            d4 = arrayOctect[i];
-            b4isp = isPad(d4);
-            if (!isData(d4) && !b4isp || b3isp && !b4isp)
-                return null;
-            i++;
-            if (!b3isp && b4isp && (d3&0x3) != 0)
-                return null;
+        for (; i<numberQuadruple-1; i++) {
 
-            // if the forth byte is pad, it should be the end of the input
-            if (b4isp && i < length)
-                return null;
+            if (!isData( (d1 = normalizedBase64Data[dataIndex++]) )||  
+                !isData( (d2 = normalizedBase64Data[dataIndex++]) )||
+                !isData( (d3 = normalizedBase64Data[dataIndex++]) )||
+                !isData( (d4 = normalizedBase64Data[dataIndex++]) ))
+                return null;//if found "no data" just return null
 
-            b1 = base64Alphabet[d1];
+            b1 = base64Alphabet[d1]; 
             b2 = base64Alphabet[d2];
+            b3 = base64Alphabet[d3];
+            b4 = base64Alphabet[d4];
 
-            if ( !b4isp ) {                   //No PAD e.g 3cQl
-                b3 = base64Alphabet[d3];
-                b4 = base64Alphabet[d4];
+            decodedData[encodedIndex++] = (byte)(  b1 <<2 | b2>>4 ) ;
+            decodedData[encodedIndex++] = (byte)(((b2 & 0xf)<<4 ) |( (b3>>2) & 0xf) );
+            decodedData[encodedIndex++] = (byte)( b3<<6 | b4 ); 
+        }
 
-                decodedData[decodedIndex++] = (byte)(  b1 <<2 | b2>>4 ) ;
-                decodedData[decodedIndex++] = (byte)(((b2 & 0xf)<<4 ) |( (b3>>2) & 0xf) );
-                decodedData[decodedIndex++] = (byte)( b3<<6 | b4 );
-            } else if ( b3isp ) {             //Two PAD e.g. 3c[Pad][Pad]
-                decodedData[decodedIndex++] = (byte)(  b1 <<2 | b2>>4 ) ;
-            } else if ( b4isp ) {    //One PAD e.g. 3cQ[Pad]
-                b3 = base64Alphabet[d3];
 
-                decodedData[decodedIndex++] = (byte)(  b1 <<2 | b2>>4 );
-                decodedData[decodedIndex++] = (byte)(((b2 & 0xf)<<4 ) |( (b3>>2) & 0xf) );
+        if (!isData( (d1 = normalizedBase64Data[dataIndex++]) ) ||  
+            !isData( (d2 = normalizedBase64Data[dataIndex++]) )) {
+            return null;//if found "no data" just return null
+        }
+
+
+        b1 = base64Alphabet[d1]; 
+        b2 = base64Alphabet[d2];
+
+        d3 = normalizedBase64Data[dataIndex++];
+        d4 = normalizedBase64Data[dataIndex++];
+        if (!isData( (d3 ) ) ||
+            !isData( (d4 ) )) {//Check if they are PAD characters
+            if (isPad( d3 ) && isPad( d4)) {               //Two PAD e.g. 3c[Pad][Pad]
+                if ((b2 & 0xf) != 0)//last 4 bits should be zero
+                    return null;
+                byte[] tmp = new byte[ i*3 + 1 ];
+                System.arraycopy( decodedData, 0, tmp, 0, i*3 ); 
+                tmp[encodedIndex]   = (byte)(  b1 <<2 | b2>>4 ) ; 
+                return tmp;
+            } else if (!isPad( d3) && isPad(d4)) {               //One PAD  e.g. 3cQ[Pad]
+                b3 = base64Alphabet[ d3 ];
+                if ((b3 & 0x3 ) != 0)//last 2 bits should be zero
+                    return null;
+                byte[] tmp = new byte[ i*3 + 2 ];
+                System.arraycopy( decodedData, 0, tmp, 0, i*3 );
+                tmp[encodedIndex++] = (byte)(  b1 <<2 | b2>>4 );
+                tmp[encodedIndex]   = (byte)(((b2 & 0xf)<<4 ) |( (b3>>2) & 0xf) );
+                return tmp;
+            } else {
+                return null;//an error  like "3c[Pad]r", "3cdX", "3cXd", "3cXX" where X is non data 
             }
+        } else { //No PAD e.g 3cQl
+            b3 = base64Alphabet[ d3 ];
+            b4 = base64Alphabet[ d4 ];
+            decodedData[encodedIndex++] = (byte)(  b1 <<2 | b2>>4 ) ;
+            decodedData[encodedIndex++] = (byte)(((b2 & 0xf)<<4 ) |( (b3>>2) & 0xf) );
+            decodedData[encodedIndex++] = (byte)( b3<<6 | b4 ); 
+
         }
 
         return decodedData;
     }
 
-    static public int getDataLength (byte[] base64Data) {
+
+    /**
+     * returns length of decoded data given an
+     * array containing encoded data.
+     * WhiteSpace removing is done if data array not
+     * valid.
+     * 
+     * @param base64Data
+     * @return         a 0 would be return if not
+     */
+    static public synchronized int getDecodedDataLength( byte[] base64Data ) {
+
         if (base64Data == null)
             return 0;
 
-        int length = base64Data.length;
-        if ( length == 0 )
+        //byte[] normalizedBase64Data =  removeWhiteSpace( base64Data );//Remove any whiteSpace 
+        byte[] decodedData = null;
+
+        if ((decodedData = decode( base64Data ) ) == null)//decode could return a null byte array
             return 0;
 
-        // remove all whitespaces
-        byte    arrayOctect[] = new byte[length];
-        System.arraycopy(base64Data,0,arrayOctect,0,length);
-        length = removeWS(arrayOctect);
-        if ( length == 0 )
-            return 0;
-        if (length % FOURBYTE != 0)
-            return -1;
+        return decodedData.length;
+    }
 
-        byte d2=0, d3=0;
-        boolean b3isp = false, b4isp = false;
-        int i = 0;
-
-        while (i < length) {
-            // the first byte must be real data
-            if (!isData(arrayOctect[i]))
-                return -1;
-            i++;
-            // the second byte must be real data
-            d2 = arrayOctect[i];
-            if (!isData(d2))
-                return -1;
-            i++;
-            // the third byte must be real data or pad
-            d3 = arrayOctect[i];
-            b3isp = isPad(d3);
-            if (!isData(d3) && !b3isp)
-                return -1;
-            if (b3isp && (d2&0xf) != 0)
-                return -1;
-            i++;
-            // the forth byte must be real data or pad
-            // and if the third is pad, the forth must be pad
-            b4isp = isPad(arrayOctect[i]);
-            if (!isData(arrayOctect[i]) && !b4isp || b3isp && !b4isp)
-                return -1;
-            i++;
-            if (!b3isp && b4isp && (d3&0x3) != 0)
-                return -1;
-
-            // if the forth byte is pad, it should be the end of the input
-            if (b4isp && i < length)
-                    return -1;
-        }
-
-        // adjust number according to pad
-        return length/FOURBYTE*3 - (b3isp?2:(b4isp?1:0));
+    /**
+     * returns length of decoded data given an
+     * array containing encoded data.
+     * WhiteSpace removing is done if any.
+     * 
+     * @param base64Data
+     * @return 
+     * @deprecated getDecodedDataLength
+     */
+    static public synchronized int getDataLength (byte[] base64Data) {
+        return getDecodedDataLength( base64Data );
     }
 }
