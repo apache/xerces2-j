@@ -478,8 +478,9 @@ public class DocumentImpl
      * is probably short in most cases, it might not be worth spending
      * the space. ***** REVISIT WHEN WE HAVE MORE EXPERIENCE.
      */
-    class LEntry implements Serializable
-    {
+    class LEntry implements Serializable {
+
+        private static final long serialVersionUID = 3258416144514626360L;
         String type;
         EventListener listener;
         boolean useCapture;
@@ -862,8 +863,8 @@ public class DocumentImpl
      * (two values, the Attr node affected (if any) and its previous 
      * string value. Simple struct, no methods.
      */
-    class EnclosingAttr implements Serializable
-    {
+    class EnclosingAttr implements Serializable {
+        private static final long serialVersionUID = 3257001077260759859L;
         AttrImpl node;
         String oldvalue;
     }
