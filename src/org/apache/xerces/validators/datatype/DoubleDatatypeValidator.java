@@ -132,7 +132,7 @@ public class DoubleDatatypeValidator extends AbstractNumericFacetValidator {
             try {
 
                 for ( int i = 0; i < enumeration.size(); i++ ) {
-                    fEnumeration[i] = new Double( (String)enumeration.elementAt(i));
+                    fEnumeration[i] = dValueOf((String)enumeration.elementAt(i));
                     ((DoubleDatatypeValidator)fBaseValidator).validate((String)enumeration.elementAt(i), null);
 
                 }
