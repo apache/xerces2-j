@@ -777,15 +777,17 @@ public class XMLDocumentScanner
 
         // spaces
         if (!fEntityScanner.skipSpaces()) {
-            // REVISIT: report error
-            throw new SAXException("spaces expected after <!DOCTYPE");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "MSG_SPACE_REQUIRED_BEFORE_ROOT_ELEMENT_TYPE_IN_DOCTYPEDECL",
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // root element name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            // REVISIT: report error
-            throw new SAXException("root element name expected");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "MSG_ROOT_ELEMENT_TYPE_REQUIRED",
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // external id
@@ -795,57 +797,67 @@ public class XMLDocumentScanner
         if (spaces) {
             if (fEntityScanner.skipString("SYSTEM")) {
                 if (!fEntityScanner.skipSpaces()) {
-                    // REVISIT: report error
-                    throw new SAXException("spaces required after SYSTEM");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "SpaceRequiredAfterSYSTEM",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 int quote = fEntityScanner.peekChar();
                 if (quote != '\'' && quote != '"') {
-                    // REVISIT: report error
-                    throw new SAXException("expected quote");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "QuoteRequiredInSystemID",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 fEntityScanner.scanChar();
                 // REVISIT: do right
                 fEntityScanner.scanAttContent(quote, fString);
                 systemId = fString.toString();
                 if (!fEntityScanner.skipChar(quote)) {
-                    // REVISIT: report error
-                    throw new SAXException("expected quote");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "SystemIDUnterminated",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
             }
             else if (fEntityScanner.skipString("PUBLIC")) {
                 if (!fEntityScanner.skipSpaces()) {
-                    // REVISIT: report error
-                    throw new SAXException("spaces required after PUBLIC");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                             "SpaceRequiredAfterPUBLIC",
+                             null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 int quote = fEntityScanner.peekChar();
                 if (quote != '\'' && quote != '"') {
-                    // REVISIT: report error
-                    throw new SAXException("expected quote");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "QuoteRequiredInPublicID",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 fEntityScanner.scanChar();
                 // REVISIT: do right
                 fEntityScanner.scanAttContent(quote, fString);
                 publicId = fString.toString();
                 if (!fEntityScanner.skipChar(quote)) {
-                    // REVISIT: report error
-                    throw new SAXException("expected quote");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "PublicIDUnterminated",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 if (!fEntityScanner.skipSpaces()) {
-                    // REVISIT: report error
-                    throw new SAXException("spaces required between publicId and systemId");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "SpaceRequiredBetweenPublicAndSystem",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 quote = fEntityScanner.peekChar();
                 if (quote != '\'' && quote != '"') {
-                    // REVISIT: report error
-                    throw new SAXException("expected quote");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "QuoteRequiredInSystemID",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 fEntityScanner.scanChar();
                 // REVISIT: do right
                 fEntityScanner.scanAttContent(quote, fString);
                 systemId = fString.toString();
                 if (!fEntityScanner.skipChar(quote)) {
-                    // REVISIT: report error
-                    throw new SAXException("expected quote");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "SystemIDUnterminated",
+                                               null, 
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
             }
             fEntityScanner.skipSpaces();
@@ -863,8 +875,10 @@ public class XMLDocumentScanner
         // end
         if (!fEntityScanner.skipChar('>')) {
             System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
-            // REVISIT: report error
-            throw new SAXException("expected '>' to close doctype");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "DoctypedeclUnterminated",
+                                       new Object[]{name},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // call handler
@@ -931,15 +945,19 @@ public class XMLDocumentScanner
             else if (c == '/') {
                 fEntityScanner.scanChar();
                 if (!fEntityScanner.skipChar('>')) {
-                    // REVISIT: report error
-                    throw new SAXException("expected '>'");
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "ElementUnterminated",
+                                               new Object[]{rawname},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 empty = true;
                 break;
             }
             else if (!XMLChar.isNameStart(c)) {
-                // REVISIT: report error
-                throw new SAXException("expected attribute name, found '"+(char)c+'\'');
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "ElementUnterminated",
+                                           new Object[]{rawname},
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
 
             // attributes
@@ -999,16 +1017,20 @@ public class XMLDocumentScanner
         // equals
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
-            // REVISIT: report error
-            throw new SAXException("expected '='");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "EqRequiredInAttribute",
+                                       new Object[]{fCurrentElement.rawname, fAttributeQName.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fEntityScanner.skipSpaces();
 
         // quote
         int quote = fEntityScanner.peekChar();
         if (quote != '\'' && quote != '"') {
-            // REVISIT: report error
-            throw new SAXException("expected open quote, found '"+(char)quote+'\'');
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "OpenQuoteExpected",
+                                       new Object[]{fAttributeQName.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fEntityScanner.scanChar();
 
@@ -1034,8 +1056,10 @@ public class XMLDocumentScanner
         // quote
         int cquote = fEntityScanner.scanChar();
         if (cquote != cquote) {
-            // REVISIT: report error
-            throw new SAXException("expected close quote");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "CloseQuoteExpected",
+                                       new Object[]{fAttributeQName.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
@@ -1095,8 +1119,10 @@ public class XMLDocumentScanner
         // end
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('>')) {
-            // REVISIT: report error
-            throw new SAXException("expected '>'");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "ETagUnterminated",
+                                       new Object[]{fElementQName.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // handle end element
@@ -1139,14 +1165,16 @@ public class XMLDocumentScanner
         // name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            // REVISIT: report error
-            throw new SAXException("entity name expected");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "NameRequiredInReference",
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // end
         if (!fEntityScanner.skipChar(';')) {
-            // REVISIT: report error
-            throw new SAXException("entity reference must end with semi-colon");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "SemicolonRequiredInReference",
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // handle built-in entities
@@ -1235,8 +1263,10 @@ public class XMLDocumentScanner
             element.prefix = fSymbolTable.addSymbol("");
         }
         if (element.prefix != null && element.uri == null) {
-            // REVISIT: report error
-            throw new SAXException("element prefix \""+element.prefix+"\" not bound");
+            fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                       "ElementPrefixUnbound",
+                                       new Object[]{element.prefix, element.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // bind the attributes
@@ -1253,8 +1283,10 @@ public class XMLDocumentScanner
                 if (fAttributeQName.prefix != null) {
                     fAttributeQName.uri = fNamespaceSupport.getURI(fAttributeQName.prefix);
                     if (fAttributeQName.uri == null) {
-                        // REVISIT: report error
-                        throw new SAXException("attribute prefix \""+fAttributeQName.prefix+"\" is not bound");
+                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                                   "AttributePrefixUnbound",
+                                                   new Object[]{fAttributeQName.prefix, fAttributeQName.rawname},
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                 }
                 else {
@@ -1285,8 +1317,10 @@ public class XMLDocumentScanner
         // make sure the elements match
         QName startElement = (QName)fElementStack.pop();
         if (element.rawname != startElement.rawname) {
-            // REVISIT: report error
-            throw new SAXException("end tag doesn't match start tag");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "ETagRequired",
+                                       new Object[]{startElement.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // bind namespaces
@@ -1667,8 +1701,9 @@ public class XMLDocumentScanner
                         else if (fEntityScanner.skipChar('!')) {
                             if (fEntityScanner.skipChar('-')) {
                                 if (!fEntityScanner.skipChar('-')) {
-                                    // REVISIT: report error
-                                    throw new SAXException("comment must start with \"<!--\"");
+                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                               "InvalidCommentStart",
+                                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                                 }
                                 setScannerState(SCANNER_STATE_COMMENT);
                                 again = true;
@@ -1678,8 +1713,9 @@ public class XMLDocumentScanner
                                 again = true;
                             }
                             else {
-                                // REVISIT: report error
-                                throw new SAXException("expected comment or doctype");
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MarkupNotRecognizedInProlog",
+                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
                         }
                         else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
@@ -1688,8 +1724,9 @@ public class XMLDocumentScanner
                             return true;
                         }
                         else {
-                            // REVISIT: report error
-                            throw new SAXException("expected comment, pi, doctype, or root element");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "MarkupNotRecognizedInProlog",
+                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                         break;
                     }
@@ -1705,8 +1742,9 @@ public class XMLDocumentScanner
                     }
                     case SCANNER_STATE_DOCTYPE: {
                         if (fSeenDoctypeDecl) {
-                            // REVISIT: report error
-                            throw new SAXException("already seen doctype");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "AlreadySeenDoctype",
+                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                         fSeenDoctypeDecl = true;
                         scanDoctypeDecl();
@@ -1714,10 +1752,14 @@ public class XMLDocumentScanner
                         break;
                     }
                     case SCANNER_STATE_CONTENT: {
-                        // REVISIT: report error
-                        throw new SAXException("content not allowed in prolog");
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "ContentIllegalInProlog",
+                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     case SCANNER_STATE_REFERENCE: {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "ReferenceIllegalInProlog",
+                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         // REVISIT: report error
                         throw new SAXException("reference not allowed in prolog");
                     }
@@ -1725,8 +1767,10 @@ public class XMLDocumentScanner
             } while (complete || again);
 
             if (fEntityScanner.scanChar() != '<') {
-                throw new SAXException("expecting root element");
-            }
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "RootElementRequired",
+                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+           }
             setScannerState(SCANNER_STATE_ROOT_ELEMENT);
             setDispatcher(fContentDispatcher);
 
@@ -1839,8 +1883,9 @@ public class XMLDocumentScanner
                         else if (fEntityScanner.skipChar('!')) {
                             if (fEntityScanner.skipChar('-')) {
                                 if (!fEntityScanner.skipChar('-')) {
-                                    // REVISIT: report error
-                                    throw new SAXException("comment must start with \"<!--\"");
+                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                               "InvalidCommentStart",
+                                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                                 }
                                 setScannerState(SCANNER_STATE_COMMENT);
                                 again = true;
@@ -1853,8 +1898,9 @@ public class XMLDocumentScanner
                                 setScannerState(SCANNER_STATE_DOCTYPE);
                             }
                             else {
-                                // REVISIT: report error
-                                throw new SAXException("expected comment, pi, or element");
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MarkupNotRecognizedInContent",
+                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
                         }
                         else if (fEntityScanner.skipChar('/')) {
@@ -1870,14 +1916,16 @@ public class XMLDocumentScanner
                             setScannerState(SCANNER_STATE_CONTENT);
                         }
                         else {
-                            // REVISIT: report error
-                            throw new SAXException("expected comment, pi, doctype, or root element");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "MarkupNotRecognizedInContent",
+                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                         break;
                     }
                     case SCANNER_STATE_DOCTYPE: {
-                        // REVISIT: report error
-                        throw new SAXException("doctype not allowed in content");
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "DoctypeIllegalInContent",
+                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                 }
             } while (complete || again);
@@ -1948,8 +1996,9 @@ public class XMLDocumentScanner
                             }
                         }
                         else {
-                            //REVISIT: report error
-                            throw new SAXException("not recognized in trailing Misc");
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "MarkupNotRecognizedInMisc",
+                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                     }
     

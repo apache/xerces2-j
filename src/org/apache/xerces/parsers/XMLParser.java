@@ -151,7 +151,9 @@ public abstract class XMLParser
         fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/entity-manager",
                         fEntityManager);
         fErrorReporter = new XMLErrorReporter( fEntityManager.getEntityScanner() );
-        fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, new XMLMessageFormatter());
+        XMLMessageFormatter xmft = new XMLMessageFormatter();
+        fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
+        fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
         fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/error-reporter",
                         fErrorReporter);
 
