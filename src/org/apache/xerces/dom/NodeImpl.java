@@ -1385,7 +1385,7 @@ public abstract class NodeImpl
 
     final void isNormalized(boolean value) {
         // See if flag should propagate to parent.
-        if (!value && !isNormalized() && ownerNode != null) {
+        if (!value && isNormalized() && ownerNode != null) {
             ownerNode.isNormalized(false);
         }
         flags = (short) (value ? flags & ~UNNORMALIZED : flags | UNNORMALIZED);
