@@ -87,8 +87,6 @@ import java.util.*;
  */
 public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     private XMLReader xmlReader;
-    private boolean validating = false;
-    private boolean namespaceAware = false;
     private String schemaLanguage = null;     // null means DTD
     
     /**
@@ -102,32 +100,29 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
         // use the right ClassLoader
         xmlReader = new org.apache.xerces.parsers.SAXParser();
 
-        // Validation
-        validating = spf.isValidating();
-
         // If validating, provide a default ErrorHandler that prints
         // validation errors with a warning telling the user to set an
         // ErrorHandler.
-        if (validating) {
+        if (spf.isValidating()) {
             xmlReader.setErrorHandler(new DefaultValidationErrorHandler());
         }
 
         xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
-                             Constants.VALIDATION_FEATURE, validating);
+                             Constants.VALIDATION_FEATURE, spf.isValidating());
 
-        // "namespaceAware" == SAX Namespaces feature
+        // JAXP "namespaceAware" == SAX Namespaces feature
         // Note: there is a compatibility problem here with default values:
         // JAXP default is false while SAX 2 default is true!
-        namespaceAware = spf.isNamespaceAware();
-        String namespaces = "http://xml.org/sax/features/namespaces";
-        xmlReader.setFeature(namespaces, namespaceAware);
+        xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
+                             Constants.NAMESPACES_FEATURE,
+                             spf.isNamespaceAware());
 
-        // SAX "namespaces" and "namespace-prefixes" features must not both
-        // be false as specified by SAX
-        if (namespaceAware == false) {
-            String prefixes = "http://xml.org/sax/features/namespace-prefixes";
-            xmlReader.setFeature(prefixes, true);
-        }
+        // SAX "namespaces" and "namespace-prefixes" features should not
+        // both be false.  We make them opposite for backward compatibility
+        // since JAXP 1.0 apps may want to receive xmlns* attributes.
+        xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
+                             Constants.NAMESPACE_PREFIXES_FEATURE,
+                             !spf.isNamespaceAware());
 
         setFeatures(features);
     }
@@ -166,11 +161,21 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     }
 
     public boolean isNamespaceAware() {
-        return namespaceAware;
+        try {
+            return xmlReader.getFeature(Constants.SAX_FEATURE_PREFIX +
+                                        Constants.NAMESPACES_FEATURE);
+        } catch (SAXException x) {
+            throw new IllegalStateException(x.getMessage());
+        }
     }
 
     public boolean isValidating() {
-        return validating;
+        try {
+            return xmlReader.getFeature(Constants.SAX_FEATURE_PREFIX +
+                                        Constants.VALIDATION_FEATURE);
+        } catch (SAXException x) {
+            throw new IllegalStateException(x.getMessage());
+        }
     }
 
     /**
@@ -184,15 +189,11 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
             // JAXP 1.2 support
             if (DocumentBuilderImpl.W3C_XML_SCHEMA.equals(value)) {
                 schemaLanguage = DocumentBuilderImpl.W3C_XML_SCHEMA;
-                xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
-                                     Constants.VALIDATION_FEATURE, validating);
                 xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
                                      Constants.SCHEMA_VALIDATION_FEATURE,
                                      true);
             } else if (value == null) {
                 schemaLanguage = null;
-                xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
-                                     Constants.VALIDATION_FEATURE, validating);
                 xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
                                      Constants.SCHEMA_VALIDATION_FEATURE,
                                      false);
