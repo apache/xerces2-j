@@ -370,7 +370,7 @@ public class DOMWriter {
                              "usage: java dom.DOMWriter (options) uri ...","",
                              "options:",
                              "  -n | -N  Turn on/off namespace [default=on]",
-                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -c       Canonical XML output.",
