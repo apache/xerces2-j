@@ -57,6 +57,10 @@
 
 package org.apache.xerces.impl.dv;
 
+import java.util.ResourceBundle;
+import java.util.PropertyResourceBundle;
+import java.util.MissingResourceException;
+
 /**
  * Base class for datatype exceptions. For DTD types, the exception can be
  * created from an error message. For Schema types, it needs an error code
@@ -102,5 +106,36 @@ public class DatatypeException extends Exception {
      */
     public Object[] getArgs() {
         return args;
+    }
+    
+    /**
+     * Overrides this method to get the formatted&localized error message.
+     * 
+     * REVISIT: the system locale is used to load the property file.
+     *          do we want to allow the appilcation to specify a
+     *          different locale?
+     */
+    public String getMessage() {
+        ResourceBundle resourceBundle = null;
+        resourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages");
+        if (resourceBundle == null)
+            throw new MissingResourceException("Property file not found!", "org.apache.xerces.impl.msg.XMLSchemaMessages", key);
+
+        String msg = resourceBundle.getString(key);
+        if (msg == null) {
+            msg = resourceBundle.getString("BadMessageKey");
+            throw new MissingResourceException(msg, "org.apache.xerces.impl.msg.XMLSchemaMessages", key);
+        }
+
+        if (args != null) {
+            try {
+                msg = java.text.MessageFormat.format(msg, args);
+            } catch (Exception e) {
+                msg = resourceBundle.getString("FormatFailed");
+                msg += " " + resourceBundle.getString(key);
+            }
+        } 
+
+        return msg;
     }
 }
