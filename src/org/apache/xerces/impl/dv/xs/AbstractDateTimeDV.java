@@ -91,8 +91,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     //CCYY, MM, DD, h, m, s, ms + timeZone
     protected final static int TOTAL_SIZE = 8;
 
-    //date obj size for gMonth datatype (without time zone): --09--
-    protected final static int MONTH_SIZE = 6;
+    //date obj size for gMonth datatype (without time zone): --09
+    protected final static int MONTH_SIZE = 4;
 
     //date obj must have at least 6 chars after year (without time zone): "-MM-DD"
     private final static int YEARMONTH_SIZE = 7;

@@ -88,7 +88,7 @@ public class MonthDV extends AbstractDateTimeDV {
     /**
      * Parses, validates and computes normalized version of gMonth object
      *
-     * @param str    The lexical representation of gMonth object --MM--
+     * @param str    The lexical representation of gMonth object --MM
      *               with possible time zone Z or (-),(+)hh:mm
      * @param date   uninitialized date object
      * @return normalized date representation
@@ -96,7 +96,6 @@ public class MonthDV extends AbstractDateTimeDV {
      */
     protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
 
-        //REVISIT: change --MM-- to --MM
         resetBuffer(str);
 
         //create structure to hold an object
@@ -114,9 +113,6 @@ public class MonthDV extends AbstractDateTimeDV {
         int stop = fStart +4;
         date[M]=parseInt(fStart+2,stop);
 
-        if (fBuffer.charAt(stop++)!='-' || fBuffer.charAt(stop)!='-') {
-            throw new SchemaDateTimeException("Invalid format for gMonth: "+str);
-        }
         if ( MONTH_SIZE<fEnd ) {
             int sign = findUTCSign(MONTH_SIZE, fEnd);
             if ( sign<0 ) {
@@ -181,7 +177,7 @@ public class MonthDV extends AbstractDateTimeDV {
      * Converts month object representation to String
      *
      * @param date   month object
-     * @return lexical representation of month: --MM-- with an optional time zone sign
+     * @return lexical representation of month: --MM with an optional time zone sign
      */
     protected String dateToString(int[] date) {
 
@@ -189,8 +185,6 @@ public class MonthDV extends AbstractDateTimeDV {
         message.append('-');
         message.append('-');
         message.append(date[M]);
-        message.append('-');
-        message.append('-');
         message.append((char)date[utc]);
         return message.toString();
     }
