@@ -525,6 +525,12 @@ public class XMLDocumentFragmentScannerImpl
 
         super.startEntity(name, identifier, encoding);
 
+        // WFC:  entity declared in external subset in standalone doc
+        if(fStandalone && fEntityManager.isEntityDeclInExternalSubset(name)) {
+            reportFatalError("MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
+                new Object[]{name});
+        }
+
         // call handler
         if (fDocumentHandler != null && !fScanningAttribute) {
             if (!name.equals("[xml]")) {

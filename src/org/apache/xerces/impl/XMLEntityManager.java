@@ -297,6 +297,10 @@ public class XMLEntityManager
      */
     protected boolean fStandalone;
 
+    // are the entities being parsed in the external subset?
+    // NOTE:  this *is not* the same as whether they're external entities!
+    protected boolean fInExternalSubset = false;
+
     // handlers
 
     /** Entity handler. */
@@ -400,7 +404,7 @@ public class XMLEntityManager
      */
     public void addInternalEntity(String name, String text) {
         if (!fEntities.containsKey(name)) {
-            Entity entity = new InternalEntity(name, text);
+            Entity entity = new InternalEntity(name, text, fInExternalSubset);
             fEntities.put(name, entity);
         }
         else{
@@ -456,7 +460,7 @@ public class XMLEntityManager
                 }
             }
             Entity entity = new ExternalEntity(name,
-                    new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId)), null);
+                    new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId)), null, fInExternalSubset);
             fEntities.put(name, entity);
         }
         else{
@@ -487,6 +491,23 @@ public class XMLEntityManager
     }
 
     /**
+     * Checks whether the declaration of an entity given by name is 
+     // in the external subset. 
+     *
+     * @param entityName The name of the entity to check.
+     * @returns True if the entity was declared in the external subset, false otherwise
+     *           (including when the entity is not declared).
+     */
+    public boolean isEntityDeclInExternalSubset(String entityName) {
+
+        Entity entity = (Entity)fEntities.get(entityName);
+        if (entity == null) {
+            return false;
+        }
+        return entity.isEntityDeclInExternalSubset();
+    }
+
+    /**
      * Adds an unparsed entity declaration.
      * <p>
      * <strong>Note:</strong> This method ignores subsequent entity
@@ -506,7 +527,7 @@ public class XMLEntityManager
                                   String publicId, String systemId,
                                   String baseSystemId, String notation) {
         if (!fEntities.containsKey(name)) {
-            Entity entity = new ExternalEntity(name, new XMLResourceIdentifierImpl(publicId, systemId, baseSystemId, null), notation);
+            Entity entity = new ExternalEntity(name, new XMLResourceIdentifierImpl(publicId, systemId, baseSystemId, null), notation, fInExternalSubset);
             fEntities.put(name, entity);
         }
         else{
@@ -767,6 +788,16 @@ public class XMLEntityManager
         throws IOException, XNIException {
         startEntity(DTDEntity, xmlInputSource, false, true);
     } // startDTDEntity(XMLInputSource)
+
+    // indicate start of external subset so that
+    // location of entity decls can be tracked
+    public void startExternalSubset() {
+        fInExternalSubset = true;
+    }
+
+    public void endExternalSubset() {
+        fInExternalSubset = false;
+    }
 
     /**
      * Starts an entity.
@@ -1677,6 +1708,10 @@ public class XMLEntityManager
         /** Entity name. */
         public String name;
 
+        // whether this entity's declaration was found in the internal
+        // or external subset
+        public boolean inExternalSubset; 
+
         //
         // Constructors
         //
@@ -1687,13 +1722,19 @@ public class XMLEntityManager
         } // <init>()
 
         /** Constructs an entity. */
-        public Entity(String name) {
+        public Entity(String name, boolean inExternalSubset) {
             this.name = name;
+            this.inExternalSubset = inExternalSubset;
         } // <init>(String)
 
         //
         // Public methods
         //
+
+        /** Returns true if this entity was declared in the external subset. */
+        public boolean isEntityDeclInExternalSubset () {
+            return inExternalSubset;
+        } 
 
         /** Returns true if this is an external entity. */
         public abstract boolean isExternal();
@@ -1704,11 +1745,13 @@ public class XMLEntityManager
         /** Clears the entity. */
         public void clear() {
             name = null;
+            inExternalSubset = false;
         } // clear()
 
         /** Sets the values of the entity. */
         public void setValues(Entity entity) {
             name = entity.name;
+            inExternalSubset = entity.inExternalSubset;
         } // setValues(Entity)
 
     } // class Entity
@@ -1738,8 +1781,8 @@ public class XMLEntityManager
         } // <init>()
 
         /** Constructs an internal entity. */
-        public InternalEntity(String name, String text) {
-            super(name);
+        public InternalEntity(String name, String text, boolean inExternalSubset) {
+            super(name,inExternalSubset);
             this.text = text;
         } // <init>(String,String)
 
@@ -1806,8 +1849,8 @@ public class XMLEntityManager
 
         /** Constructs an internal entity. */
         public ExternalEntity(String name, XMLResourceIdentifier entityLocation,
-                              String notation) {
-            super(name);
+                              String notation, boolean inExternalSubset) {
+            super(name,inExternalSubset);
             this.entityLocation = entityLocation;
             this.notation = notation;
         } // <init>(String,XMLResourceIdentifier, String)
@@ -1916,7 +1959,7 @@ public class XMLEntityManager
                              XMLResourceIdentifier entityLocation,
                              InputStream stream, Reader reader,
                              String encoding, boolean literal, boolean mayReadChunks, boolean isExternal) {
-            super(name);
+            super(name,fInExternalSubset);
             this.entityLocation = entityLocation;
             this.stream = stream;
             this.reader = reader;
@@ -2772,12 +2815,10 @@ public class XMLEntityManager
          */
         public boolean scanData(String delimiter, XMLStringBuffer buffer)
             throws IOException {
+
             boolean done = false;
             int delimLen = delimiter.length();
             char charAt0 = delimiter.charAt(0);
-            int offset = 0;
-            int c = -1;
-            int newlines = 0;
             boolean external = fCurrentEntity.isExternal();
             do {
                 if (DEBUG_BUFFER) {
@@ -2808,9 +2849,9 @@ public class XMLEntityManager
                 }
     
                 // normalize newlines
-                offset = fCurrentEntity.position;
-                c = fCurrentEntity.ch[offset];
-                newlines = 0;
+                int offset = fCurrentEntity.position;
+                int c = fCurrentEntity.ch[offset];
+                int newlines = 0;
                 if (c == '\n' || (c == '\r' && external)) {
                     if (DEBUG_BUFFER) {
                         System.out.print("[newline, "+offset+", "+fCurrentEntity.position+": ");

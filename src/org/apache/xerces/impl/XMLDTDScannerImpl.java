@@ -472,6 +472,7 @@ public class XMLDTDScannerImpl
                 fDTDHandler.startDTD(fEntityScanner, null);
             }
             fDTDHandler.startExternalSubset(fEntityScanner,null);
+            fEntityManager.startExternalSubset();
             fExtEntityDepth++;
         }
         else if (name.charAt(0) == '%') {
@@ -543,6 +544,7 @@ public class XMLDTDScannerImpl
             }
             fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
+            fEntityManager.endExternalSubset();
             if (fDTDHandler != null) {
                 fDTDHandler.endExternalSubset(null);
                 fDTDHandler.endDTD(null);
