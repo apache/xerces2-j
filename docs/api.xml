@@ -81,6 +81,7 @@
    </ul>
   </ul>
  </s2>
+ <anchor name="xml-schema-api-documentation"/>
  <s2 title='XML Schema API Documentation'>
   <p>
    The XML Schema API defines a set of interfaces for accessing and querying
