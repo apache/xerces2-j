@@ -722,6 +722,24 @@ public class XIncludeHandler
         else if (isFallbackElement(element)) {
             this.handleFallbackElement();
         }
+        else if (hasXIncludeNamespace(element)) {
+            if (getSawInclude(fDepth - 1)) {
+                reportFatalError(
+                    "IncludeChild",
+                    new Object[] { element.rawname });
+            }
+            if (getSawFallback(fDepth - 1)) {
+                reportFatalError(
+                    "FallbackChild",
+                    new Object[] { element.rawname });
+            }
+            if (fDocumentHandler != null
+                    && getState() == STATE_NORMAL_PROCESSING) {
+                augs = modifyAugmentations(augs);
+                attributes = processAttributes(attributes);
+                fDocumentHandler.emptyElement(element, attributes, augs);
+            }
+        }
         else if (
             fDocumentHandler != null
                 && getState() == STATE_NORMAL_PROCESSING) {
@@ -759,6 +777,17 @@ public class XIncludeHandler
                 reportFatalError(
                     "IncludeChild",
                     new Object[] { element.rawname });
+            }
+            if (getSawFallback(fDepth - 1)) {
+                reportFatalError(
+                    "FallbackChild",
+                    new Object[] { element.rawname });
+            }
+            if (fDocumentHandler != null
+                    && getState() == STATE_NORMAL_PROCESSING) {
+                augs = modifyAugmentations(augs);
+                attributes = processAttributes(attributes);
+                fDocumentHandler.emptyElement(element, attributes, augs);
             }
         }
         else if (
