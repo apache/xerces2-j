@@ -55,6 +55,9 @@ public class XMLParseException
     
     /** Column number. */
     protected int fColumnNumber = -1;
+    
+    /** Character offset. */
+    protected int fCharacterOffset = -1;
 
     //
     // Constructors
@@ -70,6 +73,7 @@ public class XMLParseException
             fBaseSystemId = locator.getBaseSystemId();
             fLineNumber = locator.getLineNumber();
             fColumnNumber = locator.getColumnNumber();
+            fCharacterOffset = locator.getCharacterOffset();
         }
     } // <init>(XMLLocator,String)
 
@@ -77,12 +81,15 @@ public class XMLParseException
     public XMLParseException(XMLLocator locator,
                              String message, Exception exception) {
         super(message, exception);
-        fPublicId = locator.getPublicId();
-        fLiteralSystemId = locator.getLiteralSystemId();
-        fExpandedSystemId = locator.getExpandedSystemId();
-        fBaseSystemId = locator.getBaseSystemId();
-        fLineNumber = locator.getLineNumber();
-        fColumnNumber = locator.getColumnNumber();
+        if (locator != null) {
+            fPublicId = locator.getPublicId();
+            fLiteralSystemId = locator.getLiteralSystemId();
+            fExpandedSystemId = locator.getExpandedSystemId();
+            fBaseSystemId = locator.getBaseSystemId();
+            fLineNumber = locator.getLineNumber();
+            fColumnNumber = locator.getColumnNumber();
+            fCharacterOffset = locator.getCharacterOffset();
+        }
     } // <init>(XMLLocator,String,Exception)
 
     //
@@ -118,6 +125,11 @@ public class XMLParseException
     public int getColumnNumber() {
         return fColumnNumber;
     } // getRowNumber():int
+    
+    /** Returns the character offset. */
+    public int getCharacterOffset() {
+        return fCharacterOffset;
+    } // getCharacterOffset():int
 
     //
     // Object methods
