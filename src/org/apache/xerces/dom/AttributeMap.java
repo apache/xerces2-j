@@ -334,23 +334,30 @@ public class AttributeMap extends NamedNodeMapImpl {
 
         if (hasDefaults() && addDefault) {
             // If there's a default, add it instead
-
             NamedNodeMapImpl defaults =
                 ((ElementImpl) ownerNode).getDefaultAttributes();
+
             Node d;
             if (defaults != null &&
                 (d = defaults.getNamedItem(name)) != null &&
                 findNamePoint(name, index+1) < 0) {
-
-                NodeImpl clone = (NodeImpl)d.cloneNode(true);
-                clone.ownerNode = ownerNode;
-                clone.isOwned(true);
-                clone.isSpecified(false);
-                nodes.setElementAt(clone, index);
-                if (attr.isIdAttribute()) {
-                    ownerDocument.putIdentifier(clone.getNodeValue(),
+                    NodeImpl clone = (NodeImpl)d.cloneNode(true);
+                    if (d.getLocalName() !=null){
+                            // we must rely on the name to find a default attribute
+                            // ("test:attr"), but while copying it from the DOCTYPE
+                            // we should not loose namespace URI that was assigned
+                            // to the attribute in the instance document.
+                            ((AttrNSImpl)clone).namespaceURI = attr.getNamespaceURI();
+                    } 
+                    clone.ownerNode = ownerNode;
+                    clone.isOwned(true);
+                    clone.isSpecified(false);
+                
+                    nodes.setElementAt(clone, index);
+                    if (attr.isIdAttribute()) {
+                        ownerDocument.putIdentifier(clone.getNodeValue(),
                                                 (ElementImpl)ownerNode);
-                }
+                    }
             } else {
                 nodes.removeElementAt(index);
             }
@@ -444,9 +451,7 @@ public class AttributeMap extends NamedNodeMapImpl {
                     if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
                         NodeImpl clone = (NodeImpl)d.cloneNode(true);
                         clone.ownerNode = ownerNode;
-                        // REVISIT: can we assume that if we reach here it is 
-                        // always attrNSImpl
-                        if (clone instanceof AttrNSImpl) {
+                        if (d.getLocalName() != null) {
                             // we must rely on the name to find a default attribute
                             // ("test:attr"), but while copying it from the DOCTYPE
                             // we should not loose namespace URI that was assigned
