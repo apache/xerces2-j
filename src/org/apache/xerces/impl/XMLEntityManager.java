@@ -153,17 +153,14 @@ public class XMLEntityManager
     /** Entity scanner. */
     protected XMLEntityScanner fEntityScanner;
 
-    /** General entities. */
-    protected Hashtable fGeneralEntities = new Hashtable();
-
-    /** Parameter entities. */
-    protected Hashtable fParameterEntities = new Hashtable();
+    /** Entities. */
+    protected Hashtable fEntities = new Hashtable();
 
     /** Entity stack. */
     protected Stack fEntityStack = new Stack();
 
     /** Current entity. */
-    protected Entity fEntity;
+    protected ScannedEntity fCurrentEntity;
 
     // private
 
@@ -199,52 +196,30 @@ public class XMLEntityManager
     }
 
     /**
-     * addGeneralEntity
+     * addExternalEntity
      * 
      * @param name 
      * @param publicId 
      * @param systemId 
      * @param baseSystemId 
      */
-    public void addGeneralEntity(String name, String publicId, String systemId, String baseSystemId) {
+    public void addExternalEntity(String name, String publicId, String systemId, String baseSystemId) {
+        name = fSymbolTable.addSymbol(name);
         Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId);
-        fGeneralEntities.put(name, entity);
-    } // addGeneralEntity(String,String,String,String)
+        fEntities.put(name, entity);
+    } // addExternalEntity(String,String,String,String)
 
     /**
-     * addGeneralEntity
+     * addInternalEntity
      * 
      * @param name 
      * @param text 
      */
-    public void addGeneralEntity(String name, String text) {
+    public void addInternalEntity(String name, String text) {
+        name = fSymbolTable.addSymbol(name);
         Entity entity = new InternalEntity(name, text);
-        fGeneralEntities.put(name, entity);
-    } // addGeneralEntity(String,String)
-
-    /**
-     * addParameterEntity
-     * 
-     * @param name 
-     * @param publicId 
-     * @param systemId 
-     * @param baseSystemId 
-     */
-    public void addParameterEntity(String name, String publicId, String systemId, String baseSystemId) {
-        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId);
-        fParameterEntities.put(name, entity);
-    } // addParameterEntity(String,String,String,String)
-
-    /**
-     * addParameterEntity
-     * 
-     * @param name 
-     * @param text 
-     */
-    public void addParameterEntity(String name, String text) {
-        Entity entity = new InternalEntity(name, text);
-        fParameterEntities.put(name, entity);
-    } // addParameterEntity(String,String)
+        fEntities.put(name, entity);
+    } // addInternalEntity(String,String)
 
     /**
      * resolveEntity
@@ -261,16 +236,16 @@ public class XMLEntityManager
     } // resolveEntity
 
     /**
-     * startGeneralEntity
+     * startEntity
      * 
      * @param entityName 
      * @param parameter 
      */
-    public void startGeneralEntity(String entityName) 
+    public void startEntity(String entityName) 
         throws IOException, SAXException {
 
         // resolve external entity
-        Entity entity = (Entity)fGeneralEntities.get(entityName);
+        Entity entity = (Entity)fEntities.get(entityName);
         InputSource inputSource = null;
         if (entity.isExternal()) {
             ExternalEntity externalEntity = (ExternalEntity)entity;
@@ -290,39 +265,7 @@ public class XMLEntityManager
         // start the entity
         startEntity(entityName, inputSource);
 
-    } // startGeneralEntity(String)
-
-    /**
-     * startParameterEntity
-     * 
-     * @param entityName 
-     * @param parameter 
-     */
-    public void startParameterEntity(String entityName) 
-        throws IOException, SAXException {
-
-        // resolve external entity
-        Entity entity = (Entity)fParameterEntities.get(entityName);
-        InputSource inputSource = null;
-        if (entity.isExternal()) {
-            ExternalEntity externalEntity = (ExternalEntity)entity;
-            String publicId = externalEntity.publicId;
-            String systemId = externalEntity.systemId;
-            String baseSystemId = externalEntity.baseSystemId;
-            inputSource = resolveEntity(publicId, systemId, baseSystemId);
-        }
-
-        // wrap internal entity
-        else {
-            InternalEntity internalEntity = (InternalEntity)entity;
-            Reader reader = new StringReader(internalEntity.text);
-            inputSource = new InputSource(reader);
-        }
-
-        // start the entity
-        startEntity("%"+entityName, inputSource);
-
-    } // startParameterEntity(String)
+    } // startEntity(String)
 
     /**
      * startDocumentEntity
@@ -372,9 +315,15 @@ public class XMLEntityManager
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
 
         // initialize state
-        fGeneralEntities.clear();
-        fParameterEntities.clear();
+        fEntities.clear();
         fEntityStack.removeAllElements();
+
+        // add default entities
+        addInternalEntity("lt", "<");
+        addInternalEntity("gt", ">");
+        addInternalEntity("amp", "&");
+        addInternalEntity("apos", "'");
+        addInternalEntity("quot", "\"");
 
         // initialize scanner info
         fReader = null;
@@ -443,7 +392,7 @@ public class XMLEntityManager
         fReader = new PushbackReader(reader, 32);
 
         // push entity on stack
-        Entity entity = new ExternalEntity(name, publicId, systemId, encoding);
+        ScannedEntity entity = new ScannedEntity(name, publicId, systemId, reader);
         fEntityStack.push(entity);
 
         // call handler
@@ -584,6 +533,72 @@ public class XMLEntityManager
         } // isExternal():boolean
 
     } // class ExternalEntity
+
+    /**
+     * Entity state.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected static class ScannedEntity 
+        extends Entity {
+
+        //
+        // Data
+        //
+
+        // i/o
+
+        /** Reader. */
+        public Reader reader;
+
+        // locator information
+
+        /** Public identifier. */
+        public String publicId;
+
+        /** System identifier. */
+        public String systemId;
+
+        /** Line number. */
+        public int lineNumber;
+
+        /** Column number. */
+        public int columnNumber;
+
+        // buffer
+
+        /** Character buffer. */
+        public char[] ch;
+
+        /** Offset. */
+        public int offset;
+
+        /** Length. */
+        public int length;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs a scanned entity. */
+        public ScannedEntity(String name, String publicId, String systemId,
+                             Reader reader) {
+            super(name);
+            this.publicId = publicId;
+            this.systemId = systemId;
+            this.reader = reader;
+        } // <init>(Reader,String,String,String)
+
+        //
+        // Entity methods
+        //
+
+        /** Returns true if this is an external entity. */
+        public final boolean isExternal() {
+            return systemId != null;
+        } // isExternal():boolean
+
+    } // class ScannedEntity
 
     /**
      * Implements the entity scanner methods.
@@ -840,7 +855,7 @@ public class XMLEntityManager
          * @return 
          */
         public String getPublicId() {
-            throw new RuntimeException("getPublicId not implemented");
+            return fCurrentEntity.publicId;
         } // getPublicId():String
     
         /**
@@ -849,7 +864,7 @@ public class XMLEntityManager
          * @return 
          */
         public String getSystemId() {
-            throw new RuntimeException("getSystemId not implemented");
+            return fCurrentEntity.systemId;
         } // getSystemId():String
     
         /**
@@ -858,7 +873,7 @@ public class XMLEntityManager
          * @return 
          */
         public int getLineNumber() {
-            throw new RuntimeException("getLineNumber not implemented");
+            return fCurrentEntity.lineNumber;
         } // getLineNumber():int
     
         /**
@@ -867,7 +882,7 @@ public class XMLEntityManager
          * @return 
          */
         public int getColumnNumber() {
-            throw new RuntimeException("getColumnNumber not implemented");
+            return fCurrentEntity.columnNumber;
         } // getColumnNumber():int
     
         //
