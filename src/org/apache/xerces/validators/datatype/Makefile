@@ -3,7 +3,6 @@
 TARGETS=\
 	BinaryValidator.class\
 	BooleanValidator.class\
-	BooleanValidator.class\
 	DatatypeMessageProvider.class\
 	DatatypeValidator.class\
 	DatatypeValidatorRegistry.class\
@@ -13,11 +12,16 @@ TARGETS=\
 	IllegalFacetException.class\
 	IllegalFacetValueException.class\
 	InvalidDatatypeValueException.class\
-	QNameValidator.class\
 	RecurringDurationValidator.class\
 	StringValidator.class\
 	TimeDurationValidator.class\
 	UnknownFacetException.class\
+	URIReferenceValidator.class \
+	IDValidator.class \
+	IDREFValidator.class \
+	ENTITYValidator.class \
+	NOTATIONValidator.class \
+	QNameValidator.class\
 	URIReferenceValidator.class \
 	DatatypeValidatorRegistry.class 
 

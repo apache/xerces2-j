@@ -62,6 +62,8 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
 
@@ -72,9 +74,9 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 
 public class StringValidator implements DatatypeValidator {
-    private Locale    fLocale         = null;
-    private Hashtable facetData       = null;
-    private String    fBaseValidator  = "native";
+    private Locale    fLocale          = null;
+    private String    fBaseValidator   = "native";
+
     private int       _length          = 0;
     private int       _maxLength       = 0;
     private int       _minLength       = 0;
@@ -84,80 +86,115 @@ public class StringValidator implements DatatypeValidator {
     private int       _maxExclusive    = 0;
     private int       _minInclusive    = 0;
     private int       _minExclusive    = 0;
+    private int       _facetsDefined   = 0;
 
-
-
-
-    boolean fIsMaxLength = false;
-	
-        /**
-         * validate that a string is a W3C string type
-         * 
-         * @param content A string containing the content to be validated
-         * @param list
-         * @exception throws InvalidDatatypeException if the content is
-         *                   not a W3C string type
-         * @exception InvalidDatatypeValueException
-         */
-	public void validate(String content, boolean derivedByList) throws InvalidDatatypeValueException 
-        {
-        if (facetData == null)
+    /**
+     * validate that a string is a W3C string type
+     * 
+     * @param content A string containing the content to be validated
+     * @param list
+     * @exception throws InvalidDatatypeException if the content is
+     *                   not a W3C string type
+     * @exception InvalidDatatypeValueException
+     */
+    public void validate(String content, boolean derivedByList)  throws InvalidDatatypeValueException
+    {
+        if ( _facetsDefined == 0 )// No Facets to validate against
             return;
 
-        Enumeration eee = facetData.keys();
-
-
-        while(eee.hasMoreElements()) {
-            String key = (String)eee.nextElement();
-            if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                Vector value = (Vector)facetData.get(key);
-                String vvv = value.toString();
-                if (!value.contains(content)) 
-                    throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+vvv);
+        StringTokenizer parsedList = null;
+        if ( derivedByList == true ) {
+            parsedList = new StringTokenizer( content );
+            try {
+                while ( parsedList.hasMoreTokens() ) {
+                    checkContent( parsedList.nextToken() );
+                }
+            } catch ( NoSuchElementException e ) {
+                e.printStackTrace();
             }
-            else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
-                if (fIsMaxLength && content.length() > _maxLength)
-                    throw new InvalidDatatypeValueException("Value '"+content+"' with length '"+content.length()+"' exceeds maximum length of "+_maxLength+".");
-            }
+        } else {
+            checkContent( content );
         }
-	}
-			
-	
-	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-	    facetData = new Hashtable(); // reset old facets
+    }
+
+
+    public void setFacets(Hashtable facets) throws UnknownFacetException,
+    IllegalFacetException, IllegalFacetValueException 
+    {
         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
-            if (key.equals(SchemaSymbols.ELT_LENGTH)) {
-            } else if (key.equals(SchemaSymbols.ELT_MINLENGTH)) {
-            } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
-                int vvv;
-                String value = (String)facetData.get(key);
+
+            if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+                _facetsDefined += DatatypeValidator.FACET_LENGTH;
+                String lengthValue = (String)facets.get(key);
                 try {
-                    vvv = Integer.parseInt(value);
-                } catch(NumberFormatException nfe) {
-                    throw new IllegalFacetValueException("maxLength value '"+value+"' is invalid.");
+                    _length     = Integer.parseInt( lengthValue );
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("Length value '"+lengthValue+"' is invalid.");
                 }
-                _maxLength = vvv;
-                fIsMaxLength = true;
-            } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-            } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-            } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-            } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+            } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                _facetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                String minLengthValue = (String)facets.get(key);
+                try {
+                    _minLength     = Integer.parseInt( minLengthValue );
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("maxLength value '"+minLengthValue+"' is invalid.");
+                }
+            } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
+                _facetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                String maxLengthValue = (String)facets.get(key);
+                try {
+                    _maxLength     = Integer.parseInt( maxLengthValue );
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("maxLength value '"+maxLengthValue+"' is invalid.");
+                }
             } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                _facetsDefined += DatatypeValidator.FACET_PATTERN;
+                _pattern = (String)facets.get(key);
             } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                facetData.put(key,facets.get(key));
+                _facetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                _enumeration = (Vector)facets.get(key);
+            } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                _facetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                String maxInclusiveValue = (String)facets.get(key);
+                try {
+                    _maxInclusive   = Integer.parseInt( maxInclusiveValue );
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("maxLength value '"+maxInclusiveValue+"' is invalid.");
+                }
+            } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                _facetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                String maxExclusiveValue = (String)facets.get(key);
+                try {
+                    _maxExclusive   = Integer.parseInt( maxExclusiveValue );
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("maxLength value '"+maxExclusiveValue+"' is invalid.");
+                }
+            } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                String minInclusiveValue = (String)facets.get(key);
+                try {
+                    _minInclusive   = Integer.parseInt( minInclusiveValue );
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("maxLength value '"+minInclusiveValue+"' is invalid.");
+                }
+            } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                String minExclusiveValue = (String)facets.get(key);
+                try {
+                    _minExclusive   = Integer.parseInt( minExclusiveValue );
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("maxLength value '"+minExclusiveValue+"' is invalid.");
+                }
             } else {
                 throw new IllegalFacetException();
             }
         }
-	}
-	
-	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-	}
+    }
 
-	public void setBasetype( String base) {
-        //fBaseValidator = (StringValidator) base;
-	}
+    public void setBasetype( String base) {
+        fBaseValidator = base;
+    }
 
     /**
      * set the locate to be used for error messages
@@ -169,4 +206,20 @@ public class StringValidator implements DatatypeValidator {
     public int compare( DatatypeValidator o1, DatatypeValidator o2){
         return 0;
     }
+
+    private void checkContent( String content )throws InvalidDatatypeValueException
+    {
+        if ( (_facetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 1 ) {
+            if ( content.length() > _maxLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' with length '"+content.length()+
+                                                        "' exceeds maximum length of "+_maxLength+".");
+            }
+        }
+        if ( (_facetsDefined & DatatypeValidator.FACET_ENUMERATION) == 1 ) {
+            if ( !_enumeration.contains( content ) )
+                throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+_enumeration);
+        }
+    }
 }
+
