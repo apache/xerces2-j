@@ -232,10 +232,13 @@ public class ParserConfigurationSettings
     public boolean getFeature(String featureId)
         throws XMLConfigurationException {
 
-        checkFeature(featureId);
-
         Boolean state = (Boolean) fFeatures.get(featureId);
-        return state != null ? state.booleanValue() : false;
+
+        if (state == null) {
+            checkFeature(featureId);
+            return false;
+        }
+        return state.booleanValue();
 
     } // getFeature(String):boolean
 
@@ -254,9 +257,13 @@ public class ParserConfigurationSettings
     public Object getProperty(String propertyId)
         throws XMLConfigurationException {
 
-        checkProperty(propertyId);
+        Object propertyValue = fProperties.get(propertyId);
 
-        return fProperties.get(propertyId);
+        if (propertyValue == null) {
+            checkProperty(propertyId);
+        }
+
+        return propertyValue;
 
     } // getProperty(String):Object
 
