@@ -461,7 +461,17 @@ public class RangeImpl  implements Range {
     		DOMException.INVALID_STATE_ERR, 
                 DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
     	}
-       
+        // WRONG_DOCUMENT_ERR: Raised if the two Ranges are not in the same Document or DocumentFragment.  
+    	if ((fDocument != sourceRange.getStartContainer().getOwnerDocument()
+                && fDocument != sourceRange.getStartContainer() 
+                && sourceRange.getStartContainer() != null)
+                || (fDocument != sourceRange.getEndContainer().getOwnerDocument()
+                        && fDocument != sourceRange.getEndContainer() 
+                        && sourceRange.getStartContainer() != null)) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
+                DOMMessageFormatter.formatMessage( DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null));
+        }
+        
         Node endPointA;
         Node endPointB;
         int offsetA;
