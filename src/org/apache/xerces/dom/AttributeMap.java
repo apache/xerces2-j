@@ -492,6 +492,22 @@ public class AttributeMap extends NamedNodeMapImpl {
     	return newmap;
     } // cloneMap():AttributeMap
 
+    /**
+     * Override parent's method to set the ownerNode correctly
+     */
+    protected void cloneContent(NamedNodeMapImpl srcmap) {
+    	if (srcmap.nodes != null) {
+            nodes = new Vector(srcmap.nodes.size());
+            for (int i = 0; i < srcmap.nodes.size(); ++i) {
+                NodeImpl n = (NodeImpl) srcmap.nodes.elementAt(i);
+                NodeImpl clone = (NodeImpl) n.cloneNode(true);
+                clone.isSpecified(n.isSpecified());
+                nodes.insertElementAt(clone, i);
+                clone.ownerNode = ownerNode;
+                clone.isOwned(true);
+            }
+        }
+    } // cloneContent():AttributeMap
 
     //
     // Protected methods
