@@ -54,28 +54,33 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
- 
+
 package org.apache.xerces.impl.validation;
 
 /**
- * ValidationContext has all the information required for the 
+ * ValidationContext has all the information required for the
  * validation of: id, idref, entity, notation, qname
- * 
+ *
  * @author Sandy Gao, IBM
  */
 public interface ValidationContext {
-    
+    // whether to validate against facets
+    public boolean needFacetChecking();
+
+    // whether to do extra id/idref/entity checking
+    public boolean needExtraChecking();
+
     // entity
     public boolean isEntityDeclared (String name);
     public boolean isEntityUnparsed (String name);
-    
+
     // id
     public boolean isIdDeclared (String name);
     public void    addId(String name);
-    
+
     // idref
     public void addIdRef(String name);
-    
+
     // get symbol from symbol table
     public String getSymbol (String symbol);
 

@@ -63,24 +63,41 @@ import org.apache.xerces.util.SymbolTable;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+/**
+ * Implementation of ValidationContext inteface. Used to establish an
+ * environment for simple type validation.
+ *
+ * @author Elena Litani, IBM
+ * @version $Id$
+ */
+public class ValidationState implements ValidationContext {
 
-public class  ValidationState implements ValidationContext {
-
-    // 
+    //
     // private data
     //
+    private boolean fExtraChecking              = true;
+    private boolean fFacetChecking              = true;
+
     private EntityState fEntityState            = null;
     private NamespaceSupport fNamespaceSupport  = null;
     private SymbolTable fSymbolTable            = null;
 
+    //REVISIT: Should replace with a lighter structure.
     private final Hashtable fIdTable    = new Hashtable();
     private final Hashtable fIdRefTable = new Hashtable();
-
     private final static Object fNullValue = new Object();
 
     //
     // public methods
     //
+    public void setExtraChecking(boolean newValue) {
+        fExtraChecking = newValue;
+    }
+
+    public void setFacetChecking(boolean newValue) {
+        fFacetChecking = newValue;
+    }
+
     public void setEntityState(EntityState state) {
         fEntityState = state;
     }
@@ -96,9 +113,10 @@ public class  ValidationState implements ValidationContext {
     public boolean checkIDRefID () {
         Enumeration en = fIdRefTable.keys();
 
+        String key;
         while (en.hasMoreElements()) {
-            String key = (String)en.nextElement();
-            if (fIdTable == null || !fIdTable.containsKey(key)) {
+            key = (String)en.nextElement();
+            if (!fIdTable.containsKey(key)) {
                   return false;
             }
         }
@@ -106,6 +124,8 @@ public class  ValidationState implements ValidationContext {
     }
 
     public void reset () {
+        fExtraChecking = true;
+        fFacetChecking = true;
         fIdTable.clear();
         fIdRefTable.clear();
         fEntityState = null;
@@ -115,6 +135,16 @@ public class  ValidationState implements ValidationContext {
     //
     // implementation of ValidationContext methods
     //
+
+    // whether to do extra id/idref/entity checking
+    public boolean needExtraChecking() {
+        return fExtraChecking;
+    }
+
+    // whether to validate against facets
+    public boolean needFacetChecking() {
+        return fFacetChecking;
+    }
 
     // entity
     public boolean isEntityDeclared (String name) {
@@ -134,21 +164,24 @@ public class  ValidationState implements ValidationContext {
     public boolean isIdDeclared(String name) {
         return fIdTable.containsKey(name);
     }
-    public void    addId(String name) {
+    public void addId(String name) {
         fIdTable.put(name, fNullValue);
     }
 
     // idref
     public void addIdRef(String name) {
-        if (fIdRefTable.containsKey(name)) {
-            return;
-        }
         fIdRefTable.put(name, fNullValue);
     }
     // get symbols
 
     public String getSymbol (String symbol) {
-        return fSymbolTable.addSymbol(symbol);
+        if (fSymbolTable != null)
+            return fSymbolTable.addSymbol(symbol);
+        // if there is no symbol table, we return java-internalized string,
+        // because symbol table strings are also java-internalzied.
+        // this guarantees that the returned string from this method can be
+        // compared by reference with other symbol table string. -SG
+        return symbol.intern();
     }
     // qname, notation
     public String getURI(String prefix) {
