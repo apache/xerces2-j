@@ -34,6 +34,31 @@
     </note>
     <submitter name='Andy Clark'/>
    </fix>
+   <fix>
+    <note>
+     Fixed various bug related to &lt;redefine&gt; in XML Schema traversal.
+    </note>
+    <submitter name='Khaled Noaman, Sandy Gao'/>
+   </fix>
+   <fix>
+    <note>
+     Fixed various bug related to the pattern facet (regular expression)
+     in XML Schema.
+    </note>
+    <submitter name='Khaled Noaman, Sandy Gao'/>
+   </fix>
+   <update>
+    <note>
+     Implemented XML Schema errata as they were published.
+    </note>
+    <submitter name="Sandy Gao"/>
+   </update>
+   <fix>
+    <note>
+     Fixed a bug related the external-schemaLocation property.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </fix>
   </changes>
   </release>
   <release version="&ParserName; 2.3.0">
