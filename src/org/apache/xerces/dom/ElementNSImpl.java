@@ -336,9 +336,9 @@ public class ElementNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-        //Absolute base URI is computed according to XML Base (http://www.w3.org/TR/xmlbase/#granularity)
+        // Absolute base URI is computed according to XML Base (http://www.w3.org/TR/xmlbase/#granularity)
 
-        //1.  the base URI specified by an xml:base attribute on the element, if one exists
+        // 1.  the base URI specified by an xml:base attribute on the element, if one exists
 
         if (attributes != null) {
             Attr attrNode = (Attr)attributes.getNamedItemNS("http://www.w3.org/XML/1998/namespace", "base");
@@ -346,9 +346,27 @@ public class ElementNSImpl
                 String uri =  attrNode.getNodeValue();
                 if (uri.length() != 0 ) {// attribute value is always empty string
                     try {
-                       uri = new URI(uri).toString();
+                        uri = new URI(uri).toString();
                     }
-                    catch (org.apache.xerces.util.URI.MalformedURIException e){
+                    catch (org.apache.xerces.util.URI.MalformedURIException e) {
+                        // This may be a relative URI.
+                        
+                        // Start from the base URI of the parent, or if this node has no parent, the owner node.
+                        NodeImpl parentOrOwner = (parentNode() != null) ? parentNode() : ownerNode;
+                        
+                        // Make any parentURI into a URI object to use with the URI(URI, String) constructor.
+                        String parentBaseURI = (parentOrOwner != null) ? parentOrOwner.getBaseURI() : null;
+                        
+                        if (parentBaseURI != null) {
+                            try {
+                                uri = new URI(new URI(parentBaseURI), uri).toString();
+                            }
+                            catch (org.apache.xerces.util.URI.MalformedURIException ex){
+                                // This should never happen: parent should have checked the URI and returned null if invalid.
+                                return null;
+                            }
+                            return uri;
+                        }                       
                         // REVISIT: what should happen in this case?
                         return null;
                     }

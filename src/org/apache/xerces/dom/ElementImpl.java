@@ -176,7 +176,21 @@ public class ElementImpl
                     try {
                        uri = new URI(uri).toString();
                     }
-                    catch (org.apache.xerces.util.URI.MalformedURIException e){
+                    catch (org.apache.xerces.util.URI.MalformedURIException e) {
+                        // This may be a relative URI.
+                        
+                        // Make any parentURI into a URI object to use with the URI(URI, String) constructor
+                        String parentBaseURI = (this.ownerNode != null) ? this.ownerNode.getBaseURI() : null;
+                        if (parentBaseURI != null){
+                            try{
+                                uri = new URI(new URI(parentBaseURI), uri).toString();
+                            }
+                            catch (org.apache.xerces.util.URI.MalformedURIException ex){
+                                // This should never happen: parent should have checked the URI and returned null if invalid.
+                                return null;
+                            }
+                            return uri;
+                        }
                         return null;
                     }
                     return uri;
