@@ -949,25 +949,34 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * @param isXML11Version = true if XML 1.1
      */
     public static final void isCDataWF(DOMErrorHandler errorHandler, DOMErrorImpl error, DOMLocatorImpl locator, 
-            String datavalue, boolean isXML11Version)
+        String datavalue, boolean isXML11Version)
     {
-        if(datavalue == null || (datavalue.length() == 0) ) return ;
-                
+        if (datavalue == null || (datavalue.length() == 0) ) {
+            return;
+        }
+        
         char [] dataarray = datavalue.toCharArray(); 
-        int datalength = dataarray.length ;
-
-        //version of the document is XML 1.1
-        if(isXML11Version){                    
-            //we need to check all chracters as per production rules of XML11
-            int i = 0 ;
+        int datalength = dataarray.length;
+        
+        // version of the document is XML 1.1
+        if (isXML11Version) {                    
+            // we need to check all chracters as per production rules of XML11
+            int i = 0;
             while(i < datalength){     
                 char c = dataarray[i++];                                      
-                if(XML11Char.isXML11Invalid(c)){
-                    String msg =
-                        DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.XML_DOMAIN,
-                            "InvalidCharInCDSect",
-                            new Object[] { Integer.toString(c, 16)});
+                if ( XML11Char.isXML11Invalid(c) ) {
+                    // check if this is a supplemental character
+                    if (XMLChar.isHighSurrogate(c) && i < datalength) {
+                        char c2 = dataarray[i++];
+                        if (XMLChar.isLowSurrogate(c2) && 
+                            XMLChar.isSupplemental(XMLChar.supplemental(c, c2))) {
+                            continue;
+                        }
+                    }
+                    String msg = DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.XML_DOMAIN,
+                        "InvalidCharInCDSect",
+                        new Object[] { Integer.toString(c, 16)});
                     reportDOMError(
                         errorHandler,
                         error,
@@ -976,54 +985,63 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         DOMError.SEVERITY_ERROR,
                         "wf-invalid-character");
                 }
-                else if (c==']'){
+                else if (c == ']') {
                     int count = i;
-                    if (count<datalength && dataarray[count]==']'){
-                        while (++count <datalength && dataarray[count]==']'){
+                    if (count < datalength && dataarray[count] == ']') {
+                        while (++count < datalength && dataarray[count] == ']') {
                             // do nothing
                         }
-                        if (count <datalength && dataarray[count]=='>'){
-                            //CDEndInContent
-		  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
-							    "CDEndInContent", null);
-							reportDOMError(errorHandler, error, locator,msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
+                        if (count < datalength && dataarray[count] == '>') {
+                            // CDEndInContent
+                            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN, "CDEndInContent", null);
+                            reportDOMError(errorHandler, error, locator,msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                         }
                     }
                     
                 }
             }
-        }//version of the document is XML 1.0
-        else{                    
-            //we need to check all chracters as per production rules of XML 1.0
-            int i = 0 ;
-            while(i < datalength){   
+        } // version of the document is XML 1.0
+        else {                    
+            // we need to check all chracters as per production rules of XML 1.0
+            int i = 0;
+            while (i < datalength) {   
                 char c = dataarray[i++];                         
-                if( XMLChar.isInvalid(c) ){
-                	//Note:  The key InvalidCharInCDSect from XMLMessages.properties
-                	//is being used to obtain the message and DOM error type
-                	//"wf-invalid-character" is used.  Also per DOM it is error but 
-                	//as per XML spec. it is fatal error
-					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN, "InvalidCharInCDSect", new Object[]{Integer.toString(c, 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
-					    "wf-invalid-character");
+                if( XMLChar.isInvalid(c) ) {
+                    // check if this is a supplemental character
+                    if (XMLChar.isHighSurrogate(c) && i < datalength) {
+                        char c2 = dataarray[i++];
+                        if (XMLChar.isLowSurrogate(c2) && 
+                            XMLChar.isSupplemental(XMLChar.supplemental(c, c2))) {
+                            continue;
+                        }
+                    }
+                    // Note:  The key InvalidCharInCDSect from XMLMessages.properties
+                    // is being used to obtain the message and DOM error type
+                    // "wf-invalid-character" is used.  Also per DOM it is error but 
+                    // as per XML spec. it is fatal error
+                    String msg = DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.XML_DOMAIN, 
+                        "InvalidCharInCDSect", 
+                        new Object[]{Integer.toString(c, 16)});
+                    reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }
-                else if (c==']'){
+                else if (c==']') {
                     int count = i;
-                    if (count<datalength && dataarray[count]==']'){
-                        while (++count <datalength && dataarray[count]==']'){
+                    if ( count< datalength && dataarray[count]==']' ) {
+                        while (++count < datalength && dataarray[count]==']' ) {
                             // do nothing
                         }
-                        if (count <datalength && dataarray[count]=='>'){
-		  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,"CDEndInContent", null);
-							reportDOMError(errorHandler, error, locator,  msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
+                        if ( count < datalength && dataarray[count]=='>' ) {
+                            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN, "CDEndInContent", null);
+                            reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                         }
                     }
                     
                 }
             }            
-        }//end-else fDocument.isXMLVersion()
+        } // end-else fDocument.isXMLVersion()
         
-    }//isCDataWF
+    } // isCDataWF
      
     /**
      * NON-DOM: check for valid XML characters as per the XML version
@@ -1031,41 +1049,62 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * @param isXML11Version = true if XML 1.1
      */
     public static final void isXMLCharWF(DOMErrorHandler errorHandler, DOMErrorImpl error, DOMLocatorImpl locator, 
-                String datavalue, boolean isXML11Version)
+        String datavalue, boolean isXML11Version)
     {
-        if(datavalue == null || (datavalue.length() == 0) ) return ;      
+        if ( datavalue == null || (datavalue.length() == 0) ) {
+            return;      
+        }
+        
         char [] dataarray = datavalue.toCharArray(); 
-        int datalength = dataarray.length ;
-
-        //version of the document is XML 1.1
+        int datalength = dataarray.length;
+        
+        // version of the document is XML 1.1
         if(isXML11Version){                    
             //we need to check all characters as per production rules of XML11
             int i = 0 ;
-            while(i < datalength){                            
+            while (i < datalength) {                            
                 if(XML11Char.isXML11Invalid(dataarray[i++])){
-					String msg = DOMMessageFormatter.formatMessage(
+                    // check if this is a supplemental character
+                    char ch = dataarray[i-1];
+                    if (XMLChar.isHighSurrogate(ch) && i < datalength) {
+                        char ch2 = dataarray[i++];
+                        if (XMLChar.isLowSurrogate(ch2) && 
+                            XMLChar.isSupplemental(XMLChar.supplemental(ch, ch2))) {
+                            continue;
+                        }
+                    }
+                    String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "InvalidXMLCharInDOM", 
                         new Object[]{Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
-					    "wf-invalid-character");
-                };
+                    reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
+                    "wf-invalid-character");
+                }
             }
-        }//version of the document is XML 1.0
+        } // version of the document is XML 1.0
         else{                    
-            //we need to check all characters as per production rules of XML 1.0
+            // we need to check all characters as per production rules of XML 1.0
             int i = 0 ;
-            while(i < datalength){                            
-                if( XMLChar.isInvalid(dataarray[i++]) ){
-					String msg = DOMMessageFormatter.formatMessage(
+            while (i < datalength) {                            
+                if( XMLChar.isInvalid(dataarray[i++]) ) {
+                    // check if this is a supplemental character
+                    char ch = dataarray[i-1];
+                    if (XMLChar.isHighSurrogate(ch) && i < datalength) {
+                        char ch2 = dataarray[i++];
+                        if (XMLChar.isLowSurrogate(ch2) && 
+                            XMLChar.isSupplemental(XMLChar.supplemental(ch, ch2))) {
+                            continue;
+                        }
+                    }
+                    String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "InvalidXMLCharInDOM", 
                         new Object[]{Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
-					    "wf-invalid-character");
-                };
+                    reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
+                    "wf-invalid-character");
+                }
             }            
-        }//end-else fDocument.isXMLVersion()
+        } // end-else fDocument.isXMLVersion()
         
-    }//isXMLCharWF
+    } // isXMLCharWF
     
     /**
      * NON-DOM: check if value of the comment is well-formed
@@ -1073,55 +1112,72 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * @param isXML11Version = true if XML 1.1
      */
     public static final void isCommentWF(DOMErrorHandler errorHandler, DOMErrorImpl error, DOMLocatorImpl locator, 
-                                    String datavalue, boolean isXML11Version)
+        String datavalue, boolean isXML11Version)
     {
-        if(datavalue == null || (datavalue.length() == 0) ) return ;
-                
+        if ( datavalue == null || (datavalue.length() == 0) ) {
+            return;
+        }
+        
         char [] dataarray = datavalue.toCharArray(); 
         int datalength = dataarray.length ;
-
-        //version of the document is XML 1.1
-        if(isXML11Version){                    
-            //we need to check all chracters as per production rules of XML11
+        
+        // version of the document is XML 1.1
+        if (isXML11Version) {                    
+            // we need to check all chracters as per production rules of XML11
             int i = 0 ;
-            while(i < datalength){   
+            while (i < datalength){   
                 char c = dataarray[i++];
-                                         
-                if(XML11Char.isXML11Invalid(c)){
-  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN, 
-					    "InvalidCharInComment", 
-					    new Object [] {Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
+                if ( XML11Char.isXML11Invalid(c) ) {
+                    // check if this is a supplemental character
+                    if (XMLChar.isHighSurrogate(c) && i < datalength) {
+                        char c2 = dataarray[i++];
+                        if (XMLChar.isLowSurrogate(c2) && 
+                            XMLChar.isSupplemental(XMLChar.supplemental(c, c2))) {
+                            continue;
+                        }
+                    }
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN, 
+                        "InvalidCharInComment", 
+                        new Object [] {Integer.toString(dataarray[i-1], 16)});
+                    reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }
-                else if (c == '-' && i<datalength && dataarray[i]=='-'){
-  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
-					    "DashDashInComment", null);
-					// invalid: '--' in comment                   
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
+                else if (c == '-' && i < datalength && dataarray[i] == '-') {
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
+                        "DashDashInComment", null);
+                    // invalid: '--' in comment                   
+                    reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }
             }
-        }//version of the document is XML 1.0
-        else{                    
-            //we need to check all chracters as per production rules of XML 1.0
-            int i = 0 ;
-            while(i < datalength){ 
+        } // version of the document is XML 1.0
+        else {                    
+            // we need to check all chracters as per production rules of XML 1.0
+            int i = 0;
+            while (i < datalength){ 
                 char c = dataarray[i++];                           
                 if( XMLChar.isInvalid(c) ){
-  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
-					    "InvalidCharInComment", new Object [] {Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
+                    // check if this is a supplemental character
+                    if (XMLChar.isHighSurrogate(c) && i < datalength) {
+                        char c2 = dataarray[i++];
+                        if (XMLChar.isLowSurrogate(c2) && 
+                            XMLChar.isSupplemental(XMLChar.supplemental(c, c2))) {
+                            continue;
+                        }
+                    }
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
+                        "InvalidCharInComment", new Object [] {Integer.toString(dataarray[i-1], 16)});
+                    reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }  
                 else if (c == '-' && i<datalength && dataarray[i]=='-'){
-  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
-					    "DashDashInComment", null);
-					// invalid: '--' in comment                   
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
+                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
+                        "DashDashInComment", null);
+                    // invalid: '--' in comment                   
+                    reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }                                      
             }
-                        
-        }//end-else fDocument.isXMLVersion()
+            
+        } // end-else fDocument.isXMLVersion()
         
-    }//isCommentWF
+    } // isCommentWF
     
     /** NON-DOM: check if attribute value is well-formed
      * @param attributes
