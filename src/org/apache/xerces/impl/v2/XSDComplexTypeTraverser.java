@@ -92,18 +92,16 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         super(handler, errorReporter, gAttrCheck);
     }
 
-    int traverse(Element elmNode,
-                 XSDocumentInfo schemaDoc,
-                 SchemaGrammar grammar,
-                 Stack currentGroupNameStack) {
+    int traverseLocal(Element elmNode,
+                      XSDocumentInfo schemaDoc,
+                      SchemaGrammar grammar) {
 
         return -1;
     }
 
     int traverseGlobal (Element elmNode,
                         XSDocumentInfo schemaDoc,
-                        SchemaGrammar grammar,
-                        Stack currentGroupNameStack){
+                        SchemaGrammar grammar){
 
         return -1;
     }

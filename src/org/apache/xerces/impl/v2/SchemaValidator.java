@@ -84,6 +84,7 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -282,6 +283,7 @@ public class SchemaValidator
 
     /** Temporary element declaration. */
     private XSElementDecl fTempElementDecl = new XSElementDecl();
+    private Stack fElemDeclStack = new Stack();
 
     /** Temporary atribute declaration. */
     //private XSAttributeDecl fTempAttDecl = new XSAttributeDecl();
@@ -297,6 +299,8 @@ public class SchemaValidator
 
     /** Temporary string buffers. */
     private StringBuffer fBuffer = new StringBuffer();
+    /** stack to hold string for all nodes */
+    private Stack fBufferStack = new Stack();
 
     /**
      * This table has to be own by instance of XMLValidator and shared
@@ -409,7 +413,6 @@ public class SchemaValidator
 
 
         fGrammarResolver = new XSGrammarResolver();
-        fGrammarResolver.putGrammar(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
         fSchemaHandler = new XSDHandler(fGrammarResolver, fErrorReporter,
                                         fEntityResolver,
                                         fSymbolTable);
@@ -608,9 +611,7 @@ public class SchemaValidator
     public void startElement(QName element, XMLAttributes attributes)
         throws XNIException {
 
-        //???handleStartElement(element, attributes, false);
-        System.out.println("startElement: " + element.rawname);
-        doStart (element, attributes);
+        handleStartElement(element, attributes, false);
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes);
         }
@@ -628,10 +629,8 @@ public class SchemaValidator
     public void emptyElement(QName element, XMLAttributes attributes)
         throws XNIException {
 
-        //???handleStartElement(element, attributes, true);
-        //???handleEndElement(element, true);
-        System.out.println("start/endElement: " + element.rawname);
-        doStart (element, attributes);
+        handleStartElement(element, attributes, true);
+        handleEndElement(element, true);
         if (fDocumentHandler != null) {
             fDocumentHandler.emptyElement(element, attributes);
         }
@@ -707,25 +706,7 @@ public class SchemaValidator
      */
     public void endElement(QName element) throws XNIException {
 
-        //???handleEndElement(element, false);
-        System.out.println("endElement: " + element.rawname);
-        
-        SchemaGrammar grammar = null;
-        if (fTempElementDecl.fTypeNS != null)
-            grammar = fGrammarResolver.getGrammar(fTempElementDecl.fTypeNS);
-        if (grammar != null) {
-            XSType elemType = grammar.getTypeDecl(fTempElementDecl.fTypeIdx);
-            if (elemType.getXSType() == XSType.SIMPLE_TYPE) {
-                try {
-                    DatatypeValidator dv = (DatatypeValidator)elemType;
-                    String content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
-                    dv.validate(content, null);
-                } catch (InvalidDatatypeValueException e) {
-                    System.out.println("error: " + e.toString());
-                }
-            }
-       }
-        
+        handleEndElement(element, false);
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
         }
@@ -1225,7 +1206,12 @@ public class SchemaValidator
 
     } // handleEndElement(QName,boolean)*/
 
-    void doStart (QName element, XMLAttributes attrs) {
+    void handleStartElement(QName element, XMLAttributes attrs, boolean isEmpty) {
+        fBufferStack.push(fBuffer.toString());
+        fBuffer.setLength(0);
+        fElemDeclStack.push(fTempElementDecl);
+        fTempElementDecl = new XSElementDecl();
+        
         String sLocation = attrs.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_SCHEMALOCACTION);
         String nsLocation = attrs.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION);
         if (sLocation != null) {
@@ -1250,6 +1236,29 @@ public class SchemaValidator
             fTempElementDecl = fSchemaGrammar.getElementDecl(element.localpart, fTempElementDecl);
 
         fBuffer.setLength(0);
+    }
+    
+    void handleEndElement(QName element, boolean isEmpty) {
+        SchemaGrammar grammar = null;
+        if (fTempElementDecl.fTypeNS != null)
+            grammar = fGrammarResolver.getGrammar(fTempElementDecl.fTypeNS);
+        if (grammar != null) {
+            XSType elemType = grammar.getTypeDecl(fTempElementDecl.fTypeIdx);
+            if (elemType.getXSType() == XSType.SIMPLE_TYPE) {
+                try {
+                    DatatypeValidator dv = (DatatypeValidator)elemType;
+                    String content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
+                    dv.validate(content, null);
+                } catch (InvalidDatatypeValueException e) {
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               e.toString(), null,
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+        }
+        
+        fBuffer = new StringBuffer((String)fBufferStack.pop());
+        fTempElementDecl = (XSElementDecl)fElemDeclStack.pop();
     }
 
 } // class XMLDTDValidator

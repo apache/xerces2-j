@@ -207,7 +207,7 @@ public class DOMUtil {
         Node child = parent.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE &&
-                    ((NodeImpl)child).getReadOnly()) {
+                !((NodeImpl)child).getReadOnly()) {
                 return (Element)child;
             }
             child = child.getNextSibling();
@@ -277,7 +277,7 @@ public class DOMUtil {
         Node sibling = node.getNextSibling();
         while (sibling != null) {
             if (sibling.getNodeType() == Node.ELEMENT_NODE &&
-                    ((NodeImpl)sibling).getReadOnly()) {
+                !((NodeImpl)sibling).getReadOnly()) {
                 return (Element)sibling;
             }
             sibling = sibling.getNextSibling();
@@ -679,6 +679,11 @@ public class DOMUtil {
     } // getChildText(Node):String
 
     // return the name of this element
+    public static String getName(Node node) {
+        return node.getNodeName();
+    } // getLocalName(Element):  String
+
+    // return the local name of this element
     public static String getLocalName(Node node) {
         return node.getLocalName();
     } // getLocalName(Element):  String

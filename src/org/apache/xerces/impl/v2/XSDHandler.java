@@ -202,7 +202,6 @@ class XSDHandler {
     XSDSimpleTypeTraverser fSimpleTypeTraverser;
     XSDWildcardTraverser fWildCardTraverser;
 
-    public SchemaGrammar fBogusGrammar = null;    // REVISIT:  just so traversers can get something...
     // Constructors
 
     // it should be possible to use the same XSDHandler to parse
@@ -217,8 +216,6 @@ class XSDHandler {
         fGrammarResolver = gResolver;
         fSymbolTable = symbolTable;
         createTraversers();
-        // REVISIT:  as a totally temporary solution, establish a global grammar to pass to traversers
-        fBogusGrammar = new SchemaGrammar(fSymbolTable);
     } // end constructor
 
     // This method initiates the parse of a schema.  It will likely be
@@ -257,13 +254,6 @@ class XSDHandler {
         // sixth phase:  handle derivation constraint checking
         // and UPA
 
-        //revisit: just for testing
-//        SchemaGrammar sg = new SchemaGrammar(fSymbolTable);
-//        fGrammarResolver.putGrammar("http://www.ara.com/base", sg);
-//        Element root = (Element)DOMUtil.getRoot(schemaRoot);
-//        Element child = DOMUtil.getFirstChildElement(root);
-//        fElementTraverser.traverseGlobal(child, fRoot, sg);
-
         // and return.
         return fGrammarResolver.getGrammar(fRoot.fTargetNamespace);
     } // end parseSchema
@@ -282,7 +272,11 @@ class XSDHandler {
     protected XSDocumentInfo constructTrees(Document schemaRoot) {
         if(schemaRoot == null) return null;
         XSDocumentInfo currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker);
+        SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
+        fGrammarResolver.putGrammar(currSchemaInfo.fTargetNamespace, sg);
+
         Vector dependencies = new Vector();
+        dependencies.add(currSchemaInfo);
         Element rootNode = DOMUtil.getRoot(schemaRoot);
         
         String schemaNamespace=EMPTY_STRING;
@@ -298,10 +292,10 @@ class XSDHandler {
             else if (localName.equals(SchemaSymbols.ELT_IMPORT)) {
                 // have to handle some validation here too!
                 // call XSAttributeChecker to fill in attrs
-                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true);
+                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo.fNamespaceSupport);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 schemaNamespace = (String)includeAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
-                fAttributeChecker.returnAttrArray(includeAttrs);
+                fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo.fNamespaceSupport);
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
@@ -309,9 +303,9 @@ class XSDHandler {
                 // validation for redefine/include will be the same here; just
                 // make sure TNS is right (don't care about redef contents
                 // yet).
-                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true);
+                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo.fNamespaceSupport);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
-                fAttributeChecker.returnAttrArray(includeAttrs);
+                fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo.fNamespaceSupport);
                 newSchemaRoot = getSchema(EMPTY_STRING, schemaHint);
             }
             else {
@@ -483,6 +477,7 @@ class XSDHandler {
             XSDocumentInfo currSchemaDoc =
                 (XSDocumentInfo)schemasToProcess.pop();
             Document currDoc = currSchemaDoc.fSchemaDoc;
+            SchemaGrammar currSG = fGrammarResolver.getGrammar(currSchemaDoc.fTargetNamespace);
             if(DOMUtil.isHidden(currDoc)) {
                 // must have processed this already!
                 continue;
@@ -498,70 +493,46 @@ class XSDHandler {
                 DOMUtil.setHidden(globalComp);
                 String componentType = DOMUtil.getLocalName(globalComp);
                 // includes and imports will not show up here!
-                if(componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    // REVISIT:  according to 3.13.2 the PSVI needs the parent's attributes;
-                    // thus this should be done in buildGlobalNameRegistries not here...
-                    // REVISIT:  store returned int in grammar
-                    int annotationDeclIndex = fElementTraverser.traverseAnnotationDecl(globalComp, null, true);
-                } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
+                if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
                     for(Element redefinedComp = DOMUtil.getFirstVisibleChildElement(globalComp);
                             redefinedComp != null;
                             redefinedComp = DOMUtil.getNextVisibleSiblingElement(redefinedComp)) {
                         String redefinedComponentType = DOMUtil.getLocalName(redefinedComp);
                         DOMUtil.setHidden(redefinedComp);
                         if(redefinedComponentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                            // REVISIT:  put index in grammar!
-                            // REVISIT:  handle grammars
-                            int attrGroupIndex = fAttributeGroupTraverser.traverse(redefinedComp, currSchemaDoc, fBogusGrammar);
+                            fAttributeGroupTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
                         } else if(redefinedComponentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                            // REVISIT:  put index in grammar!
-                            // REVISIT:  handle grammars
-                            int complexTypeIndex = fComplexTypeTraverser.traverse(redefinedComp, currSchemaDoc, fBogusGrammar, new Stack());
+                            fComplexTypeTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
                         } else if(redefinedComponentType.equals(SchemaSymbols.ELT_GROUP)) {
-                            // REVISIT:  put index in grammar!
-                            // REVISIT:  handle grammars
-                            int groupIndex = fGroupTraverser.traverse(redefinedComp, currSchemaDoc, fBogusGrammar);
+                            fGroupTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
                         } else if (redefinedComponentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                            // REVISIT:  put index in grammar!
-                            // REVISIT:  handle grammars
-                            int simpleTypeIndex = fSimpleTypeTraverser.traverse(redefinedComp, currSchemaDoc, fBogusGrammar);
+                            fSimpleTypeTraverser.traverseGlobal(redefinedComp, currSchemaDoc, currSG);
                         } else if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
                             // REVISIT:  according to 3.13.2 the PSVI needs the parent's attributes;
                             // thus this should be done in buildGlobalNameRegistries not here...
-                            // REVISIT:  store returned int in grammar
-                            int annotationDeclIndex = fElementTraverser.traverseAnnotationDecl(globalComp, null, true);
+                            int annotationDeclIndex = fElementTraverser.traverseAnnotationDecl(globalComp, null, true, currSchemaDoc);
                         } else {
                             // We'll have reported an error here already...
                         }
                     } // end march through <redefine> children
                 } else if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
-                    // REVISIT:  put index in grammar!
-                    // REVISIT:  handle grammars
-                    int attrIndex = fAttributeTraverser.traverseGlobal(globalComp, currSchemaDoc, fBogusGrammar);
+                    fAttributeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
                 } else if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                    // REVISIT:  put index in grammar!
-                    // REVISIT:  handle grammars
-                    int attrGroupIndex = fAttributeGroupTraverser.traverse(globalComp, currSchemaDoc, fBogusGrammar);
+                    fAttributeGroupTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
                 } else if(componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                    // REVISIT:  put index in grammar!
-                    // REVISIT:  handle grammars
-                    int complexTypeIndex = fComplexTypeTraverser.traverse(globalComp, currSchemaDoc, fBogusGrammar, new Stack());
+                    fComplexTypeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
                 } else if(componentType.equals(SchemaSymbols.ELT_ELEMENT)) {
-                    // REVISIT:  put index in grammar!
-                    // REVISIT:  handle grammars
-                    int elementIndex = fElementTraverser.traverseGlobal(globalComp, currSchemaDoc, fBogusGrammar);
+                    fElementTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
                 } else if(componentType.equals(SchemaSymbols.ELT_GROUP)) {
-                    // REVISIT:  put index in grammar!
-                    // REVISIT:  handle grammars
-                    int groupIndex = fGroupTraverser.traverse(globalComp, currSchemaDoc, fBogusGrammar);
+                    fGroupTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
                 } else if(componentType.equals(SchemaSymbols.ELT_NOTATION)) {
-                    // REVISIT:  put index in grammar!
-                    // REVISIT:  handle grammars
-                    int notationIndex = fNotationTraverser.traverse(globalComp, currSchemaDoc, fBogusGrammar);
+                    fNotationTraverser.traverse(globalComp, currSchemaDoc, currSG);
                 } else if(componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                    // REVISIT:  put index in grammar!
-                    // REVISIT:  handle grammars
-                    int simpleTypeIndex = fSimpleTypeTraverser.traverse(globalComp, currSchemaDoc, fBogusGrammar);
+                    fSimpleTypeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
+                } else if(componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    // REVISIT:  according to 3.13.2 the PSVI needs the parent's attributes;
+                    // thus this should be done in buildGlobalNameRegistries not here...
+                    int annotationDeclIndex = fElementTraverser.traverseAnnotationDecl(globalComp, null, true, currSchemaDoc);
                 } else {
                     // we'll have already reported an error above if we get here.
                 }
@@ -594,74 +565,124 @@ class XSDHandler {
     // This method returns whatever the traverser it called returned;
     // this will be an index into an array of Objects of some kind 
     // that lives in the Grammar.
-    protected int getComponentDecl(XSDocumentInfo currSchema,
-                                   int declType,
-                                   QName declToTraverse) {
-        if (declToTraverse.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
-            return SchemaGrammar.SG_SchemaNS.getTypeIndex(declToTraverse.localpart);
+    protected int getGlobalDecl(XSDocumentInfo currSchema,
+                                int declType,
+                                QName declToTraverse) {
+        XSDocumentInfo schemaWithDecl = null;
+        SchemaGrammar sGrammar = null;
+        Element decl = null;
+
+        if (declToTraverse.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+            sGrammar = SchemaGrammar.SG_SchemaNS;
+        } else {
+            String declKey = null;
+            if (declToTraverse.uri != null) {
+                declKey = declToTraverse.uri+","+declToTraverse.localpart;
+            } else {
+                declKey = ","+declToTraverse.localpart; 
+            }
+            switch (declType) {
+            case ATTRIBUTE_TYPE :
+                decl = (Element)fUnparsedAttributeRegistry.get(declKey); 
+                break;
+            case ATTRIBUTEGROUP_TYPE :
+                decl = (Element)fUnparsedAttributeGroupRegistry.get(declKey); 
+                break;
+            case ELEMENT_TYPE :
+                decl = (Element)fUnparsedElementRegistry.get(declKey); 
+                break;
+            case GROUP_TYPE :
+                decl = (Element)fUnparsedGroupRegistry.get(declKey); 
+                break;
+            case IDENTITYCONSTRAINT_TYPE :
+                decl = (Element)fUnparsedIdentityConstraintRegistry.get(declKey);
+                break;
+            case NOTATION_TYPE :
+                decl = (Element)fUnparsedNotationRegistry.get(declKey); 
+                break;
+            case TYPEDECL_TYPE :
+                decl = (Element)fUnparsedTypeRegistry.get(declKey); 
+                break;
+            default:
+                // this would indicate some sort of internal error...
+                return -1;
+            }
+            schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
+            if(schemaWithDecl == null) {
+                // cannot get to this schema from the one containing the requesting decl
+                return -1;
+            }
+            sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
+        }
+
+        int retIndex = -1;
+                
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            retIndex = sGrammar.getAttributeIndex(declToTraverse.localpart);
+            break;
+        case ATTRIBUTEGROUP_TYPE :
+            retIndex = sGrammar.getAttributeGroupIndex(declToTraverse.localpart);
+            break;
+        case ELEMENT_TYPE :
+            retIndex = sGrammar.getElementIndex(declToTraverse.localpart);
+            break;
+        case GROUP_TYPE :
+            retIndex = sGrammar.getGroupIndex(declToTraverse.localpart);
+            break;
+        case IDENTITYCONSTRAINT_TYPE :
+            retIndex = -1;
+            break;
+        case NOTATION_TYPE :
+            retIndex = sGrammar.getNotationIndex(declToTraverse.localpart);
+            break;
+        case TYPEDECL_TYPE :
+            retIndex = sGrammar.getTypeIndex(declToTraverse.localpart);
+            break;
+        }
+
+        if (retIndex != -1)
+            return retIndex;
+        
+        if (decl != null) {
+            if (DOMUtil.isHidden(decl)) {
+                //REVISIT: report an error: circular reference
+                return -1;
+            }
+            
+            DOMUtil.setHidden(decl);
+
+            // back up the current NamespaceSupport, because we need to provide
+            // a fresh one to the traverGlobal methods.
+            schemaWithDecl.backupNSSupport();
+            
+            switch (declType) {
+            case ATTRIBUTE_TYPE :
+                retIndex = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            case ATTRIBUTEGROUP_TYPE :
+                retIndex = fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            case ELEMENT_TYPE :
+                retIndex = fElementTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            case GROUP_TYPE :
+                retIndex = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            case IDENTITYCONSTRAINT_TYPE :
+                retIndex = -1;
+            case NOTATION_TYPE :
+                retIndex = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
+            case TYPEDECL_TYPE :
+                if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
+                    retIndex = fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                else
+                    retIndex = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+            }
         }
         
-        String declKey = null;
-        if (declToTraverse.uri != null) {
-            declKey = declToTraverse.uri+","+declToTraverse.localpart;
-        } else {
-            declKey = ","+declToTraverse.localpart; 
-        }
-        Element decl = null;
-        switch (declType) {
-        case ATTRIBUTE_TYPE :
-            decl = (Element)fUnparsedAttributeRegistry.get(declKey); 
-            break;
-        case ATTRIBUTEGROUP_TYPE :
-            decl = (Element)fUnparsedAttributeGroupRegistry.get(declKey); 
-            break;
-        case ELEMENT_TYPE :
-            decl = (Element)fUnparsedElementRegistry.get(declKey); 
-            break;
-        case GROUP_TYPE :
-            decl = (Element)fUnparsedGroupRegistry.get(declKey); 
-            break;
-        case IDENTITYCONSTRAINT_TYPE :
-            decl = (Element)fUnparsedIdentityConstraintRegistry.get(declKey);
-            break;
-        case NOTATION_TYPE :
-            decl = (Element)fUnparsedNotationRegistry.get(declKey); 
-            break;
-        case TYPEDECL_TYPE :
-            decl = (Element)fUnparsedTypeRegistry.get(declKey); 
-            break;
-        default:
-            // this would indicate some sort of internal error...
-            return -1;
-        }
-        XSDocumentInfo schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
-        if(schemaWithDecl == null) {
-            // cannot get to this schema from the one containing the requesting decl
-            return -1;
-        }
-        // REVISIT:  pass real Grammar instead of null
-        switch (declType) {
-        case ATTRIBUTE_TYPE :
-            return fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, null);
-        case ATTRIBUTEGROUP_TYPE :
-            return fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, null);
-        case ELEMENT_TYPE :
-            return fElementTraverser.traverseGlobal(decl, schemaWithDecl, null);
-        case GROUP_TYPE :
-            return fGroupTraverser.traverseGlobal(decl, schemaWithDecl, null);
-        case IDENTITYCONSTRAINT_TYPE :
-            return -1;
-        case NOTATION_TYPE :
-            return fNotationTraverser.traverse(decl, schemaWithDecl, null);
-        case TYPEDECL_TYPE :
-            if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
-                return fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, null, null);
-            else
-                return fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, null);
-        }
-        // if we get here there's *really* something up...
-        return -1;
-    } // getComponentDecl(XSDocumentInfo, int, QName):  int
+        // restore the previous NamespaceSupport, so that the caller can get
+        // proper namespace binding.
+        schemaWithDecl.restoreNSSupport();
+            
+        return retIndex;
+    } // getGlobalDecl(XSDocumentInfo, int, QName):  int
 
     protected Object getDecl(String namespace, int declType, int declIndex) {
         SchemaGrammar sGrammar = fGrammarResolver.getGrammar(namespace);
@@ -702,11 +723,9 @@ class XSDHandler {
                                String schemaHint) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
-        System.err.println("in getSchema, namespace is " + schemaNamespace + " and schemaHint is " + schemaHint);
         try {
             schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
             if (schemaSource != null) {
-            System.err.println("====");
                 DOMParser schemaParser = new DOMParser(fSymbolTable);
                 // set ErrorHandler and EntityResolver (doesn't seem that
                 // XMLErrorHandler or XMLEntityResolver will work with
@@ -737,7 +756,7 @@ class XSDHandler {
 
     // construct schemaGrammars.
     private void createTraversers() {
-        fAttributeChecker = new XSAttributeChecker(this, fErrorReporter);
+        fAttributeChecker = new XSAttributeChecker(this, fErrorReporter, fSymbolTable);
         fAttributeGroupTraverser = new
                                    XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this,
@@ -786,48 +805,6 @@ class XSDHandler {
         fWildCardTraverser.reset();
 
     } // reset
-
-
-    
-    /*protected DatatypeValidator getDatatypeValidator(String uri, String localpart) {
-
-        DatatypeValidator dv = null;
-
-        if (uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
-            dv = fDatatypeRegistry.getDatatypeValidator( localpart );
-        }
-        else {
-            dv = fDatatypeRegistry.getDatatypeValidator( uri+","+localpart );
-        }
-
-        return dv;
-    }
-
-    protected  DatatypeValidator getSimpleTypeValidator (String qualifiedName){
-        return fDatatypeRegistry.getDatatypeValidator(qualifiedName);
-    }
-
-    protected void createSimpleType (String qualifiedName, DatatypeValidator baseValidator,
-                                Hashtable facetData, boolean isList){
-
-        try {
-            fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator,
-                                                       facetData, isList);
-        }
-        catch (Exception e) {
-            //REVISIT
-            //reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage()});
-        }
-    }
-    protected void createUnionSimpleType (String qualifiedName, Vector dTValidators){
-        try{
-            fDatatypeRegistry.createDatatypeValidator( qualifiedName, dTValidators);
-        }
-        catch (Exception e) {
-            //REVISIT
-            //reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage()});
-        }
-    }*/
 
     /** This method makes sure that
      * if this component is being redefined that it lives in the
@@ -1121,9 +1098,7 @@ class XSDHandler {
         String name = null;
         while(types.hasMoreElements()) {
             name = (String)types.nextElement();
-            System.err.println(name);
         }
-        System.err.println("traversing completed!"); 
     } // main
 
     public static class DummyResolver implements EntityResolver {

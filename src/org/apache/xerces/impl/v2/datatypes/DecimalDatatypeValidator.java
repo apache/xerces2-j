@@ -257,7 +257,7 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
     protected void checkContent(String content, Object state, Vector enumeration, boolean asBase)
     throws InvalidDatatypeValueException {
         // validate against parent type if any
-        if (this.fBaseValidator != null) {
+        if (fBaseValidator instanceof DecimalDatatypeValidator) {
             // validate content as a base type
             ((DecimalDatatypeValidator)fBaseValidator).checkContent(content, state, enumeration, true);
         }

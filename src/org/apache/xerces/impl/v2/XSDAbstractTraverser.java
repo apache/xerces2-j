@@ -100,10 +100,13 @@ abstract class XSDAbstractTraverser {
 
     // traver the annotation declaration
     // REVISIT: store annotation information for PSVI
-    int traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs, boolean isGlobal) {
+    // REVISIT: how to pass the parentAttrs? as DOM attributes?
+    //          as name/value pairs (string)? in parsed form?
+    int traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs,
+                               boolean isGlobal, XSDocumentInfo schemaDoc) {
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal);
-        fAttrChecker.returnAttrArray(attrValues);
+        Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
         for(Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
@@ -120,8 +123,8 @@ abstract class XSDAbstractTraverser {
             // General Attribute Checking
             // There is no difference between global or local appinfo/documentation,
             // so we assume it's always global.
-            attrValues = fAttrChecker.checkAttributes(child, true);
-            fAttrChecker.returnAttrArray(attrValues);
+            attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc.fNamespaceSupport);
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
         }
 
         // REVISIT: an annotation index should be returned when we support PSVI
@@ -130,6 +133,10 @@ abstract class XSDAbstractTraverser {
 
     // REVISIT: is it how we want to handle error reporting?
     void reportGenericSchemaError (String error) {
+        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                   error,
+                                   null,
+                                   XMLErrorReporter.SEVERITY_ERROR);
     }
 
     //
@@ -154,8 +161,7 @@ abstract class XSDAbstractTraverser {
      * Element/Attribute traversers call this method to check whether
      * the type is NOTATION without enumeration facet
      */
-    void checkNotationType(String refName, String typeNS, int typeIdx) {
-        XSType typeDecl = (XSType)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, typeIdx);
+    void checkNotationType(String refName, XSType typeDecl) {
         if (typeDecl instanceof NOTATIONDatatypeValidator) {
             //REVISIT: to check whether there is an enumeration facet
             //if (((DatatypeValidator)typeDecl).hasEnumFacet) {

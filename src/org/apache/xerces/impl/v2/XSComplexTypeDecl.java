@@ -88,6 +88,10 @@ public class XSComplexTypeDecl implements XSType {
     public short getXSType () {
         return COMPLEX_TYPE;
     }
+    
+    public String getXSTypeName() {
+        return fTypeName.localpart;
+    }
 
     private static final short CT_IS_ABSTRACT = 1;
     private static final short CT_HAS_TYPE_ID = 2;

@@ -69,6 +69,10 @@ class XSGrammarResolver {
      */
     private Hashtable fGrammarRegistry = new Hashtable();
 
+    XSGrammarResolver() {
+        putGrammar(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
+    }
+
     /**
      * Get the schema grammar for the specified namespace
      * 

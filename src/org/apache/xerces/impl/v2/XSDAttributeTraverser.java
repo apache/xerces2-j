@@ -103,7 +103,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
                                 SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false);
+        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false, schemaDoc.fNamespaceSupport);
 
         String  defaultAtt = (String)  attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
         String  fixedAtt   = (String)  attrValues[XSAttributeChecker.ATTIDX_FIXED];
@@ -114,14 +114,14 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         // get 'attribute declaration'
         int attrIdx = -1;
         if (refAtt != null) {
-            attrIdx = fSchemaHandler.getComponentDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt);
+            attrIdx = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt);
             if (attrIdx == -1) {
                 reportGenericSchemaError("attribute not found: "+refAtt.uri+","+refAtt.localpart);
             }
 
             Element child = DOMUtil.getFirstChildElement(attrDecl);
             if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(child, attrValues, false);
+                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
             }
     
@@ -143,7 +143,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
             fixedAtt = null;
         }
         
-        fAttrChecker.returnAttrArray(attrValues);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
         //src-attribute
         
@@ -164,14 +164,14 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         if (defaultAtt != null) {
             String namespace = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
             XSAttributeDecl attr = (XSAttributeDecl)fSchemaHandler.getDecl(namespace, XSDHandler.ATTRIBUTE_TYPE, attrIdx);
+            DatatypeValidator type = (DatatypeValidator)fSchemaHandler.getDecl(attr.fTypeNS, XSDHandler.TYPEDECL_TYPE, attr.fTypeIdx);
 
             // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4). 
-            if (!checkDefaultValid(defaultAtt, attr.fTypeNS, attr.fTypeIdx, nameAtt)) {
+            if (!checkDefaultValid(defaultAtt, type, nameAtt)) {
                 reportGenericSchemaError ("a-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in attribute " + nameAtt);
             }
 
             // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}. 
-            DatatypeValidator type = (DatatypeValidator)fSchemaHandler.getDecl(attr.fTypeNS, XSDHandler.TYPEDECL_TYPE, attr.fTypeIdx);
             if (type instanceof IDDatatypeValidator) {
                 reportGenericSchemaError ("a-props-correct.3: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- attribute " + nameAtt);
             }
@@ -190,9 +190,9 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
                                  SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, true);
+        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, true, schemaDoc.fNamespaceSupport);
         int attrIdx = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, true);
-        fAttrChecker.returnAttrArray(attrValues);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
         return attrIdx;
     }
@@ -252,7 +252,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         // get 'annotation'
         Element child = DOMUtil.getFirstChildElement(attrDecl);
         if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-			traverseAnnotationDecl(child, attrValues, false);
+			traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
 		}
 
@@ -266,7 +266,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
             String childName = DOMUtil.getLocalName(child);
 
             if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                attrType = fSchemaHandler.fSimpleTypeTraverser.traverse(child, schemaDoc, grammar);
+                attrType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar);
                 if (attrType != -1)
                     typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
@@ -276,18 +276,15 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // Handler type attribute
         if (attrType == -1 && typeAtt != null) {
-            attrType = fSchemaHandler.getComponentDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
+            attrType = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
             if (attrType != -1)
                 typeNS = typeAtt.uri;
             else
                 reportGenericSchemaError("type not found: "+typeAtt.uri+","+typeAtt.localpart+" for element '"+nameAtt+"'");
         }
         
-        // check for NOTATION type        
-        checkNotationType(nameAtt, typeNS, attrType);
-
         if (attrType == -1) {
-            attrType = fSchemaHandler.getComponentDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_SIMPLE_TYPE);
+            attrType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_SIMPLE_TYPE);
             typeNS = SchemaSymbols.URI_SCHEMAFORSCHEMA;
         }
 
@@ -343,19 +340,21 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         }
 
         // Step 5: check 3.2.6 constraints
-        
+        DatatypeValidator type = (DatatypeValidator)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, attrType);
+        // check for NOTATION type        
+        checkNotationType(nameAtt, type);
+
         // a-props-correct
 
         // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4). 
         if (defaultAtt != null) {
-            if (!checkDefaultValid(defaultAtt, typeNS, attrType, nameAtt)) {
+            if (!checkDefaultValid(defaultAtt, type, nameAtt)) {
                 reportGenericSchemaError ("a-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in attribute " + nameAtt);
             }
         }
 
         // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}. 
         if (defaultAtt != null) {
-            DatatypeValidator type = (DatatypeValidator)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, attrType);
             if (type instanceof IDDatatypeValidator) {
                 reportGenericSchemaError ("a-props-correct.3: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- attribute " + nameAtt);
             }
@@ -379,9 +378,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
     }
 
     // return whether the constraint value is valid for the given type
-    boolean checkDefaultValid(String defaultStr, String typeNS, int elementType, String referName) {
-
-        DatatypeValidator dv = (DatatypeValidator)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, elementType);
+    boolean checkDefaultValid(String defaultStr, DatatypeValidator dv, String referName) {
 
         boolean ret = true;
 

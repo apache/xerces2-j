@@ -62,11 +62,9 @@ import org.w3c.dom.*;
 import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
-/*import org.apache.xerces.validators.common.XMLAttributeDecl;
-import org.apache.xerces.validators.common.GrammarResolver;
-import org.apache.xerces.validators.common.Grammar;
-*/
+import org.apache.xerces.util.NamespaceSupport;
 
 /**
  * Class <code>XSAttributeCheck</code> is used to check the validity of attributes
@@ -957,19 +955,25 @@ public class XSAttributeChecker {
     // used to store utility reference: error reproter. set via constructor.
     protected XMLErrorReporter fErrorReporter = null;
 
+    // used to store symbols.
+    protected SymbolTable fSymbolTable = null;
+
     // used to store the mapping from processed element to attributes
     protected Hashtable fNonSchemaAttrs = new Hashtable();
 
     // constructor. Sets fErrorReproter and get datatype validators
     public XSAttributeChecker (XSDHandler schemaHandler,
-                               XMLErrorReporter er) {
+                               XMLErrorReporter er,
+                               SymbolTable symbolTable) {
         fSchemaHandler = schemaHandler;
         fErrorReporter = er;
+        fSymbolTable = symbolTable;
     }
 
     public void reset() {
         fIdDefs.clear();
         // REVISIT: set new error reporter?
+        // REVISIT: set new symbol table?
         //???fErrorReporter = null;
         fNonSchemaAttrs.clear();
     }
@@ -983,10 +987,14 @@ public class XSAttributeChecker {
      * @param: isGlobal   - whether a child of <schema> or <redefine>
      * @return: Hashtable - list of attributes and values
      */
-    public Object[] checkAttributes(Element element, boolean isGlobal) {
+    public Object[] checkAttributes(Element element, boolean isGlobal,
+                                    NamespaceSupport nsSupport) {
         if (element == null)
             return null;
 
+        // update NamespaceSupport
+        resolveNamespace(element, nsSupport);
+        
         String uri = DOMUtil.getNamespaceURI(element);
         String elName = DOMUtil.getLocalName(element), name;
 
@@ -1026,7 +1034,7 @@ public class XSAttributeChecker {
         Attr[] attrs = DOMUtil.getAttrs(element);
         Attr sattr = null;
         for (int i = 0; i < attrs.length; i++) {
-            sattr = attrs[i++];
+            sattr = attrs[i];
             // get the attribute name/value
             //String attrName = DOMUtil.getLocalName(sattr);
             String attrName = sattr.getName();
@@ -1112,7 +1120,7 @@ public class XSAttributeChecker {
                         retValue = new Integer(attrVal);
                         break;
                     case DT_QNAME:
-                        retValue = resolveQName(attrVal);
+                        retValue = resolveQName(attrVal, nsSupport);
                         break;
                     default:
                         retValue = attrVal;
@@ -1122,7 +1130,7 @@ public class XSAttributeChecker {
                     attrValues[oneAttr.valueIndex] = retValue;
                 }
                 else {
-                    retValue = validate(attrName, attrVal, oneAttr.dvIndex);
+                    retValue = validate(attrName, attrVal, oneAttr.dvIndex, nsSupport);
                     //attrValues.put(attrName, retValue);
                     attrValues[oneAttr.valueIndex] = retValue;
                 }
@@ -1158,7 +1166,8 @@ public class XSAttributeChecker {
         return attrValues;
     }
 
-    private Object validate(String attr, String value, int dvIndex) throws InvalidDatatypeValueException {
+    private Object validate(String attr, String value, int dvIndex,
+                            NamespaceSupport nsSupport) throws InvalidDatatypeValueException {
         if (value == null)
             return null;
 
@@ -1291,7 +1300,7 @@ public class XSAttributeChecker {
                     retValue = fExtraDVs[DT_QNAME].validate(token, null);
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
-                    retValue = resolveQName(token);
+                    retValue = resolveQName(token, nsSupport);
                     memberType.addElement(retValue);
                 }
                 retValue = memberType;
@@ -1483,17 +1492,15 @@ public class XSAttributeChecker {
     }
 
     //REVISIT: how to resolver qname?
-    protected QName resolveQName (String attrVal) {
-        String prefix = "";
+    protected QName resolveQName (String attrVal, NamespaceSupport nsSupport) {
+        String prefix = XSDHandler.EMPTY_STRING;
         String localpart = attrVal;
         int colonptr = attrVal.indexOf(":");
         if ( colonptr > 0) {
-            prefix = attrVal.substring(0,colonptr);
+            prefix = fSymbolTable.addSymbol(attrVal.substring(0,colonptr));
             localpart = attrVal.substring(colonptr+1);
         }
-        String uri = fSchemaHandler.resolvePrefixToURI(prefix);
-        //REVISIT: how to resolve prefix to uri
-        uri = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+        String uri = nsSupport.getURI(prefix);
         return new QName(prefix, localpart, attrVal, uri);
     }
 
@@ -1535,7 +1542,10 @@ public class XSAttributeChecker {
     }
     
     // return an array back to the pool
-    public void returnAttrArray (Object[] attrArray) {
+    public void returnAttrArray(Object[] attrArray, NamespaceSupport nsSupport) {
+        // pop the namespace context
+        nsSupport.popContext();
+        
         // if 1. the pool is full; 2. the array is null;
         // 3. the array is of wrong size; 4. the array is already returned
         // then we can't accept this array to be returned
@@ -1550,6 +1560,31 @@ public class XSAttributeChecker {
         attrArray[ATTIDX_ISRETURNED] = Boolean.TRUE;
         // and put it into the pool
         fArrayPool[--fPoolPos] = attrArray;
+    }
+
+    public void resolveNamespace(Element element, NamespaceSupport nsSupport) {
+        // push the namespace context
+        nsSupport.pushContext();
+
+        // search for new namespace bindings
+        Attr[] attrs = DOMUtil.getAttrs(element);
+        Attr sattr = null;
+        String rawname, prefix, uri;
+        for (int i = 0; i < attrs.length; i++) {
+            sattr = attrs[i];
+            rawname = DOMUtil.getName(sattr);
+            if (rawname.startsWith("xmlns")) {
+                prefix = null;
+                if (rawname.length() == 5)
+                    prefix = XSDHandler.EMPTY_STRING;
+                else if (rawname.charAt(5) == ':')
+                    prefix = fSymbolTable.addSymbol(DOMUtil.getLocalName(sattr));
+                if (prefix != null) {
+                    uri = DOMUtil.getValue(sattr);
+                    nsSupport.declarePrefix(prefix, uri.length()!=0 ? uri : null);
+                }
+            }
+        }
     }
 }
 

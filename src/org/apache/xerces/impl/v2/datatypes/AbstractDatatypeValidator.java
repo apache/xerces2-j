@@ -134,6 +134,11 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
     public short getXSType (){
         return XSType.SIMPLE_TYPE;
     }
+    
+    public String fLocalName = null;
+    public String getXSTypeName() {
+        return fLocalName;
+    }
 
     protected int fFinalSet = 0;
     public int getFinalSet() {

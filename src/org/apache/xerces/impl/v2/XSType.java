@@ -71,5 +71,6 @@ public interface XSType {
    public static final short ANYSIMPLE_TYPE = UR_TYPE | SIMPLE_TYPE;
 
    public short getXSType();
+   public String getXSTypeName();
   
 } // class XSType

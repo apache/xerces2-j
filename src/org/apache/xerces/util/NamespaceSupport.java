@@ -128,6 +128,7 @@ public class NamespaceSupport
      * the prefixes declared in the specified context.
      */
     public NamespaceSupport(NamespaceContext context) {
+        pushContext();
         while (context != null) {
             int count = context.getDeclaredPrefixCount();
             for (int i = 0; i < count; i++) {

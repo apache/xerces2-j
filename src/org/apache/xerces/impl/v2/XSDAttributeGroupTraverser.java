@@ -81,9 +81,9 @@ class  XSDAttributeGroupTraverser extends XSDAbstractTraverser{
         super(handler, errorReporter, gAttrCheck);
     }
 
-    int traverse(Element elmNode,
-                 XSDocumentInfo schemaDoc,
-                 SchemaGrammar grammar) {
+    int traverseLocal(Element elmNode,
+                      XSDocumentInfo schemaDoc,
+                      SchemaGrammar grammar) {
 
         return -1;
     }
