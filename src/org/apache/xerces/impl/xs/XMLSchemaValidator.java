@@ -1314,6 +1314,10 @@ public class XMLSchemaValidator
         fValidationManager.addValidationState(fValidationState);
         fValidationState.setSymbolTable(fSymbolTable);
 
+        //reset XSDDescription
+        fLocationPairs.clear();
+        fNoNamespaceLocationArray.resize(0 , 2) ;
+
         // get schema location properties
         try {
             fExternalSchemas = (String)componentManager.getProperty(SCHEMA_LOCATION);
@@ -1363,10 +1367,6 @@ public class XMLSchemaValidator
         // logic for resetting grammar-related components moved
         // to schema loader
         fSchemaLoader.reset();
-
-        //reset XSDDescription
-        fLocationPairs.clear();
-        fNoNamespaceLocationArray.resize(0 , 2) ;
 
         // initialize state
         fCurrentElemDecl = null;
