@@ -60,13 +60,12 @@ package org.apache.xerces.parsers;
 import java.io.IOException;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XML11DocumentScannerImpl;
-import org.apache.xerces.impl.XML11DTDScannerImpl;
+import org.apache.xerces.impl.XMLVersionDetector;
 import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.impl.XML11EntityManager;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.dv.DTDDVFactory;
 
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -77,8 +76,9 @@ import org.apache.xerces.xni.parser.XMLDTDScanner;
 /**
  * This class is the configuration used to parse XML 1.1 documents.
  * It extends the StandardParserConfiguration by making
- * use of classes which extend the basic scanner and entity management
- * implementations.  
+ * use of a special scanner which detects the version of the document
+ * being scanned and modifies the pipeline to employ
+ * scanners optimal for the document being scanned.
  *
  * @author Neil Graham, IBM
  *
@@ -90,6 +90,13 @@ public class XML11Configuration
     //
     // Constants
     //
+    protected final static String XML11_DATATYPE_VALIDATOR_FACTORY = "org.apache.xerces.impl.dv.dtd.XML11DTDDVFactoryImpl";
+
+    // 
+    // Data
+    //
+
+    protected XMLVersionDetector fVersionDetector = null;
 
     //
     // Constructors
@@ -150,19 +157,24 @@ public class XML11Configuration
 
     // factory methods
 
-    /** Creates an entity manager. */
-    protected XMLEntityManager createEntityManager() {
-        return new XML11EntityManager();
-    } // createEntityManager():XMLEntityManager
-
     /** Create a document scanner. */
     protected XMLDocumentScanner createDocumentScanner() {
-        return new XML11DocumentScannerImpl();
+        if(fVersionDetector == null) {
+            fVersionDetector = new XMLVersionDetector();
+        }
+        return fVersionDetector;
     } // createDocumentScanner():XMLDocumentScanner
 
     /** Create a DTD scanner. */
     protected XMLDTDScanner createDTDScanner() {
-        return new XML11DTDScannerImpl();
+        if(fVersionDetector == null) {
+            fVersionDetector = new XMLVersionDetector();
+        }
+        return fVersionDetector;
     } // createDTDScanner():XMLDTDScanner
 
+    /** Create a datatype validator factory. */
+    protected DTDDVFactory createDatatypeValidatorFactory() {
+        return DTDDVFactory.getInstance(XML11_DATATYPE_VALIDATOR_FACTORY);
+    } // createDatatypeValidatorFactory():DatatypeValidatorFactory
 } // class XML11Configuration

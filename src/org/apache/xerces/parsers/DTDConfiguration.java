@@ -322,7 +322,7 @@ public class DTDConfiguration
             //WARN_ON_UNDECLARED_ELEMDEF,   // from XMLDTDScannerImpl
             //ALLOW_JAVA_ENCODINGS,         // from XMLEntityManager
             CONTINUE_AFTER_FATAL_ERROR,
-            //LOAD_EXTERNAL_DTD,    // from XMLDTDScannerImpl
+            LOAD_EXTERNAL_DTD,    // from XMLDTDScannerImpl
             //NOTIFY_BUILTIN_REFS,  // from XMLDocumentFragmentScannerImpl
             //NOTIFY_CHAR_REFS,		// from XMLDocumentFragmentScannerImpl
             //WARN_ON_DUPLICATE_ENTITYDEF,  // from XMLEntityManager
@@ -334,7 +334,7 @@ public class DTDConfiguration
         //setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);  // from XMLDTDScannerImpl
         //setFeature(ALLOW_JAVA_ENCODINGS, false);      // from XMLEntityManager
         setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
-        //setFeature(LOAD_EXTERNAL_DTD, true);      // from XMLDTDScannerImpl
+        setFeature(LOAD_EXTERNAL_DTD, true);      // from XMLDTDScannerImpl
         //setFeature(NOTIFY_BUILTIN_REFS, false);   // from XMLDocumentFragmentScannerImpl
         //setFeature(NOTIFY_CHAR_REFS, false);      // from XMLDocumentFragmentScannerImpl
         //setFeature(WARN_ON_DUPLICATE_ENTITYDEF, false);   // from XMLEntityManager
@@ -663,14 +663,20 @@ public class DTDConfiguration
         if (fDTDScanner != null) {
             if (fDTDProcessor != null) {
                 fDTDScanner.setDTDHandler(fDTDProcessor);
+                fDTDProcessor.setDTDSource(fDTDScanner);
                 fDTDProcessor.setDTDHandler(fDTDHandler);
+                fDTDHandler.setDTDSource(fDTDProcessor);
                 
                 fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
+                fDTDProcessor.setDTDContentModelSource(fDTDScanner);
                 fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
+                fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
             }
             else {
                 fDTDScanner.setDTDHandler(fDTDHandler);
+                fDTDHandler.setDTDSource(fDTDScanner);
                 fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
+                fDTDContentModelHandler.setDTDContentModelSource(fDTDScanner);
             }
         }
 
