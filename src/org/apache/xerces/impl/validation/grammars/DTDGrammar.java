@@ -59,9 +59,7 @@ package org.apache.xerces.impl.validation.grammars;
 
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
-import org.apache.xerces.xni.XMLDTDContentModelSource;
 import org.apache.xerces.xni.XMLDTDHandler;
-import org.apache.xerces.xni.XMLDTDSource;
 import org.apache.xerces.impl.validation.Grammar;
 import org.xml.sax.SAXException;
 
@@ -71,7 +69,7 @@ import org.xml.sax.SAXException;
  */
 public class DTDGrammar
     extends Grammar
-    implements XMLDTDSource, XMLDTDHandler, XMLDTDContentModelSource, XMLDTDContentModelHandler {
+    implements XMLDTDHandler, XMLDTDContentModelHandler {
 
     //
     // Data
@@ -100,18 +98,6 @@ public class DTDGrammar
      */
     public DTDGrammar(String targetNamespace) {
     }
-
-    //
-    // XMLDTDSource methods
-    //
-
-    /**
-     * setDTDHandler
-     * 
-     * @param dtdHandler 
-     */
-    public void setDTDHandler(XMLDTDHandler dtdHandler) {
-    } // setDTDHandler
 
     //
     // XMLEntityHandler methods
@@ -289,18 +275,6 @@ public class DTDGrammar
     public void endDTD()
         throws SAXException {
     } // endDTD
-
-    //
-    // XMLDTDContentModelSource methods
-    //
-
-    /**
-     * setDTDContentModelHandler
-     * 
-     * @param dtdContentModelHandler 
-     */
-    public void setDTDContentModelHandler(XMLDTDContentModelHandler dtdContentModelHandler) {
-    } // setDTDContentModelHandler
 
     //
     // XMLDTDContentModelHandler methods
