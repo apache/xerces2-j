@@ -358,7 +358,7 @@ public abstract class XMLScanner
      * @param value The string to fill in with the attribute value
      * @return The name of the attribute
      *
-     * <strong>Note:</strong> This method uses fString, anything in it
+     * <strong>Note:</strong> This method uses fStringBuffer, anything in it
      * at the time of calling is lost.
      */
     public String scanPseudoAttribute(XMLString value) 
