@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -642,53 +642,57 @@ class RegexParser {
           case T_PLUS:  return this.processPlus(tok);
           case T_QUESTION: return this.processQuestion(tok);
           case T_CHAR:
-            if (this.chardata == '{') {
-                                                // this.offset -> next of '{'
-                int off = this.offset;
+            if (this.chardata == '{' && this.offset < this.regexlen) {
+
+                int off = this.offset;          // this.offset -> next of '{'
                 int min = 0, max = -1;
-                if (off >= this.regexlen)  break;
-                ch = this.regex.charAt(off++);
-                if (ch != ',' && (ch < '0' || ch > '9'))  break;
-                if (ch != ',') {                // 0-9
-                    min = ch-'0';
+
+                if ((ch = this.regex.charAt(off++)) >= '0' && ch <= '9') {
+
+                    min = ch -'0';
                     while (off < this.regexlen
                            && (ch = this.regex.charAt(off++)) >= '0' && ch <= '9') {
                         min = min*10 +ch-'0';
-                        ch = -1;
                     }
-                    if (ch < 0)  break;
                 }
-                //if (off >= this.regexlen)  break;
+                else {
+                    throw ex("parser.quantifier.1", this.offset);
+                }
+
                 max = min;
                 if (ch == ',') {
-                    if (off >= this.regexlen
-                        || ((ch = this.regex.charAt(off++)) < '0' || ch > '9')
-                        && ch != '}')
-                        break;
-                    if (ch == '}') {
-                        max = -1;           // {min,}
-                    } else {
-                        max = ch-'0';       // {min,max}
+
+                   if (off >= this.regexlen) {
+                       throw ex("parser.quantifier.3", this.offset);
+                   }
+                   else if ((ch = this.regex.charAt(off++)) >= '0' && ch <= '9') {                       
+
+                        max = ch -'0';       // {min,max}
                         while (off < this.regexlen
                                && (ch = this.regex.charAt(off++)) >= '0'
                                && ch <= '9') {
                             max = max*10 +ch-'0';
-                            ch = -1;
                         }
-                        if (ch < 0)  break;
-                        //if (min > max)
-                        //    throw new ParseException("parseFactor(): min > max: "+min+", "+max);
+
+                        if (min > max)
+                            throw ex("parser.quantifier.4", this.offset);
+                   }
+                   else { // assume {min,}
+                        max = -1;           
                     }
                 }
-                if (ch != '}')  break;
-                                                // off -> next of '}'
-                if (this.checkQuestion(off)) {
+
+               if (ch != '}')
+                   throw ex("parser.quantifier.2", this.offset);
+
+               if (this.checkQuestion(off)) {  // off -> next of '}'
                     tok = Token.createNGClosure(tok);
                     this.offset = off+1;
                 } else {
                     tok = Token.createClosure(tok);
                     this.offset = off;
                 }
+
                 tok.setMin(min);
                 tok.setMax(max);
                 //System.err.println("CLOSURE: "+min+", "+max);
