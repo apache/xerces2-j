@@ -89,6 +89,14 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>Current source code status information</td>
    </tr>
    <tr>
+    <td>TODO</td>
+    <td>Current list of "todo" items</td>
+   </tr>
+   <tr>
+    <td>ISSUES</td>
+    <td>Current open issues that need to be resolved</td>
+   </tr>
+   <tr>
     <td>data/</td>
     <td>Directory containing sample XML data files</td>
    </tr>

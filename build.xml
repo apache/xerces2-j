@@ -174,9 +174,6 @@ Copyright:
         </fileset>
     </copy>
     
-    
-    <delete dir="${build.src}/whiteboard"/>
-
     <!-- substitute tokens as needed -->
     <replace file="${build.src}/${version.file}" token="@@version@@" value="${version}"/>
     <!-- <replace file="${build.src}/${version.file}" token="@@year@@" value="${year}"/> -->
@@ -369,6 +366,8 @@ Copyright:
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
     <copy file="STATUS" tofile="${distsrc.dir}/STATUS"/>
+    <copy file="TODO" tofile="${distsrc.dir}/TODO"/>
+    <copy file="ISSUES" tofile="${distsrc.dir}/ISSUES"/>
     <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
     <copy file="${basedir}/build.sh" tofile="${distsrc.dir}/build.sh" />
     <chmod file="${distsrc.dir}/build.sh" perm="ugo+rx" />
@@ -386,7 +385,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Prepares the binary distribution                                    -->
   <!-- =================================================================== -->
-  <target name="pack-bin" depends="jar, sampjar, javadocs, docs">
+  <target name="pack-bin" depends="jars, javadocs, docs">
 
     <echo message="Building the binary distribution files (zip,tar)"/>
     <delete dir="${distbin.dir}"/>
@@ -394,7 +393,6 @@ Copyright:
     <mkdir dir="${distbin.dir}/data"/>
     <mkdir dir="${distbin.dir}/docs"/>
     <mkdir dir="${distbin.dir}/docs/html"/>
-    <mkdir dir="${distbin.dir}/docs/apiDocs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
     <copy todir="${distbin.dir}/data" >
@@ -408,11 +406,6 @@ Copyright:
         <fileset dir="${build.docs}" />
     </copy>
 
-    <!--
-    <copy todir="${distbin.dir}/docs/apiDocs" >
-        <fileset dir="${build.javadocs}" />
-    </copy>
-    -->
     <copy todir="${distbin.dir}/docs/api" >
         <fileset dir="${build.dir}/docs/api" />
     </copy>
@@ -457,7 +450,7 @@ Copyright:
   <target name="test" depends="sampjar">
     <echo message="Performing sanity test for ${Name} ${version} ..." />
     <echo message="Using classpath=&apos;${build.dir}/${name}Samples.jar;${build.dir}/${name}.jar&apos;" />
-    <echo message="Running SAXCount ..." />
+    <echo message="Running sax.Counter ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
           classname="sax.Counter"
@@ -478,10 +471,12 @@ Copyright:
           classname="dom.Writer"
           args="${data.dir}/personal.xml"/>
     <echo message="Running DOMFilter ..." />
+    <!--
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.DOMFilter"
           args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
+    -->
     <!-- The following are samples but not command-line applications.
     <echo message="Running IteratorView ..." />
     <java fork="yes"
@@ -517,8 +512,6 @@ Copyright:
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
   <target name="clean" depends="init">
-    <delete file="${name}.jar"/>
-    <delete file="${name}Samples.jar"/>
     <delete dir="${build.dir}"/>
   </target>
 
