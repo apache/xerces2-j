@@ -104,34 +104,81 @@ final public class XMLReaderFactory
     public static XMLReader createXMLReader ()
 	throws SAXException
     {
-	String		className = null;
-	ClassLoader	loader = NewInstance.getClassLoader ();
+	    String		className = null;
+        SecuritySupport ss = SecuritySupport.getInstance();
+	    ClassLoader	loader = NewInstance.getClassLoader ();
 	
-	// 1. try the JVM-instance-wide system property
-	try { className = System.getProperty (property); }
-	catch (Exception e) { /* normally fails for applets */ }
+	    // 1. try the JVM-instance-wide system property 
+        try {
+            className = ss.getSystemProperty(property);
+	    } catch (Exception e) { /* normally fails for applets */ }
 
 	// 2. if that fails, try META-INF/services/
 	if (className == null) {
-	    try {
-		String		service = "META-INF/services/" + property;
-		InputStream	in;
-		BufferedReader	reader;
+        String		service = "META-INF/services/" + property;
 
-		if (loader == null)
-		    in = ClassLoader.getSystemResourceAsStream (service);
-		else
-		    in = loader.getResourceAsStream (service);
+        InputStream is = null;
 
-		if (in != null) {
-		    reader = new BufferedReader (
-			    new InputStreamReader (in, "UTF8"));
-		    className = reader.readLine ();
-		    in.close ();
-		}
-	    } catch (Exception e) {
-	    }
+        // First try the Context ClassLoader
+        ClassLoader cl = ss.getContextClassLoader();
+        if (cl != null) {
+            is = ss.getResourceAsStream(cl, service);
+
+            // If no provider found then try the current ClassLoader
+            if (is == null) {
+                cl = XMLReaderFactory.class.getClassLoader();
+                is = ss.getResourceAsStream(cl, service);
+            }
+        } else {
+            // No Context ClassLoader or JDK 1.1 so try the current
+            // ClassLoader
+            cl = XMLReaderFactory.class.getClassLoader();
+            is = ss.getResourceAsStream(cl, service);
+        }
+
+        if (is != null) {
+
+            // Read the service provider name in UTF-8 as specified in
+            // the jar spec.  Unfortunately this fails in Microsoft
+            // VJ++, which does not implement the UTF-8
+            // encoding. Theoretically, we should simply let it fail in
+            // that case, since the JVM is obviously broken if it
+            // doesn't support such a basic standard.  But since there
+            // are still some users attempting to use VJ++ for
+            // development, we have dropped in a fallback which makes a
+            // second attempt using the platform's default encoding. In
+            // VJ++ this is apparently ASCII, which is a subset of
+            // UTF-8... and since the strings we'll be reading here are
+            // also primarily limited to the 7-bit ASCII range (at
+            // least, in English versions), this should work well
+            // enough to keep us on the air until we're ready to
+            // officially decommit from VJ++. [Edited comment from
+            // jkesselm]
+            BufferedReader rd;
+            try {
+                rd = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            } catch (java.io.UnsupportedEncodingException e) {
+                rd = new BufferedReader(new InputStreamReader(is));
+            }
+        
+            try {
+                // XXX Does not handle all possible input as specified by the
+                // Jar Service Provider specification
+                className = rd.readLine();
+                rd.close();
+            } catch (Exception x) {
+                // No provider found
+            } 
+        }
 	}
+    // REVISIT:  there is a comment in the original FactoryFinder codde to the effect:
+    //
+    // ClassLoader because we want to avoid the case where the
+    // resource file was found using one ClassLoader and the
+    // provider class was instantiated using a different one.
+    //
+    // But it's not clear how the class loader "cl" (now out of scope!)
+    // that loaded the inputStream would matter here...
 
 	// 3. Distro-specific fallback
 	if (className == null) {

@@ -23,32 +23,61 @@ import java.lang.reflect.InvocationTargetException;
  * <p>This class contains a static method for creating an instance of a
  * class from an explicit class name.  It tries to use the thread's context
  * ClassLoader if possible and falls back to using
- * Class.forName(String).</p>
+ * Class.forName(String).  It also takes into account JDK 1.2+'s
+ * AccessController mechanism for performing its actions.  </p>
  *
- * <p>This code is designed to compile and run on JDK version 1.1 and later
- * including versions of Java 2.</p>
+ * <p>This code is designed to run on JDK version 1.1 and later and compile
+ * on versions of Java 2 and later.</p>
  *
- * @author Edwin Goei, David Brownell
- * @version 2.0r2pre3
+ * @author Edwin Goei, David Brownell, Neil Graham
+ * @version $Id$
  */
 class NewInstance {
+
+    // constants
+
+    // governs whether, if we fail in finding a class even
+    // when given a classloader, we'll make a last-ditch attempt
+    // to use the current classloader.  
+    private static final boolean DO_FALLBACK = true;
 
     /**
      * Creates a new instance of the specified class name
      *
      * Package private so this code is not exposed at the API level.
      */
-    static Object newInstance (ClassLoader classLoader, String className)
+    static Object newInstance (ClassLoader cl, String className)
         throws ClassNotFoundException, IllegalAccessException,
             InstantiationException
     {
-        Class driverClass;
-        if (classLoader == null) {
-            driverClass = Class.forName(className);
+
+        Class providerClass;
+        if (cl == null) {
+            // XXX Use the bootstrap ClassLoader.  There is no way to
+            // load a class using the bootstrap ClassLoader that works
+            // in both JDK 1.1 and Java 2.  However, this should still
+            // work b/c the following should be true:
+            //
+            // (cl == null) iff current ClassLoader == null
+            //
+            // Thus Class.forName(String) will use the current
+            // ClassLoader which will be the bootstrap ClassLoader.
+            providerClass = Class.forName(className);
         } else {
-            driverClass = classLoader.loadClass(className);
+            try {
+                providerClass = cl.loadClass(className);
+            } catch (ClassNotFoundException x) {
+                if (DO_FALLBACK) {
+                    // Fall back to current classloader
+                    cl = NewInstance.class.getClassLoader();
+                    providerClass = cl.loadClass(className);
+                } else {
+                    throw x;
+                }
+            }
         }
-        return driverClass.newInstance();
+        Object instance = providerClass.newInstance();
+        return instance;
     }
 
     /**
@@ -57,23 +86,18 @@ class NewInstance {
      */           
     static ClassLoader getClassLoader ()
     {
-        Method m = null;
 
-        try {
-            m = Thread.class.getMethod("getContextClassLoader", null);
-        } catch (NoSuchMethodException e) {
-            // Assume that we are running JDK 1.1, use the current ClassLoader
-            return NewInstance.class.getClassLoader();
-        }
+        SecuritySupport ss = SecuritySupport.getInstance();
 
-        try {
-            return (ClassLoader) m.invoke(Thread.currentThread(), null);
-        } catch (IllegalAccessException e) {
-            // assert(false)
-            throw new UnknownError(e.getMessage());
-        } catch (InvocationTargetException e) {
-            // assert(e.getTargetException() instanceof SecurityException)
-            throw new UnknownError(e.getMessage());
+        // Figure out which ClassLoader to use for loading the provider
+        // class.  If there is a Context ClassLoader then use it.
+        ClassLoader cl = ss.getContextClassLoader();
+        if (cl == null) {
+            // Assert: we are on JDK 1.1 or we have no Context ClassLoader
+            // so use the current ClassLoader
+            cl = NewInstance.class.getClassLoader();
         }
+        return cl;
+
     }
 }
