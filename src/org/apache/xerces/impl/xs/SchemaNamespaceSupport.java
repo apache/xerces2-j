@@ -100,23 +100,17 @@ public class SchemaNamespaceSupport
      */
     public void setEffectiveContext (String [] namespaceDecls) {
         if(namespaceDecls == null || namespaceDecls.length == 0) return;
-        if(fCurrentContext == fContext.length) {
-            // expand size of fContext
-            int[] newContext = new int[fContext.length*2];
-            System.arraycopy(fContext, 0, newContext, 0, fContext.length);
-            fContext = newContext;
-        }
-        fContext[++fCurrentContext] = fNamespaceSize;
-        while(fNamespace.length > fNamespaceSize + namespaceDecls.length) {
+        pushContext();
+        int newSize = fNamespaceSize + namespaceDecls.length;
+        if (fNamespace.length < newSize) {
             // expand namespace's size...
-            String[] tempNSArray = new String[fNamespace.length*2];
-            System.arraycopy(fNamespace, 0, tempNSArray, 0,
-                    fNamespace.length);
+            String[] tempNSArray = new String[newSize];
+            System.arraycopy(fNamespace, 0, tempNSArray, 0, fNamespace.length);
             fNamespace = tempNSArray;
         }
         System.arraycopy(namespaceDecls, 0, fNamespace, fNamespaceSize,
-        namespaceDecls.length);
-        fNamespaceSize += namespaceDecls.length;
+                         namespaceDecls.length);
+        fNamespaceSize = newSize;
     } // setEffectiveContext(String):void
 
     /** 
@@ -126,26 +120,29 @@ public class SchemaNamespaceSupport
      */
     public String [] getEffectiveLocalContext() {
         // the trick here is to recognize that all local contexts
-        // happen to start at fContext[2].
-        int bottomLocalContext = (fCurrentContext >= 2) ? fContext[2]:-1;
-        if (bottomLocalContext == -1) {
-            // no local decls!
-            return null;
+        // happen to start at fContext[3].
+        // context 1: empty
+        // context 2: decls for xml and xmlns;
+        // context 3: decls on <xs:schema>: the global ones
+        String[] returnVal = null;
+        if (fCurrentContext >= 3) {
+            int bottomLocalContext = fContext[3];
+            int copyCount = fNamespaceSize - bottomLocalContext;
+            if (copyCount > 0) {
+                returnVal = new String[copyCount];
+                System.arraycopy(fNamespace, bottomLocalContext, returnVal, 0,
+                                 copyCount);
+            }
         }
-        String [] returnVal = new String[fNamespaceSize-bottomLocalContext];
-        System.arraycopy(fNamespace, bottomLocalContext, returnVal, 0,
-                fNamespaceSize-bottomLocalContext);
         return returnVal;
     } // getEffectiveLocalContext():String
 
     // This method removes from this object all the namespaces
     // returned by getEffectiveLocalContext. 
     public void makeGlobal() {
-        int topLocalContext = (fCurrentContext >= 2) ? fContext[2]:-1;
-        if(topLocalContext == -1) {
-            return; // nothing to do!
+        if (fCurrentContext >= 3) {
+            fCurrentContext = 3;
+            fNamespaceSize = fContext[3];
         }
-        fCurrentContext = 1;
-        fNamespaceSize = fContext[fCurrentContext];
     } // makeGlobal
 } // class NamespaceSupport
