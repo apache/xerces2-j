@@ -1535,26 +1535,31 @@ public class XMLEntityManager
                 System.out.println("$$$ setEncoding: "+encoding);
             }
 
-            // if the encoding is the same, don't change the reader and
-            // re-use the original reader used by the OneCharReader
-            // NOTE: Besides saving an object, this overcomes deficiencies
-            //       in the UTF-16 reader supplied with the standard Java
-            //       distribution (up to and including 1.3). The UTF-16
-            //       decoder buffers 8K blocks even when only asked to read
-            //       a single char! -Ac
-            if (fCurrentEntity.encoding != null && 
-                fCurrentEntity.encoding.equals(encoding)) {
-                fCurrentEntity.reader = ((OneCharReader)fCurrentEntity.reader).getReader();
-            }
-
-            // wrap a new reader around the input stream, changing
-            // the encoding
-            else if (fCurrentEntity.stream != null) {
-                if (DEBUG_ENCODINGS) {
-                    System.out.println("$$$ creating new reader from stream: "+
-                                       fCurrentEntity.stream);
+            if (fCurrentEntity.stream != null) {
+                // if the encoding is the same, don't change the reader and
+                // re-use the original reader used by the OneCharReader
+                // NOTE: Besides saving an object, this overcomes deficiencies
+                //       in the UTF-16 reader supplied with the standard Java
+                //       distribution (up to and including 1.3). The UTF-16
+                //       decoder buffers 8K blocks even when only asked to read
+                //       a single char! -Ac
+                if (fCurrentEntity.encoding != null && 
+                    fCurrentEntity.encoding.equals(encoding)) {
+                    if (DEBUG_ENCODINGS) {
+                        System.out.println("$$$ using original reader");
+                    }
+                    fCurrentEntity.reader = ((OneCharReader)fCurrentEntity.reader).getReader();
                 }
-                fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding);
+    
+                // wrap a new reader around the input stream, changing
+                // the encoding
+                else {
+                    if (DEBUG_ENCODINGS) {
+                        System.out.println("$$$ creating new reader from stream: "+
+                                           fCurrentEntity.stream);
+                    }
+                    fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding);
+                }
             }
 
         } // setEncoding(String)
