@@ -70,31 +70,31 @@ public interface XMLDTDContentModelHandler {
     //
 
     /** TYPE_EMPTY */
-    public static final short TYPE_EMPTY = -1;
+    public static final short TYPE_EMPTY = 0;
 
     /** TYPE_ANY */
-    public static final short TYPE_ANY = -1;
+    public static final short TYPE_ANY = 1;
 
     /** TYPE_MIXED */
-    public static final short TYPE_MIXED = -1;
+    public static final short TYPE_MIXED = 2;
 
     /** TYPE_CHILDREN */
-    public static final short TYPE_CHILDREN = -1;
+    public static final short TYPE_CHILDREN = 3;
 
     /** SEPARATOR_CHOICE */
-    public static final short SEPARATOR_CHOICE = -1;
+    public static final short SEPARATOR_CHOICE = 4;
 
     /** SEPARATOR_SEQUENCE */
-    public static final short SEPARATOR_SEQUENCE = -1;
+    public static final short SEPARATOR_SEQUENCE = 5;
 
     /** OCCURS_ZERO_OR_ONE */
-    public static final short OCCURS_ZERO_OR_ONE = -1;
+    public static final short OCCURS_ZERO_OR_ONE = 6;
 
     /** OCCURS_ZERO_OR_MORE */
-    public static final short OCCURS_ZERO_OR_MORE = -1;
+    public static final short OCCURS_ZERO_OR_MORE = 7;
 
     /** OCCURS_ONE_OR_MORE */
-    public static final short OCCURS_ONE_OR_MORE = -1;
+    public static final short OCCURS_ONE_OR_MORE = 8;
 
     //
     // Methods
