@@ -675,10 +675,11 @@ Copyright:
     </java>
     <echo message="Running dom.serialization.Test ..." />
     <java fork="yes"
-          classpath="${build.dir}/classes" 
+          classpath="${build.dir}/classes"
           classname="dom.serialization.Test"
           failOnError="yes">
-       <arg value="${data.dir}/personal.xml out.xml"/>
+           <arg value="${data.dir}/personal.xml"/>
+           <arg value="out.xml"/>
     </java>
   </target>
 
