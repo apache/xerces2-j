@@ -742,13 +742,15 @@ public class XMLDTDValidator
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
-        handleStartElement(element, attributes);
+        boolean removed = handleStartElement(element, attributes);
 
         if (fDocumentHandler !=null) {
             fDocumentHandler.emptyElement(element, attributes, augs);
         }
-
-        handleEndElement(element, augs, true);
+        if (!removed) {
+            handleEndElement(element, augs, true);
+        }
+        
 
     } // emptyElement(QName,XMLAttributes)
 
@@ -1764,8 +1766,10 @@ public class XMLDTDValidator
     // Protected methods
     //
 
-    /** Handle element. */
-    protected void handleStartElement(QName element, XMLAttributes attributes) throws XNIException {
+    /** Handle element
+     * @return true if validator is removed from the pipeline
+     */
+    protected boolean handleStartElement(QName element, XMLAttributes attributes) throws XNIException {
 
         // REVISIT: Here are current assumptions about validation features
         //          given that XMLSchema validator is in the pipeline
@@ -1817,7 +1821,7 @@ public class XMLDTDValidator
             // modify pipeline
             if (fDocumentSource !=null ) {
                 fDocumentSource.setDocumentHandler(fDocumentHandler);
-                return;
+                return true;
             }
         }
         else {
@@ -1879,7 +1883,7 @@ public class XMLDTDValidator
         fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
-
+        return false;
 
     } // handleStartElement(QName,XMLAttributes,boolean)
 
