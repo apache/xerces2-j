@@ -215,7 +215,7 @@ public class XMLSchemaValidator
     // recognized features and properties
 
     /** Recognized features. */
-    protected static final String[] RECOGNIZED_FEATURES = {
+    private static final String[] RECOGNIZED_FEATURES = {
         VALIDATION,
         NAMESPACES,
         SCHEMA_VALIDATION,
@@ -224,7 +224,7 @@ public class XMLSchemaValidator
     };
 
     /** Recognized properties. */
-    protected static final String[] RECOGNIZED_PROPERTIES = {
+    private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,
         ERROR_REPORTER,
         ENTITY_RESOLVER,
@@ -390,7 +390,7 @@ public class XMLSchemaValidator
      * are recognized by this component.
      */
     public String[] getRecognizedFeatures() {
-        return RECOGNIZED_FEATURES;
+        return (String[])(RECOGNIZED_FEATURES.clone());
     } // getRecognizedFeatures():String[]
 
     /**
@@ -418,7 +418,7 @@ public class XMLSchemaValidator
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return RECOGNIZED_PROPERTIES;
+        return (String[])(RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():String[]
 
     /**

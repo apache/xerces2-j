@@ -225,14 +225,14 @@ public class XMLDTDValidator
     // recognized features and properties
 
     /** Recognized features. */
-    protected static final String[] RECOGNIZED_FEATURES = {
+    private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
         VALIDATION,
         DYNAMIC_VALIDATION
     };
 
     /** Recognized properties. */
-    protected static final String[] RECOGNIZED_PROPERTIES = {
+    private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,       
         ERROR_REPORTER,
         GRAMMAR_POOL,
@@ -547,7 +547,7 @@ public class XMLDTDValidator
      * are recognized by this component.
      */
     public String[] getRecognizedFeatures() {
-        return RECOGNIZED_FEATURES;
+        return (String[])(RECOGNIZED_FEATURES.clone());
     } // getRecognizedFeatures():String[]
 
     /**
@@ -575,7 +575,7 @@ public class XMLDTDValidator
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return RECOGNIZED_PROPERTIES;
+        return (String[])(RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():String[]
 
     /**

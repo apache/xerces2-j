@@ -118,7 +118,7 @@ public class XMLDTDLoader
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
     /** Recognized properties. */
-    protected static final String[] LOADER_RECOGNIZED_PROPERTIES = {
+    private static final String[] LOADER_RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,       
         ERROR_REPORTER,
         ERROR_HANDLER,
@@ -215,7 +215,7 @@ public class XMLDTDLoader
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return LOADER_RECOGNIZED_PROPERTIES;
+        return (String[])(LOADER_RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():String[]
 
     /**

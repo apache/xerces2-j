@@ -123,12 +123,12 @@ public class XMLNamespaceBinder
     // recognized features and properties
 
     /** Recognized features. */
-    protected static final String[] RECOGNIZED_FEATURES = {
+    private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
     };
 
     /** Recognized properties. */
-    protected static final String[] RECOGNIZED_PROPERTIES = {
+    private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,
         ERROR_REPORTER,
     };
@@ -302,7 +302,7 @@ public class XMLNamespaceBinder
      * are recognized by this component.
      */
     public String[] getRecognizedFeatures() {
-        return RECOGNIZED_FEATURES;
+        return (String[])(RECOGNIZED_FEATURES.clone());
     } // getRecognizedFeatures():String[]
 
     /**
@@ -330,7 +330,7 @@ public class XMLNamespaceBinder
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return RECOGNIZED_PROPERTIES;
+        return (String[])(RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():String[]
 
     /**

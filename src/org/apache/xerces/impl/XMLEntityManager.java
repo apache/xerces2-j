@@ -1018,7 +1018,7 @@ public class XMLEntityManager
      * are recognized by this component.
      */
     public String[] getRecognizedFeatures() {
-        return RECOGNIZED_FEATURES;
+        return (String[])(RECOGNIZED_FEATURES.clone());
     } // getRecognizedFeatures():String[]
 
     /**
@@ -1055,7 +1055,7 @@ public class XMLEntityManager
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return RECOGNIZED_PROPERTIES;
+        return (String[])(RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():String[]
 
     /**

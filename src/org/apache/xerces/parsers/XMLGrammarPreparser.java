@@ -126,7 +126,7 @@ public class XMLGrammarPreparser {
     }
 
     /** Recognized properties. */
-    protected static final String[] RECOGNIZED_PROPERTIES = {
+    private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,       
         ERROR_REPORTER,
         ERROR_HANDLER,

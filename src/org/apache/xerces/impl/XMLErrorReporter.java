@@ -156,12 +156,12 @@ public class XMLErrorReporter
     // recognized features and properties
 
     /** Recognized features. */
-    protected static final String[] RECOGNIZED_FEATURES = {
+    private static final String[] RECOGNIZED_FEATURES = {
         CONTINUE_AFTER_FATAL_ERROR,
     };
 
     /** Recognized properties. */
-    protected static final String[] RECOGNIZED_PROPERTIES = {
+    private static final String[] RECOGNIZED_PROPERTIES = {
         ERROR_HANDLER,
     };
 
@@ -413,7 +413,7 @@ public class XMLErrorReporter
      * are recognized by this component.
      */
     public String[] getRecognizedFeatures() {
-        return RECOGNIZED_FEATURES;
+        return (String[])(RECOGNIZED_FEATURES.clone());
     } // getRecognizedFeatures():String[]
 
     /**
@@ -481,7 +481,7 @@ public class XMLErrorReporter
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return RECOGNIZED_PROPERTIES;
+        return (String[])(RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():String[]
 
     /**

@@ -117,7 +117,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
 
     // recognized features:
-    protected static final String[] RECOGNIZED_FEATURES = {
+    private static final String[] RECOGNIZED_FEATURES = {
         SCHEMA_FULL_CHECKING,
         CONTINUE_AFTER_FATAL_ERROR,
     };
@@ -157,7 +157,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
     // recognized properties
-    protected static final String [] RECOGNIZED_PROPERTIES = {
+    private static final String [] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,
         ERROR_REPORTER,
         ERROR_HANDLER,
@@ -244,7 +244,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
      * are recognized.
      */
     public String[] getRecognizedFeatures() {
-        return RECOGNIZED_FEATURES;
+        return (String[])(RECOGNIZED_FEATURES.clone());
     } // getRecognizedFeatures():  String[]
 
     /**
@@ -290,7 +290,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
      * are recognized.
      */
     public String[] getRecognizedProperties() {
-        return RECOGNIZED_PROPERTIES;
+        return (String[])(RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():  String[]
 
     /**
