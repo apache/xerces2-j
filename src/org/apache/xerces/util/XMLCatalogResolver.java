@@ -22,8 +22,12 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.xerces.dom.DOMInputImpl;
 import org.apache.xerces.jaxp.SAXParserFactoryImpl;
 
 import org.apache.xerces.xni.XNIException;
@@ -45,8 +49,9 @@ import org.apache.xml.resolver.readers.SAXCatalogReader;
  * OASIS XML Catalogs Specification</a>. It encapsulates the 
  * <a href="http://xml.apache.org/commons/">XML Commons</a> resolver. 
  * An instance of this class may be registered on the parser 
- * as a SAX entity resolver or as an XNI entity resolver by setting  
- * the property (http://apache.org/xml/properties/internal/entity-resolver).</p>
+ * as a SAX entity resolver, as a DOM LSResourceResolver or 
+ * as an XNI entity resolver by setting the property
+ * (http://apache.org/xml/properties/internal/entity-resolver).</p>
  * 
  * <p>It is intended that this class may be used standalone to perform 
  * catalog resolution outside of a parsing context. It may be shared
@@ -57,7 +62,7 @@ import org.apache.xml.resolver.readers.SAXCatalogReader;
  * @version $Id$
  */
 public class XMLCatalogResolver 
-    implements XMLEntityResolver, EntityResolver {
+    implements XMLEntityResolver, EntityResolver, LSResourceResolver {
     
     /** Internal catalog manager for Apache catalogs. **/
     private CatalogManager fResolverCatalogManager = null;
@@ -241,6 +246,59 @@ public class XMLCatalogResolver
             InputSource source = new InputSource(resolvedId);
             source.setPublicId(publicId);
             return source;
+        }  
+        return null;
+    }
+
+    /** 
+     * <p>Resolves a resource using the catalog. This method interprets that 
+     * the namespace URI corresponds to uri entries in the catalog.
+     * Where both a namespace and an external identifier exist, the namespace
+     * takes precedence.</p>
+     * 
+     * @param type  The type of the resource being resolved.
+     * @param namespaceURI  The namespace of the resource being resolved.
+     * @param publicId  The public identifier of the external entity being 
+     *   referenced, or <code>null</code> if no public identifier was 
+     *   supplied or if the resource is not an entity. 
+     * @param systemId  The system identifier, a URI reference, of the 
+     *   external resource being referenced, or <code>null</code> if no 
+     *   system identifier was supplied. 
+     * @param baseURI  The absolute base URI of the resource being parsed, or 
+     *   <code>null</code> if there is no base URI.
+     */
+    public LSInput resolveResource(String type, String namespaceURI,
+        String publicId, String systemId, String baseURI) {
+
+        String resolvedId = null;
+        
+        try {
+            // The namespace is useful for resolving namespace aware
+            // grammars such as XML schema. Let it take precedence over
+            // the external identifier if one exists.
+            if (namespaceURI != null) {
+                resolvedId = resolveURI(namespaceURI);
+            }
+        
+            // Resolve against an external identifier if one exists. This
+            // is useful for resolving DTD external subsets and other 
+            // external entities. For XML schemas if there was no namespace 
+            // mapping we might be able to resolve a system identifier 
+            // specified as a location hint.
+            if (resolvedId == null) {
+                if (publicId != null && systemId != null) {
+                    resolvedId = resolvePublic(publicId, systemId);
+                }
+                else if (systemId != null) {
+                    resolvedId = resolveSystem(systemId);
+                }
+            }
+        }
+        // Ignore IOException. It cannot be thrown from this method.
+        catch (IOException ex) {}
+        
+        if (resolvedId != null) {
+            return new DOMInputImpl(publicId, resolvedId, baseURI);
         }  
         return null;
     }
