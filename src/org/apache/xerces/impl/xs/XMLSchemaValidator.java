@@ -67,7 +67,6 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.traversers.XSAttributeChecker;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
@@ -114,17 +113,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
-import java.util.StringTokenizer;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.Reader;
-import java.io.InputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * The DTD validator. The validator implements a document
+ * The XML Schema validator. The validator implements a document
  * filter: receiving document events from the scanner; validating
  * the content and structure; augmenting the InfoSet, if applicable;
  * and notifying the parser of the information resulting from the
@@ -282,7 +274,6 @@ public class XMLSchemaValidator
 
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
-    protected final XSDeclarationPool fDeclPool = new XSDeclarationPool();
 
     /**
      * A wrapper of the standard error reporter. We'll store all schema errors
@@ -378,7 +369,7 @@ public class XMLSchemaValidator
     /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
     protected final XSDDescription fXSDDescription = new XSDDescription() ;
     protected final Hashtable fLocationPairs = new Hashtable() ;
-    protected final LocationArray fNoNamespaceLocationArray = new LocationArray();
+    protected final XMLSchemaLoader.LocationArray fNoNamespaceLocationArray = new XMLSchemaLoader.LocationArray();
 
     /** Base URI for the DOM revalidation*/
     protected String fBaseURI = null;
@@ -1075,8 +1066,8 @@ public class XMLSchemaValidator
     final XSGrammarBucket fGrammarBucket;
     final SubstitutionGroupHandler fSubGroupHandler;
 
-    /** Schema handler */
-    final XSDHandler fSchemaHandler;
+    // Schema grammar loader
+    final XMLSchemaLoader fSchemaLoader;
 
     /** Namespace support. */
     final NamespaceSupport fNamespaceSupport = new NamespaceSupport();
@@ -1091,7 +1082,7 @@ public class XMLSchemaValidator
 
     /** used to build content models */
     // REVISIT: create decl pool, and pass it to each traversers
-    final CMBuilder fCMBuilder = new CMBuilder(new XSDeclarationPool());
+    final CMBuilder fCMBuilder = new CMBuilder();
 
     // state
 
@@ -1203,7 +1194,8 @@ public class XMLSchemaValidator
 
         fGrammarBucket = new XSGrammarBucket();
         fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
-        fSchemaHandler = new XSDHandler(fGrammarBucket);
+        // initialize the schema loader
+        fSchemaLoader = new XMLSchemaLoader(fXSIErrorReporter.fErrorReporter, fGrammarBucket, fSubGroupHandler, fCMBuilder);
 
     } // <init>()
 
@@ -1225,6 +1217,7 @@ public class XMLSchemaValidator
 
         // get error reporter
         fXSIErrorReporter.reset((XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER));
+        fSchemaLoader.setProperty(ERROR_REPORTER, fXSIErrorReporter.fErrorReporter);
 
         // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
@@ -1236,6 +1229,7 @@ public class XMLSchemaValidator
             XSI_TYPE = symbolTable.addSymbol(SchemaSymbols.OXSI_TYPE);
             XSI_NIL = symbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
             URI_SCHEMAFORSCHEMA = symbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
+            fSchemaLoader.setProperty(SYMBOL_TABLE, symbolTable);
         }
         fSymbolTable = symbolTable;
 
@@ -1267,6 +1261,9 @@ public class XMLSchemaValidator
         catch (XMLConfigurationException e) {
             fFullChecking = false;
         }
+        // the validator will do full checking anyway; the loader should
+        // not (and in fact cannot) concern itself with this.
+        fSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, false);
 
         try {
             fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
@@ -1290,6 +1287,7 @@ public class XMLSchemaValidator
         }
 
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
+        fSchemaLoader.setEntityResolver(fEntityResolver); 
         
         // initialize namespace support
         fNamespaceSupport.reset(fSymbolTable);
@@ -1308,8 +1306,10 @@ public class XMLSchemaValidator
             fExternalSchemas = null;
             fExternalNoNamespaceSchema = null;
         }
+        fSchemaLoader.setProperty(SCHEMA_LOCATION, fExternalSchemas);
+        fSchemaLoader.setProperty(SCHEMA_NONS_LOCATION, fExternalNoNamespaceSchema);
 
-        // get JAXP schema source property
+
         try {        
             fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
         }
@@ -1317,61 +1317,24 @@ public class XMLSchemaValidator
             fJaxpSchemaSource = null;
 
         }
+        fSchemaLoader.setProperty(JAXP_SCHEMA_SOURCE, fJaxpSchemaSource);
         fResourceIdentifier.clear();
 
         // clear grammars, and put the one for schema namespace there
-        fGrammarBucket.reset();
         try {        
             fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
         }
         catch (XMLConfigurationException e){
             fGrammarPool = null;
         }
-        //we should retreive the initial grammar set given by the applicaion
-        //to the parser and put it in local grammar bucket.
+        fSchemaLoader.setProperty(XMLGRAMMAR_POOL, fGrammarPool);
 
-        if(fGrammarPool != null) {
+        // clear grammars, and put the one for schema namespace there
+        // logic for resetting grammar-related components moved
+        // to schema loader
+        fSchemaLoader.reset();
 
-            Grammar [] initialGrammars = fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-            for (int i = 0; i < initialGrammars.length; i++) {
-                // put this grammar into the bucket, along with grammars
-                // imported by it (directly or indirectly)
-                if (!fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]), true)) {
-                    // REVISIT: a conflict between new grammar(s) and grammars
-                    // in the bucket. What to do? A warning? An exception?
-                    fXSIErrorReporter.fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                                 "GrammarConflict", null,
-                                                                 XMLErrorReporter.SEVERITY_WARNING);
-                }
-            }
-        }
-
-        // clear things in substitution group handler
-        fSubGroupHandler.reset();
-
-        //REVISIT: we are passing externalSchema and noNamespaceExternalSchema locations to XSDHandler , where
-        //it stores namespace and location values.. now we are doing the same in XMLSchemaValidator,
-        //we can pass the refernce of fLocationPairs and noNamespaceLocationPairs -nb
-        // REVISIT: should we process these two properties here? why not just
-        //  them on to xsdhandler.
-
-        // reset schema handler and all traversal objects
-        fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter,
-                             fEntityResolver, fSymbolTable,
-                             fExternalSchemas, fExternalNoNamespaceSchema,
-                             fGrammarPool);
-        
-        // register declaration pool
-        fDeclPool.reset();
-        if (fGrammarPool == null) {
-            fCMBuilder.setDeclPool(fDeclPool);
-            fSchemaHandler.setDeclPool(fDeclPool);
-        } else {
-            fCMBuilder.setDeclPool(null);
-            fSchemaHandler.setDeclPool(null);
-        } 
-
-        //reset XSDDescripton
+        //reset XSDDescription
         fXSDDescription.reset() ;
         fLocationPairs.clear();
         fNoNamespaceLocationArray.resize(0 , 2) ;
@@ -1785,13 +1748,7 @@ public class XMLSchemaValidator
             //store the external schema locations, these locations will be set at root element, so any other
             // schemaLocation declaration for the same namespace will be effectively ignored.. becuase we
             // choose to take first location hint available for a particular namespace.
-            storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
-
-            //REVISIT: this JAXP processing shouldn't be done
-            //in XMLSchemaValidator but in a separate component responsible for pre-parsing grammars
-            // and SchemaValidator should be given these preParsed grammars before this component
-            //attempts to validate -nb.
-            processJAXPSchemaSource( fJaxpSchemaSource , fEntityResolver );
+            storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ; 
         }
 
         fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
@@ -2262,72 +2219,18 @@ public class XMLSchemaValidator
         fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
     }
 
-    private class LocationArray{
-
-        int length ;
-        String [] locations = new String[2];
-
-        public void resize(int oldLength , int newLength){
-            String [] temp = new String[newLength] ;
-            System.arraycopy(locations, 0, temp, 0, Math.min(oldLength, newLength));
-            locations = temp ;
-            length = Math.min(oldLength, newLength);
-        }
-
-        public void setLocation(String location){
-            if(length >= locations.length ){
-                resize(length, Math.max(1, length*2));
-            }
-            locations[length++] = location;
-        }//setLocation()
-
-        public String [] getLocationArray(){
-            if(length < locations.length ){
-                resize(locations.length, length);
-            }
-            return locations;
-        }//getLocationArray()
-
-        public String getFirstLocation(){
-            return length > 0 ? locations[0] : null;
-        }
-
-        public int getLength(){
-            return length ;
-        }
-
-    } //locationArray
-
     void storeLocations(String sLocation, String nsLocation){
         if (sLocation != null) {
-            StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
-            String namespace, location;
-            while (t.hasMoreTokens()) {
-                namespace = fSymbolTable.addSymbol(t.nextToken ());
-
-                if (!t.hasMoreTokens()) {
-                    fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                  "SchemaLocation",
-                                                  new Object[]{sLocation},
-                                                  XMLErrorReporter.SEVERITY_WARNING);
-                    break;
-                }
-
-                Object locationArray = fLocationPairs.get(namespace) ;
-
-                if(locationArray == null){
-                    locationArray = new LocationArray() ;
-                    //add it into hashtable...
-                    fLocationPairs.put(namespace, locationArray);
-                }
-
-                location = t.nextToken();
-                ((LocationArray)locationArray).setLocation(location);
+            if(!XMLSchemaLoader.tokenizeSchemaLocationStr(sLocation, fLocationPairs)) { // error!
+                fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                              "SchemaLocation",
+                                              new Object[]{sLocation},
+                                              XMLErrorReporter.SEVERITY_WARNING);
             }
-
         }
         if (nsLocation != null) {
-            fNoNamespaceLocationArray.setLocation(nsLocation);
+            fNoNamespaceLocationArray.addLocation(nsLocation);
+            fLocationPairs.put(XMLSchemaLoader.EMPTY_STRING, fNoNamespaceLocationArray);
         }
 
     }//storeLocations
@@ -2355,7 +2258,7 @@ public class XMLSchemaValidator
             if( namespace != null){
                 locationArray = fLocationPairs.get(namespace) ;
                 if(locationArray != null){
-                    String [] temp = ((LocationArray)locationArray).getLocationArray() ;
+                    String [] temp = ((XMLSchemaLoader.LocationArray)locationArray).getLocationArray() ;
                     fXSDDescription.fLocationHints = new String [temp.length] ;
                     System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );
                 }
@@ -2366,8 +2269,6 @@ public class XMLSchemaValidator
             }
 
             // give a chance to application to be able to retreive the grammar.
-            //REVISIT: construct empty pool... we dont have to check for the null condition
-            //give a chance to application to be able to retreive the grammar.
             if (fGrammarPool != null){
                 grammar = (SchemaGrammar)fGrammarPool.retrieveGrammar(fXSDDescription);
                 if (grammar != null) {
@@ -2385,127 +2286,22 @@ public class XMLSchemaValidator
             }
             if (grammar == null) {
                 // try to parse the grammar using location hints from that namespace..
-                grammar = fSchemaHandler.parseSchema(fXSDDescription);
+                fLocationPairs.put("", fNoNamespaceLocationArray);
+                try {
+                    XMLInputSource xis = XMLSchemaLoader.resolveDocument(fXSDDescription, fLocationPairs, fEntityResolver);
+                    grammar = fSchemaLoader.loadSchema(fXSDDescription, xis, fLocationPairs); 
+                } catch (IOException ex) {
+                    fXSIErrorReporter.fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                              "schema_reference.4", 
+                              new Object[]{fXSDDescription.getLocationHints()[0]},
+                              XMLErrorReporter.SEVERITY_WARNING);
+                }
             }
         }
 
         return grammar ;
 
     }//findSchemaGrammar
-
-    /**
-     * Translate the various JAXP SchemaSource property types to XNI
-     * XMLInputSource.  Valid types are: String, org.xml.sax.InputSource,
-     * InputStream, File, or Object[] of any of previous types.
-     */
-    private void processJAXPSchemaSource(Object val, XMLEntityResolver xer) {
-        if (val == null) {
-            return;
-        }
-
-        Class componentType = val.getClass().getComponentType();
-        XMLInputSource xis = null;
-        String sid = null;
-        if (componentType == null) {
-            // Not an array
-            xis = XSD2XMLInputSource(val, xer);
-            sid = xis.getSystemId();
-            fXSDDescription.reset();
-            fXSDDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
-            if (sid != null) {
-                fXSDDescription.setLiteralSystemId(sid);
-                fXSDDescription.setExpandedSystemId(sid);
-                fXSDDescription.fLocationHints = new String[]{sid};
-            }
-            fSchemaHandler.parseSchema(xis, fXSDDescription);
-            return ;
-        } else if (componentType != Object.class) {
-            // Not an Object[]
-            throw new XMLConfigurationException(
-                XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
-        }
-
-        Object[] objArr = (Object[]) val;
-        for (int i = 0; i < objArr.length; i++) {
-            xis = XSD2XMLInputSource(objArr[i], xer);
-            sid = xis.getSystemId();
-            fXSDDescription.reset();
-            fXSDDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
-            if (sid != null) {
-                fXSDDescription.setLiteralSystemId(sid);
-                fXSDDescription.setExpandedSystemId(sid);
-                fXSDDescription.fLocationHints = new String[]{sid};
-            }
-            fSchemaHandler.parseSchema(xis, fXSDDescription);
-        }
-    }
-
-    private XMLInputSource XSD2XMLInputSource(
-            Object val, XMLEntityResolver entityResolver)
-    {
-        if (val instanceof String) {
-            // String value is treated as a URI that is passed through the
-            // EntityResolver
-            String loc = (String) val;
-
-            if (entityResolver != null) {
-
-                fResourceIdentifier.setValues(null, loc, null, null);
-                XMLInputSource xis = null;
-                try {
-                    xis = entityResolver.resolveEntity(fResourceIdentifier);
-                } catch (IOException ex) {
-                    reportSchemaError("schema_reference.4",
-                                      new Object[] { loc });
-                }
-                if (xis == null) {
-                    // REVISIT: can this happen?
-                    // Treat value as a URI and pass in as systemId
-                    return new XMLInputSource(null, loc, null);
-                }
-                return xis;
-            }
-        } else if (val instanceof InputSource) {
-            return SAX2XMLInputSource((InputSource) val);
-        } else if (val instanceof InputStream) {
-            return new XMLInputSource(null, null, null,
-                                      (InputStream) val, null);
-        } else if (val instanceof File) {
-            File file = (File) val;
-            InputStream is = null;
-            try {
-                is = new BufferedInputStream(new FileInputStream(file));
-            } catch (FileNotFoundException ex) {
-                reportSchemaError("schema_reference.4",
-                                  new Object[] { file.toString() });
-            }
-            return new XMLInputSource(null, null, null, is, null);
-        }
-        throw new XMLConfigurationException(
-            XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
-    }
-
-
-     //Convert a SAX InputSource to an equivalent XNI XMLInputSource
-
-    private static XMLInputSource SAX2XMLInputSource(InputSource sis) {
-        String publicId = sis.getPublicId();
-        String systemId = sis.getSystemId();
-
-        Reader charStream = sis.getCharacterStream();
-        if (charStream != null) {
-            return new XMLInputSource(publicId, systemId, null, charStream,
-                                      null);
-        }
-
-        InputStream byteStream = sis.getByteStream();
-        if (byteStream != null) {
-            return new XMLInputSource(publicId, systemId, null, byteStream,
-                                      sis.getEncoding());
-        }
-
-        return new XMLInputSource(publicId, systemId, null);
-    }
 
     XSTypeDecl getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
         // This method also deals with clause 1.2.1.2 of the constraint

@@ -67,6 +67,7 @@ import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
+import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.parsers.StandardParserConfiguration;
@@ -75,9 +76,9 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -100,14 +101,7 @@ import org.xml.sax.InputSource;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
-import java.util.StringTokenizer;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.Reader;
 
 /**
  * The purpose of this class is to co-ordinate the construction of a
@@ -133,7 +127,7 @@ public class XSDHandler {
 
     protected static final boolean DEBUG_NODE_POOL = false;
                               
-    // data
+    // Data
 
     // different sorts of declarations; should make lookup and
     // traverser calling more efficient/less bulky.
@@ -199,6 +193,9 @@ public class XSDHandler {
     // if the importing schema has absent namespace, empty string is stored.
     // (because the key of a hashtable can't be null.)
     private Vector fAllTNSs = new Vector();
+    // stores instance document mappings between namespaces and schema hints
+    private Hashtable fLocationPairs = null;
+
     // convinence methods
     private String null2EmptyString(String ns) {
         return ns == null ? EMPTY_STRING : ns;
@@ -247,75 +244,10 @@ public class XSDHandler {
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
+    private XMLEntityResolver fEntityResolver;
 
     // the XSAttributeChecker
     private XSAttributeChecker fAttributeChecker;
-
-    // this class is to make use of the schema location property values.
-    // we store the namespace/location pairs in a hashtable (use "" as the
-    // namespace of absent namespace). when resolving an entity, we first try
-    // to find in the hashtable whether there is a value for that namespace,
-    // if so, pass that location value to the user-defined entity resolver.
-    protected class LocationResolver {
-        // the user-defined entity resolver
-        public XMLEntityResolver fExternalResolver = null;
-        // namespace/location pairs
-        public Hashtable fLocationPairs = new Hashtable();
-
-        public void reset(XMLEntityResolver entityResolver,
-                          String sLocation, String nsLocation) {
-            fLocationPairs.clear();
-            fExternalResolver = entityResolver;
-
-            if (sLocation != null) {
-                StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
-                String namespace, location;
-                while (t.hasMoreTokens()) {
-                    namespace = t.nextToken ();
-                    if (!t.hasMoreTokens()) {
-                        break;
-                    }
-                    location = t.nextToken();
-                    fLocationPairs.put(namespace, location);
-                }
-            }
-            if (nsLocation != null) {
-                fLocationPairs.put(EMPTY_STRING, nsLocation);
-            }
-        }
-
-        public XMLInputSource resolveEntity(XSDDescription desc) throws IOException {
-            if (fExternalResolver == null)
-                return null;
-
-            String loc = null;
-            // we consider the schema location properties for import
-            if (desc.getContextType() == XSDDescription.CONTEXT_IMPORT ||
-                desc.fromInstance()) {
-                // use empty string as the key for absent namespace
-                String namespace = desc.getTargetNamespace();
-                String ns = namespace == null ? EMPTY_STRING : namespace;
-                // get the location hint for that namespace
-                loc = (String)fLocationPairs.get(ns);
-            }
-
-            // if it's not import, or if the target namespace is not set
-            // in the schema location properties, use location hint
-            if (loc == null) {
-                String[] hints = desc.getLocationHints();
-                if (hints != null && hints.length > 0)
-                    loc = hints[0];
-            }
-
-            String expandedLoc = XMLEntityManager.expandSystemId(loc, desc.getBaseSystemId());
-            desc.setLiteralSystemId(loc);
-            desc.setExpandedSystemId(expandedLoc);
-            return fExternalResolver.resolveEntity(desc);
-        }
-    }
-
-    // the schema location resolver
-    private LocationResolver fLocationResolver = new LocationResolver();
 
     // the symbol table
     private SymbolTable fSymbolTable;
@@ -397,20 +329,11 @@ public class XSDHandler {
     // in case.  An ErrorHandler, EntityResolver, XSGrammarBucket and SymbolTable must
     // already have been set; the last thing this method does is reset
     // this object (i.e., clean the registries, etc.).
-    public SchemaGrammar parseSchema(XSDDescription desc) {
-        XMLInputSource schemaSource=null;
-        try {
-            schemaSource = fLocationResolver.resolveEntity(desc);
-        }
-        catch (IOException ex) {
-            reportSchemaError(DOC_ERROR_CODES[desc.getContextType()],
-                              new Object[]{desc.getLocationHints()[0]},
-                              null);
-        }
-        return parseSchema(schemaSource, desc);
-    } // end parseSchema
 
-    public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc) {
+    public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc,
+                Hashtable locationPairs) {
+
+        fLocationPairs = locationPairs;
 
         // reset pools
         fDOMPool.reset();
@@ -1346,7 +1269,7 @@ public class XSDHandler {
                                boolean mustResolve, Element referElement) {
         XMLInputSource schemaSource=null;
         try {
-            schemaSource = fLocationResolver.resolveEntity(desc);
+            schemaSource = XMLSchemaLoader.resolveDocument(desc, fLocationPairs, fEntityResolver);
         }
         catch (IOException ex) {
             if (mustResolve) {
@@ -1398,7 +1321,7 @@ public class XSDHandler {
                 // now we need to store the mapping information from system id
                 // to the document. also from the document to the system id.
                 fTraversed.put(key, schemaDoc );
-                if (schemaId != null)
+               if (schemaId != null)
                     fDoc2SystemId.put(schemaDoc, schemaId );
                 fLastSchemaWasDuplicate = false;
                 return schemaDoc;
@@ -1509,17 +1432,14 @@ public class XSDHandler {
     public void reset(XMLErrorReporter errorReporter,
                       XMLEntityResolver entityResolver,
                       SymbolTable symbolTable,
-                      String externalSchemaLocation,
-                      String externalNoNSSchemaLocation,
                       XMLGrammarPool grammarPool) {
 
         fErrorReporter = errorReporter;
+        fEntityResolver = entityResolver;
         fSymbolTable = symbolTable;
         fGrammarPool = grammarPool;
 
         EMPTY_STRING = fSymbolTable.addSymbol(SchemaSymbols.EMPTY_STRING);
-
-        fLocationResolver.reset(entityResolver, externalSchemaLocation, externalNoNSSchemaLocation);
 
         try {
             fSchemaParser.setProperty(ERROR_HANDLER, fErrorReporter.getErrorHandler());
@@ -1527,9 +1447,7 @@ public class XSDHandler {
         catch (Exception e) {
         }
         
-        //now this part is done in XMLSchemaValidator
-        //processJAXPSchemaSource(jaxpSchemaSource, entityResolver);
-    } // reset(ErrorReporter, EntityResolver, SymbolTable)
+    } // reset(ErrorReporter, EntityResolver, SymbolTable, XMLGrammarPool)
 
     /**
      * Traverse all the deferred local elements. This method should be called

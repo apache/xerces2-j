@@ -88,6 +88,10 @@ public class CMBuilder {
     // needed for UPA
     private int fParticleCount;
 
+    public CMBuilder() {
+        fDeclPool = null;
+    }
+
     public CMBuilder(XSDeclarationPool pool) {
         fDeclPool = pool;
     }
