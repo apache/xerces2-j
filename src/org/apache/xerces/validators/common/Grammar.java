@@ -337,6 +337,18 @@ implements XMLContentSpec.Provider {
                                                           elementDeclIndex);
     }
 
+    protected void setFirstAttributeDeclIndex(int elementDeclIndex, int newFirstAttrIndex){
+        
+	if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+            return;
+        }
+    
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex &  CHUNK_MASK;
+
+        fElementDeclFirstAttributeDeclIndex[chunk][index] = newFirstAttrIndex;
+    }
+
 
     protected int createContentSpec() {
         int chunk = fContentSpecCount >> CHUNK_SHIFT;
