@@ -12,6 +12,7 @@ include ../../../../../src/Makefile.incl
 
 TARGETS=\
 	DatatypeMessages.class\
+        ExceptionMessages.class \
 	SchemaMessages.class\
 	XMLMessages.class\
 	ImplementationMessages.class
