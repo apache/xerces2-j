@@ -103,6 +103,7 @@ import org.xml.sax.helpers.NamespaceSupport;
  * @version $Id$
  */
 public class XMLDocumentScanner
+    extends XMLScanner
     implements XMLComponent, XMLDocumentSource, XMLEntityHandler {
 
     //
@@ -217,9 +218,6 @@ public class XMLDocumentScanner
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
 
-    /** Entity scanner. */
-    protected XMLEntityScanner fEntityScanner;
-
     /** Entity stack. */
     protected Stack fEntityStack = new Stack();
 
@@ -287,12 +285,6 @@ public class XMLDocumentScanner
 
     /** Element attributes. */
     private XMLAttributes fAttributes = new XMLAttributes();
-
-    /** String. */
-    private XMLString fString = new XMLString();
-
-    /** String buffer. */
-    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
 
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
@@ -707,57 +699,17 @@ public class XMLDocumentScanner
     } // scanPseudoAttribute(XMLString):String
     
     /**
-     * Scans a processing instruction.
-     * <p>
-     * <pre>
-     * [16] PI ::= '&lt;?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
-     * [17] PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
-     * </pre>
-     */
-    protected void scanPI() throws IOException, SAXException {
-
-        // target
-        String target = fEntityScanner.scanName();
-        if (target == null) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PITargetRequired", 
-                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-
-        // scan data
-        scanPIData(target);
-
-    } // scanPI()
-
-    /**
      * Scans a processing data. This is needed to handle the situation
      * where a document starts with a processing instruction whose 
      * target name <em>starts with</em> "xml". (e.g. xmlfoo)
+     *
+     * @param target The PI target
+     * @param data The string to fill in with the data
      */
-    protected void scanPIData(String target) 
+    protected void scanPIData(String target, XMLString data) 
         throws IOException, SAXException {
 
-        // check target
-        if (target.length() == 3) {
-            char c0 = Character.toLowerCase(target.charAt(0));
-            char c1 = Character.toLowerCase(target.charAt(1));
-            char c2 = Character.toLowerCase(target.charAt(2));
-            if (c0 == 'x' && c1 == 'm' && c2 == 'l') {
-                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "ReservedPITarget", 
-                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
-        }
-
-        // data
-        // REVISIT: handle invalid character, eof
-        XMLString data = fString;
-        if (fEntityScanner.scanData("?>", fString)) {
-            fStringBuffer.clear();
-            do {
-                fStringBuffer.append(fString);
-            } while (fEntityScanner.scanData("?>", fString));
-            fStringBuffer.append(fString);
-            data = fStringBuffer;
-        }
+        super.scanPIData(target, data);
 
         // call handler
         if (fDocumentHandler != null) {
@@ -777,17 +729,7 @@ public class XMLDocumentScanner
      */
     protected void scanComment() throws IOException, SAXException {
 
-        // text
-        // REVISIT: handle invalid character, eof
-        fStringBuffer.clear();
-        while (fEntityScanner.scanData("--", fString)) {
-            fStringBuffer.append(fString);
-        }
-        fStringBuffer.append(fString);
-        if (!fEntityScanner.skipChar('>')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "DashDashInComment", 
-                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
+        scanComment(fStringBuffer);
 
         // call handler
         if (fDocumentHandler != null) {
@@ -1151,59 +1093,8 @@ public class XMLDocumentScanner
     protected void scanCharReference() 
         throws IOException, SAXException {
 
-        // scan hexadecimal value
-        boolean hex = false;
-        if (fEntityScanner.skipChar('x')) {
-            fStringBuffer.clear();
-            boolean digit = true;
-            do {
-                int c = fEntityScanner.peekChar();
-                digit = (c >= '0' && c <= '9') ||
-                        (c >= 'a' && c <= 'f') ||
-                        (c >= 'A' && c <= 'F');
-                if (digit) {
-                    fEntityScanner.scanChar();
-                    fStringBuffer.append((char)c);
-                }
-            } while (digit);
-        }
+        int value = scanCharReferenceValue();
 
-        // scan decimal value
-        else {
-            fStringBuffer.clear();
-            boolean digit = true;
-            do {
-                int c = fEntityScanner.peekChar();
-                digit = c >= '0' && c <= '9';
-                if (digit) {
-                    fEntityScanner.scanChar();
-                    fStringBuffer.append((char)c);
-                }
-            } while (digit);
-        }
-
-        // end
-        if (!fEntityScanner.skipChar(';')) {
-            // REVISIT: report error
-            throw new SAXException("character reference must end with semi-colon");
-        }
-        
-        // convert string to number
-        int value = -1;
-        try {
-            value = Integer.parseInt(fStringBuffer.toString(),
-                                     hex ? 16 : 10);
-        }
-        catch (NumberFormatException e) {
-            // let -1 value drop through
-        }
-
-        // character reference must be a valid XML character
-        if (!XMLChar.isValid((char)value)) {
-            // REVISIT: report error
-            throw new SAXException("MSG_INVALID_CHARREF");
-        }
-        
         // call handler
         if (fDocumentHandler != null) {
             fSingleChar[0] = (char)value;
@@ -1654,7 +1545,7 @@ public class XMLDocumentScanner
                         fStringBuffer.append((char)fEntityScanner.scanChar());
                     }
                     String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
-                    scanPIData(target);
+                    scanPIData(target, fString);
                 }
 
                 // standard XML declaration
