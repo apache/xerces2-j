@@ -662,7 +662,6 @@ public abstract class AbstractDOMParser
             }
             else {
                 Text textNode = fDocument.createTextNode(text.toString());
-                System.out.println("2) "+((TextImpl)textNode).getReadOnly());
                 if (fDocumentImpl != null) {
                     TextImpl textNodeImpl = (TextImpl)textNode;
                     textNodeImpl.setIgnorableWhitespace(true);
@@ -821,7 +820,7 @@ public abstract class AbstractDOMParser
                     while (childIndex != -1) {
                         int cloneIndex = fDeferredDocumentImpl.cloneNode(childIndex, true);
                         fDeferredDocumentImpl.insertBefore(entityIndex, cloneIndex, prevIndex);
-                        prevIndex = childIndex;
+                        prevIndex = cloneIndex;
                         childIndex = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
                     }
                 }
@@ -866,7 +865,6 @@ public abstract class AbstractDOMParser
             if (entity == null) {
                 entity = (EntityImpl)fDocumentImpl.createEntity(name);
                 Text textNode = fDocumentImpl.createTextNode(text.toString());
-                System.out.println("3) "+((TextImpl)textNode).getReadOnly());
                 entity.appendChild(textNode);
                 entities.setNamedItem(entity);
             }
