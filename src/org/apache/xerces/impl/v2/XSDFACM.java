@@ -405,7 +405,7 @@ public class XSDFACM
 
     // This method returns the start states of the content model.  
     public int[] startContentModel() {
-        int[] val = new int[fElemMapSize];
+        int[] val = new int[1];
         val[0]=0;
         return val;
     } // startContentModel():int[]
@@ -585,7 +585,9 @@ public class XSDFACM
         fElemMapType = new int[fLeafCount];
         fElemMapSize = 0;
         for (int outIndex = 0; outIndex < fLeafCount; outIndex++) {
-            fElemMap[outIndex] = new Object ();
+            // optimization from Henry Zongaro:
+            //fElemMap[outIndex] = new Object ();
+            fElemMap[outIndex] = null;
 
             /****
             This code commented out in the DTD version...
