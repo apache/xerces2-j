@@ -218,6 +218,10 @@ public class XMLSchemaValidator
     protected static final String JAXP_SCHEMA_SOURCE =
     Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
+    /** Property identifier: JAXP schema language. */
+    protected static final String JAXP_SCHEMA_LANGUAGE =
+    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -251,6 +255,7 @@ public class XMLSchemaValidator
         SCHEMA_LOCATION,
         SCHEMA_NONS_LOCATION,
         JAXP_SCHEMA_SOURCE, 
+        JAXP_SCHEMA_LANGUAGE, 
     };
 
     /** Property defaults. */

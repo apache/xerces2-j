@@ -118,12 +118,15 @@ public final class Constants {
     // JAXP properties
     //
 
-    /** JAXP property prefix ("http://xml.org/sax/properties/"). */
+    /** JAXP property prefix ("http://java.sun.com/xml/jaxp/properties/"). */
     public static final String JAXP_PROPERTY_PREFIX =
             "http://java.sun.com/xml/jaxp/properties/";
 
     /** JAXP schemaSource property */
     public static final String SCHEMA_SOURCE = "schemaSource";
+
+    /** JAXP schemaSource language */
+    public static final String SCHEMA_LANGUAGE = "schemaLanguage";
 
 
     //
