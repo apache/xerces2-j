@@ -358,7 +358,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
         }
         checkAllFeatures(ser);
         try {
-            reset(ser);
+            ser.reset();
             ser.setOutputByteStream(destination);
             if (wnode == null)
                 return false;
@@ -431,7 +431,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
         checkAllFeatures(ser);
         StringWriter destination = new StringWriter();
         try {
-            reset(ser);
+            ser.reset();
             ser.setOutputCharStream(destination);
             if (wnode == null)
                 return null;
@@ -526,17 +526,6 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
      */
     public void setFilter(DOMWriterFilter filter){
         serializer.fDOMFilter = filter;
-    }
-
-
-    private void reset(XMLSerializer ser) {
-        ser.reset();
-        ser.fNSBinder.reset();
-        // during serialization always have a mapping to empty string
-        // so we assume there is a declaration.
-        ser.fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-        ser.fNamespaceCounter = 1;
-
     }
 
 
