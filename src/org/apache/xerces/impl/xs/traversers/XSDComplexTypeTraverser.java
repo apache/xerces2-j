@@ -731,6 +731,17 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else if (baseType.getContentType() == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
             }
             else {
+                //
+                // Check if the contentType of the base is consistent with the new type
+                // cos-ct-extends.1.4.3.2
+                if (fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT &&
+                    baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_ELEMENT ||
+                    fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED &&
+                    baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.3.2.2.1",
+                            new Object[]{fName}, complexContent);
+                }
+
                 // if the content of either type is an "all" model group, error.
                 if (fParticle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
                     ((XSModelGroupImpl)fParticle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL ||
@@ -752,23 +763,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 particle.fValue = group;
                 
                 fParticle = particle;
-            }
-
-            //
-            // Check if the contentType of the base is consistent with the new type
-            // cos-ct-extends.1.4.2.2
-            if (baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
-                if (((baseType.getContentType() ==
-                      XSComplexTypeDecl.CONTENTTYPE_ELEMENT) &&
-                     fContentType != XSComplexTypeDecl.CONTENTTYPE_ELEMENT) ||
-                    ((baseType.getContentType() ==
-                      XSComplexTypeDecl.CONTENTTYPE_MIXED) &&
-                      fContentType != XSComplexTypeDecl.CONTENTTYPE_MIXED)) {
-
-                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.2.2.2.1",
-                          new Object[]{fName}, complexContent);
-                }
-
             }
 
             // Remove prohibited uses.   Must be done before merge for EXTENSION.
