@@ -7558,6 +7558,10 @@ throws Exception {
         // Push the group name onto a stack, so that we can check for circular groups
         fCurrentGroupNameStack.push(groupName);
 
+        // Save the scope and set the current scope to -1 
+        int savedScope = fCurrentScope;
+        fCurrentScope = -1;
+
         int index = -2;
 
         boolean illegalChild = false;
@@ -7594,6 +7598,7 @@ throws Exception {
 
 	contentSpecHolder = new Integer(index);
         fCurrentGroupNameStack.pop();
+        fCurrentScope = savedScope;
 	fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
         return index;
     }
