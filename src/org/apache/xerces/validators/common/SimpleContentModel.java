@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@ package org.apache.xerces.validators.common;
 
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
+import org.apache.xerces.utils.QName;
 
 /**
  * SimpleContentModel is a derivative of the abstract content model base
@@ -80,13 +81,40 @@ import org.apache.xerces.utils.ImplementationMessages;
  * in a simple way without a DFA and without the overhead of setting up a
  * DFA for such a simple check.
  *
- * @version
+ * @version $Id$
  */
-public class SimpleContentModel implements XMLContentModel
-{
-    // -----------------------------------------------------------------------
-    //  Constructors
-    // -----------------------------------------------------------------------
+public class SimpleContentModel 
+    implements XMLContentModel {
+
+    //
+    // Data
+    //
+
+    /**
+     * The element decl pool indices of the first (and optional second)
+     * child node. The operation code tells us whether the second child
+     * is used or not.
+     */
+    private QName fFirstChild = new QName();
+
+    /**
+     * The element decl pool indices of the first (and optional second)
+     * child node. The operation code tells us whether the second child
+     * is used or not.
+     */
+    private QName fSecondChild = new QName();
+
+    /**
+     * The operation that this object represents. Since this class only
+     * does simple contents, there is only ever a single operation
+     * involved (i.e. the children of the operation are always one or
+     * two leafs.) This is one of the XMLDTDParams.CONTENTSPECNODE_XXX values.
+     */
+    private int fOp;
+
+    //
+    // Constructors
+    //
 
     /**
      * Constructs a simple content model.
@@ -97,9 +125,7 @@ public class SimpleContentModel implements XMLContentModel
      *
      * @see XMLContentSpec.Node
      */
-    public SimpleContentModel(  int     firstChildIndex
-                                , int   secondChildIndex
-                                , int   cmOp)
+    public SimpleContentModel(QName firstChild, QName secondChild, int cmOp)
     {
         //
         //  Store away the children and operation. This is all we need to
@@ -107,15 +133,20 @@ public class SimpleContentModel implements XMLContentModel
         //
         //  The operation is one of the ContentSpecNode.NODE_XXX values!
         //
-        fFirstChild = firstChildIndex;
-        fSecondChild = secondChildIndex;
+        fFirstChild.setValues(firstChild);
+        if (secondChild != null) {
+            fSecondChild.setValues(secondChild);
+        }
+        else {
+            fSecondChild.clear();
+        }
         fOp = cmOp;
     }
 
 
-    // -----------------------------------------------------------------------
-    //  Public, inherited methods
-    // -----------------------------------------------------------------------
+    //
+    // XMLContentModel methods
+    //
     
     /**
      * Check that the specified content is valid according to this
@@ -140,8 +171,9 @@ public class SimpleContentModel implements XMLContentModel
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(int childCount, int[] children) throws Exception
-    {
+    public int validateContent(int childCount, 
+                               QName children[]) throws Exception {
+
         //
         //  According to the type of operation, we do the correct type of
         //  content check.
@@ -154,7 +186,7 @@ public class SimpleContentModel implements XMLContentModel
                     return 0;
 
                 // If the 0th child is not the right kind, report an error at 0
-                if (children[0] != fFirstChild)
+                if (children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart)
                     return 0;
 
                 // If more than one child, report an error at index 1
@@ -167,7 +199,8 @@ public class SimpleContentModel implements XMLContentModel
                 //  If there is one child, make sure its the right type. If not,
                 //  then its an error at index 0.
                 //
-                if ((childCount == 1) && (children[0] != fFirstChild))
+                if (childCount == 1 && 
+                    (children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart))
                     return 0;
 
                 //
@@ -189,7 +222,7 @@ public class SimpleContentModel implements XMLContentModel
                 {
                     for (int index = 0; index < childCount; index++)
                     {
-                        if (children[index] != fFirstChild)
+                        if (children[index].uri != fFirstChild.uri && children[index].localpart != fFirstChild.localpart)
                             return index;
                     }
                 }
@@ -210,7 +243,7 @@ public class SimpleContentModel implements XMLContentModel
                 //
                 for (int index = 0; index < childCount; index++)
                 {
-                    if (children[index] != fFirstChild)
+                    if (children[index].uri != fFirstChild.uri && children[index].localpart != fFirstChild.localpart)
                         return index;
                 }
                 break;
@@ -224,7 +257,8 @@ public class SimpleContentModel implements XMLContentModel
                     return 0;
 
                 // If the zeroth element isn't one of our choices, error at 0
-                if ((children[0] != fFirstChild) && (children[0] != fSecondChild))
+                if ((children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart) &&
+                    (children[0].uri != fSecondChild.uri && children[0].localpart != fSecondChild.localpart))
                     return 0;
 
                 // If there is more than one element, then an error at 1
@@ -238,10 +272,10 @@ public class SimpleContentModel implements XMLContentModel
                 //  we stored, in the stored order.
                 //
                 if (childCount == 2) {
-                    if (children[0] != fFirstChild)
+                    if (children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart)
                         return 0;
 
-                    if (children[1] != fSecondChild)
+                    if (children[1].uri != fSecondChild.uri && children[1].localpart != fSecondChild.localpart)
                         return 1;
                 }
                 else {
@@ -290,16 +324,17 @@ public class SimpleContentModel implements XMLContentModel
      *
      * @see InsertableElementsInfo
      */
-    public int whatCanGoHere(boolean                    fullyValid
-                            , InsertableElementsInfo    info) throws Exception
-    {
+    public int whatCanGoHere(boolean fullyValid, InsertableElementsInfo info) 
+        throws Exception {
+
         //
         //  For this one, having the empty slot at the insertion point is 
         //  a problem. So lets compress the array down. We know that it has
         //  to have at least the empty slot at the insertion point.
         //
-        for (int index = info.insertAt; index < info.childCount; index++)
-            info.curChildren[index] = info.curChildren[index+1];
+        for (int index = info.insertAt; index < info.childCount; index++) {
+            info.curChildren[index].setValues(info.curChildren[index+1]);
+        }
         info.childCount--;
         
         //
@@ -341,18 +376,21 @@ public class SimpleContentModel implements XMLContentModel
         if ((info.possibleChildren == null)
         ||  (info.possibleChildren.length < info.resultsCount))
         {
-            info.possibleChildren = new int[info.resultsCount];
+            info.possibleChildren = new QName[info.resultsCount];
+            for (int i = 0; i < info.possibleChildren.length; i++) {
+                info.possibleChildren[i] = new QName();
+            }
         }
 
         //
         //  Fill in the possible children array, and set all of the associated
         //  results entries to defaults of false.
         //
-        info.possibleChildren[0] = fFirstChild;
+        info.possibleChildren[0].setValues(fFirstChild);
         info.results[0] = false;
         if (info.resultsCount == 2)
         {
-            info.possibleChildren[1] = fSecondChild;
+            info.possibleChildren[1].setValues(fSecondChild);
             info.results[1] = false;
         }
 
@@ -464,7 +502,8 @@ public class SimpleContentModel implements XMLContentModel
                     if (fullyValid)
                     {
                         if (info.childCount == 1)
-                            info.results[0] = info.curChildren[0] == fSecondChild;
+                            info.results[0] = info.curChildren[0].uri == fSecondChild.uri &&
+                                              info.curChildren[0].localpart == fSecondChild.localpart;
                     }
                      else
                     {
@@ -491,23 +530,4 @@ public class SimpleContentModel implements XMLContentModel
         return -1;
     }
 
-
-    // -----------------------------------------------------------------------
-    //  Private data members
-    //
-    //  fFirstChild
-    //  fSecondChild
-    //      The element decl pool indices of the first (and optional second)
-    //      child node. The operation code tells us whether the second child
-    //      is used or not.
-    //
-    //  fOp
-    //      The operation that this object represents. Since this class only
-    //      does simple contents, there is only ever a single operation
-    //      involved (i.e. the children of the operation are always one or
-    //      two leafs.) This is one of the XMLDTDParams.CONTENTSPECNODE_XXX values.
-    // -----------------------------------------------------------------------
-    int     fFirstChild;
-    int     fSecondChild;
-    int     fOp;
-};
+} // class SimpleContentModel
