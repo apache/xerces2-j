@@ -2466,7 +2466,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                index = fAttrList.getNextAttr(index);
             }
          }
-         System.out.println("HHHHHHHH"+fGrammar);
          return;
       }
 
