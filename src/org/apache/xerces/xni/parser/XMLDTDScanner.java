@@ -111,7 +111,7 @@ public interface XMLDTDScanner
      *                       the handler of the end of the DTD in the
      *                       absence of an external subset.
      *
-     * @returns True if there is more to scan, false otherwise.
+     * @return True if there is more to scan, false otherwise.
      */
     public boolean scanDTDInternalSubset(boolean complete, boolean standalone,
                                          boolean hasExternalSubset)
@@ -128,7 +128,7 @@ public interface XMLDTDScanner
      *                 permitted to completely scan a document if it does
      *                 not support this "pull" scanning model.
      *
-     * @returns True if there is more to scan, false otherwise.
+     * @return True if there is more to scan, false otherwise.
      */
     public boolean scanDTDExternalSubset(boolean complete) 
         throws IOException, XNIException;

@@ -148,8 +148,8 @@ public class NamedNodeMapImpl
      * stable ordering of entries... and be prepared for double-reporting
      * or skips as insertion and deletion occur.
      *
-     * @returns the node which currenly has the specified index, or null
-     * if index is greater than or equal to getLength().
+     * @return the node which currenly has the specified index, or null if index
+     * is greater than or equal to getLength().
      */
     public Node item(int index) {
     	return (nodes != null && index < nodes.size()) ?
@@ -160,8 +160,8 @@ public class NamedNodeMapImpl
      * Retrieve a node by name.
      *
      * @param name Name of a node to look up.
-     * @returns the Node (of unspecified sub-class) stored with that name,
-     * or null if no value has been assigned to that name.
+     * @return the Node (of unspecified sub-class) stored with that name, or
+     * null if no value has been assigned to that name.
      */
     public Node getNamedItem(String name) {
 

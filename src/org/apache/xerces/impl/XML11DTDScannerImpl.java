@@ -159,7 +159,7 @@ public class XML11DTDScannerImpl
      * leading and trailing white space must be removed.
      *
      * @param literal The string to fill in with the public ID literal.
-     * @returns True on success.
+     * @return True on success.
      *
      * <strong>Note:</strong> This method uses fStringBuffer, anything in it at
      * the time of calling is lost.

@@ -299,7 +299,7 @@ public class XMLDTDScannerImpl
      *                 permitted to completely scan a document if it does
      *                 not support this "pull" scanning model.
      *
-     * @returns True if there is more to scan, false otherwise.
+     * @return True if there is more to scan, false otherwise.
      */
     public boolean scanDTDExternalSubset(boolean complete) 
         throws IOException, XNIException {
@@ -350,7 +350,7 @@ public class XMLDTDScannerImpl
      *                       the handler of the end of the DTD in the
      *                       absence of an external subset.
      *
-     * @returns True if there is more to scan, false otherwise.
+     * @return True if there is more to scan, false otherwise.
      */
     public boolean scanDTDInternalSubset(boolean complete, boolean standalone,
                                          boolean hasExternalSubset)
@@ -680,7 +680,7 @@ public class XMLDTDScannerImpl
      * @param complete True if this method is intended to scan
      *                 and dispatch as much as possible.                 
      *
-     * @returns True if a TextDecl was scanned.
+     * @return True if a TextDecl was scanned.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown on parse error.
@@ -1878,7 +1878,7 @@ public class XMLDTDScannerImpl
      * @param complete True if this method is intended to scan
      *                 and dispatch as much as possible.                 
      *
-     * @returns True if there is more to scan.
+     * @return True if there is more to scan.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown on parse error.

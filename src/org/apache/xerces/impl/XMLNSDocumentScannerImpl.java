@@ -162,7 +162,7 @@ extends XMLDocumentScannerImpl {
      * destroyed. The caller should copy important information out of
      * these variables before calling this method.
      *
-     * @returns True if element is empty. (i.e. It matches
+     * @return True if element is empty. (i.e. It matches
      *          production [44].
      */
     protected boolean scanStartElement()
@@ -500,7 +500,7 @@ extends XMLDocumentScannerImpl {
      * copy the needed information out of this variable before calling
      * this method.
      *
-     * @returns The element depth.
+     * @return The element depth.
      */
     protected int scanEndElement() throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanEndElement()");
@@ -584,7 +584,7 @@ extends XMLDocumentScannerImpl {
          * is no longer in the pipeline bind namespaces in the scanner.
          *
          *
-         * @returns True if the caller should stop and return true which
+         * @return True if the caller should stop and return true which
          *          allows the scanner to switch to a new scanning
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.

@@ -111,8 +111,8 @@ public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
      * This is interpreted as "Version of the DOM API supported for the
      * specified Feature", and in Level 1 should be "1.0"
      *
-     * @returns    true iff this implementation is compatable with the
-     * specified feature and version.
+     * @return    true iff this implementation is compatable with the specified
+     * feature and version.
      */
     public boolean hasFeature(String feature, String version) {
         return super.hasFeature(feature, version) ||

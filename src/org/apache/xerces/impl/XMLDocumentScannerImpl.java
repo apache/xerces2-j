@@ -618,7 +618,7 @@ public class XMLDocumentScannerImpl
          * @param complete True if this dispatcher is intended to scan
          *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this
+         * @return True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
@@ -689,7 +689,7 @@ public class XMLDocumentScannerImpl
          * @param complete True if this dispatcher is intended to scan
          *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this
+         * @return True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
@@ -846,7 +846,7 @@ public class XMLDocumentScannerImpl
          * @param complete True if this dispatcher is intended to scan
          *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this
+         * @return True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
@@ -965,7 +965,7 @@ public class XMLDocumentScannerImpl
          * to add code to handle scanning for a the "DOCTYPE" string
          * after the string "<!" has been scanned.
          *
-         * @returns True if the "DOCTYPE" was scanned; false if "DOCTYPE"
+         * @return True if the "DOCTYPE" was scanned; false if "DOCTYPE"
          *          was not scanned.
          */
         protected boolean scanForDoctypeHook()
@@ -987,7 +987,7 @@ public class XMLDocumentScannerImpl
          * scanner must handle the trailing miscellanous section of
          * the document after the end of the document's root element.
          *
-         * @returns True if the caller should stop and return true which
+         * @return True if the caller should stop and return true which
          *          allows the scanner to switch to a new scanning
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.
@@ -1008,7 +1008,7 @@ public class XMLDocumentScannerImpl
          * "root" element. However, when scanning a full XML document,
          * the scanner must handle the root element specially.
          *
-         * @returns True if the caller should stop and return true which
+         * @return True if the caller should stop and return true which
          *          allows the scanner to switch to a new scanning
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.
@@ -1062,7 +1062,7 @@ public class XMLDocumentScannerImpl
          * @param complete True if this dispatcher is intended to scan
          *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this
+         * @return True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.

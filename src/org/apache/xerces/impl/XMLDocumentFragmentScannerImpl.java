@@ -335,7 +335,7 @@ public class XMLDocumentFragmentScannerImpl
      *                 permitted to completely scan a document if it does
      *                 not support this "pull" scanning model.
      *
-     * @returns True if there is more to scan, false otherwise.
+     * @return True if there is more to scan, false otherwise.
      */
     public boolean scanDocument(boolean complete) 
         throws IOException, XNIException {
@@ -749,7 +749,7 @@ public class XMLDocumentFragmentScannerImpl
      * destroyed. The caller should copy important information out of
      * these variables before calling this method.
      *
-     * @returns True if element is empty. (i.e. It matches
+     * @return True if element is empty. (i.e. It matches
      *          production [44].
      */
     protected boolean scanStartElement() 
@@ -890,7 +890,7 @@ public class XMLDocumentFragmentScannerImpl
     /**
      * Scans element content.
      *
-     * @returns Returns the next character on the stream.
+     * @return Returns the next character on the stream.
      */
     protected int scanContent() throws IOException, XNIException {
 
@@ -1029,7 +1029,7 @@ public class XMLDocumentFragmentScannerImpl
      * copy the needed information out of this variable before calling
      * this method.
      *
-     * @returns The element depth.
+     * @return The element depth.
      */
     protected int scanEndElement() throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanEndElement()");
@@ -1197,7 +1197,7 @@ public class XMLDocumentFragmentScannerImpl
      *
      * @param element The element.
      *
-     * @returns The element depth.
+     * @return The element depth.
      *
      * @throws XNIException Thrown if the handler throws a SAX exception
      *                      upon notification.
@@ -1417,7 +1417,7 @@ public class XMLDocumentFragmentScannerImpl
          * @param complete True if this dispatcher is intended to scan
          *                 and dispatch as much as possible.                 
          *
-         * @returns True if there is more to dispatch either from this 
+         * @return True if there is more to dispatch either from this 
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
@@ -1447,7 +1447,7 @@ public class XMLDocumentFragmentScannerImpl
          * @param complete True if this dispatcher is intended to scan
          *                 and dispatch as much as possible.                 
          *
-         * @returns True if there is more to dispatch either from this 
+         * @return True if there is more to dispatch either from this 
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
@@ -1643,7 +1643,7 @@ public class XMLDocumentFragmentScannerImpl
          * to add code to handle scanning for a the "DOCTYPE" string 
          * after the string "<!" has been scanned.
          * 
-         * @returns True if the "DOCTYPE" was scanned; false if "DOCTYPE"
+         * @return True if the "DOCTYPE" was scanned; false if "DOCTYPE"
          *          was not scanned.
          */
         protected boolean scanForDoctypeHook() 
@@ -1659,7 +1659,7 @@ public class XMLDocumentFragmentScannerImpl
          * scanner must handle the trailing miscellanous section of
          * the document after the end of the document's root element.
          *
-         * @returns True if the caller should stop and return true which
+         * @return True if the caller should stop and return true which
          *          allows the scanner to switch to a new scanning 
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.
@@ -1676,7 +1676,7 @@ public class XMLDocumentFragmentScannerImpl
          * "root" element. However, when scanning a full XML document,
          * the scanner must handle the root element specially.
          *
-         * @returns True if the caller should stop and return true which
+         * @return True if the caller should stop and return true which
          *          allows the scanner to switch to a new scanning 
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.

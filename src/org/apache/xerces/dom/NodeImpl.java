@@ -251,8 +251,8 @@ public abstract class NodeImpl
      * By default we do not accept any children, ParentNode overrides this.
      * @see ParentNode
      *
-     * @returns newChild, in its new state (relocated, or emptied in the
-     * case of DocumentNode.)
+     * @return newChild, in its new state (relocated, or emptied in the case of
+     * DocumentNode.)
      *
      * @throws DOMException(HIERARCHY_REQUEST_ERR) if newChild is of a
      * type that shouldn't be a child of this node.
@@ -479,8 +479,8 @@ public abstract class NodeImpl
      * immediately before. If refChild is null, the insertion occurs
      * after all existing Nodes, like appendChild().
      *
-     * @returns newChild, in its new state (relocated, or emptied in the
-     * case of DocumentNode.)
+     * @return newChild, in its new state (relocated, or emptied in the case of
+     * DocumentNode.)
      *
      * @throws DOMException(HIERARCHY_REQUEST_ERR) if newChild is of a
      * type that shouldn't be a child of this node, or if newChild is an
@@ -533,7 +533,7 @@ public abstract class NodeImpl
      * By default we do not have any children, ParentNode overrides this.
      * @see ParentNode
      *
-     * @returns oldChild, in its new state (removed).
+     * @return oldChild, in its new state (removed).
      *
      * @throws DOMException(HIERARCHY_REQUEST_ERR) if newChild is of a
      * type that shouldn't be a child of this node, or if newChild is

@@ -298,8 +298,8 @@ public abstract class ParentNode
      * immediately before. If refChild is null, the insertion occurs
      * after all existing Nodes, like appendChild().
      *
-     * @returns newChild, in its new state (relocated, or emptied in the
-     * case of DocumentNode.)
+     * @return newChild, in its new state (relocated, or emptied in the case of
+     * DocumentNode.)
      *
      * @throws DOMException(HIERARCHY_REQUEST_ERR) if newChild is of a
      * type that shouldn't be a child of this node, or if newChild is an
@@ -607,7 +607,7 @@ public abstract class ParentNode
      * parent, if any. Equivalent to inserting newChild before oldChild,
      * then removing oldChild.
      *
-     * @returns oldChild, in its new state (removed).
+     * @return oldChild, in its new state (removed).
      *
      * @throws DOMException(HIERARCHY_REQUEST_ERR) if newChild is of a
      * type that shouldn't be a child of this node, or if newChild is

@@ -312,7 +312,7 @@ public class TextImpl
      * @param offset The offset at which to split. If offset is at the
      * end of the available data, the second node will be empty.
      *
-     * @returns A reference to the new node (containing data after the
+     * @return A reference to the new node (containing data after the
      * offset point). The original node will contain data up to that
      * point.
      *
