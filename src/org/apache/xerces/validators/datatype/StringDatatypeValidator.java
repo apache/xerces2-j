@@ -91,10 +91,11 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     private int        fFacetsDefined    = 0;
     private boolean    fDerivedByList    = false;//default
 
-    private boolean isMaxExclusiveDefined = false;
-    private boolean isMaxInclusiveDefined = false;
-    private boolean isMinExclusiveDefined = false;
-    private boolean isMinInclusiveDefined = false;
+    private boolean    isMaxExclusiveDefined = false;
+    private boolean    isMaxInclusiveDefined = false;
+    private boolean    isMinExclusiveDefined = false;
+    private boolean    isMinInclusiveDefined = false;
+    private RegularExpression fRegex         = null;
 
 
 
@@ -147,6 +148,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                     } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                         fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                         fPattern = (String)facets.get(key);
+                        fRegex   = new RegularExpression(fPattern, "X");
                     } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                         fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                         fEnumeration = (Vector)facets.get(key);
@@ -378,10 +380,8 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            //System.out.println( "pattern = " + fPattern );
-            RegularExpression regex = new RegularExpression(fPattern );
-            //System.out.println("value = '" + content +"'."  );
-            if ( regex.matches( content) == false )
+            //RegularExpression regex = new RegularExpression(fPattern );
+            if ( fRegex == null || fRegex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
                      "' does not match regular expression facet '" + fPattern + "'." );
         }
