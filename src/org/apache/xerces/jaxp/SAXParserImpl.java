@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2004 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,18 +69,20 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
-/**
- * @author Rajiv Mordani
- * @author Edwin Goei
- * @version $Id$
- */
+import org.apache.xerces.util.SAXMessageFormatter;
 
 /**
  * This is the implementation specific class for the
- * <code>javax.xml.parsers.SAXParser</code>. 
+ * <code>javax.xml.parsers.SAXParser</code>.
+ * 
+ * @author Rajiv Mordani
+ * @author Edwin Goei
+ * 
+ * @version $Id$
  */
 public class SAXParserImpl extends javax.xml.parsers.SAXParser
-        implements JAXPConstants {
+    implements JAXPConstants {
+
     private XMLReader xmlReader;
     private String schemaLanguage = null;     // null means DTD
     
@@ -200,20 +202,26 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
                                      Constants.SCHEMA_VALIDATION_FEATURE,
                                      false);
             } else {
+                // REVISIT: It would be nice if we could format this message
+                // using a user specified locale as we do in the underlying
+                // XMLReader -- mrglavas
                 throw new SAXNotSupportedException(
-                    "Unsupported schema language");
+                    SAXMessageFormatter.formatMessage(null, "schema-not-supported", null));
             }
-        } else if(JAXP_SCHEMA_SOURCE.equals(name)){
-					String val = (String)getProperty(JAXP_SCHEMA_LANGUAGE);
-					if(val != null && W3C_XML_SCHEMA.equals(val)){
-            			xmlReader.setProperty(name, value);
-					}else
-                		throw new SAXNotSupportedException(
-								"'http://java.sun.com/xml/jaxp/properties/schemaLanguage' "+
-								"property should be set before setting "+
-								"'http://java.sun.com/xml/jaxp/properties/schemaSource'"+
-								" property");
-		}else{
+        } 
+        else if(JAXP_SCHEMA_SOURCE.equals(name)) {
+            String val = (String)getProperty(JAXP_SCHEMA_LANGUAGE);
+            if ( val != null && W3C_XML_SCHEMA.equals(val) ) {
+                xmlReader.setProperty(name, value);
+            }
+            else {
+                throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(null, 
+                    "jaxp-order-not-supported", 
+                    new Object[] {JAXP_SCHEMA_LANGUAGE, JAXP_SCHEMA_SOURCE}));
+            }
+		}
+		else {
             xmlReader.setProperty(name, value);
         }
     }
