@@ -178,11 +178,6 @@ public class AttrImpl
     	return getValue();
     }
 
-    /** Attributes don't have parent nodes. */
-    public Node getParentNode() {
-        return null;
-    }
-
     //
     // Attr methods
     //
