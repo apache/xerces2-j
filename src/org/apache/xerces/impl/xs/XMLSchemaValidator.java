@@ -821,47 +821,30 @@ public class XMLSchemaValidator
         // REVISIT: this methods basically duplicates implementation of
         //          handleCharacters(). We should be able to reuse some code
 
-        boolean allWhiteSpace = true;
-        boolean normalizedStr = false;
-
-        if (fNormalizeData) {
-            // if whitespace == -1 skip normalization, because it is a complexType
-            if (fWhiteSpace != -1 && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
-                // normalize data
-                normalizeWhitespace(data, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
-                normalizedStr = true;
-            }
-        }
-
-        if (normalizedStr) {
+        // if whitespace == -1 skip normalization, because it is a complexType
+        // or a union type.
+        if (fNormalizeData && fWhiteSpace != -1 && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
+            // normalize data
+            normalizeWhitespace(data, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
             fBuffer.append(fNormalizedStr.ch, fNormalizedStr.offset, fNormalizedStr.length);
-        } else {
+        }
+        else {
             fBuffer.append(data);
         }
 
-        boolean mixed = false;
+        // When it's a complex type with element-only content, we need to
+        // find out whether the content contains any non-whitespace character.
+        boolean allWhiteSpace = true;
         if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-                mixed = true;
-            }
-        }
-
-        if (DEBUG) {
-            System.out.println("==>characters("+data+")," +fCurrentType.getName()+","+mixed);
-        }
-
-        if (mixed || fWhiteSpace !=-1 || fUnionType) {
-        // don't check characters: since it is either
-        // a) mixed content model - we don't care if there were some characters
-        // b) simpleType/simpleContent - in which case it is data in ELEMENT content
-        }
-        else  {
-            // data outside of element content
-            for (int i=0; i< data.length(); i++) {
-                if (!XMLChar.isSpace(data.charAt(i))) {
-                    allWhiteSpace = false;
-                    break;
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
+                // data outside of element content
+                for (int i=0; i< data.length(); i++) {
+                    if (!XMLChar.isSpace(data.charAt(i))) {
+                        allWhiteSpace = false;
+                        fSawCharacters = true;
+                        break;
+                    }
                 }
             }
         }
@@ -869,9 +852,6 @@ public class XMLSchemaValidator
         // we saw first chunk of characters
         fFirstChunk = false;
 
-        if (!allWhiteSpace) {
-            fSawCharacters = true;
-        }
         return allWhiteSpace;
     }
 
@@ -1475,56 +1455,33 @@ public class XMLSchemaValidator
         if (fSkipValidationDepth >= 0)
             return;
 
-        boolean allWhiteSpace = true;
-
-        // find out if type is union, what is whitespace,
-        // determine if there is a need to do normalization
         // Note: data in EntityRef and CDATA is normalized as well
-        if (fNormalizeData) {
-            // if whitespace == -1 skip normalization, because it is a complexType
-            if (fWhiteSpace != -1 && !fUnionType && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
-                // normalize data
-                normalizeWhitespace(text, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
-                text = fNormalizedStr;
-            }
+        // if whitespace == -1 skip normalization, because it is a complexType
+        // or a union type.
+        if (fNormalizeData && fWhiteSpace != -1 && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
+            // normalize data
+            normalizeWhitespace(text, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
+            text = fNormalizedStr;
         }
-
         fBuffer.append(text.ch, text.offset, text.length);
         
-        boolean mixed = false;
+        // When it's a complex type with element-only content, we need to
+        // find out whether the content contains any non-whitespace character.
         if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
-              XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-              if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-                    mixed = true;
-              }
-        }
-
-        if (DEBUG) {
-         System.out.println("==>characters("+text.toString()+")," +fCurrentType.getName()+","+mixed);
-        }
-
-        if (mixed || fWhiteSpace !=-1 || fUnionType) {
-            // don't check characters: since it is either
-            // a) mixed content model - we don't care if there were some characters
-            // b) simpleType/simpleContent - in which case it is data in ELEMENT content
-        }
-        else  {
-            // data outside of element content
-            for (int i=text.offset; i< text.offset+text.length; i++) {
-                if (!XMLChar.isSpace(text.ch[i])) {
-                    allWhiteSpace = false;
-                    break;
+            XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
+                // data outside of element content
+                for (int i=text.offset; i< text.offset+text.length; i++) {
+                    if (!XMLChar.isSpace(text.ch[i])) {
+                        fSawCharacters = true;
+                        break;
+                    }
                 }
             }
         }
 
-
         // we saw first chunk of characters
         fFirstChunk = false;
-
-        if (!allWhiteSpace) {
-            fSawCharacters = true;
-        }
 
     } // handleCharacters(XMLString)
 
@@ -1553,7 +1510,7 @@ public class XMLSchemaValidator
         
         for (int i = value.offset; i < size; i++) {
             c = value.ch[i];
-            if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
+            if (XMLChar.isSpace(c)) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
                     fNormalizedStr.ch[fNormalizedStr.length++] = ' ';
@@ -1610,11 +1567,8 @@ public class XMLSchemaValidator
     }
 
 
-    private int normalizeWhitespace( String value, boolean collapse) {
+    private void normalizeWhitespace( String value, boolean collapse) {
         boolean skipSpace = collapse;
-        boolean sawNonWS = false;
-        int leading = 0;
-        int trailing = 0;
         char c;
         int size = value.length();
 
@@ -1627,38 +1581,24 @@ public class XMLSchemaValidator
 
         for (int i = 0; i < size; i++) {
             c = value.charAt(i);
-            if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
+            if (XMLChar.isSpace(c)) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
                     fNormalizedStr.ch[fNormalizedStr.length++] = ' ';
                     skipSpace = collapse;
                 }
-                if (!sawNonWS) {
-                    // this is a leading whitespace, record it
-                    leading = 1;
-                }
             }
             else {
                 fNormalizedStr.ch[fNormalizedStr.length++] = c;
                 skipSpace = false;
-                sawNonWS = true;
             }
         }
         if (skipSpace) {
-            if (fNormalizedStr.length != 0) {
+            if (fNormalizedStr.length != 0)
                 // if we finished on a space trim it but also record it
                 fNormalizedStr.length--;
-                trailing = 2;
-            }
-            else if (leading != 0 && !sawNonWS) {
-                // if all we had was whitespace we skipped record it as
-                // trailing whitespace as well
-                trailing = 2;
-            }
         }
-        return collapse ? leading + trailing : 0;
     }
-
 
     // handle ignorable whitespace
     void handleIgnorableWhitespace(XMLString text) {
