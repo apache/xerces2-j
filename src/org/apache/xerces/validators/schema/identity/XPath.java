@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 2000,2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -99,8 +99,8 @@ public class XPath {
     //
 
     /** Constructs an XPath object from the specified expression. */
-    public XPath(String xpath, StringPool stringPool, 
-                 NamespacesScope context) 
+    public XPath(String xpath, StringPool stringPool,
+                 NamespacesScope context)
         throws XPathException {
         XMLCharacterProperties.initCharFlags();
         fExpression = xpath;
@@ -141,7 +141,7 @@ public class XPath {
      * This method is implemented by using the XPathExprScanner and
      * examining the list of tokens that it returns.
      */
-    private void parseExpression(final NamespacesScope context) 
+    private void parseExpression(final NamespacesScope context)
         throws XPathException {
 
         // tokens
@@ -149,7 +149,7 @@ public class XPath {
 
         // scanner
         XPath.Scanner scanner = new XPath.Scanner(fStringPool) {
-            protected void addToken(XPath.Tokens tokens, int token) 
+            protected void addToken(XPath.Tokens tokens, int token)
                 throws XPathException {
                 if (
                     token == XPath.Tokens.EXPRTOKEN_ATSIGN ||
@@ -192,24 +192,24 @@ public class XPath {
 
         int length = fExpression.length();
         /***/
-        boolean success = scanner.scanExpr(fStringPool, 
+        boolean success = scanner.scanExpr(fStringPool,
                                            xtokens, fExpression, 0, length);
         //fTokens.dumpTokens();
         java.util.Vector stepsVector = new java.util.Vector();
 		java.util.Vector locationPathsVector= new java.util.Vector();
         int tokenCount = xtokens.getTokenCount();
 		boolean firstTokenOfLocationPath=true;
-		
+
         for (int i = 0; i < tokenCount; i++) {
             int token = xtokens.getToken(i);
 			boolean isNamespace=false;
-			
+
             switch (token) {
 				case  XPath.Tokens.EXPRTOKEN_OPERATOR_UNION :{
 					if (i == 0) {
 						throw new XPathException("not allowed to have '|' at the beginning of an xpath value");
 					}
-					
+
 					int size = stepsVector.size();
 					if (size == 0) {
 						throw new XPathException("not allowed to have '||'");
@@ -217,10 +217,10 @@ public class XPath {
 					Step[] steps = new Step[size];
 					stepsVector.copyInto(steps);
 					// add location path
-					locationPathsVector.add(new LocationPath(steps));
+					locationPathsVector.addElement(new LocationPath(steps));
 					//reset stepsVector
-					stepsVector.clear();
-					firstTokenOfLocationPath=true;
+					stepsVector.removeAllElements();
+                    firstTokenOfLocationPath=true;
 					break;
 				}
 
@@ -234,7 +234,7 @@ public class XPath {
                         throw new XPathException("missing attribute name");
                     }
                     token = xtokens.getToken(++i);
-				
+
 					if (token != XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME
 						&& token!= XPath.Tokens.EXPRTOKEN_NAMETEST_ANY
 						&& token!=  XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE) {
@@ -257,7 +257,7 @@ public class XPath {
 							isNamespaceAtt=true;
                     }
 					    case XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME:{
-							
+
                     token = xtokens.getToken(++i);
                     int prefix = xtokens.getTokenString(token);
                     int uri = StringPool.EMPTY_STRING;
@@ -267,7 +267,7 @@ public class XPath {
                     if (prefix != -1 && context != null && uri == StringPool.EMPTY_STRING) {
                         throw new XPathException("prefix "+fStringPool.toString(prefix)+" not bound to namespace URI");
                     }
-							
+
 							if (isNamespaceAtt)
 							{
 								// build step
@@ -277,13 +277,13 @@ public class XPath {
 								stepsVector.addElement(step);
 								break;
 							}
-								
+
                     token = xtokens.getToken(++i);
                     int localpart = xtokens.getTokenString(token);
                     int rawname = prefix != -1
-                                ? fStringPool.addSymbol(fStringPool.toString(prefix) + ':' + fStringPool.toString(localpart)) 
+                                ? fStringPool.addSymbol(fStringPool.toString(prefix) + ':' + fStringPool.toString(localpart))
                                 : localpart;
-                    
+
                     // build step
                     Axis axis = new Axis(Axis.ATTRIBUTE);
                     NodeTest nodeTest = new NodeTest(fStringPool, new QName(prefix, localpart, rawname, uri));
@@ -310,7 +310,7 @@ public class XPath {
                 }
                 /***/
                 case XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD: {
-					
+
                     // consume "::" token and drop through
                     i++;
 					if (i == tokenCount - 1) {
@@ -328,7 +328,7 @@ public class XPath {
 					firstTokenOfLocationPath=false;
 					break;
 				}
-				
+
 				case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:{
 					isNamespace=true;
                 }
@@ -340,7 +340,7 @@ public class XPath {
                     if (context != null && prefix != -1) {
                         uri = context.getNamespaceForPrefix(prefix);
                     }
-                    if (prefix != -1 && context != null && 
+                    if (prefix != -1 && context != null &&
                         uri == StringPool.EMPTY_STRING) {
                         throw new XPathException("prefix "+fStringPool.toString(prefix)+" not bound to namespace URI");
                     }
@@ -354,13 +354,13 @@ public class XPath {
 						stepsVector.addElement(step);
 						break;
 					}
-						
+
                     token = xtokens.getToken(++i);
                     int localpart = xtokens.getTokenString(token);
                     int rawname = prefix != -1
-                                ? fStringPool.addSymbol(fStringPool.toString(prefix) + ':' + fStringPool.toString(localpart)) 
+                                ? fStringPool.addSymbol(fStringPool.toString(prefix) + ':' + fStringPool.toString(localpart))
                                 : localpart;
-                    
+
                     // build step
                     Axis axis = new Axis(Axis.CHILD);
                     NodeTest nodeTest = new NodeTest(fStringPool, new QName(prefix, localpart, rawname, uri));
@@ -374,15 +374,15 @@ public class XPath {
                     break;
                 }
                 /***/
-				
-				
+
+
                 case XPath.Tokens.EXPRTOKEN_PERIOD: {
                     // build step
                     Axis axis = new Axis(Axis.SELF);
                     NodeTest nodeTest = new NodeTest(NodeTest.NODE);
                     Step step = new Step(axis, nodeTest);
                     stepsVector.addElement(step);
-					
+
 					if (firstTokenOfLocationPath && i+1<tokenCount){
 						token=xtokens.getToken(i+1);
 						if (token == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH){
@@ -394,7 +394,7 @@ public class XPath {
 								token=xtokens.getToken(i+1);
 								if (token==XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH)
 									throw new XPathException("'/' not allowed after '//'");
-							}	
+							}
 							// build step
 							axis = new Axis(Axis.DESCENDANT);
 							nodeTest = new NodeTest(NodeTest.NODE);
@@ -405,7 +405,7 @@ public class XPath {
 					firstTokenOfLocationPath=false;
                     break;
                 }
-				
+
 				case XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH:{
 					throw new XPathException("'//' only allowed after '.' at the beginning of an xpath");
 				}
@@ -437,13 +437,13 @@ public class XPath {
         }
         Step[] steps = new Step[size];
         stepsVector.copyInto(steps);
-		locationPathsVector.add(new LocationPath(steps));
+		locationPathsVector.addElement(new LocationPath(steps));
 
         // save location path
 		fLocationPaths=new LocationPath[locationPathsVector.size()];
 		locationPathsVector.copyInto(fLocationPaths);
-		
-		
+
+
         if (DEBUG_XPATH_PARSE) {
 			System.out.println(">>> "+fLocationPaths);
         }
@@ -461,13 +461,13 @@ public class XPath {
      *
      * @author Andy Clark, IBM
      */
-    public static class LocationPath 
+    public static class LocationPath
         implements Cloneable {
 
         //
         // Data
         //
-        
+
         /** List of steps. */
         public Step[] steps;
 
@@ -519,14 +519,14 @@ public class XPath {
             return new LocationPath(this);
         } // clone():Object
 
-	} // class locationPath 
+	} // class locationPath
 
     /**
      * A location path step comprised of an axis and node test.
      *
      * @author Andy Clark, IBM
      */
-    public static class Step 
+    public static class Step
         implements Cloneable {
 
         //
@@ -538,7 +538,7 @@ public class XPath {
 
         /** Node test. */
         public NodeTest nodeTest;
-        
+
         //
         // Constructors
         //
@@ -592,7 +592,7 @@ public class XPath {
      *
      * @author Andy Clark, IBM
      */
-    public static class Axis 
+    public static class Axis
         implements Cloneable {
 
         //
@@ -608,7 +608,7 @@ public class XPath {
         /** Type: self. */
         public static final short SELF = 3;
 
-		
+
 		/** Type: descendant. */
 		public static final short DESCENDANT = 4;
         //
@@ -659,7 +659,7 @@ public class XPath {
      *
      * @author Andy Clark, IBM
      */
-    public static class NodeTest 
+    public static class NodeTest
         implements Cloneable {
 
         //
@@ -677,7 +677,7 @@ public class XPath {
 
 		/** Type: namespace */
 		public static final short NAMESPACE= 4;
-		
+
         //
         // Data
         //
@@ -743,9 +743,9 @@ public class XPath {
 							return fStringPool.toString(name.prefix) + ":*";
 						}
 						return "{" + fStringPool.toString(name.uri) + '}' + fStringPool.toString(name.prefix) + ":*";
-					} 
+					}
 					return "???:*";
-				}				
+				}
                 case WILDCARD: {
                     return "*";
                 }
@@ -779,9 +779,9 @@ public class XPath {
      * @version $Id$
      */
     private static final class Tokens {
-    
+
         static final boolean DUMP_TOKENS = false;
-    
+
         /**
          * [28] ExprToken ::= '(' | ')' | '[' | ']' | '.' | '..' | '@' | ',' | '::'
          *                  | NameTest | NodeType | Operator | FunctionName
@@ -835,7 +835,7 @@ public class XPath {
             EXPRTOKEN_OPERATOR_LESS_EQUAL           =  29,
             EXPRTOKEN_OPERATOR_GREATER              =  30,
             EXPRTOKEN_OPERATOR_GREATER_EQUAL        =  31,
-    
+
             //EXPRTOKEN_FIRST_OPERATOR                = EXPRTOKEN_OPERATOR_AND,
             //EXPRTOKEN_LAST_OPERATOR                 = EXPRTOKEN_OPERATOR_GREATER_EQUAL,
 
@@ -947,19 +947,19 @@ public class XPath {
         private static final int INITIAL_TOKEN_COUNT = 1 << 8;
         private int[] fTokens = new int[INITIAL_TOKEN_COUNT];
         private int fTokenCount = 0;    // for writing
-    
+
         private StringPool fStringPool;
-    
+
         // REVISIT: Code something better here. -Ac
         //private java.util.Hashtable fSymbolMapping = new java.util.Hashtable();
-    
+
         // REVISIT: Code something better here. -Ac
         //private java.util.Hashtable fTokenNames = new java.util.Hashtable();
-    
+
         //
         // Constructors
         //
-    
+
         /***
         public XPath.Tokens(SymbolTable symbolTable) {
             fSymbolTable = symbolTable;
@@ -1031,28 +1031,28 @@ public class XPath {
             */
         }
         /***/
-        
+
         //
         // Public methods
         //
-    
+
         /***
         public int addSymbol(byte[] data, int offset, int length, EncodingMap encoding) {
             //return fSymbolTable.addSymbol(data, offset, length, encoding);
             return fSymbolTable.addSymbol(new String(data, offset, length));
         }
         /***/
-    
-        public String getTokenName(int token) { 
+
+        public String getTokenName(int token) {
             if (token < 0 || token >= fgTokenNames.length)
                 return null;
             return fgTokenNames[token];
         }
-    
+
         public int getTokenString(int token) {
             return token;
         }
-    
+
         public void addToken(int token) {
             try {
                 fTokens[fTokenCount] = token;
@@ -1285,7 +1285,7 @@ public class XPath {
         }
 
     } // class Tokens
-    
+
     /**
      * @author Glenn Marcy, IBM
      * @author Andy Clark, IBM
@@ -1293,7 +1293,7 @@ public class XPath {
      * @version $Id$
      */
     private static class Scanner {
-    
+
         /**
          * 7-bit ASCII subset
          *
@@ -1334,7 +1334,7 @@ public class XPath {
             CHARTYPE_UNDERSCORE         = 23,   // '_' (0x5F)
             CHARTYPE_UNION              = 24,   // '|' (0x7C)
             CHARTYPE_NONASCII           = 25;   // Non-ASCII Unicode codepoint (>= 0x80)
-        
+
         private static byte[] fASCIICharMap = {
             0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  0,  0,  2,  0,  0,
             0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -1345,7 +1345,7 @@ public class XPath {
             1, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
            20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,  1, 24,  1,  1,  1
         };
-        
+
         /**
          * Symbol literals
          */
@@ -1354,12 +1354,12 @@ public class XPath {
         private static int fgOrSymbol = -1;                 // 'or'
         private static int fgModSymbol = -1;                // 'mod'
         private static int fgDivSymbol = -1;                // 'div'
-        
+
         private static int fgCommentSymbol = -1;            // 'comment'
         private static int fgTextSymbol = -1;               // 'text'
         private static int fgPISymbol = -1;                 // 'processing-instruction'
         private static int fgNodeSymbol = -1;               // 'node'
-        
+
         private static int fgAncestorSymbol = -1;           // 'ancestor'
         private static int fgAncestorOrSelfSymbol = -1;     // 'ancestor-or-self'
         private static int fgAttributeSymbol = -1;          // 'attribute'
@@ -1373,9 +1373,9 @@ public class XPath {
         private static int fgPrecedingSymbol = -1;          // 'preceding'
         private static int fgPrecedingSiblingSymbol = -1;   // 'preceding-sibling'
         private static int fgSelfSymbol = -1;               // 'self'
-        
+
         private static SymbolTable fgSymbolTable = new SymbolTable();
-        
+
         static {
             fgAndSymbol = fgSymbolTable.addSymbol("and");
             fgOrSymbol = fgSymbolTable.addSymbol("or");
@@ -1400,26 +1400,26 @@ public class XPath {
             fgSelfSymbol = fgSymbolTable.addSymbol("self");
         }
         /***/
-    
+
         //
         // Data
         //
-    
+
         /** String pool. */
         private StringPool fStringPool;
-    
+
         // symbols
-    
+
         private int fAndSymbol;
         private int fOrSymbol;
         private int fModSymbol;
         private int fDivSymbol;
-        
+
         private int fCommentSymbol;
         private int fTextSymbol;
         private int fPISymbol;
         private int fNodeSymbol;
-        
+
         private int fAncestorSymbol;
         private int fAncestorOrSelfSymbol;
         private int fAttributeSymbol;
@@ -1433,17 +1433,17 @@ public class XPath {
         private int fPrecedingSymbol;
         private int fPrecedingSiblingSymbol;
         private int fSelfSymbol;
-        
+
         //
         // Constructors
         //
-    
+
         /** Constructs an XPath expression scanner. */
         public Scanner(StringPool stringPool) {
-    
+
             // save pool and tokens
             fStringPool = stringPool;
-    
+
             // create symbols
             fAndSymbol = fStringPool.addSymbol("and");
             fOrSymbol = fStringPool.addSymbol("or");
@@ -1466,22 +1466,22 @@ public class XPath {
             fPrecedingSymbol = fStringPool.addSymbol("preceding");
             fPrecedingSiblingSymbol = fStringPool.addSymbol("preceding-sibling");
             fSelfSymbol = fStringPool.addSymbol("self");
-    
+
         } // <init>(StringPool)
-    
+
         /**
          *
          */
         public boolean scanExpr(StringPool stringPool,
-                                XPath.Tokens tokens, String data, 
+                                XPath.Tokens tokens, String data,
                                 int currentOffset, int endOffset)
             throws XPathException {
-            
+
             int nameOffset;
             int nameHandle, prefixHandle;
             boolean starIsMultiplyOperator = false;
             int ch;
-    
+
             /***
             if (XPath.Tokens.DUMP_TOKENS) {
                 System.out.println("  <test>");
@@ -2256,12 +2256,12 @@ public class XPath {
             tokens.addToken(part);
             return currentOffset;
         }
-        
+
         /***
         public static SymbolTable getGlobalTokens() {
             return fgSymbolTable;
         }
-        
+
         public static void main(String argv[]) {
             try {
                 SymbolTable symbols = new SymbolTable(XPathExprScanner.getGlobalTokens());
@@ -2324,11 +2324,11 @@ public class XPath {
             }
         }
         /***/
-    
+
         //
         // Protected methods
         //
-    
+
         /**
          * This method adds the specified token to the token list. By
          * default, this method allows all tokens. However, subclasses
@@ -2337,13 +2337,13 @@ public class XPath {
          * XPath expression. This is a convenient way of allowing only
          * a subset of XPath.
          */
-        protected void addToken(XPath.Tokens tokens, int token) 
+        protected void addToken(XPath.Tokens tokens, int token)
             throws XPathException {
             tokens.addToken(token);
         } // addToken(int)
-    
+
     } // class Scanner
-    
+
     /**
      * @author Glenn Marcy, IBM
      * @author Andy Clark, IBM
@@ -2352,15 +2352,15 @@ public class XPath {
      */
     /***
     public static class XPathExprParser {
-        
+
         //
         // Constants
         //
-    
+
         private static final boolean DUMP_PARSE_TREE = false;
-        
+
         private static final boolean DEBUG_PUSH_PARSEOPS = false;
-    
+
         /** Parse Tree operations * /
         public static final int
             PARSEOP_OR                              = -5000,
@@ -2412,79 +2412,79 @@ public class XPath {
             PARSEOP_FUNCTION                        = -5046,
             PARSEOP_FUNCTION_NAME                   = -5047,
             PARSEOP_FUNCTION_ARGUMENTS              = -5048;
-        
+
         //
         // Data
         //
-    
+
         private int fTokenCount = 0;  // for reading
         private int fCurrentToken = 0;  // for reading
-        
+
         private static final int INITIAL_PARSEOP_COUNT = 1 << 8;
         private int[] fParseTree = new int[INITIAL_PARSEOP_COUNT];
         private int fParseOpCount = 0;    // for writing
         private int fCurrentParseOp = 0;  // for reading
-        
+
         /** Symbol table. * /
         private SymbolTable fSymbolTable;
-    
+
         /** Tokens. * /
         private XPath.Tokens fTokens;
-    
+
         /** Scanner. * /
         private XPathExprScanner fScanner;
-    
+
         //
         // Constructors
         //
-        
+
         public XPathExprParser() {
             this(new SymbolTable());
         }
-    
+
         public XPathExprParser(SymbolTable symbolTable) {
             this(symbolTable, new XPathExprScanner(symbolTable));
         }
-    
+
         public XPathExprParser(SymbolTable symbolTable, XPathExprScanner scanner) {
-    
+
             fSymbolTable = symbolTable;
             fScanner = scanner;
-    
+
         } // <init>(SymbolTable,XPathExprScanner)
-    
+
         //
         // Public methods
         //
-    
+
         // init
-    
+
         public void reset() {
             fParseOpCount = 0;
             fCurrentParseOp = 0;
         }
-        
+
         // parsing
-    
+
         public int parseExpr(String data) throws XPathException {
             return parseExpr(data, 0, data.length());
         }
-    
-        public int parseExpr(String data, int currentOffset, int endOffset) 
+
+        public int parseExpr(String data, int currentOffset, int endOffset)
             throws XPathException {
             return parseExprOrPattern(data, currentOffset, endOffset, false);
         }
-    
+
         public int parsePattern(String data, int currentOffset, int endOffset)
             throws XPathException {
             return parseExprOrPattern(data, currentOffset, endOffset, true);
         }
-    
-        public int parseExprOrPattern(String data, int currentOffset, 
-                                      int endOffset, boolean isPattern) 
+
+        public int parseExprOrPattern(String data, int currentOffset,
+                                      int endOffset, boolean isPattern)
             throws XPathException {
             fTokenCount = 0;
-        
+
             if (DUMP_PARSE_TREE) {
                 System.out.println("  <test>");
                 System.out.println("    <expression>");
@@ -2515,32 +2515,32 @@ public class XPath {
             }
             return fCurrentParseOp;
         }
-    
+
         // parse tree ops
-    
+
         public int getCurrentParseOp() {
             return fCurrentParseOp;
         }
-    
+
         public int getParseTreeOp(int handle) {
             return fParseTree[handle];
         }
-    
+
         public int getParseTreeSubHandle(int handle, int subHandleIndex) {
             return fParseTree[handle - 1 - subHandleIndex];
         }
-    
+
         public String getParseTreeSymbol(int handle, int subHandleIndex) {
             int symHandle = fParseTree[handle - 1 - subHandleIndex];
             return fTokens.getTokenString(symHandle);
         }
-    
+
         public int getParseTreeIntValue(int handle, int subHandleIndex) {
             return fParseTree[handle - 1 - subHandleIndex];
         }
-    
+
         // debugging
-    
+
         public void dumpParseTree(int rootParseOp, int indent) {
                 indentPrint(indent);
                 System.out.println("<parse-tree>");
@@ -2548,7 +2548,7 @@ public class XPath {
                 indentPrint(indent);
                 System.out.println("</parse-tree>");
         }
-        
+
         public String getParseOpName(int parseOp) {
             switch (parseOp) {
                 case PARSEOP_OR: return "PARSEOP_OR";
@@ -2603,19 +2603,19 @@ public class XPath {
             }
             return "??? ("+parseOp+')';
         }
-    
+
         //
         // Protected methods
         //
-    
+
         protected void checkParseOp(int parseOp) throws XPathException {
             // do nothing; all parse ops allowed in the class
         }
-    
+
         //
         // Private methods
         //
-    
+
         private void pushParseOp(int parseOp) throws XPathException {
             if (DEBUG_PUSH_PARSEOPS) {
                 System.out.println("pushParseOp: "+getParseOpName(parseOp));
@@ -2631,7 +2631,7 @@ public class XPath {
             }
             fCurrentParseOp = fParseOpCount++;
         }
-    
+
         private void pushParseOp2(int parseOp, int arg) throws XPathException {
             if (DEBUG_PUSH_PARSEOPS) {
                 System.out.println("pushParseOp2: "+getParseOpName(parseOp)+", "+arg);
@@ -2648,8 +2648,8 @@ public class XPath {
             fParseTree[fParseOpCount++] = arg;
             fCurrentParseOp = fParseOpCount++;
         }
-    
-        private void pushParseOp3(int parseOp, int arg1, int arg2) 
+
+        private void pushParseOp3(int parseOp, int arg1, int arg2)
             throws XPathException {
             if (DEBUG_PUSH_PARSEOPS) {
                 System.out.println("pushParseOp3: "+getParseOpName(parseOp)+", "+arg1+", "+arg2);
@@ -2667,13 +2667,13 @@ public class XPath {
             fParseTree[fParseOpCount++] = arg1;
             fCurrentParseOp = fParseOpCount++;
         }
-    
+
         private void indentPrint(int indent) {
             for (int i = 0; i < indent; i++) {
                 System.out.print(" ");
             }
         }
-    
+
         private void dumpParseTreeNode(int parseOp, int indent) {
                 switch (fParseTree[parseOp]) {
                 case PARSEOP_OR:
@@ -2998,18 +2998,18 @@ public class XPath {
                     throw new RuntimeException("dumpParseTreeNode("+parseOp+")");
                 }
         }
-        
+
         //
         // Package methods
         //
-    
+
         /**
          * [14] Expr ::= OrExpr
          * /
         boolean parseExpr() throws XPathException {
             return parseOrExpr();
         }
-    
+
         /**
          * [21] OrExpr ::= AndExpr | OrExpr 'or' AndExpr
          *
@@ -3041,7 +3041,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [22] AndExpr ::= EqualityExpr | AndExpr 'and' EqualityExpr
          * /
@@ -3071,7 +3071,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [23] EqualityExpr ::= RelationalExpr
          *                     | EqualityExpr '=' RelationalExpr
@@ -3108,7 +3108,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [24] RelationalExpr ::= AdditiveExpr
          *                       | RelationalExpr '<' AdditiveExpr
@@ -3151,7 +3151,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [25] AdditiveExpr ::= MultiplicativeExpr
          *                     | AdditiveExpr '+' MultiplicativeExpr
@@ -3188,7 +3188,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [26] MultiplicativeExpr ::= UnaryExpr
          *                           | MultiplicativeExpr MultiplyOperator UnaryExpr
@@ -3229,7 +3229,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [27] UnaryExpr ::= UnionExpr | '-' UnaryExpr
          *
@@ -3261,7 +3261,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [18] UnionExpr ::= PathExpr | UnionExpr '|' PathExpr
          * /
@@ -3291,7 +3291,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [19] PathExpr ::= RelativeLocationPath
          *                 | '/' RelativeLocationPath?
@@ -3367,7 +3367,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [3] RelativeLocationPath ::= Step
          *                            | RelativeLocationPath '/' Step
@@ -3413,7 +3413,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [4] Step ::=  (AxisName '::' | '@'?) NodeTest Predicate* | '.' | '..'
          * [6] AxisName ::= 'ancestor' | 'ancestor-or-self'
@@ -3542,7 +3542,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [7] NodeTest ::= '*'
          *                | NCName ':' '*'
@@ -3634,7 +3634,7 @@ public class XPath {
             }
             return true;
         }
-    
+
         /**
          * [8] Predicate ::= '[' PredicateExpr ']'
          * [9] PredicateExpr ::= Expr
@@ -3665,7 +3665,7 @@ public class XPath {
                 left = fCurrentParseOp;
             }
         }
-    
+
         /**
          * [15] PrimaryExpr ::= '$' QName
          *                    | '(' Expr ')'
@@ -3772,11 +3772,11 @@ public class XPath {
             }
             return true;
         }
-        
+
         //
         // MAIN
         //
-    
+
         public static void main(String argv[]) {
             for (int i = 0; i < argv.length; i++) {
                 String expression = argv[i];
@@ -3790,10 +3790,10 @@ public class XPath {
                 }
             }
         }
-    
+
     } // class XPathExprParser
     /***/
-    
+
     //
     // MAIN
     //
@@ -3806,7 +3806,7 @@ public class XPath {
             System.out.println("# XPath expression: \""+expression+'"');
             try {
                 StringPool stringPool = new StringPool();
-                XPath xpath = new XPath(expression, stringPool, 
+                XPath xpath = new XPath(expression, stringPool,
                                         null);
                 System.out.println("expanded xpath: \""+xpath.toString()+'"');
             }
@@ -3821,8 +3821,8 @@ public class XPath {
 	protected LocationPath[] fLocationPaths;	//
 	// Public methods
 	//
-	
-	/** Returns a representation of all location paths for this XPath. 
+
+	/** Returns a representation of all location paths for this XPath.
 		XPath = locationPath ( '|' locationPath)*
 	*/
 	public LocationPath[] getLocationPaths() {
@@ -3830,6 +3830,6 @@ public class XPath {
 		for (int i=0;i<fLocationPaths.length;i++){
 			ret[i]=(LocationPath)fLocationPaths[i].clone();
 		}
-		return ret; 
+		return ret;
 	} // getLocationPath(LocationPath)
 } // class XPath

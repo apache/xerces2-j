@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -19,7 +19,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -27,7 +27,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,11 +55,11 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
- 
+
  /*
  * @author Eric Ye
- *         
- * @see    
+ *
+ * @see
  * @version $Id$
  */
 package org.apache.xerces.validators.schema;
@@ -110,7 +110,7 @@ public class SchemaGrammar extends Grammar{
 
     private int fScopeDefinedByElement[][] = new int[INITIAL_CHUNK_COUNT][];
     private String fFromAnotherSchemaURI[][] = new String[INITIAL_CHUNK_COUNT][];
-    private TraverseSchema.ComplexTypeInfo fComplexTypeInfo[][] = 
+    private TraverseSchema.ComplexTypeInfo fComplexTypeInfo[][] =
         new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
     private int fElementDeclDefaultType[][] = new int[INITIAL_CHUNK_COUNT][];
     private String fElementDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
@@ -139,10 +139,10 @@ public class SchemaGrammar extends Grammar{
     private NamespacesScope fNamespacesScope = null;
     private String fTargetNamespaceURI = "";
 
-    // Set if we defer min/max expansion for content trees.   This is required if we 
+    // Set if we defer min/max expansion for content trees.   This is required if we
     // are doing particle derivation checking for schema.
     private boolean deferContentSpecExpansion = false;
- 
+
     // Set if we check Unique Particle Attribution
     // This one onle takes effect when deferContentSpecExpansion is set
     private boolean checkUniqueParticleAttribution = false;
@@ -183,7 +183,7 @@ public class SchemaGrammar extends Grammar{
     }
 
     public int getElementDefinedScope(int elementDeclIndex) {
-        
+
         if (elementDeclIndex < -1) {
             return -1;
         }
@@ -192,9 +192,9 @@ public class SchemaGrammar extends Grammar{
         return fScopeDefinedByElement[chunk][index];
 
     }
-    
+
     public int getElementDefaultTYpe(int elementDeclIndex) {
-        
+
         if (elementDeclIndex < -1) {
             return -1;
         }
@@ -235,7 +235,7 @@ public class SchemaGrammar extends Grammar{
     }
 
     public String getElementFromAnotherSchemaURI(int elementDeclIndex) {
-        
+
         if (elementDeclIndex < 0 ) {
             return null;
         }
@@ -246,7 +246,7 @@ public class SchemaGrammar extends Grammar{
     }
 
     public String getElementDefaultValue(int elementDeclIndex) {
-        
+
         if (elementDeclIndex < 0 ) {
             return null;
         }
@@ -256,7 +256,7 @@ public class SchemaGrammar extends Grammar{
 
     }
     public String getElementDeclSubstitutionGroupElementFullName( int elementDeclIndex){
-        
+
         if (elementDeclIndex < 0 ) {
             return null;
         }
@@ -275,7 +275,7 @@ public class SchemaGrammar extends Grammar{
         int index = elementDeclIndex & CHUNK_MASK;
         return fComplexTypeInfo[chunk][index];
     }
-    
+
     // Protected methods
     //
 
@@ -293,7 +293,7 @@ public class SchemaGrammar extends Grammar{
         int minOccurs = getContentSpecMinOccurs(contentSpecIndex);
         int maxOccurs = getContentSpecMaxOccurs(contentSpecIndex);
 
- 
+
         if (((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) ||
             ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) ||
             ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_NS) ||
@@ -321,12 +321,12 @@ public class SchemaGrammar extends Grammar{
           int right = fTempContentSpecNode.otherValue;
           int type = fTempContentSpecNode.type;
 
-          left =  convertContentSpecTree(left); 
+          left =  convertContentSpecTree(left);
 
-          if (right == -2)  
+          if (right == -2)
              return expandContentModel(left, minOccurs, maxOccurs);
 
-          right =  convertContentSpecTree(right); 
+          right =  convertContentSpecTree(right);
 
           // When checking Unique Particle Attribution, we always create new
           // new node to store different name for different groups
@@ -366,7 +366,7 @@ public class SchemaGrammar extends Grammar{
             }
         }
 
-        return super.getElementContentModel(elementDeclIndex, comparator);;
+        return super.getElementContentModel(elementDeclIndex, comparator);
     }
 
     // Unique Particle Attribution
@@ -483,7 +483,7 @@ public class SchemaGrammar extends Grammar{
             fElementDeclDefaultValue[chunk][index] = defaultValue;
         }
     }
-    
+
     protected void setElementDeclBlockSet(int elementDeclIndex, int blockSet) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
@@ -560,11 +560,11 @@ public class SchemaGrammar extends Grammar{
 
     //add methods for TraverseSchema
     /**
-     *@return elementDecl Index, 
+     *@return elementDecl Index,
      */
 
-    protected int addElementDecl(QName eltQName, int enclosingScope, int scopeDefined, 
-                                 int contentSpecType, int contentSpecIndex, 
+    protected int addElementDecl(QName eltQName, int enclosingScope, int scopeDefined,
+                                 int contentSpecType, int contentSpecIndex,
                                  int attrListHead, DatatypeValidator dv){
         int elementDeclIndex = getElementDeclIndex(eltQName, enclosingScope);
         if (elementDeclIndex == -1) {
@@ -586,13 +586,13 @@ public class SchemaGrammar extends Grammar{
 
     //debugging
     /*****
-             XMLElementDecl fTempElementDecl = new XMLElementDecl();                                          
-             getElementDecl(elementDeclIndex, fTempElementDecl);                                              
-             System.out.println("elementDeclIndex in addElementDecl : " + elementDeclIndex                            
-                                + " \n and itsName : '"                                                               
-                                + (fTempElementDecl.name.localpart)                                       
-                                +"' \n its ContentType:" + (fTempElementDecl.type)                        
-                                +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"); 
+             XMLElementDecl fTempElementDecl = new XMLElementDecl();
+             getElementDecl(elementDeclIndex, fTempElementDecl);
+             System.out.println("elementDeclIndex in addElementDecl : " + elementDeclIndex
+                                + " \n and itsName : '"
+                                + (fTempElementDecl.name.localpart)
+                                +"' \n its ContentType:" + (fTempElementDecl.type)
+                                +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n");
     /*****/
         return elementDeclIndex;
 
@@ -601,9 +601,9 @@ public class SchemaGrammar extends Grammar{
     /**
      *@return the new attribute List Head
      */
-    protected void addAttDef(  int templateElementIndex, 
-                      QName attQName, int attType, 
-                      int enumeration, int attDefaultType, 
+    protected void addAttDef(  int templateElementIndex,
+                      QName attQName, int attType,
+                      int enumeration, int attDefaultType,
                       String attDefaultValue, DatatypeValidator dv, boolean isList){
         int attrDeclIndex = createAttributeDecl();
         fTempAttributeDecl.name.setValues(attQName);
@@ -628,7 +628,7 @@ public class SchemaGrammar extends Grammar{
 
     public int findAttributeDecl(int attListHead, QName attribute) {
 
-        int attDefIndex = attListHead;                                  
+        int attDefIndex = attListHead;
         while (attDefIndex != -1) {
             getAttributeDecl(attDefIndex, fTempAttributeDecl);
             if (fTempAttributeDecl.name.localpart == attribute.localpart &&
@@ -639,7 +639,7 @@ public class SchemaGrammar extends Grammar{
         }
         return -1;
      }
-         
+
     /**
      *@return the new contentSpec Index
      */
@@ -647,16 +647,16 @@ public class SchemaGrammar extends Grammar{
         fTempContentSpecNode.type = contentSpecType;
         fTempContentSpecNode.value = value;
         fTempContentSpecNode.otherValue = otherValue;
-        
+
         int contentSpecIndex = createContentSpec();
         setContentSpec(contentSpecIndex, fTempContentSpecNode);
         setContentSpecMinOccurs(contentSpecIndex, 1);
         setContentSpecMaxOccurs(contentSpecIndex, 1);
         return contentSpecIndex;
     }
-                                                
+
     protected int expandContentModel(int index, int minOccurs, int maxOccurs) {
-  
+
         int leafIndex = index;
 
         if (minOccurs==1 && maxOccurs==1) {
@@ -705,7 +705,7 @@ public class SchemaGrammar extends Grammar{
         else {
             // {n,m} => a,a,a,...(a),(a),...
 
-              
+
             if (minOccurs==0) {
                 int optional = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
                                                                  leafIndex,
@@ -769,7 +769,7 @@ public class SchemaGrammar extends Grammar{
     private boolean ensureElementDeclCapacity(int chunk) {
         try {
             return  fScopeDefinedByElement[chunk][0] == -2;
-        } 
+        }
         catch (ArrayIndexOutOfBoundsException ex) {
              fScopeDefinedByElement= resize(fScopeDefinedByElement, fScopeDefinedByElement.length * 2);
              fFromAnotherSchemaURI = resize(fFromAnotherSchemaURI, fFromAnotherSchemaURI.length *2);

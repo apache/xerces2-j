@@ -1275,6 +1275,11 @@ class OneElement {
 
     public OneElement (Hashtable attrList) {
         this.attrList = attrList;
-        this.attrArray = attrList.values().toArray();
+
+        int count = attrList.size();
+        this.attrArray = new Object[count];
+        Enumeration enum = attrList.elements();
+        for (int i = 0; i < count; i++)
+            this.attrArray[i] = enum.nextElement();
     }
 }
