@@ -117,6 +117,7 @@ public class XMLElementDecl {
     public void clear() {
         name.clear();
         type = - 1;
+        list = false;
         datatypeValidator = null;
         contentSpecIndex = -1;
         enclosingScope = -1;
@@ -125,6 +126,7 @@ public class XMLElementDecl {
     public void setValues(XMLElementDecl elementDecl) {
         name.setValues(elementDecl.name);
         type = elementDecl.type;
+        list = elementDecl.list;
         datatypeValidator = elementDecl.datatypeValidator;
         contentSpecIndex = elementDecl.contentSpecIndex;
         enclosingScope = elementDecl.enclosingScope;
