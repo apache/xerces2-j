@@ -150,9 +150,10 @@ public class SchemaGrammar extends Grammar{
 
     public String getElementFromAnotherSchemaURI(int elementDeclIndex) {
         
-        if (elementDeclIndex < -1) {
+        if (elementDeclIndex < 0 ) {
             return null;
         }
+System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + elementDeclIndex);
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         return fFromAnotherSchemaURI[chunk][index];
@@ -246,12 +247,12 @@ public class SchemaGrammar extends Grammar{
             if (enclosingScope<-1 || scopeDefined < -1 ) {
                 //TO DO: report error here;
             }
-            fTempElementDecl.name = eltQName;
+            fTempElementDecl.name.setValues(eltQName);
             fTempElementDecl.enclosingScope = enclosingScope;
             fTempElementDecl.type = contentSpecType;
             fTempElementDecl.contentSpecIndex = contentSpecIndex;
             fTempElementDecl.datatypeValidator = dv;
-            fTempElementDecl.firstAttributeDeclIndex = attrListHead;
+            //fTempElementDecl.firstAttributeDeclIndex = attrListHead;
             elementDeclIndex = createElementDecl();
             setElementDecl(elementDeclIndex,fTempElementDecl);
             //note, this is the scope defined by the element, not its enclosing scope
@@ -276,7 +277,7 @@ public class SchemaGrammar extends Grammar{
      */
     protected void addAttDef(  int templateElementIndex, 
                       QName attQName, int attType, 
-                      int enumeration, String attDefaultType, 
+                      int enumeration, int attDefaultType, 
                       String attDefaultValue, DatatypeValidator dv){
         int attrDeclIndex = createAttributeDecl();
         fTempAttributeDecl.name = attQName;
