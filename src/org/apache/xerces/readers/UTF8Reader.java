@@ -427,16 +427,18 @@ final class UTF8Reader extends XMLEntityReader {
         boolean result = false;
 
         //if (( 0xf8 & b0 ) == 0xf0 ) {
-            //if (!(b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90))) { // [#x10000-#x10FFFF]
-        if( ((b0&0xf8) == 0xf0) && ((b1&0xc0)==0x80) &&
-            ((b2&0xc0) == 0x80) && ((b3&0xc0)==0x80)){
-            if (skipPastChar) {
+        //if (!(b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90))) { // [#x10000-#x10FFFF]
+        if ( ((b0&0xf8) == 0xf0) && ((b1&0xc0)==0x80) &&
+             ((b2&0xc0) == 0x80) && ((b3&0xc0)==0x80)){
+            if (!(b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90))) { // [#x10000-#x10FFFF]
+
+                if (skipPastChar) {
                     fCharacterCounter++;
                     loadNextByte();
                     return true;
+                }
+                result = true;
             }
-            result = true;
-            //}
             fCurrentChunk = saveChunk;
             fCurrentIndex = saveIndex;
             fCurrentOffset = saveOffset;
@@ -807,14 +809,14 @@ final class UTF8Reader extends XMLEntityReader {
             int b2 = 0;
             if ((0xe0 & b0) == 0xc0) { // 110yyyyy 10xxxxxx
                 ch = ((0x1f & b0)<<6) + (0x3f & b1);
-            } else if( (0xf0 & b0) == 0xe0 ) { 
+            } else if ( (0xf0 & b0) == 0xe0 ) { 
                 b2 = loadNextByte();
                 ch = ((0x0f & b0)<<12) + ((0x3f & b1)<<6) + (0x3f & b2);
-            } else if(( 0xf8 & b0 ) == 0xf0 ){
+            } else if (( 0xf8 & b0 ) == 0xf0 ){
                 b2 = loadNextByte();
                 int b3 = loadNextByte(); // 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx
                 ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12)
-                         + ((0x3f & b2)<<6) + (0x3f & b3);
+                     + ((0x3f & b2)<<6) + (0x3f & b3);
             }
         }
         loadNextByte();
