@@ -61,8 +61,11 @@ import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 
 /**
- * Any simple type would implement this interface. It inherits from both
- * XSTypeDecl (for schema) and DatatypeValidator (for the validate method).
+ * This interface <code>XSSimpleType</code> represents the simple type
+ * definition of schema component and defines methods to query the information
+ * contained.
+ * Any simple type (atomic, list or union) will implement this interface.
+ * It inherits from <code>XSTypeDecl</code>.
  *
  * @author Sandy Gao, IBM
  *
@@ -71,55 +74,89 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
 public interface XSSimpleType extends XSTypeDecl {
 
     /**
+     * Constant defined for the constraining facets as defined in schema.
+     * see <a href='http://www.w3.org/TR/xmlschema-2/#rf-facets'> XML Schema
+     * Part 2: Datatypes </a>
      * The bit combination of the following constants are used to tell
      * which facets are fixed, and which ones are present
      */
+    /** the length facet */
     public static final short FACET_LENGTH         = 1<<0;
+    /** the minLength facet */
     public static final short FACET_MINLENGTH      = 1<<1;
+    /** the maxLength facet */
     public static final short FACET_MAXLENGTH      = 1<<2;
+    /** the pattern facet */
     public static final short FACET_PATTERN        = 1<<3;
+    /** the enumeration facet */
     public static final short FACET_ENUMERATION    = 1<<4;
+    /** the whiteSpace facet */
     public static final short FACET_WHITESPACE     = 1<<5;
+    /** the maxInclusive facet */
     public static final short FACET_MAXINCLUSIVE   = 1<<6;
+    /** the maxExclusive facet */
     public static final short FACET_MAXEXCLUSIVE   = 1<<7;
+    /** the minExclusive facet */
     public static final short FACET_MINEXCLUSIVE   = 1<<8;
+    /** the minInclusive facet */
     public static final short FACET_MININCLUSIVE   = 1<<9;
+    /** the totalDigits facet */
     public static final short FACET_TOTALDIGITS    = 1<<10;
+    /** the fractionDigits facet */
     public static final short FACET_FRACTIONDIGITS = 1<<11;
 
     /**
-     * Variety constants
+     * constants defined for the 'variety' property of Simple Type schema component.
+     * see <a href='http://www.w3.org/TR/xmlschema-2/#defn-variety'> XML Schema
+     * Part 2: Datatypes </a>
      */
+    /** the atomic variety */
     public static final short VARIETY_ATOMIC    = 1;
+    /** the list variety */
     public static final short VARIETY_LIST      = 2;
+    /** the union variety */
     public static final short VARIETY_UNION     = 3;
 
     /**
-     * whiteSpace constants
+     * constants defined for the values of 'whitespace' facet.
+     * see <a href='http://www.w3.org/TR/xmlschema-2/#dt-whiteSpace'> XML Schema
+     * Part 2: Datatypes </a>
      */
+    /** preserve the white spaces */
     public static final short WS_PRESERVE = 0;
+    /** replace the white spaces */
     public static final short WS_REPLACE  = 1;
+    /** collapse the white spaces */
     public static final short WS_COLLAPSE = 2;
 
     /**
-     * order constants
+     * constants defined for the 'ordered' fundamental facet.
+     * see <a href='http://www.w3.org/TR/xmlschema-2/#rf-fund-facets'> XML
+     * Schema Part 2: Datatypes </a>
      */
+    /** not ordered */
     public static final short ORDERED_FALSE     = 1;
+    /** partically ordered */
     public static final short ORDERED_PARTIAL   = 2;
+    /** totally ordered */
     public static final short ORDERED_TOTAL     = 3;
 
     /**
-     * cardinality constants
+     * constants defined for the 'cardinality' fundamental facet.
+     * see <a href='http://www.w3.org/TR/xmlschema-2/#rf-fund-facets'> XML
+     * Schema Part 2: Datatypes </a>
      */
+    /** finite cardinality */
     public static final short CARDINALITY_FINITE             = 1;
+    /** countably infinite cardinality */
     public static final short CARDINALITY_COUNTABLY_INFINITE = 2;
 
     /**
-     * validate a given string against this DV
+     * validate a given string against this simple type.
      *
      * @param content       the string value that needs to be validated
      * @param context       the validation context
-     * @param validatedInfo used to store validatoin result
+     * @param validatedInfo used to store validation result
      *
      * @return              the actual value (QName, Boolean) of the string value
      */
@@ -127,22 +164,28 @@ public interface XSSimpleType extends XSTypeDecl {
         throws InvalidDatatypeValueException;
 
     /**
-     * validate an actual value against this DV
+     * validate an actual value against this simple type.
      *
      * @param value         the actual value that needs to be validated
      * @param context       the validation context
      * @param validatedInfo used to provide the actual value and member types
+     * @exception InvalidDatatypeValueException  exception for invalid values.
      */
     public void validate(ValidationContext context, ValidatedInfo validatedInfo)
         throws InvalidDatatypeValueException;
 
     /**
      * If this type is created from restriction, then some facets can be applied
-     * to the simple type.
+     * to the simple type. <code>XSFacets</code> is used to pass the value of
+     * different facets.
      *
      * @param facets        the value of all the facets
-     * @param presentFacets which facets are present
-     * @param fixedFacets   which facets are fixed
+     * @param presentFacets bit combination value of the costraining facet
+     *                      constants which are present.
+     * @param fixedFacets   bit combination value of the costraining facet
+     *                      constants which are fixed.
+     * @param ValidationContext the validation context
+     * @exception InvalidDatatypeFacetException  exception for invalid facet values.
      */
     public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)
         throws InvalidDatatypeFacetException;
@@ -150,7 +193,7 @@ public interface XSSimpleType extends XSTypeDecl {
     /**
      * Get the variety of the simple type: atomic, list or union.
      *
-     * @return  a constant corresponding to the variety
+     * @return  a constant corresponding to the variety, as defined above.
      */
     public short getVariety();
 
@@ -181,10 +224,10 @@ public interface XSSimpleType extends XSTypeDecl {
     //public short compare(Object value1, Object value2);
 
     /**
-     * Return which facets are defined in this simple type.
+     * bit combination of the constants defined in this simple type.
      *
      * @return  the bit combination of the constants corresponding to the
-     *          defined facets
+     *          constraining facets, as defined above.
      */
     public short getDefinedFacets();
 

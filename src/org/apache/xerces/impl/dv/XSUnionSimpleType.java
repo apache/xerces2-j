@@ -58,7 +58,8 @@
 package org.apache.xerces.impl.dv;
 
 /**
- * Any union simple type would implement this interface.
+ * Any union simple type will implement this interface. It inherits the methods
+ * of generic <code>XSSimpleType</code> interface.
  *
  * @author Sandy Gao, IBM
  *
@@ -67,9 +68,9 @@ package org.apache.xerces.impl.dv;
 public interface XSUnionSimpleType extends XSSimpleType {
 
     /**
-     * return the member types
+     * return the member type definitions of Union Simple Type schema component.
      *
-     * @return the member types
+     * @return the member type definitions
      */
     public XSSimpleType[] getMemberTypes();
 

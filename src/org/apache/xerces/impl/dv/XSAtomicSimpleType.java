@@ -58,9 +58,8 @@
 package org.apache.xerces.impl.dv;
 
 /**
- * Any atomic simple type would implement this interface.
- * REVISIT: how should we return the primitive type information?
- *          and how can we tell whether a type is ID/NOTATOIN?
+ * Any atomic simple type will implement this interface. It inherits the methods
+ * of generic <code>XSSimpleType</code> interface.
  *
  * @author Sandy Gao, IBM
  *

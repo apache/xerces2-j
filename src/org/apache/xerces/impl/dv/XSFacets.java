@@ -60,23 +60,72 @@ package org.apache.xerces.impl.dv;
 import java.util.Vector;
 
 /**
- * The class used to pass all facets to XSSimpleType#applyFacets().
+ * The class used to pass all facets to {@link XSSimpleType#applyFacets()}.
  *
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
 public class XSFacets {
+
+    /**
+     * value of length facet.
+     */
     public int length;
+
+    /**
+     * value of minLength facet.
+     */
     public int minLength;
+
+    /**
+     * value of maxLength facet.
+     */
     public int maxLength;
+
+    /**
+     * value of whiteSpace facet.
+     */
     public short whiteSpace;
+
+    /**
+     * value of totalDigits facet.
+     */
     public int totalDigits;
+
+    /**
+     * value of fractionDigits facet.
+     */
     public int fractionDigits;
+
+    /**
+     * string containing value of pattern facet, for multiple patterns values
+     * are ORed together.
+     */
     public String pattern;
+
+    /**
+     * Vector containing values of Enumeration facet.
+     */
     public Vector enumeration;
+
+    /**
+     * value of maxInclusive facet.
+     */
     public String maxInclusive;
+
+    /**
+     * value of maxExclusive facet.
+     */
     public String maxExclusive;
+
+    /**
+     * value of minInclusive facet.
+     */
     public String minInclusive;
+
+    /**
+     * value of minExclusive facet.
+     */
     public String minExclusive;
 }

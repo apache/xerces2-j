@@ -58,7 +58,8 @@
 package org.apache.xerces.impl.dv;
 
 /**
- * Any list simple type would implement this interface.
+ * Any list simple type will implement this interface. It inherits the methods
+ * of generic <code>XSSimpleType</code> interface.
  *
  * @author Sandy Gao, IBM
  *
@@ -67,9 +68,9 @@ package org.apache.xerces.impl.dv;
 public interface XSListSimpleType extends XSSimpleType {
 
     /**
-     * return the item type
+     * return the item type definiton of List simple type schema component.
      *
-     * @return the item type
+     * @return the item type definition.
      */
     public XSSimpleType getItemType();
 
