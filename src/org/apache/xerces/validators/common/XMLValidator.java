@@ -3013,7 +3013,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             if (fNormalizeAttributeValues) {
                 if (attributeDecl.list) {
-                    attValue = normalizeListAttribute(value);
+                    attValue = normalizeListAttribute(value, attValue, unTrimValue);
                 } else {
                     if (value != unTrimValue) {
                         attValue = fStringPool.addSymbol(value);
@@ -3088,7 +3088,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             if (fNormalizeAttributeValues) {
                 if (attributeDecl.list) {
-                    attValue = normalizeListAttribute(value);
+                    attValue = normalizeListAttribute(value, attValue, unTrimValue);
                 } else {
                     if (value != unTrimValue) {
                         attValue = fStringPool.addSymbol(value);
@@ -3157,7 +3157,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             if (fNormalizeAttributeValues) {
                 if (attributeDecl.list) {
-                    attValue = normalizeListAttribute(value);
+                    attValue = normalizeListAttribute(value, attValue, unTrimValue);
                 } else {
                     if (value != unTrimValue) {
                         attValue = fStringPool.addSymbol(value);
@@ -3179,14 +3179,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
    /**
     * @param value This is already trimmed.
     */
-   private int normalizeListAttribute(String value) {
+   private int normalizeListAttribute(String value, int origIndex, String origValue) {
        int length = value.length();
        StringBuffer buffer = null;
        int state = 0;           // 0:non-S, 1: 1st S, 2: non-1st S
        int copyStart = 0;
        for (int i = 0;  i < length;  i++) {
            int ch = value.charAt(i);
-           if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
+           if (ch == ' ') {
                if (state == 0) {
                    state = 1;
                } else if (state == 1) {
@@ -3202,7 +3202,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
            }
        }
        if (buffer == null)
-           return fStringPool.addSymbol(value);
+           return value == origValue ? origIndex : fStringPool.addSymbol(value);
        buffer.append(value.substring(copyStart));
        return fStringPool.addSymbol(new String(buffer));
    }
