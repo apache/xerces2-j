@@ -1893,6 +1893,13 @@ public class TraverseSchema implements
             contentSpecType = XMLElementDecl.TYPE_ANY;
         }
 
+        if (content.length() == 0 && simpleTypeValidator == null && left == -2 ) {
+            if (base.length() > 0 && baseTypeInfo != null 
+                && baseTypeInfo.contentType == XMLElementDecl.TYPE_EMPTY) {
+                contentSpecType = XMLElementDecl.TYPE_EMPTY;
+            }
+        }
+
         if ( DEBUGGING )
             System.out.println("!!!!!>>>>>" + typeName+", "+ baseTypeInfo + ", " 
                                + baseContentSpecHandle +", " + left +", "+scopeDefined);
