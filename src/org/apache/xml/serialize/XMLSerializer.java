@@ -372,7 +372,9 @@ public final class XMLSerializer
 	boolean      preserveSpace;
 	String       name;
 	String       value;
+	String       tagName;
 
+	tagName = elem.getTagName();
 	state = getElementState();
 	if ( state == null ) {
 	    // If this is the root element handle it differently.
@@ -380,7 +382,7 @@ public final class XMLSerializer
 	    // the document's DOCTYPE. Space preserving defaults
 	    // to that of the output format.
 	    if ( ! _started )
-		startDocument( elem.getTagName() );
+		startDocument( tagName );
 	    preserveSpace = _format.getPreserveSpace();
 	} else {
 	    // For any other element, if first in parent, then
@@ -399,7 +401,7 @@ public final class XMLSerializer
 	// Do not change the current element state yet.
 	// This only happens in endElement().
 
-	printText( '<' + elem.getTagName() );
+	printText( '<' + tagName );
 	indent();
 
 	// Lookup the element's attribute, but only print specified
@@ -436,15 +438,15 @@ public final class XMLSerializer
 	if ( elem.hasChildNodes() ) {
 	    // Enter an element state, and serialize the children
 	    // one by one. Finally, end the element.
-	    state = enterElementState( elem.getTagName(), preserveSpace );
-	    state.cdata = _format.isCDataElement( elem.getTagName() );
-	    state.unescaped = _format.isNonEscapingElement( elem.getTagName() );
+	    state = enterElementState( tagName, preserveSpace );
+	    state.cdata = _format.isCDataElement( tagName );
+	    state.unescaped = _format.isNonEscapingElement( tagName );
 	    child = elem.getFirstChild();
 	    while ( child != null ) {
 		serializeNode( child );
 		child = child.getNextSibling();
 	    }
-	    endElement( elem.getTagName() );
+	    endElement( tagName );
 	} else {
 	    unindent();
 	    printText( "/>" );
