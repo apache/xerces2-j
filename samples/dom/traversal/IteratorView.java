@@ -65,23 +65,22 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 import org.apache.xerces.parsers.*;
 import org.w3c.dom.*;
+import org.w3c.dom.traversal.*;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import org.apache.xerces.dom.NodeIteratorImpl;
-import org.w3c.dom.traversal.*;
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.NodeImpl;
 import ui.DOMTreeFull;
-/** 
- * 
+
+/** This class shows a DOM Document in a JTree, and presents controls
+ *  which allow the user to create and view the progress of a NodeIterator
+ *  in the DOM tree.
  */
 public class IteratorView 
     extends JFrame 
     implements ActionListener {
 
-    DocumentImpl document;
+    Document document;
     TreeNode lastSelected;
     DOMParser parser;
     JTextArea messageText;
@@ -149,8 +148,13 @@ public class IteratorView
             Errors errors = new Errors();
             parser.setErrorHandler(errors);
             parser.parse(filename);
-            document = (DocumentImpl)parser.getDocument();
+            document = parser.getDocument();
             
+            if (!document.supports("Traversal", "2.0")) {
+                // This cannot happen with ou DOMParser...
+                throw new RuntimeException("This DOM Document does not support Traversal");
+            }
+
             // jtree  UI setup
             jtree = new DOMTreeFull((Node)document);
             jtree.getSelectionModel().setSelectionMode
@@ -312,7 +316,9 @@ public class IteratorView
                 messageText.append( (String)elements.nextElement());
             }    
             
-            iterator = document.
+            // This cast must work, because we have tested above
+            // with document.supports("Traversal")
+            iterator = ((DocumentTraversal)document).
                 createNodeIterator(
                     document, 
                     NodeFilter.SHOW_ALL, 
@@ -353,10 +359,10 @@ public class IteratorView
             nameNodeFilter.setName(nameText);
             nameNodeFilter.setMatch(matched);
             
-            //((DocumentImpl)document).removeNodeIterators();
             if (iterator !=null) iterator.detach();
             boolean expand = expandERs.isSelected();
-            iterator = document.createNodeIterator(
+            iterator = ((DocumentTraversal)document).
+                createNodeIterator(
                     node, 
                     (short)mask, 
                     nameNodeFilter,

@@ -65,22 +65,22 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 import org.apache.xerces.parsers.*;
 import org.w3c.dom.*;
+import org.w3c.dom.traversal.*;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import org.apache.xerces.dom.*;
-import org.w3c.dom.traversal.*;
 import ui.DOMTreeFull;
 
-/** 
- * 
+/** This class shows a DOM Document in a JTree, and presents controls
+ *  which allow the user to create and view the progress of a TreeWalker
+ *  in the DOM tree.
  */
 public class TreeWalkerView 
     extends JFrame 
     implements ActionListener {
 
-    DocumentImpl document;
+    Document document;
     TreeNode lastSelected;
     DOMParser parser;
     JTextArea messageText;
@@ -157,8 +157,14 @@ public class TreeWalkerView
             Errors errors = new Errors();
             parser.setErrorHandler(errors);
             parser.parse(filename);
-            document = (DocumentImpl)parser.getDocument();
+            document = parser.getDocument();
             
+            if (!document.supports("Traversal", "2.0")) {
+                // This cannot happen with the DOMParser...
+                throw new RuntimeException("This DOM Document does not support Traversal");
+            
+            }
+
             // jtree  UI setup
             jtree = new DOMTreeFull((Node)document);
             jtree.getSelectionModel().setSelectionMode
@@ -362,7 +368,7 @@ public class TreeWalkerView
             }    
             
             boolean expand = expandERs.isSelected();
-            treeWalker = document.
+            treeWalker = ((DocumentTraversal)document).
                 createTreeWalker(
                     document, 
                     NodeFilter.SHOW_ALL, 
@@ -417,7 +423,7 @@ public class TreeWalkerView
             // expand Entity References?
             boolean expand = expandERs.isSelected();
             
-            treeWalker = document.
+            treeWalker = ((DocumentTraversal)document).
                 createTreeWalker(
                     node, 
                     mask, 
