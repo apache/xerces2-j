@@ -7,6 +7,15 @@
    the Xerces Native Interface.
   </desc>
   <changes>
+   <fix>
+    <note>
+     Fixed newline normalization bug. Previously, the sequence #x0A #x0D
+     was being converted to #x0A instead of #x0A #x0A per section 2.11 of
+     the XML 1.0 specification. Thanks to Aleksander Slominski for the
+     bug report.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
    <update>
     <note>
      Added getter methods to XMLParserConfiguration interface and added

@@ -1845,6 +1845,8 @@ public class XMLEntityManager
                     load(1, false);
                 }
                 if (c == '\r' && external) {
+                    // REVISIT: Does this need to be updated to fix the
+                    //          #x0D ^#x0A newline normalization problem? -Ac
                     if (fCurrentEntity.ch[fCurrentEntity.position++] != '\n') {
                         fCurrentEntity.position--;
                     }
@@ -2215,6 +2217,11 @@ public class XMLEntityManager
                             fCurrentEntity.position++;
                             offset++;
                         }
+                        /*** NEWLINE NORMALIZATION ***/
+                        else {
+                            newlines++;
+                        }
+                        /***/
                     }
                     else if (c == '\n') {
                         newlines++;
@@ -2227,11 +2234,13 @@ public class XMLEntityManager
                                 break;
                             }
                         }
+                        /*** NEWLINE NORMALIZATION ***
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
                             && external) {
                             fCurrentEntity.position++;
                             offset++;
                         }
+                        /***/
                     }
                     else {
                         fCurrentEntity.position--;
@@ -2273,6 +2282,8 @@ public class XMLEntityManager
             // return next character
             if (fCurrentEntity.position != fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position];
+                // REVISIT: Does this need to be updated to fix the
+                //          #x0D ^#x0A newline normalization problem? -Ac
                 if (c == '\r' && external) {
                     c = '\n';
                 }
@@ -2363,6 +2374,11 @@ public class XMLEntityManager
                             fCurrentEntity.position++;
                             offset++;
                         }
+                        /*** NEWLINE NORMALIZATION ***/
+                        else {
+                            newlines++;
+                        }
+                        /***/
                     }
                     else if (c == '\n') {
                         newlines++;
@@ -2375,11 +2391,13 @@ public class XMLEntityManager
                                 break;
                             }
                         }
+                        /*** NEWLINE NORMALIZATION ***
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
                             && external) {
                             fCurrentEntity.position++;
                             offset++;
                         }
+                        /***/
                     }
                     else {
                         fCurrentEntity.position--;
@@ -2525,6 +2543,11 @@ public class XMLEntityManager
                             fCurrentEntity.position++;
                             offset++;
                         }
+                        /*** NEWLINE NORMALIZATION ***/
+                        else {
+                            newlines++;
+                        }
+                        /***/
                     }
                     else if (c == '\n') {
                         newlines++;
@@ -2540,11 +2563,13 @@ public class XMLEntityManager
                             }
                         }
                         /***/
+                        /*** NEWLINE NORMALIZATION ***
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
                             && external) {
                             fCurrentEntity.position++;
                             offset++;
                         }
+                        /***/
                     }
                     else {
                         fCurrentEntity.position--;
@@ -2737,16 +2762,20 @@ public class XMLEntityManager
                                 fCurrentEntity.position = 0;
                         }
                         if (c == '\r' && external) {
+                            // REVISIT: Does this need to be updated to fix the
+                            //          #x0D ^#x0A newline normalization problem? -Ac
                             if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
                                 fCurrentEntity.position--;
                             }
                         }
+                        /*** NEWLINE NORMALIZATION ***
                         else {
                             if (fCurrentEntity.ch[fCurrentEntity.position + 1] == '\r'
                                 && external) {
                                 fCurrentEntity.position++;
                             }
                         }
+                        /***/
                     }
                     else {
                         fCurrentEntity.columnNumber++;
