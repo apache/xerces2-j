@@ -72,8 +72,8 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLDocumentSource; 
-import org.apache.xerces.xni.XMLDocumentHandler; 
+import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -82,9 +82,9 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
  * The scanner acts as the source for the document
  * information which is communicated to the document handler.
  *
- * This class scans an XML document, checks if document has a DTD, and if 
+ * This class scans an XML document, checks if document has a DTD, and if
  * DTD is not found the scanner will remove the DTD Validator from the pipeline and perform
- * namespace binding. 
+ * namespace binding.
  *
  * Note: This scanner should only be used when the namespace processing is on!
  *
@@ -111,11 +111,11 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 public class XMLNSDocumentScannerImpl
 extends XMLDocumentScannerImpl {
 
-    /** If is true, the dtd validator is no longer in the pipeline 
+    /** If is true, the dtd validator is no longer in the pipeline
       * and the scanner should bind namespaces */
-    protected boolean fBindNamespaces;    
+    protected boolean fBindNamespaces;
 
-    /** If validating parser, make sure we report an error in the 
+    /** If validating parser, make sure we report an error in the
       *   scanner if DTD grammar is missing.*/
     protected boolean fPerformValidation;
 
@@ -134,7 +134,7 @@ extends XMLDocumentScannerImpl {
     /**
      * The scanner is responsible for removing DTD validator
      * from the pipeline if it is not needed.
-     * 
+     *
      * @param previous The filter component before DTDValidator
      * @param dtdValidator
      *                 The DTDValidator
@@ -144,7 +144,7 @@ extends XMLDocumentScannerImpl {
         fDTDValidator = dtd;
     }
 
-    /** 
+    /**
      * Scans a start element. This method will handle the binding of
      * namespace information and notifying the handler of the start
      * of the element.
@@ -152,7 +152,7 @@ extends XMLDocumentScannerImpl {
      * <pre>
      * [44] EmptyElemTag ::= '&lt;' Name (S Attribute)* S? '/>'
      * [40] STag ::= '&lt;' Name (S Attribute)* S? '>'
-     * </pre> 
+     * </pre>
      * <p>
      * <strong>Note:</strong> This method assumes that the leading
      * '&lt;' character has been consumed.
@@ -165,27 +165,27 @@ extends XMLDocumentScannerImpl {
      * @returns True if element is empty. (i.e. It matches
      *          production [44].
      */
-    protected boolean scanStartElement() 
+    protected boolean scanStartElement()
     throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElementNS()");
         String rawname = null;
 
-        // Note: namespace processing is on by default 
+        // Note: namespace processing is on by default
         fEntityScanner.scanQName(fElementQName);
         if (fBindNamespaces) {
             fNamespaceContext.pushContext();
             rawname = fElementQName.rawname;
             if (fScannerState == SCANNER_STATE_ROOT_ELEMENT) {
                 if (fPerformValidation) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_GRAMMAR_NOT_FOUND",
                                                new Object[]{ rawname},
                                                XMLErrorReporter.SEVERITY_ERROR);
 
                     if (fDoctypeName == null || !fDoctypeName.equals(rawname)) {
-                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, 
-                                                    "RootElementTypeMustMatchDoctypedecl", 
-                                                    new Object[]{fDoctypeName, rawname}, 
+                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                    "RootElementTypeMustMatchDoctypedecl",
+                                                    new Object[]{fDoctypeName, rawname},
                                                     XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
@@ -207,7 +207,7 @@ extends XMLDocumentScannerImpl {
             if (c == '>') {
                 fEntityScanner.scanChar();
                 break;
-            } 
+            }
             else if (c == '/') {
                 fEntityScanner.scanChar();
                 if (!fEntityScanner.skipChar('>')) {
@@ -216,7 +216,7 @@ extends XMLDocumentScannerImpl {
                 }
                 empty = true;
                 break;
-            } 
+            }
             else if (!XMLChar.isNameStart(c) || !sawSpace) {
                 reportFatalError("ElementUnterminated", new Object[]{rawname});
             }
@@ -263,7 +263,7 @@ extends XMLDocumentScannerImpl {
                                  ? fAttributeQName.prefix : XMLSymbols.EMPTY_STRING;
                 String uri = fNamespaceContext.getURI(aprefix);
                 // REVISIT: try removing the first "if" and see if it is faster.
-                //           
+                //
                 if (fAttributeQName.uri != null && fAttributeQName.uri == uri) {
                     checkDuplicates(fAttributeQName, fAttributes);
                     continue;
@@ -286,6 +286,16 @@ extends XMLDocumentScannerImpl {
         // call handler
         if (fDocumentHandler != null) {
             if (empty) {
+
+                //decrease the markup depth..
+                fMarkupDepth--;
+
+                // check that this element was opened in the same entity
+                if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+                    reportFatalError("ElementEntityMismatch",
+                                     new Object[]{fCurrentElement.rawname});
+                }
+
                 fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
 
                 if (fBindNamespaces) {
@@ -296,15 +306,6 @@ extends XMLDocumentScannerImpl {
                         fDocumentHandler.endPrefixMapping(prefix, null);
                     }
                     fNamespaceContext.popContext();
-                }
-
-                //decrease the markup depth..
-                fMarkupDepth--;
-
-                // check that this element was opened in the same entity
-                if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
-                    reportFatalError("ElementEntityMismatch",
-                                     new Object[]{fCurrentElement.rawname});
                 }
                 //pop the element off the stack..
                 fElementStack.popElement(fElementQName);
@@ -348,14 +349,14 @@ extends XMLDocumentScannerImpl {
 
 
 
-    /** 
+    /**
  * Scans an attribute.
  * <p>
  * <pre>
  * [41] Attribute ::= Name Eq AttValue
- * </pre> 
+ * </pre>
  * <p>
- * <strong>Note:</strong> This method assumes that the next 
+ * <strong>Note:</strong> This method assumes that the next
  * character on the stream is the first character of the attribute
  * name.
  * <p>
@@ -365,7 +366,7 @@ extends XMLDocumentScannerImpl {
  *
  * @param attributes The attributes list for the scanned attribute.
  */
-    protected void scanAttribute(XMLAttributesImpl attributes) 
+    protected void scanAttribute(XMLAttributesImpl attributes)
     throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanAttribute()");
 
@@ -392,7 +393,7 @@ extends XMLDocumentScannerImpl {
         }
 
         //REVISIT: one more case needs to be included: external PE and standalone is no
-        boolean isVC =  fHasExternalDTD && !fStandalone; 
+        boolean isVC =  fHasExternalDTD && !fStandalone;
 
         // REVISIT: it seems that this function should not take attributes, and length
         scanAttributeValue(this.fTempString, fTempString2,
@@ -473,7 +474,7 @@ extends XMLDocumentScannerImpl {
                 if (fDocumentHandler != null) {
                     fDocumentHandler.startPrefixMapping(prefix, uri, null);
                 }
-            } 
+            }
             else {
                 // attempt to bind attribute
                 if (fAttributeQName.prefix != null) {
@@ -581,7 +582,7 @@ extends XMLDocumentScannerImpl {
          * element. This method will also attempt to remove DTD validator
          * from the pipeline, if there is no DTD grammar. If DTD validator
          * is no longer in the pipeline bind namespaces in the scanner.
-         * 
+         *
          *
          * @returns True if the caller should stop and return true which
          *          allows the scanner to switch to a new scanning

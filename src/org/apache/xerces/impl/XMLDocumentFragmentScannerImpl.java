@@ -803,7 +803,7 @@ public class XMLDocumentFragmentScannerImpl
         // call handler
         if (fDocumentHandler != null) {
             if (empty) {
-                fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
+
                 //decrease the markup depth..
                 fMarkupDepth--;
                 // check that this element was opened in the same entity
@@ -811,6 +811,9 @@ public class XMLDocumentFragmentScannerImpl
                     reportFatalError("ElementEntityMismatch",
                                      new Object[]{fCurrentElement.rawname});
                 }
+
+                fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
+
                 //pop the element off the stack..
                 fElementStack.popElement(fElementQName);
             }
