@@ -131,7 +131,7 @@ public class ExceptionMessages extends ListResourceBundle {
         
     // org.apache.xerces.parsers
     { "PAR001", "Fatal error constructing DOMParser." },
-    { "PAR002", "Class, \"{0}\", is not of type org.w3c.dom" },
+    { "PAR002", "Class, \"{0}\", is not of type org.w3c.dom.Document." },
     { "PAR003", "Class, \"{0}\", not found." },
     { "PAR004", "Cannot setFeature({0}): parse is in progress." },
     { "PAR005", "Property, \"{0}\" is read-only." },
@@ -148,6 +148,8 @@ public class ExceptionMessages extends ListResourceBundle {
     { "PAR015", "startEntityReference(): ENTITYTYPE_UNPARSED" },
     { "PAR016", "endEntityReference(): ENTITYTYPE_UNPARSED" },
     { "PAR017", "cannot happen: {0}" },
+    { "PAR018", "{0} state for feature \"{1}\" is not supported." },
+    { "PAR019", "Property, \"{0}\", is not supported." },
     
     // org.apache.xerces.readers
 
