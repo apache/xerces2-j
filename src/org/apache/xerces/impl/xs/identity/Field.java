@@ -59,8 +59,14 @@ package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.*;
+import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSTypeDecl;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.psvi.ElementPSVI;
 
 import org.xml.sax.SAXException;
 
@@ -211,8 +217,9 @@ public class Field {
          */
         protected void matched(String content, XSSimpleType val, boolean isNil) {
             super.matched(content, val, isNil);
-            if(isNil) {
-                fStore.reportNilError(fIdentityConstraint);
+            if(isNil && (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY)) {
+                String code = "KeyMatchesNillable";
+                fStore.reportError(code, new Object[]{fIdentityConstraint.getElementName()});
             }
             fStore.addValue(Field.this, new IDValue(content, val));
             // once we've stored the value for this field, we set the mayMatch
@@ -220,6 +227,45 @@ public class Field {
             // values (and throw an error instead).
             mayMatch = false;
         } // matched(String)
+
+        protected void handleContent(XSElementDecl eDecl, ElementPSVI ePSVI) { 
+            // REVISIT:  make sure type is simple!
+            XSSimpleType val=null;
+
+            if (eDecl!=null) {
+                XSTypeDecl type = eDecl.fType;
+                if (type != null) {
+                    if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+                        XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
+                        val = (XSSimpleType)ctype.getSimpleType();
+                    }
+                    else {
+                        val = (XSSimpleType)(type);
+                    }
+                }
+                // REVISIT:  special case to handle elements with xs:anyType.
+                // This probably is not valid; need clarification from WG.  - NG
+                if(val == null && type == SchemaGrammar.fAnyType ) {
+                    // REVISIT:  this is why anyType shouldn't 
+                    // match fields!
+                    val = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
+                }
+            }
+
+            if(val == null ) {
+                // must be a complexType with no simpleContent!
+                String code = "cvc-id.3";
+                String name = (eDecl == null?"null":eDecl.getName());
+                fStore.reportError(code, new Object[]{fIdentityConstraint.getName(), name});
+                return;
+            }
+            fMatchedString = ePSVI.getSchemaNormalizedValue();
+            if(eDecl != null) {
+                matched(fMatchedString, val, (eDecl.getIsNillable()));
+            } else {
+                matched(fMatchedString, val, false); 
+            }
+        } // handleContent(XSElementDecl, ElementPSVI)
 
     } // class Matcher
 

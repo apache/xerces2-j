@@ -133,7 +133,7 @@ public class XPathMatcher {
     private int[] fMatched;
 
     /** The matching string. */
-    private String fMatchedString;
+    protected String fMatchedString;
 
     /** Integer stack of step indexes. */
     private IntStack[] fStepIndexes;
@@ -196,29 +196,9 @@ public class XPathMatcher {
     // Protected methods
     //
 
+    // a place-holder method; to be overridden by subclasses
+    // that care about matching element content.
     protected void handleContent(XSElementDecl eDecl, ElementPSVI ePSVI) { 
-        fMatchedString = ePSVI.getSchemaNormalizedValue();
-        // REVISIT:  make sure type is simple!
-        XSSimpleType val=null;
-
-        if (eDecl!=null) {
-            XSTypeDecl type = eDecl.fType;
-            if (type != null) {
-                if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
-                    XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-                    val = (XSSimpleType)ctype.getSimpleType();
-                }
-                else {
-                    val = (XSSimpleType)(type);
-                }
-            }
-        }
-
-        if(eDecl != null) {
-            matched(fMatchedString, val, (eDecl.getIsNillable()));
-        } else {
-            matched(fMatchedString, val, false); 
-        }
     } // handleContent(XSElementDecl, ElementPSVI)
 
     /**

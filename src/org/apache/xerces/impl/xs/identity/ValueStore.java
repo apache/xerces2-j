@@ -93,10 +93,12 @@ public interface ValueStore {
      */
     public void addValue(Field field, IDValue value);
 
-    /* report an error if a nillable element is being keyed on.
-     * the implementor must check that a <key> really is present, not a <unique> or <keyref>.
-     * @param:  id:  the IdentityConstraint that has matched.
+    /**
+     * Since the valueStore will have access to an error reporter, this
+     * allows it to be called appropriately.
+     * @param key  the key of the localized error message
+     * @param args  the list of arguments for substitution.
      */
-    public void reportNilError(IdentityConstraint id);
+    public void reportError(String key, Object[] args);
 
 } // interface ValueStore

@@ -58,13 +58,13 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xpath.*;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.util.SymbolTable;
 
@@ -279,11 +279,6 @@ public class Selector {
         //
         // Protected methods
         //
-
-        // overridden to do nothing; selectors don't care
-        // about element content
-        protected void handleContent(XSElementDecl eDecl, ElementPSVI ePSVI) {
-        } // handleContent(XSElementDecl, ElementPSVI)
 
     } // class Matcher
 
