@@ -547,16 +547,22 @@ public class Counter
             // parse file
             try {
                 long timeBefore = System.currentTimeMillis();
-                long memoryBefore = Runtime.getRuntime().freeMemory();
+                long memoryBefore = 0; 
+                if(memoryUsage) {
+                    System.gc();
+                    memoryBefore = Runtime.getRuntime().freeMemory();
+                }
                 for (int j = 0; j < repetition; j++) {
                     parser.parse(new XMLInputSource(null, arg, null));
                 }
-                long memoryAfter = Runtime.getRuntime().freeMemory();
-                long timeAfter = System.currentTimeMillis();
+                long memory = Long.MIN_VALUE;
+                if(memoryUsage) {
+                    long memoryAfter = Runtime.getRuntime().freeMemory();
+                    memory = memoryBefore - memoryAfter;
+                }
 
+                long timeAfter = System.currentTimeMillis();
                 long time = timeAfter - timeBefore;
-                long memory = memoryUsage
-                            ? memoryBefore - memoryAfter : Long.MIN_VALUE;
                 ((Counter)parser).printResults(out, arg, time,
                                                memory, tagginess,
                                                repetition);
