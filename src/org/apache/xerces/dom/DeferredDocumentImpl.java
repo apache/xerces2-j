@@ -62,6 +62,7 @@ import org.apache.xerces.utils.StringPool;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import java.util.Vector;
 
 /**
  * The Document interface represents the entire HTML or XML document.
@@ -162,6 +163,8 @@ public class DeferredDocumentImpl
 	// interpret the int representing the qname.
     protected boolean fNamespacesEnabled = false;
 
+    private final StringBuffer fBufferStr = new StringBuffer();
+    private final Vector fStrChunks = new Vector();
     //
     // Constructors
     //
@@ -389,7 +392,6 @@ public class DeferredDocumentImpl
         return elementNodeIndex;
 
     } // createElement(int,XMLAttrList,int):int
-
     /** Creates an attribute in the table. */
     public int createAttribute(int attrNameIndex,
                                int attrValueIndex, boolean specified) {
@@ -996,21 +998,27 @@ public class DeferredDocumentImpl
         if (type == Node.TEXT_NODE) {
             int prevSib = getRealPrevSibling(nodeIndex);
             if (prevSib != -1 && getNodeType(prevSib, false) == Node.TEXT_NODE) {
-                StringBuffer str = new StringBuffer();
-                str.append(fStringPool.toString(valueIndex));
+                fStrChunks.addElement(fStringPool.toString(valueIndex));
                 do {
                     chunk = prevSib >> CHUNK_SHIFT;
                     index = prevSib & CHUNK_MASK;
                     valueIndex = getChunkIndex(fNodeValue, chunk, index);
                     // NOTE: This has to be done backwards because the
                     //       children are placed backwards.
-                    str.insert(0, fStringPool.toString(valueIndex));
+                    fStrChunks.addElement(fStringPool.toString(valueIndex));
                     prevSib = getChunkIndex(fNodePrevSib, chunk, index);
                     if (prevSib == -1) {
                         break;
                     }
                 } while (getNodeType(prevSib, false) == Node.TEXT_NODE);
-                return str.toString();
+                for (int i=fStrChunks.size()-1; i>=0; i--) {                                                               
+                    fBufferStr.append((String)fStrChunks.elementAt(i));
+                }
+                                                        
+                String value = fBufferStr.toString();
+                fStrChunks.setSize(0);
+                fBufferStr.setLength(0);
+                return value;
             }
         }
 
