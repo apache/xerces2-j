@@ -104,6 +104,10 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             return null;
         }
 
+        if (publicAttr == null) {
+            reportSchemaError("src-notation", new Object[]{"<notation> must have 'public' attribute"}, elmNode);
+        }
+
         XSNotationDecl notation = new XSNotationDecl();
         notation.fName = nameAttr;
         notation.fTargetNamespace = schemaDoc.fTargetNamespace;
