@@ -763,14 +763,18 @@ public class TraverseSchema implements
         
         if (fFullConstraintChecking) {
             // Loop thru all of the top-level elements that were ref'd from groups or 
-            // complexTypes, and ensure that any substitutable elements are consistent
-            // with similiarly named elements from the group scope
+            // complexTypes, and ensure that: 
+            // 1. they have consistent type as any local element potentially declared in 
+            //    the group/type 
+            // 2.  any substitutable elements are consistent wrt type given any 
+            //     similiarly named elements from the group scope
             // Note: for a complexType, we don't check against base scope.   Not clear if
             // we need to. 
             
-            for (int j = 0; j < fTopLevelElementsRefdFromGroup.size(); j++) {
-               Integer elementNdx = (Integer)fTopLevelElementsRefdFromGroup.elementAt(j);
-               checkConsistentElements(elementNdx.intValue());
+            for (int j = 0; j < fTopLevelElementsRefdFromGroup.size(); j+=2) {
+               QName eltName = (QName)fTopLevelElementsRefdFromGroup.elementAt(j);
+               int groupScope = ((Integer)fTopLevelElementsRefdFromGroup.elementAt(j+1)).intValue();
+               checkConsistentElements(eltName, groupScope);     
             }
         }
 
@@ -845,24 +849,31 @@ public class TraverseSchema implements
         } // for each child node
     }
 
-    // Check whether substitutable elements for a top-level element ref'd from a group
-    // is consistent with other elements in the group re:name/type.                  
-    private void checkConsistentElements(int elementNdx) throws Exception {
+    private void checkConsistentElements(QName eltName, int scope) throws Exception {
+
+      // See if there is a declaration of an element with the same name at the
+      // given scope. 
+      // This is required because any model group cannot have more than 1
+      // element with the same name, but different types (even if some are
+      // local, and others top-level)
 
        fTempElementDecl.clear();
-       fSchemaGrammar.getElementDecl(elementNdx, fTempElementDecl);
-       // Get the group scope and name of the element
-       int groupScope = fSchemaGrammar.getElementDefinedScope(elementNdx); 
-       QName eltName = fTempElementDecl.name;
-
-       if (groupScope == TOP_LEVEL_SCOPE) 
-         return;
-
-
-       // Look up the element at top-level scope, and get subsitutable elements
-       int topLevelElementNdx = fSchemaGrammar.getElementDeclIndex(eltName, TOP_LEVEL_SCOPE); 
+       int topLevelElementNdx = fSchemaGrammar.getElementDeclIndex(eltName, TOP_LEVEL_SCOPE);
        if (topLevelElementNdx < 0)
            return;
+
+       fSchemaGrammar.getElementDecl(topLevelElementNdx, fTempElementDecl);
+       DatatypeValidator edv = fTempElementDecl.datatypeValidator;
+       ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(topLevelElementNdx);
+       int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltName.uri,
+                                              eltName.localpart,scope);
+       if (existingEltNdx > -1) {
+          if (!checkDuplicateElementTypes(existingEltNdx,eTypeInfo,edv))
+
+              reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
+                                        fStringPool.toString(eltName.localpart));
+       }
+
 
        Vector substitutableNames = fSchemaGrammar.getElementDeclAllSubstitutionGroupQNames(topLevelElementNdx, fGrammarResolver, fStringPool);
        
@@ -871,11 +882,11 @@ public class TraverseSchema implements
           QName substName = subGroup.name;
           int substEltNdx = subGroup.eleIndex;
           
-          int localEltNdx = fSchemaGrammar.getElementDeclIndex(substName, groupScope);
+          int localEltNdx = fSchemaGrammar.getElementDeclIndex(substName, scope);
           if (localEltNdx > -1) {
              fSchemaGrammar.getElementDecl(localEltNdx, fTempElementDecl);
-             DatatypeValidator edv = fTempElementDecl.datatypeValidator;
-             ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(localEltNdx);
+             edv = fTempElementDecl.datatypeValidator;
+             eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(localEltNdx);
              if (!checkDuplicateElementTypes(substEltNdx,eTypeInfo,edv))
                  reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
                   fStringPool.toString(substName.localpart));
@@ -6485,40 +6496,19 @@ throws Exception {
                     //return new QName(-1,fStringPool.addSymbol(localpart), -1, fStringPool.addSymbol(uriString));
                 }
                 else {
-                    eltName= traverseElementDecl(targetElement);
-                    // Should be able to look up the element now
-                    elementIndex = fSchemaGrammar.getElementDeclIndex(eltName, TOP_LEVEL_SCOPE);
+                    // Problem with recursive decls if we attempt the traversal now. 
+                    //eltName= traverseElementDecl(targetElement);
 
                 }
             }
 
 
-            if (fCurrentScope != TOP_LEVEL_SCOPE &&
-                elementIndex > -1) {
-               // See if there is a declaration of this element at current scope and
-               // check types.
-               // This is required because any model group cannot have more than 1
-               // element with the same name, but different types (even if some are
-               // local, and others top-level)
-               fSchemaGrammar.getElementDecl(elementIndex, fTempElementDecl);
-               DatatypeValidator edv = fTempElementDecl.datatypeValidator;
-               ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(elementIndex);
-               int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltName.uri,
-                                                 eltName.localpart,fCurrentScope);
-
-               if (existingEltNdx > -1) {
-                 if (!checkDuplicateElementTypes(existingEltNdx,eTypeInfo,edv))
-
-                    reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
-                                              fStringPool.toString(eltName.localpart));
-               }
-               else  {
-                 existingEltNdx = fSchemaGrammar.cloneElementDecl(elementIndex,fCurrentScope);
-               }
+            if (fCurrentScope != TOP_LEVEL_SCOPE) {
                if (fFullConstraintChecking) {
-                 // Add the element to a list we'll check later for substitution group 
-                 // checking
-                 fTopLevelElementsRefdFromGroup.addElement(new Integer(existingEltNdx));
+                 // Add the name to a list of top-level elements we'll need to check later
+                 // for consistency wrt type
+                 fTopLevelElementsRefdFromGroup.addElement(eltName);           
+                 fTopLevelElementsRefdFromGroup.addElement(new Integer(fCurrentScope));           
                }
                
             }
