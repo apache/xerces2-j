@@ -299,7 +299,7 @@ public class DOMASBuilderImpl
        }
 
        fErrorReporter = (XMLErrorReporter)fConfiguration.getProperty(ERROR_REPORTER);
-       fEntityResolver = (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
+       fEntityResolver = (XMLEntityResolver)fConfiguration.getProperty(ENTITY_MANAGER);
 
        fSymbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
        String externalSchemas =
