@@ -22,6 +22,41 @@
    <changes>
     <add>
      <note>
+      Implemented partial experimental support of the first working draft of 
+      XML Schema 1.1 <jump href="http://www.w3.org/TR/2004/WD-xmlschema11-1-20040716/">Structures</jump>
+      and <jump href="http://www.w3.org/TR/2004/WD-xmlschema11-2-20040716/">Datatypes</jump>.
+     </note>
+     <submitter name='Ankit Pasricha'/>
+    </add>
+    <update>
+     <note>
+      Implemented the <jump href="http://www.w3.org/TR/2004/CR-xinclude-20040413/">XInclude</jump>
+      Candidate Recommendation (April 2004), excluding support for XPointer.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Fixed a bug which caused the DTD validator to be activated when using the XInclude
+      processor with schema validation turned on.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <update>
+     <note>
+      Modified the XNI XMLLocator interface to include getCharacterOffset and getXMLVersion.
+      Added a getCharacterOffset method to XMLParseException.
+     </note>
+     <submitter name='Michael Glavassevich, Ankit Pasricha'/>
+    </update>
+    <update>
+     <note>
+      Made various modifications to support the reporting of character offsets in XNI and DOM.
+     </note>
+     <submitter name='Ankit Pasricha'/>
+    </update>
+    <add>
+     <note>
       Implemented SAX 2.0.2 and SAX2 Extensions 1.1.
      </note>
      <submitter name='Michael Glavassevich'/>
