@@ -97,7 +97,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class AttrImpl
-    extends NodeImpl
+    extends NodeContainer
     implements Attr {
 
     //

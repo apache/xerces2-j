@@ -43,7 +43,8 @@ TARGETS=\
 	NodeImpl.class\
 	NotationImpl.class\
 	ProcessingInstructionImpl.class\
-	TextImpl.class
+	TextImpl.class \
+	NodeContainer.class
 
 all: dirs compile
 

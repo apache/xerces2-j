@@ -69,7 +69,7 @@ import org.w3c.dom.*;
  * @version
  */
 public class ElementDefinitionImpl 
-    extends NodeImpl {
+    extends NodeContainer {
 
     //
     // Constants

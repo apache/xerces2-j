@@ -111,7 +111,7 @@ import org.w3c.dom.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityReferenceImpl 
-    extends NodeImpl 
+    extends NodeContainer
     implements EntityReference {
 
     //

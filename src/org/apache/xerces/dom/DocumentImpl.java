@@ -95,7 +95,7 @@ import org.apache.xerces.dom.events.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentImpl
-    extends NodeImpl
+    extends NodeContainer
     implements Document, DocumentTraversal, DocumentEvent {
 
     //
