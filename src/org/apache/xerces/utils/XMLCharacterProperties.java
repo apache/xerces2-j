@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,7 +57,7 @@
 
 package org.apache.xerces.utils;
 
-/** 
+/**
  * A class representing properties of characters according to various
  * W3C recommendations
  *
@@ -76,7 +76,7 @@ public final class XMLCharacterProperties {
      * Note: This is the same as the ascii portion of the
      *       NameChar definition.
      */
-    /** 
+    /**
      * Check to see if a string is a valid version string according to
      * [26] in the XML 1.0 Recommendation
      *
@@ -84,9 +84,10 @@ public final class XMLCharacterProperties {
      * @return true if version is a valid version string
      */
     public static boolean validVersionNum(String version) {
-        if (version.length() == 0)
+        int len = version.length();
+        if (len == 0)
             return false;
-        for (int i = 0; i < version.length(); i++) {
+        for (int i = 0; i < len; i++) {
             char ch = version.charAt(i);
             if (ch > 'z' || fgAsciiNameChar[ch] == 0)
                 return false;
@@ -99,17 +100,18 @@ public final class XMLCharacterProperties {
     /**
      * Check to see if a string is a valid encoding name according to [81]
      * in the XML 1.0 Recommendation
-     * 
+     *
      * @param encoding string to check
      * @return true if encoding is a valid encoding name
      */
     public static boolean validEncName(String encoding) {
-        if (encoding.length() == 0)
+        int len = encoding.length();
+        if (len == 0)
             return false;
         char ch = encoding.charAt(0);
         if (ch > 'z' || fgAsciiAlphaChar[ch] == 0)
             return false;
-        for (int i = 1; i < encoding.length(); i++) {
+        for (int i = 1; i < len; i++) {
             ch = encoding.charAt(i);
             if (ch > 'z' || fgAsciiEncNameChar[ch] == 0)
                 return false;
@@ -119,7 +121,7 @@ public final class XMLCharacterProperties {
     /*
      * [13] PubidChar ::= #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
      */
-    /** 
+    /**
      * Check to see if a string is a valid public identifier according to [13]
      * in the XML 1.0 Recommendation
      *
@@ -127,9 +129,10 @@ public final class XMLCharacterProperties {
      * @return true if publicId is a valid public identifier
      */
     public static int validPublicId(String publicId) {
-        if (publicId.length() == 0)
+        int len = publicId.length();
+        if (len == 0)
             return -1;
-        for (int i = 0; i < publicId.length(); i++) {
+        for (int i = 0; i < len; i++) {
             char ch = publicId.charAt(i);
             if (ch > 'z' || fgAsciiPubidChar[ch] == 0)
                 return i;
@@ -147,7 +150,8 @@ public final class XMLCharacterProperties {
      * @return true if name is a valid Name
      */
     public static boolean validName(String name) {
-        if (name.length() == 0)
+        int len = name.length();
+        if (len == 0)
             return false;
         char ch = name.charAt(0);
         if (ch > 'z') {
@@ -155,7 +159,7 @@ public final class XMLCharacterProperties {
                 return false;
         } else if (fgAsciiInitialNameChar[ch] == 0)
             return false;
-        for (int i = 1; i < name.length(); i++) {
+        for (int i = 1; i < len; i++) {
             ch = name.charAt(i);
             if (ch > 'z') {
                 if ((fgCharFlags[ch] & E_NameCharFlag) == 0)
@@ -165,7 +169,7 @@ public final class XMLCharacterProperties {
         }
         return true;
     }
-    
+
     /*
      * from the namespace rec
      * [5] NCName ::= (Letter | '_' | ':') (NameNCChar)*
@@ -178,7 +182,8 @@ public final class XMLCharacterProperties {
      * @return true if name is a valid NCName
      */
     public static boolean validNCName(String name) {
-        if (name.length() == 0)
+        int len = name.length();
+        if (len == 0)
             return false;
         char ch = name.charAt(0);
         if (ch > 'z') {
@@ -186,7 +191,7 @@ public final class XMLCharacterProperties {
                 return false;
         } else if (fgAsciiInitialNCNameChar[ch] == 0)
             return false;
-        for (int i = 1; i < name.length(); i++) {
+        for (int i = 1; i < len; i++) {
             ch = name.charAt(i);
             if (ch > 'z') {
                 if ((fgCharFlags[ch] & E_NameCharFlag) == 0)
@@ -196,12 +201,12 @@ public final class XMLCharacterProperties {
         }
         return true;
     }
-    
-    
+
+
     /*
      * [7] Nmtoken ::= (NameChar)+
      */
-    /** 
+    /**
      * Check to see if a string is a valid Nmtoken according to [7]
      * in the XML 1.0 Recommendation
      *
@@ -209,9 +214,10 @@ public final class XMLCharacterProperties {
      * @return true if nmtoken is a valid Nmtoken
      */
     public static boolean validNmtoken(String nmtoken) {
-        if (nmtoken.length() == 0)
+        int len = nmtoken.length();
+        if (len == 0)
             return false;
-        for (int i = 0; i < nmtoken.length(); i++) {
+        for (int i = 0; i < len; i++) {
             char ch = nmtoken.charAt(i);
             if (ch > 'z') {
                 if ((fgCharFlags[ch] & E_NameCharFlag) == 0)
