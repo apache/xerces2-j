@@ -65,14 +65,19 @@ import org.xml.sax.SAXException;
 
 import java.lang.ClassCastException;
 /* 
- * @author Eric Ye
- *         
- * @see    
+ * @version 1.0.  ericye, neilg
  *
- * @version $Id$
+  * Modified by neilg, 01/18/01
+  * Note:  this class, formerly called equivClassComparator.java, has
+  * been renamed to comply with schema CR changes.  It still contains
+  * some outmoded terminology--such as use of the term "exemplar", now
+  * referred to as the head of the substitution group.  I have
+  * changed as much terminology as possible, but I thought future
+  * maintainers could deal with simple and not necessarily-ill-named
+  * concepts like exemplar.  
  */
 
-public class EquivClassComparator {
+public class SubstitutionGroupComparator {
 
     // constants
     private final int TOP_LEVEL_SCOPE = -1;
@@ -82,25 +87,25 @@ public class EquivClassComparator {
     private GrammarResolver fGrammarResolver = null;
 
     // constructors
-    private EquivClassComparator(){
+    private SubstitutionGroupComparator(){
         // can never be instantiated without passing in a GrammarResolver.
     }
-    public  EquivClassComparator(GrammarResolver grammarResolver, StringPool stringPool){
+    public  SubstitutionGroupComparator(GrammarResolver grammarResolver, StringPool stringPool){
         fGrammarResolver = grammarResolver;
         fStringPool = stringPool;
     }
 
     //public methods
-    public boolean isEquivalentTo(QName aElement, QName examplar) throws Exception{
-        if (aElement.localpart==examplar.localpart && aElement.uri==examplar.uri ) {
+    public boolean isEquivalentTo(QName aElement, QName exemplar) throws Exception{
+        if (aElement.localpart==exemplar.localpart && aElement.uri==exemplar.uri ) {
             return true;
         }
 
         if (fGrammarResolver == null || fStringPool == null) {
-            throw new SAXException("Try to check equivalency by equivClass, but no GrammarResolver is defined");
+            throw new SAXException("Try to check substitutionGroup against a substitutionGroup, but no GrammarResolver is defined");
         }
 
-        int count = 16; // 16 is the limit of times for which we'll check the equivClass transitively.
+        int count = 16; // 16 is the limit of times for which we'll check the substitutionGroup transitively.
         int uriIndex = aElement.uri;
         int localpartIndex = aElement.localpart;
         String uri = fStringPool.toString(aElement.uri);
@@ -126,25 +131,25 @@ public class EquivClassComparator {
                 return false;
             }
 
-            String equivClassFullName = sGrammar.getElementDeclEquivClassElementFullName(elementIndex);
+            String substitutionGroupFullName = sGrammar.getElementDeclSubstitutionGroupElementFullName(elementIndex);
             //System.out.println("----------equivClassFullName : " + equivClassFullName);
-            if (equivClassFullName==null) {
+            if (substitutionGroupFullName==null) {
                 return false;
             }
 
-            int commaAt = equivClassFullName.indexOf(","); 
+            int commaAt = substitutionGroupFullName.indexOf(","); 
             uri = "";
-            localpart = equivClassFullName;
+            localpart = substitutionGroupFullName;
             if (  commaAt >= 0  ) {
                 if (commaAt > 0 ) {
-                    uri = equivClassFullName.substring(0,commaAt);
+                    uri = substitutionGroupFullName.substring(0,commaAt);
                 }
-                localpart = equivClassFullName.substring(commaAt+1);
+                localpart = substitutionGroupFullName.substring(commaAt+1);
             }
             uriIndex = fStringPool.addSymbol(uri);
             localpartIndex = fStringPool.addSymbol(localpart);
 
-            if (uriIndex == examplar.uri && localpartIndex == examplar.localpart) {
+            if (uriIndex == exemplar.uri && localpartIndex == exemplar.localpart) {
                 return true;
             }
 
