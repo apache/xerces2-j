@@ -497,7 +497,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         //of the document                            
                         checkInValidXMLCharacters(commentdata, fDocument.isXML11Version());                        
                     }
-                }//end-else if comment node is not to be removed.                                                
+                }//end-else if comment node is not to be removed.
+				break;
             }
         case Node.ENTITY_REFERENCE_NODE: { 
                 if (DEBUG_ND) {
@@ -1545,7 +1546,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
 					//       flag to "true" which may overwrite a "false"
 					//       value from the attribute list.
 					boolean specified = attr.getSpecified();
-					attr.setValue(attrPSVI.getSchemaNormalizedValue());
+					//For now .
+					// namespace attributes xmlns:ve are not validated.
+					String value = attrPSVI.getSchemaNormalizedValue();
+					if(value != null)
+						attr.setValue(value);
 					if (!specified) {
 						((AttrImpl) attr).setSpecified(specified);
 					}

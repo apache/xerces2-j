@@ -419,7 +419,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 
             }
             else if (name.equals (Constants.DOM_RESOURCE_RESOLVER)) {
-                if (value instanceof LSResourceResolver) {
+                if (value == null || value instanceof LSResourceResolver) {
                     try {
                         fConfiguration.setProperty (ENTITY_RESOLVER, new DOMEntityResolverWrapper ((LSResourceResolver) value));
                     }

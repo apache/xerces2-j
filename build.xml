@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<!-- ===================================================================
+<!--  ===================================================================
 
 Read the README file for build instruction.
 
@@ -353,6 +353,9 @@ Copyright:
       <arg value="${build.dir}/xdocs/docs-book.xml"/>
       <arg value="${build.dir}/xdocs/style"/>
     </java>
+
+    <copy file="${docs.dir}/download.cgi" tofile="${build.docs}/download.cgi"/>
+    
   </target>
 
   <!-- =================================================================== -->

@@ -1386,7 +1386,9 @@ extends BaseMarkupSerializer {
                     }
                     continue;
                 }
-                if ( unescaped )
+                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
+                    _printer.printSpace();
+                else if ( unescaped )
                     _printer.printText( ch );
                 else
                     printXMLChar( ch );

@@ -207,8 +207,15 @@ public class IndentPrinter
      * separator will be counted. If the line accumulated so far is
      * long enough, it will be printed.
      */
-    public void printSpace()
-    {
+    public void printSpace() {
+        printSpace(1);
+    }
+    
+    /**
+     * Prints a space <tt>width</tt> times, which may be broken into
+     * separate lines. 
+     */
+    private void printSpace(int width) {
         // The line consists of the text accumulated in _line,
         // followed by one or more spaces as counted by _spaces,
         // followed by more space accumulated in _text:
@@ -253,7 +260,7 @@ public class IndentPrinter
         }
         // Starting a new word: accumulate the text between the line
         // and this new word; not a new word: just add another space.
-        ++_spaces;
+        _spaces += width;
     }
 
 
@@ -272,16 +279,12 @@ public class IndentPrinter
 
     public void breakLine( boolean preserveSpace )
     {
-        // Equivalent to calling printSpace and forcing a flushLine.
-        if ( _text.length() > 0 ) {
-            while ( _spaces > 0 ) {
-                _line.append( ' ' );
-                --_spaces;
-            }
-            _line.append( _text );
-            _text = new StringBuffer( 20 );
-        }
+        // let the proper word wrapping happen between
+        // _line and _text
+        printSpace(0);
         flushLine( preserveSpace );
+        _thisIndent = _nextIndent;
+        
         try {
             // Print line and new line, then zero the line contents.
             _writer.write( _format.getLineSeparator() );
@@ -298,7 +301,7 @@ public class IndentPrinter
      * Flushes the line accumulated so far to the writer and get ready
      * to accumulate the next line. This method is called by {@link
      * #printText} and {@link #printSpace} when the accumulated line plus
-     * accumulated text are two long to fit on a given line. At the end of
+     * accumulated text are too long to fit on a given line. At the end of
      * this method _line is empty and _spaces is zero.
      */
     public void flushLine( boolean preserveSpace )
@@ -320,8 +323,6 @@ public class IndentPrinter
                         --indent;
                     }
                 }
-                _thisIndent = _nextIndent;
-                
                 // There is no need to print the spaces at the end of the line,
                 // they are simply stripped and replaced with a single line
                 // separator.
