@@ -119,7 +119,7 @@ public final class XMLValidator
 
     private static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
     private static final boolean DEBUG_PRINT_ATTRIBUTES = false;
-    private static final boolean DEBUG_PRINT_CONTENT = false;
+    private static final boolean DEBUG_PRINT_CONTENT = true;
 
     // Chunk size constants
 
@@ -749,6 +749,8 @@ public final class XMLValidator
 
     /** Call start element. */
     public void callStartElement(QName element) throws Exception {
+//debugging
+//System.out.println("\n=======StartElement : " + fStringPool.toString(element.localpart));
 
         if (fAttrListHandle != -1) {
             fAttrList.endAttrList();
@@ -784,18 +786,24 @@ public final class XMLValidator
             QName[] children = fElementChildren[fElementDepth];
             int childCount = fElementChildCount[fElementDepth];
             try {
-                children[childCount] = element;
+                children[childCount].setValues(element);
             } 
             catch (NullPointerException ex) {
                 children = fElementChildren[fElementDepth] = new QName[256];
+                for (int i=0; i<256; i++) {
+                    children[i] = new QName();
+                }
                 childCount = 0; // should really assert this...
-                children[childCount] = element;
+                children[childCount].setValues(element);
             } 
             catch (ArrayIndexOutOfBoundsException ex) {
                 QName[] newChildren = new QName[childCount * 2];
+                for (int i=0; i<(childCount*2); i++) {
+                    children[i] = new QName();
+                }
                 System.arraycopy(children, 0, newChildren, 0, childCount);
                 children = fElementChildren[fElementDepth] = newChildren;
-                children[childCount] = element;
+                children[childCount].setValues(element);
             }
             fElementChildCount[fElementDepth] = ++childCount;
         }
@@ -858,6 +866,8 @@ public final class XMLValidator
 
     /** Call end element. */
     public void callEndElement(int readerId) throws Exception {
+//debugging
+//System.out.println("=======EndElement : " + fStringPool.toString(fCurrentElement.localpart)+"\n");
 
                 //****DEBUG****
                 if (DEBUG) print("(VAL) XMLValidator.callEndElement: " + param("readerId",readerId) + "\n");
@@ -1325,12 +1335,16 @@ public final class XMLValidator
 
     /** Returns the content spec type for an element index. */
     public int getContentSpecType(int elementIndex) {
+
         int contentSpecType = -1;
         if ( elementIndex > -1) {
             if ( fGrammar.getElementDecl(elementIndex,fTempElementDecl) ) {
                 contentSpecType = fTempElementDecl.type;
             }
         }
+//debugging
+//System.out.println("*******In XMLValidator#getContentSpecType, eltIndex:"
+//                   +elementIndex+","+"contentSpecType:"+contentSpecType);
         return contentSpecType;
     }
 
@@ -2378,10 +2392,11 @@ public final class XMLValidator
                 //****DEBUG****
                 if (DEBUG) print("(POP) XMLValidator.init\n");
                 //****DEBUG****
-        fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
-        fANYSymbol = fStringPool.addSymbol("ANY");
-        fMIXEDSymbol = fStringPool.addSymbol("MIXED");
-        fCHILDRENSymbol = fStringPool.addSymbol("CHILDREN");
+        //fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
+        fEMPTYSymbol = XMLElementDecl.TYPE_EMPTY;
+        fANYSymbol = XMLElementDecl.TYPE_ANY;
+        fMIXEDSymbol = XMLElementDecl.TYPE_MIXED;
+        fCHILDRENSymbol = XMLElementDecl.TYPE_CHILDREN;
         fCDATASymbol = fStringPool.addSymbol("CDATA");
         fIDSymbol = fStringPool.addSymbol("ID");
         fIDREFSymbol = fStringPool.addSymbol("IDREF");
@@ -2394,7 +2409,7 @@ public final class XMLValidator
         fENUMERATIONSymbol = fStringPool.addSymbol("ENUMERATION");
         fREQUIREDSymbol = fStringPool.addSymbol("#REQUIRED");
         fFIXEDSymbol = fStringPool.addSymbol("#FIXED");
-        fDATATYPESymbol = fStringPool.addSymbol("DATATYPE");
+        fDATATYPESymbol = XMLElementDecl.TYPE_SIMPLE;
         fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
         fXMLLang = fStringPool.addSymbol("xml:lang");
 
@@ -3645,14 +3660,17 @@ public final class XMLValidator
         }
 
         // Get out the content spec for this element
-        final int contentSpec = fCurrentContentSpecType;
+        final int contentType = fCurrentContentSpecType;
+
+// debugging
+//System.out.println("~~~~~~in checkContent, fCurrentContentSpecType : " + fCurrentContentSpecType);
 
         //
         //  Deal with the possible types of content. We try to optimized here
         //  by dealing specially with content models that don't require the
         //  full DFA treatment.
         //
-        if (contentSpec == fEMPTYSymbol) {
+        if (contentType == XMLElementDecl.TYPE_EMPTY) {
             //
             //  If the child count is greater than zero, then this is
             //  an error right off the bat at index 0.
@@ -3661,13 +3679,14 @@ public final class XMLValidator
                 return 0;
             }
         }
-        else if (contentSpec == fANYSymbol) {
+        else if (contentType == XMLElementDecl.TYPE_ANY) {
             //
             //  This one is open game so we don't pass any judgement on it
             //  at all. Its assumed to fine since it can hold anything.
             //
         }
-        else if (contentSpec == fMIXEDSymbol ||  contentSpec == fCHILDRENSymbol) {
+        else if (contentType == XMLElementDecl.TYPE_MIXED ||  
+                 contentType == XMLElementDecl.TYPE_CHILDREN) {
             // Get the content model for this element, faulting it in if needed
             XMLContentModel cmElem = null;
             try {
@@ -3685,12 +3704,12 @@ public final class XMLValidator
                                            XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
             }
         }
-        else if (contentSpec == -1) {
+        else if (contentType == -1) {
             reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
                                       XMLMessages.VC_ELEMENT_VALID,
                                       elementType);
         }
-        else if (contentSpec == fStringPool.addSymbol("DATATYPE")) {
+        else if (contentType == XMLElementDecl.TYPE_SIMPLE ) {
 
             XMLContentModel cmElem = null;
             try {
