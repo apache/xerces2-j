@@ -85,7 +85,7 @@ public class TimeDV extends AbstractDateTimeDV {
         StringBuffer message = new StringBuffer(16);
         append(message, date.hour, 2);
         message.append(':');
-        append(message, date.month, 2);
+        append(message, date.minute, 2);
         message.append(':');
         append(message, date.second);
 

@@ -338,24 +338,23 @@ public class DurationDV extends AbstractDateTimeDV {
 
     protected String dateToString(DateTimeData date) {
         StringBuffer message = new StringBuffer(30);
-        int negate = 1;
-        if ( date.year<0 ) {
+        if ( date.year<0 || date.month<0 || date.day<0
+                || date.hour<0 || date.minute<0 || date.second<0) {
             message.append('-');
-            negate=-1;
         }
         message.append('P');
-        message.append(negate * date.year);
+        message.append((date.year < 0?-1:1) * date.year);
         message.append('Y');
-        message.append(negate * date.month);
+        message.append((date.month < 0?-1:1) * date.month);
         message.append('M');
-        message.append(negate * date.day);
+        message.append((date.day < 0?-1:1) * date.day);
         message.append('D');
         message.append('T');
-        message.append(negate * date.hour);
+        message.append((date.hour < 0?-1:1) * date.hour);
         message.append('H');
-        message.append(negate * date.minute);
+        message.append((date.minute < 0?-1:1) * date.minute);
         message.append('M');
-        message.append(negate * date.second);
+        message.append((date.second < 0?-1:1) * date.second);
         message.append('S');
 
         return message.toString();
