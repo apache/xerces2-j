@@ -1915,12 +1915,6 @@ public class DOMParser
                         true,
                         false); // search
                     fAttrList.addAttr(
-                        fStringPool.addSymbol("minOccurs"),
-                        fStringPool.addString("0"),
-                        fStringPool.addSymbol("CDATA"),
-                        false,
-                        false); // search
-                    fAttrList.addAttr(
                         fStringPool.addSymbol("maxOccurs"),
                         fStringPool.addString("1"),
                         fStringPool.addSymbol("CDATA"),
@@ -1994,23 +1988,26 @@ public class DOMParser
                     boolean fixed = false;
                     switch (attDefaultType) {
                         case XMLAttributeDecl.DEFAULT_TYPE_REQUIRED: {
-                            int minOccursAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("minOccurs"), fStringPool.addString("1"), true);
-                            int oldMinOccursAttrIndex = fDeferredDocumentImpl.setAttributeNode(attributeIndex, minOccursAttrIndex);
-                            fStringPool.releaseString(fDeferredDocumentImpl.getNodeValue(oldMinOccursAttrIndex, false));
+                            int useAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("use"), fStringPool.addString("required"), true);
+                            fDeferredDocumentImpl.setAttributeNode(attributeIndex, useAttrIndex);
                             break;
                         }
                         case XMLAttributeDecl.DEFAULT_TYPE_FIXED: {
                             fixed = true;
-                            int fixedAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("fixed"), attDefaultValue, true);
-                            fDeferredDocumentImpl.setAttributeNode(attributeIndex, fixedAttrIndex);
+                            int useAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("use"), fStringPool.addString("fixed"), true);
+                            fDeferredDocumentImpl.setAttributeNode(attributeIndex, useAttrIndex);
                             break;
                         }
                     }
 
                     // attribute default value
-                    if (!fixed && attDefaultValue != -1) {
-                        int defaultAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("default"), attDefaultValue, true);
-                        fDeferredDocumentImpl.setAttributeNode(attributeIndex, defaultAttrIndex);
+                    if (attDefaultValue != -1) {
+                        if (!fixed) {
+                            int useAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("use"), fStringPool.addString("default"), true);
+                            fDeferredDocumentImpl.setAttributeNode(attributeIndex, useAttrIndex);
+                        }
+                        int valueAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("value"), attDefaultValue, true);
+                        fDeferredDocumentImpl.setAttributeNode(attributeIndex, valueAttrIndex);
                     }
                 }
             }
@@ -2056,6 +2053,7 @@ public class DOMParser
             //
             // Create attribute declaration
             //
+            try {
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
@@ -2081,8 +2079,6 @@ public class DOMParser
                 if (attribute == null) {
                     attribute = fDocumentImpl.createElement("attribute");
                     attribute.setAttribute("name", attributeName);
-                    attribute.setAttribute("minOccurs", "0");
-                    ((AttrImpl)attribute.getAttributeNode("minOccurs")).setSpecified(false);
                     attribute.setAttribute("maxOccurs", "1");
                     ((AttrImpl)attribute.getAttributeNode("maxOccurs")).setSpecified(false);
                     type.appendChild(attribute);
@@ -2136,21 +2132,28 @@ public class DOMParser
                     boolean fixed = false;
                     switch (attDefaultType) {
                         case XMLAttributeDecl.DEFAULT_TYPE_REQUIRED: {
-                            attribute.setAttribute("minOccurs", "1");
+                            attribute.setAttribute("use", "required");
                             break;
                         }
                         case XMLAttributeDecl.DEFAULT_TYPE_FIXED: {
-                            attribute.setAttribute("fixed", fStringPool.toString(attDefaultValue));
+                            attribute.setAttribute("use", "fixed");
                             fixed = true;
                             break;
                         }
                     }
 
                     // attribute default value
-                    if (!fixed && attDefaultValue != -1) {
-                        attribute.setAttribute("default", fStringPool.toString(attDefaultValue));
+                    if (attDefaultValue != -1) {
+                        if (!fixed) {
+                            attribute.setAttribute("use", "default");
+                        }
+                        attribute.setAttribute("value", fStringPool.toString(attDefaultValue));
                     }
                 }
+            }
+            }
+            catch (Exception e) {
+                e.printStackTrace(System.err);
             }
 
         } // if NOT defer-node-expansion
