@@ -1922,6 +1922,9 @@ public class XMLEntityManager
                             System.arraycopy(fCurrentEntity.ch, offset,
                                              fCurrentEntity.ch, 0, length);
                         }
+                        if (index != -1) {
+                            index = index - offset;
+                        }
                         offset = 0;
                         if (load(length, false)) {
                             break;
