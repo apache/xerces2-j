@@ -298,9 +298,9 @@ public class XMLGrammarCachingConfiguration
 
        fXSGrammarBucket.reset();
        // by default, make all XMLGrammarPoolImpl's schema grammars available to fSchemaHandler
-       SchemaGrammar [] grammars = (SchemaGrammar [])(fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA));
+       Grammar[] grammars = (Grammar[])(fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA));
        for(int i=0; i<grammars.length; i++ )
-            fXSGrammarBucket.putGrammar(grammars[i]);
+            fXSGrammarBucket.putGrammar((SchemaGrammar)grammars[i]);
        fSubGroupHandler.reset();
        fSchemaHandler.reset(fErrorReporter, fEntityManager, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, fGrammarPool);
 
@@ -320,8 +320,13 @@ public class XMLGrammarCachingConfiguration
        if (getFeature(SCHEMA_FULL_CHECKING)) {
            XSConstraints.fullSchemaChecking(fXSGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
        }
+       
        // by default, hand it off to the grammar pool
-       fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar [] {grammar});
+       if (grammar != null) {
+           fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA,
+                                      new Grammar[]{grammar});
+        }
+        
        return grammar;
 
     }
