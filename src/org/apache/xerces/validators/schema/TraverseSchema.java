@@ -1471,7 +1471,7 @@ public class TraverseSchema implements
                     ((finalValue.intValue() & baseRefContext) != 0)) {
                 //REVISIT:  localize
                 reportGenericSchemaError("the base type " + baseTypeStr + " does not allow itself to be used as the base for a restriction and/or as a type in a list and/or union");
-                return null;
+                return baseValidator;
             }
         }
        return baseValidator;
@@ -1512,8 +1512,6 @@ public class TraverseSchema implements
         else
             finalProperty = parseFinalSet(null);
 
-        // REVISIT:  is "extension" allowed???
-        
         // if we have a nonzero final , store it in the hash...
         if(finalProperty != 0) 
             fSimpleTypeFinalRegistry.put(qualifiedName, new Integer(finalProperty));
@@ -2409,6 +2407,15 @@ public class TraverseSchema implements
         }
 
         QName baseQName = parseBase(base);
+        // check if we're extending a simpleType which has a "final" setting which precludes this
+        Integer finalValue = (baseQName.uri == StringPool.EMPTY_STRING?
+                ((Integer)fSimpleTypeFinalRegistry.get(fStringPool.toString(baseQName.localpart))):
+                ((Integer)fSimpleTypeFinalRegistry.get(fStringPool.toString(baseQName.uri) + "," +fStringPool.toString(baseQName.localpart))));
+        if(finalValue != null && 
+                (finalValue.intValue() == typeInfo.derivedBy)) 
+            throw new ComplexTypeRecoverableError(
+                  "The simpleType " + base + " that " + typeName + " uses has a value of \"final\" which does not permit extension");
+
         processBaseTypeInfo(baseQName,typeInfo);
        
         // check that the base isn't a complex type with complex content
@@ -5017,16 +5024,17 @@ public class TraverseSchema implements
                         if(dTemp == substitutionGroupEltDV) break;
                     }
                     if (dTemp == null) {
-                        if(typeInfo.baseDataTypeValidator instanceof UnionDatatypeValidator) {
+                        if(substitutionGroupEltDV instanceof UnionDatatypeValidator) {
                             // dv must derive from one of its members...
-                            Vector subUnionMemberDV = ((UnionDatatypeValidator)typeInfo.baseDataTypeValidator).getBaseValidators();
+                            Vector subUnionMemberDV = ((UnionDatatypeValidator)substitutionGroupEltDV).getBaseValidators();
                             int subUnionSize = subUnionMemberDV.size();
                             boolean found = false;
                             for (int i=0; i<subUnionSize && !found; i++) {
                                 DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
-                                for(; dTempSub != null; dTempSub = dTempSub.getBaseValidator()) {
+                                DatatypeValidator dTempOrig = typeInfo.baseDataTypeValidator; 
+                                for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
                                     // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-                                    if(dTempSub == typeInfo.baseDataTypeValidator) {
+                                    if(dTempSub == dTempOrig) {
                                         found = true;
                                         break;
                                     }
@@ -5082,6 +5090,8 @@ public class TraverseSchema implements
                 if(dTemp == substitutionGroupEltDV) break;
             }
             if (dTemp == null) {
+                // now if substitutionGroupEltDV is a union, then we can
+                // derive from it if we derive from any of its members' types.  
                 if(substitutionGroupEltDV instanceof UnionDatatypeValidator) {
                     // dv must derive from one of its members...
                     Vector subUnionMemberDV = ((UnionDatatypeValidator)substitutionGroupEltDV).getBaseValidators();
@@ -5089,9 +5099,10 @@ public class TraverseSchema implements
                     boolean found = false;
                     for (int i=0; i<subUnionSize && !found; i++) {
                         DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
-                        for(; dTempSub != null; dTempSub = dTempSub.getBaseValidator()) {
+                        DatatypeValidator dTempOrig = dv; 
+                        for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
                             // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-                            if(dTempSub == substitutionGroupEltDV) {
+                            if(dTempSub == dTempOrig) {
                                 found = true;
                                 break;
                             }
@@ -6065,13 +6076,11 @@ public class TraverseSchema implements
             if( blockString == null) 
                 return fBlockDefault;
             else if ( blockString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
-                    return SchemaSymbols.SUBSTITUTION+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.UNION;
+                    return SchemaSymbols.SUBSTITUTION+SchemaSymbols.EXTENSION+SchemaSymbols.RESTRICTION;
             } else {
                     int extend = 0;
                     int restrict = 0;
                     int substitute = 0;
-                    int list = 0;
-                    int union = 0;
 
                     StringTokenizer t = new StringTokenizer (blockString, " ");
                     while (t.hasMoreTokens()) {
@@ -6091,20 +6100,6 @@ public class TraverseSchema implements
                                         // REVISIT: Localize
                                             reportGenericSchemaError ( "The value 'extension' is already in the list" );
                                     }
-                            } else if ( token.equals (SchemaSymbols.ELT_LIST) ) {
-                                    if ( list == 0 ) {
-                                            list = SchemaSymbols.LIST;
-                                    } else {
-                                        // REVISIT: Localize
-                                            reportGenericSchemaError ( "The value 'list' is already present in the list" );
-                                    }
-                            } else if ( token.equals (SchemaSymbols.ELT_UNION) ) {
-                                    if ( union == 0 ) {
-                                            union = SchemaSymbols.UNION;
-                                    } else {
-                                        // REVISIT: Localize
-                                            reportGenericSchemaError ( "The value 'union' is already present in the list" );
-                                    }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = SchemaSymbols.RESTRICTION;
@@ -6118,7 +6113,7 @@ public class TraverseSchema implements
                             }
                     }
 
-                    int defaultVal = extend+restrict+list+union+substitute;
+                    int defaultVal = extend+restrict+substitute;
                     return (defaultVal == 0 ? fBlockDefault : defaultVal);
             }
     }

@@ -60,8 +60,12 @@ package org.apache.xerces.validators.schema;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.common.GrammarResolver;
+import org.apache.xerces.validators.common.XMLElementDecl;
+import org.apache.xerces.validators.datatype.DatatypeValidator;
 
 import org.xml.sax.SAXException;
+import org.apache.xerces.framework.XMLErrorReporter;
+import org.apache.xerces.utils.XMLMessages;
 
 import java.lang.ClassCastException;
 /* 
@@ -85,58 +89,68 @@ public class SubstitutionGroupComparator {
     // private data members
     private StringPool fStringPool = null;
     private GrammarResolver fGrammarResolver = null;
+    private XMLErrorReporter fErrorReporter = null;
 
     // constructors
     private SubstitutionGroupComparator(){
         // can never be instantiated without passing in a GrammarResolver.
     }
-    public  SubstitutionGroupComparator(GrammarResolver grammarResolver, StringPool stringPool){
+    public  SubstitutionGroupComparator(GrammarResolver grammarResolver, StringPool stringPool, XMLErrorReporter errorReporter){
         fGrammarResolver = grammarResolver;
         fStringPool = stringPool;
+        fErrorReporter = errorReporter;
     }
 
     //public methods
-    public boolean isEquivalentTo(QName aElement, QName exemplar) throws Exception{
-        if (aElement.localpart==exemplar.localpart && aElement.uri==exemplar.uri ) {
-            return true;
+    public boolean isEquivalentTo(QName anElement, QName exemplar) throws Exception{
+        if (anElement.localpart==exemplar.localpart && anElement.uri==exemplar.uri ) {
+            return true; // they're the same!
         }
 
         if (fGrammarResolver == null || fStringPool == null) {
-            throw new SAXException("Try to check substitutionGroup against a substitutionGroup, but no GrammarResolver is defined");
+            throw new SAXException("Internal error; tried to check an element against a substitutionGroup, but no GrammarResolver is defined");
         }
 
-        int count = 16; // 16 is the limit of times for which we'll check the substitutionGroup transitively.
-        int uriIndex = aElement.uri;
-        int localpartIndex = aElement.localpart;
-        String uri = fStringPool.toString(aElement.uri);
-        String localpart = fStringPool.toString(aElement.localpart);
+        int uriIndex = anElement.uri;
+        int localpartIndex = anElement.localpart;
+        String uri = fStringPool.toString(anElement.uri);
+        String localpart = fStringPool.toString(anElement.localpart);
 
-        while (count >= 0) {
-            if(uri==null) {
-                return false;
-            }
-            SchemaGrammar sGrammar = null;
-            try {
-                sGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
-            }
-            catch ( ClassCastException ce) {
-                //since the returen Grammar is not a SchemaGrammar, bail out
-                return false;
-            }
-            if(sGrammar == null) return false;
+        // In addition to simply trying to find a chain between anElement and exemplar,
+        // we need to make sure that no steps in the chain are blocked.  
+        // That is, at every step, we need to make sure that the element
+        // being substituted for will permit being substituted
+        // for, and whether the type of the element will permit derivations in
+        // instance documents of this sort.
+        if(uri==null) {
+            return false;
+        }
+        SchemaGrammar sGrammar = null;
+        try {
+            sGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
+        }
+        catch ( ClassCastException ce) {
+            //since the return Grammar is not a SchemaGrammar, bail out 
+            String er = "Grammar with URI " + uri + " is not a schema grammar!";
+            Object [] a = {er};
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                    XMLMessages.XML_DOMAIN,
+                    XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                    XMLMessages.SCHEMA_GENERIC_ERROR, 
+                    a, XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+            return false;
+        }
+        if(sGrammar == null) { 
+            return false;
+        }
 
-            int elementIndex = sGrammar.getElementDeclIndex(uriIndex, localpartIndex, TOP_LEVEL_SCOPE);
-            //System.out.println("----------equivClassFullName : " + uriIndex+","+localpartIndex+","+elementIndex);
-            if (elementIndex == -1) {
-                return false;
-            }
+        // this will be the index of anElement
+        int elementIndex = sGrammar.getElementDeclIndex(uriIndex, localpartIndex, TOP_LEVEL_SCOPE);
+        int anElementIndex = elementIndex;
 
-            String substitutionGroupFullName = sGrammar.getElementDeclSubstitutionGroupElementFullName(elementIndex);
-            //System.out.println("----------equivClassFullName : " + equivClassFullName);
-            if (substitutionGroupFullName==null) {
-                return false;
-            }
-
+        String substitutionGroupFullName = sGrammar.getElementDeclSubstitutionGroupElementFullName(elementIndex);
+        boolean foundIt = false;
+        while (substitutionGroupFullName != null) {
             int commaAt = substitutionGroupFullName.indexOf(","); 
             uri = "";
             localpart = substitutionGroupFullName;
@@ -146,16 +160,77 @@ public class SubstitutionGroupComparator {
                 }
                 localpart = substitutionGroupFullName.substring(commaAt+1);
             }
+            if(uri==null) {
+                return false;
+            }
+            try {
+                sGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
+            }
+            catch ( ClassCastException ce) {
+                //since the return Grammar is not a SchemaGrammar, bail out
+                String er = "Grammar with URI " + uri + " is not a schema grammar!";
+                Object [] a = {er};
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                     XMLMessages.XML_DOMAIN,
+                     XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                     XMLMessages.SCHEMA_GENERIC_ERROR, 
+                     a, XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                return false;
+            }
+            if(sGrammar == null) {
+                return false;
+            }
             uriIndex = fStringPool.addSymbol(uri);
             localpartIndex = fStringPool.addSymbol(localpart);
-
-            if (uriIndex == exemplar.uri && localpartIndex == exemplar.localpart) {
-                return true;
+            elementIndex = sGrammar.getElementDeclIndex(uriIndex, localpartIndex, TOP_LEVEL_SCOPE);
+            if (elementIndex == -1) {
+                return false; 
             }
 
-            count--;
+            if (uriIndex == exemplar.uri && localpartIndex == exemplar.localpart) {
+                // time to check for block value on element
+                if((sGrammar.getElementDeclBlockSet(elementIndex) & SchemaSymbols.SUBSTITUTION) != 0) {
+                    return false; 
+                }
+                foundIt = true;
+                break;
+            }
+
+            substitutionGroupFullName = sGrammar.getElementDeclSubstitutionGroupElementFullName(elementIndex);
+
         }
 
-        return false;
+        if (!foundIt) {
+            return false; 
+        }
+        // this will contain anElement's complexType information.
+        TraverseSchema.ComplexTypeInfo aComplexType = sGrammar.getElementComplexTypeInfo(anElementIndex);
+        // elementIndex contains the index of the substitutionGroup head
+        int exemplarBlockSet = sGrammar.getElementDeclBlockSet(elementIndex);
+        if(aComplexType == null) {
+            // check on simpleType case
+            XMLElementDecl anElementDecl = new XMLElementDecl();
+            sGrammar.getElementDecl(anElementIndex, anElementDecl);
+            DatatypeValidator anElementDV = anElementDecl.datatypeValidator;
+            XMLElementDecl exemplarDecl = new XMLElementDecl();
+            sGrammar.getElementDecl(elementIndex, exemplarDecl);
+            DatatypeValidator exemplarDV = exemplarDecl.datatypeValidator;
+            return((anElementDV == null) ||
+                ((anElementDV == exemplarDV) ||
+                ((exemplarBlockSet & SchemaSymbols.RESTRICTION) == 0)));
+        }
+        // now we have to make sure there are no blocks on the complexTypes that this is based upon
+        int anElementDerivationMethod = aComplexType.derivedBy;
+        if((anElementDerivationMethod & exemplarBlockSet) != 0) return false;
+        // this will contain exemplar's complexType information.
+        TraverseSchema.ComplexTypeInfo exemplarComplexType = sGrammar.getElementComplexTypeInfo(elementIndex);
+        for(TraverseSchema.ComplexTypeInfo tempType = aComplexType;
+                tempType != null && tempType != exemplarComplexType; 
+                tempType = tempType.baseComplexTypeInfo) {
+            if((tempType.blockSet & anElementDerivationMethod) != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

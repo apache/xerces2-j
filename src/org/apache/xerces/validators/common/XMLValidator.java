@@ -118,6 +118,7 @@ import org.apache.xerces.validators.datatype.IDREFDatatypeValidator;
 import org.apache.xerces.validators.datatype.IDDatatypeValidator;
 import org.apache.xerces.validators.datatype.ENTITYDatatypeValidator;
 import org.apache.xerces.validators.datatype.NOTATIONDatatypeValidator;
+import org.apache.xerces.validators.datatype.UnionDatatypeValidator;
 /**
  * This class is the super all-in-one validator used by the parser.
  *
@@ -1464,7 +1465,7 @@ public final class XMLValidator
                 } else if (!switchGrammar(fGrammarNameSpaceIndex)) {
                      reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
                                                "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex) 
-                                               + " , can not found");
+                                               + " , can not be found");
              }
       }
 
@@ -3004,7 +3005,7 @@ public final class XMLValidator
             if (!success && !laxThisOne) {
                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
                                          "Grammar with uri 2: " + fStringPool.toString(fGrammarNameSpaceIndex) 
-                                         + " , can not found");
+                                         + " , can not be found");
             }
          }
 
@@ -3120,7 +3121,7 @@ public final class XMLValidator
                                                      XMLMessages.SCHEMA_GENERIC_ERROR, 
                                                      "Grammar with uri 3: " 
                                                      + fStringPool.toString(fCurrentSchemaURI) 
-                                                     + " , can not found");
+                                                     + " , can not be found");
                         }
                      }
                   }
@@ -3138,10 +3139,6 @@ public final class XMLValidator
                } else {
                   TraverseSchema.ComplexTypeInfo typeInfo = 
                   (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
-                  //TO DO:
-                  //      here need to check if this substitution is legal based on the current active grammar,
-                  //      this should be easy, cause we already saved final, block and base type information in 
-                  //      the SchemaGrammar.
 
                   if (typeInfo==null) {
                      if (uri.length() == 0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
@@ -3153,6 +3150,56 @@ public final class XMLValidator
                                                   XMLMessages.SCHEMA_GENERIC_ERROR, 
                                                   "unresolved type : "+uri+","+localpart 
                                                   +" found  in xsi:type handling");
+                     else { 
+                        // make sure the new type is related to the
+                        // type of the expected element
+                        XMLElementDecl tempElementDecl = new XMLElementDecl();
+                        fGrammar.getElementDecl(elementIndex, tempElementDecl);
+                        DatatypeValidator ancestorValidator = tempElementDecl.datatypeValidator;
+                        DatatypeValidator tempVal = fXsiTypeValidator;
+                        for(; tempVal != null; tempVal = tempVal.getBaseValidator()) 
+                            // WARNING!!!  Comparison by reference. 
+                            if(tempVal == ancestorValidator) break;
+                        if(tempVal == null) { 
+                            // now if ancestorValidator is a union, then wemust
+                            // look through its members to see whether we derive from any of them.
+			                if(ancestorValidator instanceof UnionDatatypeValidator) {
+			                    // fXsiTypeValidator must derive from one of its members...
+			                    Vector subUnionMemberDV = ((UnionDatatypeValidator)ancestorValidator).getBaseValidators();
+			                    int subUnionSize = subUnionMemberDV.size();
+			                    boolean found = false;
+			                    for (int i=0; i<subUnionSize && !found; i++) {
+			                        DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
+			                        DatatypeValidator dTemp = fXsiTypeValidator; 
+			                        for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
+			                            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+			                            if(dTempSub == dTemp) {
+			                                found = true;
+			                                break;
+			                            }
+			                        }
+			                    }
+			                    if(!found) {
+                                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                        XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                        "Type : "+uri+","+localpart 
+                                        +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+			                    }
+			                } else {
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                    XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                    "Type : "+uri+","+localpart 
+                                    +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                            }
+                        } else { // check if element has block set
+                            if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & SchemaSymbols.RESTRICTION) != 0) {
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                    XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                    "Element " + fStringPool.toString(tempElementDecl.name.localpart)
+                                    + "does not permit substitution by a type such as "+uri+","+localpart);
+                            }
+                        }
+                     }
                   } else {
 
                      //
@@ -3163,7 +3210,37 @@ public final class XMLValidator
                                XMLMessages.SCHEMA_GENERIC_ERROR, 
                                "Abstract type " + xsiType + " should not be used in xsi:type"); 
                      }
+                     // now we look at whether there is a type
+                     // relation and whether the type (and element) allow themselves to be substituted for.
 
+                     System.err.println(elementIndex + " " + typeInfo.templateElementIndex);
+                     TraverseSchema.ComplexTypeInfo tempType = typeInfo;
+                     TraverseSchema.ComplexTypeInfo destType = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex);
+                     for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
+                        if(tempType.typeName.equals(destType.typeName))
+                            break; 
+                     }
+                     if(tempType == null) {
+                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                               XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                "Type : "+uri+","+localpart 
+                                +" does not derive from the type " + destType.typeName);
+                     } else { // now check whether the element or typeInfo's baseType blocks us.
+                        int derivationMethod = typeInfo.derivedBy;
+                        if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & derivationMethod) != 0) {
+                            XMLElementDecl tempElementDecl = new XMLElementDecl();
+                            fGrammar.getElementDecl(elementIndex, tempElementDecl);
+                            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                               XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                "Element " + fStringPool.toString(tempElementDecl.name.localpart) +
+                                " does not permit xsi:type substitution in the manner required by type "+uri+","+localpart);
+                        } else if ((typeInfo.baseComplexTypeInfo.blockSet & derivationMethod) != 0) {
+                            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                               XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                "Type " + typeInfo.baseComplexTypeInfo.typeName + " does not permit other types, such as " 
+                                +uri+","+localpart + " to be substituted for itself using xsi:type");
+                        }
+                     }
                      elementIndex = typeInfo.templateElementIndex;
                   }
                }
@@ -3223,7 +3300,7 @@ public final class XMLValidator
                                             XMLMessages.SCHEMA_GENERIC_ERROR, 
                                             "Grammar with uri 4: " 
                                             + fStringPool.toString(fCurrentSchemaURI) 
-                                            + " , can not found");
+                                            + " , can not be found");
                }
             }
 
@@ -3883,7 +3960,7 @@ public final class XMLValidator
             int result = cmElem.validateContent(children, childOffset, childCount);
             if (result != -1 && fGrammarIsSchemaGrammar) {
                // REVISIT: not optimized for performance, 
-               SubstitutionGroupComparator comparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool);
+               SubstitutionGroupComparator comparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool, fErrorReporter);
                cmElem.setSubstitutionGroupComparator(comparator);
                result = cmElem.validateContentSpecial(children, childOffset, childCount);
             }
