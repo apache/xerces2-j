@@ -60,6 +60,30 @@ public final class Constants {
     
     /** Lexical handler parameter entities feature ("lexical-handler/parameter-entities"). */
     public static final String LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE = "lexical-handler/parameter-entities";
+    
+    /** Is standalone feature ("is-standalone"). */
+    public static final String IS_STANDALONE_FEATURE = "is-standalone";
+    
+    /** Resolve DTD URIs feature ("resolve-dtd-uris"). */
+    public static final String RESOLVE_DTD_URIS_FEATURE = "resolve-dtd-uris";
+    
+    /** Use Attributes2 feature ("use-attributes2"). */
+    public static final String USE_ATTRIBUTES2_FEATURE = "use-attributes2";
+    
+    /** Use Locator2 feature ("use-locator2"). */
+    public static final String USE_LOCATOR2_FEATURE = "use-locator2";
+    
+    /** Use EntityResolver2 feature ("use-entity-resolver2"). */
+    public static final String USE_ENTITY_RESOLVER2_FEATURE = "use-entity-resolver2";
+    
+    /** Unicode normalization checking feature ("unicode-normalization-checking"). */
+    public static final String UNICODE_NORMALIZATION_CHECKING_FEATURE = "unicode-normalization-checking";
+    
+    /** xmlns URIs feature ("xmlns-uris"). */
+    public static final String XMLNS_URIS_FEATURE = "xmlns-uris";
+    
+    /** XML 1.1 feature ("xml-1.1"). */
+    public static final String XML_11_FEATURE = "xml-1.1";
 
     /** Allow unparsed entity and notation declaration events to be sent after the end DTD event ("allow-dtd-events-after-endDTD") */
     public static final String ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE = "allow-dtd-events-after-endDTD";
@@ -80,6 +104,9 @@ public final class Constants {
 
     /** XML string property ("xml-string"). */
     public static final String XML_STRING_PROPERTY = "xml-string";
+    
+    /** Document XML version property ("document-xml-version"). */
+    public static final String DOCUMENT_XML_VERSION_PROPERTY = "document-xml-version";
 
 
     //
