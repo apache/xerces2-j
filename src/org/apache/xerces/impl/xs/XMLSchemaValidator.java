@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2003 The Apache Software Foundation.
+ * Copyright (c) 1999-2004 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1764,9 +1764,6 @@ public class XMLSchemaValidator
 			}
 		}
 
-		// push error reporter context: record the current position
-		fXSIErrorReporter.pushContext();
-
 		// if it's not the root element, we push the current states in the stacks
 		if (fElementDepth != -1) {
 			ensureStackCapacity();
@@ -1827,11 +1824,6 @@ public class XMLSchemaValidator
 			}
 		}
 
-		// Element Locally Valid (Element)
-		// 2 Its {abstract} must be false.
-		if (fCurrentElemDecl != null && fCurrentElemDecl.getAbstract())
-			reportSchemaError("cvc-elt.2", new Object[] { element.rawname });
-
 		if (fCurrentElemDecl != null) {
 			// then get the type
 			fCurrentType = fCurrentElemDecl.fType;
@@ -1839,11 +1831,9 @@ public class XMLSchemaValidator
 
 		// get type from xsi:type
 		String xsiType = attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_TYPE);
-		if (xsiType != null)
-			fCurrentType = getAndCheckXsiType(element, xsiType, attributes);
 
-		// if the element decl is not found
-		if (fCurrentType == null) {
+        // if no decl/type found for the current element
+        if (fCurrentType == null && xsiType == null) {
 			// if this is the validation root, report an error, because
 			// we can't find eith decl or type for this element
 			// REVISIT: should we report error, or warning?
@@ -1883,7 +1873,9 @@ public class XMLSchemaValidator
 					new Object[] { element.rawname },
 					XMLErrorReporter.SEVERITY_ERROR);
 			}
-			// if wildcard = strict, report error
+            // if wildcard = strict, report error.
+            // needs to be called before fXSIErrorReporter.pushContext()
+            // so that the error belongs to the parent element.
 			else if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.PC_STRICT) {
 				// report error, because wilcard = strict
 				reportSchemaError("cvc-complex-type.2.4.c", new Object[] { element.rawname });
@@ -1896,7 +1888,30 @@ public class XMLSchemaValidator
 			fNFullValidationDepth = fElementDepth;
 			// any type has mixed content, so we don't need to append buffer
 			fAppendBuffer = false;
+
+            // push error reporter context: record the current position
+            // This has to happen after we process skip contents,
+            // otherwise push and pop won't be correctly paired.
+            fXSIErrorReporter.pushContext();
 		} else {
+            // push error reporter context: record the current position
+            // This has to happen after we process skip contents,
+            // otherwise push and pop won't be correctly paired.
+            fXSIErrorReporter.pushContext();
+
+            // get xsi:type
+            if (xsiType != null) {
+                XSTypeDefinition oldType = fCurrentType;
+                fCurrentType = getAndCheckXsiType(element, xsiType, attributes);
+                // If it fails, use the old type. Use anyType if ther is no old type.
+                if (fCurrentType == null) {
+                    if (oldType == null)
+                        fCurrentType = SchemaGrammar.fAnyType;
+                    else
+                        fCurrentType = oldType;
+                }
+            }
+
 			fNNoneValidationDepth = fElementDepth;
 			// if the element has a fixed value constraint, we need to append
 			if (fCurrentElemDecl != null
@@ -1912,6 +1927,11 @@ public class XMLSchemaValidator
 				fAppendBuffer = (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE);
 			}
 		}
+
+        // Element Locally Valid (Element)
+        // 2 Its {abstract} must be false.
+        if (fCurrentElemDecl != null && fCurrentElemDecl.getAbstract())
+            reportSchemaError("cvc-elt.2", new Object[] { element.rawname });
 
 		// make the current element validation root
 		if (fElementDepth == 0) {
