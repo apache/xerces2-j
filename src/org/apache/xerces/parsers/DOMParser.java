@@ -958,6 +958,11 @@ public class DOMParser
         // set DOM error checking back on
         if (fDocumentImpl != null) {
             fDocumentImpl.setErrorChecking(true);
+        
+            if (fDocumentType!=null) {
+                // set entities and notations read_only per DOM spec
+                ((DocumentTypeImpl)fDocumentType).setReadOnly(true, false);
+            }
         }
     }
 
