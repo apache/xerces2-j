@@ -59,6 +59,9 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.XSAtomicSimpleType;
+import org.apache.xerces.impl.dv.XSListSimpleType;
+import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -73,6 +76,7 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
@@ -185,7 +189,9 @@ abstract class XSDAbstractTraverser {
         short facetsFixed = 0; // facets that have fixed="true"
 
         String facet;
+        boolean hasQName = containsQName(baseValidator);
         Vector enumData = new Vector();
+        Vector enumNSDecls = hasQName ? new Vector() : null;
         int currentFacet = 0;
         while (content != null) {
             // General Attribute Checking
@@ -199,10 +205,16 @@ abstract class XSDAbstractTraverser {
                                            XMLErrorReporter.SEVERITY_ERROR);
             }*/
             if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
+                attrs = fAttrChecker.checkAttributes(content, false, schemaDoc, hasQName);
                 String enumVal = (String)attrs[XSAttributeChecker.ATTIDX_VALUE];
+                NamespaceSupport nsDecls = (NamespaceSupport)attrs[XSAttributeChecker.ATTIDX_ENUMNSDECLS];
 
-                if (baseValidator.isNOTATIONType()) {
+                // for NOTATION types, need to check whether there is a notation
+                // declared with the same name as the enumeration value.
+                if (baseValidator.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
+                    ((XSAtomicSimpleType)baseValidator).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION) {
+                    // need to use the namespace context returned from checkAttributes
+                    schemaDoc.fValidationContext.setNamespaceSupport(nsDecls);
                     try{
                         QName temp = (QName)fQNameDV.validate(enumVal, schemaDoc.fValidationContext, null);
                         if (fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp) == null) {
@@ -212,9 +224,13 @@ abstract class XSDAbstractTraverser {
                     }catch(InvalidDatatypeValueException ex){
                         reportGenericSchemaError(ex.getMessage());
                     }
+                    // restore to the normal namespace context
+                    schemaDoc.fValidationContext.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 }
 
                 enumData.addElement(enumVal);
+                if (hasQName)
+                    enumNSDecls.addElement(nsDecls);
                 Element child = DOMUtil.getFirstChildElement( content );
 
                 if (child != null) {
@@ -354,6 +370,7 @@ abstract class XSDAbstractTraverser {
         if (enumData.size() > 0) {
             facetsPresent |= XSSimpleType.FACET_ENUMERATION;
             xsFacets.enumeration = enumData;
+            xsFacets.enumNSDecls = enumNSDecls;
         }
         if (fPattern.length() != 0) {
             facetsPresent |= XSSimpleType.FACET_PATTERN;
@@ -368,6 +385,26 @@ abstract class XSDAbstractTraverser {
         fi.fPresentFacets = facetsPresent;
         fi.fFixedFacets = facetsFixed;
         return fi;
+    }
+
+    // return whether QName/NOTATION is part of the given type
+    private boolean containsQName(XSSimpleType type) {
+        if (type.getVariety() == XSSimpleType.VARIETY_ATOMIC) {
+            short primitive = ((XSAtomicSimpleType)type).getPrimitiveKind();
+            return (primitive == XSAtomicSimpleType.PRIMITIVE_QNAME ||
+                    primitive == XSAtomicSimpleType.PRIMITIVE_NOTATION);
+        }
+        else if (type.getVariety() == XSSimpleType.VARIETY_LIST) {
+            return containsQName(((XSListSimpleType)type).getItemType());
+        }
+        else if (type.getVariety() == XSSimpleType.VARIETY_UNION) {
+            XSSimpleType[] members = ((XSUnionSimpleType)type).getMemberTypes();
+            for (int i = 0; i < members.length; i++) {
+                if (containsQName(members[i]))
+                    return true;
+            }
+        }
+        return false;
     }
 
     //
@@ -486,13 +523,14 @@ abstract class XSDAbstractTraverser {
                                    XMLErrorReporter.SEVERITY_ERROR);
     }
 
-
     /**
      * Element/Attribute traversers call this method to check whether
      * the type is NOTATION without enumeration facet
      */
     void checkNotationType(String refName, XSTypeDecl typeDecl) {
-        if (typeDecl.getXSType() == typeDecl.SIMPLE_TYPE && ((XSSimpleType)typeDecl).isNOTATIONType()) {
+        if (typeDecl.getXSType() == typeDecl.SIMPLE_TYPE &&
+            ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
+            ((XSAtomicSimpleType)typeDecl).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION) {
             if ((((XSSimpleType)typeDecl).getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0) {
                 reportSchemaError("dt-enumeration-notation", new Object[]{refName});
             }
@@ -504,7 +542,6 @@ abstract class XSDAbstractTraverser {
                                               String particleName, Element parent,
                                               int allContextFlags,
                                               long defaultVals) {
-
 
         int min = particle.fMinOccurs;
         int max = particle.fMaxOccurs;
