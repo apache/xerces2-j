@@ -242,6 +242,9 @@ public final class  Base64 {
 
         if (base64Data == null)
             return null;
+            
+        // remove white spaces
+        base64Data = removeWhiteSpace(base64Data);
 
         if (base64Data.length%FOURBYTE != 0) {
             return null;//should be divisible by four
@@ -344,4 +347,39 @@ public final class  Base64 {
         return decoded == null ? null : new String(decoded);
 	}
     }
+    
+    
+    /**
+     * remove WhiteSpace from MIME containing encoded Base64 data.
+     * 
+     * @param data  the byte array of base64 data (with WS)
+     * @return      the byte array of base64 data (without WS)
+     */
+    protected static byte[] removeWhiteSpace(byte[] data) {
+        if (data == null)
+            return null;
+
+        // count characters that's not whitespace
+        int newSize = 0;
+        int len = data.length;
+        for (int i = 0; i < len; i++) {
+            if (!isWhiteSpace(data[i]))
+                newSize++;
+        }
+
+        // if no whitespace, just return the input array
+        if (newSize == len)
+            return data;
+
+        // create the array to return
+        byte[] newArray = new byte[newSize];
+
+        int j = 0;
+        for (int i = 0; i < len; i++) {
+            if (!isWhiteSpace(data[i]))
+                newArray[j++] = data[i];
+        }
+        return newArray;
+    }
+    
 }
