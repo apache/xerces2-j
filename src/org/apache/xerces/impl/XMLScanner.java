@@ -737,7 +737,7 @@ public abstract class XMLScanner
                     reportFatalError("LessthanInAttValue",
                                      new Object[] { null, atName });
                 }
-                else if (c == '%') {
+                else if (c == '%' || c == ']') {
                     if (spaces > 1 && fStringBuffer2.length != 0) {
                         fStringBuffer2.append(' ');
                         fAttributeOffset++;
