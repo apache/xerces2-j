@@ -230,7 +230,9 @@ public class TraverseSchema implements
         public int blockSet = 0;
         public int finalSet = 0;
 
-        public boolean isAbstract = false;
+        public int miscFlags=0;
+        public static final int CT_IS_ABSTRACT=1;
+        public static final int CT_CONTAINS_ATTR_TYPE_ID=2;
 
         public int scopeDefined = -1;
 
@@ -239,6 +241,21 @@ public class TraverseSchema implements
         public int templateElementIndex = -1;
         public int attlistHead = -1;
         public DatatypeValidator datatypeValidator;
+
+        public boolean isAbstractType() {
+           return ((miscFlags & CT_IS_ABSTRACT)!=0);
+        }
+        public boolean containsAttrTypeID () {
+           return ((miscFlags & CT_CONTAINS_ATTR_TYPE_ID)!=0);
+        }
+
+        public void setIsAbstractType() {
+           miscFlags |= CT_IS_ABSTRACT;
+        }
+        public void setContainsAttrTypeID() {
+           miscFlags |= CT_CONTAINS_ATTR_TYPE_ID;
+        }
+          
     }
 
     private class ComplexTypeRecoverableError extends Exception {
@@ -2328,7 +2345,8 @@ public class TraverseSchema implements
         // Finish the setup of the typeInfo and register the type
         // ------------------------------------------------------------------
         typeInfo.scopeDefined = scopeDefined; 
-        typeInfo.isAbstract = isAbstract.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false ;
+        if (isAbstract.equals(SchemaSymbols.ATTVAL_TRUE)) 
+          typeInfo.setIsAbstractType();  
         typeName = fTargetNSURIString + "," + typeName;
         typeInfo.typeName = new String(typeName);
 
@@ -2495,11 +2513,11 @@ public class TraverseSchema implements
         //
         if (typeInfo.derivedBy==SchemaSymbols.RESTRICTION) {
             //
-            //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
+            //Schema Spec : Complex Type Definition Properties Correct : 2
             //
             if (typeInfo.baseDataTypeValidator != null) {
                 throw new ComplexTypeRecoverableError(
-                 "The type '" + base +"' is a simple type.  It cannot be used in a "+
+                 "ct-props-correct.2: The type '" + base +"' is a simple type.  It cannot be used in a "+
                  "derivation by RESTRICTION for a complexType");
             }
             else {
@@ -2973,6 +2991,14 @@ public class TraverseSchema implements
                     Element baseTypeNode = getTopLevelComponentByName(
                                    SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                     if (baseTypeNode != null) {
+                        // Before traversing the base, make sure we're not already 
+                        // doing so.. 
+                        // ct-props-correct 3
+                        if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
+                            throw new ComplexTypeRecoverableError(
+                                 "ct-props-correct.3:  Recursive type definition");
+                        }
+                        
                         baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
                         baseComplexTypeInfo = (ComplexTypeInfo)
                         fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); 
@@ -3567,6 +3593,7 @@ public class TraverseSchema implements
 
         // validator
         DatatypeValidator dv;
+        boolean dvIsDerivedFromID = false;
 
         // value constraints and use type
         int attValueAndUseType = 0;
@@ -3885,7 +3912,9 @@ int aaaa= 1;
         }
 
         // check the coexistence of ID and value constraint
-        if (dv != null && dv instanceof org.apache.xerces.validators.datatype.IDDatatypeValidator && attValueConstraint != -1)
+        dvIsDerivedFromID = 
+          ((dv != null) && dv instanceof org.apache.xerces.validators.datatype.IDDatatypeValidator);
+        if (dvIsDerivedFromID && attValueConstraint != -1)
         {
             reportGenericSchemaError("If type definition is or is derived from ID ," +
                 "there must not be a value constraint" + errorContext);
@@ -3908,6 +3937,22 @@ int aaaa= 1;
 
         // add attribute to attr decl pool in fSchemaGrammar, 
         if (typeInfo != null) {
+            
+            // check that there aren't duplicate attributes
+            int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, attQName);
+            if (temp > -1) {
+              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " + 
+              fStringPool.toString(attQName.rawname) + " in type definition");
+            }
+              
+            // check that there aren't multiple attributes with type derived from ID
+            if (dvIsDerivedFromID) {
+               if (typeInfo.containsAttrTypeID())  {
+                 reportGenericSchemaError("ct-props-correct.5: More than one attribute derived from type ID cannot appear in the same complex type definition.");
+               }
+               typeInfo.setContainsAttrTypeID();
+            }
+
             fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                       attQName, attType, 
                                       dataTypeSymbol, attValueAndUseType,
@@ -3945,6 +3990,23 @@ int aaaa= 1;
 
 
         if (typeInfo!= null) {
+
+            // check that there aren't duplicate attributes
+            int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, tempAttrDecl.name);
+            if (temp > -1) {
+              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " + 
+              fStringPool.toString(tempAttrDecl.name.rawname) + " in type definition");
+            }
+
+            // check that there aren't multiple attributes with type derived from ID
+            if (tempAttrDecl.datatypeValidator != null && 
+                tempAttrDecl.datatypeValidator instanceof org.apache.xerces.validators.datatype.IDDatatypeValidator) {
+               if (typeInfo.containsAttrTypeID())  {
+                 reportGenericSchemaError("ct-props-correct.5: More than one attribute derived from type ID cannot appear in the same complex type definition");
+               }
+               typeInfo.setContainsAttrTypeID();
+            }
+
             fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                       tempAttrDecl.name, tempAttrDecl.type,
                                       -1, tempAttrDecl.defaultType,

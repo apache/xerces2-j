@@ -3045,6 +3045,7 @@ public final class XMLValidator
                   while (baseTypeInfo != null) {
                      elementIndex = fGrammar.getElementDeclIndex(element, baseTypeInfo.scopeDefined);
                      if (elementIndex > -1 ) {
+                        System.out.println("found element index for " + fStringPool.toString(element.localpart));
                         // update the current Grammar NS index if resolving element succeed.
                         fGrammarNameSpaceIndex = aGrammarNSIndex;
                         break;
@@ -3219,7 +3220,7 @@ public final class XMLValidator
                      //
                      // The type must not be abstract
                      //
-                     if (typeInfo.isAbstract) {
+                     if (typeInfo.isAbstractType()) {
                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                XMLMessages.SCHEMA_GENERIC_ERROR, 
                                "Abstract type " + xsiType + " should not be used in xsi:type"); 
@@ -3269,7 +3270,8 @@ public final class XMLValidator
                TraverseSchema.ComplexTypeInfo typeInfo =
                  ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
 
-               if (typeInfo != null && typeInfo.isAbstract) {
+               if (typeInfo != null && 
+                   typeInfo.isAbstractType()) {
                   reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                    XMLMessages.SCHEMA_GENERIC_ERROR,
                    "Element " + fStringPool.toString(element.rawname) + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type");
