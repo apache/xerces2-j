@@ -94,6 +94,7 @@ import java.util.Vector;
 
 import org.apache.xerces.validators.dtd.DTDGrammar;
 
+import org.apache.xerces.validators.schema.EquivClassComparator;
 import org.apache.xerces.validators.schema.SchemaGrammar;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
 import org.apache.xerces.validators.schema.SchemaSymbols;
@@ -2719,7 +2720,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             XMLContentModel cmElem = null;
             try {
                 cmElem = getContentModel(elementIndex);
-                return cmElem.validateContent(children, childOffset, childCount);
+                int result = cmElem.validateContent(children, childOffset, childCount);
+                if (result != -1 && fGrammarIsSchemaGrammar) {
+                    // REVISIT: not optimized for performance, 
+                    EquivClassComparator comparator = new EquivClassComparator(fGrammarResolver, fStringPool);
+                    cmElem.setEquivClassComparator(comparator);
+                    result = cmElem.validateContentSpecial(children, childOffset, childCount);
+                }
+                return result;
             }
             catch(CMException excToCatch) {
                 // REVISIT - Translate the caught exception to the protected error API
@@ -2769,52 +2777,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                            new Object [] { idve.getMessage() },
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
             }
-            /*
-            boolean DEBUG_DATATYPES = false;
-            if (DEBUG_DATATYPES) {
-                System.out.println("Checking content of datatype");
-                String strTmp = fStringPool.toString(elementTypeIndex);
-                int contentSpecIndex = fElementDeclPool.getContentSpec(elementIndex);
-                XMLContentSpec csn = new XMLContentSpec();
-                fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
-                String contentSpecString = fStringPool.toString(csn.value);
-                System.out.println
-                (
-                    "Name: "
-                    + strTmp
-                    + ", Count: "
-                    + childCount
-                    + ", ContentSpec: "
-                    + contentSpecString
-                );
-                for (int index = 0; index < childCount && index < 10; index++) {
-                    if (index == 0) System.out.print("  (");
-                    String childName = (children[index] == -1) ? "#PCDATA" : fStringPool.toString(children[index]);
-                    if (index + 1 == childCount)
-                        System.out.println(childName + ")");
-                    else if (index + 1 == 10)
-                        System.out.println(childName + ",...)");
-                    else
-                        System.out.print(childName + ",");
-                }
-            }
-            try { // REVISIT - integrate w/ error handling
-                int contentSpecIndex = fElementDeclPool.getContentSpec(elementIndex);
-                XMLContentSpec csn = new XMLContentSpec();
-                fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
-                String type = fStringPool.toString(csn.value);
-                DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);
-                if (v != null)
-                    v.validate(fDatatypeBuffer.toString());
-                else
-                    System.out.println("No validator for datatype "+type);
-            } catch (InvalidDatatypeValueException idve) {
-                System.out.println("Incorrect datatype: "+idve.getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Internal error in datatype validation");
-            }
-            */
         }
         else {
             fErrorReporter.reportError(fErrorReporter.getLocator(),

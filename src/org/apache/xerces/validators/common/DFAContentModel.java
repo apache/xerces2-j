@@ -60,6 +60,7 @@ package org.apache.xerces.validators.common;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.validators.schema.EquivClassComparator;
 //import org.apache.xerces.utils.StringPool;
 
 /**
@@ -100,6 +101,9 @@ public class DFAContentModel
     //
     // Data
     //
+
+    /* this is the EquivClassComparator object */
+    private EquivClassComparator comparator = null;
 
     /**
      * This is the map of unique input symbol elements to indices into
@@ -356,7 +360,8 @@ public class DFAContentModel
             {
                 int type = fElemMapType[elemIndex];
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                    if (isEqual(fElemMap[elemIndex], curElem))
+                    if (fElemMap[elemIndex].uri==curElem.uri
+                         && fElemMap[elemIndex].localpart == curElem.localpart)
                         break;
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
@@ -421,14 +426,117 @@ public class DFAContentModel
     }
 
     private boolean isEqual(QName name1, QName name2) {
-        if (name1 != null && name2 != null) {
-                
             return name1.localpart == name2.localpart &&
                 name1.uri == name2.uri;
+    }
+    
+    public int validateContentSpecial(QName children[], int offset, int length) throws Exception{
+        if (DEBUG_VALIDATE_CONTENT) 
+            System.out.println("DFAContentModel#validateContentSpecial");
 
+        if (comparator==null) {
+            return validateContent(children,offset, length);
         }
-        return false;
 
+
+        if (length == 0) {
+            if (DEBUG_VALIDATE_CONTENT) {
+                System.out.println("!!! no children");
+                System.out.println("elemMap="+fElemMap);
+                for (int i = 0; i < fElemMap.length; i++) {
+                    int uriIndex = fElemMap[i].uri;
+                    int localpartIndex = fElemMap[i].localpart;
+                }
+                System.out.println("EOCIndex="+fEOCIndex);
+            }
+
+            return fEmptyContentIsValid ? -1 : 0;
+
+        } // if child count == 0
+
+        //
+        //  Lets loop through the children in the array and move our way
+        //  through the states. Note that we use the fElemMap array to map
+        //  an element index to a state index.
+        //
+        int curState = 0;
+        for (int childIndex = 0; childIndex < length; childIndex++)
+        {
+            // Get the current element index out
+            final QName curElem = children[offset + childIndex];
+
+            // Look up this child in our element map
+            int elemIndex = 0;
+            for (; elemIndex < fElemMapSize; elemIndex++)
+            {
+                int type = fElemMapType[elemIndex];
+                if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex] ) )
+                        break;
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+                    int uri = fElemMap[elemIndex].uri;
+                    if (uri == -1 || uri == curElem.uri) {
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+                    if (curElem.uri == -1) {
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                    if (fElemMap[elemIndex].uri != curElem.uri) {
+                        break;
+                    }
+                }
+            }
+
+            // If we didn't find it, then obviously not valid
+            if (elemIndex == fElemMapSize) {
+                if (!DEBUG_VALIDATE_CONTENT) {
+                    System.out.println("!!! didn't find it");
+
+                    System.out.println("curElem : " +curElem );
+                    for (int i=0; i<fElemMapSize; i++) {
+                        System.out.println("fElemMap["+i+"] = " +fElemMap[i] );
+                        System.out.println("fElemMapType["+i+"] = " +fElemMapType[i] );
+                    }
+                }
+
+                return childIndex;
+            }
+
+            //
+            //  Look up the next state for this input symbol when in the
+            //  current state.
+            //
+            curState = fTransTable[curState][elemIndex];
+
+            // If its not a legal transition, then invalid
+            if (curState == -1) {
+                if (DEBUG_VALIDATE_CONTENT) 
+                    System.out.println("!!! not a legal transition");
+                return childIndex;
+            }
+        }
+
+        //
+        //  We transitioned all the way through the input list. However, that
+        //  does not mean that we ended in a final state. So check whether
+        //  our ending state is a final state.
+        //
+        if (DEBUG_VALIDATE_CONTENT) 
+            System.out.println("curState="+curState+", childCount="+length);
+        if (!fFinalStateFlags[curState])
+            return length;
+
+        // success!
+        return -1;
+    }
+
+    public void setEquivClassComparator(EquivClassComparator comparator) {
+        this.comparator = comparator;
     }
 
     /**

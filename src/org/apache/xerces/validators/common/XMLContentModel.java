@@ -58,6 +58,7 @@
 package org.apache.xerces.validators.common;
 
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.validators.schema.EquivClassComparator;
 
 /**
  * ContentModel is an interface that can be used by your own custom validators
@@ -76,7 +77,7 @@ import org.apache.xerces.utils.QName;
  * model to be validated. Therefore the validateContent() method accepts
  * this standard view of the elements to be validated.
  *
- * @author  Dean Roddey
+ * @author  Dean Roddey, Eric Ye
  * @version $Id$
  */
 public interface XMLContentModel {
@@ -106,6 +107,40 @@ public interface XMLContentModel {
      * @exception Exception Thrown on error.
      */
     public int validateContent(QName children[], int offset, int length) throws Exception;
+
+    /**
+     * This method is different from "validateContent" in that it will try to use
+     * the EquivClassComparator to match children against the content model.
+     * <p>
+     * A value of -1 in the children array indicates a PCDATA node. All other 
+     * indexes will be positive and represent child elements. The count can be
+     * zero, since some elements have the EMPTY content model and that must be 
+     * confirmed.
+     *
+     * @param children The children of this element.  Each integer is an index within
+     *                 the <code>StringPool</code> of the child element name.  An index
+     *                 of -1 is used to indicate an occurrence of non-whitespace character
+     *                 data.
+     * @param offset Offset into the array where the children starts.
+     * @param length The number of entries in the <code>children</code> array.
+     *
+     * @return The value -1 if fully valid, else the 0 based index of the child
+     *         that first failed. If the value returned is equal to the number
+     *         of children, then the specified children are valid but additional
+     *         content is required to reach a valid ending state.
+     *
+     * @exception Exception Thrown on error.
+     */
+    public int validateContentSpecial(QName children[], int offset, int length) throws Exception;
+
+    /**
+     * The setter method to pass in the EquivCLassComparator.
+     *
+     * @param comparator a EquivClassComparator object.
+     * @return 
+     * @exception 
+     */
+    public void setEquivClassComparator(EquivClassComparator comparator);// should really use a Comparator interface
 
     /**
      * Returns information about which elements can be placed at a particular point

@@ -61,6 +61,8 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
 
+import org.apache.xerces.validators.schema.EquivClassComparator;
+
 /**
  * SimpleContentModel is a derivative of the abstract content model base
  * class that handles a small set of simple content models that are just
@@ -112,6 +114,9 @@ public class SimpleContentModel
      */
     private int fOp;
 
+    /* this is the EquivClassComparator object */
+    private EquivClassComparator comparator = null;
+    
     //
     // Constructors
     //
@@ -298,6 +303,149 @@ public class SimpleContentModel
 
         // We survived, so return success status
         return -1;
+    }
+    
+    public int validateContentSpecial(QName children[], int offset, int length) throws Exception{
+
+        if (comparator==null) {
+            return validateContent(children,offset, length);
+        }
+        //
+        //  According to the type of operation, we do the correct type of
+        //  content check.
+        //
+        switch(fOp)
+        {
+            case XMLContentSpec.CONTENTSPECNODE_LEAF :
+                // If there is not a child, then report an error at index 0
+                if (length == 0)
+                    return 0;
+
+                // If the 0th child is not the right kind, report an error at 0
+                if (children[offset].uri != fFirstChild.uri || 
+                    children[offset].localpart != fFirstChild.localpart)
+                    if (!comparator.isEquivalentTo(children[offset], fFirstChild)) 
+                        return 0;
+
+                // If more than one child, report an error at index 1
+                if (length > 1)
+                    return 1;
+                break;
+
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE :
+                //
+                //  If there is one child, make sure its the right type. If not,
+                //  then its an error at index 0.
+                //
+                if (length == 1 && 
+                    (children[offset].uri != fFirstChild.uri || 
+                     children[offset].localpart != fFirstChild.localpart))
+                    if (!comparator.isEquivalentTo(children[offset], fFirstChild)) 
+                        return 0;
+
+                //
+                //  If the child count is greater than one, then obviously
+                //  bad, so report an error at index 1.
+                //
+                if (length > 1)
+                    return 1;
+                break;
+
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE :
+                //
+                //  If the child count is zero, that's fine. If its more than
+                //  zero, then make sure that all children are of the element
+                //  type that we stored. If not, report the index of the first
+                //  failed one.
+                //
+                if (length > 0)
+                {
+                    for (int index = 0; index < length; index++)
+                    {
+                        if (children[offset + index].uri != fFirstChild.uri || 
+                            children[offset + index].localpart != fFirstChild.localpart)
+                            if (!comparator.isEquivalentTo(children[offset+index], fFirstChild)) 
+                                return index;
+                    }
+                }
+                break;
+
+            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE :
+                //
+                //  If the child count is zero, that's an error so report
+                //  an error at index 0.
+                //
+                if (length == 0)
+                    return 0;
+
+                //
+                //  Otherwise we have to check them all to make sure that they
+                //  are of the correct child type. If not, then report the index
+                //  of the first one that is not.
+                //
+                for (int index = 0; index < length; index++)
+                {
+                    if (children[offset + index].uri != fFirstChild.uri || 
+                        children[offset + index].localpart != fFirstChild.localpart)
+                        if (!comparator.isEquivalentTo(children[offset+index], fFirstChild)) 
+                            return index;
+                }
+                break;
+
+            case XMLContentSpec.CONTENTSPECNODE_CHOICE :
+                //
+                //  There must be one and only one child, so if the element count
+                //  is zero, return an error at index 0.
+                //
+                if (length == 0)
+                    return 0;
+
+                // If the zeroth element isn't one of our choices, error at 0
+                if ((children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart) &&
+                    (children[offset].uri != fSecondChild.uri || children[offset].localpart != fSecondChild.localpart))
+                    if (   !comparator.isEquivalentTo(children[offset], fFirstChild) 
+                        && !comparator.isEquivalentTo(children[offset], fSecondChild) ) 
+                        return 0;
+
+                // If there is more than one element, then an error at 1
+                if (length > 1)
+                    return 1;
+                break;
+
+            case XMLContentSpec.CONTENTSPECNODE_SEQ :
+                //
+                //  There must be two children and they must be the two values
+                //  we stored, in the stored order.
+                //
+                if (length == 2) {
+                    if (children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart)
+                        if (!comparator.isEquivalentTo(children[offset], fFirstChild)) 
+                            return 0;
+
+                    if (children[offset + 1].uri != fSecondChild.uri || children[offset + 1].localpart != fSecondChild.localpart)
+                        if (!comparator.isEquivalentTo(children[offset+1], fSecondChild)) 
+                            return 1;
+                }
+                else {
+                    if (length > 2) {
+                        return 2;
+                    }
+
+                    return length;
+                }
+
+                break;
+
+            default :
+                throw new CMException(ImplementationMessages.VAL_CST);
+        }
+
+        // We survived, so return success status
+        return -1;
+    }
+
+    public void setEquivClassComparator(EquivClassComparator comparator) {
+        this.comparator = comparator;
     }
 
     /**

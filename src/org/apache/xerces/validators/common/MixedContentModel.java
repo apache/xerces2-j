@@ -59,6 +59,7 @@ package org.apache.xerces.validators.common;
 
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.validators.schema.EquivClassComparator;
 
 /**
  * MixedContentModel is a derivative of the abstract content model base
@@ -92,6 +93,9 @@ public class MixedContentModel
     /** The type of the children to support ANY. */
     private int fChildrenType[];
 
+    /* this is the EquivClassComparator object */
+    private EquivClassComparator comparator = null;
+    
     /** 
      * True if mixed content model is ordered. DTD mixed content models
      * are <em>always</em> unordered.
@@ -266,6 +270,15 @@ public class MixedContentModel
         // Everything seems to be in order, so return success
         return -1;
 
+    }
+
+    public int validateContentSpecial(QName children[], int offset, int length) throws Exception{
+         //TO DO here. cause Mixed Content is only for DTD, Schema is kind of different.
+            return validateContent(children,offset, length);
+    }
+
+    public void setEquivClassComparator(EquivClassComparator comparator) {
+        this.comparator = comparator;
     }
 
     /**

@@ -1797,19 +1797,19 @@ public class TraverseSchema implements
             if (! fElementRecurseComplex.isEmpty() ) {
                 Enumeration e = fElementRecurseComplex.keys();
                 while( e.hasMoreElements() ) {
-                    String nameThenScope = (String) e.nextElement();
+                    QName nameThenScope = (QName) e.nextElement();
                     String typeName = (String) fElementRecurseComplex.get(nameThenScope);
-                    int comma = nameThenScope.indexOf(",");
-                    String eltName = nameThenScope.substring(0, comma);
-                    int enclosingScope = Integer.parseInt(nameThenScope.substring(comma+1));
+
+                    int eltUriIndex = nameThenScope.uri;
+                    int eltNameIndex = nameThenScope.localpart;
+                    int enclosingScope = nameThenScope.prefix;
                     ComplexTypeInfo typeInfo = 
                         (ComplexTypeInfo) fComplexTypeRegistry.get(fTargetNSURIString+","+typeName);
                     if (typeInfo==null) {
                         throw new Exception ( "Internal Error in void checkRecursingComplexType(). " );
                     }
                     else {
-                        int nameIndex = fStringPool.addSymbol(eltName);
-                        int elementIndex = fSchemaGrammar.addElementDecl(new QName(-1, nameIndex, nameIndex, -1), 
+                        int elementIndex = fSchemaGrammar.addElementDecl(new QName(-1, eltNameIndex, eltNameIndex, eltUriIndex), 
                                                                          enclosingScope, typeInfo.scopeDefined, 
                                                                          typeInfo.contentType, 
                                                                          typeInfo.contentSpecHandle, 
@@ -2690,14 +2690,28 @@ public class TraverseSchema implements
                 if (typeInfo == null) {
                     dv = fDatatypeRegistry.getDatatypeValidator(localpart);
                     if (dv == null )
-                    if (!typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+                    if (typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
+                        && !fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) 
+                    {
+                        noErrorSoFar = false;
+                        // REVISIT: Localize
+                        reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
+                    }
+                    else {
                         Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                         if (topleveltype != null) {
                             if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
                                 //then we found a recursive element using complexType.
                                 // REVISIT: this will be broken when recursing happens between 2 schemas
-                                fElementRecurseComplex.put(name+","+fCurrentScope, localpart);
-                                return new QName(-1, fStringPool.addSymbol(name), fStringPool.addSymbol(name), -1);
+                                int uriInd = -1;
+                                if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+                                     fElementDefaultQualified) {
+                                    uriInd = fTargetNSURI;
+                                }
+                                int nameIndex = fStringPool.addSymbol(name);
+                                QName tempQName = new QName(fCurrentScope, nameIndex, nameIndex, uriInd);
+                                fElementRecurseComplex.put(tempQName, localpart);
+                                return new QName(-1, nameIndex, nameIndex, uriInd);
                             }
                             else {
                                 typeNameIndex = traverseComplexTypeDecl( topleveltype );
@@ -2720,11 +2734,6 @@ public class TraverseSchema implements
 
                         }
 
-                    }
-                    else {
-                        noErrorSoFar = false;
-                        // REVISIT: Localize
-                        reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
                     }
                 }
             }
@@ -2823,10 +2832,10 @@ public class TraverseSchema implements
         if ( DEBUGGING ) {
             /***/
             System.out.println("########elementIndex:"+elementIndex+" ("+fStringPool.toString(eltQName.uri)+","
-                               + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + ")"+
+                               + fStringPool.toString(eltQName.localpart) + ")"+
                                " eltType:"+type+" contentSpecType:"+contentSpecType+
                                " SpecNodeIndex:"+ contentSpecNodeIndex +" enclosingScope: " +enclosingScope +
-                               " scopeDefined: " +scopeDefined);
+                               " scopeDefined: " +scopeDefined+"\n");
              /***/
         }
 
