@@ -1197,7 +1197,11 @@ public class TraverseSchema implements
         if (namespace.length() == 0 || namespace.equals("##any")) {
             // REVISIT: Should the "any" namespace signifier also be changed
             //          to StringPool.EMPTY_STRING instead of -1? -Ac
-            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, -1, false);
+            // REVISIT: is this the right way to do it? EMPTY_STRING does not 
+            //          seem to work in this case -el 
+            String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+            int uriIndex = fStringPool.addSymbol(uri);
+            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
         }
         else if (namespace.equals("##other")) {
             String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
@@ -2388,6 +2392,7 @@ public class TraverseSchema implements
             } 
             else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
                 traverseAttributeGroupDecl(child,typeInfo,anyAttDecls);
+
             }
             else if ( childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) { 
                 attWildcard = traverseAnyAttribute(child);
@@ -2412,8 +2417,10 @@ public class TraverseSchema implements
         }
         else {
             //REVISIT: unclear in the Scheme Structures 4.3.3 what to do in this case
+            if (anyAttDecls.size()>0) {
+                attWildcard = (XMLAttributeDecl)anyAttDecls.elementAt(0);
+            }
         }
-
         //
         // merge in base type's attribute decls
         //
@@ -3089,7 +3096,8 @@ public class TraverseSchema implements
     * 
     */
     private int traverseAttributeGroupDecl( Element attrGrpDecl, ComplexTypeInfo typeInfo, Vector anyAttDecls ) throws Exception {
-        // attribute name
+        // REVISIT: we are traversing Group decl each time it is referenced over and over again
+        // do we really want to do it?!
         int attGrpName = fStringPool.addSymbol(attrGrpDecl.getAttribute(SchemaSymbols.ATT_NAME));
         
         String ref = attrGrpDecl.getAttribute(SchemaSymbols.ATT_REF); 
@@ -3140,7 +3148,9 @@ public class TraverseSchema implements
                 traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
-                anyAttDecls.addElement(traverseAnyAttribute(child));
+                if (anyAttDecls != null) { 
+                     anyAttDecls.addElement(traverseAnyAttribute(child));
+                }
                 break;
             }
             else if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
@@ -3725,9 +3735,9 @@ public class TraverseSchema implements
         else if ( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED) &&
                 	(( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
                    		fElementDefaultQualified ))) {
+            
             uriIndex = fTargetNSURI;
         }
-        
         //There can never be two elements with the same name and different type in the same scope.
         int existSuchElementIndex = fSchemaGrammar.getElementDeclIndex(uriIndex, localpartIndex, enclosingScope);
         if ( existSuchElementIndex > -1) {
