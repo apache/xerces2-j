@@ -8,15 +8,11 @@
 		<a>
 			<p>Here are some of the new features in &javaparsername;:</p>
 		     <ul>
-			     <li>Support for SAX2 alpha.</li>
-			     <li>Support for DOM Level 2 Core, Events, Traversal, and Ranges.</li>
-			     <li>Preliminary support for W3C XML Schema Language (validation only).</li>
+			     <li>Support for SAX2 final.</li>
+			     <li>Additional support for W3C XML Schema Language.</li>
 			     <li>Access to DTD information as a DOM Tree.</li>
-			     <li>Improved Conformance.</li>
-			     <li>Improved Performance.</li>
-			     <li>Parser option control based on SAX2.</li>
-			     <li>New "serialization" classes allow you output XML, HTML, and XHTML.</li>
-			     <li>New classes implement the HTML portion of the DOM Level 1 specification.</li>
+			<li>Inclusion of WML DOM classes.</li>
+			<li>Support for JAXP.</li>
 		     </ul>
 	<anchor name="valid"/>
 		</a>
@@ -25,14 +21,17 @@
 	<faq title="Validation">
 		<q>How do I turn on validation?</q>
 		<a>
-			<p>You can turn validation on and off via the SAX2
-			Configurable interface.  This works for both the <code>SAXParser</code>
-			and <code>DOMParser</code> classes.<br/>
+			<p>You can turn validation on and off via methods available
+			on the SAX2 <code>XMLFilter</code> interface. While only the 
+			<code>SAXParser</code> implements the <code>XMLFilter</code>
+			interface, the methods required for turning on validation
+			are available to both parser classes, DOM and SAX.
+			<br/>
             The code snippet below shows how to turn validation on -- assume that <ref>parser</ref>
             is an instance of either
             <code>org.apache.xerces.parsers.SAXParser</code> or
             <code>org.apache.xerces.parsers.DOMParser</code>. <br/><br/>
-     		<code>((Configurable)parser).setFeature("http://xml.org/sax/features/validation", true);</code>
+     		<code>parser.setFeature("http://xml.org/sax/features/validation", true);</code>
 			</p>
 		</a>
 	</faq>
