@@ -155,6 +155,23 @@ public abstract class AbstractSAXParser
     protected AbstractSAXParser(XMLParserConfiguration config) {
         super(config);
 
+        final String[] recognizedFeatures = {
+            Constants.SAX_FEATURE_PREFIX +
+            Constants.NAMESPACE_PREFIXES_FEATURE,
+            Constants.SAX_FEATURE_PREFIX +
+            Constants.STRING_INTERNING_FEATURE
+        };
+        config.addRecognizedFeatures(recognizedFeatures);
+
+        final String[] recognizedProperties = {
+            Constants.SAX_PROPERTY_PREFIX +
+            Constants.LEXICAL_HANDLER_PROPERTY,
+            Constants.SAX_PROPERTY_PREFIX +
+            Constants.DECLARATION_HANDLER_PROPERTY,
+            Constants.SAX_PROPERTY_PREFIX + Constants.DOM_NODE_PROPERTY
+        };
+        config.addRecognizedProperties(recognizedProperties);
+
     } // <init>(XMLParserConfiguration)
 
     //
