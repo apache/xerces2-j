@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * The Apache Software License, Version 1.1
  *
  *
@@ -49,117 +51,143 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999-2000, Pierpaolo
- * Fumagalli <mailto:pier@betaversion.org>, http://www.apache.org.
- * For more information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
+ * originally based on software copyright (c) 1999, Sun Microsystems, Inc., 
+ * http://www.sun.com.  For more information on the Apache Software 
+ * Foundation, please see <http://www.apache.org/>.
  */
+
 
 package org.apache.xerces.jaxp;
 
 import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.xerces.parsers.DOMParser;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.DocumentType;
+
+import org.xml.sax.XMLReader;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.w3c.dom.Document;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.helpers.DefaultHandler;
+
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.dom.DOMImplementationImpl;
 
 /**
- * The <code>DocumentBuilder</code> implementation for the Apache Xerces XML
- * parser.
- *
- * @author <a href="mailto:fumagalli@exoffice.com">Pierpaolo Fumagalli</a>
- *         (Apache Software Foundation, Exoffice Technologies)
- * @version $Revision$ $Date$
+ * @author Rajiv Mordani
+ * @author Edwin Goei
+ * @version $Revision$
  */
 public class DocumentBuilderImpl extends DocumentBuilder {
+    /** Xerces features */
+    static final String XERCES_FEATURE_PREFIX =
+                                        "http://apache.org/xml/features/";
+    static final String CREATE_ENTITY_REF_NODES_FEATURE =
+                                        "dom/create-entity-ref-nodes";
+    static final String INCLUDE_IGNORABLE_WHITESPACE =
+                                        "dom/include-ignorable-whitespace";
 
-    /** Wether this <code>SAXParserImpl</code> supports namespaces. */
-    private boolean namespaces=false;
-    /** Wether this <code>SAXParserImpl</code> supports validataion. */
-    private boolean validation=false;
-    /** The current Xerces SAX <code>Parser</code>. */
-    private DOMParser parser=null;
+    private DocumentBuilderFactory dbf;
 
-    /** Deny no-argument construction. */
-    private DocumentBuilderImpl() {
-        super();
-    }
+    private EntityResolver er = null;
+    private ErrorHandler eh = null;
+    private DOMParser domParser = null;
 
-    /**
-     * Create a new <code>SAXParserFactoryImpl</code> instance.
-     */
-    protected DocumentBuilderImpl(boolean namespaces, boolean validation)
-    throws ParserConfigurationException {
-        this();
-        DOMParser p=new DOMParser();
+    private boolean namespaceAware = false;
+    private boolean validating = false;
+
+    DocumentBuilderImpl(DocumentBuilderFactory dbf)
+        throws ParserConfigurationException
+    {
+        this.dbf = dbf;
+
+        domParser = new DOMParser();
+
         try {
-            p.setFeature("http://xml.org/sax/features/namespaces",namespaces);
+            // Validation
+            validating = dbf.isValidating();
+            String validation = "http://xml.org/sax/features/validation";
+
+            // If validating, provide a default ErrorHandler that prints
+            // validation errors with a warning telling the user to set an
+            // ErrorHandler
+            if (validating) {
+                domParser.setErrorHandler(new DefaultValidationErrorHandler());
+            }
+            // Allow parser to use a different ErrorHandler if it wants to
+            domParser.setFeature(validation, validating);
+
+            // XXX Ignore unimplemented features for now
+            try {
+                // Set various parameters obtained from DocumentBuilderFactory
+                domParser.setFeature(XERCES_FEATURE_PREFIX +
+                                     INCLUDE_IGNORABLE_WHITESPACE,
+                                     !dbf.isIgnoringElementContentWhitespace());
+                domParser.setFeature(XERCES_FEATURE_PREFIX +
+                                     CREATE_ENTITY_REF_NODES_FEATURE,
+                                     !dbf.isExpandEntityReferences());
+                // XXX No way to control dbf.isIgnoringComments() or
+                // dbf.isCoalescing()
+            } catch (SAXException e) {
+            }
         } catch (SAXException e) {
-            throw new ParserConfigurationException("Cannot set namespace "+
-                "awareness to "+namespaces);
+            // Handles both SAXNotSupportedException, SAXNotRecognizedException
+            throw new ParserConfigurationException(e.getMessage());
         }
-        try {
-            p.setFeature("http://xml.org/sax/features/validation",validation);
-        } catch (SAXException e) {
-            throw new ParserConfigurationException("Cannot set validation to "+
-                validation);
-        }
-        this.namespaces=namespaces;
-        this.validation=validation;
-        this.parser=p;
     }
 
     /**
-     * Parses the content of the given <code>InputSource</code> and returns
-     * a <code>Document</code> object.
-     */
-    public Document parse(InputSource source)
-    throws SAXException, IOException, IllegalArgumentException {
-        if (source==null) throw new IllegalArgumentException();
-        this.parser.parse(source);
-        return(this.parser.getDocument());
-    }
-
-    /**
-     * Creates an new <code>Document</code> instance from the underlying DOM
-     * implementation.
+     * Non-preferred: use the getDOMImplementation() method instead of this
+     * one
      */
     public Document newDocument() {
-        return(new org.apache.xerces.dom.DocumentImpl());
+        DOMImplementation di = getDOMImplementation();
+        // XXX What should the root element be named???
+        String qName = "root";
+        DocumentType docType = di.createDocumentType(qName, null, null);
+        return di.createDocument(null, qName, docType);
     }
 
-    /**
-     * Returns whether or not this parser supports XML namespaces.
-     */
+    public DOMImplementation getDOMImplementation() {
+        return DOMImplementationImpl.getDOMImplementation();
+    }
+
+    public Document parse(InputSource is) throws SAXException, IOException {
+        if (is == null) {
+            throw new IllegalArgumentException("InputSource cannot be null");
+        }
+
+        if (er != null) {
+            domParser.setEntityResolver(er);
+        }
+
+        if (eh != null) {
+            domParser.setErrorHandler(eh);      
+        }
+
+        domParser.parse(is);
+        return domParser.getDocument();
+    }
+
     public boolean isNamespaceAware() {
-        return(this.namespaces);
+        return namespaceAware;
     }
 
-    /**
-     * Returns whether or not this parser supports validating XML content.
-     */
     public boolean isValidating() {
-        return(this.validation);
+        return validating;
     }
 
-    /**
-     * Specifies the <code>EntityResolver</code> to be used by this
-     * <code>DocumentBuilderImpl</code>.
-     */
-    public void setEntityResolver(EntityResolver er) {
-        this.parser.setEntityResolver(er);
+    public void setEntityResolver(org.xml.sax.EntityResolver er) {
+        this.er = er;
     }
 
-    /**
-     * Specifies the <code>ErrorHandler</code> to be used by this
-     * <code>DocumentBuilderImpl</code>.
-     */
-    public void setErrorHandler(ErrorHandler eh) {
-        this.parser.setErrorHandler(eh);
+    public void setErrorHandler(org.xml.sax.ErrorHandler eh) {
+        this.eh = eh; 
     }
 }
-

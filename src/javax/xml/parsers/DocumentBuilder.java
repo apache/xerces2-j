@@ -65,6 +65,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
+import org.w3c.dom.DOMImplementation;
 
 /**
  * Instances of <code>DocumentBuilder</code> provide a mechansim for
@@ -273,4 +274,10 @@ public abstract class DocumentBuilder {
     
     public abstract Document newDocument();
 
+    /**
+     * Obtain an instance of a {@link org.w3c.dom.DOMImplementation} object.
+     *
+     * @return A new instance of a <code>DOMImplementation</code>.
+     */
+    public abstract DOMImplementation getDOMImplementation();
 }

@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * The Apache Software License, Version 1.1
  *
  *
@@ -49,100 +51,129 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999-2000, Pierpaolo
- * Fumagalli <mailto:pier@betaversion.org>, http://www.apache.org.
- * For more information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
+ * originally based on software copyright (c) 1999, Sun Microsystems, Inc., 
+ * http://www.sun.com.  For more information on the Apache Software 
+ * Foundation, please see <http://www.apache.org/>.
  */
 
 package org.apache.xerces.jaxp;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.xerces.parsers.SAXParser;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.HandlerBase;
-import org.xml.sax.InputSource;
 import org.xml.sax.Parser;
 import org.xml.sax.XMLReader;
-import org.xml.sax.SAXException;
+import org.xml.sax.helpers.XMLReaderFactory;
+import org.xml.sax.helpers.XMLReaderAdapter;
+import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
+import java.util.*;
+
 /**
- * The <code>SAXParser</code> implementation for the Apache Xerces XML parser.
- *
- * @author <a href="mailto:fumagalli@exoffice.com">Pierpaolo Fumagalli</a>
- *         (Apache Software Foundation, Exoffice Technologies)
- * @version $Revision$ $Date$
+ * @author Rajiv Mordani
+ * @author Edwin Goei
+ * @version $Revision$
  */
-public class SAXParserImpl extends javax.xml.parsers.SAXParser {
 
-    /** Wether this <code>SAXParserImpl</code> supports namespaces. */
-    private boolean namespaces=false;
-    /** Wether this <code>SAXParserImpl</code> supports validataion. */
-    private boolean validation=false;
-    /** The current Xerces SAX <code>Parser</code>. */
-    private Parser parser=null;
+/**
+ * This is the implementation specific class for the
+ * <code>javax.xml.parsers.SAXParser</code>. 
+ */
+public class SAXParserImpl extends SAXParser {
+    /** Default parser name. */
+    static final String DEFAULT_PARSER_NAME =
+                                    "org.apache.xerces.parsers.SAXParser";
 
-    /** Deny no-argument construction. */
-    private SAXParserImpl() {
-        super();
+    private SAXParserFactory spf = null;
+    private XMLReader xmlReader;
+    private Parser parser = null;
+
+    private boolean validating = false;
+    private boolean namespaceAware = false;
+    
+    /**
+     * Create a SAX parser with the associated features
+     * @param features Hashtable of SAX features, may be null
+     */
+    SAXParserImpl(SAXParserFactory spf, Hashtable features)
+        throws SAXException
+    {
+        xmlReader = XMLReaderFactory.createXMLReader(DEFAULT_PARSER_NAME);
+
+        // Validation
+        validating = spf.isValidating();
+        String validation = "http://xml.org/sax/features/validation";
+
+        // If validating, provide a default ErrorHandler that prints
+        // validation errors with a warning telling the user to set an
+        // ErrorHandler.  Note: this does not handle all cases.
+        if (validating) {
+            xmlReader.setErrorHandler(new DefaultValidationErrorHandler());
+        }
+
+        // Allow SAX parser to use a different ErrorHandler if it wants to
+        xmlReader.setFeature(validation, validating);
+
+        if (spf.isNamespaceAware()) {
+            namespaceAware = true;
+	    // XXX default value of namespaceAware conflicts with SAX2
+	    // namespaces feature so do nothing for now
+        }
+
+        setFeatures(features);
     }
 
     /**
-     * Create a new <code>SAXParserFactoryImpl</code> instance.
+     * Set any features of our XMLReader based on any features set on the
+     * SAXParserFactory.
+     *
+     * XXX Does not handle possible conflicts between SAX feature names and
+     * JAXP specific feature names, eg. SAXParserFactory.isValidating()
      */
-    protected SAXParserImpl(boolean namespaces, boolean validation)
-    throws ParserConfigurationException {
-        this();
-        SAXParser p=new SAXParser();
-        try {
-            p.setFeature("http://xml.org/sax/features/namespaces",namespaces);
-        } catch (SAXException e) {
-            throw new ParserConfigurationException("Cannot set namespace "+
-                "awareness to "+namespaces);
+    private void setFeatures(Hashtable features)
+        throws SAXNotSupportedException, SAXNotRecognizedException
+    {
+        if (features != null) {
+            for (Enumeration e = features.keys(); e.hasMoreElements();) {
+                String feature = (String)e.nextElement();
+                boolean value = ((Boolean)features.get(feature)).booleanValue();
+                xmlReader.setFeature(feature, value);
+            }
         }
-        try {
-            p.setFeature("http://xml.org/sax/features/validation",validation);
-        } catch (SAXException e) {
-            throw new ParserConfigurationException("Cannot set validation to "+
-                validation);
-        }
-        this.namespaces=namespaces;
-        this.validation=validation;
-        this.parser=p;
     }
 
-    /**
-     * Returns the underlying <code>Parser</code> object which is wrapped by
-     * this <code>SAXParserImpl</code> implementation.
-     */
-    public Parser getParser() {
-        return(this.parser);
+    public Parser getParser() throws SAXException {
+        if (parser == null) {
+            // Adapt a SAX2 XMLReader into a SAX1 Parser
+            parser = new XMLReaderAdapter(xmlReader);
+
+            // Set a DocumentHandler that does nothing to avoid getting
+            // exceptions if no DocumentHandler is set by the app
+            parser.setDocumentHandler(new HandlerBase());
+        }
+        return parser;
     }
 
     /**
      * Returns the XMLReader that is encapsulated by the implementation of
      * this class.
      */
-    public XMLReader getXMLReader() throws SAXException {
-        return (XMLReader)parser; // xerces implements both parser and reader.
+    public XMLReader getXMLReader() {
+        return xmlReader;
     }
 
-    /**
-     * Returns whether or not this parser supports XML namespaces.
-     */
     public boolean isNamespaceAware() {
-        return(this.namespaces);
+        return namespaceAware;
     }
 
-    /**
-     * Returns whether or not this parser supports validating XML content.
-     */
     public boolean isValidating() {
-        return(this.validation);
+        return validating;
     }
 
     /**
@@ -152,7 +183,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public void setProperty(String name, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        throw new SAXNotRecognizedException("Feature: " + name);
+        xmlReader.setProperty(name, value);
     }
 
     /**
@@ -162,7 +193,6 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public Object getProperty(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        throw new SAXNotRecognizedException("Feature: " + name);
+        return xmlReader.getProperty(name);
     }
-
 }
