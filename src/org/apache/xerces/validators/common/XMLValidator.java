@@ -2035,7 +2035,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         if (grammar == null) {
             DOMParser parser = new DOMParser();
-            parser.setEntityResolver( new Resolver() );
+            parser.setEntityResolver( new Resolver(fEntityHandler) );
             parser.setErrorHandler(  new ErrorHandler() );
 
             try {
@@ -2096,34 +2096,66 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     }
 
     static class Resolver implements EntityResolver {
-    private static final String SYSTEM[] = {
-        "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/structures.dtd",
-        "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/datatypes.dtd",
-        "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/versionInfo.ent",
-    };
-    private static final String PATH[] = {
-        "structures.dtd",
-        "datatypes.dtd",
-        "versionInfo.ent",
-    };
 
-    public InputSource resolveEntity(String publicId, String systemId)
-    throws IOException {
+        //
+        // Constants
+        //
 
-        // looking for the schema DTDs?
-        for (int i = 0; i < SYSTEM.length; i++) {
-            if (systemId.equals(SYSTEM[i])) {
-                InputSource source = new InputSource(getClass().getResourceAsStream(PATH[i]));
-                source.setPublicId(publicId);
-                source.setSystemId(systemId);
-                return source;
-            }
+        private static final String SYSTEM[] = {
+            "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/structures.dtd",
+            "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/datatypes.dtd",
+            "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/versionInfo.ent",
+        };
+        private static final String PATH[] = {
+            "structures.dtd",
+            "datatypes.dtd",
+            "versionInfo.ent",
+        };
+
+        //
+        // Data
+        //
+
+        private DefaultEntityHandler fEntityHandler;
+
+        //
+        // Constructors
+        //
+
+        public Resolver(DefaultEntityHandler handler) {
+            fEntityHandler = handler;
         }
 
-        // use default resolution
-        return null;
+        //
+        // EntityResolver methods
+        //
 
-    } // resolveEntity(String,String):InputSource
+        public InputSource resolveEntity(String publicId, String systemId)
+            throws IOException, SAXException {
+
+            // looking for the schema DTDs?
+            for (int i = 0; i < SYSTEM.length; i++) {
+                if (systemId.equals(SYSTEM[i])) {
+                    InputSource source = new InputSource(getClass().getResourceAsStream(PATH[i]));
+                    source.setPublicId(publicId);
+                    source.setSystemId(systemId);
+                    return source;
+                }
+            }
+    
+            // first try to resolve using user's entity resolver
+            EntityResolver resolver = fEntityHandler.getEntityResolver();
+            if (resolver != null) {
+                InputSource source = resolver.resolveEntity(publicId, systemId);
+                if (source != null) {
+                    return source;
+                }
+            }
+
+            // use default resolution
+            return new InputSource(fEntityHandler.expandSystemId(systemId));
+    
+        } // resolveEntity(String,String):InputSource
 
     } // class Resolver
 
