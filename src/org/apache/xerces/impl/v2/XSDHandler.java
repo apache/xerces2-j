@@ -65,6 +65,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.DOMUtil;
 
 import org.w3c.dom.Document;
@@ -157,6 +158,14 @@ class XSDHandler {
     // map between <redefine> elements and the XSDocumentInfo
     // objects that correspond to the documents being redefined.
     private Hashtable fRedefine2XSDMap = new Hashtable();
+
+    // these objects store a mapping between the names of redefining 
+    // groups/attributeGroups and the groups/AttributeGroups which
+    // they redefine by restriction (implicitly).  It is up to the
+    // Group and AttributeGroup traversers to check these restrictions for
+    // validity.
+    private Hashtable fRedefinedRestrictedAttributeGroupRegistry = new Hashtable();
+    private Hashtable fRedefinedRestrictedGroupRegistry = new Hashtable();
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -357,31 +366,28 @@ class XSDHandler {
                             // the check will have changed our name;
                             String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                             // and all we need to do is error-check+rename our kkids:
-                            // REVISIT!!!
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_ATTRIBUTEGROUP),
-//                                lName, targetLName);
+                            renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_ATTRIBUTEGROUP, 
+                                lName, targetLName);
                         } else if((componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) ||
                                 (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE))) {
                             checkForDuplicateNames(qName, fUnparsedTypeRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
                             String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                             // and all we need to do is error-check+rename our kkids:
-                            // REVISIT!!!
                             if(componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_COMPLEXTYPE),
-//                                lName, targetLName);
+                            renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_COMPLEXTYPE, 
+                                lName, targetLName);
                             } else { // must be simpleType
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_SIMPLETYPE),
-//                                lName, targetLName);
+                            renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_SIMPLETYPE, 
+                                lName, targetLName);
                             }
                         } else if(componentType.equals(SchemaSymbols.ELT_GROUP)) {
                             checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
                             String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                             // and all we need to do is error-check+rename our kkids:
-                            // REVISIT!!!
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_GROUP),
-//                                lName, targetLName);
+                            renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_GROUP, 
+                                lName, targetLName);
                         } else {
                             // REVISIT:  report schema element ordering error
                         }
@@ -631,26 +637,212 @@ class XSDHandler {
         //String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
         //if (uriStr.length() == 0 && prefix.length() > 0) {
             // REVISIT: Localize
-            //reportGenericSchemaError("prefix : [" + prefix +"] cannot be resolved to a URI");
+            //// REVISIT:  reportGenericSchemaError("prefix : [" + prefix +"] cannot be resolved to a URI");
             //return "";
         //}
 
         return null;
     }
-    //REVISIT: implement namescope support!!!
-    protected Element getTopLevelComponentByName(String componentCategory, String name){
-        return null;
-    }
-
 
     // the purpose of this method is to take the component of the
     // specified type and rename references to itself so that they
     // refer to the object being redefined.  It takes special care of
     // <group>s and <attributeGroup>s to ensure that information
     // relating to implicit restrictions is preserved for those
-    // traversers.
-    private void renameRedefiningComponents(Element component, String componentType,
+    // traversers.  
+    private void renameRedefiningComponents(XSDocumentInfo currSchema, 
+            Element child, String componentType, 
             String oldName, String newName) {
-    } // renameRedefiningComponents(Element, String, String, String):void
+
+        NamespaceSupport currNSMap = currSchema.fNamespaceSupport;
+        if (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+            String processedTypeName = currSchema.fTargetNamespace+","+oldName;
+			Element grandKid = DOMUtil.getFirstChildElement(child);
+			if (grandKid == null) {
+                // fRedefineSucceeded = false;
+            	// REVISIT: Localize
+            	// REVISIT:  reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
+            } else {
+                String grandKidName = grandKid.getLocalName();
+				if(grandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
+				    grandKid = DOMUtil.getNextSiblingElement(grandKid);
+               	    grandKidName = grandKid.getLocalName();
+                }
+			    if (grandKid == null) {
+                    // fRedefineSucceeded = false;
+            	    // REVISIT: Localize
+            	    // REVISIT:  reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
+                } else if(!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
+                    // fRedefineSucceeded = false;
+            		// REVISIT: Localize
+            		// REVISIT:  reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
+                } else {
+            		String derivedBase = grandKid.getAttribute( SchemaSymbols.ATT_BASE );
+					String processedDerivedBase = findQName(derivedBase, currNSMap);
+					if(!processedTypeName.equals(processedDerivedBase)) {
+                        // fRedefineSucceeded = false;
+            			// REVISIT: Localize
+            			// REVISIT:  reportGenericSchemaError("the base attribute of the restriction child of a simpleType child of a redefine must have the same value as the simpleType's type attribute");
+                    } else {
+						// now we have to do the renaming...
+                        int colonptr = derivedBase.indexOf(":");
+                        if ( colonptr > 0)
+            			    grandKid.setAttribute( SchemaSymbols.ATT_BASE,
+                                derivedBase.substring(0,colonptr) + ":" + newName );
+                        else 
+            			    grandKid.setAttribute( SchemaSymbols.ATT_BASE, newName );
+//                        return true;
+					}
+				}
+			}
+		} else if (componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
+            String processedTypeName = currSchema.fTargetNamespace+","+oldName;
+			Element grandKid = DOMUtil.getFirstChildElement(child);
+			if (grandKid == null) {
+                // fRedefineSucceeded = false;
+           		// REVISIT: Localize
+           		// REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+            } else {
+                if(grandKid.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+		            grandKid = DOMUtil.getNextSiblingElement(grandKid);
+                }
+		        if (grandKid == null) {
+                    // fRedefineSucceeded = false;
+            	    // REVISIT: Localize
+            	    // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                } else {
+				    // have to go one more level down; let another pass worry whether complexType is valid.
+				    Element greatGrandKid = DOMUtil.getFirstChildElement(grandKid);
+				    if (greatGrandKid == null) {
+                        // fRedefineSucceeded = false;
+            		    // REVISIT: Localize
+            		    // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                    } else {
+            		    String greatGrandKidName = greatGrandKid.getLocalName();
+				        if(greatGrandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
+			                greatGrandKid = DOMUtil.getNextSiblingElement(greatGrandKid);
+                            greatGrandKidName = greatGrandKid.getLocalName();
+                        }
+			            if (greatGrandKid == null) {
+                            // fRedefineSucceeded = false;
+                            // REVISIT: Localize
+            	            // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+					    } else if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
+							    !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
+                            // fRedefineSucceeded = false;
+            			    // REVISIT: Localize
+            			    // REVISIT:  reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+					    } else {
+            			    String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
+						    String processedDerivedBase = findQName(derivedBase, currSchema.fNamespaceSupport);
+						    if(!processedTypeName.equals(processedDerivedBase)) {
+                                // fRedefineSucceeded = false;
+            				    // REVISIT: Localize
+            				    // REVISIT:  reportGenericSchemaError("the base attribute of the restriction or extension grandchild of a complexType child of a redefine must have the same value as the complexType's type attribute");
+						    } else {
+							    // now we have to do the renaming...
+                                int colonptr = derivedBase.indexOf(":");
+                                if ( colonptr > 0)
+            				        greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE, 
+                                        derivedBase.substring(0,colonptr) + ":" + newName );
+                                else 
+            				        greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE, 
+                                        newName );
+//                                return true;
+						    }
+                        }
+					}
+				}
+			}
+        } else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+			String processedBaseName = currSchema.fTargetNamespace+","+oldName;
+			int attGroupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
+			if(attGroupRefsCount > 1) {
+                // fRedefineSucceeded = false;
+				// REVISIT:  localize
+				// REVISIT:  reportGenericSchemaError("if an attributeGroup child of a <redefine> element contains an attributeGroup ref'ing itself, it must have exactly 1; this one has " + attGroupRefsCount);
+			} else if (attGroupRefsCount == 1) {
+//                return true;
+			}  else
+                fRedefinedRestrictedAttributeGroupRegistry.put(processedBaseName, currSchema.fTargetNamespace+","+newName);
+        } else if (componentType.equals(SchemaSymbols.ELT_GROUP)) {
+			String processedBaseName = currSchema.fTargetNamespace+","+oldName;
+			int groupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
+			if(groupRefsCount > 1) {
+                // fRedefineSucceeded = false;
+				// REVISIT:  localize
+				// REVISIT:  reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
+			} else if (groupRefsCount == 1) {
+//                return true;
+			}  else {
+                fRedefinedRestrictedGroupRegistry.put(processedBaseName, currSchema.fTargetNamespace+","+newName);
+            }
+		} else {
+            // fRedefineSucceeded = false;
+           	// REVISIT: Localize
+           	// REVISIT:  reportGenericSchemaError("internal Xerces error; please submit a bug with schema as testcase");
+		}
+        // if we get here then we must have reported an error and failed somewhere...
+//        return false;
+    } // renameRedefiningComponents(XSDocumentInfo, Element, String, String, String):void
+
+    // this method takes a name of the form a:b, determines the URI mapped
+    // to by a in the current NamespaceSupport object, and returns this
+    // information in the form (nsURI,b) suitable for lookups in the global
+    // decl Hashtables.
+    private String findQName(String name, NamespaceSupport currNSMap) {
+        int colonPtr = name.indexOf(':');
+        String prefix = "";
+        if (colonPtr > 0)
+            prefix = name.substring(0, colonPtr);
+        String uri = currNSMap.getURI(prefix);
+        String localpart = (colonPtr == 0)?name:name.substring(colonPtr);
+        return uri+","+localpart;
+    } // findQName(String, NamespaceSupport):  String
+
+	// This function looks among the children of curr for an element of type elementSought.
+	// If it finds one, it evaluates whether its ref attribute contains a reference
+	// to originalQName.  If it does, it returns 1 + the value returned by
+	// calls to itself on all other children.  In all other cases it returns 0 plus
+	// the sum of the values returned by calls to itself on curr's children.
+	// It also resets the value of ref so that it will refer to the renamed type from the schema
+	// being redefined.
+	private int changeRedefineGroup(String originalQName, String elementSought, 
+            String newName, Element curr, NamespaceSupport currNSMap) {
+		int result = 0;
+		for (Element child = DOMUtil.getFirstChildElement(curr);
+				child != null; child = DOMUtil.getNextSiblingElement(child)) {
+            String name = child.getLocalName();
+            if (!name.equals(elementSought))
+				result += changeRedefineGroup(originalQName, elementSought, newName, child, currNSMap);
+			else {
+				String ref = child.getAttribute( SchemaSymbols.ATT_REF );
+				if (ref.length() != 0) {
+                    String processedRef = findQName(ref, currNSMap);
+                    if(originalQName.equals(processedRef)) {
+            		    String prefix = "";
+            		    String localpart = ref;
+            		    int colonptr = ref.indexOf(":");
+            		    if ( colonptr > 0) {
+                		    prefix = ref.substring(0,colonptr);
+						    child.setAttribute(SchemaSymbols.ATT_REF, prefix + ":" + newName);
+            		    } else
+						    child.setAttribute(SchemaSymbols.ATT_REF, newName);
+						result++;
+                        if(elementSought.equals(SchemaSymbols.ELT_GROUP)) {
+				            String minOccurs = child.getAttribute( SchemaSymbols.ATT_MINOCCURS );
+				            String maxOccurs = child.getAttribute( SchemaSymbols.ATT_MAXOCCURS );
+                            if(!((maxOccurs.length() == 0 || maxOccurs.equals("1"))
+                                    && (minOccurs.length() == 0 || minOccurs.equals("1")))) {
+                                //REVISIT:  localize
+                                // REVISIT:  reportGenericSchemaError("src-redefine.6.1.2:  the group " + ref + " which contains a reference to a group being redefined must have minOccurs = maxOccurs = 1");
+                            }
+                        }
+					}
+				} // if ref was null some other stage of processing will flag the error
+			}
+		}
+		return result;
+	} // changeRedefineGroup
 
 } // XSDHandler
