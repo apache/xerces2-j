@@ -119,22 +119,22 @@ public class XMLContentSpec {
      * Name or #PCDATA. Leaf nodes that represent parsed character
      * data (#PCDATA) have values of -1.
      */
-    public static final int CONTENTSPECNODE_LEAF = 0;
+    public static final short CONTENTSPECNODE_LEAF = 0;
 
     /** Represents a zero or one occurence count, '?'. */
-    public static final int CONTENTSPECNODE_ZERO_OR_ONE = 1;
+    public static final short CONTENTSPECNODE_ZERO_OR_ONE = 1;
 
     /** Represents a zero or more occurence count, '*'. */
-    public static final int CONTENTSPECNODE_ZERO_OR_MORE = 2;
+    public static final short CONTENTSPECNODE_ZERO_OR_MORE = 2;
     
     /** Represents a one or more occurence count, '+'. */
-    public static final int CONTENTSPECNODE_ONE_OR_MORE = 3;
+    public static final short CONTENTSPECNODE_ONE_OR_MORE = 3;
     
     /** Represents choice, '|'. */
-    public static final int CONTENTSPECNODE_CHOICE = 4;
+    public static final short CONTENTSPECNODE_CHOICE = 4;
     
     /** Represents sequence, ','. */
-    public static final int CONTENTSPECNODE_SEQ = 5;
+    public static final short CONTENTSPECNODE_SEQ = 5;
 
     /** 
      * Represents any namespace specified namespace. When the element
@@ -146,7 +146,7 @@ public class XMLContentSpec {
      * Lists of valid namespaces are created from choice content spec
      * nodes that have any content spec nodes as children.
      */
-    public static final int CONTENTSPECNODE_ANY = 6;
+    public static final short CONTENTSPECNODE_ANY = 6;
 
     /** 
      * Represents any other namespace (XML Schema: ##other). 
@@ -155,25 +155,25 @@ public class XMLContentSpec {
      * <code>value</code> will contain the namespace that <em>cannot</em>
      * occur.
      */
-    public static final int CONTENTSPECNODE_ANY_OTHER = 7;
+    public static final short CONTENTSPECNODE_ANY_OTHER = 7;
 
     /** Represents any local element (XML Schema: ##local). */
-    public static final int CONTENTSPECNODE_ANY_LOCAL = 8;
+    public static final short CONTENTSPECNODE_ANY_LOCAL = 8;
 
     /** prcessContent is 'lax' **/
-    public static final int CONTENTSPECNODE_ANY_LAX = 22;
+    public static final short CONTENTSPECNODE_ANY_LAX = 22;
 
-    public static final int CONTENTSPECNODE_ANY_OTHER_LAX = 23;
+    public static final short CONTENTSPECNODE_ANY_OTHER_LAX = 23;
 
-    public static final int CONTENTSPECNODE_ANY_LOCAL_LAX = 24;
+    public static final short CONTENTSPECNODE_ANY_LOCAL_LAX = 24;
 
     /** processContent is 'skip' **/
     
-    public static final int CONTENTSPECNODE_ANY_SKIP = 38;
+    public static final short CONTENTSPECNODE_ANY_SKIP = 38;
 
-    public static final int CONTENTSPECNODE_ANY_OTHER_SKIP = 39;
+    public static final short CONTENTSPECNODE_ANY_OTHER_SKIP = 39;
 
-    public static final int CONTENTSPECNODE_ANY_LOCAL_SKIP = 40;
+    public static final short CONTENTSPECNODE_ANY_LOCAL_SKIP = 40;
     //
     // Data
     //
