@@ -130,6 +130,9 @@ public final class  HexBin {
         int lengthDecode = lengthData / 2;
         byte[] decodedData = new byte[lengthDecode];
         for( int i = 0; i<lengthDecode; i++ ){
+            if (!isHex(binaryData[i*2]) || !isHex(binaryData[i*2+1])) {
+                return null;
+            }
             decodedData[i] = (byte)((hexNumberTable[binaryData[i*2]] << 4) | hexNumberTable[binaryData[i*2+1]]);
         }
         return decodedData;

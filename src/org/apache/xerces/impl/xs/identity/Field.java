@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.dv.xs.DatatypeValidator;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.*;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
@@ -82,7 +82,7 @@ public class Field {
     /** Datatype. */
     // Unfortunately, a Field may conceivably match values of varying
     // datatypes.  Hence, this member no longer makes sense; see the IDValue class.
-    // protected DatatypeValidator fDatatypeValidator;
+    // protected XSSimpleType fXSSimpleType;
 
     /** Identity constraint. */
     protected IdentityConstraint fIdentityConstraint;
@@ -209,7 +209,7 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(String content, DatatypeValidator val, boolean isNil) {
+        protected void matched(String content, XSSimpleType val, boolean isNil) {
             super.matched(content, val, isNil);
             if(isNil) {
                 fStore.reportNilError(fIdentityConstraint);

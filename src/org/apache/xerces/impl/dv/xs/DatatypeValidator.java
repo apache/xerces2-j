@@ -72,7 +72,7 @@ import java.util.Locale;
  * @author Jeffrey Rodriguez-
  * @version $Id$
  */
-public interface DatatypeValidator extends XSTypeDecl {
+public interface DatatypeValidator {//extends XSTypeDecl {
     public static final short FACET_LENGTH       = 0x1<<0;
     public static final short FACET_MINLENGTH    = 0x1<<1;
     public static final short FACET_MAXLENGTH    = 0x1<<2;
@@ -132,8 +132,6 @@ public interface DatatypeValidator extends XSTypeDecl {
      * @return
      */
     public int compare( String value1, String value2);
-
-    public int getFinalSet();
 
     public void setFinalSet(int finalSet);
 

@@ -57,8 +57,11 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.XSUnionSimpleType;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.dv.xs.*;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.validation.ValidationContext;
@@ -78,7 +81,7 @@ public class XSConstraints {
      * check whether derived is valid derived from base, given a subset
      * of {restriction, extension}.
      */
-    public static boolean checkTypeDerivationOk(XSTypeDecl derived, XSTypeDecl base, int block) {
+    public static boolean checkTypeDerivationOk(XSTypeDecl derived, XSTypeDecl base, short block) {
         // if derived is anyType, then it's valid only if base is anyType too
         if (derived == SchemaGrammar.fAnyType)
             return derived == base;
@@ -100,8 +103,8 @@ public class XSConstraints {
                 else
                     return false;
             }
-            return checkSimpleDerivation((DatatypeValidator)derived,
-                                         (DatatypeValidator)base, block);
+            return checkSimpleDerivation((XSSimpleType)derived,
+                                         (XSSimpleType)base, block);
         } else {
             return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
         }
@@ -111,7 +114,7 @@ public class XSConstraints {
      * check whether simple type derived is valid derived from base,
      * given a subset of {restriction, extension}.
      */
-    public static boolean checkSimpleDerivationOk(DatatypeValidator derived, XSTypeDecl base, int block) {
+    public static boolean checkSimpleDerivationOk(XSSimpleType derived, XSTypeDecl base, short block) {
         // if derived is anySimpleType, then it's valid only if the base
         // is ur-type
         if (derived == SchemaGrammar.fAnySimpleType) {
@@ -128,15 +131,15 @@ public class XSConstraints {
             else
                 return false;
         }
-        return checkSimpleDerivation((DatatypeValidator)derived,
-                                     (DatatypeValidator)base, block);
+        return checkSimpleDerivation((XSSimpleType)derived,
+                                     (XSSimpleType)base, block);
     }
 
     /**
      * check whether complex type derived is valid derived from base,
      * given a subset of {restriction, extension}.
      */
-    public static boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
+    public static boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDecl base, short block) {
         // if derived is anyType, then it's valid only if base is anyType too
         if (derived == SchemaGrammar.fAnyType)
             return derived == base;
@@ -148,7 +151,7 @@ public class XSConstraints {
      *       anySimpleType, and base is not anyType. Another method will be
      *       introduced for public use, which will call this method.
      */
-    private static boolean checkSimpleDerivation(DatatypeValidator derived, DatatypeValidator base, int block) {
+    private static boolean checkSimpleDerivation(XSSimpleType derived, XSSimpleType base, short block) {
         // 1 They are the same type definition.
         if (derived == base)
             return true;
@@ -156,13 +159,13 @@ public class XSConstraints {
         // 2 All of the following must be true:
         // 2.1 restriction is not in the subset, or in the {final} of its own {base type definition};
         if ((block & SchemaSymbols.RESTRICTION) != 0 ||
-            (derived.getBaseValidator().getFinalSet() & SchemaSymbols.RESTRICTION) != 0) {
+            (derived.getBaseType().getFinalSet() & SchemaSymbols.RESTRICTION) != 0) {
             return false;
         }
 
         // 2.2 One of the following must be true:
         // 2.2.1 D's base type definition is B.
-        DatatypeValidator directBase = derived.getBaseValidator();
+        XSSimpleType directBase = (XSSimpleType)derived.getBaseType();
         if (directBase == base)
             return true;
 
@@ -173,18 +176,18 @@ public class XSConstraints {
         }
 
         // 2.2.3 D's {variety} is list or union and B is the simple ur-type definition.
-        if ((derived instanceof ListDatatypeValidator ||
-             derived instanceof UnionDatatypeValidator) &&
+        if ((derived.getVariety() == XSSimpleType.VARIETY_LIST ||
+             derived.getVariety() == XSSimpleType.VARIETY_UNION) &&
             base == SchemaGrammar.fAnySimpleType) {
             return true;
         }
 
         // 2.2.4 B's {variety} is union and D is validly derived from a type definition in B's {member type definitions} given the subset, as defined by this constraint.
-        if (base instanceof UnionDatatypeValidator) {
-            Vector subUnionMemberDV = ((UnionDatatypeValidator)base).getBaseValidators();
-            int subUnionSize = subUnionMemberDV.size();
+        if (base.getVariety() == XSSimpleType.VARIETY_UNION) {
+            XSSimpleType[] subUnionMemberDV = ((XSUnionSimpleType)base).getMemberTypes();
+            int subUnionSize = subUnionMemberDV.length ;
             for (int i=0; i<subUnionSize; i++) {
-                base = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+                base = subUnionMemberDV[i];
                 if (checkSimpleDerivation(derived, base, block))
                     return true;
             }
@@ -198,7 +201,7 @@ public class XSConstraints {
      *       anyType. Another method will be introduced for public use,
      *       which will call this method.
      */
-    private static boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
+    private static boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDecl base, short block) {
         // 2.1 B and D must be the same type definition.
         if (derived == base)
             return true;
@@ -236,8 +239,8 @@ public class XSConstraints {
                 else
                     return false;
             }
-            return checkSimpleDerivation((DatatypeValidator)directBase,
-                                         (DatatypeValidator)base, block);
+            return checkSimpleDerivation((XSSimpleType)directBase,
+                                         (XSSimpleType)base, block);
         }
 
         return false;
@@ -246,16 +249,17 @@ public class XSConstraints {
     /**
      * check whether a value is a valid default for some type
      * returns the compiled form of the value
+     * The parameter value could be either a String or a ValidatedInfo object
      */
-    public static Object ElementDefaultValidImmediate(XSTypeDecl type, String value, ValidationContext context) {
+    public static Object ElementDefaultValidImmediate(XSTypeDecl type, Object value, ValidationContext context, ValidatedInfo vinfo) {
 
-        DatatypeValidator dv = null;
+        XSSimpleType dv = null;
 
         // e-props-correct
         // For a string to be a valid default with respect to a type definition the appropriate case among the following must be true:
         // 1 If the type definition is a simple type definition, then the string must be valid with respect to that definition as defined by String Valid (3.14.4).
         if (type.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
-            dv = (DatatypeValidator)type;
+            dv = (XSSimpleType)type;
         }
 
         // 2 If the type definition is a complex type definition, then all of the following must be true:
@@ -265,7 +269,7 @@ public class XSConstraints {
             // 2.2 The appropriate case among the following must be true:
             // 2.2.1 If the {content type} is a simple type definition, then the string must be valid with respect to that simple type definition as defined by String Valid (3.14.4).
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                dv = ctype.fDatatypeValidator;
+                dv = ctype.fXSSimpleType;
             }
             // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be emptiable as defined by Particle Emptiable (3.9.6).
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
@@ -281,11 +285,15 @@ public class XSConstraints {
         Object actualValue = null;
         if (dv != null) {
             try {
-                // REVISIT:  we'll be able to do this once he datatype redesign is implemented
-                //actualValue = dv.validate(value, null);
-                dv.validate(value, context);
-                actualValue = value;
+                if (value instanceof String) {
+                    actualValue = dv.validate((String)value, context, vinfo);
+                } else {
+                    ValidatedInfo info = (ValidatedInfo)value;
+                    dv.validate(context, info);
+                    actualValue = info.actualValue;
+                }
             } catch (InvalidDatatypeValueException ide) {
+                return null;
             }
         }
 
@@ -888,20 +896,28 @@ public class XSConstraints {
                                       new Object[]{dElement.fName});
       }
 
-
       //
       // Check for consistent fixed values
       //
       if (bElement.getConstraintType() == XSElementDecl.FIXED_VALUE) {
-         // check the values are the same.  NB - this should not be a string
-         // comparison REVISIT when we have new datatype design!
-         String baseFixedValue=(String) bElement.fDefault;
-         String thisFixedValue=(String) dElement.fDefault;
-         if (dElement.getConstraintType() != XSElementDecl.FIXED_VALUE ||
-            !baseFixedValue.equals(thisFixedValue)) {
+         // derived one has to have a fixed value
+         if (dElement.getConstraintType() != XSElementDecl.FIXED_VALUE) {
             throw new XMLSchemaException("rcase-NameAndTypeOK.4",
                                       new Object[]{dElement.fName});
+         }
 
+         // get simple type
+         XSSimpleType dv = null;
+         if (dElement.fType.getXSType() == XSTypeDecl.SIMPLE_TYPE)
+            dv = (XSSimpleType)dElement.fType;
+         else if (((XSComplexTypeDecl)dElement.fType).fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE)
+            dv = ((XSComplexTypeDecl)dElement.fType).fXSSimpleType;
+
+         // if there is no simple type, then compare based on string
+         if (dv == null && !bElement.fDefault.normalizedValue.equals(dElement.fDefault.normalizedValue) ||
+             dv != null && !dv.isEqual(bElement.fDefault.actualValue, dElement.fDefault.actualValue)) {
+            throw new XMLSchemaException("rcase-NameAndTypeOK.4",
+                                      new Object[]{dElement.fName});
          }
       }
 
@@ -1270,4 +1286,5 @@ public class XSConstraints {
             }
         }
     }
+
 } // class XSContraints

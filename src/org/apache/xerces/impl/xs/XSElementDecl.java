@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.dv.ValidatedInfo;
 
 /**
  * The XML representation for an element declaration
@@ -87,7 +88,7 @@ public class XSElementDecl {
     // final set (substitution group exclusions) of the element
     public short fFinal = SchemaSymbols.EMPTY_SET;
     // value constraint value
-    public Object fDefault = null;
+    public ValidatedInfo fDefault = null;
     // the substitution group affiliation of the element
     public XSElementDecl fSubGroup = null;
     // identity constraints

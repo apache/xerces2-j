@@ -85,6 +85,12 @@ public class DecimalDV extends TypeValidator {
         }
     } //getActualValue()
 
+    public boolean isEqual(Object value1, Object value2) {
+        if (!(value1 instanceof BigDecimal) || !(value2 instanceof BigDecimal))
+            return false;
+        return ((BigDecimal)value1).compareTo((BigDecimal)value2) == 0;
+    }
+
     public int compare(Object value1, Object value2){
         return ((BigDecimal)value1).compareTo((BigDecimal)value2);
     }

@@ -105,7 +105,7 @@ public class QNameDV extends TypeValidator {
         if (prefix.length() > 0 && uri == null)
             throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName: cannot resolve the prefix to a namespace uri");
 
-        return new QName(prefix, localpart, content, uri);
+        return new QName(prefix, context.getSymbol(localpart), context.getSymbol(content), uri);
 
     }
 

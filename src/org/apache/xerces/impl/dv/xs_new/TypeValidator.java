@@ -100,6 +100,12 @@ public abstract class TypeValidator {
     // and it's an *internal* error if a method is called on a DV that
     // doesn't support it.
 
+    //order constants
+    public static final short LESS_THAN     = -1;
+    public static final short EQUAL         = 0;
+    public static final short GREATER_THAN  = 1;
+    public static final short INDETERMINATE = 2;
+
     // check the order relation between the two values
     // the parameters are in compiled form (from getActualValue)
     public int compare(Object value1, Object value2) {

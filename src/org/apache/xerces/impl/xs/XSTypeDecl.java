@@ -69,9 +69,11 @@ public interface XSTypeDecl {
     public static final short COMPLEX_TYPE   = 1;
     public static final short SIMPLE_TYPE    = 2;
 
-    // REVISIT: change XSTypeDecl to an class after the new datatype design
-    // then we'll add common fields here: name, base, ...
     public short getXSType();
-    public String getXSTypeName();
+    public String getTypeName();
+    public String getTargetNamespace();
+    public XSTypeDecl getBaseType();
+    public short getFinalSet();
+    public boolean isAnonymous();
 
-} // class XSType
+}

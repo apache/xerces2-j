@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.dv.ValidatedInfo;
+
 /**
  * The XML representation for an attribute use
  * schema component is a local <attribute> element information item
@@ -73,6 +75,6 @@ public class XSAttributeUse {
     // value constraint type: default, fixed or !specified
     public short fConstraintType = XSAttributeDecl.NO_CONSTRAINT;
     // value constraint value
-    public Object fDefault = null;
+    public ValidatedInfo fDefault = null;
 
 } // class XSAttributeUse

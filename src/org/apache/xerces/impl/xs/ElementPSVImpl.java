@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 2000,2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -69,10 +69,10 @@ import java.util.Vector;
  * Element PSV infoset augmentations implementation.
  * The following information will be available at the startElement call:
  * name, namespace, type, notation, default(?), validation context
- * 
+ *
  * The following information will be available at the endElement call:
  * nil, specified, normalized value, member type, validity, error codes
- * 
+ *
  * @author Elena Litani IBM
  */
 public class ElementPSVImpl implements ElementPSVI {
@@ -95,7 +95,7 @@ public class ElementPSVImpl implements ElementPSVI {
     /**
      * [member type definition anonymous]
      * @ see http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_anonymous
-     * @return true if the {name} of the actual member type definition is absent, 
+     * @return true if the {name} of the actual member type definition is absent,
      *         otherwise false.
      */
     public boolean  isMemberTypeAnonymous() {
@@ -129,7 +129,7 @@ public class ElementPSVImpl implements ElementPSVI {
 
     /**
      * [schema default]
-     * 
+     *
      * @return The canonical lexical representation of the declaration's {value constraint} value.
      * @see http://www.w3.org/TR/xmlschema-1/#e-schema_default
      */
@@ -142,11 +142,11 @@ public class ElementPSVImpl implements ElementPSVI {
     }
 
     /**
-     * [schema normalized value] 
-     * 
-     * 
+     * [schema normalized value]
+     *
+     *
      * @see http://www.w3.org/TR/xmlschema-1/#e-schema_normalized_value
-     * @return 
+     * @return
      */
     public String schemaNormalizedValue() {
 
@@ -155,9 +155,9 @@ public class ElementPSVImpl implements ElementPSVI {
     }
 
     /**
-     * [schema specified] 
+     * [schema specified]
      * @see http://www.w3.org/TR/xmlschema-1/#e-schema_specified
-     * @return 
+     * @return
      */
     public boolean schemaSpecified() {
         if (fDeclaration !=null) {
@@ -189,7 +189,7 @@ public class ElementPSVImpl implements ElementPSVI {
     public String getTypeName() {
 
         if (fDeclaration !=null && fDeclaration.fType !=null) {
-            return fDeclaration.fType.getXSTypeName();
+            return fDeclaration.fType.getTypeName();
         }
         return null;
     }
@@ -208,15 +208,15 @@ public class ElementPSVImpl implements ElementPSVI {
     }
 
     /**
-     * [type definition type] 
-     * 
+     * [type definition type]
+     *
      *  @see http://www.w3.org/TR/xmlschema-1/#a-type_definition_type
      *  @see http://www.w3.org/TR/xmlschema-1/#e-type_definition_type
-     *  @return simple or complex, depending on the type definition. 
+     *  @return simple or complex, depending on the type definition.
      */
     public short getTypeDefinitionType() {
         if (fDeclaration !=null && fDeclaration.fType !=null) {
-            return fDeclaration.fType.getXSType();    
+            return fDeclaration.fType.getXSType();
         }
         // if there was an error and element declaration was not provided
         // application should not rely on any information available via PSVI
@@ -225,8 +225,8 @@ public class ElementPSVImpl implements ElementPSVI {
 
     /**
      * Determines the extent to which the document has been validated
-     * 
-     * @return return the [validation attempted] property. The possible values are 
+     *
+     * @return return the [validation attempted] property. The possible values are
      *         NO_VALIDATION, PARTIAL_VALIDATION and FULL_VALIDATION
      */
     public short getValidationAttempted() {
@@ -234,10 +234,10 @@ public class ElementPSVImpl implements ElementPSVI {
     }
 
     /**
-     * Determine the validity of the node with respect 
+     * Determine the validity of the node with respect
      * to the validation being attempted
-     * 
-     * @return return the [validity] property. Possible values are: 
+     *
+     * @return return the [validity] property. Possible values are:
      *         UNKNOWN_VALIDITY, INVALID_VALIDITY, VALID_VALIDITY
      */
     public short getValidity() {
@@ -245,9 +245,9 @@ public class ElementPSVImpl implements ElementPSVI {
     }
 
     /**
-     * A list of error codes generated from validation attempts. 
+     * A list of error codes generated from validation attempts.
      * Need to find all the possible subclause reports that need reporting
-     * 
+     *
      * @return Array of error codes
      */
     public String[] getErrorCodes() {
@@ -270,39 +270,39 @@ public class ElementPSVImpl implements ElementPSVI {
     }
 
     /**
-     * [nil] 
+     * [nil]
      * @see http://www.w3.org/TR/xmlschema-1/#e-nil
-     * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false 
+     * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false
      */
     public boolean isNil() {
         return false;
     }
 
     /**
-     * [notation public] 
+     * [notation public]
      * @see http://www.w3.org/TR/xmlschema-1/#e-notation_public
      * @see http://www.w3.org/TR/xmlschema-1/#e-notation
-     * @return The value of the {public identifier} of that notation declaration. 
+     * @return The value of the {public identifier} of that notation declaration.
      */
     public String getNotationPublicId() {
         return(fNotation!=null)?fNotation.fPublicId:null;
     }
 
     /**
-     * [notation system] 
-     * 
+     * [notation system]
+     *
      * @see http://www.w3.org/TR/xmlschema-1/#e-notation_system
-     * @return The value of the {system identifier} of that notation declaration. 
+     * @return The value of the {system identifier} of that notation declaration.
      */
     public String getNotationSystemId() {
         return(fNotation!=null)?fNotation.fSystemId:null;
     }
 
     /**
-     * [schema namespace] 
+     * [schema namespace]
      * @see http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace
      * @see http://www.w3.org/TR/xmlschema-1/#e-schema_information
-     * @return A namespace name or absent. 
+     * @return A namespace name or absent.
      */
     public String getSchemaNamespace() {
         return fTargetNS;
@@ -327,7 +327,7 @@ public class ElementPSVImpl implements ElementPSVI {
 
     //
     // setter methods
-    // 
+    //
 
     public void setErrorCode (String error) {
         // REVISIT: how should we internally store errors

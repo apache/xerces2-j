@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.dv.xs.IDDatatypeValidator;
+import org.apache.xerces.impl.dv.ValidatedInfo;
 
 /**
  * The XML representation for an attribute group declaration
@@ -99,7 +99,7 @@ public class XSAttributeGroupDecl {
         if (attrUse.fUse == SchemaSymbols.USE_PROHIBITED)
             return null;
 
-        if (attrUse.fAttrDecl.fType instanceof IDDatatypeValidator) {
+        if (attrUse.fAttrDecl.fType.isIDType()) {
             // if there is already an attribute use of type ID, return it' sname
             if (fIDAttrName == null)
                 fIDAttrName = attrUse.fAttrDecl.fName;
@@ -166,7 +166,7 @@ public class XSAttributeGroupDecl {
         XSAttributeUse attrUse = null;
         XSAttributeDecl attrDecl = null;
         XSAttributeUse baseAttrUse = null;
-    XSAttributeDecl baseAttrDecl = null;
+        XSAttributeDecl baseAttrDecl = null;
 
         for (int i=0; i<fAttrUseNum; i++) {
 
@@ -216,11 +216,11 @@ public class XSAttributeGroupDecl {
                  else {
                    // check the values are the same.  NB - this should not be a string
                    // comparison REVISIT when we have new datatype design!
-                   String baseFixedValue=(String) (baseAttrUse.fDefault!=null ?
-                                         baseAttrUse.fDefault: baseAttrDecl.fDefault);
-                   String thisFixedValue=(String) (attrUse.fDefault!=null ?
-                                         attrUse.fDefault: attrDecl.fDefault);
-                   if (!baseFixedValue.equals(thisFixedValue)) {
+                   ValidatedInfo baseFixedValue=(baseAttrUse.fDefault!=null ?
+                                                baseAttrUse.fDefault: baseAttrDecl.fDefault);
+                   ValidatedInfo thisFixedValue=(attrUse.fDefault!=null ?
+                                                attrUse.fDefault: attrDecl.fDefault);
+                   if (!baseFixedValue.normalizedValue.equals(thisFixedValue.normalizedValue)) {
                      errorCode="derivation-ok-restriction.2.1.3";
                      return errorCode;
                    }

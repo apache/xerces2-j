@@ -23,7 +23,7 @@
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
  *    if and wherever such third-party acknowledgments normally appear.
- *
+ *1
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
  *    software without prior written permission. For written
@@ -57,9 +57,14 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import java.util.*;
-import org.w3c.dom.*;
-import org.apache.xerces.impl.dv.xs.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Attr;
+import java.util.Hashtable;
+import java.util.Vector;
+import java.util.StringTokenizer;
+import java.util.Enumeration;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -188,22 +193,22 @@ public class XSAttributeChecker {
 
     // used to store extra datatype validators
     protected static final int DT_COUNT            = DT_XPATH1 + 1;
-    protected static DatatypeValidator[] fExtraDVs = new DatatypeValidator[DT_COUNT];
+    protected static XSSimpleType[] fExtraDVs = new XSSimpleType[DT_COUNT];
     static {
         // step 5: register all datatype validators for new types
         SchemaGrammar grammar = SchemaGrammar.SG_SchemaNS;
         // anyURI
-        fExtraDVs[DT_ANYURI] = (DatatypeValidator)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYURI);
+        fExtraDVs[DT_ANYURI] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYURI);
         // ID
-        fExtraDVs[DT_ID] = (DatatypeValidator)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ID);
+        fExtraDVs[DT_ID] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ID);
         // QName
-        fExtraDVs[DT_QNAME] = (DatatypeValidator)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
+        fExtraDVs[DT_QNAME] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
         // string
-        fExtraDVs[DT_STRING] = (DatatypeValidator)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
+        fExtraDVs[DT_STRING] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
         // token
-        fExtraDVs[DT_TOKEN] = (DatatypeValidator)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_TOKEN);
+        fExtraDVs[DT_TOKEN] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_TOKEN);
         // NCName
-        fExtraDVs[DT_NCNAME] = (DatatypeValidator)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_NCNAME);
+        fExtraDVs[DT_NCNAME] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_NCNAME);
         // xpath = a subset of XPath expression
         fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
         // xpath = a subset of XPath expression
@@ -1103,8 +1108,6 @@ public class XSAttributeChecker {
 
             // check the value against the datatype
             try {
-                Object retValue = null;
-
                 // no checking on string needs to be done here.
                 // no checking on xpath needs to be done here.
                 // xpath values are validated in xpath parser
@@ -1112,26 +1115,21 @@ public class XSAttributeChecker {
                     if (oneAttr.dvIndex != DT_STRING &&
                         oneAttr.dvIndex != DT_XPATH &&
                         oneAttr.dvIndex != DT_XPATH1) {
-                        DatatypeValidator dv = fExtraDVs[oneAttr.dvIndex];
-                        retValue = dv.validate(attrVal, schemaDoc.fValidationContext);
+                        XSSimpleType dv = fExtraDVs[oneAttr.dvIndex];
+                        Object avalue = dv.validate(attrVal, schemaDoc.fValidationContext, null);
+                        // kludge to handle chameleon includes/redefines...
+                        if (oneAttr.dvIndex == DT_QNAME) {
+                            QName qname = (QName)avalue;
+                            if(qname.prefix == fSchemaHandler.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
+                                qname.uri = schemaDoc.fTargetNamespace;
+                        }
+                        attrValues[oneAttr.valueIndex] = avalue;
+                    } else {
+                        attrValues[oneAttr.valueIndex] = attrVal;
                     }
-                    // REVISIT: should have the datatype validators return
-                    // the object representation of the value.
-                    switch (oneAttr.dvIndex) {
-                    case DT_QNAME:
-                        retValue = resolveQName(attrVal, schemaDoc);
-                        break;
-                    default:
-                        retValue = attrVal;
-                        break;
-                    }
-                    //attrValues.put(attrName, retValue);
-                    attrValues[oneAttr.valueIndex] = retValue;
                 }
                 else {
-                    retValue = validate(attrName, attrVal, oneAttr.dvIndex, schemaDoc);
-                    //attrValues.put(attrName, retValue);
-                    attrValues[oneAttr.valueIndex] = retValue;
+                    attrValues[oneAttr.valueIndex] = validate(attrName, attrVal, oneAttr.dvIndex, schemaDoc);
                 }
             } catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("s4s-att-invalid-value",
@@ -1184,7 +1182,8 @@ public class XSAttributeChecker {
         if (ivalue == null)
             return null;
 
-        String value = normalize(ivalue, DatatypeValidator.COLLAPSE);
+        // the whiteSpace facet of all types here have the value "collapse"
+        String value = normalize(ivalue, XSSimpleType.WS_COLLAPSE);
         Object retValue = value;
         Vector memberType;
         int choice;
@@ -1347,11 +1346,11 @@ public class XSAttributeChecker {
                 StringTokenizer t = new StringTokenizer (value, " ");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
-                    retValue = fExtraDVs[DT_QNAME].validate(token, schemaDoc.fValidationContext);
-                    // REVISIT: should have the datatype validators return
-                    // the object representation of the value.
-                    retValue = resolveQName(token, schemaDoc);
-                    memberType.addElement(retValue);
+                    QName qname = (QName)fExtraDVs[DT_QNAME].validate(token, schemaDoc.fValidationContext, null);
+                    // kludge to handle chameleon includes/redefines...
+                    if(qname.prefix == fSchemaHandler.EMPTY_STRING && qname.uri == null && schemaDoc.fIsChameleonSchema)
+                        qname.uri = schemaDoc.fTargetNamespace;
+                    memberType.addElement(qname);
                 }
                 retValue = memberType;
             }
@@ -1402,7 +1401,7 @@ public class XSAttributeChecker {
                         } else {
                             // we have found namespace URI here
                             // need to add it to the symbol table
-                            fExtraDVs[DT_ANYURI].validate(token, schemaDoc.fValidationContext);
+                            fExtraDVs[DT_ANYURI].validate(token, schemaDoc.fValidationContext, null);
                             tempNamespace = fSymbolTable.addSymbol(token);
                         }
 
@@ -1447,7 +1446,7 @@ public class XSAttributeChecker {
         case DT_PUBLIC:
             // public = A public identifier, per ISO 8879
             // REVISIT: how to validate "public"???
-            fExtraDVs[DT_TOKEN].validate(value, schemaDoc.fValidationContext);
+            fExtraDVs[DT_TOKEN].validate(value, schemaDoc.fValidationContext, null);
             break;
         case DT_USE:
             // use = (optional | prohibited | required)
@@ -1501,7 +1500,7 @@ public class XSAttributeChecker {
             attrDecl = sGrammar.getGlobalAttributeDecl(attrLocal);
             if (attrDecl == null)
                 continue;
-            DatatypeValidator dv = (DatatypeValidator)attrDecl.fType;
+            XSSimpleType dv = (XSSimpleType)attrDecl.fType;
             if (dv == null)
                 continue;
 
@@ -1512,14 +1511,12 @@ public class XSAttributeChecker {
             // for each of the values
             int count = values.size();
             for (int i = 1; i < count; i += 2) {
-                // normalize it according to the whiteSpace facet
                 elName = (String)values.elementAt(i);
-                attrVal = normalize((String)values.elementAt(i+1), dv.getWSFacet());
                 try {
-                    // and validate it using the DatatypeValidator
+                    // and validate it using the XSSimpleType
                     // REVISIT: what would be the proper validation context?
                     //          guess we need to save that in the vectors too.
-                    dv.validate(attrVal, null);
+                    dv.validate((String)values.elementAt(i+1), null, null);
                 } catch(InvalidDatatypeValueException ide) {
                     reportSchemaError ("s4s-att-invalid-value",
                                        new Object[] {elName, attrName, ide.getLocalizedMessage()});
@@ -1529,14 +1526,13 @@ public class XSAttributeChecker {
     }
 
     // normalize the string according to the whiteSpace facet
-    // REVISIT: should move this to a util class/method
     public static String normalize(String content, short ws) {
         int len = content == null ? 0 : content.length();
-        if (len == 0 || ws == DatatypeValidator.PRESERVE)
+        if (len == 0 || ws == XSSimpleType.WS_PRESERVE)
             return content;
 
         StringBuffer sb = new StringBuffer();
-        if (ws == DatatypeValidator.REPLACE) {
+        if (ws == XSSimpleType.WS_REPLACE) {
             char ch;
             // when it's replace, just replace #x9, #xa, #xd by #x20
             for (int i = 0; i < len; i++) {
@@ -1546,8 +1542,7 @@ public class XSAttributeChecker {
                 else
                     sb.append((char)0x20);
             }
-        }
-        else {
+        } else {
             char ch;
             int i;
             boolean isLeading = true;
@@ -1574,23 +1569,6 @@ public class XSAttributeChecker {
         }
 
         return sb.toString();
-    }
-
-    // REVISIT: should remove this method once the DVs return compiled value
-    protected QName resolveQName (String attrVal, XSDocumentInfo currSchema) {
-        SchemaNamespaceSupport nsSupport = currSchema.fNamespaceSupport;
-        String prefix = fSchemaHandler.EMPTY_STRING;
-        String localpart = attrVal;
-        int colonptr = attrVal.indexOf(":");
-        if ( colonptr > 0) {
-            prefix = fSymbolTable.addSymbol(attrVal.substring(0,colonptr));
-            localpart = attrVal.substring(colonptr+1);
-        }
-        String uri = nsSupport.getURI(prefix);
-        // kludge to handle chameleon includes/redefines...
-        if(prefix == fSchemaHandler.EMPTY_STRING && uri == null && currSchema.fIsChameleonSchema)
-            uri = currSchema.fTargetNamespace;
-        return new QName(prefix, localpart, attrVal, uri);
     }
 
     // the following part implements an attribute-value-array pool.

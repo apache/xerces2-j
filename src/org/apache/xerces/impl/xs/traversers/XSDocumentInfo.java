@@ -57,9 +57,9 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -78,7 +78,6 @@ import java.util.Stack;
  * @author Neil Graham, IBM
  * @version $Id$
  */
-
 class XSDocumentInfo {
 
     // Data
@@ -105,8 +104,6 @@ class XSDocumentInfo {
     // the root of the schema Document tree itself
     protected Document fSchemaDoc;
 
-    // to store the ID values appearing in this document
-    // set namespace resolver
     protected ValidationState fValidationContext = new ValidationState();
 
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable) {
@@ -133,6 +130,7 @@ class XSDocumentInfo {
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
+            //set namespace support
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
             fValidationContext.setSymbolTable(symbolTable);
             // REVISIT: we can't return, becaues we can't pop fNamespaceSupport

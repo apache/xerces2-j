@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.dv.xs.DatatypeValidator;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 
@@ -95,7 +95,8 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     // block set (prohibited substitution) of the complexType
     public short fBlock = SchemaSymbols.EMPTY_SET;
 
-    // flags: whether is abstract; whether contains ID type
+    // flags: whether is abstract; whether contains ID type;
+    //        whether it's an anonymous tpye
     public short fMiscFlags = 0;
 
     // the attribute group that holds the attribute uses and attribute wildcard
@@ -105,8 +106,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     public short fContentType = CONTENTTYPE_EMPTY;
 
     // if the content type is simple, then the corresponding simpleType
-    // REVISIT: to be changed to XSSimpleTypeDecl
-    public DatatypeValidator fDatatypeValidator = null;
+    public XSSimpleType fXSSimpleType = null;
 
     // if the content type is element or mixed, the particle
     public XSParticleDecl fParticle = null;
@@ -120,13 +120,26 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     }
 
     // REVISIT: when XSTypeDecl becomes a class, remove this method
-    public String getXSTypeName() {
+    public String getTypeName() {
         return fName;
+    }
+
+    public short getFinalSet(){
+        return fFinal;
+    }
+
+    public String getTargetNamespace(){
+        return fTargetNamespace;
+    }
+
+    public XSTypeDecl getBaseType(){
+        return fBaseType;
     }
 
     // flags for the misc flag
     private static final short CT_IS_ABSTRACT = 1;
     private static final short CT_HAS_TYPE_ID = 2;
+    private static final short CT_IS_ANONYMOUS = 4;
 
     // methods to get/set misc flag
 
@@ -136,12 +149,18 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     public boolean containsTypeID () {
         return ((fMiscFlags & CT_HAS_TYPE_ID) != 0);
     }
+    public boolean isAnonymous() {
+        return ((fMiscFlags & CT_IS_ANONYMOUS) != 0);
+    }
 
     public void setIsAbstractType() {
         fMiscFlags |= CT_IS_ABSTRACT;
     }
     public void setContainsTypeID() {
         fMiscFlags |= CT_HAS_TYPE_ID;
+    }
+    public void setIsAnonymous() {
+        fMiscFlags |= CT_IS_ANONYMOUS;
     }
 
     public XSCMValidator getContentModel(CMBuilder cmBuilder) {
@@ -163,9 +182,9 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         String contentType[] = {"EMPTY", "SIMPLE", "MIXED", "ELEMENT"};
         String derivedBy[] = {"EMPTY", "EXTENSION", "RESTRICTION"};
 
-        str.append("Complex type name='" + fTargetNamespace + "," + getXSTypeName() + "', ");
+        str.append("Complex type name='" + fTargetNamespace + "," + getTypeName() + "', ");
         if (fBaseType != null)
-          str.append(" base type name='" + fBaseType.getXSTypeName() + "', ");
+          str.append(" base type name='" + fBaseType.getTypeName() + "', ");
 
         str.append(" content type='" + contentType[fContentType] + "', ");
         str.append(" isAbstract='" + isAbstractType() + "', ");

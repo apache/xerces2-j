@@ -56,6 +56,10 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.SchemaDVFactory;
+import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -70,7 +74,6 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.dv.xs.*;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
 
@@ -104,6 +107,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private static final boolean DEBUG=false;
 
     private static XSParticleDecl fErrorContent=null;
+    private SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
 
     private class ComplexTypeRecoverableError extends Exception {
 
@@ -141,6 +145,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                                           complexTypeName, attrValues, schemaDoc, grammar);
         // need to add the type to the grammar for later constraint checking
         grammar.addComplexTypeDecl(type);
+        type.setIsAnonymous();
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
@@ -347,13 +352,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
         typeInfo.fBaseType = type;
 
-
-        DatatypeValidator baseValidator = null;
+        XSSimpleType baseValidator = null;
         XSComplexTypeDecl baseComplexType = null;
         int baseFinalSet = 0;
 
         // If the base type is complex, it must have simpleContent
-        if ((type instanceof XSComplexTypeDecl)) {
+        if ((type.getXSType() == XSTypeDecl.COMPLEX_TYPE)) {
 
             baseComplexType = (XSComplexTypeDecl)type;
             if (baseComplexType.fContentType != XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
@@ -361,10 +365,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                 new Object[]{typeInfo.fName});
             }
             baseFinalSet = baseComplexType.fFinal;
-            baseValidator = baseComplexType.fDatatypeValidator;
+            baseValidator = baseComplexType.fXSSimpleType;
         }
         else {
-            baseValidator = (DatatypeValidator)type;
+            baseValidator = (XSSimpleType)type;
             if (typeInfo.fDerivedBy == SchemaSymbols.RESTRICTION) {
                 throw new ComplexTypeRecoverableError("src-ct.2",
                                 new Object[]{typeInfo.fName});
@@ -413,7 +417,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (simpleContent !=null &&
             DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_SIMPLETYPE )) {
 
-                DatatypeValidator dv=fSchemaHandler.fSimpleTypeTraverser.traverseLocal(
+                XSSimpleType dv = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(
                       simpleContent, schemaDoc, grammar);
                 if (dv == null)
                     throw new ComplexTypeRecoverableError();
@@ -433,24 +437,26 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // -----------------------------------------------------------------------
             // Traverse any facets
             // -----------------------------------------------------------------------
-            Hashtable fFacetData = null;
             Element attrNode = null;
+            XSFacets facetData = null;
+            short presentFacets = 0 ;
+            short fixedFacets = 0 ;
+
             if (simpleContent!=null) {
-                fFacetInfo fi = traverseFacets(simpleContent, null, typeName, baseValidator,
-                                               schemaDoc, grammar);
-                fFacetData = fi.facetdata;
+                FacetInfo fi = traverseFacets(simpleContent, null, typeName, baseValidator,
+                                              schemaDoc, grammar);
                 attrNode = fi.nodeAfterFacets;
+                facetData = fi.facetdata;
+                presentFacets = fi.fPresentFacets;
+                fixedFacets = fi.fFixedFacets;
             }
 
-            fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
-            // REVISIT: after using the new simpleType interfaces, should be:
-            //stype = dvFactory.create(...);
-            //stype.applyFacets(..., fValidationState);
-            typeInfo.fDatatypeValidator = createRestrictedValidator(baseValidator,
-                                                          fFacetData, fErrorReporter);
-            if (typeInfo.fDatatypeValidator == null) {
-                // Internal error
-                throw new ComplexTypeRecoverableError();
+            typeInfo.fXSSimpleType = schemaFactory.createTypeRestriction(null,schemaDoc.fTargetNamespace,(short)0,baseValidator);
+            try{
+                fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+                typeInfo.fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
+            }catch(InvalidDatatypeFacetException ex){
+                reportGenericSchemaError(ex.getLocalizedMessage());
             }
 
             // -----------------------------------------------------------------------
@@ -484,7 +490,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // Process a EXTENSION
         // -----------------------------------------------------------------------
         else {
-            typeInfo.fDatatypeValidator = baseValidator;
+            typeInfo.fXSSimpleType = baseValidator;
             if (simpleContent != null) {
                 // -----------------------------------------------------------------------
                 // Traverse any attributes
@@ -538,7 +544,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // Since the type must have complex content, set the simple type validators
         // to null
         // -----------------------------------------------------------------------
-        typeInfo.fDatatypeValidator = null;
+        typeInfo.fXSSimpleType = null;
 
         Element complexContent = DOMUtil.getFirstChildElement(complexContentElement);
         if (complexContent != null) {

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  
+ * Copyright (c) 2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,15 +57,16 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.dv.xs.DatatypeValidator;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.validation.ValidationState;
 
 /**
  * Stores a value associated with a particular field of an identity constraint that
- * has successfully matched some string in an instance document.  
- * This class also stores the DatatypeValidator associated
+ * has successfully matched some string in an instance document.
+ * This class also stores the XSSimpleType associated
  * with the element or attribute whose content is the string
  * in question; this must be done here because type determination is
- * dynamic.  
+ * dynamic.
  * <p> This class also makes it its business to provide
  * functionality to determine whether two instances are duplicates.</p>
  *
@@ -77,11 +78,11 @@ public class IDValue {
     // data
 
     protected String fValue;
-    protected DatatypeValidator fValidator;
-    
+    protected XSSimpleType fValidator;
+
     // constructor
-    
-    public IDValue(String value, DatatypeValidator val) {
+
+    public IDValue(String value, XSSimpleType val) {
         fValue = value;
         fValidator = val;
     }
@@ -90,8 +91,8 @@ public class IDValue {
     // IDValue methods
     //
 
-    /** 
-     * Returns whether the supplied IDValue is a duplicate of this IDValue.  
+    /**
+     * Returns whether the supplied IDValue is a duplicate of this IDValue.
      * It is a duplicate only if either of these conditions are true:
      * - The Datatypes are the same or related by derivation and
      * the values are in the same valuespace.
@@ -107,22 +108,40 @@ public class IDValue {
         // are the validators equal?
         // As always we are obliged to compare by reference...
         if (fValidator == value.fValidator) {
-            return ((fValidator.compare(fValue, value.fValue)) == 0);
-        } 
+            return (isDuplicateOf(fValidator, fValue, value.fValue));
+        }
         // see if this.fValidator is derived from value.fValidator:
-        DatatypeValidator tempVal;
-        for(tempVal = fValidator; tempVal == null || tempVal == value.fValidator; tempVal = tempVal.getBaseValidator());
+        XSSimpleType tempVal;
+        for(tempVal = fValidator; tempVal == null || tempVal == value.fValidator; tempVal = (XSSimpleType)tempVal.getBaseType());
         if(tempVal != null) { // was derived!
-            return ((value.fValidator.compare(fValue, value.fValue)) == 0);
+            return (isDuplicateOf(fValidator, fValue, value.fValue));
         }
         // see if value.fValidator is derived from this.fValidator:
-        for(tempVal = value.fValidator; tempVal == null || tempVal == fValidator; tempVal = tempVal.getBaseValidator());
+        for(tempVal = value.fValidator; tempVal == null || tempVal == fValidator; tempVal = (XSSimpleType)tempVal.getBaseType());
         if(tempVal != null) { // was derived!
-            return ((fValidator.compare(fValue, value.fValue)) == 0);
+            return (value.isDuplicateOf(fValidator, fValue, value.fValue));
         }
         // if we're here it means the types weren't related.  Must fall back to strings:
-        return(fValue.equals(value.fValue)); 
+        return(fValue.equals(value.fValue));
     } // end compare(IDValue):boolean
+
+    static final ValidationState VS = new ValidationState();
+    static {
+        VS.setExtraChecking(false);
+        VS.setFacetChecking(false);
+    }
+    private boolean isDuplicateOf(XSSimpleType dv, String v1, String v2) {
+        //REVISIT: now we always store string values in IDValue, so we have to
+        //         validate the two string again to get actual values.
+        //         we should store actual values in IDValue.
+        try {
+            Object av1 = dv.validate(v1, VS, null);
+            Object av2 = dv.validate(v2, VS, null);
+            return dv.isEqual(av1, av2);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     // Object methods:
     public String toString() {

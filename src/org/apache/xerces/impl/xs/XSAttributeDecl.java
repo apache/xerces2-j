@@ -57,7 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.dv.xs.DatatypeValidator;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.ValidatedInfo;
 
 /**
  * The XML representation for an attribute declaration
@@ -79,12 +80,11 @@ public class XSAttributeDecl {
     // the target namespace of the attribute
     public String fTargetNamespace = null;
     // the simple type of the attribute
-    // REVISIT: to be changed to XSSimpleTypeDecl
-    public DatatypeValidator fType = null;
+    public XSSimpleType fType = null;
     // value constraint type: default, fixed or !specified
     short fMiscFlags = 0;
     // value constraint value
-    public Object fDefault = null;
+    public ValidatedInfo fDefault = null;
 
     private static final short CONSTRAINT_MASK = 3;
     private static final short GLOBAL          = 4;

@@ -141,10 +141,10 @@ public class MonthDV extends AbstractDateTimeDV {
      * @param date2
      * @return
      */
-    protected  int compareDates(int[] date1, int[] date2) {
+    protected  short compareDates(int[] date1, int[] date2) {
 
         if ( date1[utc]==date2[utc] ) {
-            return (date1[M]>=date2[M])?(date1[M]>date2[M])?1:0:-1;
+            return (short)((date1[M]>=date2[M])?(date1[M]>date2[M])?1:0:-1);
         }
 
         if ( date1[utc]=='Z' || date2[utc]=='Z' ) {

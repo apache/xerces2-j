@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.dv.xs.*;
 import org.apache.xerces.impl.xs.XSGrammarResolver;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;

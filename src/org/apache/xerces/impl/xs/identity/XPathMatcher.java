@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  
+ * Copyright (c) 2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -63,7 +63,7 @@ import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.dv.xs.DatatypeValidator;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xpath.*;
@@ -101,7 +101,7 @@ public class XPathMatcher {
 
     /** Compile to true to debug the <em>really</em> important methods. */
     protected static final boolean DEBUG_METHODS3 = false || DEBUG_METHODS || DEBUG_ALL;
-                                                      
+
     /** Compile to true to debug match. */
     protected static final boolean DEBUG_MATCH = false || DEBUG_ALL;
 
@@ -109,7 +109,7 @@ public class XPathMatcher {
     protected static final boolean DEBUG_STACK = false || DEBUG_ALL;
 
     /** Don't touch this value unless you add more debug constants. */
-    protected static final boolean DEBUG_ANY = DEBUG_METHODS || 
+    protected static final boolean DEBUG_ANY = DEBUG_METHODS ||
                                                DEBUG_METHODS2 ||
                                                DEBUG_METHODS3 ||
                                                DEBUG_MATCH ||
@@ -143,7 +143,7 @@ public class XPathMatcher {
     /** Current step. */
     private int[] fCurrentStep;
 
-    /** 
+    /**
      * No match depth. The value of this field will be zero while
      * matching is successful for the given xpath expression.
      */
@@ -160,16 +160,16 @@ public class XPathMatcher {
     */
 
     // the Identity constraint we're the matcher for.  Only
-    // used for selectors!  
+    // used for selectors!
     protected IdentityConstraint fIDConstraint;
 
     //
     // Constructors
     //
 
-    /** 
-     * Constructs an XPath matcher that implements a document fragment 
-     * handler. 
+    /**
+     * Constructs an XPath matcher that implements a document fragment
+     * handler.
      *
      * @param xpath   The xpath.
      */
@@ -177,14 +177,14 @@ public class XPathMatcher {
         this(xpath, false, null);
     } // <init>(XPath)
 
-    /** 
-     * Constructs an XPath matcher that implements a document fragment 
-     * handler. 
+    /**
+     * Constructs an XPath matcher that implements a document fragment
+     * handler.
      *
      * @param xpath   The xpath.
      * @param shouldBufferContent True if the matcher should buffer the
      *                            matched content.
-     * @param idConstraint:  the identity constraint we're matching for; 
+     * @param idConstraint:  the identity constraint we're matching for;
      *      null unless it's a Selector.
      */
     public XPathMatcher(XPath xpath, boolean shouldBufferContent, IdentityConstraint idConstraint) {
@@ -208,7 +208,7 @@ public class XPathMatcher {
     /** Returns true if XPath has been matched. */
     public boolean isMatched() {
         // xpath has been matched if any one of the members of the union have matched.
-        for (int i=0; i < fLocationPaths.length; i++) 
+        for (int i=0; i < fLocationPaths.length; i++)
             if (fMatched[i]) return true;
         return false;
     } // isMatched():boolean
@@ -220,7 +220,7 @@ public class XPathMatcher {
 
     // returns the ID constraint
     public IdentityConstraint getIDConstraint() {
-        return fIDConstraint; 
+        return fIDConstraint;
     } // end getIDConstraint():IdentityConstraint
 
     /** Returns the matched string. */
@@ -237,11 +237,11 @@ public class XPathMatcher {
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(String content, DatatypeValidator val, boolean isNil) throws XNIException {
+    protected void matched(String content, XSSimpleType val, boolean isNil) throws XNIException {
         if (DEBUG_METHODS3) {
             System.out.println(toString()+"#matched(\""+normalize(content)+"\")");
         }
-    } // matched(String content, DatatypeValidator val)
+    } // matched(String content, XSSimpleType val)
 
     //
     // ~XMLDocumentFragmentHandler methods
@@ -255,7 +255,7 @@ public class XPathMatcher {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocumentFragment(SymbolTable symbolTable) 
+    public void startDocumentFragment(SymbolTable symbolTable)
         throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#startDocumentFragment("+
@@ -284,15 +284,15 @@ public class XPathMatcher {
      * The start of an element. If the document specifies the start element
      * by using an empty tag, then the startElement method will immediately
      * be followed by the endElement method, with no intervening methods.
-     * 
+     *
      * @param element    The name of the element.
      * @param attributes The element attributes.
-     * @param elementDecl: The element declaration for the element 
+     * @param elementDecl: The element declaration for the element
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes, 
-                             XSElementDecl elementDecl) 
+    public void startElement(QName element, XMLAttributes attributes,
+                             XSElementDecl elementDecl)
         throws XNIException {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#startElement("+
@@ -302,7 +302,7 @@ public class XPathMatcher {
         }
 
         for(int i = 0; i < fLocationPaths.length; i++) {
-            // push context 
+            // push context
             int startStep = fCurrentStep[i];
             fStepIndexes[i].push(startStep);
 
@@ -318,7 +318,7 @@ public class XPathMatcher {
 
             // consume self::node() steps
             XPath.Step[] steps = fLocationPaths[i].steps;
-            while (fCurrentStep[i] < steps.length && 
+            while (fCurrentStep[i] < steps.length &&
                     steps[fCurrentStep[i]].axis.type == XPath.Axis.SELF) {
                 if (DEBUG_MATCH) {
                     XPath.Step step = steps[fCurrentStep[i]];
@@ -337,7 +337,7 @@ public class XPathMatcher {
                     fBufferContent = fShouldBufferContent;
                 continue;
             }
-        
+
             // now if the current step is a descendant step, we let the next
             // step do its thing; if it fails, we reset ourselves
             // to look at this step for next time we're called.
@@ -407,9 +407,9 @@ public class XPathMatcher {
                     XPath.NodeTest nodeTest = steps[fCurrentStep[i]].nodeTest;
                     QName aname = new QName(); // REVISIT: cache this
 
-                    // Get the list of attributes from the element decl. 
-                    // REVISIT - is this correct?   This is what was done in xerces-1, 
-                    // but is it right?                              
+                    // Get the list of attributes from the element decl.
+                    // REVISIT - is this correct?   This is what was done in xerces-1,
+                    // but is it right?
                     XSAttributeGroupDecl attrGrp = null;
                     if (elementDecl != null) {
                         XSTypeDecl type = elementDecl.fType;
@@ -420,7 +420,7 @@ public class XPathMatcher {
                           }
                         }
                     }
-                    
+
                     for (int aindex = 0; aindex < attrCount; aindex++) {
                         attributes.getName(aindex, aname);
                         if (nodeTest.type != XPath.NodeTest.QNAME ||
@@ -433,14 +433,14 @@ public class XPathMatcher {
                                 if(j==i) {
                                     String avalue = attributes.getValue(aindex);
                                     fMatchedString = avalue;
-                                    // now, we have to go on the hunt for 
+                                    // now, we have to go on the hunt for
                                     // datatype validator; not an easy or pleasant task...
 
-                                    DatatypeValidator aValidator = null;
+                                    XSSimpleType aValidator = null;
                                     if (attrGrp != null) {
                                       XSAttributeUse tempAttUse = attrGrp.getAttributeUse(aname.uri, aname.localpart);
                                       if (tempAttUse != null) {
-                                        XSAttributeDecl tempAttDecl = tempAttUse.fAttrDecl; 
+                                        XSAttributeDecl tempAttDecl = tempAttUse.fAttrDecl;
                                         aValidator = tempAttDecl.fType;
                                       }
                                     }
@@ -471,7 +471,7 @@ public class XPathMatcher {
     } // startElement(QName,XMLAttrList,int)
 
     /** Character content. */
-    public void characters(XMLString text) 
+    public void characters(XMLString text)
         throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#characters("+
@@ -481,7 +481,7 @@ public class XPathMatcher {
 
         // collect match content
         // so long as one of our paths is matching, store the content
-        for(int i=0; i<fLocationPaths.length; i++) 
+        for(int i=0; i<fLocationPaths.length; i++)
             if (fBufferContent && fNoMatchDepth[i] == 0) {
                 if (!DEBUG_METHODS && DEBUG_METHODS2) {
                     System.out.println(toString()+"#characters("+
@@ -491,14 +491,14 @@ public class XPathMatcher {
                 fMatchedBuffer.append(text);
                 break;
             }
-        
+
     } // characters(char[],int,int)
 
     /**
      * The end of an element.
-     * 
+     *
      * @param element The name of the element.
-     * @param eDecl:  the element declaration 
+     * @param eDecl:  the element declaration
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
@@ -526,33 +526,33 @@ public class XPathMatcher {
                     // REVISIT: cache this.
                     // REVISIT:  make sure type's from same schema!
                     // REVISIT:  make sure type is simple!
-                    DatatypeValidator val=null;
+                    XSSimpleType val=null;
 
                     if (eDecl!=null) {
                       XSTypeDecl type = eDecl.fType;
                       if (type != null) {
                         if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                           XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-                          val = ctype.fDatatypeValidator;
+                          val = ctype.fXSSimpleType;
                         }
                         else {
-                          val = (DatatypeValidator)(type);
+                          val = (XSSimpleType)(type);
                         }
                       }
                     }
 
                     if(eDecl != null) {
                         matched(fMatchedString, val, (eDecl.isNillable()));
-                    } else  
+                    } else
                         matched(fMatchedString, val, false);
-                    
+
                 }
                 clear();
             }
 
             // go back a step
             fCurrentStep[i] = fStepIndexes[i].pop();
-        
+
             if (DEBUG_STACK) {
                 System.out.println(toString()+": "+fStepIndexes[i]);
             }
@@ -575,7 +575,7 @@ public class XPathMatcher {
     //
     // Object methods
     //
-    
+
     /** Returns a string representation of this object. */
     public String toString() {
         /***
@@ -652,7 +652,7 @@ public class XPathMatcher {
     //       If you want to use this main, use Jikes to compile but
     //       *never* check in this code to CVS without commenting it
     //       out. -Ac
-    
+
     /** Main program. */
     /***
     public static void main(String[] argv) throws XNIException {
@@ -662,7 +662,7 @@ public class XPathMatcher {
                 final String expr = argv[i];
                 final XPath xpath = new XPath(expr, symbols, null);
                 final XPathMatcher matcher = new XPathMatcher(xpath, true);
-                org.apache.xerces.parsers.SAXParser parser = 
+                org.apache.xerces.parsers.SAXParser parser =
                     new org.apache.xerces.parsers.SAXParser(symbols) {
                     public void startDocument() throws XNIException {
                         matcher.startDocumentFragment(symbols, null);

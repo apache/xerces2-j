@@ -57,7 +57,9 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.dv.xs.*;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -162,21 +164,25 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         XInt  maxAtt = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
 
         XSElementDecl element = null;
-        if (refAtt != null) {
-            element = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt);
+        if (elmDecl.getAttributeNode(SchemaSymbols.ATT_REF) != null) {
+            if (refAtt != null) {
+                element = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt);
 
-            Element child = DOMUtil.getFirstChildElement(elmDecl);
-            if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
-                child = DOMUtil.getNextSiblingElement(child);
-            }
+                Element child = DOMUtil.getFirstChildElement(elmDecl);
+                if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                    child = DOMUtil.getNextSiblingElement(child);
+                }
 
-            // Element Declaration Representation OK
-            // 2 If the item's parent is not <schema>, then all of the following must be true:
-            // 2.1 One of ref or name must be present, but not both.
-            // 2.2 If ref is present, then all of <complexType>, <simpleType>, <key>, <keyref>, <unique>, nillable, default, fixed, form, block and type must be absent, i.e. only minOccurs, maxOccurs, id are allowed in addition to ref, along with <annotation>.
-            if (child != null) {
-                reportSchemaError("src-element.2.2", new Object[]{refAtt});
+                // Element Declaration Representation OK
+                // 2 If the item's parent is not <schema>, then all of the following must be true:
+                // 2.1 One of ref or name must be present, but not both.
+                // 2.2 If ref is present, then all of <complexType>, <simpleType>, <key>, <keyref>, <unique>, nillable, default, fixed, form, block and type must be absent, i.e. only minOccurs, maxOccurs, id are allowed in addition to ref, along with <annotation>.
+                if (child != null) {
+                    reportSchemaError("src-element.2.2", new Object[]{refAtt});
+                }
+            } else {
+                element = null;
             }
         } else {
             element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false);
@@ -279,10 +285,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // get 'value constraint'
         if (fixedAtt != null) {
-            element.fDefault = fixedAtt;
+            element.fDefault = new ValidatedInfo();
+            element.fDefault.normalizedValue = fixedAtt;
             element.setConstraintType(XSElementDecl.FIXED_VALUE);
         } else if (defaultAtt != null) {
-            element.fDefault = defaultAtt;
+            element.fDefault = new ValidatedInfo();
+            element.fDefault.normalizedValue = defaultAtt;
             element.setConstraintType(XSElementDecl.DEFAULT_VALUE);
         } else {
             element.setConstraintType(XSElementDecl.NO_CONSTRAINT);
@@ -419,15 +427,14 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // 2 If there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in Element Default Valid (Immediate) (3.3.6).
         if (element.fDefault != null) {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
-            Object actualValue = XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.toString(), fValidationState);
-            if (actualValue == null) {
-                reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault});
+            XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault);
+            if (element.fDefault.actualValue == null) {
+                reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue});
                 element.setConstraintType(XSElementDecl.NO_CONSTRAINT);
             }
-            element.fDefault = actualValue;
         }
 
-        // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (b3.14.6) (if the {type definition} is simple).
+        // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
            if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
                 reportSchemaError ("e-props-correct.3", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart});
@@ -436,9 +443,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 4 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}.
         if (element.fDefault != null) {
-            if (elementType instanceof IDDatatypeValidator ||
-                elementType instanceof XSComplexTypeDecl &&
-                ((XSComplexTypeDecl)elementType).containsTypeID()) {
+            if ((elementType.getXSType() == XSTypeDecl.SIMPLE_TYPE &&
+                 ((XSSimpleType)elementType).isIDType()) ||
+                (elementType.getXSType() == XSTypeDecl.COMPLEX_TYPE &&
+                 ((XSComplexTypeDecl)elementType).containsTypeID())) {
                 reportSchemaError ("e-props-correct.4", new Object[]{element.fName});
             }
         }

@@ -83,9 +83,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
     //define shared variables for date/time
 
-    //To check order relation as per 3.2.7.3
-    public static final short INDETERMINATE=2;
-
     //define constants
     protected final static int CY = 0,  M = 1, D = 2, h = 3,
     m = 4, s = 5, ms = 6, utc=7, hh=0, mm=1;
@@ -148,12 +145,14 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
     // the parameters are in compiled form (from getActualValue)
     public boolean isEqual(Object value1, Object value2){
-        return compareDates((int[])value1,(int[])value2)==0;
+        if (!(value1 instanceof int[]) || !(value2 instanceof int[]))
+            return false;
+        return compareDates((int[])value1,(int[])value2, true)==0;
     }//IsEqual()
 
     // the parameters are in compiled form (from getActualValue)
     public int compare (Object value1, Object value2) {
-        return compareDates((int[])value1, (int[])value2);
+        return compareDates((int[])value1, (int[])value2, true);
     }//compare()
 
     /**
@@ -178,7 +177,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param strict
      * @return less, greater, less_equal, greater_equal, equal
      */
-    protected int compareDates(int[] date1, int[] date2) {
+    protected short compareDates(int[] date1, int[] date2, boolean strict) {
         if ( date1[utc]==date2[utc] ) {
             return compareOrder(date1, date2);
         }
