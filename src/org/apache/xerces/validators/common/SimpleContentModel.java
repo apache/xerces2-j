@@ -186,7 +186,7 @@ public class SimpleContentModel
                     return 0;
 
                 // If the 0th child is not the right kind, report an error at 0
-                if (children[offset].uri != fFirstChild.uri && 
+                if (children[offset].uri != fFirstChild.uri || 
                     children[offset].localpart != fFirstChild.localpart)
                     return 0;
 
@@ -201,7 +201,7 @@ public class SimpleContentModel
                 //  then its an error at index 0.
                 //
                 if (length == 1 && 
-                    (children[offset].uri != fFirstChild.uri && 
+                    (children[offset].uri != fFirstChild.uri || 
                      children[offset].localpart != fFirstChild.localpart))
                     return 0;
 
@@ -224,7 +224,7 @@ public class SimpleContentModel
                 {
                     for (int index = 0; index < length; index++)
                     {
-                        if (children[offset + index].uri != fFirstChild.uri && 
+                        if (children[offset + index].uri != fFirstChild.uri || 
                             children[offset + index].localpart != fFirstChild.localpart)
                             return index;
                     }
@@ -246,7 +246,7 @@ public class SimpleContentModel
                 //
                 for (int index = 0; index < length; index++)
                 {
-                    if (children[offset + index].uri != fFirstChild.uri && 
+                    if (children[offset + index].uri != fFirstChild.uri || 
                         children[offset + index].localpart != fFirstChild.localpart)
                         return index;
                 }
