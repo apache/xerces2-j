@@ -597,8 +597,8 @@ public class DocumentTracer
 
     /** Attribute declaration. */
     public void attributeDecl(String elementName, String attributeName, 
-                              String type, String defaultValue, 
-                              String defaultType) throws SAXException {
+                              String type, String valueDefault, 
+                              String value) throws SAXException {
 
         printIndent();
         fOut.print("attributeDecl(");
@@ -611,11 +611,11 @@ public class DocumentTracer
         fOut.print("type=");
         printQuotedString(type);
         fOut.print(',');
-        fOut.print("defaultValue=");
-        printQuotedString(defaultValue);
+        fOut.print("valueDefault=");
+        printQuotedString(valueDefault);
         fOut.print(',');
-        fOut.print("defaultType=");
-        printQuotedString(defaultType);
+        fOut.print("value=");
+        printQuotedString(value);
         fOut.println(')');
         fOut.flush();
 
