@@ -18,7 +18,7 @@
     </SPAN>
     <HR/>
     <SPAN class='netscape'>
-     Last modified: <xsl:value-of select='date'/>
+     Last modified: <xsl:value-of select='@date'/>
     </SPAN>
    </BODY>
   </HTML>
@@ -49,17 +49,26 @@
       </TD>
      </TR>
     </xsl:if>
-    <xsl:if test='goal'>
+    <xsl:for-each select='goal'>
      <TR>
-      <TH>Goals:</TH>
+      <TH>Goal:</TH>
       <TD>
-       <xsl:for-each select='goal'>
-        <xsl:value-of select='.'/>
-        <xsl:if test='not(position()=last())'><BR/></xsl:if>
-       </xsl:for-each>
+       <xsl:value-of select='.'/>
+       <xsl:if test='@owner'>
+	<BR/>
+        <STRONG>Owner:</STRONG> 
+	<xsl:choose>
+	 <xsl:when test='id(@owner)/@email'>
+	  <A href='mailto:{id(@owner)/@email}'><xsl:value-of select='id(@owner)'/></A>
+	 </xsl:when>
+	 <xsl:otherwise>
+	  <xsl:value-of select='@owner'/>
+	 </xsl:otherwise>
+	</xsl:choose>
+       </xsl:if>
       </TD>
      </TR>
-    </xsl:if>
+    </xsl:for-each>
    </TABLE>
   </P>
  </xsl:template>
