@@ -366,7 +366,7 @@ public class XMLEntityManager
         if (!fEntities.containsKey(name)) {
             Entity entity = new InternalEntity(name, text);
             fEntities.put(name, entity);
-        }
+        } 
     } // addInternalEntity(String,String)
 
     /**

@@ -464,7 +464,6 @@ public abstract class XMLScanner
             }
             sawSpace = fEntityScanner.skipSpaces();
         }
-
         // REVISIT: should we remove this error reporting?
         if (scanningTextDecl && state != STATE_DONE) {
             reportFatalError("MorePseudoAttributes", null);

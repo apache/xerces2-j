@@ -1429,6 +1429,12 @@ public class XMLDTDScannerImpl
         // internal entity
         if (systemId == null) {
             scanEntityValue(fLiteral, fLiteral2);
+            // since we need it's value anyway, let's snag it so it doesn't get corrupted 
+            // if a new load takes place before we store the entity values
+            fStringBuffer.clear();
+            fStringBuffer2.clear();
+            fStringBuffer.append(fLiteral.ch, fLiteral.offset, fLiteral.length);
+            fStringBuffer2.append(fLiteral2.ch, fLiteral2.offset, fLiteral2.length);
         }
 
         // skip possible trailing space
@@ -1466,9 +1472,9 @@ public class XMLDTDScannerImpl
             }
         }
         else {
-            fEntityManager.addInternalEntity(name, fLiteral.toString());
+            fEntityManager.addInternalEntity(name, fStringBuffer.toString());
             if (fDTDHandler != null) {
-                fDTDHandler.internalEntityDecl(name, fLiteral, fLiteral2, null); 
+                fDTDHandler.internalEntityDecl(name, fStringBuffer, fStringBuffer2, null); 
             }
         }
         fReportEntity = true;
