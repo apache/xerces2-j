@@ -1686,7 +1686,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         }
 
         fInDTD = true;
-        fBaseURIStack.push(locator.getBaseSystemId());
+        if (locator != null) {
+            fBaseURIStack.push(locator.getBaseSystemId());
+        }
         if (fDeferNodeExpansion || fDocumentImpl != null) {
             fInternalSubset = new StringBuffer(1024);
         }
@@ -1706,7 +1708,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             System.out.println("==>endDTD()");
         }
         fInDTD = false;
-        fBaseURIStack.pop();
+        if (!fBaseURIStack.isEmpty()) {
+            fBaseURIStack.pop();
+        }
         String internalSubset = fInternalSubset != null && fInternalSubset.length() > 0
                               ? fInternalSubset.toString() : null;
         if (fDeferNodeExpansion) {
