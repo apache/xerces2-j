@@ -44,7 +44,11 @@ TARGETS=\
 	NotationImpl.class\
 	ProcessingInstructionImpl.class\
 	TextImpl.class \
-	NodeContainer.class
+	NodeContainer.class \
+	AttrNSImpl.class \
+	ElementNSImpl.class \
+	DeferredAttrNSImpl.class \
+	DeferredElementNSImpl.class
 
 all: dirs compile
 

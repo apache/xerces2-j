@@ -76,6 +76,10 @@ import org.w3c.dom.*;
  * be dealing with simple string values, and convenience methods are provided
  * to work in terms of Strings.
  * <P>
+ * ElementImpl does not support Namespaces. ElementNSImpl, which inherits from
+ * it, does.
+ * @see ElementNSImpl
+ *
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
@@ -88,8 +92,7 @@ public class ElementImpl
     //
 
     /** Serialization version. */
-    static final long serialVersionUID = -7202454486126245907L;
-
+    static final long serialVersionUID = 3717253516652722278L;
     //
     // Data
     //
@@ -97,20 +100,6 @@ public class ElementImpl
     /** Attributes. */
     protected NamedNodeMapImpl attributes;
 
-    /** DOM2: Namespace URI. */
-	protected String namespaceURI;
-  
-    /** DOM2: Prefix */
-	protected String prefix;
-
-    /** DOM2: localName. */
-	protected String localName;
-	
-    /** DOM2: support. 
-     * Is this element created with ownerDocument.createElementNS()? 
-     */
-	//protected boolean enableNamespace = false;
-  
     //
     // Constructors
     //
@@ -122,52 +111,9 @@ public class ElementImpl
         //this.localName = name;
         syncData = true;
     }
-    
-    /**
-     * DOM2: Constructor for Namespace implementation.
-     */
-    protected ElementImpl(DocumentImpl ownerDocument, 
-                          String namespaceURI,
-                          String qualifiedName) 
-        throws DOMException
-    {
 
-        this.ownerDocument = ownerDocument;
-        this.namespaceURI = namespaceURI;
-        this.name = qualifiedName;
-        int index = qualifiedName.indexOf(':');
-        if (index < 0) {
-            this.prefix = null;
-            this.localName = null;
-        } 
-        else {
-            this.prefix = qualifiedName.substring(0, index); 
-            this.localName = qualifiedName.substring(index+1);
-        }
-        
-    	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
-        }
-        
-        if (prefix != null && prefix.equals("xml")) {
-            if (namespaceURI != null && !namespaceURI.equals("") 
-            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace")) 
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (prefix != null && (namespaceURI == null || namespaceURI.equals(""))) 
-        {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-    	}
-            
-        //this.enableNamespace = true;
-        syncData = true;
-        
-    } // <init>(DocumentImpl,String,short,boolean,String)
+    // for ElementNSImpl
+    protected ElementImpl() {}
     
     //
     // Node methods
@@ -309,14 +255,15 @@ public class ElementImpl
      *
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null.     
+     * <P>
+     * ElementImpl does not support Namespaces, so this always returns null.
+     * ElementNSImpl overrides this.
+     * @see ElementNSImpl
+     *
      * @since WD-DOM-Level-2-19990923
      */
-    public String getNamespaceURI()
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-        return namespaceURI;
+    public String getNamespaceURI() {
+        return null;
     }
     
     /** 
@@ -326,15 +273,15 @@ public class ElementImpl
      *
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null. <p>
+     * <P>
+     * ElementImpl does not support Namespaces, so this always returns null.
+     * ElementNSImpl overrides this.
+     * @see ElementNSImpl
      *
      * @since WD-DOM-Level-2-19990923
      */
-    public String getPrefix()
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-        return prefix;
+    public String getPrefix() {
+        return null;
     }
     
     /** 
@@ -343,6 +290,10 @@ public class ElementImpl
      * Note that setting this attribute changes the nodeName attribute, which holds the
      * qualified name, as well as the tagName and name attributes of the Element
      * and Attr interfaces, when applicable.<p>
+     * <P>
+     * ElementImpl does not support Namespaces, so this always throws an
+     * exception. ElementNSImpl overrides this.
+     * @see ElementNSImpl
      *
      * @throws INVALID_CHARACTER_ERR Raised if the specified
      * prefix contains an invalid character.     
@@ -350,45 +301,24 @@ public class ElementImpl
      * @since WD-DOM-Level-2-19990923
      */
     public void setPrefix(String prefix)
-        throws DOMException
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-    	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
-        }
-        
-        if (prefix != null && prefix.equals("xml")) {
-            if (!(namespaceURI != null && namespaceURI.equals("") 
-            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))) 
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (namespaceURI == null || namespaceURI.equals("")) 
-        {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-    	}
-        
-        this.prefix = prefix;
+        throws DOMException {
+	throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+				   "NAMESPACE_ERR");
     }
                                         
     /** 
      * Introduced in DOM Level 2. <p>
      *
      * Returns the local part of the qualified name of this node.
+     * <P>
+     * ElementImpl does not support Namespaces, so this always returns null.
+     * ElementNSImpl overrides this.
+     * @see ElementNSImpl
+     *
      * @since WD-DOM-Level-2-19990923
      */
-    public String             getLocalName()
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-        return localName;
+    public String             getLocalName() {
+        return null;
     }
     
     /**

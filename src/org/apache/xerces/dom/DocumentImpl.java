@@ -921,7 +921,7 @@ public class DocumentImpl
     public Element createElementNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-        return new ElementImpl( this, namespaceURI, qualifiedName);
+        return new ElementNSImpl( this, namespaceURI, qualifiedName);
     }
 
     /**
@@ -945,7 +945,7 @@ public class DocumentImpl
     public Attr createAttributeNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-        return new AttrImpl( this, namespaceURI, qualifiedName);
+        return new AttrNSImpl( this, namespaceURI, qualifiedName);
     }
 
     /**

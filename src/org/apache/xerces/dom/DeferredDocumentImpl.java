@@ -757,7 +757,11 @@ public class DeferredDocumentImpl
             //
 
             case Node.ATTRIBUTE_NODE: {
-                node = new DeferredAttrImpl(this, nodeIndex);
+		if (fNamespacesEnabled) {
+		    node = new DeferredAttrNSImpl(this, nodeIndex);
+		} else {
+		    node = new DeferredAttrImpl(this, nodeIndex);
+		}
                 break;
             }
 
@@ -798,7 +802,11 @@ public class DeferredDocumentImpl
                 }
 
                 // create node
-                node = new DeferredElementImpl(this, nodeIndex);
+		if (fNamespacesEnabled) {
+		    node = new DeferredElementNSImpl(this, nodeIndex);
+		} else {
+		    node = new DeferredElementImpl(this, nodeIndex);
+		}
 
                 // save the document element node
                 if (docElement == null) {

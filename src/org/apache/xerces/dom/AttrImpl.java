@@ -92,6 +92,10 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * getParentNode() method is defined to return null for Attr nodes.
  * However, the getElement() method will return the element node
  * that this attribute is associated with.
+ * <P>
+ * AttrImpl does not support Namespaces. AttrNSImpl, which inherits from
+ * it, does.
+ * @see AttrNSImpl
  *
  * @version
  * @since  PR-DOM-Level-1-19980818.
@@ -105,7 +109,7 @@ public class AttrImpl
     //
 
     /** Serialization version. */
-    static final long serialVersionUID = -4421396439224009670L;
+    static final long serialVersionUID = 7277707688218972102L;
 
     //
     // Data
@@ -116,15 +120,6 @@ public class AttrImpl
 
     /** False for default attributes. */
     protected boolean specified = true;
-
-    /** DOM2: Namespace URI. */
-	protected String namespaceURI;
-  
-    /** DOM2: Prefix */
-	protected String prefix;
-
-    /** DOM2: localName. */
-	protected String localName;
   
     //
     // Constructors
@@ -138,60 +133,9 @@ public class AttrImpl
     	super(ownerDocument, name, null);
         syncData = true;
     }
-    /**
-     * DOM2: Constructor for Namespace implementation.
-     */
-    protected AttrImpl(DocumentImpl ownerDocument, 
-                       String namespaceURI, 
-                       String qualifiedName) {
 
-        this.ownerDocument = ownerDocument;
-        this.name = qualifiedName;
-        this.namespaceURI = namespaceURI;
-        int index = qualifiedName.indexOf(':');
-        if (index < 0) {
-            this.prefix = null;
-            this.localName = null;
-        } 
-        else {
-            this.prefix = qualifiedName.substring(0, index); 
-            this.localName = qualifiedName.substring(index+1);
-        }
-        
-    	if (!DocumentImpl.isXMLName(prefix)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
-        }
-        
-        if (prefix != null && prefix.equals("xml")) {
-            
-            if (namespaceURI != null && !namespaceURI.equals("") 
-            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (prefix != null && prefix.equals("xmlns")) {
-            if (namespaceURI != null && !namespaceURI.equals("") )
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (prefix != null && (namespaceURI == null || namespaceURI.equals("")) ) 
-        {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-    	}
-    	
-    	// Unqualified attributes do not have namespaces as per NS spec.
-    	if (prefix == null) 
-    	    namespaceURI = null;
-    	
-        syncData = true;
-        
-    } 
+    // for AttrNS
+    protected AttrImpl() {}
 
     //
     // Node methods
@@ -410,17 +354,15 @@ public class AttrImpl
      *
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null.     
+     * <P>
+     * AttrImpl does not support Namespaces, so this always returns null.
+     * AttrNSImpl overrides this.
+     * @see AttrNSImpl
+     *
      * @since WD-DOM-Level-2-19990923
      */
-    public String getNamespaceURI()
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-        // REVIST: This code could/should be done at a lower-level, such that the namespaceURI
-        // is set properly upon creation. However, there still seems to be some DOM spec 
-        // interpretation grey-area.
-        return namespaceURI;
+    public String getNamespaceURI() {
+        return null;
     }
     
     /** 
@@ -430,15 +372,15 @@ public class AttrImpl
      *
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null. <p>
+     * <P>
+     * AttrImpl does not support Namespaces, so this always returns null.
+     * AttrNSImpl overrides this.
+     * @see AttrNSImpl
      *
      * @since WD-DOM-Level-2-19990923
      */
-    public String getPrefix()
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-        return prefix;
+    public String getPrefix() {
+        return null;
     }
     
     /** 
@@ -447,6 +389,10 @@ public class AttrImpl
      * Note that setting this attribute changes the nodeName attribute, which holds the
      * qualified name, as well as the tagName and name attributes of the Element
      * and Attr interfaces, when applicable.<p>
+     * <P>
+     * AttrImpl does not support Namespaces, so this always throws an
+     * exception. AttrNSImpl overrides this.
+     * @see AttrNSImpl
      *
      * @throws INVALID_CHARACTER_ERR Raised if the specified
      * prefix contains an invalid character.     
@@ -454,31 +400,24 @@ public class AttrImpl
      * @since WD-DOM-Level-2-19990923
      */
     public void setPrefix(String prefix)
-        throws DOMException
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-    	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
-        }
-            
-        this.prefix = prefix;
+        throws DOMException {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                               "NAMESPACE_ERR");
     }
                                         
     /** 
      * Introduced in DOM Level 2. <p>
      *
      * Returns the local part of the qualified name of this node.
+     * <P>
+     * AttrImpl does not support Namespaces, so this always returns null.
+     * AttrNSImpl overrides this.
+     * @see AttrNSImpl
+     *
      * @since WD-DOM-Level-2-19990923
      */
-    public String getLocalName()
-    {
-        if (syncData) {
-            synchronizeData();
-        }
-        return localName;
+    public String getLocalName() {
+        return null;
     }
 
     //

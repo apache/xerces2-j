@@ -55,6 +55,12 @@
  * <http://www.apache.org/>.
  */
 
+/*
+ * WARNING: because java doesn't support multi-inheritance some code is
+ * duplicated. If you're changing this file you probably want to change
+ * DeferredAttrNSImpl.java at the same time.
+ */
+
 package org.apache.xerces.dom;
 
 import org.w3c.dom.*;
@@ -88,6 +94,11 @@ import org.apache.xerces.utils.StringPool;
  * Note that Elements do not permit attributes to appear to be shared
  * (see the INUSE exception), so this object's mutability is
  * officially not an issue.
+ * <P>
+ * DeferredAttrImpl inherits from AttrImpl which does not support
+ * Namespaces. DeferredAttrNSImpl, which inherits from AttrNSImpl, does.
+ * @see DeferredAttrNSImpl
+ *
  *
  * @version
  * @since  PR-DOM-Level-1-19980818.
@@ -101,7 +112,7 @@ public final class DeferredAttrImpl
     //
 
     /** Serialization version. */
-    static final long serialVersionUID = 8793967374959140933L;
+    static final long serialVersionUID = 6903232312469148636L;
 
     //
     // Data
@@ -152,14 +163,6 @@ public final class DeferredAttrImpl
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(elementTypeName);
         specified = ownerDocument.getNodeValue(fNodeIndex) == 1;
-
-        if (ownerDocument.fNamespacesEnabled) {
-            prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
-            if (prefix != null)  { // REVIST: Unqualified attributes do not inherit default namespaces.
-                namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
-            }
-            localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
-        }
 
     } // synchronizeData()
 

@@ -1,3 +1,4 @@
+/* $Id$ */
 /*
  * The Apache Software License, Version 1.1
  *
@@ -58,7 +59,7 @@
 /*
  * WARNING: because java doesn't support multi-inheritance some code is
  * duplicated. If you're changing this file you probably want to change
- * DeferredElementNSImpl.java at the same time.
+ * DeferredElementImpl.java at the same time.
  */
 
 package org.apache.xerces.dom;
@@ -71,27 +72,12 @@ import org.apache.xerces.utils.StringPool;
 import org.w3c.dom.*;
 
 /**
- * Elements represent most of the "markup" and structure of the
- * document.  They contain both the data for the element itself
- * (element name and attributes), and any contained nodes, including
- * document text (as children).
- * <P>
- * Elements may have Attributes associated with them; the API for this is
- * defined in Node, but the function is implemented here. In general, XML
- * applications should retrive Attributes as Nodes, since they may contain
- * entity references and hence be a fairly complex sub-tree. HTML users will
- * be dealing with simple string values, and convenience methods are provided
- * to work in terms of Strings.
- * <P>
- * DeferredElementImpl inherits from ElementImpl which does not support
- * Namespaces. DeferredElementNSImpl, which inherits from ElementNSImpl, does.
- * @see DeferredElementNSImpl
- *
- * @version
- * @since  PR-DOM-Level-1-19980818.
+ * DeferredElementNSImpl is to ElementNSImpl, what DeferredElementImpl is to
+ * ElementImpl. 
+ * @see DeferredElementImpl
  */
-public class DeferredElementImpl
-    extends ElementImpl
+public class DeferredElementNSImpl
+    extends ElementNSImpl
     implements DeferredNode {
 
     //
@@ -99,7 +85,7 @@ public class DeferredElementImpl
     //
 
     /** Serialization version. */
-    static final long serialVersionUID = -7670981133940934842L;
+    static final long serialVersionUID = -5001885145370927385L;
 
     //
     // Data
@@ -116,7 +102,7 @@ public class DeferredElementImpl
      * This is the deferred constructor. Only the fNodeIndex is given here. All
      * other data, can be requested from the ownerDocument via the index.
      */
-    DeferredElementImpl(DeferredDocumentImpl ownerDoc, int nodeIndex) {
+    DeferredElementNSImpl(DeferredDocumentImpl ownerDoc, int nodeIndex) {
         super(ownerDoc, null);
 
         fNodeIndex = nodeIndex;
@@ -149,6 +135,9 @@ public class DeferredElementImpl
         int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(elementTypeName);
+	prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
+	namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+	localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
 
         // attributes
         setupDefaultAttributes();

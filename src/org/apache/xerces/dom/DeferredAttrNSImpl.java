@@ -1,3 +1,4 @@
+/* $Id$ */
 /*
  * The Apache Software License, Version 1.1
  *
@@ -58,40 +59,22 @@
 /*
  * WARNING: because java doesn't support multi-inheritance some code is
  * duplicated. If you're changing this file you probably want to change
- * DeferredElementNSImpl.java at the same time.
+ * DeferredAttrImpl.java at the same time.
  */
 
 package org.apache.xerces.dom;
 
-import java.util.Enumeration;
-import java.util.Vector;
+import org.w3c.dom.*;
 
 import org.apache.xerces.utils.StringPool;
 
-import org.w3c.dom.*;
-
 /**
- * Elements represent most of the "markup" and structure of the
- * document.  They contain both the data for the element itself
- * (element name and attributes), and any contained nodes, including
- * document text (as children).
- * <P>
- * Elements may have Attributes associated with them; the API for this is
- * defined in Node, but the function is implemented here. In general, XML
- * applications should retrive Attributes as Nodes, since they may contain
- * entity references and hence be a fairly complex sub-tree. HTML users will
- * be dealing with simple string values, and convenience methods are provided
- * to work in terms of Strings.
- * <P>
- * DeferredElementImpl inherits from ElementImpl which does not support
- * Namespaces. DeferredElementNSImpl, which inherits from ElementNSImpl, does.
- * @see DeferredElementNSImpl
- *
- * @version
- * @since  PR-DOM-Level-1-19980818.
+ * DeferredAttrNSImpl is to AttrNSImpl, what DeferredAttrImpl is to
+ * AttrImpl. 
+ * @see DeferredAttrImpl
  */
-public class DeferredElementImpl
-    extends ElementImpl
+public final class DeferredAttrNSImpl
+    extends AttrNSImpl
     implements DeferredNode {
 
     //
@@ -99,7 +82,7 @@ public class DeferredElementImpl
     //
 
     /** Serialization version. */
-    static final long serialVersionUID = -7670981133940934842L;
+    static final long serialVersionUID = 6074924934945957154L;
 
     //
     // Data
@@ -113,24 +96,24 @@ public class DeferredElementImpl
     //
 
     /**
-     * This is the deferred constructor. Only the fNodeIndex is given here. All
-     * other data, can be requested from the ownerDocument via the index.
+     * This is the deferred constructor. Only the fNodeIndex is given here.
+     * All other data, can be requested from the ownerDocument via the index.
      */
-    DeferredElementImpl(DeferredDocumentImpl ownerDoc, int nodeIndex) {
-        super(ownerDoc, null);
+    DeferredAttrNSImpl(DeferredDocumentImpl ownerDocument, int nodeIndex) {
+        super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
         syncData = true;
         syncChildren = true;
 
-    } // <init>(DocumentImpl,int)
+    } // <init>(DeferredDocumentImpl,int)
 
     //
     // DeferredNode methods
     //
 
     /** Returns the node index. */
-    public final int getNodeIndex() {
+    public int getNodeIndex() {
         return fNodeIndex;
     }
 
@@ -139,7 +122,7 @@ public class DeferredElementImpl
     //
 
     /** Synchronizes the data (name and value) for fast nodes. */
-    protected final void synchronizeData() {
+    protected void synchronizeData() {
 
         // no need to sync in the future
         syncData = false;
@@ -149,19 +132,13 @@ public class DeferredElementImpl
         int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(elementTypeName);
+        specified = ownerDocument.getNodeValue(fNodeIndex) == 1;
 
-        // attributes
-        setupDefaultAttributes();
-        int index = ownerDocument.getNodeValue(fNodeIndex);
-        if (index != -1) {
-            NamedNodeMap attrs = getAttributes();
-            do {
-                NodeImpl attr = (NodeImpl)ownerDocument.getNodeObject(index);
-                attrs.setNamedItem(attr);
-                attr.parentNode = this;
-                index = ownerDocument.getNextSibling(index);
-            } while (index != -1);
-        }
+	prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
+	if (prefix != null)  { // REVIST: Unqualified attributes do not inherit default namespaces.
+	    namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+	}
+	localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
 
     } // synchronizeData()
 
@@ -171,7 +148,7 @@ public class DeferredElementImpl
      * the two structures in sync. The problem gets worse when
      * editing the tree -- this makes it a lot easier.
      */
-    protected final void synchronizeChildren() {
+    protected void synchronizeChildren() {
 
         // no need to sync in the future
         syncChildren = false;
@@ -200,4 +177,4 @@ public class DeferredElementImpl
 
     } // synchronizeChildren()
 
-} // class DeferredElementImpl
+} // class DeferredAttrImpl
