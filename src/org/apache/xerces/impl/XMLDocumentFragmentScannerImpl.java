@@ -745,7 +745,15 @@ public class XMLDocumentFragmentScannerImpl
         if (fDocumentHandler != null) {
             if (empty) {
                 fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
-                handleEndElement(fElementQName, true);
+                //decrease the markup depth..
+                fMarkupDepth--;
+                // check that this element was opened in the same entity
+                if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+                    reportFatalError("ElementEntityMismatch",
+                                     new Object[]{fCurrentElement.rawname});
+                }
+                //pop the element off the stack..
+                fElementStack.popElement(fElementQName);
             }
             else {
                 fDocumentHandler.startElement(fElementQName, fAttributes, null);
@@ -963,15 +971,19 @@ public class XMLDocumentFragmentScannerImpl
     protected int scanEndElement() throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanEndElement()");
 
-        // name
-        if (fNamespaces) {
-            if (!fEntityScanner.scanQName(fElementQName)) {
-                fElementQName.clear();
-            }
-        }
-        else {
-            String name = fEntityScanner.scanName();
-            fElementQName.setValues(null, name, name, null);
+        fElementStack.popElement(fElementQName) ;
+
+        // Take advantage of the fact that next string _should_ be "fElementQName.rawName",
+        //In scanners most of the time is consumed on checks done for XML characters, we can
+        // optimize on it and avoid the checks done for endElement,
+        //we will also avoid symbol table lookup - neeraj.bajaj@sun.com
+
+        // this should work both for namespace processing true or false...
+
+        //REVISIT: if the string is not the same as expected.. we need to do better error handling..
+        //We can skip this for now... In any case if the string doesn't match -- document is not well formed.
+        if (!fEntityScanner.skipString(fElementQName.rawname)) {
+            reportFatalError("ETagRequired", new Object[]{fElementQName.rawname});
         }
 
         // end
@@ -982,11 +994,22 @@ public class XMLDocumentFragmentScannerImpl
         }
         fMarkupDepth--;
 
-        // handle end element
-        int depth = handleEndElement(fElementQName, false);
-        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanEndElement(): "+depth);
-        return depth;
+        //we have increased the depth for two markup "<" characters
+        fMarkupDepth--;
+      
+        // check that this element was opened in the same entity
+        if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+            reportFatalError("ElementEntityMismatch",
+                             new Object[]{fCurrentElement.rawname});
+        }
 
+        // call handler
+        if (fDocumentHandler != null ) {
+            fDocumentHandler.endElement(fElementQName, null);
+        }
+
+        return fMarkupDepth;
+ 
     } // scanEndElement():int
 
     /**
@@ -1116,6 +1139,8 @@ public class XMLDocumentFragmentScannerImpl
      *                      upon notification.
      *
      */
+    // REVISIT: need to remove this method. It's not called anymore, because
+    // the handling is done when the end tag is scanned. - SG
     protected int handleEndElement(QName element, boolean isEmpty) 
         throws XNIException {
 
