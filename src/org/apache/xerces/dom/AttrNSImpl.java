@@ -113,15 +113,13 @@ public class AttrNSImpl
         
 	if ((prefix != null &&
 	     (namespaceURI == null || namespaceURI.equals("") ||
-	      ((prefix.equals("xml") &&
-		!namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
-	       ||
-	       (prefix.equals("xmlns") &&
-		!namespaceURI.equals("http://www.w3.org/2000/xmlns/")))))
-	    ||
-	    (qualifiedName.equals("xmlns") &&
-	     (namespaceURI == null ||
-	      !namespaceURI.equals("http://www.w3.org/2000/xmlns/")))) {
+	      (prefix.equals("xml") &&
+	       !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
+	      ||
+	      (prefix.equals("xmlns") &&
+	       !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))))
+	     || (qualifiedName.equals("xmlns") &&
+		 !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))) {
 
 	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
@@ -200,18 +198,14 @@ public class AttrNSImpl
         if (syncData) {
             synchronizeData();
         }
-	// treat an empty string as a null
-	if (prefix != null && prefix.equals("")) {
-	    prefix = null;
-	}
 	if (namespaceURI == null ||
-	    (prefix != null
-	     &&
-	     ((prefix.equals("xmlns")
-	       && !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))
+	    (prefix != null &&
+	     ((prefix.equals("xmlns") &&
+	       !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))
 	      ||
-	      (prefix.equals("xml")
-	       && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))))) {
+	      (prefix.equals("xml") &&
+	       !namespaceURI.equals("http://www.w3.org/XML/1998/namespace")))))
+	{
     	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
     	}

@@ -197,10 +197,6 @@ public class ElementNSImpl
         if (syncData) {
             synchronizeData();
         }
-	// treat an empty string as a null
-	if (prefix != null && prefix.equals("")) {
-	    prefix = null;
-	}
 	if (namespaceURI == null ||
 	    (prefix != null && prefix.equals("xml") &&
 	     !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))) {
