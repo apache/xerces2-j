@@ -225,6 +225,7 @@ Copyright:
          compress="true"
          includes="org/apache/**, META-INF/**
                    org/w3c/dom/ls/**
+	           org/w3c/dom/xpath/**
                    org/w3c/dom/DOMError.class
                    org/w3c/dom/DOMErrorHandler.class
                    org/w3c/dom/DOMImplementationSource.class
@@ -242,6 +243,7 @@ Copyright:
          compress="true"
          includes="org/xml/**, org/w3c/**, javax/**"
          excludes="org/w3c/dom/ls/**
+                   org/w3c/dom/xpath/**
                    org/w3c/dom/DOMError.class
                    org/w3c/dom/DOMErrorHandler.class
                    org/w3c/dom/DOMImplementationSource.class
@@ -823,6 +825,7 @@ Copyright:
          compress="true"
          includes="org/apache/**, META-INF/**
                    org/w3c/dom/ls/**
+	           org/w3c/dom/xpath/**
                    org/w3c/dom/DOMError.class
                    org/w3c/dom/DOMErrorHandler.class
                    org/w3c/dom/DOMImplementationSource.class
