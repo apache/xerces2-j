@@ -16,6 +16,7 @@
 
 package org.apache.xerces.impl;
 
+import java.io.CharConversionException;
 import java.io.EOFException;
 import java.io.IOException;
 
@@ -668,9 +669,14 @@ public class XMLDocumentScannerImpl
                 // if no XMLDecl, then scan piece of prolog
                 return true;
             }
+            // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
                     e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
+            catch (CharConversionException e) {
+                reportFatalError("CharConversionFailure", null);
                 return false;
             }
             // premature end of file
@@ -836,9 +842,14 @@ public class XMLDocumentScannerImpl
                     setDispatcher(fContentDispatcher);
                 }
             }
+            // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
                     e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
+            catch (CharConversionException e) {
+                reportFatalError("CharConversionFailure", null);
                 return false;
             }
             // premature end of file
@@ -949,9 +960,14 @@ public class XMLDocumentScannerImpl
                     }
                 } while (complete || again);
             }
+            // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
                     e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
+            catch (CharConversionException e) {
+                reportFatalError("CharConversionFailure", null);
                 return false;
             }
             // premature end of file
@@ -1188,9 +1204,14 @@ public class XMLDocumentScannerImpl
                     }
                 } while (complete || again);
             }
+            // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
                     e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
+            catch (CharConversionException e) {
+                reportFatalError("CharConversionFailure", null);
                 return false;
             }
             catch (EOFException e) {

@@ -15,6 +15,7 @@
  */
 package org.apache.xerces.xinclude;
 
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Stack;
@@ -25,6 +26,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.io.MalformedByteSequenceException;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.ParserConfigurationSettings;
@@ -1265,9 +1267,14 @@ public class XIncludeHandler
                 reader.setErrorReporter(fErrorReporter);
                 reader.parse();
             }
+            // encoding errors
             catch (MalformedByteSequenceException ex) {
                 fErrorReporter.reportError(ex.getDomain(), ex.getKey(), 
                     ex.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            catch (CharConversionException e) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                    "CharConversionFailure", null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             catch (IOException e) {
                 reportResourceError(
