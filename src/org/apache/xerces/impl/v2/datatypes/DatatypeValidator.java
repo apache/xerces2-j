@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.v2.datatypes;
 
+import org.apache.xerces.impl.v2.XSType;
 import java.util.Hashtable;
 import java.util.Locale;
 
@@ -70,7 +71,7 @@ import java.util.Locale;
  * @author Jeffrey Rodriguez-
  * @version $Id$
  */
-public interface DatatypeValidator {
+public interface DatatypeValidator extends XSType {
     public static final short FACET_LENGTH       = 0x1<<0;
     public static final short FACET_MINLENGTH    = 0x1<<1;
     public static final short FACET_MAXLENGTH    = 0x1<<2;

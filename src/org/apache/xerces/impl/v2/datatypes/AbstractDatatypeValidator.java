@@ -68,6 +68,8 @@ package org.apache.xerces.impl.v2.datatypes;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import org.apache.xerces.impl.v2.XSType;
+
 import org.apache.xerces.impl.v1.util.regex.RegularExpression;
 
 public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
@@ -129,6 +131,8 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
     public void setLocale(Locale locale) {
         fLocale = locale;
     }
-
+    public short getXSType (){
+        return XSType.DATATYPE_TYPE;
+    }
 
 }
