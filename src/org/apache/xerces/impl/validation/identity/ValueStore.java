@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.validation.identity;
 
-import org.xml.sax.SAXException;
+import org.apache.xerces.xni.XNIException;
 
 /**
  * Interface for storing values associated to an identity constraint. 
@@ -91,6 +91,6 @@ public interface ValueStore {
      *              is used to ensure that each field only adds a value
      *              once within a selection scope.
      */
-    public void addValue(String value, Field field) throws SAXException;
+    public void addValue(String value, Field field) throws XNIException;
 
 } // interface ValueStore

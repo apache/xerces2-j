@@ -63,6 +63,7 @@ import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.ErrorHandler;
@@ -189,7 +190,7 @@ public class Counter
 
     /** Start document. */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
 
         fElements            = 0;
         fAttributes          = 0;
@@ -200,7 +201,7 @@ public class Counter
 
     /** Start element. */
     public void startElement(QName element, XMLAttributes attrs) 
-        throws SAXException {
+        throws XNIException {
 
         fElements++;
         if (attrs != null) {
@@ -210,14 +211,14 @@ public class Counter
     } // startElement(QName,XMLAttributes)
 
     /** Characters. */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
 
         fCharacters += text.length;
 
     } // characters(XMLString);
 
     /** Ignorable whitespace. */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
 
         fIgnorableWhitespace += text.length;
 

@@ -66,6 +66,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentFragmentHandler;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -203,7 +204,7 @@ public class XPathMatcher
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(String content) throws SAXException {
+    protected void matched(String content) throws XNIException {
         if (DEBUG_METHODS || DEBUG_METHODS2) {
             System.out.println("XPATH["+toString()+"]: matched \""+content+'"');
         }
@@ -327,10 +328,10 @@ public class XPathMatcher
      *                         the current context (and its parent contexts)
      *                         if that information is important.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocumentFragment(NamespaceContext namespaceContext) 
-        throws SAXException {
+        throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: startDocumentFragment("+
                                "namespaceContext="+namespaceContext+
@@ -379,10 +380,10 @@ public class XPathMatcher
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: startEntity("+
                                "name="+name+','+
@@ -407,9 +408,9 @@ public class XPathMatcher
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws SAXException {
+    public void textDecl(String version, String encoding) throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: textDecl("+
                                "version="+version+','+
@@ -426,9 +427,9 @@ public class XPathMatcher
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: endEntity("+
                                "name="+name+
@@ -441,9 +442,9 @@ public class XPathMatcher
      * 
      * @param text The text in the comment.
      *
-     * @throws SAXException Thrown by application to signal an error.
+     * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: comment("+
                                "text="+text+
@@ -465,10 +466,10 @@ public class XPathMatcher
      * @param target The target.
      * @param data   The data or null if none specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: processingInstruction("+
                                "target="+target+','+
@@ -484,10 +485,10 @@ public class XPathMatcher
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
-        throws SAXException {
+        throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: startPrefixMapping("+
                                "prefix="+prefix+','+
@@ -508,10 +509,10 @@ public class XPathMatcher
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
         if (DEBUG_METHODS || DEBUG_METHODS2) {
             System.out.println("XPATH["+toString()+"]: startElement("+
                                "element="+element+','+
@@ -609,7 +610,7 @@ public class XPathMatcher
                     }
                     /***/
                     else {
-                        throw new SAXException("axis \""+axis+"\" not allowed");
+                        throw new XNIException("axis \""+axis+"\" not allowed");
                     }
 
                     // check for attribute match
@@ -658,14 +659,14 @@ public class XPathMatcher
                                 matched(fMatchedString);
                             }
                             else {
-                                throw new SAXException("node test \""+nodeTest+"\" not allowed");
+                                throw new XNIException("node test \""+nodeTest+"\" not allowed");
                             }
                         }
                     }
                     break;
                 }
                 default: {
-                    throw new SAXException("step \""+step+"\" not allowed");
+                    throw new XNIException("step \""+step+"\" not allowed");
                 }
             }
             break;
@@ -682,9 +683,9 @@ public class XPathMatcher
      * 
      * @param text The content.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: characters("+
                                "text="+text+
@@ -713,9 +714,9 @@ public class XPathMatcher
      * 
      * @param text The ignorable whitespace.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: ignorableWhitespace("+
                                "text="+text+
@@ -728,9 +729,9 @@ public class XPathMatcher
      * 
      * @param element The name of the element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
         if (DEBUG_METHODS || DEBUG_METHODS2) {
             System.out.println("XPATH["+toString()+"]: endElement("+
                                "element="+element+
@@ -762,9 +763,9 @@ public class XPathMatcher
      * 
      * @param prefix The namespace prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix) throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: endPrefixMapping("+
                                "prefix="+prefix+
@@ -775,9 +776,9 @@ public class XPathMatcher
     /** 
      * The start of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws SAXException {
+    public void startCDATA() throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: startCDATA()");
         }
@@ -787,9 +788,9 @@ public class XPathMatcher
     /**
      * The end of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws SAXException {
+    public void endCDATA() throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: endCDATA()");
         }
@@ -798,9 +799,9 @@ public class XPathMatcher
     /**
      * The end of the document fragment.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocumentFragment() throws SAXException {
+    public void endDocumentFragment() throws XNIException {
         if (DEBUG_METHODS) {
             System.out.println("XPATH["+toString()+"]: endDocumentFragment()");
         }
@@ -918,19 +919,19 @@ public class XPathMatcher
                 System.out.println("#### argv["+i+"]: \""+expr+"\" -> \""+xpath.toString()+'"');
                 org.apache.xerces.parsers.XMLDocumentParser parser =
                     new org.apache.xerces.parsers.XMLDocumentParser(symbols) {
-                    public void startDocument() throws SAXException {
+                    public void startDocument() throws XNIException {
                         matcher.startDocumentFragment(null);
                     }
-                    public void startElement(QName element, XMLAttributes attributes) throws SAXException {
+                    public void startElement(QName element, XMLAttributes attributes) throws XNIException {
                         matcher.startElement(element, attributes);
                     }
-                    public void characters(XMLString text) throws SAXException {
+                    public void characters(XMLString text) throws XNIException {
                         matcher.characters(text);
                     }
-                    public void endElement(QName element) throws SAXException {
+                    public void endElement(QName element) throws XNIException {
                         matcher.endElement(element);
                     }
-                    public void endDocument() throws SAXException {
+                    public void endDocument() throws XNIException {
                         matcher.endDocumentFragment();
                     }
                 };

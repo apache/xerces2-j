@@ -69,6 +69,7 @@ import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.ErrorHandler;
@@ -194,10 +195,10 @@ public class DocumentTracer
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *     
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
 
         fIndent = 0;
         printIndent();
@@ -215,7 +216,7 @@ public class DocumentTracer
 
     /** XML Declaration. */
     public void xmlDecl(String version, String encoding, String actualEncoding,
-                        String standalone) throws SAXException {
+                        String standalone) throws XNIException {
 
         printIndent();
         fOut.print("xmlDecl(");
@@ -236,7 +237,7 @@ public class DocumentTracer
 
     /** Doctype declaration. */
     public void doctypeDecl(String rootElement, String publicId, 
-                            String systemId) throws SAXException {
+                            String systemId) throws XNIException {
 
         printIndent();
         fOut.print("doctypeDecl(");
@@ -255,7 +256,7 @@ public class DocumentTracer
 
     /** Start prefix mapping. */
     public void startPrefixMapping(String prefix, String uri)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("startPrefixMapping(");
@@ -271,7 +272,7 @@ public class DocumentTracer
 
     /** Start element. */
     public void startElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("startElement(");
@@ -284,7 +285,7 @@ public class DocumentTracer
 
     /** Empty element. */
     public void emptyElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("emptyElement(");
@@ -295,7 +296,7 @@ public class DocumentTracer
     } // emptyElement(QName,XMLAttributes)
 
     /** Characters. */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
 
         printIndent();
         fOut.print("characters(");
@@ -307,7 +308,7 @@ public class DocumentTracer
     } // characters(XMLString)
 
     /** Ignorable whitespace. */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
 
         printIndent();
         fOut.print("ignorableWhitespace(");
@@ -319,7 +320,7 @@ public class DocumentTracer
     } // ignorableWhitespace(XMLString)
 
     /** End element. */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -344,7 +345,7 @@ public class DocumentTracer
     } // endElement(QName)
 
     /** End prefix mapping. */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix) throws XNIException {
 
         printIndent();
         fOut.print("endPrefixMapping(");
@@ -356,7 +357,7 @@ public class DocumentTracer
     } // endPrefixMapping(String)
 
     /** Start CDATA section. */
-    public void startCDATA() throws SAXException {
+    public void startCDATA() throws XNIException {
 
         printIndent();
         fOut.println("startCDATA()");
@@ -366,7 +367,7 @@ public class DocumentTracer
     } // startCDATA()
 
     /** End CDATA section. */
-    public void endCDATA() throws SAXException {
+    public void endCDATA() throws XNIException {
 
         fIndent--;
         printIndent();
@@ -376,7 +377,7 @@ public class DocumentTracer
     } //  endCDATA()
 
     /** End document. */
-    public void endDocument() throws SAXException {
+    public void endDocument() throws XNIException {
 
         fIndent--;
         printIndent();
@@ -391,7 +392,7 @@ public class DocumentTracer
 
     /** Start entity. */
     public void startEntity(String name, String publicId, String systemId, 
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
 
         printIndent();
         fOut.print("startEntity(");
@@ -413,7 +414,7 @@ public class DocumentTracer
     } // startEntity(String,String,String,String)
 
     /** Text declaration. */
-    public void textDecl(String version, String encoding) throws SAXException {
+    public void textDecl(String version, String encoding) throws XNIException {
 
         printIndent();
         fOut.print("textDecl(");
@@ -428,7 +429,7 @@ public class DocumentTracer
     } // textDecl(String,String)
 
     /** Comment. */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
 
         printIndent();
         fOut.print("comment(");
@@ -441,7 +442,7 @@ public class DocumentTracer
 
     /** Processing instruction. */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("processingInstruction(");
@@ -456,7 +457,7 @@ public class DocumentTracer
     } // processingInstruction(String,XMLString)
 
     /** End entity. */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -473,7 +474,7 @@ public class DocumentTracer
     //
 
     /** Start DTD. */
-    public void startDTD() throws SAXException {
+    public void startDTD() throws XNIException {
 
         printIndent();
         fOut.println("startDTD()");
@@ -484,7 +485,7 @@ public class DocumentTracer
 
     /** Element declaration. */
     public void elementDecl(String name, String contentModel)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("elementDecl(");
@@ -499,7 +500,7 @@ public class DocumentTracer
     } // elementDecl(String,String)
 
     /** Start attribute list. */
-    public void startAttlist(String elementName) throws SAXException {
+    public void startAttlist(String elementName) throws XNIException {
 
         printIndent();
         fOut.print("startAttlist(");
@@ -515,7 +516,7 @@ public class DocumentTracer
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("attributeDecl(");
@@ -560,7 +561,7 @@ public class DocumentTracer
     } // attributeDecl(String,String,String,String[],String,XMLString)
 
     /** End attribute list. */
-    public void endAttlist() throws SAXException {
+    public void endAttlist() throws XNIException {
 
         fIndent--;
         printIndent();
@@ -571,7 +572,7 @@ public class DocumentTracer
 
     /** Internal entity declaration. */
     public void internalEntityDecl(String name, XMLString text)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("internalEntityDecl(");
@@ -587,7 +588,7 @@ public class DocumentTracer
 
     /** External entity declaration. */
     public void externalEntityDecl(String name, String publicId, 
-                                   String systemId) throws SAXException {
+                                   String systemId) throws XNIException {
 
         printIndent();
         fOut.print("externalEntityDecl(");
@@ -607,7 +608,7 @@ public class DocumentTracer
     /** Unparsed entity declaration. */
     public void unparsedEntityDecl(String name, String publicId, 
                                    String systemId, String notation)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("externalEntityDecl(");
@@ -629,7 +630,7 @@ public class DocumentTracer
 
     /** Notation declaration. */
     public void notationDecl(String name, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("notationDecl(");
@@ -647,7 +648,7 @@ public class DocumentTracer
     } // notationDecl(String,String,String)
 
     /** Start conditional section. */
-    public void startConditional(short type) throws SAXException {
+    public void startConditional(short type) throws XNIException {
 
         printIndent();
         fOut.print("startConditional(");
@@ -672,7 +673,7 @@ public class DocumentTracer
     } // startConditional(short)
 
     /** End conditional section. */
-    public void endConditional() throws SAXException {
+    public void endConditional() throws XNIException {
 
         fIndent--;
         printIndent();
@@ -682,7 +683,7 @@ public class DocumentTracer
     } // endConditional()
 
     /** End DTD. */
-    public void endDTD() throws SAXException {
+    public void endDTD() throws XNIException {
 
         fIndent--;
         printIndent();
@@ -697,7 +698,7 @@ public class DocumentTracer
 
     /** Start content model. */
     public void startContentModel(String elementName, short type)
-        throws SAXException {
+        throws XNIException {
 
         printIndent();
         fOut.print("startContentModel(");
@@ -733,7 +734,7 @@ public class DocumentTracer
     } // startContentModel(String,short)
 
     /** Mixed element. */
-    public void mixedElement(String elementName) throws SAXException {
+    public void mixedElement(String elementName) throws XNIException {
 
         printIndent();
         fOut.print("mixedElement(");
@@ -745,7 +746,7 @@ public class DocumentTracer
     } // mixedElement(String)
 
     /** Children start group. */
-    public void childrenStartGroup() throws SAXException {
+    public void childrenStartGroup() throws XNIException {
 
         printIndent();
         fOut.println("childrenStartGroup()");
@@ -755,7 +756,7 @@ public class DocumentTracer
     } // childrenStartGroup()
 
     /** Children element. */
-    public void childrenElement(String elementName) throws SAXException {
+    public void childrenElement(String elementName) throws XNIException {
 
         printIndent();
         fOut.print("childrenElement(");
@@ -767,7 +768,7 @@ public class DocumentTracer
     } // childrenElement(String)
 
     /** Children separator. */
-    public void childrenSeparator(short separator) throws SAXException {
+    public void childrenSeparator(short separator) throws XNIException {
 
         printIndent();
         fOut.print("childrenSeparator(");
@@ -791,7 +792,7 @@ public class DocumentTracer
     } // childrenSeparator(short)
 
     /** Children occurrence. */
-    public void childrenOccurrence(short occurrence) throws SAXException {
+    public void childrenOccurrence(short occurrence) throws XNIException {
 
         printIndent();
         fOut.print("childrenOccurrence(");
@@ -819,7 +820,7 @@ public class DocumentTracer
     } // childrenOccurrence(short)
 
     /** Children end group. */
-    public void childrenEndGroup() throws SAXException {
+    public void childrenEndGroup() throws XNIException {
 
         fIndent--;
         printIndent();
@@ -829,7 +830,7 @@ public class DocumentTracer
     } // childrenEndGroup()
 
     /** End content model. */
-    public void endContentModel() throws SAXException {
+    public void endContentModel() throws XNIException {
 
         fIndent--;
         printIndent();

@@ -69,6 +69,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
@@ -112,10 +113,10 @@ public class XMLSchemaValidator
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      *     
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(String systemId, String encoding) 
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -134,10 +135,10 @@ public class XMLSchemaValidator
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void xmlDecl(String version, String encoding, String standalone)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -155,10 +156,10 @@ public class XMLSchemaValidator
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement, String publicId, String systemId)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -174,10 +175,10 @@ public class XMLSchemaValidator
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -194,10 +195,10 @@ public class XMLSchemaValidator
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -211,9 +212,9 @@ public class XMLSchemaValidator
      * 
      * @param text The content.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws SAXException {
+    public void characters(XMLString text) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -232,9 +233,9 @@ public class XMLSchemaValidator
      * 
      * @param text The ignorable whitespace.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws SAXException {
+    public void ignorableWhitespace(XMLString text) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -248,9 +249,9 @@ public class XMLSchemaValidator
      * 
      * @param element The name of the element.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws SAXException {
+    public void endElement(QName element) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -265,9 +266,9 @@ public class XMLSchemaValidator
      * 
      * @param prefix The namespace prefix.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(String prefix) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -279,9 +280,9 @@ public class XMLSchemaValidator
     /** 
      * The start of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws SAXException {
+    public void startCDATA() throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -293,9 +294,9 @@ public class XMLSchemaValidator
     /**
      * The end of a CDATA section. 
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws SAXException {
+    public void endCDATA() throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -307,9 +308,9 @@ public class XMLSchemaValidator
     /**
      * The end of the document.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws SAXException {
+    public void endDocument() throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -352,10 +353,10 @@ public class XMLSchemaValidator
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -386,9 +387,9 @@ public class XMLSchemaValidator
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws SAXException {
+    public void textDecl(String version, String encoding) throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -410,9 +411,9 @@ public class XMLSchemaValidator
      * 
      * @param text The text in the comment.
      *
-     * @throws SAXException Thrown by application to signal an error.
+     * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws SAXException {
+    public void comment(XMLString text) throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -443,10 +444,10 @@ public class XMLSchemaValidator
      * @param target The target.
      * @param data   The data or null if none specified.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+        throws XNIException {
 
         // call handlers
         if (fInDTD) {
@@ -485,9 +486,9 @@ public class XMLSchemaValidator
      * 
      * @param name The name of the entity.
      *
-     * @throws SAXException Thrown by handler to signal an error.
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws SAXException {
+    public void endEntity(String name) throws XNIException {
 
         // call handlers
         if (fInDTD) {

@@ -58,8 +58,8 @@
 package org.apache.xerces.impl.validation.identity;
 
 import org.apache.xerces.impl.xpath.XPathMatcher;
+import org.apache.xerces.xni.XNIException;
 
-import org.xml.sax.SAXException;
 
 /**
  * Interface for a field activator. The field activator is responsible
@@ -82,6 +82,6 @@ public interface FieldActivator {
      *
      * @param field The field to activate.
      */
-    public XPathMatcher activateField(Field field) throws SAXException;
+    public XPathMatcher activateField(Field field) throws XNIException;
 
 } // interface FieldActivator

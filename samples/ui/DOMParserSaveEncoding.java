@@ -62,7 +62,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.parsers.DOMParser;
-import org.xml.sax.SAXException;
+import org.apache.xerces.xni.XNIException;
 
 /**
  *  The DOMParserSaveEncoding class extends DOMParser. It also provides
@@ -97,7 +97,7 @@ public class DOMParserSaveEncoding extends DOMParser {
         return(javaEncoding);
     }
     public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
+                            String encoding) throws XNIException {
         if( encoding != null){
             setMimeEncoding( encoding);
         }

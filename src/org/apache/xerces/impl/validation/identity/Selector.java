@@ -64,8 +64,8 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XNIException;
 
-import org.xml.sax.SAXException;
 
 /**
  * Schema identity constraint selector.
@@ -190,10 +190,10 @@ public class Selector {
          * @param element    The name of the element.
          * @param attributes The element attributes.
          *
-         * @throws SAXException Thrown by handler to signal an error.
+         * @throws XNIException Thrown by handler to signal an error.
          */
         public void startElement(QName element, XMLAttributes attributes)
-            throws SAXException {
+            throws XNIException {
             super.startElement(element, attributes);
     
             // activate the fields, if selector is matched

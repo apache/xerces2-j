@@ -63,8 +63,8 @@ import org.apache.xerces.impl.xpath.XPathMatcher;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.XNIException;
 
-import org.xml.sax.SAXException;
 
 /**
  * Schema identity constraint field.
@@ -186,7 +186,7 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(String content) throws SAXException {
+        protected void matched(String content) throws XNIException {
             fStore.addValue(content, Field.this);
         } // matched(String)
 
