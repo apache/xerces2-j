@@ -3261,7 +3261,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                SchemaMessageProvider.SCHEMA_DOMAIN,
                                                SchemaMessageProvider.DatatypeError,
                                                SchemaMessageProvider.MSG_NONE,
-                                               new Object [] { idve.getMessage()},
+                                               new Object [] { "In element '"+fStringPool.toString(elementType)+"' : "+idve.getMessage()},
                                                XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                 }
             }
