@@ -334,7 +334,7 @@ public class XMLEntityManager
     public XMLEntityManager(XMLEntityManager entityManager) {
 
         // create scanner
-        fEntityScanner = new EntityScanner();
+        fEntityScanner = createEntityScanner();
 
         // save shared entity declarations
         fDeclaredEntities = entityManager != null
@@ -1444,6 +1444,11 @@ public class XMLEntityManager
 
     } // createReader(InputStream,String, Boolean): Reader
 
+    // returns an instance of XMLEntityScanner
+    protected XMLEntityScanner createEntityScanner() {
+        return new EntityScanner();
+    } // createEntityScanner():  XMLEntityScanner
+
     //
     // Protected static methods
     //
@@ -2037,14 +2042,6 @@ public class XMLEntityManager
                     }
                     c = '\n';
                 }
-                /*** NEWLINE NORMALIZATION ***
-                else {
-                    if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
-                        && fCurrentEntity.isExternal()) {
-                        fCurrentEntity.position++;
-                    }
-                }
-                /***/
             }
 
             // return character that was scanned
@@ -2408,7 +2405,6 @@ public class XMLEntityManager
                         else {
                             newlines++;
                         }
-                        /***/
                     }
                     else if (c == '\n') {
                         newlines++;
@@ -2421,13 +2417,6 @@ public class XMLEntityManager
                                 break;
                             }
                         }
-                        /*** NEWLINE NORMALIZATION ***
-                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
-                            && external) {
-                            fCurrentEntity.position++;
-                            offset++;
-                        }
-                        /***/
                     }
                     else {
                         fCurrentEntity.position--;
@@ -3241,7 +3230,7 @@ public class XMLEntityManager
          * @returns Returns true if the entity changed as a result of this
          *          load operation.
          */
-        private final boolean load(int offset, boolean changeEntity)
+        final boolean load(int offset, boolean changeEntity)
             throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(load, "+offset+": ");
