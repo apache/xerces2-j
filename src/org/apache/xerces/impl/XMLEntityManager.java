@@ -2619,7 +2619,7 @@ public class XMLEntityManager
 
             // end of this entity
             else {
-                //fCurrentEntity.count = offset;
+                fCurrentEntity.count = offset;
                 entityChanged = true;
                 if (changeEntity) {
                     endEntity();
