@@ -22,7 +22,7 @@ jars: compile
 	${MKDIR} bin
 	${MAKE} -C src jars
 
-docs: src/classfiles_updated
+docs: ./src/classfiles_updated
 	@echo Building Stylebook docs in docs directory
 	${MKDIR} docs/html
 	$(STYLEBOOK) "targetDirectory=docs/html" docs/docs-book.xml tools/style-apachexml.jar
