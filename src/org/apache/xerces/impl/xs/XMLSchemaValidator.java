@@ -179,8 +179,12 @@ public class XMLSchemaValidator
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
 
     /** Feature identifier: whether to recognize java encoding names */
-    protected static final String ALLOW_JAVA_ENCODING =
+    protected static final String ALLOW_JAVA_ENCODINGS =
     Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
+
+    /** Feature identifier: whether to continue parsing a schema after a fatal error is encountered */
+    protected static final String CONTINUE_AFTER_FATAL_ERROR =
+    Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
 
     // property identifiers
 
@@ -230,6 +234,8 @@ public class XMLSchemaValidator
         SCHEMA_VALIDATION,
         DYNAMIC_VALIDATION,
         SCHEMA_FULL_CHECKING,
+        ALLOW_JAVA_ENCODINGS,
+        CONTINUE_AFTER_FATAL_ERROR,
     };
 
     /** Feature defaults. */
@@ -241,6 +247,8 @@ public class XMLSchemaValidator
         //       those set by the application. This goes against the
         //       whole purpose of XMLComponent#getFeatureDefault but
         //       it can't be helped in this case. -Ac
+        null, //Boolean.FALSE,
+        null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
@@ -1363,8 +1371,16 @@ public class XMLSchemaValidator
         // Copy the allow-java-encoding feature to the grammar loader.
         // REVISIT: what other fetures/properties do we want to copy?
         try {
-            boolean jencoding = componentManager.getFeature(ALLOW_JAVA_ENCODING);
-            fSchemaLoader.setFeature(ALLOW_JAVA_ENCODING, jencoding);
+            boolean allowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
+            fSchemaLoader.setFeature(ALLOW_JAVA_ENCODINGS, allowJavaEncodings);
+        }
+        catch (XMLConfigurationException e){
+        }
+
+        // get continue-after-fatal-error feature
+        try {
+            boolean fatalError = componentManager.getFeature(CONTINUE_AFTER_FATAL_ERROR);
+            fSchemaLoader.setFeature(CONTINUE_AFTER_FATAL_ERROR, fatalError);
         }
         catch (XMLConfigurationException e){
         }

@@ -119,6 +119,14 @@ import java.io.IOException;
  */
 public class XSDHandler {
 
+    /** Feature identifier:  allow java encodings */
+    protected static final String ALLOW_JAVA_ENCODINGS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
+
+    /** Feature identifier:  continue after fatal error */
+    protected static final String CONTINUE_AFTER_FATAL_ERROR =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
+
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
@@ -151,6 +159,9 @@ public class XSDHandler {
     protected Hashtable fNotationRegistry = new Hashtable();
 
     protected XSDeclarationPool fDeclPool = null;
+
+    // are java encodings allowed?
+    private boolean fAllowJavaEncodings = false;
 
     // These tables correspond to the symbol spaces defined in the
     // spec.
@@ -191,7 +202,7 @@ public class XSDHandler {
     // stores instance document mappings between namespaces and schema hints
     private Hashtable fLocationPairs = null;
 
-    // convinence methods
+    // convenience methods
     private String null2EmptyString(String ns) {
         return ns == null ? XMLSymbols.EMPTY_STRING : ns;
     }
@@ -1469,20 +1480,22 @@ public class XSDHandler {
     public void reset(XMLErrorReporter errorReporter,
                       XMLEntityResolver entityResolver,
                       SymbolTable symbolTable,
-                      XMLGrammarPool grammarPool) {
+                      XMLGrammarPool grammarPool,
+                      boolean allowJavaEncodings) {
 
         fErrorReporter = errorReporter;
         fEntityResolver = entityResolver;
         fSymbolTable = symbolTable;
         fGrammarPool = grammarPool;
+        fAllowJavaEncodings = allowJavaEncodings;
 
         resetSchemaParserErrorHandler();
         
     } // reset(ErrorReporter, EntityResolver, SymbolTable, XMLGrammarPool)
 
     void resetSchemaParserErrorHandler() {
-        try {
-            if (fSchemaParser != null) {
+        if (fSchemaParser != null) {
+            try {
                 XMLErrorHandler currErrorHandler =
                                      fErrorReporter.getErrorHandler();
                 // Setting a parser property can be much more expensive
@@ -1492,9 +1505,18 @@ public class XSDHandler {
                     != fSchemaParser.getProperty(ERROR_HANDLER)) {
                     fSchemaParser.setProperty(ERROR_HANDLER, currErrorHandler);
                 }
+            } catch (Exception e) {
             }
-        }
-        catch (Exception e) {
+            // make sure continue-after-fatal-error and
+            // allow-java-encodings set correctly:
+            try {
+                fSchemaParser.setFeature(CONTINUE_AFTER_FATAL_ERROR, fErrorReporter.getFeature(CONTINUE_AFTER_FATAL_ERROR));
+            } catch (Exception e) {
+            }
+            try {
+                fSchemaParser.setFeature(ALLOW_JAVA_ENCODINGS, fAllowJavaEncodings);
+            } catch (Exception e) {
+            }
         }
     } // resetSchemaParserErrorHandler()
 

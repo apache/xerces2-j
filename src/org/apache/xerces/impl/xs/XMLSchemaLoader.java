@@ -114,10 +114,15 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
         Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
 
+    /** Feature identifier: allow java encodings to be recognized when parsing schema docs. */
+    protected static final String ALLOW_JAVA_ENCODINGS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
+
     // recognized features:
     private static final String[] RECOGNIZED_FEATURES = {
         SCHEMA_FULL_CHECKING,
         CONTINUE_AFTER_FATAL_ERROR,
+        ALLOW_JAVA_ENCODINGS,
     };
 
     // property identifiers
@@ -170,6 +175,9 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
 
     // is Schema Full Checking enabled
     private boolean fIsCheckedFully = false;
+
+    // is allow-java-encodings enabled?
+    private boolean fAllowJavaEncodings = false;
 
     private SymbolTable fSymbolTable = null;
     private XMLErrorReporter fErrorReporter = new XMLErrorReporter (); 
@@ -277,6 +285,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             fIsCheckedFully = state;
         } else if(featureId.equals(CONTINUE_AFTER_FATAL_ERROR)) {
             fErrorReporter.setFeature(CONTINUE_AFTER_FATAL_ERROR, state);
+        } else if(featureId.equals(ALLOW_JAVA_ENCODINGS)) {
+            fAllowJavaEncodings = state;
         } else {
             throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, featureId);
         }
@@ -429,7 +439,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         }
 
         fSchemaHandler.reset(fErrorReporter, fEntityResolver,
-                fSymbolTable, fGrammarPool);
+                fSymbolTable, fGrammarPool, fAllowJavaEncodings);
         if(fGrammarPool == null) {
             fDeclPool.reset();
             fSchemaHandler.setDeclPool(fDeclPool);
