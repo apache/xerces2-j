@@ -57,7 +57,7 @@
            id='releases' source='releases.xml'/>
  <document label='Limitations' title='Parser Limitations'
            id='limitations' source='limitations.xml'/>
- <hidden   title='XML Schema Limitations' id='limitations-schema' source='limitations-schema.xml'/>
+ <hidden   title='XML Schema' id='xml-schema' source='xml-schema.xml'/>
  <hidden   title='DOM Level 3 Implementation' id='dom3' source='dom3.xml'/>
  <external label='Report a Bug' 
            href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'/>
