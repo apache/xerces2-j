@@ -286,19 +286,19 @@ public class Grammar {
         short attributeType;
         boolean isList;
 
-        if (fAttributeDeclType[chunk][index] == -1) {
+        //if (fAttributeDeclType[chunk][index] == -1) {
             
-            attributeType = -1;
-            isList = false;
-        }
-        else {
-            attributeType = (short) (fAttributeDeclType[chunk][index] & LIST_MASK);
-            isList = (fAttributeDeclType[chunk][index] & LIST_FLAG) != 0;
-        }
-        attributeDecl.simpleType.setValues(attributeType,"",fAttributeDeclEnumeration[chunk][index],
-                                           isList, fAttributeDeclDefaultType[chunk][index],
-                                           fAttributeDeclDefaultValue[chunk][index], 
-                                           fAttributeDeclDatatypeValidator[chunk][index]);
+          //  attributeType = -1;
+            //isList = false;
+      //  }
+       // else {
+         //   attributeType = (short) (fAttributeDeclType[chunk][index] & LIST_MASK);
+        //    isList = (fAttributeDeclType[chunk][index] & LIST_FLAG) != 0;
+        //}
+        //attributeDecl.simpleType.setValues(attributeType,"",fAttributeDeclEnumeration[chunk][index],
+          //                                 isList, fAttributeDeclDefaultType[chunk][index],
+            //                               fAttributeDeclDefaultValue[chunk][index], 
+              //                             fAttributeDeclDatatypeValidator[chunk][index]);
         return true;
     } // getAttributeDecl
 
@@ -432,9 +432,9 @@ public class Grammar {
                                        
 
 
-        if (elementDecl.simpleType.list  == true ) {
-            fElementDeclType[chunk][index] |= LIST_FLAG;
-        }
+        //if (elementDecl.simpleType.list  == true ) {
+          //  fElementDeclType[chunk][index] |= LIST_FLAG;
+        //}
         
     }
 

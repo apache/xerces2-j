@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,70 +54,74 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.impl.validation.datatypes;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.Enumeration;
 import java.util.Locale;
-import java.text.Collator;
-import java.util.Enumeration;
 import java.util.StringTokenizer;
-import java.util.NoSuchElementException;
+import java.text.Collator;
 import org.apache.xerces.impl.validation.DatatypeValidator;
 import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
 import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
-
+import org.apache.xerces.util.XMLChar;
+import java.util.NoSuchElementException;
 
 
 /**
- * StringValidator validates that XML content is a W3C string type.
+ * QName Validator validates a QName type.
+ * QName represents XML qualified names. The value 
+ * space of QName is the set of tuples
+ * {namespace name, local part}, where namespace 
+ * name is a uriReference and local part is an NCName.
+ * The lexical space of QName is the set of strings
+ * that match the QName production of [Namespaces in
+ * XML]. 
+ * 
+ * @author Jeffrey Rodriguez
  * @version $Id$
  */
-public class StringDatatypeValidator extends AbstractDatatypeValidator{
-    private Locale     fLocale          = null;
-    DatatypeValidator  fBaseValidator   = null; // Native datatypes have null
+public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
+    private Locale    fLocale          = null;
+    private DatatypeValidator    fBaseValidator   = null;
+    private boolean fDerivedByList             = false;
 
-    private int        fLength           = 0;
-    private int        fMaxLength        = Integer.MAX_VALUE;
-    private int        fMinLength        = 0;
-    private String     fPattern          = null;
-    private Vector     fEnumeration      = null;
-    private String     fMaxInclusive     = null;
-    private String     fMaxExclusive     = null;
-    private String     fMinInclusive     = null;
-    private String     fMinExclusive     = null;
-    private int        fFacetsDefined    = 0;
-    private boolean    fDerivedByList    = false;//default
+    private int       fLength          = 0;
+    private int       fMaxLength       = Integer.MAX_VALUE;
+    private int       fMinLength       = 0;
+    private String    fPattern         = null;
+    private Vector    fEnumeration     = null;
+    private String    fMaxInclusive    = null;
+    private String    fMaxExclusive    = null;
+    private String    fMinInclusive    = null;
+    private String    fMinExclusive    = null;
+    private int       fFacetsDefined   = 0;
 
-    private boolean    isMaxExclusiveDefined = false;
-    private boolean    isMaxInclusiveDefined = false;
-    private boolean    isMinExclusiveDefined = false;
-    private boolean    isMinInclusiveDefined = false;
+    private boolean isMaxExclusiveDefined = false;
+    private boolean isMaxInclusiveDefined = false;
+    private boolean isMinExclusiveDefined = false;
+    private boolean isMinInclusiveDefined = false;
     private RegularExpression fRegex         = null;
 
 
-
-
-    public  StringDatatypeValidator () throws InvalidDatatypeFacetException{
+    public QNameDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
-
     }
 
-    public StringDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
+    public QNameDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+                                    boolean derivedByList ) throws InvalidDatatypeFacetException  {
 
         setBasetype( base ); // Set base type 
 
         fDerivedByList = derivedByList;
 
         // Set Facets if any defined
-        //fFacetsDefined = 0;
         if ( facets != null  ){
             if ( fDerivedByList == false) {
-
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -138,7 +142,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         try {
                             fMinLength     = Integer.parseInt( minLengthValue );
                         } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
+                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
                         }
                     } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
                         fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
@@ -168,7 +172,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
                         fMinExclusive = (String)facets.get(key);
                     } else {
-                        throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                        throw new InvalidDatatypeFacetException();
                     }
                 }
 
@@ -185,8 +189,8 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "'must be less than the value of maxLength = '" + fMaxLength + "'.");
+                        throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
+                                                                 "must be greater that the value of minLength" + fMinLength );
                     }
                 }
 
@@ -241,7 +245,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                         fEnumeration    = (Vector)facets.get(key);
                     } else {
-                        throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                        throw new InvalidDatatypeFacetException();
                     }
                 }
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
@@ -256,98 +260,81 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength > fMaxLength ) {
+                    if ( fMinLength < fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
                                                                  "must be greater that the value of maxLength" + fMaxLength );
                     }
                 }
             }
         }// End of Facets Setting
+
+
     }
 
 
 
-
-    /**
-     * validate that a string is a W3C string type
-     * 
-     * @param content A string containing the content to be validated
-     * @param list
-     * @exception throws InvalidDatatypeException if the content is
-     *                   not a W3C string type
-     * @exception InvalidDatatypeValueException
-     */
+/**
+* validate that a string is a W3C string type
+* 
+* @param content A string containing the content to be validated
+* @param list
+* @exception throws InvalidDatatypeException if the content is
+*                   not a W3C string type
+* @exception InvalidDatatypeValueException
+*/
     public void validate(String content, Object state)  throws InvalidDatatypeValueException
     {
-        if ( fDerivedByList == false  ) {
-            if (fFacetsDefined != 0 )//Any facets to validate
-                checkContent( content, state );
-        } else { //derived by list 
-            checkContentList( content, state );
+        StringTokenizer parsedList = null;
+
+        if ( fDerivedByList == true  ) { //derived by list
+            parsedList = new StringTokenizer( content );
+            try {
+                while ( parsedList.hasMoreTokens() ) {
+                    checkContentList( parsedList.nextToken() );
+                }
+            } catch ( NoSuchElementException e ) {
+                e.printStackTrace();
+            }
+        } else { //derived by list
+            checkContent( content );
         }
     }
 
 
-    /**
-     * set the locate to be used for error messages
-     */
+
+/**
+* set the locate to be used for error messages
+*/
     public void setLocale(Locale locale) {
         fLocale = locale;
     }
 
 
-    /**
-     * 
-     * @return                          A Hashtable containing the facets
-     *         for this datatype.
-     */
-    public Hashtable getFacets(){
-        return null;
-    }
 
-    private void checkContent( String content, Object state )throws InvalidDatatypeValueException
+
+    private void checkContent( String content )throws InvalidDatatypeValueException
     {
-
-        if ( this.fBaseValidator != null ) {//validate against parent type if any
-            this.fBaseValidator.validate( content, state );
-        }
-
         if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
             if ( content.length() > fMaxLength ) {
                 throw new InvalidDatatypeValueException("Value '"+content+
                                                         "' with length '"+content.length()+
-                                                        "' exceeds maximum length facet of '"+fMaxLength+"'.");
+                                                        "' exceeds maximum length of "+fMaxLength+".");
             }
         }
-        if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-            if ( content.length() < fMinLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is less than minimum length facet of '"+fMinLength+"'." );
-            }
-        }
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-            if ( content.length() != fLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is not equal to length facet '"+fLength+"'.");
-            }
-        }
-
-
-
         if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
             if ( fEnumeration.contains( content ) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
         }
 
+
         if ( isMaxExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMaxExclusive );
+            //System.out.println( "maxExc = " + comparisonResult );
+
             if ( comparisonResult >= 0 ) {
-                throw new InvalidDatatypeValueException( "MaxExclusive:Value '"+content+ "'  must be " +
-                                                         "lexicographically less than" + fMaxExclusive );
+                throw new InvalidDatatypeValueException( "Value '"+content+ "'  must be " +
+                                  "lexicographically less than '" + fMaxExclusive + "'."  );
 
             }
 
@@ -356,122 +343,68 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             int comparisonResult;
             comparisonResult  = compare( content, fMaxInclusive );
             if ( comparisonResult > 0 )
-                throw new InvalidDatatypeValueException( "MaxInclusive:Value '"+content+ "' must be " +
-                                                         "lexicographically less or equal than" + fMaxInclusive );
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
+                                  "lexicographically less or equal than '" + fMaxInclusive +"'." );
         }
 
         if ( isMinExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMinExclusive );
-
-            //System.out.println( "exclusive = " + comparisonResult );
+            //System.out.println( "minExc = " + comparisonResult );
 
             if ( comparisonResult <= 0 )
-                throw new InvalidDatatypeValueException( "MinExclusive:Value '"+content+ "' must be " +
-                                                         "lexicographically greater than" + fMinExclusive );
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
+                                                         "lexicographically greater than '" + fMinExclusive + "'." );
         }
         if ( isMinInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult = compare( content, fMinInclusive );
-            //System.out.println( "inclusive = " + comparisonResult );
+            //System.out.println( "minInc = " + comparisonResult );
             if ( comparisonResult < 0 )
-                throw new InvalidDatatypeValueException( "MinInclusive:Value '"+content+ "' must be " +
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
                                                          "lexicographically greater or equal than '" + fMinInclusive  + "'." );
         }
 
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            //RegularExpression regex = new RegularExpression(fPattern );
             if ( fRegex == null || fRegex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+
                                                         "' does not match regular expression facet '" + fPattern + "'." );
         }
-
     }
+
+    public Hashtable getFacets(){
+        return null;
+    }
+
     public int compare( String content, String facetValue ){
         Locale    loc       = Locale.getDefault();
         Collator  collator  = Collator.getInstance( loc );
         return collator.compare( content, facetValue );
     }
 
+
+
     /**
-   * Returns a copy of this object.
-   */
-    public Object clone() throws CloneNotSupportedException  {
-        StringDatatypeValidator newObj = null;
-        try {
-            newObj = new StringDatatypeValidator();
-
-            newObj.fLocale           =  this.fLocale;
-            newObj.fBaseValidator    =  this.fBaseValidator;
-            newObj.fLength           =  this.fLength;
-            newObj.fMaxLength        =  this.fMaxLength;
-            newObj.fMinLength        =  this.fMinLength;
-            newObj.fPattern          =  this.fPattern;
-            newObj.fEnumeration      =  this.fEnumeration;
-            newObj.fMaxInclusive     =  this.fMaxInclusive;
-            newObj.fMaxExclusive     =  this.fMaxExclusive;
-            newObj.fMinInclusive     =  this.fMinInclusive;
-            newObj.fMinExclusive     =  this.fMinExclusive;
-            newObj.fFacetsDefined    =  this.fFacetsDefined;
-            newObj.fDerivedByList    =  this.fDerivedByList;
-            newObj.isMaxExclusiveDefined = this.isMaxExclusiveDefined;
-            newObj.isMaxInclusiveDefined = this.isMaxInclusiveDefined;
-            newObj.isMinExclusiveDefined = this.isMinExclusiveDefined;
-            newObj.isMinInclusiveDefined = this.isMinInclusiveDefined;
-        } catch ( InvalidDatatypeFacetException ex) {
-            ex.printStackTrace();
-        }
-        return newObj;
+       * Returns a copy of this object.
+       */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-    // Private methods
-    private void checkContentList( String content,  Object state )throws InvalidDatatypeValueException
+
+
+    private void checkContentList( String content )throws InvalidDatatypeValueException
     {
-        StringTokenizer parsedList = new StringTokenizer( content );
-        try {
-            int numberOfTokens =  parsedList.countTokens();
-            if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                if ( numberOfTokens > fMaxLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+  numberOfTokens + "'tokens"+
-                                                            "' exceeds maximum length facet with  '"+fMaxLength+"' tokens.");
-                }
-            }
-            if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                if ( numberOfTokens < fMinLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+ numberOfTokens+ "'tokens" +
-                                                            "' is less than minimum length facet with '"+fMinLength+"' tokens." );
-                }
-            }
-
-            if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                if ( numberOfTokens != fLength ) {
-                    throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' with length ='"+ numberOfTokens+ "'tokens" +
-                                                            "' is not equal to length facet with '"+fLength+"'. tokens");
-                }
-            }
-
-            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                if ( fEnumeration.contains( content ) == false )
-                    throw new InvalidDatatypeValueException("Value '"+
-                                                            content+"' must be one of "+fEnumeration);
-            }
-            while ( parsedList.hasMoreTokens() ) {       //Check actual list content
-                if ( this.fBaseValidator != null ) {//validate against parent type if any
-                    this.fBaseValidator.validate( parsedList.nextToken(), state );
-                }
-            }
-        } catch ( NoSuchElementException e ) {
-            e.printStackTrace();
-        }
+//Revisit
     }
+
 
     private void setBasetype( DatatypeValidator base) {
         fBaseValidator = base;
     }
+
+
 
 }
 

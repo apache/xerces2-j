@@ -65,10 +65,17 @@ import org.xml.sax.SAXException;
  */
 public class InvalidDatatypeValueException
     extends SAXException {
-
     //
+    //data
+    //
+   private int majorCode = -1;
+   private int minorCode  = -1;
+
+      //
     // Constructors
     //
+
+
 
     /**
      * 
@@ -104,5 +111,21 @@ public class InvalidDatatypeValueException
     public InvalidDatatypeValueException(String message, Exception exception) {
         super(message, exception);
     }
+
+    //methods
+public  int getMinorCode(){
+    return  minorCode;
+}
+public  int getMajorCode(){
+    return  majorCode;
+}
+
+public  void setMinorCode(int code ){
+    majorCode = code;
+}
+public  void setMajorCode(int code ){
+    minorCode = code;
+}
+
 
 } // class InvalidDatatypeValueException
