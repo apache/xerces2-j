@@ -202,7 +202,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Compiles the tests                                                  -->
   <!-- =================================================================== -->
-  <target name="tests" depends="jar">
+  <target name="tests" depends="samples">
     <mkdir dir="${build.tests}"/>
     <copydir src="${tests.dir}" dest="${build.tests}" />
     <javac srcdir="${build.tests}"
