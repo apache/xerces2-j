@@ -98,6 +98,13 @@
      </td>
     </tr>
     <tr>
+     <td>-va | -VA</td>
+     <td>
+      Turn on/off validation of schema annotations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
      <td>-dv | -DV</td>
      <td>
       Turn on/off dynamic validation.<br/>
@@ -180,6 +187,13 @@
      </td>
     </tr>
     <tr>
+     <td>-va | -VA</td>
+     <td>
+      Turn on/off validation of schema annotations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
      <td>-dv | -DV</td>
      <td>
       Turn on/off dynamic validation.<br/>
@@ -231,6 +245,13 @@
      <td>-f  | -F</td>
      <td>
       Turn on/off Schema full checking.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-va | -VA</td>
+     <td>
+      Turn on/off validation of schema annotations.<br/>
       <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
      </td>
     </tr>
