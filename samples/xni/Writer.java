@@ -71,6 +71,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -198,7 +199,8 @@ public class Writer
     //
 
     /** Start document. */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, 
+            NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
 
         fSeenRootElement = false;
@@ -209,7 +211,7 @@ public class Writer
             fOut.flush();
         }
 
-    } // startDocument(XMLLocator,String,Augmentations)
+    } // startDocument(XMLLocator,String,NamespaceContext, Augmentations)
 
     /** Start element. */
     public void startElement(QName element, XMLAttributes attrs, Augmentations augs)
@@ -339,43 +341,6 @@ public class Writer
     //
     // XMLDTDHandler methods
     //
-
-    /** Processing instruction. */
-    public void processingInstruction(String target, XMLString data)
-        throws XNIException {
-
-        if (fSeenRootElement) {
-            fOut.print('\n');
-        }
-        fOut.print("<?");
-        fOut.print(target);
-        if (data != null && data.length > 0) {
-            fOut.print(' ');
-            fOut.print(data.toString());
-        }
-        fOut.print("?>");
-        if (!fSeenRootElement) {
-            fOut.print('\n');
-        }
-        fOut.flush();
-
-    } // processingInstruction(String,XMLString)
-
-    /** Comment. */
-    public void comment(XMLString text) throws XNIException {
-        if (!fCanonical) {
-            if (fSeenRootElement) {
-                fOut.print('\n');
-            }
-            fOut.print("<!--");
-            normalizeAndPrint(text);
-            fOut.print("-->");
-            if (!fSeenRootElement) {
-                fOut.print('\n');
-            }
-            fOut.flush();
-        }
-    } // comment(XMLString)
 
     //
     // XMLErrorHandler methods

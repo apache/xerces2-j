@@ -67,6 +67,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -239,7 +240,7 @@ public class Counter
     //
 
     /** Start document. */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
 
         fElements            = 0;
@@ -249,7 +250,7 @@ public class Counter
         fTagCharacters       = 0;
         fOtherCharacters     = 0;
 
-    } // startDocument(XMLLocator,String)
+    } // startDocument(XMLLocator,String, NamespaceContext, Augmentations)
 
     /** Start element. */
     public void startElement(QName element, XMLAttributes attrs, Augmentations augs)
