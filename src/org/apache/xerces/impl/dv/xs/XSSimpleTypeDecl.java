@@ -1697,6 +1697,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public StringList getLexicalEnumerations() {
+        if (fEnumeration == null)
+            return null;
+        
         // REVISIT: fEnumeration should be of type StringListImpl
         int size = fEnumeration.size();
         String[] strs = new String[size];
@@ -1706,6 +1709,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public StringList getLexicalPatterns() {
+        if (fPattern == null)
+            return null;
 
         // REVISIT: fPattern should be of type StringListImpl
         int size = fPattern.size();
