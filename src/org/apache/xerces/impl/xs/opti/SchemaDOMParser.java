@@ -25,7 +25,6 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -225,16 +224,18 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         if (fAnnotationDepth == -1) {
             if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA &&
                     element.localpart == SchemaSymbols.ELT_ANNOTATION) {
-                if(fGenerateSyntheticAnnotation) {
-                    if(fSawAnnotation.size() > 0) fSawAnnotation.pop();
+                if (fGenerateSyntheticAnnotation) {
+                    if (fSawAnnotation.size() > 0) {
+                        fSawAnnotation.pop();
+                    }
                     fSawAnnotation.push(Boolean.TRUE);
                 }
                 fAnnotationDepth = fDepth;
                 schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
             } 
-            else if(fGenerateSyntheticAnnotation) {
+            else if (fGenerateSyntheticAnnotation) {
                 fSawAnnotation.push(Boolean.FALSE);
-                fHasNonSchemaAttributes.push(hasNonSchemaAttributes(attributes) ? Boolean.TRUE : Boolean.FALSE);
+                fHasNonSchemaAttributes.push(hasNonSchemaAttributes(element, attributes) ? Boolean.TRUE : Boolean.FALSE);
             }
         } else if(fDepth == fAnnotationDepth+1) {
             fInnerAnnotationDepth = fDepth;
@@ -265,7 +266,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
         
-        if(fGenerateSyntheticAnnotation && element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && hasNonSchemaAttributes(attributes)) { 
+        if (fGenerateSyntheticAnnotation && fAnnotationDepth == -1 && 
+                element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && hasNonSchemaAttributes(element, attributes)) { 
             
             schemaDOM.startElement(element, attributes,
                     fLocator.getLineNumber(),
@@ -374,11 +376,16 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * @param attributes
      * @return
      */
-    private boolean hasNonSchemaAttributes(XMLAttributes attributes) {
-        for(int i = 0;i < attributes.getLength(); i++) {
+    private boolean hasNonSchemaAttributes(QName element, XMLAttributes attributes) {
+        final int length = attributes.getLength();
+        for (int i = 0; i < length; ++i) {
             String uri = attributes.getURI(i);
-            if(uri != null && uri != SchemaSymbols.URI_SCHEMAFORSCHEMA && uri != SchemaSymbols.URI_XSI && uri != XMLSymbols.PREFIX_XMLNS && uri != XMLSymbols.PREFIX_XMLNS)
+            if (uri != null && uri != SchemaSymbols.URI_SCHEMAFORSCHEMA && 
+                    uri != NamespaceContext.XMLNS_URI &&
+                    !(uri == NamespaceContext.XML_URI && 
+                            attributes.getQName(i) == SchemaSymbols.ATT_XML_LANG && element.localpart == SchemaSymbols.ELT_SCHEMA)) {
                 return true;
+            }
         }
         return false;
     }
