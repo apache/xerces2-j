@@ -307,6 +307,23 @@ public class ElementPSVImpl implements ElementPSVI {
         return (fDeclaration !=null)? fDeclaration.fTargetNamespace:null;
     }
 
+    /**
+     * REVISIT: temprory method to return the internal representation of
+     * the type definition used to validate this element. This method
+     * will be removed when we have full PSVI support.
+     */
+    public XSTypeDecl getTypeDefinition() {
+        return fTypeDecl;
+    }
+
+    /**
+     * REVISIT: temprory method to return the internal representation of
+     * the element declaration used to validate this element. This method
+     * will be removed when we have full PSVI support.
+     */
+    public XSElementDecl getElementDecl() {
+        return fDeclaration;
+    }
 
     /**
      * Reset() should be called in validator startElement(..) method.

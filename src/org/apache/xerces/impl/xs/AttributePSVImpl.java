@@ -64,7 +64,6 @@ import org.apache.xerces.xni.psvi.AttributePSVI;
 
 import java.util.Vector;
 
-
 /**
  * Attribute PSV infoset augmentations implementation.
  * The PSVI information for attributes will be available at the startElement call.
@@ -100,7 +99,6 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
-
 
     //
     // AttributePSVI methods
@@ -251,12 +249,28 @@ public class AttributePSVImpl implements AttributePSVI {
 
     }
 
-
     // This is the only information we can provide in a pipeline.
     public String getValidationContext() {
         return fValidationContext;
     }
 
+    /**
+     * REVISIT: temprory method to return the internal representation of
+     * the type definition used to validate this attribute. This method
+     * will be removed when we have full PSVI support.
+     */
+    public XSTypeDecl getTypeDefinition() {
+        return fTypeDecl;
+    }
+
+    /**
+     * REVISIT: temprory method to return the internal representation of
+     * the attribute declaration used to validate this attribute. This method
+     * will be removed when we have full PSVI support.
+     */
+    public XSAttributeDecl getAttributeDecl() {
+        return fDeclaration;
+    }
 
     /**
      * Reset() 
