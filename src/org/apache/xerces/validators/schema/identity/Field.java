@@ -87,6 +87,10 @@ public class Field {
     /** Identity constraint. */
     protected IdentityConstraint fIdentityConstraint;
 
+    // whether this field can be matched; used to catch instance documents
+    // that try and match a field several times in the same scope.
+    protected boolean mayMatch = true;
+
     //
     // Constructors
     //
@@ -102,6 +106,16 @@ public class Field {
     // Public methods
     //
 
+    // sets mayMatch
+    public void setMayMatch(boolean b) {
+        mayMatch = b;
+    } // setMayMatch(boolean);
+    
+    // returns mayMatch
+    public boolean mayMatch() {
+        return mayMatch;
+    } // mayMatch():boolean
+    
     /** Returns the field XPath. */
     public org.apache.xerces.validators.schema.identity.XPath getXPath() {
         return fXPath;
@@ -180,7 +194,7 @@ public class Field {
 
         /** Constructs a field matcher. */
         public Matcher(Field.XPath xpath, ValueStore store) {
-            super(xpath, true);
+            super(xpath, true, null);
             fStore = store;
         } // <init>(Field.XPath,ValueStore)
 
@@ -195,6 +209,10 @@ public class Field {
         protected void matched(String content, DatatypeValidator val) throws Exception {
             super.matched(content, val);
             fStore.addValue(Field.this, new IDValue(content, val));
+            // once we've stored the value for this field, we set the mayMatch
+            // member to false so that, in the same scope, we don't match any more
+            // values (and throw an error instead).
+            mayMatch = false;
         } // matched(String)
 
     } // class Matcher

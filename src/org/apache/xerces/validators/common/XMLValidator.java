@@ -90,6 +90,7 @@ import java.io.IOException;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -620,9 +621,11 @@ public final class XMLValidator
    public void startValueScopeFor(IdentityConstraint identityConstraint)
         throws Exception {
 
-        Field field = identityConstraint.getFieldAt(0);
-        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(field);
-        valueStore.startValueScope();
+        for(int i=0; i<identityConstraint.getFieldCount(); i++) {
+            Field field = identityConstraint.getFieldAt(i);
+            ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(field);
+            valueStore.startValueScope();
+        }
 
     } // startValueScopeFor(IdentityConstraint identityConstraint)
 
@@ -637,6 +640,7 @@ public final class XMLValidator
             System.out.println("<IC>: activateField(\""+field+"\")");
         }
         ValueStore valueStore = fValueStoreCache.getValueStoreFor(field);
+        field.setMayMatch(true);
         XPathMatcher matcher = field.createMatcher(valueStore);
         fMatcherStack.addMatcher(matcher);
         matcher.startDocumentFragment(fStringPool, (SchemaGrammar)fGrammar);
@@ -651,8 +655,7 @@ public final class XMLValidator
     public void endValueScopeFor(IdentityConstraint identityConstraint)
         throws Exception {
 
-        Field field = identityConstraint.getFieldAt(0);
-        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(field);
+        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(identityConstraint);
         valueStore.endValueScope();
 
     } // endValueScopeFor(IdentityConstraint)
@@ -886,7 +889,7 @@ public final class XMLValidator
           char[] chars = new char[text.length()];
           int offset = 0;
           int length = chars.length;
-          text.getChars(length, length, chars, offset);
+          text.getChars(offset, length, chars, offset);
           for (int i = 0; i < count; i++) {
               XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
               if (DEBUG_IDENTITY_CONSTRAINTS) {
@@ -1140,21 +1143,22 @@ public final class XMLValidator
           if (DEBUG_IDENTITY_CONSTRAINTS) {
               System.out.println("<IC>: pushing context - element: "+fStringPool.toString(element.rawname));
           }
+          fValueStoreCache.startElement();
           fMatcherStack.pushContext();
           int eindex = fGrammar.getElementDeclIndex(element, -1);
           if (eindex != -1) {
               fGrammar.getElementDecl(eindex, fTempElementDecl);
               fValueStoreCache.initValueStoresFor(fTempElementDecl);
-              int ucount = fTempElementDecl.unique.size();
-              for (int i = 0; i < ucount; i++) {
+              int uCount = fTempElementDecl.unique.size();
+              for (int i = 0; i < uCount; i++) {
                   activateSelectorFor((IdentityConstraint)fTempElementDecl.unique.elementAt(i));
               }
-              int kcount = fTempElementDecl.key.size();
-              for (int i = 0; i < kcount; i++) {
+              int kCount = fTempElementDecl.key.size();
+              for (int i = 0; i < kCount; i++) {
                   activateSelectorFor((IdentityConstraint)fTempElementDecl.key.elementAt(i));
               }
-              int krcount = fTempElementDecl.keyRef.size();
-              for (int i = 0; i < krcount; i++) {
+              int krCount = fTempElementDecl.keyRef.size();
+              for (int i = 0; i < krCount; i++) {
                   activateSelectorFor((IdentityConstraint)fTempElementDecl.keyRef.elementAt(i));
               }
           }
@@ -1379,13 +1383,34 @@ public final class XMLValidator
              fMatcherStack.popContext();
          }
          int newCount = fMatcherStack.getMatcherCount();
+         // handle everything *but* keyref's.
          for (int i = oldCount - 1; i >= newCount; i--) {
              XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-             if (DEBUG_IDENTITY_CONSTRAINTS) {
-                 System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
-             }
-             matcher.endDocumentFragment();
+             IdentityConstraint id; 
+             if((id = matcher.getIDConstraint()) != null  && id.getType() != IdentityConstraint.KEYREF) {
+                 if (DEBUG_IDENTITY_CONSTRAINTS) {
+                    System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
+                 }
+                 matcher.endDocumentFragment();
+                 fValueStoreCache.transplant(id);
+             } else if (id == null)
+                 matcher.endDocumentFragment();
          }
+         // now handle keyref's/...
+         for (int i = oldCount - 1; i >= newCount; i--) {
+             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+             IdentityConstraint id; 
+             if((id = matcher.getIDConstraint()) != null && id.getType() == IdentityConstraint.KEYREF) {
+                 if (DEBUG_IDENTITY_CONSTRAINTS) {
+                    System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
+                 }
+                 ValueStoreBase values = fValueStoreCache.getValueStoreFor(id);
+                 if(values != null) // nothing to do if nothing matched!
+                     values.endDocumentFragment();
+                 matcher.endDocumentFragment();
+             }
+         }
+        fValueStoreCache.endElement();
       }
       fDocumentHandler.endElement(fCurrentElement);
       if (fNamespacesEnabled) {
@@ -4470,6 +4495,23 @@ public final class XMLValidator
         // Public methods
         //
 
+        // destroys this ValueStore; useful when, for instanc,e a 
+        // locally-scoped ID constraint is involved.
+        public void destroy() {
+            fValuesCount = 0;
+            fValues.clear();
+            fValueTuples.clear();
+        } // end destroy():void
+
+        // appends the contents of one ValueStore to those of us.
+        public void append(ValueStoreBase newVal) {
+            for (int i = 0; i < newVal.fValueTuples.size(); i++) {
+                OrderedHashtable o = (OrderedHashtable)newVal.fValueTuples.elementAt(i); 
+                if (!contains(o)) 
+                    fValueTuples.addElement(o);
+            } 
+        } // append(ValueStoreBase)
+
         /** Start scope for value store. */
         public void startValueScope() throws Exception {
             if (DEBUG_VALUE_STORES) {
@@ -4522,15 +4564,24 @@ public final class XMLValidator
                         int code = SchemaMessageProvider.KeyRefNotEnoughValues;
                         KeyRef keyref = (KeyRef)fIdentityConstraint;
                         String ename = fIdentityConstraint.getElementName();
-                        String kname = keyref.getReferName();
+                        String kname = (keyref.getKey()).getIdentityConstraintName();
                         reportSchemaError(code, new Object[]{ename,kname});
                         break;
                     }
                 }
                 return;
             }
+
             
         } // endValueScope()
+
+        // This is needed to allow keyref's to look for matched keys
+        // in the correct scope.  Unique and Key may also need to
+        // override this method for purposes of their own.
+        // This method is called whenever the DocumentFragment
+        // of an ID Constraint goes out of scope.  
+        public void endDocumentFragment() throws Exception {
+        } // endDocumentFragment():void
 
         /** 
          * Signals the end of the document. This is where the specific
@@ -4556,6 +4607,10 @@ public final class XMLValidator
          *              once within a selection scope.
          */
         public void addValue(Field field, IDValue value) throws Exception {
+            if(!field.mayMatch()) {
+                int code = SchemaMessageProvider.FieldMultipleMatch;
+                reportSchemaError(code, new Object[]{field.toString()});
+            }
             if (DEBUG_VALUE_STORES) {
                 System.out.println("<VS>: "+toString()+"#addValue("+
                                    "field="+field+','+
@@ -4768,7 +4823,7 @@ public final class XMLValidator
         //
 
         /** Key value store. */
-        protected KeyValueStore fKeyValueStore;
+        protected ValueStoreBase fKeyValueStore;
 
         //
         // Constructors
@@ -4784,11 +4839,25 @@ public final class XMLValidator
         // ValueStoreBase methods
         //
 
-        /** End document. */
-        public void endDocument() throws Exception {
-            super.endDocument();
+        // end the value Scope; here's where we have to tie
+        // up keyRef loose ends.
+        public void endDocumentFragment () throws Exception {
+
+            // do all the necessary management...
+            super.endDocumentFragment ();
 
             // verify references
+            // get the key store corresponding (if it exists):
+            fKeyValueStore = (ValueStoreBase)fValueStoreCache.fGlobalIDConstraintMap.get(((KeyRef)fIdentityConstraint).getKey());
+            
+            if(fKeyValueStore == null) {
+                // report error
+                int code = SchemaMessageProvider.KeyRefOutOfScope;
+                String value = fIdentityConstraint.toString();
+                reportSchemaError(code, new Object[]{value});
+                return;
+            }
+
             int count = fValueTuples.size();
             for (int i = 0; i < count; i++) {
                 OrderedHashtable values = (OrderedHashtable)fValueTuples.elementAt(i);
@@ -4800,7 +4869,13 @@ public final class XMLValidator
                 }
             }
 
-        } // endValueScope()
+        } // endDocumentFragment() 
+
+        /** End document. */
+        public void endDocument() throws Exception {
+            super.endDocument();
+
+        } // endDocument()
 
     } // class KeyRefValueStore
 
@@ -4820,11 +4895,32 @@ public final class XMLValidator
 
         // values stores
 
-        /** Values stores. */
+        /** stores all global Values stores. */
         protected final Vector fValueStores = new Vector();
 
         /** Values stores associated to specific identity constraints. */
         protected final Hashtable fIdentityConstraint2ValueStoreMap = new Hashtable();
+
+        // sketch of algorithm:  
+        // - when a constraint is first encountered, its
+        //  values are stored in the (local) fIdentityConstraint2ValueStoreMap;
+        // - Once it is validated (i.e., wen it goes out of scope), 
+        //  its values are merged into the fGlobalIDConstraintMap;
+        // - as we encounter keyref's, we look at the global table to
+        //  validate them.  
+        // the fGlobalIDMapStack has the following structure:
+        // - validation always occurs against the fGlobalIDConstraintMap 
+        // (which comprises all the "eligible" id constraints);
+        // When an endelement is found, this Hashtable is merged with the one
+        // below in the stack.
+        // When a start tag is encountered, we create a new
+        // fGlobalIDConstraintMap. 
+        // i.e., the top of the fGlobalIDMapStack always contains 
+        // the preceding siblings' eligible id constraints;
+        // the fGlobalIDConstraintMap contains descendants+self.
+        // keyrefs can only match descendants+self.  
+        protected final Stack fGlobalMapStack = new Stack();
+        protected final Hashtable fGlobalIDConstraintMap = new Hashtable();
 
         //
         // Constructors
@@ -4845,90 +4941,99 @@ public final class XMLValidator
             }
             fValueStores.removeAllElements();
             fIdentityConstraint2ValueStoreMap.clear();
+            fGlobalIDConstraintMap.clear();
+            fGlobalMapStack.clear();
         } // startDocument()
+
+        // startElement:  pushes the current fGlobalIDConstraintMap
+        // onto fGlobalMapStack and clears fGlobalIDConstraint map.
+        public void startElement() {
+            fGlobalMapStack.push(fGlobalIDConstraintMap.clone());
+            fGlobalIDConstraintMap.clear();
+        } // startElement(void)
+
+        // endElement():  merges contents of fGlobalIDConstraintMap with the
+        // top of fGlobalMapStack into fGlobalIDConstraintMap.
+        public void endElement() {
+            if (fGlobalMapStack.isEmpty()) return; // must be an invalid doc!
+            Hashtable oldMap = (Hashtable)fGlobalMapStack.pop();
+            Enumeration keys = oldMap.keys();
+            while(keys.hasMoreElements()) {
+                IdentityConstraint id = (IdentityConstraint)keys.nextElement();
+                ValueStoreBase oldVal = (ValueStoreBase)oldMap.get(id);
+                if(oldVal != null) {
+                    ValueStoreBase currVal = (ValueStoreBase)fGlobalIDConstraintMap.get(id);
+                    if (currVal == null)
+                        fGlobalIDConstraintMap.put(id, oldVal);
+                    else {
+                        currVal.append(oldVal);
+                        fGlobalIDConstraintMap.put(id, currVal);
+                    }
+                }
+            }
+        } // endElement()
 
         /** 
          * Initializes the value stores for the specified element
          * declaration. 
          */
-        public void initValueStoresFor(XMLElementDecl edecl) 
+        public void initValueStoresFor(XMLElementDecl eDecl) 
             throws Exception {
             if (DEBUG_VALUE_STORES) {
                 System.out.println("<VS>: "+toString()+"#initValueStoresFor("+
-                                   fStringPool.toString(edecl.name.rawname)+
+                                   fStringPool.toString(eDecl.name.rawname)+
                                    ")");
             }
 
             // initialize value stores for unique fields
-            Vector uvector = edecl.unique;
-            int ucount = uvector.size();
-            for (int i = 0; i < ucount; i++) {
-                Unique unique = (Unique)uvector.elementAt(i);
-                UniqueValueStore valueStore = null;
-                int fcount = unique.getFieldCount();
-                for (int j = 0; j < fcount; j++) {
-                    Field field = unique.getFieldAt(j);
-                    if (valueStore == null) {
-                        valueStore = (UniqueValueStore)fIdentityConstraint2ValueStoreMap.get(unique);
-                        if (valueStore != null) {
-                            // NOTE: If already initialized, don't need to
-                            //       do it again. -Ac
-                            return;
-                        }
-                        valueStore = new UniqueValueStore(unique);
-                        fValueStores.addElement(valueStore);
-                    }
-                    if (DEBUG_VALUE_STORES) {
-                        System.out.println("<VS>: "+unique+" -> "+valueStore);
-                    }
-                    fIdentityConstraint2ValueStoreMap.put(unique, valueStore);
+            Vector uVector = eDecl.unique;
+            int uCount = uVector.size();
+            for (int i = 0; i < uCount; i++) {
+                Unique unique = (Unique)uVector.elementAt(i);
+                UniqueValueStore valueStore = (UniqueValueStore)fIdentityConstraint2ValueStoreMap.get(unique);
+                if (valueStore != null) {
+                    // NOTE: If already initialized, don't need to
+                    //       do it again. -Ac
+                    continue;
                 }
+                valueStore = new UniqueValueStore(unique);
+                fValueStores.addElement(valueStore);
+                if (DEBUG_VALUE_STORES) {
+                    System.out.println("<VS>: "+unique+" -> "+valueStore);
+                }
+                fIdentityConstraint2ValueStoreMap.put(unique, valueStore);
             }
 
             // initialize value stores for key fields
-            Vector kvector = edecl.key;
-            int kcount = kvector.size();
-            Hashtable keyHash = null;
-            if (kcount > 0) {
-                keyHash = new Hashtable(kcount);
-                for (int i = 0; i < kcount; i++) {
-                    Key key = (Key)kvector.elementAt(i);
-                    KeyValueStore valueStore = null;
-                    int fcount = key.getFieldCount();
-                    for (int j = 0; j < fcount; j++) {
-                        Field field = key.getFieldAt(j);
-                        if (valueStore == null) {
-                            valueStore = new KeyValueStore(key);
-                            fValueStores.addElement(valueStore);
-                            keyHash.put(key.getIdentityConstraintName(), valueStore);
-                        }
-                        if (DEBUG_VALUE_STORES) {
-                            System.out.println("<VS>: "+key+" -> "+valueStore);
-                        }
-                        fIdentityConstraint2ValueStoreMap.put(key, valueStore);
-                    }
+            Vector kVector = eDecl.key;
+            int kCount = kVector.size();
+            for (int i = 0; i < kCount; i++) {
+                Key key = (Key)kVector.elementAt(i);
+                KeyValueStore valueStore = (KeyValueStore)fIdentityConstraint2ValueStoreMap.get(key);
+                if (valueStore != null) {
+                    // NOTE: If already initialized, don't need to
+                    //       do it again. -Ac
+                    continue;
                 }
+                valueStore = new KeyValueStore(key);
+                fValueStores.addElement(valueStore);
+                if (DEBUG_VALUE_STORES) {
+                    System.out.println("<VS>: "+key+" -> "+valueStore);
+                }
+                fIdentityConstraint2ValueStoreMap.put(key, valueStore);
             }
 
             // initialize value stores for key reference fields
-            Vector krvector = edecl.keyRef;
-            int krcount = krvector.size();
-            for (int i = 0; i < krcount; i++) {
-                KeyRef keyRef = (KeyRef)krvector.elementAt(i);
-                KeyValueStore keyValueStore = (KeyValueStore)keyHash.get(keyRef.getReferName());
-                KeyRefValueStore keyRefValueStore = null;
-                int fcount = keyRef.getFieldCount();
-                for (int j = 0; j < fcount; j++) {
-                    Field field = keyRef.getFieldAt(i);
-                    if (keyRefValueStore == null) {
-                        keyRefValueStore = new KeyRefValueStore(keyRef, keyValueStore);
-                        fValueStores.addElement(keyRefValueStore);
-                    }
-                    if (DEBUG_VALUE_STORES) {
-                        System.out.println("<VS>: "+keyRef+" -> "+keyRefValueStore);
-                    }
-                    fIdentityConstraint2ValueStoreMap.put(keyRef, keyRefValueStore);
+            Vector krVector = eDecl.keyRef;
+            int krCount = krVector.size();
+            for (int i = 0; i < krCount; i++) {
+                KeyRef keyRef = (KeyRef)krVector.elementAt(i);
+                KeyRefValueStore keyRefValueStore = new KeyRefValueStore(keyRef, null);
+                fValueStores.addElement(keyRefValueStore);
+                if (DEBUG_VALUE_STORES) {
+                    System.out.println("<VS>: "+keyRef+" -> "+keyRefValueStore);
                 }
+                fIdentityConstraint2ValueStoreMap.put(keyRef, keyRefValueStore);
             }
 
         } // initValueStoresFor(XMLElementDecl)
@@ -4941,6 +5046,38 @@ public final class XMLValidator
             IdentityConstraint identityConstraint = field.getIdentityConstraint();
             return (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(identityConstraint);
         } // getValueStoreFor(Field):ValueStoreBase
+
+        /** Returns the value store associated to the specified IdentityConstraint. */
+        public ValueStoreBase getValueStoreFor(IdentityConstraint id) {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#getValueStoreFor("+id+")");
+            }
+            return (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(id);
+        } // getValueStoreFor(IdentityConstraint):ValueStoreBase
+
+        /** Returns the global value store associated to the specified IdentityConstraint. */
+        public ValueStoreBase getGlobalValueStoreFor(IdentityConstraint id) {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#getGlobalValueStoreFor("+id+")");
+            }
+            return (ValueStoreBase)fGlobalIDConstraintMap.get(id);
+        } // getValueStoreFor(IdentityConstraint):ValueStoreBase
+        // This method takes the contents of the (local) ValueStore
+        // associated with id and moves them into the global
+        // hashtable, if id is a <unique> or a <key>.  
+        // If it's a <keyRef>, then we leave it for later. 
+        public void transplant(IdentityConstraint id) throws Exception {
+            if (id.getType() == IdentityConstraint.KEYREF ) return;
+            ValueStoreBase newVals = (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(id);
+            fIdentityConstraint2ValueStoreMap.remove(id);
+            ValueStoreBase currVals = (ValueStoreBase)fGlobalIDConstraintMap.get(id);
+            if (currVals != null) {
+                currVals.append(newVals);
+                fGlobalIDConstraintMap.put(id, currVals);
+            } else
+                fGlobalIDConstraintMap.put(id, newVals);
+                
+        } // transplant(id)
 
         /** Check identity constraints. */
         public void endDocument() throws Exception {

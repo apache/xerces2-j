@@ -216,6 +216,10 @@ public class TraverseSchema implements
     private EntityResolver  fEntityResolver = null;
     
     private Hashtable fIdentityConstraints = new Hashtable();
+    // Yet one more data structure; this one associates
+    // <unique> and <key> QNames with their corresponding objects,
+    // so that <keyRef>s can find them.
+    private Hashtable fIdentityConstraintNames = new Hashtable();
     
     // General Attribute Checking
     private GeneralAttrCheck fGeneralAttrCheck = null;
@@ -517,6 +521,8 @@ public class TraverseSchema implements
         } // for each child node
 
         // handle identity constraints
+        // we must traverse <key>s and <unique>s before we tackel<keyref>s,
+        // since all have global scope and may be declared anywhere in the schema.  
         Enumeration elementIndexes = fIdentityConstraints.keys();
         while (elementIndexes.hasMoreElements()) {
             Integer elementIndexObj = (Integer)elementIndexes.nextElement();
@@ -526,7 +532,19 @@ public class TraverseSchema implements
             Vector identityConstraints = (Vector)fIdentityConstraints.get(elementIndexObj);
             if (identityConstraints != null) {
                 int elementIndex = elementIndexObj.intValue();
-                traverseIdentityConstraintsFor(elementIndex, identityConstraints);
+                traverseIdentityNameConstraintsFor(elementIndex, identityConstraints);
+            }
+        }
+        elementIndexes = fIdentityConstraints.keys();
+        while (elementIndexes.hasMoreElements()) {
+            Integer elementIndexObj = (Integer)elementIndexes.nextElement();
+            if (DEBUG_IC_DATATYPES) {
+                System.out.println("<ICD>: traversing identity constraints for element: "+elementIndexObj);
+            }
+            Vector identityConstraints = (Vector)fIdentityConstraints.get(elementIndexObj);
+            if (identityConstraints != null) {
+                int elementIndex = elementIndexObj.intValue();
+                traverseIdentityRefConstraintsFor(elementIndex, identityConstraints);
             }
         }
 
@@ -4906,7 +4924,7 @@ int aaaa= 1;
 
     }// end of method traverseElementDecl(Element)
 
-    private void traverseIdentityConstraintsFor(int elementIndex,
+    private void traverseIdentityNameConstraintsFor(int elementIndex,
                                                 Vector identityConstraints)
         throws Exception {
 
@@ -4922,18 +4940,8 @@ int aaaa= 1;
                 if ( icName.equals(SchemaSymbols.ELT_KEY) ) { 
                     traverseKey(ic, edecl);
                 }
-                else if ( icName.equals(SchemaSymbols.ELT_KEYREF) ) {
-                    traverseKeyRef(ic, edecl);
-                }
                 else if ( icName.equals(SchemaSymbols.ELT_UNIQUE) ) {
                     traverseUnique(ic, edecl);
-                }
-                else {
-                    // should never get here
-                    throw new RuntimeException("identity constraint must be one of "+
-                                               "\""+SchemaSymbols.ELT_UNIQUE+"\", "+
-                                               "\""+SchemaSymbols.ELT_KEY+"\", or "+
-                                               "\""+SchemaSymbols.ELT_KEYREF+'"');
                 }
                 fSchemaGrammar.setElementDecl(elementIndex, edecl);
 
@@ -4941,88 +4949,118 @@ int aaaa= 1;
 
         } // if size > 0
 
-    } // traverseIdentityConstraints(Vector)
+    } // traverseIdentityNameConstraints(Vector)
 
-    private void traverseUnique(Element uelem, XMLElementDecl edecl) 
+    private void traverseIdentityRefConstraintsFor(int elementIndex,
+                                                Vector identityConstraints)
+        throws Exception {
+
+        // iterate over identity constraints for this element
+        int size = identityConstraints != null ? identityConstraints.size() : 0;
+        if (size > 0) {
+            // REVISIT: Use cached copy. -Ac
+            XMLElementDecl edecl = new XMLElementDecl();
+            fSchemaGrammar.getElementDecl(elementIndex, edecl);
+            for (int i = 0; i < size; i++) {
+                Element ic = (Element)identityConstraints.elementAt(i);
+                String icName = ic.getLocalName();
+                if ( icName.equals(SchemaSymbols.ELT_KEYREF) ) {
+                    traverseKeyRef(ic, edecl);
+                }
+                fSchemaGrammar.setElementDecl(elementIndex, edecl);
+
+            } // loop over vector elements
+
+        } // if size > 0
+
+    } // traverseIdentityRefConstraints(Vector)
+
+    private void traverseUnique(Element uElem, XMLElementDecl eDecl) 
         throws Exception {
 
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
-        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(uelem, scope);
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(uElem, scope);
 
         // create identity constraint
-        String uname = uelem.getAttribute(SchemaSymbols.ATT_NAME);
+        String uName = uElem.getAttribute(SchemaSymbols.ATT_NAME);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
-            System.out.println("<IC>: traverseUnique(\""+uelem.getNodeName()+"\") ["+uname+']');
+            System.out.println("<IC>: traverseUnique(\""+uElem.getNodeName()+"\") ["+uName+']');
         }
-        String ename = getElementNameFor(uelem);
-        Unique unique = new Unique(uname, ename);
+        String eName = getElementNameFor(uElem);
+        Unique unique = new Unique(uName, eName);
+        fIdentityConstraintNames.put(fTargetNSURIString+","+uName, unique);
 
         // get selector and fields
-        traverseIdentityConstraint(unique, uelem);
+        traverseIdentityConstraint(unique, uElem);
 
         // add to element decl
-        edecl.unique.addElement(unique);
+        eDecl.unique.addElement(unique);
 
     } // traverseUnique(Element,XMLElementDecl)
 
-    private void traverseKey(Element kelem, XMLElementDecl edecl)
+    private void traverseKey(Element kElem, XMLElementDecl eDecl)
         throws Exception {
 
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
-        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(kelem, scope);
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(kElem, scope);
 
         // create identity constraint
-        String kname = kelem.getAttribute(SchemaSymbols.ATT_NAME);
+        String kName = kElem.getAttribute(SchemaSymbols.ATT_NAME);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
-            System.out.println("<IC>: traverseKey(\""+kelem.getNodeName()+"\") ["+kname+']');
+            System.out.println("<IC>: traverseKey(\""+kElem.getNodeName()+"\") ["+kName+']');
         }
-        String ename = getElementNameFor(kelem);
-        Key key = new Key(kname, ename);
+        String eName = getElementNameFor(kElem);
+        Key key = new Key(kName, eName);
+        fIdentityConstraintNames.put(fTargetNSURIString+","+kName, key);
 
         // get selector and fields
-        traverseIdentityConstraint(key, kelem);
+        traverseIdentityConstraint(key, kElem);
 
         // add to element decl
-        edecl.key.addElement(key);
+        eDecl.key.addElement(key);
 
     } // traverseKey(Element,XMLElementDecl)
 
-    private void traverseKeyRef(Element krelem, XMLElementDecl edecl) 
+    private void traverseKeyRef(Element krElem, XMLElementDecl eDecl) 
         throws Exception {
 
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
-        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(krelem, scope);
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(krElem, scope);
 
         // create identity constraint
-        String krname = krelem.getAttribute(SchemaSymbols.ATT_NAME);
-        String kname = krelem.getAttribute(SchemaSymbols.ATT_REFER);
+        String krName = krElem.getAttribute(SchemaSymbols.ATT_NAME);
+        String kName = krElem.getAttribute(SchemaSymbols.ATT_REFER);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
-            System.out.println("<IC>: traverseKeyRef(\""+krelem.getNodeName()+"\") ["+krname+','+kname+']');
+            System.out.println("<IC>: traverseKeyRef(\""+krElem.getNodeName()+"\") ["+krName+','+kName+']');
         }
 
         // verify that key reference "refer" attribute is valid
-        Element element = (Element)krelem.getParentNode();
-        Element kelem = XUtil.getFirstChildElement(element, 
-                                                   SchemaSymbols.ELT_KEY, 
-                                                   SchemaSymbols.ATT_NAME, 
-                                                   kname);
-        if (kelem == null) {
+        String prefix = "";
+        String localpart = kName;
+        int colonptr = kName.indexOf(":");
+        if ( colonptr > 0) {
+            prefix = kName.substring(0,colonptr);
+            localpart = kName.substring(colonptr+1);
+        }
+        String uriStr = resolvePrefixToURI(prefix);
+        IdentityConstraint kId = (IdentityConstraint)fIdentityConstraintNames.get(uriStr+","+localpart); 
+        if (kId== null) {
             reportSchemaError(SchemaMessageProvider.KeyRefReferNotFound,
-                              new Object[]{krname,kname});
+                              new Object[]{krName,kName});
             return;
         }
         
-        String ename = getElementNameFor(krelem);
-        KeyRef keyRef = new KeyRef(krname, kname, ename);
+        String eName = getElementNameFor(krElem);
+        KeyRef keyRef = new KeyRef(krName, kId, eName);
 
         // add to element decl
-        traverseIdentityConstraint(keyRef, krelem);
+        traverseIdentityConstraint(keyRef, krElem);
 
         // add key reference to element decl
-        edecl.keyRef.addElement(keyRef);
+        eDecl.keyRef.addElement(keyRef);
 
     } // traverseKeyRef(Element,XMLElementDecl)
 

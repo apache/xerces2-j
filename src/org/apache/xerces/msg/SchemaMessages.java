@@ -110,6 +110,8 @@ public class SchemaMessages extends ListResourceBundle {
         { "FixedDiffersFromActual", "The content of this element is not equivalent to the value of the \"fixed\" attribute in the element's declaration in the schema."}, 
         // simpleType
         {"InvalidBaseType", "itemType \"{0}\" must have a variety of atomic or union"},
+        {"FieldMultipleMatch", "Identity constraint error:  field \"{0}\" matches more than one value within the scope of its selector; fields must match unique values"},
+        {"KeyRefOutOfScope", "Identity Constraint error:  identity constraint \"{0}\" has a keyref which refers to a key or unique that is out of scope."},
         
     };
     
