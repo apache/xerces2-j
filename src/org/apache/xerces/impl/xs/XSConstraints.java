@@ -725,7 +725,7 @@ public class XSConstraints {
                  dChildren = new Vector();
                  dChildren.addElement(dParticle);
 
-                 checkRecurseLax(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
+                 checkRecurseLax(dChildren, 1, 1, dSGHandler,
                                  bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
@@ -737,7 +737,7 @@ public class XSConstraints {
                  dChildren = new Vector();
                  dChildren.addElement(dParticle);
 
-                 checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
+                 checkRecurse(dChildren, 1, 1, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
