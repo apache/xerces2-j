@@ -177,11 +177,11 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     static final short SPECIAL_PATTERN_NCNAME   = 3;
 
     static final String[] SPECIAL_PATTERN_STRING   = {
-        "NONE", "NMTOKEN", "Name", "NCName", "integer"
+        "NONE", "NMTOKEN", "Name", "NCName"
     };
 
     static final String[] WS_FACET_STRING = {
-        "preserve", "collapse", "replace",
+        "preserve", "replace", "collapse"
     };
 
     static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
