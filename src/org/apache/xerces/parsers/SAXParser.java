@@ -506,7 +506,19 @@ public class SAXParser
                 setNamespacePrefixes(state);
                 return;
             }
-   
+            // http://xml.org/sax/features/string-interning
+            //   controls the use of java.lang.String#intern() for strings
+            //   passed to SAX handlers.
+            //
+            if (feature.equals("string-interning")) {
+                if (state) {
+                    throw new SAXNotSupportedException(
+                        "PAR018 "+state+" state for feature \""+featureId+"\" is not supported.\n"+
+                        state+'\t'+featureId
+                        );
+                }
+                return;
+            }
             /*
             //
             // http://xml.org/sax/features/normalize-text
@@ -579,6 +591,23 @@ public class SAXParser
 
         if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
             String feature = featureId.substring(SAX2_FEATURES_PREFIX.length());
+            // http://xml.org/sax/features/namespace-prefixes
+            //   controls the reporting of raw prefixed names and Namespace 
+            //   declarations (xmlns* attributes): when this feature is false 
+            //   (the default), raw prefixed names may optionally be reported, 
+            //   and xmlns* attributes must not be reported.
+            //
+            if (feature.equals("namespace-prefixes")) {
+                return getNamespacePrefixes();
+            }
+            // http://xml.org/sax/features/string-interning
+            //   controls the use of java.lang.String#intern() for strings
+            //   passed to SAX handlers.
+            //
+            if (feature.equals("string-interning")) {
+                // NOTE: This is the only value supported by the parser. -Ac
+                return false;
+            }
             /*
             //
             // http://xml.org/sax/features/normalize-text
@@ -1224,28 +1253,32 @@ public class SAXParser
             fDocumentHandler.startElement(name, attrs);
         }
         if (fContentHandler != null) {
+            boolean namespaces = getNamespaces();
             int uriIndex = fStringPool.getURIForQName(elementType);
-            String uri = uriIndex != -1 ? fStringPool.toString(uriIndex) : "";
+            String uri = uriIndex != -1 && namespaces
+                       ? fStringPool.toString(uriIndex) : "";
             int localIndex = fStringPool.getLocalPartForQName(elementType);
-            String local = localIndex != -1 ? fStringPool.toString(localIndex) : "";
+            String local = localIndex != -1 && namespaces
+                         ? fStringPool.toString(localIndex) : "";
             String raw = name;
             fAttributes.clear();
+            boolean namespacePrefixes = getNamespacePrefixes();
             for (int attrIndex = attrList.getFirstAttr(attrListIndex); 
                  attrIndex != -1; 
                  attrIndex = attrList.getNextAttr(attrIndex)) {
                 int attrNameIndex = attrList.getAttrName(attrIndex);
                 int attrUriIndex = fStringPool.getURIForQName(attrNameIndex);
-                String attrUri = attrUriIndex != -1 
+                String attrUri = attrUriIndex != -1 && namespaces
                                ? fStringPool.toString(attrUriIndex) : "";
                 int attrLocalIndex = fStringPool.getLocalPartForQName(attrNameIndex);
-                String attrLocal = attrLocalIndex != -1 
+                String attrLocal = attrLocalIndex != -1 && namespaces
                                  ? fStringPool.toString(attrLocalIndex) : "";
                 String attrRaw = fStringPool.toString(attrNameIndex);
                 String attrType = fStringPool.toString(attrList.getAttType(attrIndex));
                 String attrValue = fStringPool.toString(attrList.getAttValue(attrIndex));
                 int attrPrefix = fStringPool.getPrefixForQName(attrNameIndex);
-                if (getNamespacePrefixes() ||
-                    (!getNamespacePrefixes()
+                if (namespacePrefixes ||
+                    (!namespacePrefixes
                     && attrPrefix != fStringPool.addSymbol("xmlns")
                     && attrLocalIndex != fStringPool.addSymbol("xmlns")
                     )) 
@@ -1272,8 +1305,10 @@ public class SAXParser
             fDocumentHandler.endElement(fStringPool.toString(elementType));
         }
         if (fContentHandler != null) {
+            boolean namespaces = getNamespaces();
             int uriIndex = fStringPool.getURIForQName(elementType);
-            String uri = uriIndex != -1 ? fStringPool.toString(uriIndex) : "";
+            String uri = uriIndex != -1 && namespaces
+                       ? fStringPool.toString(uriIndex) : "";
             int localIndex = fStringPool.getLocalPartForQName(elementType);
             String local = localIndex != -1 ? fStringPool.toString(localIndex) : "";
             String raw = fStringPool.toString(elementType);

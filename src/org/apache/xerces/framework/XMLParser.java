@@ -154,7 +154,7 @@ public abstract class XMLParser
     private static final String RECOGNIZED_PROPERTIES[] = {
         // SAX2 core
         //"http://xml.org/sax/properties/namespace-sep",
-        //"http://xml.org/sax/properties/xml-string",
+        "http://xml.org/sax/properties/xml-string",
         // Xerces
     };
 
@@ -1803,11 +1803,13 @@ public abstract class XMLParser
             //   not currently parsing text, it should return null (this is a good
             //   way to check for availability before the parse begins).
             //
-            /***
             if (property.equals("xml-string")) {
-                return getXMLString();
+                //return getXMLString();
+                throw new SAXNotSupportedException(
+                    "PAR019 Property, \"http://xml.org/sax/properties/xml-string\", is not supported.\n"+
+                    "http://xml.org/sax/properties/xml-string"
+                    );
             }
-            /***/
             //
             // Not recognized
             //
