@@ -60,7 +60,7 @@ Copyright:
 
   <target name="init">
     <property name="name" value="xerces"/>
-    <property name="Name" value="xerces-J"/>
+    <property name="Name" value="Xerces-J"/>
     <property name="version" value="1.4.1"/>
     <property name="version_postfix" value=".1.4.1"/>
     <property name="appendit" value="1_4_1"/>
