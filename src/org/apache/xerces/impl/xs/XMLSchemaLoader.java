@@ -100,7 +100,7 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xs.DOMInputList;
+import org.apache.xerces.xs.LSInputList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
@@ -1032,7 +1032,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.XSLoader#loadInputList(org.apache.xerces.xs.DOMInputList)
      */
-    public XSModel loadInputList(DOMInputList is) {
+    public XSModel loadInputList(LSInputList is) {
         int length = is.getLength();
         if (length == 0) {
             return null;

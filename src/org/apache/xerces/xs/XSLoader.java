@@ -107,7 +107,7 @@ public interface XSLoader {
      *   Schema documents are to be read. 
      * @return An XSModel representing schema documents.
      */
-    public XSModel loadInputList(DOMInputList is);
+    public XSModel loadInputList(LSInputList is);
 
     /**
      * Parse an XML Schema document from a location identified by a URI 
