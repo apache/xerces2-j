@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.dv;
 
+import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 
 /**
@@ -67,7 +68,7 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
  *
  * @version $Id$
  */
-public interface XSSimpleType extends XSTypeDecl, DatatypeValidator {
+public interface XSSimpleType extends XSTypeDecl {
 
     /**
      * The bit combination of the following constants are used to tell
@@ -114,6 +115,28 @@ public interface XSSimpleType extends XSTypeDecl, DatatypeValidator {
     public static final short CARDINALITY_COUNTABLY_INFINITE = 2;
 
     /**
+     * validate a given string against this DV
+     *
+     * @param content       the string value that needs to be validated
+     * @param context       the validation context
+     * @param validatedInfo used to store validatoin result
+     *
+     * @return              the actual value (QName, Boolean) of the string value
+     */
+    public Object validate(String content, ValidationContext context, ValidatedInfo validatedInfo)
+        throws InvalidDatatypeValueException;
+
+    /**
+     * validate an actual value against this DV
+     *
+     * @param value         the actual value that needs to be validated
+     * @param context       the validation context
+     * @param validatedInfo used to provide the actual value and member types
+     */
+    public void validate(ValidationContext context, ValidatedInfo validatedInfo)
+        throws InvalidDatatypeValueException;
+
+    /**
      * If this type is created from restriction, then some facets can be applied
      * to the simple type.
      *
@@ -121,7 +144,7 @@ public interface XSSimpleType extends XSTypeDecl, DatatypeValidator {
      * @param presentFacets which facets are present
      * @param fixedFacets   which facets are fixed
      */
-    public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet)
+    public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)
         throws InvalidDatatypeFacetException;
 
     /**
@@ -172,6 +195,12 @@ public interface XSSimpleType extends XSTypeDecl, DatatypeValidator {
      *          clean way of doing it except to define special method like this.
      */
     public boolean isIDType();
+
+    /**
+     * Check whether this type is or is derived from NOTATION.
+     * REVISIT: this method makes NOTATION special, which is not a good design.
+     */
+    public boolean isNOTATIONType();
 
     // REVISIT: the following methods are for PSVI. they are not implemented yet.
     //public XSFacet[] getFacets();

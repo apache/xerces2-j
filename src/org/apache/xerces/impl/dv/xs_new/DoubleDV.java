@@ -85,8 +85,9 @@ public class DoubleDV extends TypeValidator {
         }
     }//getActualValue()
 
+    // Can't call Double#compareTo method, because it's introduced in jdk 1.2
     public int compare(Object value1, Object value2) {
-        return ((Double)value1).compareTo((Double)value2);
+        return compareDoubles((Double)value1, (Double)value2);
     }//compare()
 
     //
@@ -113,5 +114,22 @@ public class DoubleDV extends TypeValidator {
         }
         return d;
     }//dValueOf()
+
+    private int compareDoubles(Double value, Double anotherValue) {
+        double thisVal = value.doubleValue();
+        double anotherVal = anotherValue.doubleValue();
+
+        if (thisVal < anotherVal)
+            return -1;		 // Neither val is NaN, thisVal is smaller
+        if (thisVal > anotherVal)
+            return 1;		 // Neither val is NaN, thisVal is larger
+
+        long thisBits = Double.doubleToLongBits(thisVal);
+        long anotherBits = Double.doubleToLongBits(anotherVal);
+
+        return (thisBits == anotherBits ?  0 : // Values are equal
+                (thisBits < anotherBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
+                 1));                          // (0.0, -0.0) or (NaN, !NaN)
+    }
 
 } // class DoubleDV

@@ -104,6 +104,7 @@ public class YearMonthDV extends AbstractDateTimeDV{
 
         // get date
         getYearMonth(fStart, fEnd, date);
+        date[D] = DAY;
         parseTimeZone (fEnd, date);
 
         //validate and normalize

@@ -175,6 +175,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     private Object fMinExclusive;
     private Object fMinInclusive;
 
+    private ValidatedInfo fTempInfo = new ValidatedInfo();
+
     //Create a new built-in primitive types (and id/idref/entity)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV) {
         fBase = base;
@@ -299,6 +301,10 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         return (fValidationDV == DV_ID);
     }
 
+    public boolean isNOTATIONType(){
+        return (fValidationDV == DV_NOTATION);
+    }
+
     // REVISIT
     public XSSimpleType getPrimitiveType() {
         if (fVariety == VARIETY_ATOMIC)
@@ -324,9 +330,9 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     /**
      * If <restriction> is chosen
      */
-    public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet)
+    public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)
         throws InvalidDatatypeFacetException {
-        applyFacets(facets, presentFacet, fixedFacet, (short)0);
+        applyFacets(facets, presentFacet, fixedFacet, (short)0, context);
     }
 
     /**
@@ -335,7 +341,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     void applyFacets1(XSFacets facets, short presentFacet, short fixedFacet) {
 
         try {
-            applyFacets(facets, presentFacet, fixedFacet, (short)0);
+            applyFacets(facets, presentFacet, fixedFacet, (short)0, null);
         } catch (InvalidDatatypeFacetException e) {
             // should never gets here, internel error
             throw new RuntimeException("internal error");
@@ -348,7 +354,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     void applyFacets1(XSFacets facets, short presentFacet, short fixedFacet, short tokenType) {
 
         try {
-            applyFacets(facets, presentFacet, fixedFacet, tokenType);
+            applyFacets(facets, presentFacet, fixedFacet, tokenType, null);
         } catch (InvalidDatatypeFacetException e) {
             // should never gets here, internel error
             throw new RuntimeException("internal error");
@@ -358,7 +364,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     /**
      * If <restriction> is chosen, or built-in derived types by restriction
      */
-    void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, short tokenType)
+    void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, short tokenType, ValidationContext context)
         throws InvalidDatatypeFacetException {
 
         // clear facets. because we always inherit facets in the constructor
@@ -440,7 +446,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 Vector enumVals = facets.enumeration;
                 for (int i = enumVals.size()-1; i >= 0; i--) {
                     try {
-                        fEnumeration.addElement(getActualValue((String)enumVals.elementAt(i), null, null));
+                        fEnumeration.addElement(getActualValue((String)enumVals.elementAt(i), context, fTempInfo));
                     } catch (InvalidDatatypeValueException ide) {
                         reportError("Value of enumeration '" + enumVals.elementAt(i) + "' must be from the value space of base");
                     }
@@ -467,7 +473,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("non-supported facet");
             } else {
                 try {
-                    fMaxInclusive = getActualValue(facets.maxInclusive, null, null);
+                    fMaxInclusive = getActualValue(facets.maxInclusive, context, fTempInfo);
                     fFacetsDefined |= FACET_MAXINCLUSIVE;
                     if ((fixedFacet & FACET_MAXINCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXINCLUSIVE;
@@ -482,7 +488,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("non-supported facet");
             } else {
                 try {
-                    fMaxExclusive = getActualValue(facets.maxExclusive, null, null);
+                    fMaxExclusive = getActualValue(facets.maxExclusive, context, fTempInfo);
                     fFacetsDefined |= FACET_MAXEXCLUSIVE;
                     if ((fixedFacet & FACET_MAXEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXEXCLUSIVE;
@@ -497,7 +503,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("non-supported facet");
             } else {
                 try {
-                    fMinExclusive = getActualValue(facets.minExclusive, null, null);
+                    fMinExclusive = getActualValue(facets.minExclusive, context, fTempInfo);
                     fFacetsDefined |= FACET_MINEXCLUSIVE;
                     if ((fixedFacet & FACET_MINEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MINEXCLUSIVE;
@@ -512,7 +518,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("non-supported facet");
             } else {
                 try {
-                    fMinInclusive = getActualValue(facets.minInclusive, null, null);
+                    fMinInclusive = getActualValue(facets.minInclusive, context, fTempInfo);
                     fFacetsDefined |= FACET_MININCLUSIVE;
                     if ((fixedFacet & FACET_MININCLUSIVE) != 0)
                         fFixedFacet |= FACET_MININCLUSIVE;
@@ -1007,9 +1013,49 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
      */
     public Object validate(String content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
 
-        // step 1: validate the value against the facets. we need to use the
-        //         get***, compare, isEqual methods from TypeValidator
-        Object ob = getActualValue(content, context, validatedInfo);
+        // first normalize string value, and convert it to actual value
+        Object ob = getActualValue(content, context, fTempInfo);
+
+        validate(context, fTempInfo);
+
+        if (validatedInfo != null) {
+            validatedInfo.actualValue = fTempInfo.actualValue;
+            validatedInfo.normalizedValue = fTempInfo.normalizedValue;
+            validatedInfo.memberType = fTempInfo.memberType;
+            validatedInfo.memberTypes = fTempInfo.memberTypes;
+        }
+
+        return ob;
+
+    }
+
+    /**
+     * validate an actual value against this DV
+     *
+     * @param value         the actual value that needs to be validated
+     * @param context       the validation context
+     * @param validatedInfo used to provide the actual value and member types
+     */
+    public void validate(ValidationContext context, ValidatedInfo validatedInfo)
+        throws InvalidDatatypeValueException {
+
+        // then validate the actual value against the facets
+        if (context.needFacetChecking() &&
+            (fFacetsDefined != 0 && fFacetsDefined != FACET_WHITESPACE)) {
+            checkFacets(validatedInfo);
+        }
+
+        // now check extra rules: for ID/IDREF/ENTITY
+        if (context.needExtraChecking()) {
+            checkExtraRules(context, validatedInfo);
+        }
+
+    }
+
+    private void checkFacets(ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
+
+        Object ob = validatedInfo.actualValue;
+        String content = validatedInfo.normalizedValue;
 
         if ( (fFacetsDefined & FACET_PATTERN ) != 0 ) {
             RegularExpression regex;
@@ -1184,13 +1230,43 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                                                         SPECIAL_TOKEN_STRING[fTokenType]);
             }
         }
+    }
 
-        // check extra rules: for ID/IDREF/ENTITY
-        fDVs[fValidationDV].checkExtraRules(ob, context);
+    private void checkExtraRules(ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
 
-        return ob;
+        Object ob = validatedInfo.actualValue;
 
-    }// validate()
+        if (fVariety == VARIETY_ATOMIC) {
+
+            fDVs[fValidationDV].checkExtraRules(ob, context);
+
+        } else if (fVariety == VARIETY_LIST) {
+
+            Object[] values = (Object[])ob;
+            if (fItemType.fVariety == VARIETY_UNION) {
+                XSSimpleTypeDecl[] memberTypes = (XSSimpleTypeDecl[])validatedInfo.memberTypes;
+                XSSimpleType memberType = validatedInfo.memberType;
+                for (int i = values.length-1; i >= 0; i--) {
+                    validatedInfo.actualValue = values[i];
+                    validatedInfo.memberType = memberTypes[i];
+                    fItemType.checkExtraRules(context, validatedInfo);
+                }
+                validatedInfo.memberType = memberType;
+            } else { // (fVariety == VARIETY_ATOMIC)
+                for (int i = values.length-1; i >= 0; i--) {
+                    validatedInfo.actualValue = values[i];
+                    fItemType.checkExtraRules(context, validatedInfo);
+                }
+            }
+            validatedInfo.actualValue = values;
+
+        } else { // (fVariety == VARIETY_UNION)
+
+            ((XSSimpleTypeDecl)validatedInfo.memberType).checkExtraRules(context, validatedInfo);
+
+        }
+
+    }// checkExtraRules()
 
     //we can still return object for internal use.
     private Object getActualValue(String content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException{
@@ -1200,11 +1276,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             String nvalue = normalize(content, fWhiteSpace);
             Object avalue = fDVs[fValidationDV].getActualValue(nvalue, context);
 
-            if (validatedInfo != null) {
-                validatedInfo.actualValue = avalue;
-                validatedInfo.normalizedValue = nvalue;
-                validatedInfo.memberType = null;
-            }
+            validatedInfo.actualValue = avalue;
+            validatedInfo.normalizedValue = nvalue;
 
             return avalue;
 
@@ -1214,15 +1287,15 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             StringTokenizer parsedList = new StringTokenizer(nvalue);
             int countOfTokens = parsedList.countTokens() ;
             Object[] avalue = new Object[countOfTokens];
+            XSSimpleTypeDecl[] memberTypes = new XSSimpleTypeDecl[countOfTokens];
             for(int i = 0 ; i < countOfTokens ; i ++){
-                avalue[i] = fItemType.validate(parsedList.nextToken(), context, null);
+                avalue[i] = fItemType.validate(parsedList.nextToken(), context, validatedInfo);
+                memberTypes[i] = (XSSimpleTypeDecl)validatedInfo.memberType;
             }
 
-            if (validatedInfo != null) {
-                validatedInfo.actualValue = avalue;
-                validatedInfo.normalizedValue = nvalue;
-                validatedInfo.memberType = null;
-            }
+            validatedInfo.actualValue = avalue;
+            validatedInfo.normalizedValue = nvalue;
+            validatedInfo.memberTypes = memberTypes;
 
             return avalue;
 
@@ -1232,8 +1305,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 try {
                     //it should throw exception if anything goes wrong
                     Object aValue = fMemberTypes[i].validate(content, context, validatedInfo);
-                    if (validatedInfo != null)
-                        validatedInfo.memberType = fMemberTypes[i];
+                    validatedInfo.memberType = fMemberTypes[i];
                     return aValue;
                 } catch(InvalidDatatypeValueException invalidValue) {
                 }

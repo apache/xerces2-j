@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.dv;
 
+import org.apache.xerces.impl.dv.xs_new.SchemaDVFactoryImpl;
 import java.util.Hashtable;
 
 /**
@@ -69,7 +70,68 @@ import java.util.Hashtable;
  *
  * @version $Id$
  */
-public interface SchemaDVFactory {
+public abstract class SchemaDVFactory {
+
+    /**
+     * property name of the schema dv factory implementation class
+     */
+    public static final String SCHEMA_DV_FACTORY_CLASS = "xerces.dv.schemadv";
+
+    private static SchemaDVFactory fSchemaDVFactory = null;
+
+    /**
+     * Get an instance of SchemaDVFactory implementation.
+     *
+     * The system property "xerces.dv.schemadv" needs to be specified to the
+     * class name of the implementation. If there is any error creating an
+     * instance of the specified class, the default implementation is used.
+     *
+     * After the first time this method successfully returns, any subsequent
+     * invocation to this method returns the same instance, even if the system
+     * property is changed later on.
+     *
+     * @return  an instance of SchemaDVFactory implementation
+     */
+    public static final SchemaDVFactory getInstance() {
+        // if the factory instance has been created, just return it.
+        if (fSchemaDVFactory != null)
+            return fSchemaDVFactory;
+
+        // synchronize on the string value, to make sure that we don't create
+        // two instance of the dv factory class
+        synchronized (SCHEMA_DV_FACTORY_CLASS) {
+            // in case this thread was waiting for another thread to create
+            // the factory instance, just return the instance created by the
+            // other thread.
+            if (fSchemaDVFactory != null)
+                return fSchemaDVFactory;
+
+            // get the class name from the system property
+            String factoryClass = System.getProperty(SCHEMA_DV_FACTORY_CLASS);
+
+            try {
+                // if the class name is specified, try to create a new instance
+                // of that
+                if (factoryClass != null)
+                    fSchemaDVFactory = (SchemaDVFactory)(Class.forName(factoryClass).newInstance());
+            } catch (Exception e) {
+                // REVISIT: the system property specified by the application is
+                // not valid do we want to report some kind of error/warning?
+            }
+
+            // if the class name is not specified, or we failed creating a new
+            // instance, create an instance of the default implementation of
+            // the dv factory interface
+            if (fSchemaDVFactory == null)
+                fSchemaDVFactory = new SchemaDVFactoryImpl();
+        }
+
+        // return the newly created dv factory instance
+        return fSchemaDVFactory;
+    }
+
+    // can't create a new object of this class
+    protected SchemaDVFactory(){}
 
     /**
      * Get a built-in simple type of the given name
@@ -82,7 +144,7 @@ public interface SchemaDVFactory {
      * @param name  the name of the datatype
      * @return      the datatype validator of the given name
      */
-    public XSSimpleType getBuiltInType(String name);
+    public abstract XSSimpleType getBuiltInType(String name);
 
     /**
      * get all built-in simple types, which are stored in a hashtable keyed by
@@ -90,7 +152,7 @@ public interface SchemaDVFactory {
      *
      * @return      a hashtable which contains all built-in simple types
      */
-    public Hashtable getBuiltInTypes();
+    public abstract Hashtable getBuiltInTypes();
 
     /**
      * Create a new simple type which is derived by restriction from another
@@ -102,7 +164,7 @@ public interface SchemaDVFactory {
      * @param base              base type of the new type
      * @return                  the newly created simple type
      */
-    public XSSimpleType createTypeRestriction(String name, String targetNamespace,
+    public abstract XSSimpleType createTypeRestriction(String name, String targetNamespace,
                                               short finalSet, XSSimpleType base);
 
     /**
@@ -115,7 +177,7 @@ public interface SchemaDVFactory {
      * @param itemType          item type of the list type
      * @return                  the newly created simple type
      */
-    public XSListSimpleType createTypeList(String name, String targetNamespace,
+    public abstract XSListSimpleType createTypeList(String name, String targetNamespace,
                                            short finalSet, XSSimpleType itemType);
 
     /**
@@ -128,7 +190,7 @@ public interface SchemaDVFactory {
      * @param base              member types of the union type
      * @return                  the newly created simple type
      */
-    public XSUnionSimpleType createTypeUnion(String name, String targetNamespace,
+    public abstract XSUnionSimpleType createTypeUnion(String name, String targetNamespace,
                                              short finalSet, XSSimpleType[] memberTypes);
 
 }

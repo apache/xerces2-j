@@ -127,6 +127,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     //error message buffer
     protected StringBuffer message;
 
+    public AbstractDateTimeDV(){
+        initializeValues();
+    }
+
     protected void initializeValues(){
         fDateValue = new int[TOTAL_SIZE];
         fTempDate = new int[TOTAL_SIZE];

@@ -74,11 +74,12 @@ public interface DatatypeValidator {
      *
      * @param content       the string value that needs to be validated
      * @param context       the validation context
-     * @param validatedInfo used to store validatoin result
      *
-     * @return              the actual value (QName, Boolean) of the string value
+     * @return              the actual value of the string value
+     *                      (most likely a normalized string, since all types
+     *                       in DTD are string types.)
      */
-    public Object validate(String content, ValidationContext context, ValidatedInfo validatedInfo)
+    public Object validate(String content, ValidationContext context)
         throws InvalidDatatypeValueException;
 
 }

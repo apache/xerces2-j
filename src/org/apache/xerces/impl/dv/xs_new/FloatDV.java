@@ -85,9 +85,9 @@ public class FloatDV extends TypeValidator {
         }
     }//getActualValue()
 
-    // Float compareTo method takes care of cases specified for Float in schema spec.
+    // Can't call Float#compareTo method, because it's introduced in jdk 1.2
     public int compare(Object value1, Object value2){
-        return ((Float)value1).compareTo((Float)value2);
+        return compareFloats((Float)value1, (Float)value2);
     }//compare()
 
     //takes care of special values positive, negative infinity and Not a Number as per the spec.
@@ -111,6 +111,23 @@ public class FloatDV extends TypeValidator {
             }
         }
         return f;
+    }
+
+    private int compareFloats(Float value, Float anotherValue){
+        float thisVal = value.floatValue();
+        float anotherVal = anotherValue.floatValue();
+
+        if (thisVal < anotherVal)
+            return -1;		 // Neither val is NaN, thisVal is smaller
+        if (thisVal > anotherVal)
+            return 1;		 // Neither val is NaN, thisVal is larger
+
+        int thisBits = Float.floatToIntBits(thisVal);
+        int anotherBits = Float.floatToIntBits(anotherVal);
+
+        return (thisBits == anotherBits ?  0 : // Values are equal
+                (thisBits < anotherBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
+                 1));                          // (0.0, -0.0) or (NaN, !NaN)
     }
 
 } // class FloatDV

@@ -73,7 +73,7 @@ import java.util.Hashtable;
  *
  * @version $Id$
  */
-public class SchemaDVFactoryImpl implements SchemaDVFactory {
+public class SchemaDVFactoryImpl extends SchemaDVFactory {
 
     static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
 

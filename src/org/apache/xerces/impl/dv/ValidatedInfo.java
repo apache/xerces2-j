@@ -74,6 +74,7 @@ public class ValidatedInfo {
 
     /**
      * The actual value from a string value (QName, Boolean, etc.)
+     * An array of Objects if the type is a list.
      */
     public Object actualValue;
 
@@ -82,5 +83,14 @@ public class ValidatedInfo {
      * actually validated the string value.
      */
     public XSSimpleType memberType;
+
+    /**
+     * If
+     * 1. the type is a union type where one of the member types is a list, or
+     *    if the type is a list; and
+     * 2. the item type of the list is a union type
+     * then an array of member types used to validate the values.
+     */
+    public XSSimpleType[] memberTypes;
 
 }
