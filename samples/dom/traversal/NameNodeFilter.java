@@ -57,7 +57,7 @@
 package dom.traversal;
 
 
-import org.apache.xerces.domx.traversal.*;
+import org.w3c.dom.traversal.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 

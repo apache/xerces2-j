@@ -70,7 +70,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import org.apache.xerces.dom.traversal.NodeIteratorImpl;
-import org.apache.xerces.domx.traversal.*;
+import org.w3c.dom.traversal.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
 import ui.DOMTreeFull;
@@ -87,7 +87,7 @@ public class IteratorView
     JTextArea messageText;
     JScrollPane messageScroll;
     DOMTreeFull jtree;
-    NodeIteratorImpl iterator;
+    NodeIterator iterator;
     NameNodeFilter nameNodeFilter;
     
     JButton nextButton;
@@ -116,6 +116,8 @@ public class IteratorView
             };
     JCheckBox expandERs;
     
+    Hashtable treeNodeMap = new Hashtable();
+    
     
     /** main */
     public static void main (String args[]) {
@@ -137,8 +139,6 @@ public class IteratorView
         }
     }
     
-    Hashtable treeNodeMap = new Hashtable();
-
     /** Constructor */
     public IteratorView (String filename) {
         super("IteratorView: "+filename);
@@ -312,7 +312,7 @@ public class IteratorView
                 messageText.append( (String)elements.nextElement());
             }    
             
-            iterator = (NodeIteratorImpl)document.
+            iterator = document.
                 createNodeIterator(
                     document, 
                     NodeFilter.SHOW_ALL, 
@@ -353,9 +353,10 @@ public class IteratorView
             nameNodeFilter.setName(nameText);
             nameNodeFilter.setMatch(matched);
             
-            document.removeNodeIterators();
+            //((DocumentImpl)document).removeNodeIterators();
+            if (iterator !=null) iterator.detach();
             boolean expand = expandERs.isSelected();
-            iterator = (NodeIteratorImpl)document.createNodeIterator(
+            iterator = document.createNodeIterator(
                     node, 
                     (short)mask, 
                     nameNodeFilter,

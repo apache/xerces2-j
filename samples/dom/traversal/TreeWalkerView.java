@@ -69,8 +69,8 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import org.apache.xerces.dom.traversal.TreeWalkerImpl;
-import org.apache.xerces.domx.traversal.*;
+import org.apache.xerces.dom.traversal.*;
+import org.w3c.dom.traversal.*;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import ui.DOMTreeFull;
@@ -88,7 +88,7 @@ public class TreeWalkerView
     JTextArea messageText;
     JScrollPane messageScroll;
     DOMTreeFull jtree;
-    TreeWalkerImpl treeWalker;
+    TreeWalker treeWalker;
     NameNodeFilter nameNodeFilter;
     
     JButton nextButton;
@@ -364,7 +364,7 @@ public class TreeWalkerView
             }    
             
             boolean expand = expandERs.isSelected();
-            treeWalker = (TreeWalkerImpl)document.
+            treeWalker = document.
                 createTreeWalker(
                     document, 
                     NodeFilter.SHOW_ALL, 
@@ -419,7 +419,7 @@ public class TreeWalkerView
             // expand Entity References?
             boolean expand = expandERs.isSelected();
             
-            treeWalker = (TreeWalkerImpl)document.
+            treeWalker = document.
                 createTreeWalker(
                     node, 
                     mask, 
