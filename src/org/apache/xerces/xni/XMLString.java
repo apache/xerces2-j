@@ -164,7 +164,7 @@ public class XMLString {
     public void clear() {
         this.ch = null;
         this.offset = 0;
-        this.length = 0;
+        this.length = -1;
     } // clear()
 
     /**

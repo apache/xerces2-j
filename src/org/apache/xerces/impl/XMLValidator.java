@@ -270,6 +270,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /** Default constructor. */
     public XMLValidator() {
+        
+        // setup namespace binder
+        fNamespaceBinder = new XMLNamespaceBinder();
+        fNamespaceBinder.setOnlyPassPrefixMappingEvents(true);
+
     } // <init>()
 
     //
@@ -290,8 +295,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *                      SAXNotRecognizedException or a
      *                      SAXNotSupportedException.
      */
-    public void reset(XMLComponentManager configurationManager)
-    throws SAXException {
+    public void reset(XMLComponentManager componentManager)
+        throws SAXException {
 
 
         // clear grammars
@@ -315,26 +320,24 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fNDataDeclNotations.clear();
 
         // sax features
-        fValidation = configurationManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
+        fNamespaces = componentManager.getFeature(Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE);
+        fValidation = componentManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
 
         // get needed components
-        fErrorReporter = (XMLErrorReporter) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
-        fSymbolTable = (SymbolTable) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
-        fGrammarPool = (GrammarPool) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.GRAMMAR_POOL_PROPERTY);
-
-        // plug in XMLNamespaceBinder
-        fNamespaceBinder = new XMLNamespaceBinder();
-        fNamespaceBinder.setOnlyPassPrefixMappingEvents(true);
-        fNamespaceBinder.setDocumentHandler(fDocumentHandler);
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
+        fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
+        fGrammarPool = (GrammarPool)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.GRAMMAR_POOL_PROPERTY);
 
         for (int i = 0; i < fElementQNamePartsStack.length; i++) {
             fElementQNamePartsStack[i] = new QName();
         }
 
+        // reset namespace binder
+        fNamespaceBinder.reset(componentManager);
 
-        fElementDepth = -1;
-
+        fElementDepth = -1;                      
         init();
+
     } // reset(XMLComponentManager)
 
     /**
@@ -386,6 +389,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
+        fNamespaceBinder.setDocumentHandler(fDocumentHandler);
     } // setDocumentHandler(XMLDocumentHandler)
 
     //
@@ -595,20 +599,17 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         }
 
-
-        ensureStackCapacity(fElementDepth);
-
-        fCurrentElement.setValues(element);
-
-        fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
-
-        fElementIndexStack[fElementDepth] = fCurrentElementIndex;
-        fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
-
         //if fCurrentGrammar is DTD, do namespace binding here.
         if (fNamespaces && fCurrentGrammarIsDTD) {
             fNamespaceBinder.startElement(element, attributes);
         }
+
+        fCurrentElement.setValues(element);
+        
+        ensureStackCapacity(fElementDepth);
+        fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
+        fElementIndexStack[fElementDepth] = fCurrentElementIndex;
+        fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -738,9 +739,18 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         // call handlers
         if (fDocumentHandler != null) {
-            // call fNamesapceBinder to fire up endPrefixMapping events
-            fNamespaceBinder.endElement(fCurrentElement);
+            // NOTE: The binding of the element doesn't actually happen
+            //       yet because the namespace binder does that. However,
+            //       if it does it before this point, then the endPrefix-
+            //       Mapping calls get made too soon! As long as the
+            //       rawnames match, we know it'll have a good binding,
+            //       so we can just use the current element. -Ac
             fDocumentHandler.endElement(fCurrentElement);
+        }
+        
+        // unbind prefixes
+        if (fNamespaces) {
+            fNamespaceBinder.endElement(element);
         }
 
         // now pop this element off the top of the element stack
@@ -1840,8 +1850,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     int position = fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
                     while (position != -1) {
                         fCurrentGrammar.getAttributeDecl(position, fTempAttDecl);
-                        if (fTempAttDecl.name.rawname == attrRawName 
-                            || fTempAttDecl.name.rawname.equals(attrRawName)) {
+                        if (fTempAttDecl.name.rawname == attrRawName) {
                             // found the match att decl, 
                             attDefIndex = position;
                             declared = true;
@@ -1852,8 +1861,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     if (attDefIndex == -1) {
                         // REVISIT - cache the elem/attr tuple so that we only give
                         //  this error once for each unique occurrence
-                        Object[] args = { element.localpart,
-                            attrRawName};
+                        Object[] args = { element.rawname, attrRawName };
 
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "MSG_ATTRIBUTE_NOT_DECLARED",

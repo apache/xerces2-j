@@ -143,15 +143,47 @@ public class XMLSimpleType {
      * @param defaultValue 
      * @param datatypeValidator 
      */
-    public void setValues(short type, String name, String[] enumeration, boolean list, short defaultType, String defaultValue, DatatypeValidator datatypeValidator) {
+    public void setValues(short type, String name, String[] enumeration, 
+                          boolean list, short defaultType, 
+                          String defaultValue, 
+                          DatatypeValidator datatypeValidator) {
+
         this.type              = type;
         this.name              = name;
-        this.enumeration       = enumeration;
+        // REVISIT: Should this be a copy? -Ac
+        if (enumeration != null && enumeration.length > 0) {
+            this.enumeration = new String[enumeration.length];
+            System.arraycopy(enumeration, 0, this.enumeration, 0, this.enumeration.length);
+        }
+        else {
+            this.enumeration = null;
+        }
         this.list              = list;
         this.defaultType       = defaultType;
         this.defaultValue      = defaultValue;
         this.datatypeValidator = datatypeValidator;
-    } // setValues
+
+    } // setValues(short,String,String[],boolean,short,String,DatatypeValidator)
+
+    /** Set values. */
+    public void setValues(XMLSimpleType simpleType) {
+
+        type = simpleType.type;
+        name = simpleType.name;
+        // REVISIT: Should this be a copy? -Ac
+        if (simpleType.enumeration != null && simpleType.enumeration.length > 0) {
+            enumeration = new String[simpleType.enumeration.length];
+            System.arraycopy(simpleType.enumeration, 0, enumeration, 0, enumeration.length);
+        }
+        else {
+            enumeration = null;
+        }
+        list = simpleType.list;
+        defaultType = simpleType.defaultType;
+        defaultValue = simpleType.defaultValue;
+        datatypeValidator = simpleType.datatypeValidator;
+
+    } // setValues(XMLSimpleType)
 
     /**
      * clear

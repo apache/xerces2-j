@@ -1201,13 +1201,12 @@ public class XMLDTDScanner
 
         String defaultType = null;
         fString.clear();
+        defaultVal.clear();
         if (fEntityScanner.skipString("#REQUIRED")) {
             defaultType = "#REQUIRED";
-            defaultVal.clear();
         }
         else if (fEntityScanner.skipString("#IMPLIED")) {
             defaultType = "#IMPLIED";
-            defaultVal.clear();
         }
         else {
             if (fEntityScanner.skipString("#FIXED")) {

@@ -102,11 +102,6 @@ public class XMLNamespaceBinder
     // Data
     //
 
-    // features
-
-    /** Namespaces. */
-    protected boolean fNamespaces;
-
     // properties
 
     /** Symbol table. */
@@ -563,25 +558,25 @@ public class XMLNamespaceBinder
      */
     public void endElement(QName element) throws SAXException {
 
+        // bind element
+        element.uri = fNamespaceSupport.getURI(element.prefix);
+        
         // call handlers
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.endElement(element);
         }
 
         // end prefix mappings
-        if (fNamespaces) {
-            // call handler
-            if (fDocumentHandler != null) {
-                int count = fNamespaceSupport.getDeclaredPrefixCount();
-                for (int i = count; i > 0; i--) {
-                    String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
-                    fDocumentHandler.endPrefixMapping(prefix);
-                }
+        if (fDocumentHandler != null) {
+            int count = fNamespaceSupport.getDeclaredPrefixCount();
+            for (int i = count; i > 0; i--) {
+                String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
+                fDocumentHandler.endPrefixMapping(prefix);
             }
-
-            // pop context
-            fNamespaceSupport.popContext();
         }
+
+        // pop context
+        fNamespaceSupport.popContext();
 
     } // endElement(QName)
 

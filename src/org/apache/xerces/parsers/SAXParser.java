@@ -188,6 +188,25 @@ public class SAXParser
     } // doctypeDecl(String,String,String)
 
     /**
+     * The start of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
+     * 
+     * @param prefix The namespace prefix.
+     * @param uri    The URI bound to the prefix.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void startPrefixMapping(String prefix, String uri)
+        throws SAXException {
+
+        // SAX2
+        if (fContentHandler != null) {
+            fContentHandler.startPrefixMapping(prefix, uri);
+        }
+
+    } // startPrefixMapping(String prefix, String uri)
+
+    /**
      * The start of an element. If the document specifies the start element
      * by using an empty tag, then the startElement method will immediately
      * be followed by the endElement method, with no intervening methods.
@@ -284,6 +303,23 @@ public class SAXParser
         }
 
     } // endElement(QName)
+
+    /**
+     * The end of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
+     * 
+     * @param prefix The namespace prefix.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void endPrefixMapping(String prefix) throws SAXException {
+
+        // SAX2
+        if (fContentHandler != null) {
+            fContentHandler.endPrefixMapping(prefix);
+        }
+
+    } // endPrefixMapping(String)
 
     /**
      * The end of the document.

@@ -57,10 +57,7 @@
 
 package org.apache.xerces.util;
 
-import java.util.EmptyStackException;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import org.apache.xerces.xni.NamespaceContext;
 
 /**
  * Namespace support for XML document handlers. This class doesn't 
@@ -72,17 +69,8 @@ import java.util.Vector;
  *
  * @version $Id$
  */
-public class NamespaceSupport {
-
-    //
-    // Constants
-    //
-
-    /**
-     * The XML Namespace ("http://www.w3.org/XML/1998/namespace"). This is
-     * the Namespace URI that is automatically mapped to the "xml" prefix.
-     */
-    protected final static String XMLNS = "http://www.w3.org/XML/1998/namespace";
+public class NamespaceSupport 
+    implements NamespaceContext {
 
     //
     // Data
@@ -101,6 +89,9 @@ public class NamespaceSupport {
 
     /** The top of the namespace information array. */
     protected int fNamespaceSize;
+
+    // NOTE: The constructor depends on the initial context size 
+    //       being at least 1. -Ac
 
     /** 
      * Context indexes. This array contains indexes into the namespace
@@ -162,7 +153,7 @@ public class NamespaceSupport {
         // bind "xml" prefix to the XMLNS uri
         fNamespace[fNamespaceSize++] = fXmlSymbol;
         fNamespace[fNamespaceSize++] = symbolTable.addSymbol(XMLNS);
-        fCurrentContext++;
+        ++fCurrentContext;
 
     } // reset(SymbolTable)
 
@@ -204,12 +195,12 @@ public class NamespaceSupport {
      * <p>
      * You must not attempt to declare additional Namespace
      * prefixes after popping a context, unless you push another
-     * context first.</p>
+     * context first.
      *
      * @see #pushContext
      */
     public void popContext() {
-    	fCurrentContext--;
+        fNamespaceSize = fContext[fCurrentContext--];
     } // popContext()
 
     // operations within a context.
@@ -247,6 +238,12 @@ public class NamespaceSupport {
         // see if prefix already exists in current context
         for (int i = fNamespaceSize; i > fContext[fCurrentContext]; i -= 2) {
             if (fNamespace[i - 2] == prefix) {
+                // REVISIT: [Q] Should the new binding override the
+                //          previously declared binding or should it
+                //          it be ignored? -Ac
+                // NOTE:    The SAX2 "NamespaceSupport" helper allows
+                //          re-bindings with the new binding overwriting
+                //          the previous binding. -Ac
                 fNamespace[i - 1] = uri;
                 return true;
             }
@@ -308,5 +305,129 @@ public class NamespaceSupport {
     public String getDeclaredPrefixAt(int index) {
         return fNamespace[fContext[fCurrentContext] + index * 2];
     } // getDeclaredPrefixAt(int):String
+
+    /**
+     * Returns the parent namespace context or null if there is no
+     * parent context. The total depth of the namespace contexts 
+     * matches the element depth in the document.
+     * <p>
+     * <strong>Note:</strong> This method <em>may</em> return the same 
+     * NamespaceContext object reference. The caller is responsible for
+     * saving the declared prefix mappings before calling this method.
+     */
+    public NamespaceContext getParentContext() {
+        if (fCurrentContext == 1) {
+            return null;
+        }
+        return new Context(fCurrentContext - 1);
+    } // getParentContext():NamespaceContext
+
+    //
+    // Classes
+    //
+
+    /**
+     * Namespace context information. The current context is always
+     * handled directly by the NamespaceSupport class. This class is
+     * used when a user queries the parent context.
+     *
+     * @author Andy Clark, IBM
+     */
+    final class Context 
+        implements NamespaceContext {
+    
+        //
+        // Data
+        //
+
+        /** The current context. */
+        private int fCurrentContext;
+
+        //
+        // Constructors
+        //
+
+        /** 
+         * Constructs a new context. Once constructed, this object will
+         * be re-used when the application calls <code>getParentContext</code.
+         */
+        public Context(int currentContext) {
+            setCurrentContext(currentContext);
+        } // <init>(int)
+
+        //
+        // Public methods
+        //
+
+        /** Sets the current context. */
+        public void setCurrentContext(int currentContext) {
+            fCurrentContext = currentContext;
+        } // setCurrentContext(int)
+
+        //
+        // NamespaceContext methods
+        //
+
+        /**
+         * Look up a prefix and get the currently-mapped Namespace URI.
+         * <p>
+         * This method looks up the prefix in the current context.
+         * Use the empty string ("") for the default Namespace.
+         *
+         * @param prefix The prefix to look up.
+         *
+         * @return The associated Namespace URI, or null if the prefix
+         *         is undeclared in this context.
+         *
+         * @see #getPrefix
+         * @see #getPrefixes
+         */
+        public String getURI(String prefix) {
+
+            // find prefix in current context
+            for (int i = fNamespaceSize; i > 0; i -= 2) {
+                if (fNamespace[i - 2] == prefix) {
+                    return fNamespace[i - 1];
+                }
+            }
+
+            // prefix not found
+            return null;
+
+        } // getURI(String):String
+
+        /**
+         * Return a count of all prefixes currently declared, including
+         * the default prefix if bound.
+         */
+        public int getDeclaredPrefixCount() {
+            return (fNamespaceSize - fContext[fCurrentContext]) / 2;
+        } // getDeclaredPrefixCount():int
+
+        /** 
+         * Returns the prefix at the specified index in the current context.
+         */
+        public String getDeclaredPrefixAt(int index) {
+            return fNamespace[fContext[fCurrentContext] + index * 2];
+        } // getDeclaredPrefixAt(int):String
+
+        /**
+         * Returns the parent namespace context or null if there is no
+         * parent context. The total depth of the namespace contexts 
+         * matches the element depth in the document.
+         * <p>
+         * <strong>Note:</strong> This method <em>may</em> return the same 
+         * NamespaceContext object reference. The caller is responsible for
+         * saving the declared prefix mappings before calling this method.
+         */
+        public NamespaceContext getParentContext() {
+            if (fCurrentContext == 1) {
+                return null;
+            }
+            setCurrentContext(fCurrentContext - 1);
+            return this;
+        } // getParentContext():NamespaceContext
+
+    } // class Context
 
 } // class NamespaceSupport
