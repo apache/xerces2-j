@@ -782,6 +782,7 @@ public class XSAttributeChecker {
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
         oneEle = new OneElement (attrList, false);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_APPINFO, oneEle);
         fEleAttrsMapN.put(SchemaSymbols.ELT_APPINFO, oneEle);
 
         // for element "documentation" - local name
@@ -790,6 +791,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
         // xml:lang = language ???
         oneEle = new OneElement (attrList, false);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
         fEleAttrsMapN.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
 
         // for element "simpleType" - global
