@@ -59,7 +59,7 @@
 // Aug 25, 2000:
 //   Fixed processing instruction printing inside element content
 //   to not escape content. Reported by Mikael Staldal
-//   <d96-mst-ingen-reklam@d.kth.se>
+//   <d96-mst@d.kth.se>
 // Aug 25, 2000:
 //   Added ability to omit comments.
 //   Contributed by Anupam Bagchi <abagchi@jtcsv.com>
