@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002, 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ package org.apache.xerces.impl.dv.xs;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.util.SymbolHash;
 
 /**
@@ -113,11 +114,12 @@ public class BaseDVFactory extends SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param base              base type of the new type
+     * @param annotations       set of annotations
      * @return                  the newly created simple type
      */
     public XSSimpleType createTypeRestriction(String name, String targetNamespace,
-                                              short finalSet, XSSimpleType base) {
-        return new XSSimpleTypeDecl((XSSimpleTypeDecl)base, name, targetNamespace, finalSet, false);
+                                              short finalSet, XSSimpleType base, XSObjectList annotations) {
+        return new XSSimpleTypeDecl((XSSimpleTypeDecl)base, name, targetNamespace, finalSet, false, annotations);
     }
 
     /**
@@ -128,11 +130,13 @@ public class BaseDVFactory extends SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param itemType          item type of the list type
+     * @param annotations       set of annotations
      * @return                  the newly created simple type
      */
     public XSSimpleType createTypeList(String name, String targetNamespace,
-                                       short finalSet, XSSimpleType itemType) {
-        return new XSSimpleTypeDecl(name, targetNamespace, finalSet, (XSSimpleTypeDecl)itemType, false);
+                                       short finalSet, XSSimpleType itemType,
+                                       XSObjectList annotations) {
+        return new XSSimpleTypeDecl(name, targetNamespace, finalSet, (XSSimpleTypeDecl)itemType, false, annotations);
     }
 
     /**
@@ -143,15 +147,17 @@ public class BaseDVFactory extends SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param base              member types of the union type
+     * @param annotations       set of annotations
      * @return                  the newly created simple type
      */
     public XSSimpleType createTypeUnion(String name, String targetNamespace,
-                                        short finalSet, XSSimpleType[] memberTypes) {
+                                        short finalSet, XSSimpleType[] memberTypes,
+                                        XSObjectList annotations) {
         int typeNum = memberTypes.length;
         XSSimpleTypeDecl[] mtypes = new XSSimpleTypeDecl[typeNum];
         System.arraycopy(memberTypes, 0, mtypes, 0, typeNum);
 
-        return new XSSimpleTypeDecl(name, targetNamespace, finalSet, mtypes);
+        return new XSSimpleTypeDecl(name, targetNamespace, finalSet, mtypes, annotations);
     }
 
     // create all built-in types
@@ -210,69 +216,69 @@ public class BaseDVFactory extends SchemaDVFactory {
         types.put(INTEGER, integerDV);
 
         facets.maxInclusive = "0";
-        XSSimpleTypeDecl nonPositiveDV = new XSSimpleTypeDecl(integerDV, NONPOSITIVEINTEGER, URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl nonPositiveDV = new XSSimpleTypeDecl(integerDV, NONPOSITIVEINTEGER, URI_SCHEMAFORSCHEMA, (short)0, false, null);
         nonPositiveDV.applyFacets1(facets , XSSimpleType.FACET_MAXINCLUSIVE, (short)0);
         types.put(NONPOSITIVEINTEGER, nonPositiveDV);
 
         facets.maxInclusive = "-1";
-        XSSimpleTypeDecl negativeDV = new XSSimpleTypeDecl(integerDV, NEGATIVEINTEGER, URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl negativeDV = new XSSimpleTypeDecl(integerDV, NEGATIVEINTEGER, URI_SCHEMAFORSCHEMA, (short)0, false, null);
         negativeDV.applyFacets1(facets , XSSimpleType.FACET_MAXINCLUSIVE, (short)0);
         types.put(NEGATIVEINTEGER, negativeDV);
 
         facets.maxInclusive = "9223372036854775807";
         facets.minInclusive = "-9223372036854775808";
-        XSSimpleTypeDecl longDV = new XSSimpleTypeDecl(integerDV, LONG, URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl longDV = new XSSimpleTypeDecl(integerDV, LONG, URI_SCHEMAFORSCHEMA, (short)0, false, null);
         longDV.applyFacets1(facets , (short)(XSSimpleType.FACET_MAXINCLUSIVE | XSSimpleType.FACET_MININCLUSIVE), (short)0 );
         types.put(LONG, longDV);
 
 
         facets.maxInclusive = "2147483647";
         facets.minInclusive =  "-2147483648";
-        XSSimpleTypeDecl intDV = new XSSimpleTypeDecl(longDV, INT, URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl intDV = new XSSimpleTypeDecl(longDV, INT, URI_SCHEMAFORSCHEMA, (short)0, false, null);
         intDV.applyFacets1(facets, (short)(XSSimpleType.FACET_MAXINCLUSIVE | XSSimpleType.FACET_MININCLUSIVE), (short)0 );
         types.put(INT, intDV);
 
         facets.maxInclusive = "32767";
         facets.minInclusive = "-32768";
-        XSSimpleTypeDecl shortDV = new XSSimpleTypeDecl(intDV, SHORT , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl shortDV = new XSSimpleTypeDecl(intDV, SHORT , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         shortDV.applyFacets1(facets, (short)(XSSimpleType.FACET_MAXINCLUSIVE | XSSimpleType.FACET_MININCLUSIVE), (short)0 );
         types.put(SHORT, shortDV);
 
         facets.maxInclusive = "127";
         facets.minInclusive = "-128";
-        XSSimpleTypeDecl byteDV = new XSSimpleTypeDecl(shortDV, BYTE , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl byteDV = new XSSimpleTypeDecl(shortDV, BYTE , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         byteDV.applyFacets1(facets, (short)(XSSimpleType.FACET_MAXINCLUSIVE | XSSimpleType.FACET_MININCLUSIVE), (short)0 );
         types.put(BYTE, byteDV);
 
         facets.minInclusive =  "0" ;
-        XSSimpleTypeDecl nonNegativeDV = new XSSimpleTypeDecl(integerDV, NONNEGATIVEINTEGER , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl nonNegativeDV = new XSSimpleTypeDecl(integerDV, NONNEGATIVEINTEGER , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         nonNegativeDV.applyFacets1(facets, XSSimpleType.FACET_MININCLUSIVE, (short)0 );
         types.put(NONNEGATIVEINTEGER, nonNegativeDV);
 
         facets.maxInclusive = "18446744073709551615" ;
-        XSSimpleTypeDecl unsignedLongDV = new XSSimpleTypeDecl(nonNegativeDV, UNSIGNEDLONG , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl unsignedLongDV = new XSSimpleTypeDecl(nonNegativeDV, UNSIGNEDLONG , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         unsignedLongDV.applyFacets1(facets, XSSimpleType.FACET_MAXINCLUSIVE, (short)0 );
         types.put(UNSIGNEDLONG, unsignedLongDV);
 
         facets.maxInclusive = "4294967295" ;
-        XSSimpleTypeDecl unsignedIntDV = new XSSimpleTypeDecl(unsignedLongDV, UNSIGNEDINT , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl unsignedIntDV = new XSSimpleTypeDecl(unsignedLongDV, UNSIGNEDINT , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         unsignedIntDV.applyFacets1(facets, XSSimpleType.FACET_MAXINCLUSIVE, (short)0 );
         types.put(UNSIGNEDINT, unsignedIntDV);
 
         facets.maxInclusive = "65535" ;
-        XSSimpleTypeDecl unsignedShortDV = new XSSimpleTypeDecl(unsignedIntDV, UNSIGNEDSHORT , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl unsignedShortDV = new XSSimpleTypeDecl(unsignedIntDV, UNSIGNEDSHORT , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         unsignedShortDV.applyFacets1(facets, XSSimpleType.FACET_MAXINCLUSIVE, (short)0 );
         types.put(UNSIGNEDSHORT, unsignedShortDV);
 
         facets.maxInclusive = "255" ;
-        XSSimpleTypeDecl unsignedByteDV = new XSSimpleTypeDecl(unsignedShortDV, UNSIGNEDBYTE , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl unsignedByteDV = new XSSimpleTypeDecl(unsignedShortDV, UNSIGNEDBYTE , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         unsignedByteDV.applyFacets1(facets, XSSimpleType.FACET_MAXINCLUSIVE, (short)0 );
         types.put(UNSIGNEDBYTE, unsignedByteDV);
 
         facets.minInclusive = "1" ;
-        XSSimpleTypeDecl positiveIntegerDV = new XSSimpleTypeDecl(nonNegativeDV, POSITIVEINTEGER , URI_SCHEMAFORSCHEMA, (short)0, false);
+        XSSimpleTypeDecl positiveIntegerDV = new XSSimpleTypeDecl(nonNegativeDV, POSITIVEINTEGER , URI_SCHEMAFORSCHEMA, (short)0, false, null);
         positiveIntegerDV.applyFacets1(facets, XSSimpleType.FACET_MININCLUSIVE, (short)0 );
         types.put(POSITIVEINTEGER, positiveIntegerDV);
     }//createBuiltInTypes(SymbolHash)
 
-}//XFormsDVFactory
+}//BaseDVFactory

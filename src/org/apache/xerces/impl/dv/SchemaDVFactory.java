@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@ package org.apache.xerces.impl.dv;
 
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.ObjectFactory;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 
 /**
  * Defines a factory API that enables applications to <p>
@@ -144,10 +145,12 @@ public abstract class SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param base              base type of the new type
+     * @param annotation        set of annotations
      * @return                  the newly created simple type
      */
     public abstract XSSimpleType createTypeRestriction(String name, String targetNamespace,
-                                                       short finalSet, XSSimpleType base);
+                                                       short finalSet, XSSimpleType base,
+                                                       XSObjectList annotations);
 
     /**
      * Create a new simple type which is derived by list from another simple
@@ -157,10 +160,12 @@ public abstract class SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param itemType          item type of the list type
+     * @param annotation        set of annotations
      * @return                  the newly created simple type
      */
     public abstract XSSimpleType createTypeList(String name, String targetNamespace,
-                                                short finalSet, XSSimpleType itemType);
+                                                short finalSet, XSSimpleType itemType,
+                                                XSObjectList annotations);
 
     /**
      * Create a new simple type which is derived by union from a list of other
@@ -170,9 +175,11 @@ public abstract class SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param base              member types of the union type
+     * @param annotation        set of annotations
      * @return                  the newly created simple type
      */
     public abstract XSSimpleType createTypeUnion(String name, String targetNamespace,
-                                                 short finalSet, XSSimpleType[] memberTypes);
+                                                 short finalSet, XSSimpleType[] memberTypes,
+                                                 XSObjectList annotations);
 
 }
