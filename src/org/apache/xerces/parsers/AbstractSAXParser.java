@@ -74,6 +74,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
@@ -91,11 +92,13 @@ import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * This is the base class of all SAX parsers. It implements both the
@@ -914,6 +917,27 @@ public abstract class AbstractSAXParser
         }
 
         // wrap XNI exceptions as SAX exceptions
+        catch (XMLParseException e) {
+            Exception ex = e.getException();
+            if (ex == null) {
+                // must be a parser exception; mine it for locator info and throw
+                // a SAXParseException
+                LocatorImpl locatorImpl = new LocatorImpl();
+                locatorImpl.setPublicId(e.getPublicId());
+                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setLineNumber(e.getLineNumber());
+                locatorImpl.setColumnNumber(e.getColumnNumber());
+                throw new SAXParseException(e.getMessage(), locatorImpl);
+            }
+            if (ex instanceof SAXException) {
+                // why did we create an XMLParseException?
+                throw (SAXException)ex;
+            }
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            throw new SAXException(ex);
+        }
         catch (XNIException e) {
             Exception ex = e.getException();
             if (ex == null) {
@@ -973,6 +997,27 @@ public abstract class AbstractSAXParser
         }
 
         // wrap XNI exceptions as SAX exceptions
+        catch (XMLParseException e) {
+            Exception ex = e.getException();
+            if (ex == null) {
+                // must be a parser exception; mine it for locator info and throw
+                // a SAXParseException
+                LocatorImpl locatorImpl = new LocatorImpl();
+                locatorImpl.setPublicId(e.getPublicId());
+                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setLineNumber(e.getLineNumber());
+                locatorImpl.setColumnNumber(e.getColumnNumber());
+                throw new SAXParseException(e.getMessage(), locatorImpl);
+            }
+            if (ex instanceof SAXException) {
+                // why did we create an XMLParseException?
+                throw (SAXException)ex;
+            }
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            throw new SAXException(ex);
+        }
         catch (XNIException e) {
             Exception ex = e.getException();
             if (ex == null) {

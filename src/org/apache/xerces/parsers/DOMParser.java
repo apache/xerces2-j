@@ -66,6 +66,7 @@ import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
@@ -76,8 +77,10 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * This is the main Xerces DOM parser class. It uses the abstract DOM
@@ -152,7 +155,28 @@ public class DOMParser
             parse(source);
         }
 
-        // wrap XNI exceptions as SAX exceptions
+        // wrap XNI exceptions as SAX exceptions 
+        catch (XMLParseException e) {
+            Exception ex = e.getException();
+            if (ex == null) {
+                // must be a parser exception; mine it for locator info and throw
+                // a SAXParseException
+                LocatorImpl locatorImpl = new LocatorImpl();
+                locatorImpl.setPublicId(e.getPublicId());
+                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setLineNumber(e.getLineNumber());
+                locatorImpl.setColumnNumber(e.getColumnNumber());
+                throw new SAXParseException(e.getMessage(), locatorImpl);
+            }
+            if (ex instanceof SAXException) {
+                // why did we create an XMLParseException?
+                throw (SAXException)ex;
+            }
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            throw new SAXException(ex);
+        }
         catch (XNIException e) {
             Exception ex = e.getException();
             if (ex == null) {
@@ -211,7 +235,28 @@ public class DOMParser
             parse(xmlInputSource);
         }
 
-        // wrap XNI exceptions as SAX exceptions
+        // wrap XNI exceptions as SAX exceptions 
+        catch (XMLParseException e) {
+            Exception ex = e.getException();
+            if (ex == null) {
+                // must be a parser exception; mine it for locator info and throw
+                // a SAXParseException
+                LocatorImpl locatorImpl = new LocatorImpl();
+                locatorImpl.setPublicId(e.getPublicId());
+                locatorImpl.setSystemId(e.getSystemId());
+                locatorImpl.setLineNumber(e.getLineNumber());
+                locatorImpl.setColumnNumber(e.getColumnNumber());
+                throw new SAXParseException(e.getMessage(), locatorImpl);
+            }
+            if (ex instanceof SAXException) {
+                // why did we create an XMLParseException?
+                throw (SAXException)ex;
+            }
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            throw new SAXException(ex);
+        }
         catch (XNIException e) {
             Exception ex = e.getException();
             if (ex == null) {
