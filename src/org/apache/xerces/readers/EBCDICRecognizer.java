@@ -87,6 +87,8 @@ final class EBCDICRecognizer extends XMLDeclRecognizer {
         byte b1 = data.byteAt(1);
         byte b2 = data.byteAt(2);
         byte b3 = data.byteAt(3);
+        boolean debug = false;
+
         if (b0 != 0x4c || b1 != 0x6f || b2 != (byte)0xa7 || b3 != (byte)0x94)
             return reader;
         XMLEntityHandler.EntityReader declReader = readerFactory.createCharReader(entityHandler, errorReporter, sendCharDataAsCharArray, new InputStreamReader(data, "CP037"), stringPool);
@@ -115,7 +117,8 @@ final class EBCDICRecognizer extends XMLDeclRecognizer {
         } catch (UnsupportedEncodingException e) {
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();            // Internal Error
+            if( debug == true )
+                e.printStackTrace();            // Internal Error
         }
         return reader;
     }
