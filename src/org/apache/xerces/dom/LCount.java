@@ -61,7 +61,7 @@ import java.util.Vector;
 
 import org.w3c.dom.*;
 
-import org.apache.xerces.domx.events.*;
+import org.w3c.dom.events.*;
 //import org.w3c.dom.events.*;
 
 

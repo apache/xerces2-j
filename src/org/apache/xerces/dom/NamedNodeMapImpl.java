@@ -63,9 +63,9 @@ import java.util.Enumeration;
 
 import org.w3c.dom.*;
 
-import org.apache.xerces.domx.events.*;
+//import org.apache.xerces.domx.events.*;
 import org.apache.xerces.dom.events.MutationEventImpl;
-//import org.w3c.dom.events.*;
+import org.w3c.dom.events.*;
 
 /**
  * NamedNodeMaps represent collections of Nodes that can be accessed
