@@ -660,8 +660,8 @@ public abstract class NodeImpl
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null.
      * @since WD-DOM-Level-2-19990923
-     * @see AttrImpl
-     * @see ElementImpl
+     * @see AttrNSImpl
+     * @see ElementNSImpl
      */
     public String getNamespaceURI()
     {
@@ -679,8 +679,8 @@ public abstract class NodeImpl
      * from the Document interface, this is null. <p>
      *
      * @since WD-DOM-Level-2-19990923
-     * @see AttrImpl
-     * @see ElementImpl
+     * @see AttrNSImpl
+     * @see ElementNSImpl
      */
     public String getPrefix()
     {
@@ -705,13 +705,14 @@ public abstract class NodeImpl
      *  prefix contains an invalid character.
      *
      * @since WD-DOM-Level-2-19990923
-     * @see AttrImpl
-     * @see ElementImpl
+     * @see AttrNSImpl
+     * @see ElementNSImpl
      */
     public void setPrefix(String prefix)
         throws DOMException
     {
-        //this space intentionally left blank.
+	throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+				   "NAMESPACE_ERR");
     }
 
     /**
@@ -723,15 +724,12 @@ public abstract class NodeImpl
      * ELEMENT_NODE and ATTRIBUTE_NODE this is the same as the nodeName
      * attribute.
      * @since WD-DOM-Level-2-19990923
-     * @see AttrImpl
-     * @see ElementImpl
+     * @see AttrNSImpl
+     * @see ElementNSImpl
      */
     public String             getLocalName()
     {
-        if (syncData) {
-            synchronizeData();
-        }
-        return name;
+        return null;
     }
     
     
