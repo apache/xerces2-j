@@ -400,9 +400,11 @@ public abstract class AbstractSAXParser
                 for (int i = len - 1; i >= 0; i--) {
                     attributes.getName(i, fQName);
                     // change attribute value to normalized value
+                    // REVISIT: should this happen here? why not in schema validator?
                     if (fNormalizeData) {
                         AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
-                        if (attrPSVI != null) {
+                        if (attrPSVI != null &&
+                            attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
                             attributes.setValue(i, attrPSVI.getSchemaNormalizedValue());
                         }
                     }
@@ -469,6 +471,8 @@ public abstract class AbstractSAXParser
                 String value = null;
                 // normalized value for element is stored in schema_normalize_value property
                 // of PSVI element.
+                // REVISIT: should this happen here? why not in schema validator?
+                // REVISIT: how to determine whether the value is trustable?
                 if (fNormalizeData && augs != null) {
                     ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
                     if (elemPSVI != null) {
