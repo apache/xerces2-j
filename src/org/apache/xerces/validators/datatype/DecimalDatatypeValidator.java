@@ -100,6 +100,9 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
             //REVISIT: should we throw exception??
             return -1;
         }
+        catch ( Exception e){
+            return -1;
+        }
     }
 
     protected void inheritAdditionalFacets() {
