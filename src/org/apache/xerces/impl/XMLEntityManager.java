@@ -208,9 +208,12 @@ public class XMLEntityManager
      * @param publicId 
      * @param systemId 
      * @param baseSystemId 
+     * @param notation
      */
-    public void addExternalEntity(String name, String publicId, String systemId, String baseSystemId) {
-        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId);
+    public void addExternalEntity(String name, 
+                                  String publicId, String systemId, String baseSystemId,
+                                  String notation) {
+        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId, notation);
         fEntities.put(name, entity);
     } // addExternalEntity(String,String,String,String)
 
@@ -395,10 +398,10 @@ public class XMLEntityManager
             addInternalEntity("recursive-entity2", "<bar>&recursive-entity3;</bar>");
             addInternalEntity("recursive-entity3", "<baz>&recursive-entity;</baz>");
 
-            addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml");
-            addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml");
-            addExternalEntity("one", null, "ent/one.ent", "test/external-entity.xml");
-            addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml");
+            addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml", null);
+            addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml", null);
+            addExternalEntity("one", null, "ent/one.ent", "test/external-entity.xml", null);
+            addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml", null);
         }
 
     } // reset(XMLComponentManager)
@@ -864,6 +867,9 @@ public class XMLEntityManager
         /** Base system identifier. */
         public String baseSystemId;
 
+        /** Notation name for unparsed entity. */
+        public String notation;
+
         //
         // Constructors
         //
@@ -875,12 +881,13 @@ public class XMLEntityManager
 
         /** Constructs an internal entity. */
         public ExternalEntity(String name, String publicId, String systemId,
-                              String baseSystemId) {
+                              String baseSystemId, String notation) {
             super(name);
             this.publicId = publicId;
             this.systemId = systemId;
             this.baseSystemId = baseSystemId;
-        } // <init>(String,String,String,String)
+            this.notation = notation;
+        } // <init>(String,String,String,String,String)
 
         //
         // Entity methods
@@ -897,6 +904,7 @@ public class XMLEntityManager
             publicId = null;
             systemId = null;
             baseSystemId = null;
+            notation = null;
         } // clear()
 
         /** Sets the values of the entity. */
@@ -905,6 +913,7 @@ public class XMLEntityManager
             publicId = null;
             systemId = null;
             baseSystemId = null;
+            notation = null;
         } // setValues(Entity)
 
         /** Sets the values of the entity. */
@@ -913,6 +922,7 @@ public class XMLEntityManager
             publicId = entity.publicId;;
             systemId = entity.systemId;
             baseSystemId = entity.baseSystemId;
+            notation = entity.notation;
         } // setValues(ExternalEntity)
 
     } // class ExternalEntity
