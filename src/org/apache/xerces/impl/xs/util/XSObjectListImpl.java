@@ -108,12 +108,13 @@ public class XSObjectListImpl implements XSObjectList {
         return fArray[index];
     }
 
-    // reset this object
-    public void reset() {
+    // clear this object
+    public void clear() {
         for (int i=0; i<fLength; i++) {
             fArray[i] = null;
         }
         fArray = null;
+        fLength = 0;
     }
 
 } // class XSObjectList

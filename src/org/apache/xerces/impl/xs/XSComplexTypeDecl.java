@@ -278,7 +278,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
         fCMValidator = null;
         if(fAnnotations != null) {
             // help out the garbage collector
-            fAnnotations.reset();
+            fAnnotations.clear();
         }
         fAnnotations = null;
     }
