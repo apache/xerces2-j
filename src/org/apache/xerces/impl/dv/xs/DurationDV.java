@@ -20,7 +20,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
- * Validator for <duration> datatype (W3C Schema Datatypes)
+ * Validator for &lt;duration&gt; datatype (W3C Schema Datatypes)
  *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
@@ -55,7 +55,7 @@ public class DurationDV extends AbstractDateTimeDV {
      * Parses, validates and computes normalized version of duration object
      *
      * @param str    The lexical representation of duration object PnYn MnDTnH nMnS
-     * @param date   uninitialized date object
+     * @param durationType
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */

@@ -106,7 +106,7 @@ public class BaseDVFactory extends SchemaDVFactory {
      * @param name              name of the new type, could be null
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
-     * @param base              member types of the union type
+     * @param memberTypes       member types of the union type
      * @param annotations       set of annotations
      * @return                  the newly created simple type
      */

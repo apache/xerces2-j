@@ -20,7 +20,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
- * Validator for <gMonth> datatype (W3C Schema Datatypes)
+ * Validator for &lt;gMonth&gt; datatype (W3C Schema Datatypes)
  *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
@@ -49,7 +49,6 @@ public class MonthDV extends AbstractDateTimeDV {
      *
      * @param str    The lexical representation of gMonth object --MM
      *               with possible time zone Z or (-),(+)hh:mm
-     * @param date   uninitialized date object
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */

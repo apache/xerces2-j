@@ -20,7 +20,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
- * Validator for <gDay> datatype (W3C Schema datatypes)
+ * Validator for &lt;gDay&gt; datatype (W3C Schema datatypes)
  *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
@@ -45,7 +45,6 @@ public class DayDV extends AbstractDateTimeDV {
      * @param str    The lexical representation of gDay object ---DD
      *               with possible time zone Z or (-),(+)hh:mm
      *               Pattern: ---(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?
-     * @param date   uninitialized date object
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */

@@ -1493,7 +1493,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     /**
      * validate an actual value against this DV
      *
-     * @param value         the actual value that needs to be validated
      * @param context       the validation context
      * @param validatedInfo used to provide the actual value and member types
      */
@@ -2339,7 +2338,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
      *            The namspace of the ancestor type declaration
      * @param ancestorName
      *            The name of the ancestor type declaration
-     * @param derivation
+     * @param derivationMethod
      *            The derivation method
      * 
      * @return boolean True if the ancestor type is derived from the reference type by the specifiied derivation method. 

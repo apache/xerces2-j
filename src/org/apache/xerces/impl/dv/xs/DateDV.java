@@ -41,11 +41,10 @@ public class DateDV extends DateTimeDV {
      *
      * @param str    The lexical representation of dateTime object CCYY-MM-DD
      *               with possible time zone Z or (-),(+)hh:mm
-     * @param date   uninitialized date object
      * @return normalized dateTime representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected DateTimeData parse(String str) throws SchemaDateTimeException{
+    protected DateTimeData parse(String str) throws SchemaDateTimeException {
         DateTimeData date = new DateTimeData(this);
         int len = str.length();
 

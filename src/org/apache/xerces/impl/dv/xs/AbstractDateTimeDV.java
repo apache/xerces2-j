@@ -249,9 +249,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     /**
      * Parses date CCYY-MM-DD
      *
-     * @param start
-     * @param end
-     * @param data
+     * @param buffer
+     * @param start start position
+     * @param end end position
+     * @param date
      * @exception RuntimeException
      */
     protected int getDate (String buffer, int start, int end, DateTimeData date) throws RuntimeException{
@@ -269,9 +270,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     /**
      * Parses date CCYY-MM
      *
-     * @param start
-     * @param end
-     * @param data
+     * @param buffer
+     * @param start start position
+     * @param end end position
+     * @param date
      * @exception RuntimeException
      */
     protected int getYearMonth (String buffer, int start, int end, DateTimeData date) throws RuntimeException{
@@ -479,8 +481,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     /**
      * Given start and end position, parses string value
      *
-     * @param value  string to parse
-     * @param start  Start position
+     * @param buffer string to parse
+     * @param start  start position
      * @param end    end position
      * @return  return integer representation of characters
      */

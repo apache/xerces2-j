@@ -20,7 +20,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
- * Validator for <gYear> datatype (W3C Schema Datatypes)
+ * Validator for &lt;gYear&gt; datatype (W3C Schema Datatypes)
  *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
@@ -49,7 +49,6 @@ public class YearDV extends AbstractDateTimeDV {
      *
      * @param str    The lexical representation of year object CCYY
      *               with possible time zone Z or (-),(+)hh:mm
-     * @param date   uninitialized date object
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */

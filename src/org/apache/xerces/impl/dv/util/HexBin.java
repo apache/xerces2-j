@@ -76,7 +76,7 @@ public final class  HexBin {
     /**
      * Decode hex string to a byte array
      *
-     * @param binaryData  encoded string
+     * @param encoded  encoded string
      * @return return     array of byte to encode
      */
     static public byte[] decode(String encoded) {

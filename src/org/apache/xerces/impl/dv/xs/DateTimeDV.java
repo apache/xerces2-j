@@ -20,7 +20,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
- * Validator for <dateTime> datatype (W3C Schema Datatypes)
+ * Validator for &lt;dateTime&gt; datatype (W3C Schema Datatypes)
  *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
@@ -42,7 +42,6 @@ public class DateTimeDV extends AbstractDateTimeDV {
      *
      * @param str    The lexical representation of dateTime object CCYY-MM-DDThh:mm:ss.sss
      *               with possible time zone Z or (-),(+)hh:mm
-     * @param date   uninitialized date object
      * @return normalized dateTime representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
