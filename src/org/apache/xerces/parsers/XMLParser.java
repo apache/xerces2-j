@@ -95,9 +95,6 @@ public abstract class XMLParser {
 
     // properties
 
-    /** Property identifier: entity resolver. */
-    protected static final String ENTITY_RESOLVER = 
-        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER = 
@@ -105,7 +102,6 @@ public abstract class XMLParser {
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
-        ENTITY_RESOLVER,
         ERROR_HANDLER,
     };
 

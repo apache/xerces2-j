@@ -72,6 +72,9 @@ public final class Constants {
     //
     // Constants
     //
+    // Schema Types:
+    public static final String NS_XMLSCHEMA = "http://www.w3.org/2001/XMLSchema".intern();
+    public static final String NS_DTD = "http://www.w3.org/TR/REC-xml".intern();
 
     // sax features
 
@@ -122,13 +125,13 @@ public final class Constants {
     public static final String JAXP_PROPERTY_PREFIX =
             "http://java.sun.com/xml/jaxp/properties/";
 
-    /** JAXP schemaSource property */
+    /** JAXP schemaSource property: when used internally may include DTD sources (DOM) */
     public static final String SCHEMA_SOURCE = "schemaSource";
 
-    /** JAXP schemaSource language */
+    /** JAXP schemaSource language: when used internally may include DTD namespace (DOM) */
     public static final String SCHEMA_LANGUAGE = "schemaLanguage";
-
-
+    
+    
     //
     // DOM features
     //
@@ -175,6 +178,19 @@ public final class Constants {
 
     // Load and Save
     public static final String DOM_FORMAT_PRETTY_PRINT = "format-pretty-print";
+    public static final String DOM_XMLDECL = "xml-declaration";
+    public static final String DOM_UNKNOWNCHARS = "unknown-characters";
+    public static final String DOM_CERTIFIED =  "certified";
+   
+    // DOM Properties
+    public static final String DOM_ENTITY_RESOLVER = "entity-resolver";
+    public static final String DOM_ERROR_HANDLER = "error-handler";
+    public static final String DOM_SCHEMA_TYPE = "schema-type";
+    public static final String DOM_SCHEMA_LOCATION = "schema-location";
+    
+    // XSModel
+    public static final String DOM_PSVI = "psvi";
+
 
     // xerces features
 
@@ -305,7 +321,7 @@ public final class Constants {
 
     /** Schema location property ("schema/external-noNamespaceSchemaLocation"). */
     public static final String SCHEMA_NONS_LOCATION = "schema/external-noNamespaceSchemaLocation";
-
+    
     /** Namespace binder property ("internal/namespace-binder"). */
     public static final String NAMESPACE_BINDER_PROPERTY = "internal/namespace-binder";
 

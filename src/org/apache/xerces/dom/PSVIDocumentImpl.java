@@ -59,6 +59,7 @@ package org.apache.xerces.dom;
 
 // REVISIT: This is a HACK! DO NOT MODIFY THIS import.
 //          It allows us to expose DOM L3 implemenation via org.w3c.dom packages
+import org.apache.xerces.dom3.DOMConfiguration;
 import org.w3c.dom.*;
 
 /**
@@ -70,6 +71,12 @@ import org.w3c.dom.*;
  * @version $Id$
  */
 public class PSVIDocumentImpl extends DocumentImpl {
+    
+    /** Recognized features. */
+    private static final String[] RECOGNIZED_FEATURES = {
+        DOMConfigurationImpl.PSVI
+        };
+
 
     /**
      * Create a document.
@@ -117,5 +124,16 @@ public class PSVIDocumentImpl extends DocumentImpl {
                                   String localName) throws DOMException {
         return new PSVIAttrNSImpl(this, namespaceURI, qualifiedName, localName);
     } 
+    
+        /**
+     *  The configuration used when <code>Document.normalizeDocument</code> is 
+     * invoked. 
+     * @since DOM Level 3
+     */
+    public DOMConfiguration getConfig(){
+        super.getConfig();
+        fConfiguration.addRecognizedFeatures(RECOGNIZED_FEATURES);
+        return fConfiguration;
+    }
     
 } // class PSVIDocumentImpl

@@ -307,6 +307,9 @@ public class XMLSchemaValidator
     protected boolean fNormalizeData = true;
     protected boolean fSchemaElementDefault = true;
     protected boolean fAugPSVI = true;
+        /** Schema type: None, DTD, Schema */
+    private String fSchemaType  = null;
+
     
     // to indicate whether we are in the scope of entity reference or CData
     protected boolean fEntityRef = false;
@@ -1342,6 +1345,13 @@ public class XMLSchemaValidator
         catch (XMLConfigurationException e) {
             fAugPSVI = true;
         }
+        try {
+            fSchemaType = (String)componentManager.getProperty (Constants.JAXP_PROPERTY_PREFIX 
+            + Constants.SCHEMA_LANGUAGE);           
+        }
+        catch (XMLConfigurationException e){
+            fSchemaType = null;
+        }
         
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
         fSchemaLoader.setEntityResolver(fEntityResolver);
@@ -1735,10 +1745,20 @@ public class XMLSchemaValidator
 
         // root element
         if (fElementDepth == -1 && fValidationManager.isGrammarFound()) {
-            // if a DTD grammar is found, we do the same thing as Dynamic:
-            // if a schema grammar is found, validation is performed;
-            // otherwise, skip the whole document.
-            fDynamicValidation = true;
+            if (fSchemaType == null) {
+				// schemaType is not specified
+                // if a DTD grammar is found, we do the same thing as Dynamic:
+                // if a schema grammar is found, validation is performed;
+                // otherwise, skip the whole document.
+                fDynamicValidation = true;
+			}
+			else {
+                // [1] Either schemaType is DTD, and in this case validate/schema is turned off
+                // [2] Validating against XML Schemas only
+                //   [a] dynamic validation is false: report error if SchemaGrammar is not found
+                //   [b] dynamic validation is true: if grammar is not found ignore.
+            }
+
         }
 
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,

@@ -207,6 +207,14 @@ public class DTDConfiguration
 
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+    
+    /** Property identifier: JAXP schema language / DOM schema-type. */
+    protected static final String JAXP_SCHEMA_LANGUAGE =
+    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
+
+    /** Property identifier: JAXP schema source/ DOM schema-location. */
+    protected static final String JAXP_SCHEMA_SOURCE =
+    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
 
     // debugging
@@ -350,7 +358,9 @@ public class DTDConfiguration
             NAMESPACE_BINDER,
             XMLGRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
-            VALIDATION_MANAGER
+            VALIDATION_MANAGER,
+            JAXP_SCHEMA_SOURCE,
+            JAXP_SCHEMA_LANGUAGE
         };
         addRecognizedProperties(recognizedProperties);
 

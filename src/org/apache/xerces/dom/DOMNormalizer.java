@@ -81,6 +81,7 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.psvi.ElementPSVI;
@@ -147,18 +148,10 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
     /** prefix added by namespace fixup algorithm should follow a pattern "NS" + index*/
     protected final static String PREFIX = "NS";
 
-
-    /** Property identifier: error handler. */
-    protected static final String ERROR_HANDLER = 
-    Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
-
-    /** Property identifier: symbol table. */
-    protected static final String SYMBOL_TABLE = 
-    Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-
     //
     // Data
     //
+    protected DOMConfigurationImpl fConfiguration = null;
     protected CoreDocumentImpl fDocument = null;
     protected final XMLAttributesProxy fAttrProxy = new XMLAttributesProxy();
     protected final QName fQName = new QName();
@@ -206,71 +199,69 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
     public DOMNormalizer(){}
 
 
-    protected void reset(XMLComponentManager componentManager){
-        if (componentManager == null) {
-            fSymbolTable = null;
-            fValidationHandler = null;
-            return;
-        }
-        fPSVI = false;
-        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-        if (fSymbolTable == null) {
-            fSymbolTable = new SymbolTable();
-        }
-
-        fNamespaceValidation = componentManager.getFeature(DOMValidationConfiguration.SCHEMA);
-        fNamespaceContext.reset();
-        fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-        fNamespaceCounter = 1;
-
-        if (fValidationHandler != null) {
-            ((XMLComponent)fValidationHandler).reset(componentManager);
-            // REVISIT: how to pass and reuse namespace binder in the XML Schema validator?
-        }
-    }
-
-    protected void setValidationHandler (RevalidationHandler validator){
-        this.fValidationHandler = validator;
-
-    }
 
     /**
      * Normalizes document.
      * Note: reset() must be called before this method.
      */
-    protected void normalizeDocument(CoreDocumentImpl document){
-        if (fSymbolTable == null) {
-            // reset was not called
-            return;
-        }
+	protected void normalizeDocument(CoreDocumentImpl document, DOMConfigurationImpl config) {
 
-        fDocument = document;
-        fErrorHandler = fDocument.getErrorHandler();
-        if (fValidationHandler != null) {
-            if (fDocument instanceof PSVIDocumentImpl) {
-                fPSVI = true;
-            }
-            fValidationHandler.setBaseURI(fDocument.fDocumentURI);
-            fValidationHandler.setDocumentHandler(this);
-            fValidationHandler.startDocument(null, fDocument.encoding, fNamespaceContext, null);
-            
-        }
+		fDocument = document;
+		fConfiguration = config;
 
-        Node kid, next;
-        for (kid = fDocument.getFirstChild(); kid != null; kid = next) {
-            next = kid.getNextSibling();
-            kid = normalizeNode(kid);
-            if (kid != null) {  // don't advance
-                next = kid;
-            }
-        }
+		// intialize and reset DOMNormalizer component
+		// 
+		fSymbolTable = (SymbolTable) fConfiguration.getProperty(DOMConfigurationImpl.SYMBOL_TABLE);
+		// reset namespace context
+		fNamespaceContext.reset();
+		fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+		fNamespaceCounter = 1;
 
-        if (fValidationHandler != null) {
-            fValidationHandler.endDocument(null);
-        }
-        // reset symbol table
-        fSymbolTable = null;
-    }
+		if ((fConfiguration.features & DOMConfigurationImpl.VALIDATE) != 0) {
+			// REVISIT: currently we only support revalidation against XML Schemas
+			fValidationHandler =
+				CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_SCHEMA);
+			fConfiguration.setFeature(DOMConfigurationImpl.XERCES_VALIDATION, true);
+			fConfiguration.setFeature(DOMConfigurationImpl.SCHEMA, true);
+			// report fatal error on DOM Level 1 nodes
+			fNamespaceValidation = true;
+			// check if we need to fill in PSVI
+			try {
+				fPSVI = fConfiguration.getFeature(DOMConfigurationImpl.PSVI);
+			}
+			catch (XMLConfigurationException e) {
+				fPSVI = false;
+			}
+			// REVISIT: pass namespace context to the XML Schema validator
+			 ((XMLComponent) fValidationHandler).reset(fConfiguration);
+		}
+
+		fErrorHandler = (DOMErrorHandler)fConfiguration.getParameter("error-handler");
+		if (fValidationHandler != null) {
+			fValidationHandler.setBaseURI(fDocument.fDocumentURI);
+			fValidationHandler.setDocumentHandler(this);
+			fValidationHandler.startDocument(null, fDocument.encoding, fNamespaceContext, null);
+
+		}
+
+		Node kid, next;
+		for (kid = fDocument.getFirstChild(); kid != null; kid = next) {
+			next = kid.getNextSibling();
+			kid = normalizeNode(kid);
+			if (kid != null) { // don't advance
+				next = kid;
+			}
+		}
+
+		// release resources
+		if (fValidationHandler != null) {
+			fValidationHandler.endDocument(null);
+			// REVISIT: only validation against XML Schema occurs
+			CoreDOMImplementationImpl.singleton.releaseValidator(XMLGrammarDescription.XML_SCHEMA);
+			fValidationHandler = null;
+		}
+
+	}
 
 
     /**
@@ -299,7 +290,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                 if (DEBUG_ND) {
                     System.out.println("==>normalizeNode:{doctype}");
                 }
-                if ((fDocument.features & CoreDocumentImpl.ENTITIES) == 0) {
+                if ((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0) {
                     // remove all entity nodes
                     ((DocumentTypeImpl)node).entities.removeAll();
                 }
@@ -324,7 +315,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                 AttributeMap attributes = (elem.hasAttributes()) ? (AttributeMap) elem.getAttributes() : null; 
 
                 // fix namespaces and remove default attributes
-                if ((fDocument.features & CoreDocumentImpl.NAMESPACES) !=0) {
+                if ((fConfiguration.features & DOMConfigurationImpl.NAMESPACES) !=0) {
                     // fix namespaces
                     // normalize attribute values
                     // remove default attributes
@@ -347,7 +338,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                     //
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
-                    fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                    fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
                     fCurrentNode = node;
                     // call re-validation handler
                     fValidationHandler.startElement(fQName, fAttrProxy, null);
@@ -378,7 +369,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                     //
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
-                    fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                    fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
                     fCurrentNode = node;
                     fValidationHandler.endElement(fQName, null);
                 }
@@ -394,7 +385,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                     System.out.println("==>normalizeNode:{comments}");
                 }
 
-                if ((fDocument.features & CoreDocumentImpl.COMMENTS) == 0) {
+                if ((fConfiguration.features & DOMConfigurationImpl.COMMENTS) == 0) {
                     Node prevSibling = node.getPreviousSibling();
                     Node parent = node.getParentNode();
                     // remove the comment node
@@ -415,7 +406,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                     System.out.println("==>normalizeNode:{entityRef} "+node.getNodeName());
                 }
 
-                if ((fDocument.features & CoreDocumentImpl.ENTITIES) == 0) {
+                if ((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0) {
                     Node prevSibling = node.getPreviousSibling();
                     Node parent = node.getParentNode();
                     ((EntityReferenceImpl)node).setReadOnly(false, true);
@@ -441,7 +432,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                 if (DEBUG_ND) {
                     System.out.println("==>normalizeNode:{cdata}");
                 }
-                if ((fDocument.features & CoreDocumentImpl.CDATA) == 0) {
+                if ((fConfiguration.features & DOMConfigurationImpl.CDATA) == 0) {
                     // convert CDATA to TEXT nodes
                     Text text = fDocument.createTextNode(node.getNodeValue());
                     Node parent = node.getParentNode();
@@ -460,14 +451,14 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                     //
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
-                    fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                    fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
                     fCurrentNode = node;
                     fValidationHandler.startCDATA(null);
                     fValidationHandler.characterData(node.getNodeValue(), null);
                     fValidationHandler.endCDATA(null);
                 }
 
-                if ((fDocument.features & CoreDocumentImpl.SPLITCDATA) != 0) {
+                if ((fConfiguration.features & DOMConfigurationImpl.SPLITCDATA) != 0) {
                     String value = node.getNodeValue();
                     int index = value.indexOf("]]>");
                     if (index >= 0) {
@@ -512,17 +503,17 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
 
                     if (fValidationHandler != null) {
                         short nextType = (next != null)?next.getNodeType():-1;
-                        if (!(((fDocument.features & CoreDocumentImpl.ENTITIES) == 0 &&
+                        if (!(((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0 &&
                                nextType == Node.ENTITY_NODE) ||
-                              ((fDocument.features & CoreDocumentImpl.COMMENTS) == 0 &&
+                              ((fConfiguration.features & DOMConfigurationImpl.COMMENTS) == 0 &&
                                nextType == Node.COMMENT_NODE) ||
-                              ((fDocument.features & CoreDocumentImpl.CDATA) == 0) &&
+                              ((fConfiguration.features & DOMConfigurationImpl.CDATA) == 0) &&
                               nextType == Node.CDATA_SECTION_NODE)) {
 
                             //
                             // set error node in the dom error wrapper
                             // so if error occurs we can report an error node
-                            fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                            fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
                             fCurrentNode = node;
                             fValidationHandler.characterData(node.getNodeValue(), null);
                             if (DEBUG_ND) {
@@ -861,7 +852,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
     }
 
     protected final boolean removeDefault (Attr attribute, AttributeMap attrMap){
-        if ((fDocument.features & CoreDocumentImpl.DEFAULTS) != 0) {
+        if ((fConfiguration.features & DOMConfigurationImpl.DEFAULTS) != 0) {
             // remove default attributes
             if (!attribute.getSpecified()) {
                 if (DEBUG_ND) {
@@ -896,7 +887,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
         qname.rawname = fSymbolTable.addSymbol(node.getNodeName()); 
         qname.uri =  (namespace != null)?fSymbolTable.addSymbol(namespace):null;
     }
-
+  
     protected final class XMLAttributesProxy 
     implements XMLAttributes {
         protected AttributeMap fAttributes;

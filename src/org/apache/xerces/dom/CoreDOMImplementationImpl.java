@@ -158,7 +158,7 @@ public class CoreDOMImplementationImpl
         int index = qname.indexOf(':');
         int lastIndex = qname.lastIndexOf(':');
         int length = qname.length();
-        
+
         // it is an error for NCName to have more than one ':'
         // check if it is valid QName [Namespace in XML production 6]
         if (index == 0 || index == length - 1 || lastIndex != index) {
@@ -311,7 +311,7 @@ public class CoreDOMImplementationImpl
 	 * DOM Level 3 WD - Experimental.
 	 */
 	public DOMWriter createDOMWriter() {
-		return new DOMWriterImpl(true);
+		return new DOMWriterImpl();
 	}
 	/**
 	 * DOM Level 3 WD - Experimental.

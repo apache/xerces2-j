@@ -1190,8 +1190,7 @@ public abstract class AbstractSAXParser
     public void setEntityResolver(EntityResolver resolver) {
 
         try {
-            fConfiguration.setProperty(ENTITY_RESOLVER,
-                                       new EntityResolverWrapper(resolver));
+            fConfiguration.setEntityResolver(new EntityResolverWrapper(resolver));
         }
         catch (XMLConfigurationException e) {
             // do nothing
@@ -1211,7 +1210,7 @@ public abstract class AbstractSAXParser
         EntityResolver entityResolver = null;
         try {
             XMLEntityResolver xmlEntityResolver =
-                (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
+                (XMLEntityResolver)fConfiguration.getEntityResolver();
             if (xmlEntityResolver != null &&
                 xmlEntityResolver instanceof EntityResolverWrapper) {
                 entityResolver = ((EntityResolverWrapper)xmlEntityResolver).getEntityResolver();

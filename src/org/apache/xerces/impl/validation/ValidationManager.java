@@ -79,50 +79,43 @@ public class ValidationManager {
     // used by the DTD validator to tell other components that it has a
     // cached DTD in hand so there's no reason to 
     // scan external subset or entity decls.
-    protected boolean fCachedDTD = false;
-
+    protected boolean fCachedDTD = false;    
+    
     /**
      * Each validator should call this method to add its ValidationState into
      * the validation manager.
      */
-    public void addValidationState(ValidationState vs) {
+    public final void addValidationState(ValidationState vs) {
         fVSs.addElement(vs);
     }
 
     /**
      * Set the information required to validate entity values.
      */
-    public void setEntityState(EntityState state) {
+    public final void setEntityState(EntityState state) {
         for (int i = fVSs.size()-1; i >= 0; i--) {
             ((ValidationState)fVSs.elementAt(i)).setEntityState(state);
         }
     }
     
-    public void setGrammarFound(boolean grammar){
+    public final void setGrammarFound(boolean grammar){
         fGrammarFound = grammar;
     }
         
-    public boolean isGrammarFound(){
+    public final boolean isGrammarFound(){
         return fGrammarFound;
     }
 
-    public void setCachedDTD(boolean cachedDTD) {
+    public final void setCachedDTD(boolean cachedDTD) {
         fCachedDTD = cachedDTD;
     } // setCachedDTD(boolean)
 
-    public boolean isCachedDTD() {
+    public final boolean isCachedDTD() {
         return fCachedDTD;
     } // isCachedDTD():  boolean
-
-    // REVISIT: handle other validation coordination
-    //          the following will depend on the final set of validation
-    //          features
     
-    //protected XMLComponent fLastValidator = null;
-    // public boolean isLastValidationComponent( XMLComponent validator){
-    // public void setLastValidationComponent( XMLComponent validator){
         
-    public void reset (){
+    public final void reset (){
         fVSs.removeAllElements();
         fGrammarFound = false;
         fCachedDTD = false;

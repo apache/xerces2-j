@@ -252,8 +252,8 @@ public class XMLDTDValidator
      */
     protected boolean fDynamicValidation;
 
-        /** warn on duplicate attribute definition, this feature works only when validation is true */
-        protected boolean fWarnDuplicateAttdef;
+    /** warn on duplicate attribute definition, this feature works only when validation is true */
+    protected boolean fWarnDuplicateAttdef;
         
     // properties
 
@@ -296,9 +296,9 @@ public class XMLDTDValidator
 
     /** Perform validation. */
     private boolean fPerformValidation;
-
-    /** Skip validation. */
-    private boolean fSkipValidation;
+    
+    /** Schema type: None, DTD, Schema */
+    private String fSchemaType;
 
     // information regarding the current element
 
@@ -461,7 +461,6 @@ public class XMLDTDValidator
         fInElementContent = false;
         fCurrentElementIndex = -1;
         fCurrentContentSpecType = -1;
-        fSkipValidation=false;
 
         fRootElement.clear();
 
@@ -500,11 +499,19 @@ public class XMLDTDValidator
         catch (XMLConfigurationException e) {
             fWarnDuplicateAttdef = false;
         }
-
+        
+        try {
+            fSchemaType = (String)componentManager.getProperty (Constants.JAXP_PROPERTY_PREFIX 
+            + Constants.SCHEMA_LANGUAGE);           
+        }
+        catch (XMLConfigurationException e){
+            fSchemaType = null;
+        }
 
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.addValidationState(fValidationState);
         fValidationState.resetIDTables();
+        
         // get needed components
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
@@ -1121,8 +1128,9 @@ public class XMLDTDValidator
     }
     
     public final boolean validate(){
-        return fValidation && (!fDynamicValidation || fSeenDoctypeDecl)  
-                             && (fDTDValidation || fSeenDoctypeDecl);
+        return (fSchemaType != Constants.NS_XMLSCHEMA) && 
+                fValidation && (!fDynamicValidation || fSeenDoctypeDecl)  
+                && (fDTDValidation || fSeenDoctypeDecl);
     }
     
 			//REVISIT:we can convert into functions.. adding default attribute values.. and one validating.
@@ -1188,7 +1196,7 @@ public class XMLDTDValidator
 
             if (!specified) {
                 if (required) {
-                    if (fValidation) {
+                    if (fPerformValidation) {
                         Object[] args = {elementName.localpart, attRawName};
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED", args,
@@ -1863,39 +1871,37 @@ public class XMLDTDValidator
     protected boolean handleStartElement(QName element, XMLAttributes attributes, Augmentations augs) 
                         throws XNIException {
 
-        // REVISIT: Here are current assumptions about validation features
-        //          given that XMLSchema validator is in the pipeline
-        //
-        // http://xml.org/sax/features/validation = true
-        // http://apache.org/xml/features/validation/schema = true
-        //
-        //[1] XML instance document only has reference to a DTD 
-        //  Outcome: report validation errors only against dtd.
-        //
-        //[2] XML instance document has only XML Schema grammars:
-        //  Outcome: report validation errors only against schemas (no errors produced from DTD validator)
-        //
-        // [3] XML instance document has DTD and XML schemas:
-        // Outcome: validation errors reported against both grammars: DTD and schemas.
-        //
-        //         
-        //         if dynamic validation is on
-        //            validate only against grammar we've found (depending on settings
-        //            for schema feature)
-        // 
-        // set wether we're performing validation
-        fPerformValidation = fValidation && (!fDynamicValidation || fSeenDoctypeDecl)  
-                             && (fDTDValidation || fSeenDoctypeDecl);
 
         // VC: Root Element Type
         // see if the root element's name matches the one in DoctypeDecl 
-        if (!fSeenRootElement) {
-            fSeenRootElement = true;
-            fValidationManager.setEntityState(fDTDGrammar);
-            fValidationManager.setGrammarFound(fSeenDoctypeDecl);
-            rootElementSpecified(element);
-        }
-
+		if (!fSeenRootElement) {
+			// REVISIT: Here are current assumptions about validation features
+			//          given that XMLSchema validator is in the pipeline
+			//
+			// http://xml.org/sax/features/validation = true
+			// http://apache.org/xml/features/validation/schema = true
+			//
+			// [1] XML instance document only has reference to a DTD 
+			//  Outcome: report validation errors only against dtd.
+			//
+			// [2] XML instance document has only XML Schema grammars:
+			//  Outcome: report validation errors only against schemas (no errors produced from DTD validator)
+			//
+			// [3] XML instance document has DTD and XML schemas:
+			// [a] if schema language is not set outcome - validation errors reported against both grammars: DTD and schemas.
+			// [b] if schema language is set to XML Schema - do not report validation errors
+			//         
+			// if dynamic validation is on
+			//            validate only against grammar we've found (depending on settings
+			//            for schema feature)
+			// 
+			// 
+			fPerformValidation = validate();
+			fSeenRootElement = true;
+			fValidationManager.setEntityState(fDTDGrammar);
+			fValidationManager.setGrammarFound(fSeenDoctypeDecl);
+			rootElementSpecified(element);
+		}
         if (fDTDGrammar == null) {
 
             if (!fPerformValidation) {
@@ -1903,8 +1909,7 @@ public class XMLDTDValidator
                 fCurrentContentSpecType = -1;
                 fInElementContent = false;
             }
-            if (fPerformValidation && !fSkipValidation) {
-                fSkipValidation = true;
+            if (fPerformValidation) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                            "MSG_GRAMMAR_NOT_FOUND",
                                            new Object[]{ element.rawname},

@@ -153,13 +153,6 @@ public class StandardParserConfiguration
     protected static final String SCHEMA_NONS_LOCATION =
     Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
 
-    /** Property identifier: JAXP schema language. */
-    protected static final String JAXP_SCHEMA_LANGUAGE =
-    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
-
-    /** Property identifier: JAXP schema source. */
-    protected static final String JAXP_SCHEMA_SOURCE =
-    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
     // debugging
 
@@ -253,10 +246,8 @@ public class StandardParserConfiguration
             //       properties might not have been set and it would cause a
             //       not-recognized exception to be thrown. -Ac
             SCHEMA_LOCATION,
-            SCHEMA_NONS_LOCATION,
-            JAXP_SCHEMA_SOURCE,
-            JAXP_SCHEMA_LANGUAGE,
-        };
+            SCHEMA_NONS_LOCATION,       
+            };
 
 			addRecognizedProperties(recognizedProperties);
 
