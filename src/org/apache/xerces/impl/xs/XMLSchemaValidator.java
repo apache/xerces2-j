@@ -772,11 +772,6 @@ public class XMLSchemaValidator
 
         handleEndDocument();
 
-        //return the final set of grammars validator ended up with
-        if(fGrammarPool != null){
-            fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA , fGrammarBucket.getGrammars() ) ;
-        }
-
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endDocument(augs);
@@ -2134,18 +2129,6 @@ public class XMLSchemaValidator
         }
         fValueStoreCache.endElement();
 
-        // have we reached the end tag of the validation root?
-        if (fElementDepth == 0) {
-            if (fDoValidation) {
-                // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
-                String invIdRef = fValidationState.checkIDRefID();
-                if (invIdRef != null) {
-                    reportSchemaError("cvc-id.1", new Object[]{invIdRef});
-                }
-            }
-            fValidationState.resetIDTables();
-        }
-
         // PSVI: validation attempted
         if (fElementDepth <= fPartialValidationDepth) {
             // the element had child with a content skip.
@@ -2162,13 +2145,28 @@ public class XMLSchemaValidator
 
         // decrease element depth and restore states
         fElementDepth--;
+        // have we reached the end tag of the validation root?
         if (fElementDepth == -1) {
             if (fDoValidation) {
+                // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
+                String invIdRef = fValidationState.checkIDRefID();
+                if (invIdRef != null) {
+                    reportSchemaError("cvc-id.1", new Object[]{invIdRef});
+                }
                 // check extra schema constraints
                 if (fFullChecking) {
                     XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
                 }
             }
+            fValidationState.resetIDTables();
+            
+            SchemaGrammar[] grammars = fGrammarBucket.getGrammars();
+            // return the final set of grammars validator ended up with
+            if (fGrammarPool != null) {
+                fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, grammars);
+            }
+            // store [schema information] in the PSVI
+            fCurrentPSVI.fSchemaInformation = new XSModelImpl(grammars);
         }
         else {
             // get the states for the parent element.
@@ -2401,9 +2399,6 @@ public class XMLSchemaValidator
             // PSVI attribute: validation context
             attrPSVI.fValidationContext = fValidationRoot;
         }
- 
-
-
         
         // add default attributes
         if (attrGrp != null) {
@@ -2625,7 +2620,7 @@ public class XMLSchemaValidator
                // triggered the loading of grammar ?? -nb
     
                if (grammar != null)
-                   fCurrentPSVI.fNotation = grammar.getNotationDecl(qName.localpart);
+                   fCurrentPSVI.fNotation = grammar.getGlobalNotationDecl(qName.localpart);
             }
         }
         catch (InvalidDatatypeValueException idve) {

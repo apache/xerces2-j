@@ -185,6 +185,17 @@ public class XSModelImpl implements XSModel {
     }
 
     /**
+     * Convenience method. Returns a list of all [namespace schema information
+     * item]s. There is one such item for each namespace (including the null
+     * namespace). Enties of the returned enumeration are instances of
+     * XSNamespaceItem interface.
+     * @return A list of namespace items that belong to this schema.
+     */
+    public Enumeration getNamespaceItems() {
+        return new EnumerationImpl(fGrammarList, fGrammarCount);
+    }
+
+    /**
      * Returns a list of top-level components, i.e. element declarations,
      * attribute declarations, etc.
      * @param objectType The type of the declaration, i.e.

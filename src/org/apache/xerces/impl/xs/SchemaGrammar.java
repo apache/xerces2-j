@@ -60,8 +60,8 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
-import org.apache.xerces.impl.xs.util.SimpleLocator;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.util.*;
+import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 
@@ -70,6 +70,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Enumeration;
 
 /**
  * This class is to hold all schema component declaration that are declared
@@ -86,7 +87,7 @@ import java.util.Vector;
  * @version $Id$
  */
 
-public class SchemaGrammar implements Grammar {
+public class SchemaGrammar implements Grammar, XSNamespaceItem {
 
     // the target namespace of grammar
     public String fTargetNamespace;
@@ -342,7 +343,7 @@ public class SchemaGrammar implements Grammar {
     /**
      * get one global notation
      */
-    public final XSNotationDecl getNotationDecl(String declName) {
+    public final XSNotationDecl getGlobalNotationDecl(String declName) {
         return(XSNotationDecl)fGlobalNotationDecls.get(declName);
     }
 
@@ -541,4 +542,192 @@ public class SchemaGrammar implements Grammar {
         return newArray;
     }
 
+    // XSNamespaceItem methods
+    
+    // the max index / the max value of XSObject type
+    private static final short MAX_COMP_IDX = XSTypeDefinition.SIMPLE_TYPE;
+    private static final boolean[] GLOBAL_COMP = {false,    // null
+                                                  true,     // attribute
+                                                  true,     // element
+                                                  true,     // type
+                                                  false,    // attribute use
+                                                  true,     // attribute group
+                                                  true,     // group
+                                                  false,    // model group
+                                                  false,    // particle
+                                                  false,    // wildcard
+                                                  false,    // idc
+                                                  true,     // notation
+                                                  false,    // annotation
+                                                  true,     // complex type
+                                                  true      // simple type
+                                                 };
+                                                 
+    // store a certain kind of components from all namespaces
+    private XSNamedMap[] fComponents = null;
+
+    // store the documents and their locations contributing to this namespace
+    private Vector fDocuments = null;
+    private Vector fLocations = null;
+    
+    public synchronized void addDocument(Object document, String location) {
+        if (fDocuments == null) {
+            fDocuments = new Vector();
+            fLocations = new Vector();
+        }
+        fDocuments.addElement(document);
+        fLocations.addElement(location);
+    }
+    
+    /**
+     * [schema namespace]
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace">[schema namespace]</a>
+     * @return The target namespace of this item.
+     */
+    public String getSchemaNamespace() {
+        return fTargetNamespace;
+    }
+
+    /**
+     * Returns a list of top-level components, i.e. element declarations,
+     * attribute declarations, etc.<p>
+     * Note that  <code>XSTypeDefinition#SIMPLE_TYPE</code> and
+     * <code>XSTypeDefinition#COMPLEX_TYPE</code> can also be used as the
+     * <code>objectType</code> to retrieve only complex types or simple types,
+     * instead of all types.
+     * @param objectType The type of the declaration, i.e.
+     *   ELEMENT_DECLARATION, ATTRIBUTE_DECLARATION, etc.
+     * @return A list of top-level definition of the specified type in
+     *   <code>objectType</code> or <code>null</code>.
+     */
+    public synchronized XSNamedMap getComponents(short objectType) {
+        if (objectType <= 0 || objectType > MAX_COMP_IDX ||
+            !GLOBAL_COMP[objectType]) {
+            return null;
+        }
+        
+        if (fComponents == null)
+            fComponents = new XSNamedMap[MAX_COMP_IDX+1];
+
+        // get the hashtable for this type of components
+        if (fComponents[objectType] == null) {
+            SymbolHash table = null;
+            switch (objectType) {
+            case XSConstants.TYPE_DEFINITION:
+            case XSTypeDefinition.COMPLEX_TYPE:
+            case XSTypeDefinition.SIMPLE_TYPE:
+                table = fGlobalTypeDecls;
+                break;
+            case XSConstants.ATTRIBUTE_DECLARATION:
+                table = fGlobalAttrDecls;
+                break;
+            case XSConstants.ELEMENT_DECLARATION:
+                table = fGlobalElemDecls;
+                break;
+            case XSConstants.ATTRIBUTE_GROUP:
+                table = fGlobalAttrGrpDecls;
+                break;
+            case XSConstants.MODEL_GROUP_DEFINITION:
+                table = fGlobalGroupDecls;
+                break;
+            case XSConstants.NOTATION_DECLARATION:
+                table = fGlobalNotationDecls;
+                break;
+            }
+            
+            // for complex/simple types, create a special implementation,
+            // which take specific types out of the hash table
+            if (objectType == XSTypeDefinition.COMPLEX_TYPE ||
+                objectType == XSTypeDefinition.SIMPLE_TYPE) {
+                fComponents[objectType] = new XSNamedMap4Types(fTargetNamespace, table, objectType);
+            }
+            else {
+                fComponents[objectType] = new XSNamedMapImpl(fTargetNamespace, table);
+            }
+        }
+        
+        return fComponents[objectType];
+    }
+
+    /**
+     * Convenience method. Returns a top-level simple or complex type
+     * definition.
+     * @param name The name of the definition.
+     * @return An <code>XSTypeDefinition</code> or null if such definition
+     *   does not exist.
+     */
+    public XSTypeDefinition getTypeDefinition(String name) {
+        return getGlobalTypeDecl(name);
+    }
+
+    /**
+     * Convenience method. Returns a top-level attribute declaration.
+     * @param name The name of the declaration.
+     * @return A top-level attribute declaration or null if such declaration
+     *   does not exist.
+     */
+    public XSAttributeDeclaration getAttributeDecl(String name) {
+        return getGlobalAttributeDecl(name);
+    }
+
+    /**
+     * Convenience method. Returns a top-level element declaration.
+     * @param name The name of the declaration.
+     * @return A top-level element declaration or null if such declaration
+     *   does not exist.
+     */
+    public XSElementDeclaration getElementDecl(String name) {
+        return getGlobalElementDecl(name);
+    }
+
+    /**
+     * Convenience method. Returns a top-level attribute group definition.
+     * @param name The name of the definition.
+     * @return A top-level attribute group definition or null if such
+     *   definition does not exist.
+     */
+    public XSAttributeGroupDefinition getAttributeGroup(String name) {
+        return getGlobalAttributeGroupDecl(name);
+    }
+
+    /**
+     * Convenience method. Returns a top-level model group definition.
+     *
+     * @param name      The name of the definition.
+     * @return A top-level model group definition definition or null if such
+     *         definition does not exist.
+     */
+    public XSModelGroupDefinition getModelGroupDefinition(String name) {
+        return getGlobalGroupDecl(name);
+    }
+
+    /**
+     * Convenience method. Returns a top-level notation declaration.
+     *
+     * @param name      The name of the declaration.
+     * @return A top-level notation declaration or null if such declaration
+     *         does not exist.
+     */
+    public XSNotationDeclaration getNotationDecl(String name) {
+        return getGlobalNotationDecl(name);
+    }
+
+    /**
+     * [document]
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#sd-document">[document]</a>
+     * @return a list of document information item
+     */
+    public Enumeration getDocuments() {
+        return fDocuments.elements();
+    }
+
+    /**
+     * [document location]
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#sd-document_location">[document location]</a>
+     * @return a list of document information item
+     */
+    public Enumeration getDocumentLocations() {
+        return fLocations.elements();
+    }
+    
 } // class SchemaGrammar

@@ -548,11 +548,19 @@ public class XSDHandler {
 
         SchemaGrammar sg = null;
         
-        if (referType != XSDDescription.CONTEXT_INCLUDE &&
-            referType != XSDDescription.CONTEXT_REDEFINE) {
+        if (referType == XSDDescription.CONTEXT_INCLUDE ||
+            referType == XSDDescription.CONTEXT_REDEFINE) {
+            sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
+        }
+        else {
             sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone());
             fGrammarBucket.putGrammar(sg);
         }
+
+        // store the document and its location
+        // REVISIT: don't expose the DOM tree
+        //sg.addDocument(currSchemaInfo.fSchemaDoc, (String)fDoc2SystemId.get(currSchemaInfo));
+        sg.addDocument(null, (String)fDoc2SystemId.get(currSchemaInfo));
             
         fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
 
@@ -1039,7 +1047,7 @@ public class XSDHandler {
             retObj = sGrammar.getIDConstraintDecl(declToTraverse.localpart);
             break;
         case NOTATION_TYPE :
-            retObj = sGrammar.getNotationDecl(declToTraverse.localpart);
+            retObj = sGrammar.getGlobalNotationDecl(declToTraverse.localpart);
             break;
         case TYPEDECL_TYPE :
             retObj = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);

@@ -115,6 +115,9 @@ public class ElementPSVImpl implements ElementPSVI {
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
 
+    /** the schema information property */
+    protected XSModel fSchemaInformation = null;
+    
     //
     // ElementPSVI methods
     //
@@ -242,6 +245,16 @@ public class ElementPSVImpl implements ElementPSVI {
         return fDeclaration;
     }
 
+    /**
+     * [schema information]
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_information">XML Schema Part 1: Structures [schema information]</a>
+     * @return The schema information property if it's the validation root,
+     *         null otherwise.
+     */
+    public XSModel getSchemaInformation() {
+        return fSchemaInformation;
+    }
+    
     /**
      * Reset() should be called in validator startElement(..) method.
      */
