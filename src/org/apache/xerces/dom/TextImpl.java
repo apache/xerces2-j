@@ -458,20 +458,24 @@ public class TextImpl
     private boolean hasTextOnlyChildren(Node node) {
 
         Node child = node;
-
-        if (child == null)
+        
+        if (child == null) {
             return false;
-
-        for (int i = 0; i < child.getChildNodes().getLength(); i++) {
-            int type = child.getChildNodes().item(i).getNodeType();
-
+        }
+        
+        child = child.getFirstChild();
+        while (child != null) {
+            int type = child.getNodeType();
+            
             if (type == Node.ENTITY_REFERENCE_NODE) {
-                return hasTextOnlyChildren(child.getChildNodes().item(i));
-            } else if (type != Node.TEXT_NODE
+                return hasTextOnlyChildren(child);
+            } 
+            else if (type != Node.TEXT_NODE
                     && type != Node.CDATA_SECTION_NODE
                     && type != Node.ENTITY_REFERENCE_NODE) {
                 return false;
             }
+            child = child.getNextSibling();
         }
         return true;
     }
