@@ -55,7 +55,7 @@ public class MonthDV extends AbstractDateTimeDV {
      * @exception SchemaDateTimeException Invalid lexical representation
      */
     protected DateTimeData parse(String str) throws SchemaDateTimeException{
-        DateTimeData date = new DateTimeData(this);
+        DateTimeData date = new DateTimeData(str, this);
         int len = str.length();
 
         //set constants

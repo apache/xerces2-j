@@ -71,4 +71,9 @@ public interface XSDateTime {
 	 * @return int
 	 */
 	public int getTimeZoneMin();
+    
+    /**
+     * @return string
+     */
+    public String getLexicalValue();
 }

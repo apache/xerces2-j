@@ -99,7 +99,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		}
 		short c1, c2;
 		
-		DateTimeData tempDate = new DateTimeData(this);
+		DateTimeData tempDate = new DateTimeData(null, this);
 		
 		if ( date1.utc=='Z' ) {
 			
@@ -804,6 +804,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		int year, month, day, hour, minute, utc;
 		double second;
 		int timezoneHr, timezoneMin;
+        String originalValue;
 		
 		// used for comparisons - to decide the 'interesting' portions of
 		// a date/time based data type.
@@ -813,11 +814,12 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		// statically created XXXDV objects, so this won't cause any GC problem.
 		final AbstractDateTimeDV type;
 		private String canonical;
-		public DateTimeData(AbstractDateTimeDV type) {
+		public DateTimeData(String originalValue, AbstractDateTimeDV type) {
+            this.originalValue = originalValue;
 			this.type = type;
 		}
 		public DateTimeData(int year, int month, int day, int hour, int minute,
-				double second, int utc, AbstractDateTimeDV type) {
+				double second, int utc, String originalValue, AbstractDateTimeDV type) {
 			this.year = year;
 			this.month = month;
 			this.day = day;
@@ -826,6 +828,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			this.second = second;
 			this.utc = utc;
 			this.type = type;
+            this.originalValue = originalValue;
 		}
 		public boolean equals(Object obj) {
 			if (!(obj instanceof DateTimeData))
@@ -892,5 +895,11 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		public int getTimeZoneMin() {
 			return timezoneMin;
 		}
+        /**
+         * @return Returns the originalValue.
+         */
+        public String getLexicalValue() {
+            return originalValue;
+        }
 	}
 }

@@ -47,7 +47,7 @@ public class DateDV extends DateTimeDV {
      * @exception SchemaDateTimeException Invalid lexical representation
      */
     protected DateTimeData parse(String str) throws SchemaDateTimeException {
-        DateTimeData date = new DateTimeData(this);
+        DateTimeData date = new DateTimeData(str, this);
         int len = str.length();
 
         int end = getDate(str, 0, len, date);

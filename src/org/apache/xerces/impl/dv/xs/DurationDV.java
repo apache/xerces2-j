@@ -40,10 +40,10 @@ public class DurationDV extends AbstractDateTimeDV {
     //
     // the dates are in format: {CCYY,MM,DD, H, S, M, MS, timezone}
     private final static DateTimeData[] DATETIMES= {
-        new DateTimeData(1696, 9, 1, 0, 0, 0, 'Z', null),
-        new DateTimeData(1697, 2, 1, 0, 0, 0, 'Z', null),
-        new DateTimeData(1903, 3, 1, 0, 0, 0, 'Z', null),
-        new DateTimeData(1903, 7, 1, 0, 0, 0, 'Z', null)};
+        new DateTimeData(1696, 9, 1, 0, 0, 0, 'Z', null, null),
+        new DateTimeData(1697, 2, 1, 0, 0, 0, 'Z', null, null),
+        new DateTimeData(1903, 3, 1, 0, 0, 0, 'Z', null, null),
+        new DateTimeData(1903, 7, 1, 0, 0, 0, 'Z', null, null)};
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
@@ -63,7 +63,7 @@ public class DurationDV extends AbstractDateTimeDV {
      */
     protected DateTimeData parse(String str, int durationType) throws SchemaDateTimeException{
         int len = str.length();
-        DateTimeData date= new DateTimeData(this);
+        DateTimeData date= new DateTimeData(str, this);
         
         int start = 0;
         char c=str.charAt(start++);
@@ -209,8 +209,8 @@ public class DurationDV extends AbstractDateTimeDV {
         }
 
         DateTimeData[] result = new DateTimeData[2];
-        result[0] = new DateTimeData(this);
-        result[1] = new DateTimeData(this);
+        result[0] = new DateTimeData(null, this);
+        result[1] = new DateTimeData(null, this);
 
         //long comparison algorithm is required
         DateTimeData tempA = addDuration (date1, DATETIMES[0], result[0]);

@@ -2989,6 +2989,22 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		return (fMultiValueFacets != null) ?
 				fMultiValueFacets : XSObjectListImpl.EMPTY_LIST;
 	}
+    
+    public Object getMinInclusiveValue() {
+        return fMinInclusive;
+    }
+    
+    public Object getMinExclusiveValue() {
+        return fMinExclusive;
+    }
+    
+    public Object getMaxInclusiveValue() {
+        return fMaxInclusive;
+    }
+    
+    public Object getMaxExclusiveValue() {
+        return fMaxExclusive;
+    }
 	
 	private static final class XSFacetImpl implements XSFacet {
 		final short kind;
