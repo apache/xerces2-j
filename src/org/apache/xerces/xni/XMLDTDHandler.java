@@ -200,9 +200,9 @@ public interface XMLDTDHandler {
      *                      the following: "CDATA", "ENTITY", "ENTITIES",
      *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
      *                      "NMTOKEN", "NMTOKENS", or "NOTATION".
-     * @param enumeration   If the type has the value "ENUMERATION", this
-     *                      array holds the allowed attribute values;
-     *                      otherwise, this array is null.
+     * @param enumeration   If the type has the value "ENUMERATION" or
+     *                      "NOTATION", this array holds the allowed attribute
+     *                      values; otherwise, this array is null.
      * @param defaultType   The attribute default type. This value will be
      *                      one of the following: "#FIXED", "#IMPLIED",
      *                      "#REQUIRED", or null.
