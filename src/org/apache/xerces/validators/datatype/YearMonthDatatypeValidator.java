@@ -102,8 +102,10 @@ public class YearMonthDatatypeValidator extends DateTimeValidator {
         getYearMonth(fStart, fEnd, date);
         parseTimeZone (fEnd, date);
 
-        //validate and normalize
-        
+        // initialize
+        date[D]=DAY;
+
+        //validate and normalize        
         //REVISIT: do we need SchemaDateTimeException?
         validateDateTime(date);
         
