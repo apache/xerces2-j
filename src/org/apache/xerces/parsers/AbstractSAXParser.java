@@ -2062,6 +2062,60 @@ public abstract class AbstractSAXParser
             return uri.equals("") ? fAttributes.getIndex(null, localPart) :
                                     fAttributes.getIndex(uri, localPart);
         }
+        
+        // Attributes2 methods
+        // REVISIT: Localize exception messages. -- mrglavas
+        public boolean isDeclared(int index) {
+            if (index < 0 || index >= fAttributes.getLength()) {
+                throw new ArrayIndexOutOfBoundsException(index);
+            }
+            return Boolean.TRUE.equals(
+                fAttributes.getAugmentations(index).getItem(
+                Constants.ATTRIBUTE_DECLARED));
+        }
+        
+        public boolean isDeclared(String qName) {
+            int index = getIndex(qName);
+            if (index == -1) {
+                throw new IllegalArgumentException(qName);
+            }
+            return Boolean.TRUE.equals(
+                fAttributes.getAugmentations(index).getItem(
+                Constants.ATTRIBUTE_DECLARED));
+        }
+		
+        public boolean isDeclared(String uri, String localName) {
+            int index = getIndex(uri, localName);
+            if (index == -1) {
+                throw new IllegalArgumentException(localName);
+            }
+            return Boolean.TRUE.equals(
+                fAttributes.getAugmentations(index).getItem(
+                Constants.ATTRIBUTE_DECLARED));
+        }
+                
+        public boolean isSpecified(int index) {
+            if (index < 0 || index >= fAttributes.getLength()) {
+                throw new ArrayIndexOutOfBoundsException(index);
+            }
+            return fAttributes.isSpecified(index);
+        }
+        
+        public boolean isSpecified(String qName) {
+            int index = getIndex(qName);
+            if (index == -1) {
+                throw new IllegalArgumentException(qName);
+            }
+            return fAttributes.isSpecified(index);
+        }
+        
+        public boolean isSpecified(String uri, String localName) {
+            int index = getIndex(uri, localName);
+            if (index == -1) {
+                throw new IllegalArgumentException(localName);
+            }
+            return fAttributes.isSpecified(index);
+        }
 
     } // class AttributesProxy
 
