@@ -1240,7 +1240,11 @@ public class XMLSchemaValidator
 		fInCDATA = false;
 
 		fMatcherStack.clear();
-		fMayMatchFieldMap.clear();
+		
+        if (!fMayMatchFieldMap.isEmpty()) {
+            // should only clear this if the last schema had identity constraints.
+            fMayMatchFieldMap.clear();
+        } 
 		
 		// get error reporter
 		fXSIErrorReporter.reset((XMLErrorReporter) componentManager.getProperty(ERROR_REPORTER));

@@ -41,10 +41,6 @@ public class Field {
     /** Identity constraint. */
     protected IdentityConstraint fIdentityConstraint;
 
-    // whether this field can be matched; used to catch instance documents
-    // that try and match a field several times in the same scope.
-    // protected boolean mayMatch = true;
-
     //
     // Constructors
     //
@@ -59,16 +55,6 @@ public class Field {
     //
     // Public methods
     //
-
-    /** // sets mayMatch
-    public void setMayMatch(boolean b) {
-        mayMatch = b;
-    } // setMayMatch(boolean);
-    
-    // returns mayMatch
-    public boolean mayMatch() {
-        return mayMatch;
-    } // mayMatch():boolean **/
     
     /** Returns the field XPath. */
     public org.apache.xerces.impl.xpath.XPath getXPath() {
