@@ -118,7 +118,7 @@ XSLoader, DOMConfiguration {
     protected static final String DISALLOW_DOCTYPE = 
         Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
     
-    /** Feature: generate syntheti annotations */
+    /** Feature: generate synthetic annotations */
     protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
     
@@ -1170,6 +1170,7 @@ XSLoader, DOMConfiguration {
             v.add(CONTINUE_AFTER_FATAL_ERROR);
             v.add(ALLOW_JAVA_ENCODINGS);
             v.add(STANDARD_URI_CONFORMANT_FEATURE);
+            v.add(VALIDATE_ANNOTATIONS);
             v.add(GENERATE_SYNTHETIC_ANNOTATIONS);
             fRecognizedParameters = new DOMStringListImpl(v);      	
         }
