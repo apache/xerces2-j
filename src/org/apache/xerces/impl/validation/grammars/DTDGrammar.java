@@ -109,8 +109,9 @@ public class DTDGrammar
      * @param name 
      * @param publicId 
      * @param systemId 
+     * @param encoding
      */
-    public void startEntity(String name, String publicId, String systemId)
+    public void startEntity(String name, String publicId, String systemId, String encoding)
         throws SAXException {
     }
 
