@@ -590,7 +590,7 @@ public class Grammar {
                  //  chunk++;
                  //  index = 0;
                // }
-               getContentSpec(((int[])contentSpec.otherValue)[0], contentSpec);
+               getContentSpec(otherValue, contentSpec);
                appendContentSpec(contentSpec, str, true, thisContentSpec);
                if (parens) {
                    str.append(')');
@@ -895,6 +895,18 @@ public class Grammar {
       int index = elementDeclIndex &  CHUNK_MASK;
 
       fElementDeclFirstAttributeDeclIndex[chunk][index] = newFirstAttrIndex;
+   }
+   
+   protected void setContentSpecIndex(int elementDeclIndex, int contentSpecIndex){
+
+      if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+         return;
+      }
+
+      int chunk = elementDeclIndex >> CHUNK_SHIFT;
+      int index = elementDeclIndex &  CHUNK_MASK;
+
+      fElementDeclContentSpecIndex[chunk][index] = contentSpecIndex;
    }
 
 
