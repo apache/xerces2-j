@@ -4,7 +4,10 @@
 <s1 title="Releases">
   <s2 title='August 20, 2001 (version 1.4.3)'>
     <ul>
-        <li>Reorganization of the DOM implementation to make it cleaner [Arnaud Le Hors]</li>
+        <li>Reorganization of the DOM implementation to separate the Core
+        functionality (new classes: CoreDOMImplementationImpl,
+        CoreDocumentImpl), from the complete DOM (DOMImplementationImpl,
+        DocumentImpl) [Arnaud Le Hors]</li>
         <li>Fix to Base64 and HexBinary datatype validators so they work properly on OS/390 [Steve Dulin/Neil Graham]</li>
         <li>General bug fixes [Lisa Martin, Sandy Gao, Elena Litani, Neil Graham]</li>
     </ul>
