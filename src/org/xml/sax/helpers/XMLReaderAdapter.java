@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: XMLReaderAdapter.java,v 1.3 2000/02/25 14:57:16 david Exp $
+// $Id: XMLReaderAdapter.java,v 1.5 2000/05/05 17:50:46 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -33,17 +33,18 @@ import org.xml.sax.SAXNotSupportedException;
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
  * </blockquote>
  *
- * <p>This class wraps a SAX2 XMLReader and makes it act as a SAX1
- * Parser.  The XMLReader must support a true value for the
+ * <p>This class wraps a SAX2 {@link org.xml.sax.XMLReader XMLReader}
+ * and makes it act as a SAX1 {@link org.xml.sax.Parser Parser}.  The XMLReader 
+ * must support a true value for the 
  * http://xml.org/sax/features/namespace-prefixes property or parsing will fail
- * with a SAXException; if the XMLReader supports a false value
- * for the http://xml.org/sax/features/namespaces property, that will
- * also be used to improve efficiency.</p>
+ * with a {@link org.xml.sax.SAXException SAXException}; if the XMLReader 
+ * supports a false value for the http://xml.org/sax/features/namespaces 
+ * property, that will also be used to improve efficiency.</p>
  *
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.Parser
  * @see org.xml.sax.XMLReader
  */
@@ -89,13 +90,19 @@ public class XMLReaderAdapter implements Parser, ContentHandler
     }
 
 
+
+    /**
+     * Internal setup.
+     *
+     * @param xmlReader The embedded XMLReader.
+     */
     private void setup (XMLReader xmlReader)
     {
 	if (xmlReader == null) {
 	    throw new NullPointerException("XMLReader must not be null");
 	}
 	this.xmlReader = xmlReader;
-	rawAtts = new AttributesAdapter();
+	qAtts = new AttributesAdapter();
     }
 
 
@@ -190,8 +197,7 @@ public class XMLReaderAdapter implements Parser, ContentHandler
     public void parse (String systemId)
 	throws IOException, SAXException
     {
-	setupXMLReader();
-	xmlReader.parse(systemId);
+	parse(new InputSource(systemId));
     }
 
 
@@ -229,7 +235,7 @@ public class XMLReaderAdapter implements Parser, ContentHandler
 	    xmlReader.setFeature("http://xml.org/sax/features/namespaces",
 	                         false);
 	} catch (SAXException e) {
-	    // NO OP
+	    // NO OP: it's just extra information, and we can ignore it
 	}
 	xmlReader.setContentHandler(this);
     }
@@ -309,18 +315,18 @@ public class XMLReaderAdapter implements Parser, ContentHandler
      *
      * @param uri The Namespace URI.
      * @param localName The Namespace local name.
-     * @param rawName The raw XML 1.0 name.
+     * @param qName The qualified (prefixed) name.
      * @param atts The SAX2 attributes.
      * @exception org.xml.sax.SAXException The client may raise a
      *            processing exception.
      * @see org.xml.sax.ContentHandler#endDocument
      */
     public void startElement (String uri, String localName,
-			      String rawName, Attributes atts)
+			      String qName, Attributes atts)
 	throws SAXException
     {
-	rawAtts.setAttributes(atts);
-	documentHandler.startElement(rawName, rawAtts);
+	qAtts.setAttributes(atts);
+	documentHandler.startElement(qName, qAtts);
     }
 
 
@@ -329,16 +335,16 @@ public class XMLReaderAdapter implements Parser, ContentHandler
      *
      * @param uri The Namespace URI.
      * @param localName The Namespace local name.
-     * @param rawName The raw XML 1.0 name.
+     * @param qName The qualified (prefixed) name.
      * @exception org.xml.sax.SAXException The client may raise a
      *            processing exception.
      * @see org.xml.sax.ContentHandler#endElement
      */
     public void endElement (String uri, String localName,
-			    String rawName)
+			    String qName)
 	throws SAXException
     {
-	documentHandler.endElement(rawName);
+	documentHandler.endElement(qName);
     }
 
 
@@ -411,7 +417,7 @@ public class XMLReaderAdapter implements Parser, ContentHandler
 
     XMLReader xmlReader;
     DocumentHandler documentHandler;
-    AttributesAdapter rawAtts;
+    AttributesAdapter qAtts;
 
 
 
@@ -454,14 +460,14 @@ public class XMLReaderAdapter implements Parser, ContentHandler
 
 
 	/**
-	 * Return the raw name of an attribute by position.
+	 * Return the qualified (prefixed) name of an attribute by position.
 	 *
-	 * @return The raw name.
+	 * @return The qualified name.
 	 * @see org.xml.sax.AttributeList#getName
 	 */
 	public String getName (int i)
 	{
-	    return attributes.getRawName(i);
+	    return attributes.getQName(i);
 	}
 
 
@@ -490,26 +496,26 @@ public class XMLReaderAdapter implements Parser, ContentHandler
 
 
 	/**
-	 * Return the type of an attribute by raw name.
+	 * Return the type of an attribute by qualified (prefixed) name.
 	 *
 	 * @return The type.
 	 * @see org.xml.sax.AttributeList#getType(java.lang.String)
 	 */
-	public String getType (String rawName)
+	public String getType (String qName)
 	{
-	    return attributes.getType(rawName);
+	    return attributes.getType(qName);
 	}
 
 
 	/**
-	 * Return the value of an attribute by raw name.
+	 * Return the value of an attribute by qualified (prefixed) name.
 	 *
 	 * @return The value.
 	 * @see org.xml.sax.AttributeList#getValue(java.lang.String)
 	 */
-	public String getValue (String rawName)
+	public String getValue (String qName)
 	{
-	    return attributes.getValue(rawName);
+	    return attributes.getValue(qName);
 	}
 
 	private Attributes attributes;

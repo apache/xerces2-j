@@ -1,6 +1,6 @@
 // SAX input source.
 // No warranty; no copyright -- use this as you will.
-// $Id: InputSource.java,v 1.3 2000/01/21 15:42:24 david Exp $
+// $Id: InputSource.java,v 1.5 2000/05/05 17:46:48 david Exp $
 
 package org.xml.sax;
 
@@ -40,7 +40,7 @@ import java.io.InputStream;
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.Parser#parse
  * @see org.xml.sax.EntityResolver#resolveEntity
  * @see java.io.InputStream
@@ -317,3 +317,5 @@ public class InputSource {
     private Reader characterStream;
     
 }
+
+// end of InputSource.java

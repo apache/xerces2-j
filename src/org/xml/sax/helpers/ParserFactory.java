@@ -1,6 +1,6 @@
 // SAX parser factory.
 // No warranty; no copyright -- use this as you will.
-// $Id: ParserFactory.java,v 1.2 2000/01/22 16:24:18 david Exp $
+// $Id: ParserFactory.java,v 1.4 2000/05/05 17:50:13 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -21,7 +21,11 @@ import org.xml.sax.Parser;
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
  * </blockquote>
  *
- * <p>This class is not part of the platform-independent definition
+ * <p><strong>Note:</strong> This class is designed to work with the now-deprecated
+ * SAX1 {@link org.xml.sax.Parser Parser} class.  SAX2 applications should use
+ * {@link org.xml.sax.helpers.XMLReaderFactory XMLReaderFactory} instead.</p>
+ *
+ * <p>ParserFactory is not part of the platform-independent definition
  * of SAX; it is an additional convenience class designed
  * specifically for Java XML application writers.  SAX applications
  * can use the static methods in this class to allocate a SAX parser
@@ -30,7 +34,7 @@ import org.xml.sax.Parser;
  * name.</p>
  *
  * <p>Note that the application still requires an XML parser that
- * implements SAX.</p>
+ * implements SAX1.</p>
  *
  * @deprecated This class works with the deprecated
  *             {@link org.xml.sax.Parser Parser}
@@ -38,7 +42,7 @@ import org.xml.sax.Parser;
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.Parser
  * @see java.lang.Class
  */
@@ -51,29 +55,29 @@ public class ParserFactory {
     private ParserFactory ()
     {
     }
-     
-     
-     /**
-      * Create a new SAX parser using the `org.xml.sax.parser' system property.
-      *
-      * <p>The named class must exist and must implement the
-      * org.xml.sax.Parser interface.</p>
-      *
-      * @exception java.lang.NullPointerException There is no value
-      *            for the `org.xml.sax.parser' system property.
-      * @exception java.lang.ClassNotFoundException The SAX parser
-      *            class was not found (check your CLASSPATH).
-      * @exception IllegalAccessException The SAX parser class was
-      *            found, but you do not have permission to load
-      *            it.
-      * @exception InstantiationException The SAX parser class was
-      *            found but could not be instantiated.
-      * @exception java.lang.ClassCastException The SAX parser class
-      *            was found and instantiated, but does not implement
-      *            org.xml.sax.Parser.
-      * @see #makeParser(java.lang.String)
-      * @see org.xml.sax.Parser
-      */
+    
+    
+    /**
+     * Create a new SAX parser using the `org.xml.sax.parser' system property.
+     *
+     * <p>The named class must exist and must implement the
+     * {@link org.xml.sax.Parser Parser} interface.</p>
+     *
+     * @exception java.lang.NullPointerException There is no value
+     *            for the `org.xml.sax.parser' system property.
+     * @exception java.lang.ClassNotFoundException The SAX parser
+     *            class was not found (check your CLASSPATH).
+     * @exception IllegalAccessException The SAX parser class was
+     *            found, but you do not have permission to load
+     *            it.
+     * @exception InstantiationException The SAX parser class was
+     *            found but could not be instantiated.
+     * @exception java.lang.ClassCastException The SAX parser class
+     *            was found and instantiated, but does not implement
+     *            org.xml.sax.Parser.
+     * @see #makeParser(java.lang.String)
+     * @see org.xml.sax.Parser
+     */
     public static Parser makeParser ()
 	throws ClassNotFoundException,
 	IllegalAccessException, 
@@ -94,7 +98,7 @@ public class ParserFactory {
      * Create a new SAX parser object using the class name provided.
      *
      * <p>The named class must exist and must implement the
-     * org.xml.sax.Parser interface.</p>
+     * {@link org.xml.sax.Parser Parser} interface.</p>
      *
      * @param className A string containing the name of the
      *                  SAX parser class.

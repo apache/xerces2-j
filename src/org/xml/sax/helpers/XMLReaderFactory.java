@@ -2,11 +2,12 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the Public Domain.
 
-// $Id: XMLReaderFactory.java,v 1.1 2000/02/25 11:47:41 david Exp $
+// $Id: XMLReaderFactory.java,v 1.3 2000/05/05 17:50:53 david Exp $
 
 package org.xml.sax.helpers;
-import org.xml.sax.SAXException;
+import org.xml.sax.Parser;
 import org.xml.sax.XMLReader;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -34,15 +35,18 @@ import org.xml.sax.XMLReader;
  * system properties are not accessible or where the application or
  * applet is not permitted to load classes dynamically.</p>
  *
+ * <p><strong>Note to implementors:</strong> SAX implementations in specialized
+ * environments may replace this class with a different one optimized for the
+ * environment, as long as its method signatures remain the same.</p>
+ *
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.XMLReader
  */
 final public class XMLReaderFactory
 {
-
 
     /**
      * Private constructor.
@@ -76,8 +80,18 @@ final public class XMLReaderFactory
     {
 	String className = System.getProperty("org.xml.sax.driver");
 	if (className == null) {
-	    throw new
-		SAXException("System property org.xml.sax.driver not specified");
+	    Parser parser;
+	    try {
+		parser = ParserFactory.makeParser();
+	    } catch (Exception e) {
+		parser = null;
+	    }
+	    if (parser == null) {
+		throw new
+		    SAXException("System property org.xml.sax.driver not specified");
+	    } else {
+		return new ParserAdapter(parser);
+	    }
 	} else {
 	    return createXMLReader(className);
 	}

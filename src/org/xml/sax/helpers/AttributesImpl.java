@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: AttributesImpl.java,v 1.2 2000/01/21 15:13:40 david Exp $
+// $Id: AttributesImpl.java,v 1.4 2000/05/05 17:49:22 david Exp $
 
 
 package org.xml.sax.helpers;
@@ -19,28 +19,29 @@ import org.xml.sax.Attributes;
  * </blockquote>
  *
  * <p>This class provides a default implementation of the SAX2
- * Attributes interface, with the addition of manipulators
- * so that the list can be modified or reused.</p>
+ * {@link org.xml.sax.Attributes Attributes} interface, with the 
+ * addition of manipulators so that the list can be modified or 
+ * reused.</p>
  *
  * <p>There are two typical uses of this class:</p>
  *
  * <ol>
  * <li>to take a persistent snapshot of an Attributes object
- *  in a ContentHandler.startElement event; or</li>
- * <li>to construct or modify an Attributes object in a SAX2
- *  XMLReader or filter.</li>
+ *  in a {@link org.xml.sax.ContentHandler#startElement startElement} event; or</li>
+ * <li>to construct or modify an Attributes object in a SAX2 driver or filter.</li>
  * </ol>
  *
- * <p>This class replaces the now-deprecated SAX1 AttributeListImpl
+ * <p>This class replaces the now-deprecated SAX1 {@link 
+ * org.xml.sax.helpers.AttributeListImpl AttributeListImpl}
  * class; in addition to supporting the updated Attributes
- * interface rather than the deprecated AttributeList interface,
- * it also includes a much more efficient implementation using
- * arrays rather than Vector.</p>
+ * interface rather than the deprecated {@link org.xml.sax.AttributeList
+ * AttributeList} interface, it also includes a much more efficient 
+ * implementation using a single array rather than a set of Vectors.</p>
  *
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  */
 public class AttributesImpl implements Attributes
 {
@@ -64,22 +65,14 @@ public class AttributesImpl implements Attributes
     /**
      * Copy an existing Attributes object.
      *
-     * <p>This constructor is especially useful inside a start
-     * element event.</p>
+     * <p>This constructor is especially useful inside a
+     * {@link org.xml.sax.ContentHandler#startElement startElement} event.</p>
      *
      * @param atts The existing Attributes object.
      */
     public AttributesImpl (Attributes atts)
     {
-	length = atts.getLength();
-	data = new String[length*5]; 
-	for (int i = 0; i < length; i++) {
-	    data[i*5] = atts.getURI(i);
-	    data[i*5+1] = atts.getLocalName(i);
-	    data[i*5+2] = atts.getRawName(i);
-	    data[i*5+3] = atts.getType(i);
-	    data[i*5+4] = atts.getValue(i);
-	}
+	setAttributes(atts);
     }
 
 
@@ -105,8 +98,8 @@ public class AttributesImpl implements Attributes
      * Return an attribute's Namespace URI.
      *
      * @param index The attribute's index (zero-based).
-     * @return The Namespace URI or the empty string if none is
-     *         available.
+     * @return The Namespace URI, the empty string if none is
+     *         available, or null if the index is out of range.
      * @see org.xml.sax.Attributes#getURI
      */
     public String getURI (int index)
@@ -123,8 +116,8 @@ public class AttributesImpl implements Attributes
      * Return an attribute's local name.
      *
      * @param index The attribute's index (zero-based).
-     * @return The attribute's local name or the empty string if 
-     *         none is available.
+     * @return The attribute's local name, the empty string if 
+     *         none is available, or null if the index if out of range.
      * @see org.xml.sax.Attributes#getLocalName
      */
     public String getLocalName (int index)
@@ -138,14 +131,14 @@ public class AttributesImpl implements Attributes
 
 
     /**
-     * Return an attribute's raw XML 1.0 name.
+     * Return an attribute's qualified (prefixed) name.
      *
      * @param index The attribute's index (zero-based).
-     * @return The attribute's raw name or the empty string if 
-     *         none is available.
-     * @see org.xml.sax.Attributes#getRawName
+     * @return The attribute's qualified name, the empty string if 
+     *         none is available, or null if the index is out of bounds.
+     * @see org.xml.sax.Attributes#getQName
      */
-    public String getRawName (int index)
+    public String getQName (int index)
     {
 	if (index >= 0 && index < length) {
 	    return data[index*5+2];
@@ -159,7 +152,8 @@ public class AttributesImpl implements Attributes
      * Return an attribute's type by index.
      *
      * @param index The attribute's index (zero-based).
-     * @return The attribute's type.
+     * @return The attribute's type, "CDATA" if the type is unknown, or null
+     *         if the index is out of bounds.
      * @see org.xml.sax.Attributes#getType(int)
      */
     public String getType (int index)
@@ -176,7 +170,7 @@ public class AttributesImpl implements Attributes
      * Return an attribute's value by index.
      *
      * @param index The attribute's index (zero-based).
-     * @return The attribute's value.
+     * @return The attribute's value or null if the index is out of bounds.
      * @see org.xml.sax.Attributes#getValue(int)
      */
     public String getValue (int index)
@@ -191,6 +185,10 @@ public class AttributesImpl implements Attributes
 
     /**
      * Look up an attribute's index by Namespace name.
+     *
+     * <p>In many cases, it will be more efficient to look up the name once and
+     * use the index query methods rather than using the name query methods
+     * repeatedly.</p>
      *
      * @param uri The attribute's Namespace URI, or the empty
      *        string if none is available.
@@ -211,17 +209,17 @@ public class AttributesImpl implements Attributes
 
 
     /**
-     * Look up an attribute's index by raw XML 1.0 name.
+     * Look up an attribute's index by qualified (prefixed) name.
      *
-     * @param rawName The raw XML 1.0 (prefixed) name.
+     * @param qName The qualified name.
      * @return The attribute's index, or -1 if none matches.
      * @see org.xml.sax.Attributes#getIndex(java.lang.String)
      */
-    public int getIndex (String rawName)
+    public int getIndex (String qName)
     {
 	int max = length * 5;
 	for (int i = 0; i < max; i += 5) {
-	    if (data[i+2].equals(rawName)) {
+	    if (data[i+2].equals(qName)) {
 		return i / 5;
 	    }
 	} 
@@ -252,18 +250,18 @@ public class AttributesImpl implements Attributes
 
 
     /**
-     * Look up an attribute's type by raw XML 1.0 name.
+     * Look up an attribute's type by qualified (prefixed) name.
      *
-     * @param rawName The raw XML 1.0 name.
+     * @param qName The qualified name.
      * @return The attribute's type, or null if there is no
      *         matching attribute.
      * @see org.xml.sax.Attributes#getType(java.lang.String)
      */
-    public String getType (String rawName)
+    public String getType (String qName)
     {
 	int max = length * 5;
 	for (int i = 0; i < max; i += 5) {
-	    if (data[i+2].equals(rawName)) {
+	    if (data[i+2].equals(qName)) {
 		return data[i+3];
 	    }
 	}
@@ -294,18 +292,18 @@ public class AttributesImpl implements Attributes
 
 
     /**
-     * Look up an attribute's value by raw XML 1.0 name.
+     * Look up an attribute's value by qualified (prefixed) name.
      *
-     * @param rawName The raw XML 1.0 name.
+     * @param qName The qualified name.
      * @return The attribute's value, or null if there is no
      *         matching attribute.
      * @see org.xml.sax.Attributes#getValue(java.lang.String)
      */
-    public String getValue (String rawName)
+    public String getValue (String qName)
     {
 	int max = length * 5;
 	for (int i = 0; i < max; i += 5) {
-	    if (data[i+2].equals(rawName)) {
+	    if (data[i+2].equals(qName)) {
 		return data[i+4];
 	    }
 	}
@@ -333,6 +331,29 @@ public class AttributesImpl implements Attributes
 
 
     /**
+     * Copy an entire Attributes object.
+     *
+     * <p>It may be more efficient to reuse an existing object
+     * rather than constantly allocating new ones.</p>
+     * 
+     * @param atts The attributes to copy.
+     */
+    public void setAttributes (Attributes atts)
+    {
+	clear();
+	length = atts.getLength();
+	data = new String[length*5]; 
+	for (int i = 0; i < length; i++) {
+	    data[i*5] = atts.getURI(i);
+	    data[i*5+1] = atts.getLocalName(i);
+	    data[i*5+2] = atts.getQName(i);
+	    data[i*5+3] = atts.getType(i);
+	    data[i*5+4] = atts.getValue(i);
+	}
+    }
+
+
+    /**
      * Add an attribute to the end of the list.
      *
      * <p>For the sake of speed, this method does no checking
@@ -344,18 +365,18 @@ public class AttributesImpl implements Attributes
      *        being performed.
      * @param localName The local name, or the empty string if
      *        Namespace processing is not being performed.
-     * @param rawName The raw XML 1.0 name, or the empty string
-     *        if raw names are not available.
+     * @param qName The qualified (prefixed) name, or the empty string
+     *        if qualified names are not available.
      * @param type The attribute type as a string.
      * @param value The attribute value.
      */
-    public void addAttribute (String uri, String localName, String rawName,
+    public void addAttribute (String uri, String localName, String qName,
 			      String type, String value)
     {
 	ensureCapacity(length+1);
 	data[length*5] = uri;
 	data[length*5+1] = localName;
-	data[length*5+2] = rawName;
+	data[length*5+2] = qName;
 	data[length*5+3] = type;
 	data[length*5+4] = value;
 	length++;
@@ -375,8 +396,8 @@ public class AttributesImpl implements Attributes
      *        being performed.
      * @param localName The local name, or the empty string if
      *        Namespace processing is not being performed.
-     * @param rawName The raw XML 1.0 name, or the empty string
-     *        if raw names are not available.
+     * @param qName The qualified name, or the empty string
+     *        if qualified names are not available.
      * @param type The attribute type as a string.
      * @param value The attribute value.
      * @exception java.lang.ArrayIndexOutOfBoundsException When the
@@ -384,12 +405,12 @@ public class AttributesImpl implements Attributes
      *            in the list.
      */
     public void setAttribute (int index, String uri, String localName,
-			      String rawName, String type, String value)
+			      String qName, String type, String value)
     {
 	if (index >= 0 && index < length) {
 	    data[index*5] = uri;
 	    data[index*5+1] = localName;
-	    data[index*5+2] = rawName;
+	    data[index*5+2] = qName;
 	    data[index*5+3] = type;
 	    data[index*5+4] = value;
 	} else {
@@ -409,8 +430,11 @@ public class AttributesImpl implements Attributes
     public void removeAttribute (int index)
     {
 	if (index >= 0 && index < length) {
-	    System.arraycopy(data, (index+1)*5, data, index*5,
-			     (length-index)*5);
+	    data[index] = null;
+	    if (index < length - 1) {
+		System.arraycopy(data, (index+1)*5, data, index*5,
+				 (length-index)*5);
+	    }
 	    length--;
 	} else {
 	    badIndex(index);
@@ -459,19 +483,19 @@ public class AttributesImpl implements Attributes
 
 
     /**
-     * Set the raw XML 1.0 name of a specific attribute.
+     * Set the qualified name of a specific attribute.
      *
      * @param index The index of the attribute (zero-based).
-     * @param rawName The attribute's raw name, or the empty
+     * @param qName The attribute's qualified name, or the empty
      *        string for none.
      * @exception java.lang.ArrayIndexOutOfBoundsException When the
      *            supplied index does not point to an attribute
      *            in the list.
      */
-    public void setRawName (int index, String rawName)
+    public void setQName (int index, String qName)
     {
 	if (index >= 0 && index < length) {
-	    data[index*5+2] = rawName;
+	    data[index*5+2] = qName;
 	} else {
 	    badIndex(index);
 	}
@@ -559,7 +583,7 @@ public class AttributesImpl implements Attributes
 	throws ArrayIndexOutOfBoundsException
     {
 	String msg =
-	    "Attempt to reference attribute at illegal index: " + index;
+	    "Attempt to modify attribute at illegal index: " + index;
 	throw new ArrayIndexOutOfBoundsException(msg);
     }
 

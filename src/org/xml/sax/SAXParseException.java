@@ -1,6 +1,6 @@
 // SAX exception class.
 // No warranty; no copyright -- use this as you will.
-// $Id: SAXParseException.java,v 1.2 2000/01/22 16:29:41 david Exp $
+// $Id: SAXParseException.java,v 1.4 2000/05/05 17:48:16 david Exp $
 
 package org.xml.sax;
 
@@ -15,17 +15,18 @@ package org.xml.sax;
  * <p>This exception will include information for locating the error
  * in the original XML document.  Note that although the application
  * will receive a SAXParseException as the argument to the handlers
- * in the ErrorHandler interface, the application is not actually
- * required to throw the exception; instead, it can simply read the
- * information in it and take a different action.</p>
+ * in the {@link org.xml.sax.ErrorHandler ErrorHandler} interface, 
+ * the application is not actually required to throw the exception; 
+ * instead, it can simply read the information in it and take a 
+ * different action.</p>
  *
- * <p>Since this exception is a subclass of SAXException, it
- * inherits the ability to wrap another exception.</p>
+ * <p>Since this exception is a subclass of {@link org.xml.sax.SAXException 
+ * SAXException}, it inherits the ability to wrap another exception.</p>
  *
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.SAXException
  * @see org.xml.sax.Locator
  * @see org.xml.sax.ErrorHandler
@@ -36,25 +37,29 @@ public class SAXParseException extends SAXException {
     //////////////////////////////////////////////////////////////////////
     // Constructors.
     //////////////////////////////////////////////////////////////////////
-    
+
+
     /**
      * Create a new SAXParseException from a message and a Locator.
      *
      * <p>This constructor is especially useful when an application is
-     * creating its own exception from within a DocumentHandler
-     * callback.</p>
+     * creating its own exception from within a {@link org.xml.sax.ContentHandler
+     * ContentHandler} callback.</p>
      *
      * @param message The error or warning message.
-     * @param locator The locator object for the error or warning.
+     * @param locator The locator object for the error or warning (may be
+     *        null).
      * @see org.xml.sax.Locator
      * @see org.xml.sax.Parser#setLocale 
      */
     public SAXParseException (String message, Locator locator) {
 	super(message);
-	this.publicId = locator.getPublicId();
-	this.systemId = locator.getSystemId();
-	this.lineNumber = locator.getLineNumber();
-	this.columnNumber = locator.getColumnNumber();
+	if (locator != null) {
+	    init(locator.getPublicId(), locator.getSystemId(),
+		 locator.getLineNumber(), locator.getColumnNumber());
+	} else {
+	    init(null, null, -1, -1);
+	}
     }
     
     
@@ -62,24 +67,27 @@ public class SAXParseException extends SAXException {
      * Wrap an existing exception in a SAXParseException.
      *
      * <p>This constructor is especially useful when an application is
-     * creating its own exception from within a DocumentHandler
-     * callback, and needs to wrap an existing exception that is not a
-     * subclass of SAXException.</p>
+     * creating its own exception from within a {@link org.xml.sax.ContentHandler
+     * ContentHandler} callback, and needs to wrap an existing exception that is not a
+     * subclass of {@link org.xml.sax.SAXException SAXException}.</p>
      *
      * @param message The error or warning message, or null to
      *                use the message from the embedded exception.
-     * @param locator The locator object for the error or warning.
-     * @param e Any exception
+     * @param locator The locator object for the error or warning (may be
+     *        null).
+     * @param e Any exception.
      * @see org.xml.sax.Locator
      * @see org.xml.sax.Parser#setLocale
      */
     public SAXParseException (String message, Locator locator,
 			      Exception e) {
 	super(message, e);
-	this.publicId = locator.getPublicId();
-	this.systemId = locator.getSystemId();
-	this.lineNumber = locator.getLineNumber();
-	this.columnNumber = locator.getColumnNumber();
+	if (locator != null) {
+	    init(locator.getPublicId(), locator.getSystemId(),
+		 locator.getLineNumber(), locator.getColumnNumber());
+	} else {
+	    init(null, null, -1, -1);
+	}
     }
     
     
@@ -106,10 +114,7 @@ public class SAXParseException extends SAXException {
 			      int lineNumber, int columnNumber)
     {
 	super(message);
-	this.publicId = publicId;
-	this.systemId = systemId;
-	this.lineNumber = lineNumber;
-	this.columnNumber = columnNumber;
+	init(publicId, systemId, lineNumber, columnNumber);
     }
     
     
@@ -118,7 +123,7 @@ public class SAXParseException extends SAXException {
      *
      * <p>This constructor is most useful for parser writers who
      * need to wrap an exception that is not a subclass of
-     * SAXException.</p>
+     * {@link org.xml.sax.SAXException SAXException}.</p>
      *
      * <p>If the system identifier is a URL, the parser must resolve it
      * fully before creating the exception.</p>
@@ -140,6 +145,23 @@ public class SAXParseException extends SAXException {
 			      int lineNumber, int columnNumber, Exception e)
     {
 	super(message, e);
+	init(publicId, systemId, lineNumber, columnNumber);
+    }
+
+
+    /**
+     * Internal initialization method.
+     *
+     * @param publicId The public identifier of the entity which generated the exception,
+     *        or null.
+     * @param systemId The system identifier of the entity which generated the exception,
+     *        or null.
+     * @param lineNumber The line number of the error, or -1.
+     * @param columnNumber The column number of the error, or -1.
+     */
+    private void init (String publicId, String systemId,
+		       int lineNumber, int columnNumber)
+    {
 	this.publicId = publicId;
 	this.systemId = systemId;
 	this.lineNumber = lineNumber;
@@ -238,3 +260,5 @@ public class SAXParseException extends SAXException {
     private int columnNumber;
     
 }
+
+// end of SAXParseException.java

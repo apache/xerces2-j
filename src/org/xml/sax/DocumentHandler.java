@@ -1,6 +1,6 @@
 // SAX document handler.
 // No warranty; no copyright -- use this as you will.
-// $Id: DocumentHandler.java,v 1.2 2000/01/21 15:21:16 david Exp $
+// $Id: DocumentHandler.java,v 1.4 2000/05/05 17:46:11 david Exp $
 
 package org.xml.sax;
 
@@ -37,7 +37,7 @@ package org.xml.sax;
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.Parser#setDocumentHandler
  * @see org.xml.sax.Locator
  * @see org.xml.sax.HandlerBase

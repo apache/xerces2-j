@@ -1,6 +1,6 @@
 // SAX Attribute List Interface.
 // No warranty; no copyright -- use this as you will.
-// $Id: AttributeList.java,v 1.2 2000/01/21 14:44:51 david Exp $
+// $Id: AttributeList.java,v 1.4 2000/05/05 17:44:56 david Exp $
 
 package org.xml.sax;
 
@@ -63,7 +63,7 @@ package org.xml.sax;
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.DocumentHandler#startElement startElement
  * @see org.xml.sax.helpers.AttributeListImpl AttributeListImpl
  */

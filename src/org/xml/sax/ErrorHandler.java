@@ -1,6 +1,6 @@
 // SAX error handler.
 // No warranty; no copyright -- use this as you will.
-// $Id: ErrorHandler.java,v 1.2 2000/01/21 15:22:22 david Exp $
+// $Id: ErrorHandler.java,v 1.4 2000/05/05 17:46:27 david Exp $
 
 package org.xml.sax;
 
@@ -15,31 +15,29 @@ package org.xml.sax;
  *
  * <p>If a SAX application needs to implement customized error
  * handling, it must implement this interface and then register an
- * instance with the SAX parser using the parser's setErrorHandler
+ * instance with the XML reader using the
+ * {@link org.xml.sax.XMLReader#setErrorHandler setErrorHandler}
  * method.  The parser will then report all errors and warnings
  * through this interface.</p>
  *
- * <p> The parser shall use this interface instead of throwing an
- * exception: it is up to the application whether to throw an
- * exception for different types of errors and warnings.  Note,
- * however, that there is no requirement that the parser continue to
- * provide useful information after a call to fatalError (in other
- * words, a SAX driver class could catch an exception and report a
- * fatalError).</p>
+ * <p><strong>WARNING:</strong> If an application does <em>not</em>
+ * register an ErrorHandler, XML parsing errors will go unreported
+ * and bizarre behaviour may result.</p>
  *
- * <p>The HandlerBase class provides a default implementation of this
- * interface, ignoring warnings and recoverable errors and throwing a
- * SAXParseException for fatal errors.  An application may extend
- * that class rather than implementing the complete interface
- * itself.</p>
+ * <p>For XML processing errors, a SAX driver must use this interface 
+ * instead of throwing an exception: it is up to the application 
+ * to decide whether to throw an exception for different types of 
+ * errors and warnings.  Note, however, that there is no requirement that 
+ * the parser continue to provide useful information after a call to 
+ * {@link #fatalError fatalError} (in other words, a SAX driver class 
+ * could catch an exception and report a fatalError).</p>
  *
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.Parser#setErrorHandler
  * @see org.xml.sax.SAXParseException 
- * @see org.xml.sax.HandlerBase
  */
 public interface ErrorHandler {
     
@@ -54,6 +52,9 @@ public interface ErrorHandler {
      * <p>The SAX parser must continue to provide normal parsing events
      * after invoking this method: it should still be possible for the
      * application to process the document through to the end.</p>
+     *
+     * <p>Filters may use this method to report other, non-XML warnings
+     * as well.</p>
      *
      * @param exception The warning information encapsulated in a
      *                  SAX parse exception.
@@ -80,6 +81,9 @@ public interface ErrorHandler {
      * application cannot do so, then the parser should report a fatal
      * error even if the XML 1.0 recommendation does not require it to
      * do so.</p>
+     *
+     * <p>Filters may use this method to report other, non-XML errors
+     * as well.</p>
      *
      * @param exception The error information encapsulated in a
      *                  SAX parse exception.

@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: ParserAdapter.java,v 1.4 2000/02/25 14:56:26 david Exp $
+// $Id: ParserAdapter.java,v 1.6 2000/05/05 17:50:04 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -36,10 +36,10 @@ import org.xml.sax.SAXNotSupportedException;
  * </blockquote>
  *
  * <p>This class wraps a SAX1 {@link org.xml.sax.Parser Parser}
- *  and makes it act as a SAX2 {@link org.xml.sax.XMLReader XMLReader},
+ * and makes it act as a SAX2 {@link org.xml.sax.XMLReader XMLReader},
  * with feature, property, and Namespace support.  Note
- * that it is not possible to report skippedEntity events, since
- * SAX1 does not make that information available.</p>
+ * that it is not possible to report {@link org.xml.sax.ContentHandler#skippedEntity
+ * skippedEntity} events, since SAX1 does not make that information available.</p>
  *
  * <p>This adapter does not test for duplicate Namespace-qualified
  * attribute names.</p>
@@ -47,7 +47,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.helpers.XMLReaderAdapter
  * @see org.xml.sax.XMLReader
  * @see org.xml.sax.Parser
@@ -403,17 +403,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     public void parse (String systemId)
 	throws IOException, SAXException
     {
-	if (parsing) {
-	    throw new SAXException("Parser is already in use");
-	}
-	setupParser();
-	parsing = true;
-	try {
-	    parser.parse(systemId);
-	} finally {
-	    parsing = false;
-	}
-	parsing = false;
+	parse(new InputSource(systemId));
     }
 
 
@@ -503,18 +493,18 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      *
      * <p>If necessary, perform Namespace processing.</p>
      *
-     * @param rawName The raw XML 1.0 name.
-     * @param rawAtts The raw XML 1.0 attribute list.
+     * @param qName The qualified (prefixed) name.
+     * @param qAtts The XML 1.0 attribute list (with qnames).
      */
-    public void startElement (String rawName, AttributeList rawAtts)
+    public void startElement (String qName, AttributeList qAtts)
 	throws SAXException
     {
 				// If we're not doing Namespace
 				// processing, dispatch this quickly.
 	if (!namespaces) {
 	    if (contentHandler != null) {
-		attAdapter.setAttributeList(rawAtts);
-		contentHandler.startElement("", "", rawName.intern(),
+		attAdapter.setAttributeList(qAtts);
+		contentHandler.startElement("", "", qName.intern(),
 					    attAdapter);
 	    }
 	    return;
@@ -530,20 +520,20 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 				// attributes into the SAX2 attribute
 				// list, noting any Namespace 
 				// declarations.
-	int length = rawAtts.getLength();
+	int length = qAtts.getLength();
 	for (int i = 0; i < length; i++) {
-	    String attRawName = rawAtts.getName(i);
-	    String type = rawAtts.getType(i);
-	    String value = rawAtts.getValue(i);
+	    String attQName = qAtts.getName(i);
+	    String type = qAtts.getType(i);
+	    String value = qAtts.getValue(i);
 
 				// Found a declaration...
-	    if (attRawName.startsWith("xmlns")) {
+	    if (attQName.startsWith("xmlns")) {
 		String prefix;
-		int n = attRawName.indexOf(':');
+		int n = attQName.indexOf(':');
 		if (n == -1) {
 		    prefix = "";
 		} else {
-		    prefix = attRawName.substring(n+1);
+		    prefix = attQName.substring(n+1);
 		}
 		if (!nsSupport.declarePrefix(prefix, value)) {
 		    reportError("Illegal Namespace prefix: " + prefix);
@@ -554,14 +544,14 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 				// We may still have to add this to
 				// the list.
 		if (prefixes) {
-		    atts.addAttribute("", "", attRawName.intern(),
+		    atts.addAttribute("", "", attQName.intern(),
 				      type, value);
 		}
 		seenDecl = true;
 
 				// This isn't a declaration.
 	    } else {
-		String attName[] = processName(attRawName, true);
+		String attName[] = processName(attQName, true);
 		atts.addAttribute(attName[0], attName[1], attName[2],
 				  type, value);
 	    }
@@ -575,9 +565,9 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	if (seenDecl) {
 	    length = atts.getLength();
 	    for (int i = 0; i < length; i++) {
-		String attRawName = atts.getRawName(i);
-		if (!attRawName.startsWith("xmlns")) {
-		    String attName[] = processName(attRawName, true);
+		String attQName = atts.getQName(i);
+		if (!attQName.startsWith("xmlns")) {
+		    String attName[] = processName(attQName, true);
 		    atts.setURI(i, attName[0]);
 		    atts.setLocalName(i, attName[1]);
 		}
@@ -586,7 +576,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
 				// OK, finally report the event.
 	if (contentHandler != null) {
-	    String name[] = processName(rawName, false);
+	    String name[] = processName(qName, false);
 	    contentHandler.startElement(name[0], name[1], name[2], atts);
 	}
     }
@@ -595,25 +585,25 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     /**
      * Adapt a SAX1 end element event.
      *
-     * @param rawName The raw XML 1.0 name.
+     * @param qName The qualified (prefixed) name.
      * @exception org.xml.sax.SAXException The client may raise a
      *            processing exception.
      * @see org.xml.sax.DocumentHandler#endElement
      */
-    public void endElement (String rawName)
+    public void endElement (String qName)
 	throws SAXException
     {
 				// If we're not doing Namespace
 				// processing, dispatch this quickly.
 	if (!namespaces) {
 	    if (contentHandler != null) {
-		contentHandler.endElement("", "", rawName.intern());
+		contentHandler.endElement("", "", qName.intern());
 	    }
 	    return;
 	}
 
 				// Split the name.
-	String names[] = processName(rawName, false);
+	String names[] = processName(qName, false);
 	if (contentHandler != null) {
 	    contentHandler.endElement(names[0], names[1], names[2]);
 	    Enumeration prefixes = nsSupport.getDeclaredPrefixes();
@@ -710,27 +700,27 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
 
     /**
-     * Process a raw XML 1.0 name.
+     * Process a qualified (prefixed) name.
      *
-     * <p>If the name has an undeclared prefix, use only the raw name
+     * <p>If the name has an undeclared prefix, use only the qname
      * and make an ErrorHandler.error callback in case the app is
      * interested.</p>
      *
-     * @param rawName The raw XML 1.0 name.
+     * @param qName The qualified (prefixed) name.
      * @param isAttribute true if this is an attribute name.
      * @return The name split into three parts.
      * @exception org.xml.sax.SAXException The client may throw
      *            an exception if there is an error callback.
      */
-    private String [] processName (String rawName, boolean isAttribute)
+    private String [] processName (String qName, boolean isAttribute)
 	throws SAXException
     {
-	String parts[] = nsSupport.processName(rawName, nameParts,
+	String parts[] = nsSupport.processName(qName, nameParts,
 					       isAttribute);
 	if (parts == null) {
 	    parts = new String[3];
-	    parts[2] = rawName.intern();
-	    reportError("Undeclared prefix: " + rawName);
+	    parts[2] = qName.intern();
+	    reportError("Undeclared prefix: " + qName);
 	}
 	return parts;
     }
@@ -847,11 +837,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	 * <p>This method must be invoked before any of the others
 	 * can be used.</p>
 	 *
-	 * @param The raw SAX1 attribute list.
+	 * @param The SAX1 attribute list (with qnames).
 	 */
-	void setAttributeList (AttributeList rawAtts)
+	void setAttributeList (AttributeList qAtts)
 	{
-	    this.rawAtts = rawAtts;
+	    this.qAtts = qAtts;
 	}
 
 
@@ -863,7 +853,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	 */
 	public int getLength ()
 	{
-	    return rawAtts.getLength();
+	    return qAtts.getLength();
 	}
 
 
@@ -894,14 +884,14 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
 
 	/**
-	 * Return the raw XML 1.0 name of the specified attribute.
+	 * Return the qualified (prefixed) name of the specified attribute.
 	 *
 	 * @param The attribute's index.
-	 * @return The attribute's raw XML 1.0 name, internalized.
+	 * @return The attribute's qualified name, internalized.
 	 */
-	public String getRawName (int i)
+	public String getQName (int i)
 	{
-	    return rawAtts.getName(i).intern();
+	    return qAtts.getName(i).intern();
 	}
 
 
@@ -913,7 +903,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	 */
 	public String getType (int i)
 	{
-	    return rawAtts.getType(i).intern();
+	    return qAtts.getType(i).intern();
 	}
 
 
@@ -925,7 +915,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	 */
 	public String getValue (int i)
 	{
-	    return rawAtts.getValue(i);
+	    return qAtts.getValue(i);
 	}
 
 
@@ -944,17 +934,17 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
 
 	/**
-	 * Look up an attribute index by raw XML 1.0 name.
+	 * Look up an attribute index by qualified (prefixed) name.
 	 *
-	 * @param rawName The raw XML 1.0 name.
+	 * @param qName The qualified name.
 	 * @return The attributes index, or -1 if none was found.
 	 * @see org.xml.sax.Attributes#getIndex(java.lang.String)
 	 */
-	public int getIndex (String rawName)
+	public int getIndex (String qName)
 	{
 	    int max = atts.getLength();
 	    for (int i = 0; i < max; i++) {
-		if (rawAtts.getName(i).equals(rawName)) {
+		if (qAtts.getName(i).equals(qName)) {
 		    return i;
 		}
 	    }
@@ -976,14 +966,14 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
 
 	/**
-	 * Look up the type of an attribute by raw XML 1.0 name.
+	 * Look up the type of an attribute by qualified (prefixed) name.
 	 *
-	 * @param rawName The raw XML 1.0 name.
+	 * @param qName The qualified name.
 	 * @return The attribute's type as an internalized string.
 	 */
-	public String getType (String rawName)
+	public String getType (String qName)
 	{
-	    return rawAtts.getType(rawName).intern();
+	    return qAtts.getType(qName).intern();
 	}
 
 
@@ -1001,17 +991,17 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
 
 	/**
-	 * Look up the value of an attribute by raw XML 1.0 name.
+	 * Look up the value of an attribute by qualified (prefixed) name.
 	 *
-	 * @param rawName The raw XML 1.0 name.
+	 * @param qName The qualified name.
 	 * @return The attribute's value.
 	 */
-	public String getValue (String rawName)
+	public String getValue (String qName)
 	{
-	    return rawAtts.getValue(rawName);
+	    return qAtts.getValue(qName);
 	}
 
-	private AttributeList rawAtts;
+	private AttributeList qAtts;
     }
 }
 

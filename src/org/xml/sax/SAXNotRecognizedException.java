@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the Public Domain.
 
-// $Id: SAXNotRecognizedException.java,v 1.2 2000/01/22 16:26:51 david Exp $
+// $Id: SAXNotRecognizedException.java,v 1.4 2000/05/05 17:47:28 david Exp $
 
 
 package org.xml.sax;
@@ -23,11 +23,12 @@ package org.xml.sax;
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta 
+ * @version 2.0
  * @see org.xml.sax.SAXNotSupportedException
  */
 public class SAXNotRecognizedException extends SAXException
 {
+
     /**
      * Construct a new exception with the given message.
      *
@@ -37,6 +38,7 @@ public class SAXNotRecognizedException extends SAXException
     {
 	super(message);
     }
+
 }
 
 // end of SAXNotRecognizedException.java

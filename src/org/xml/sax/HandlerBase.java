@@ -1,6 +1,6 @@
 // SAX default handler base class.
 // No warranty; no copyright -- use this as you will.
-// $Id: HandlerBase.java,v 1.3 2000/01/26 13:24:19 david Exp $
+// $Id: HandlerBase.java,v 1.5 2000/05/05 17:46:37 david Exp $
 
 package org.xml.sax;
 
@@ -15,7 +15,9 @@ package org.xml.sax;
  * <p>This class implements the default behaviour for four SAX1
  * interfaces: EntityResolver, DTDHandler, DocumentHandler,
  * and ErrorHandler.  It is now obsolete, but is included in SAX2 to
- * support legacy SAX1 applications.</p>
+ * support legacy SAX1 applications.  SAX2 applications should use
+ * the {@link org.xml.sax.helpers.DefaultHandler DefaultHandler}
+ * class instead.</p>
  *
  * <p>Application writers can extend this class when they need to
  * implement only part of an interface; parser writers can
@@ -32,15 +34,14 @@ package org.xml.sax;
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.EntityResolver
  * @see org.xml.sax.DTDHandler
  * @see org.xml.sax.DocumentHandler
  * @see org.xml.sax.ErrorHandler
  */
 public class HandlerBase
-    implements EntityResolver, DTDHandler,
-    DocumentHandler, ErrorHandler
+    implements EntityResolver, DTDHandler, DocumentHandler, ErrorHandler
 {
     
 

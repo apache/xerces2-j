@@ -1,6 +1,6 @@
 // SAX parser interface.
 // No warranty; no copyright -- use this as you will.
-// $Id: Parser.java,v 1.3 2000/01/22 16:21:00 david Exp $
+// $Id: Parser.java,v 1.5 2000/05/05 17:47:07 david Exp $
 
 package org.xml.sax;
 
@@ -39,7 +39,7 @@ import java.util.Locale;
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.EntityResolver
  * @see org.xml.sax.DTDHandler
  * @see org.xml.sax.DocumentHandler

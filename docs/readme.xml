@@ -8,10 +8,10 @@
 		recommendation and contains advanced parser functionality, such as 
 		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump>, 
 		<jump href="http://www.w3.org/TR/DOM-Level-2/">DOM Level 2 version 1.0</jump>, and 
-		<jump href="http://www.megginson.com/SAX/SAX2/">SAX Version 2</jump>, 
+		<jump href="http://www.megginson.com/SAX/">SAX Version 2</jump>, 
 		in addition to supporting the industry-standard 
 		<jump href="http://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-core.html">DOM Level 1</jump> and 
-		<jump href="http://www.megginson.com/SAX/index.html">SAX version 1</jump>
+		<jump href="http://www.megginson.com/SAX/SAX1/">SAX version 1</jump>
 		APIs.</p>
         <p>
 <!--
@@ -64,12 +64,9 @@
                 As of this writing, the DOM Level 2 specification is now a
                 Candidate Recommendation.</p>
 	</s2>
-	<s2 title="SAX 2 (beta 2) Support">
-		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/SAX2/">
-		SAX Version 2</jump> API&apos;s which are being discussed on the 
-		<jump href="http://www.lists.ic.ac.uk/hypermail/xml-dev/">xml-dev</jump> mailing list. 
-		These API's are still 
-		under development, so they are subject to change in the future.</p>
+	<s2 title="SAX 2 Support">
+		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/">
+		SAX Version 2</jump> API&apos;s which have been finalized.</p>
 	</s2>
 	<s2 title="Configuration Mechanism">
 		<p>&javaparsername; &javaparserversion; uses a collection of methods to configure 

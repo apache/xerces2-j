@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the Public Domain.
 
-// $Id: XMLFilter.java,v 1.2 2000/01/22 16:27:36 david Exp $
+// $Id: XMLFilter.java,v 1.4 2000/05/05 17:48:25 david Exp $
 
 
 package org.xml.sax;
@@ -22,12 +22,15 @@ package org.xml.sax;
  * events as they pass on to the final application.</p>
  *
  * <p>The XMLFilterImpl helper class provides a convenient base
- * for creating SAX2 filters.</p>
+ * for creating SAX2 filters, by passing on all {@link org.xml.sax.EntityResolver
+ * EntityResolver}, {@link org.xml.sax.DTDHandler DTDHandler},
+ * {@link org.xml.sax.ContentHandler ContentHandler} and {@link org.xml.sax.ErrorHandler
+ * ErrorHandler} events automatically.</p>
  *
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.helpers.XMLFilterImpl
  */
 public interface XMLFilter extends XMLReader

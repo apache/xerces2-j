@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the Public Domain.
 
-// $Id: XMLFilterImpl.java,v 1.2 2000/01/22 16:27:53 david Exp $
+// $Id: XMLFilterImpl.java,v 1.4 2000/05/05 17:50:37 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -31,8 +31,8 @@ import org.xml.sax.SAXNotRecognizedException;
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
  * </blockquote>
  *
- * <p>This class is designed to sit between an XMLReader and
- * the client application's event handlers.  By default, it
+ * <p>This class is designed to sit between an {@link org.xml.sax.XMLReader
+ * XMLReader} and the client application's event handlers.  By default, it
  * does nothing but pass requests up to the reader and events
  * on to the handlers unmodified, but subclasses can override
  * specific methods to modify the event stream or the configuration
@@ -41,7 +41,7 @@ import org.xml.sax.SAXNotRecognizedException;
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.XMLFilter
  * @see org.xml.sax.XMLReader
  * @see org.xml.sax.EntityResolver
@@ -50,8 +50,7 @@ import org.xml.sax.SAXNotRecognizedException;
  * @see org.xml.sax.ErrorHandler
  */
 public class XMLFilterImpl
-    implements XMLFilter, EntityResolver, DTDHandler,
-               ContentHandler, ErrorHandler
+    implements XMLFilter, EntityResolver, DTDHandler, ContentHandler, ErrorHandler
 {
 
 
@@ -98,9 +97,9 @@ public class XMLFilterImpl
     /**
      * Set the parent reader.
      *
-     * <p>This is the XMLReader from which this filter will obtain
-     * its events and to which it will pass its configuration
-     * requests.  The parent may itself be another filter.</p>
+     * <p>This is the {@link org.xml.sax.XMLReader XMLReader} from which 
+     * this filter will obtain its events and to which it will pass its 
+     * configuration requests.  The parent may itself be another filter.</p>
      *
      * <p>If there is no parent reader set, any attempt to parse
      * or to set or get a feature or property will fail.</p>
@@ -121,7 +120,7 @@ public class XMLFilterImpl
     /**
      * Get the parent reader.
      *
-     * @return The parent reader, or null if none is set.
+     * @return The parent XML reader, or null if none is set.
      * @see #setParent
      */
     public XMLReader getParent ()
@@ -387,8 +386,7 @@ public class XMLFilterImpl
     public void parse (String systemId)
 	throws SAXException, IOException
     {
-	setupParse();
-	parent.parse(systemId);
+	parse(new InputSource(systemId));
     }
 
 
@@ -562,19 +560,19 @@ public class XMLFilterImpl
      *
      * @param uri The element's Namespace URI, or the empty string.
      * @param localName The element's local name, or the empty string.
-     * @param rawName The element's raw XML 1.0 name, or the empty
+     * @param qName The element's qualified (prefixed) name, or the empty
      *        string.
      * @param atts The element's attributes.
      * @exception org.xml.sax.SAXException The client may throw
      *            an exception during processing.
      * @see org.xml.sax.ContentHandler#startElement
      */
-    public void startElement (String uri, String localName, String rawName,
+    public void startElement (String uri, String localName, String qName,
 			      Attributes atts)
 	throws SAXException
     {
 	if (contentHandler != null) {
-	    contentHandler.startElement(uri, localName, rawName, atts);
+	    contentHandler.startElement(uri, localName, qName, atts);
 	}
     }
 
@@ -584,17 +582,17 @@ public class XMLFilterImpl
      *
      * @param uri The element's Namespace URI, or the empty string.
      * @param localName The element's local name, or the empty string.
-     * @param rawName The element's raw XML 1.0 name, or the empty
+     * @param qName The element's qualified (prefixed) name, or the empty
      *        string.
      * @exception org.xml.sax.SAXException The client may throw
      *            an exception during processing.
      * @see org.xml.sax.ContentHandler#endElement
      */
-    public void endElement (String uri, String localName, String rawName)
+    public void endElement (String uri, String localName, String qName)
 	throws SAXException
     {
 	if (contentHandler != null) {
-	    contentHandler.endElement(uri, localName, rawName);
+	    contentHandler.endElement(uri, localName, qName);
 	}
     }
 

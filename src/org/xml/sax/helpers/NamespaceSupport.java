@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // This class is in the Public Domain.  NO WARRANTY!
 
-// $Id: NamespaceSupport.java,v 1.4 2000/02/25 14:56:13 david Exp $
+// $Id: NamespaceSupport.java,v 1.8 2000/05/05 17:49:53 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -22,8 +22,9 @@ import java.util.Vector;
  *
  * <p>This class encapsulates the logic of Namespace processing:
  * it tracks the declarations currently in force for each context
- * and automatically processing raw XML 1.0 names into their
- * Namespace parts.</p>
+ * and automatically processes qualified XML 1.0 names into their
+ * Namespace parts; it can also be used in reverse for generating
+ * XML 1.0 from Namespaces.</p>
  *
  * <p>Namespace support objects are reusable, but the reset method
  * must be invoked between each session.</p>
@@ -59,7 +60,7 @@ import java.util.Vector;
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  */
 public class NamespaceSupport
 {
@@ -166,7 +167,7 @@ public class NamespaceSupport
      * Revert to the previous Namespace context.
      *
      * <p>Normally, you should pop the context at the end of each
-     * element.  After popping the context, all Namespace prefix
+     * XML element.  After popping the context, all Namespace prefix
      * mappings that were previously in force are restored.</p>
      *
      * <p>You must not attempt to declare additional Namespace
@@ -181,7 +182,6 @@ public class NamespaceSupport
 	if (contextPos < 0) {
 	    throw new EmptyStackException();
 	}
-// XXX if current can be optimized out, unoptimize it here
 	currentContext = contexts[contextPos];
     }
 
@@ -205,11 +205,20 @@ public class NamespaceSupport
      * <p>Note that you must <em>not</em> declare a prefix after
      * you've pushed and popped another Namespace.</p>
      *
+     * <p>Note that there is an asymmetry in this library: while {@link
+     * #getPrefix getPrefix} will not return the default "" prefix,
+     * even if you have declared one; to check for a default prefix,
+     * you have to look it up explicitly using {@link #getURI getURI}.
+     * This asymmetry exists to make it easier to look up prefixes
+     * for attribute names, where the default prefix is not allowed.</p>
+     *
      * @param prefix The prefix to declare, or null for the empty
      *        string.
      * @param uri The Namespace URI to associate with the prefix.
      * @return true if the prefix was legal, false otherwise
      * @see #processName
+     * @see #getURI
+     * @see #getPrefix
      */
     public boolean declarePrefix (String prefix, String uri)
     {
@@ -249,7 +258,7 @@ public class NamespaceSupport
      * default Namespace (if any), while an unprefixed element name
      * will not.</p>
      *
-     * @param rawName The raw XML 1.0 name to be processed.
+     * @param qName The raw XML 1.0 name to be processed.
      * @param parts An array supplied by the caller, capable of
      *        holding at least three members.
      * @param isAttribute A flag indicating whether this is an
@@ -260,10 +269,10 @@ public class NamespaceSupport
      *        is an undeclared prefix.
      * @see #declarePrefix
      * @see java.lang.String#intern */
-    public String [] processName (String rawName, String parts[],
+    public String [] processName (String qName, String parts[],
 				  boolean isAttribute)
     {
-	String myParts[] = currentContext.processName(rawName, isAttribute);
+	String myParts[] = currentContext.processName(qName, isAttribute);
 	if (myParts == null) {
 	    return null;
 	} else {
@@ -284,6 +293,7 @@ public class NamespaceSupport
      * @param prefix The prefix to look up.
      * @return The associated Namespace URI, or null if the prefix
      *         is undeclared in this context.
+     * @see #getPrefix
      * @see #getPrefixes
      */
     public String getURI (String prefix)
@@ -295,8 +305,13 @@ public class NamespaceSupport
     /**
      * Return an enumeration of all prefixes currently declared.
      *
+     * <p><strong>Note:</strong> if there is a default prefix, it will not be
+     * returned in this enumeration; check for the default prefix
+     * using the {@link #getURI getURI} with an argument of "".</p>
+     *
      * @return An enumeration of all prefixes declared in the
-     *         current context.
+     *         current context except for the empty (default)
+     *         prefix.
      * @see #getDeclaredPrefixes
      * @see #getURI
      */
@@ -307,7 +322,73 @@ public class NamespaceSupport
 
 
     /**
+     * Return one of the prefixes mapped to a Namespace URI.
+     *
+     * <p>If more than one prefix is currently mapped to the same
+     * URI, this method will make an arbitrary selection; if you
+     * want all of the prefixes, use the {@link #getPrefixes}
+     * method instead.</p>
+     *
+     * <p><strong>Note:</strong> this will never return the empty (default) prefix;
+     * to check for a default prefix, use the {@link #getURI getURI}
+     * method with an argument of "".</p>
+     *
+     * @param uri The Namespace URI.
+     * @param isAttribute true if this prefix is for an attribute
+     *        (and the default Namespace is not allowed).
+     * @return One of the prefixes currently mapped to the URI supplied,
+     *         or null if none is mapped or if the URI is assigned to
+     *         the default Namespace.
+     * @see #getPrefixes(java.lang.String)
+     * @see #getURI
+     */
+    public String getPrefix (String uri)
+    {
+	return currentContext.getPrefix(uri);
+    }
+
+
+    /**
+     * Return an enumeration of all prefixes currently declared for a URI.
+     *
+     * <p>This method returns prefixes mapped to a specific Namespace
+     * URI.  The xml: prefix will be included.  If you want only one
+     * prefix that's mapped to the Namespace URI, and you don't care 
+     * which one you get, use the {@link #getPrefix getPrefix}
+     *  method instead.</p>
+     *
+     * <p><strong>Note:</strong> the empty (default) prefix is <em>never</em> included
+     * in this enumeration; to check for the presence of a default
+     * Namespace, use the {@link #getURI getURI} method with an
+     * argument of "".</p>
+     *
+     * @param uri The Namespace URI.
+     * @return An enumeration of all prefixes declared in the
+     *         current context.
+     * @see #getPrefix
+     * @see #getDeclaredPrefixes
+     * @see #getURI
+     */
+    public Enumeration getPrefixes (String uri)
+    {
+	Vector prefixes = new Vector();
+	Enumeration allPrefixes = getPrefixes();
+	while (allPrefixes.hasMoreElements()) {
+	    String prefix = (String)allPrefixes.nextElement();
+	    if (uri.equals(getURI(prefix))) {
+		prefixes.addElement(prefix);
+	    }
+	}
+	return prefixes.elements();
+    }
+
+
+    /**
      * Return an enumeration of all prefixes declared in this context.
+     *
+     * <p>The empty (default) prefix will be included in this 
+     * enumeration; note that this behaviour differs from that of
+     * {@link #getPrefix} and {@link #getPrefixes}.</p>
      *
      * @return An enumeration of all prefixes declared in this
      *         context.
@@ -337,6 +418,10 @@ public class NamespaceSupport
 
     /**
      * Internal class for a single Namespace context.
+     *
+     * <p>This module caches and reuses Namespace contexts, so the number allocated
+     * will be equal to the element depth of the document, not to the total
+     * number of elements (i.e. 5-10 rather than tens of thousands).</p>
      */
     final class Context {
 
@@ -359,6 +444,7 @@ public class NamespaceSupport
 	    this.parent = parent;
 	    declarations = null;
 	    prefixTable = parent.prefixTable;
+	    uriTable = parent.uriTable;
 	    elementNameTable = parent.elementNameTable;
 	    attributeNameTable = parent.attributeNameTable;
 	    defaultNS = parent.defaultNS;
@@ -385,10 +471,16 @@ public class NamespaceSupport
 	    
 	    prefix = prefix.intern();
 	    uri = uri.intern();
-	    if (prefix.equals("")) {
-		defaultNS = uri;
+	    if ("".equals(prefix)) {
+		if ("".equals(uri)) {
+		    defaultNS = null;
+		} else {
+		    defaultNS = uri;
+		}
+	    } else {
+		prefixTable.put(prefix, uri);
+		uriTable.put(uri, prefix); // may wipe out another prefix
 	    }
-	    prefixTable.put(prefix, uri);
 	    declarations.addElement(prefix);
 	}
 
@@ -396,7 +488,7 @@ public class NamespaceSupport
 	/**
 	 * Process a raw XML 1.0 name in this context.
 	 *
-	 * @param rawName The raw XML 1.0 name.
+	 * @param qName The raw XML 1.0 name.
 	 * @param isAttribute true if this is an attribute name.
 	 * @return An array of three strings containing the
 	 *         URI part (or empty string), the local part,
@@ -404,7 +496,7 @@ public class NamespaceSupport
 	 *         if there is an undeclared prefix.
 	 * @see org.xml.sax.helpers.NamespaceSupport#processName
 	 */
-	String [] processName (String rawName, boolean isAttribute)
+	String [] processName (String qName, boolean isAttribute)
 	{
 	    String name[];
 	    Hashtable table;
@@ -419,7 +511,7 @@ public class NamespaceSupport
 				// Start by looking in the cache, and
 				// return immediately if the name
 				// is already known in this content
-	    name = (String[])table.get(rawName);
+	    name = (String[])table.get(qName);
 	    if (name != null) {
 		return name;
 	    }
@@ -427,7 +519,7 @@ public class NamespaceSupport
 				// We haven't seen this name in this
 				// context before.
 	    name = new String[3];
-	    int index = rawName.indexOf(':');
+	    int index = qName.indexOf(':');
 	    
 	    
 				// No prefix.
@@ -437,21 +529,26 @@ public class NamespaceSupport
 		} else {
 		    name[0] = defaultNS;
 		}
-		name[1] = rawName.intern();
+		name[1] = qName.intern();
 		name[2] = name[1];
 	    }
 	    
 				// Prefix
 	    else {
-		String prefix = rawName.substring(0, index);
-		String local = rawName.substring(index+1);
-		String uri = (String)prefixTable.get(prefix);
+		String prefix = qName.substring(0, index);
+		String local = qName.substring(index+1);
+		String uri;
+		if ("".equals(prefix)) {
+		    uri = defaultNS;
+		} else {
+		    uri = (String)prefixTable.get(prefix);
+		}
 		if (uri == null) {
 		    return null;
 		}
 		name[0] = uri;
 		name[1] = local.intern();
-		name[2] = rawName.intern();
+		name[2] = qName.intern();
 	    }
 	    
 				// Save in the cache for future use.
@@ -471,10 +568,32 @@ public class NamespaceSupport
 	 */
 	String getURI (String prefix)
 	{
-	    if (prefixTable == null) {
+	    if ("".equals(prefix)) {
+		return defaultNS;
+	    } else if (prefixTable == null) {
 		return null;
 	    } else {
 		return (String)prefixTable.get(prefix);
+	    }
+	}
+
+
+	/**
+	 * Look up one of the prefixes associated with a URI in this context.
+	 *
+	 * <p>Since many prefixes may be mapped to the same URI,
+	 * the return value may be unreliable.</p>
+	 *
+	 * @param uri The URI to look up.
+	 * @return The associated prefix, or null if none is declared.
+	 * @see org.xml.sax.helpers.NamespaceSupport#getPrefix
+	 */
+	String getPrefix (String uri)
+	{
+	    if (uriTable == null) {
+		return null;
+	    } else {
+		return (String)uriTable.get(uri);
 	    }
 	}
 	
@@ -498,12 +617,19 @@ public class NamespaceSupport
 	/**
 	 * Return an enumeration of all prefixes currently in force.
 	 *
+	 * <p>The default prefix, if in force, is <em>not</em>
+	 * returned, and will have to be checked for separately.</p>
+	 *
 	 * @return An enumeration of prefixes (never empty).
 	 * @see org.xml.sax.helpers.NamespaceSupport#getPrefixes
 	 */
 	Enumeration getPrefixes ()
 	{
-	    return prefixTable.keys();
+	    if (prefixTable == null) {
+		return EMPTY_ENUMERATION;
+	    } else {
+		return prefixTable.keys();
+	    }
 	}
 	
 	
@@ -526,6 +652,11 @@ public class NamespaceSupport
 	    } else {
 		prefixTable = new Hashtable();
 	    }
+	    if (uriTable != null) {
+		uriTable = (Hashtable)uriTable.clone();
+	    } else {
+		uriTable = new Hashtable();
+	    }
 	    elementNameTable = new Hashtable();
 	    attributeNameTable = new Hashtable();
 	    tablesDirty = true;
@@ -538,6 +669,7 @@ public class NamespaceSupport
 	////////////////////////////////////////////////////////////////
 	
 	Hashtable prefixTable;
+	Hashtable uriTable;
 	Hashtable elementNameTable;
 	Hashtable attributeNameTable;
 	String defaultNS = null;

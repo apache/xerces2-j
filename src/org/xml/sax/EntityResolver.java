@@ -1,6 +1,6 @@
 // SAX entity resolver.
 // No warranty; no copyright -- use this as you will.
-// $Id: EntityResolver.java,v 1.2 2000/01/21 15:22:04 david Exp $
+// $Id: EntityResolver.java,v 1.4 2000/05/05 17:46:19 david Exp $
 
 package org.xml.sax;
 
@@ -17,10 +17,11 @@ import java.io.IOException;
  *
  * <p>If a SAX application needs to implement customized handling
  * for external entities, it must implement this interface and
- * register an instance with the SAX parser using the parser's
- * setEntityResolver method.</p>
+ * register an instance with the SAX driver using the
+ * {@link org.xml.sax.XMLReader#setEntityResolver setEntityResolver}
+ * method.</p>
  *
- * <p>The parser will then allow the application to intercept any
+ * <p>The XML reader will then allow the application to intercept any
  * external entities (including the external DTD subset and external
  * parameter entities, if any) before including them.</p>
  *
@@ -56,17 +57,12 @@ import java.io.IOException;
  * identifiers to local URIs or to look up replacements in a catalog
  * (possibly by using the public identifier).</p>
  *
- * <p>The HandlerBase class implements the default behaviour for
- * this interface, which is simply always to return null (to request
- * that the parser use the default system identifier).</p>
- *
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.Parser#setEntityResolver
  * @see org.xml.sax.InputSource
- * @see org.xml.sax.HandlerBase 
  */
 public interface EntityResolver {
     

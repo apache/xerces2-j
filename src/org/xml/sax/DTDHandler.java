@@ -1,6 +1,6 @@
 // SAX DTD handler.
 // No warranty; no copyright -- use this as you will.
-// $Id: DTDHandler.java,v 1.2 2000/01/21 15:19:32 david Exp $
+// $Id: DTDHandler.java,v 1.4 2000/05/05 17:46:02 david Exp $
 
 package org.xml.sax;
 
@@ -19,6 +19,10 @@ package org.xml.sax;
  * instance to report notation and unparsed entity declarations to 
  * the application.</p>
  *
+ * <p>Note that this interface includes only those DTD events that
+ * the XML recommendation <em>requires</em> processors to report:
+ * notation and unparsed entity declarations.</p>
+ *
  * <p>The SAX parser may report these events in any order, regardless
  * of the order in which the notations and unparsed entities were
  * declared; however, all DTD events must be reported after the
@@ -32,13 +36,10 @@ package org.xml.sax;
  * obtained through this interface to find the entity and/or
  * notation corresponding with the attribute value.</p>
  *
- * <p>The HandlerBase class provides a default implementation
- * of this interface, which simply ignores the events.</p>
- *
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.Parser#setDTDHandler
  * @see org.xml.sax.HandlerBase 
  */
@@ -51,9 +52,13 @@ public interface DTDHandler {
      * <p>It is up to the application to record the notation for later
      * reference, if necessary.</p>
      *
-     * <p>If a system identifier is present, and it is a URL, the SAX
+     * <p>At least one of publicId and systemId must be non-null.
+     * If a system identifier is present, and it is a URL, the SAX
      * parser must resolve it fully before passing it to the
-     * application.</p>
+     * application through this event.</p>
+     *
+     * <p>There is no guarantee that the notation declaration will be
+     * reported before any unparsed entities that use it.</p>
      *
      * @param name The notation name.
      * @param publicId The notation's public identifier, or null if
@@ -75,9 +80,9 @@ public interface DTDHandler {
      * Receive notification of an unparsed entity declaration event.
      *
      * <p>Note that the notation name corresponds to a notation
-     * reported by the notationDecl() event.  It is up to the
-     * application to record the entity for later reference, if
-     * necessary.</p>
+     * reported by the {@link #notationDecl notationDecl} event.  
+     * It is up to the application to record the entity for later 
+     * reference, if necessary.</p>
      *
      * <p>If the system identifier is a URL, the parser must resolve it
      * fully before passing it to the application.</p>
@@ -87,8 +92,7 @@ public interface DTDHandler {
      * @param name The unparsed entity's name.
      * @param publicId The entity's public identifier, or null if none
      *        was given.
-     * @param systemId The entity's system identifier (it must always
-     *        have one).
+     * @param systemId The entity's system identifier.
      * @param notation name The name of the associated notation.
      * @see #notationDecl
      * @see org.xml.sax.AttributeList

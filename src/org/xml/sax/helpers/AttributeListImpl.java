@@ -1,6 +1,6 @@
 // SAX default implementation for AttributeList.
 // No warranty; no copyright -- use this as you will.
-// $Id: AttributeListImpl.java,v 1.2 2000/01/21 15:12:33 david Exp $
+// $Id: AttributeListImpl.java,v 1.4 2000/05/05 17:49:14 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -10,19 +10,24 @@ import java.util.Vector;
 
 
 /**
- * Convenience implementation for AttributeList.
+ * Default implementation for AttributeList.
  *
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
  * </blockquote>
  *
+ * <p>AttributeList implements the deprecated SAX1 {@link
+ * org.xml.sax.AttributeList AttributeList} interface, and has been
+ * replaced by the new SAX2 {@link org.xml.sax.helpers.AttributesImpl
+ * AttributesImpl} interface.</p>
+ *
  * <p>This class provides a convenience implementation of the SAX
- * AttributeList class.  This implementation is useful both
- * for SAX parser writers, who can use it to provide attributes
- * to the application, and for SAX application writers, who can
- * use it to create a persistent copy of an element's attribute
- * specifications:</p>
+ * {@link org.xml.sax.AttributeList AttributeList} interface.  This 
+ * implementation is useful both for SAX parser writers, who can use 
+ * it to provide attributes to the application, and for SAX application 
+ * writers, who can use it to create a persistent copy of an element's 
+ * attribute specifications:</p>
  *
  * <pre>
  * private AttributeList myatts;
@@ -52,9 +57,9 @@ import java.util.Vector;
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.AttributeList
- * @see org.xml.sax.DocumentHandler#startElement
+ * @see org.xml.sax.DocumentHandler#startElement 
  */
 public class AttributeListImpl implements AttributeList
 {

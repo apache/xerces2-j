@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: DefaultHandler.java,v 1.1 2000/01/26 13:24:26 david Exp $
+// $Id: DefaultHandler.java,v 1.3 2000/05/05 17:49:33 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -47,7 +47,7 @@ import org.xml.sax.SAXParseException;
  * @since SAX 2.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.EntityResolver
  * @see org.xml.sax.DTDHandler
  * @see org.xml.sax.ContentHandler
@@ -105,9 +105,12 @@ public class DefaultHandler
      * @param publicId The notation public identifier, or null if not
      *                 available.
      * @param systemId The notation system identifier.
+     * @exception org.xml.sax.SAXException Any SAX exception, possibly
+     *            wrapping another exception.
      * @see org.xml.sax.DTDHandler#notationDecl
      */
     public void notationDecl (String name, String publicId, String systemId)
+	throws SAXException
     {
 	// no op
     }
@@ -125,10 +128,13 @@ public class DefaultHandler
      *                 available.
      * @param systemId The entity system identifier.
      * @param notationName The name of the associated notation.
+     * @exception org.xml.sax.SAXException Any SAX exception, possibly
+     *            wrapping another exception.
      * @see org.xml.sax.DTDHandler#unparsedEntityDecl
      */
     public void unparsedEntityDecl (String name, String publicId,
 				    String systemId, String notationName)
+	throws SAXException
     {
 	// no op
     }
@@ -180,7 +186,7 @@ public class DefaultHandler
      * Receive notification of the end of the document.
      *
      * <p>By default, do nothing.  Application writers may override this
-     * method in a subclass to take specific actions at the beginning
+     * method in a subclass to take specific actions at the end
      * of a document (such as finalising a tree or closing an output
      * file).</p>
      *
@@ -200,8 +206,7 @@ public class DefaultHandler
      *
      * <p>By default, do nothing.  Application writers may override this
      * method in a subclass to take specific actions at the start of
-     * each element (such as allocating a new tree node or writing
-     * output to a file).</p>
+     * each Namespace prefix scope (such as storing the prefix mapping).</p>
      *
      * @param prefix The Namespace prefix being declared.
      * @param uri The Namespace URI mapped to the prefix.
@@ -220,9 +225,8 @@ public class DefaultHandler
      * Receive notification of the end of a Namespace mapping.
      *
      * <p>By default, do nothing.  Application writers may override this
-     * method in a subclass to take specific actions at the start of
-     * each element (such as allocating a new tree node or writing
-     * output to a file).</p>
+     * method in a subclass to take specific actions at the end of
+     * each prefix mapping.</p>
      *
      * @param prefix The Namespace prefix being declared.
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
@@ -251,7 +255,7 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#startElement
      */
     public void startElement (String uri, String localName,
-			      String rawName, Attributes attributes)
+			      String qName, Attributes attributes)
 	throws SAXException
     {
 	// no op
@@ -272,7 +276,7 @@ public class DefaultHandler
      *            wrapping another exception.
      * @see org.xml.sax.ContentHandler#endElement
      */
-    public void endElement (String uri, String localName, String rawName)
+    public void endElement (String uri, String localName, String qName)
 	throws SAXException
     {
 	// no op

@@ -1,6 +1,6 @@
 // SAX exception class.
 // No warranty; no copyright -- use this as you will.
-// $Id: SAXException.java,v 1.2 2000/01/22 16:25:56 david Exp $
+// $Id: SAXException.java,v 1.4 2000/05/05 17:47:20 david Exp $
 
 package org.xml.sax;
 
@@ -24,12 +24,12 @@ package org.xml.sax;
  *
  * <p>If the parser or application needs to include information about a
  * specific location in an XML document, it should use the
- * SAXParseException subclass.</p>
+ * {@link org.xml.sax.SAXParseException SAXParseException} subclass.</p>
  *
  * @since SAX 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 2.0
  * @see org.xml.sax.SAXParseException
  */
 public class SAXException extends Exception {
@@ -83,7 +83,7 @@ public class SAXException extends Exception {
     /**
      * Return a detail message for this exception.
      *
-     * <p>If there is a embedded exception, and if the SAXException
+     * <p>If there is an embedded exception, and if the SAXException
      * has no detail message of its own, this method will return
      * the detail message from the embedded exception.</p>
      *
