@@ -1625,11 +1625,17 @@ public class CoreDocumentImpl
                 attr.setOwnerDocument(this);
                 break;
             }
-            //document, entity, notation, documentype nodes can't be adopted.
+            //entity, notation nodes are read only nodes.. so they can't be adopted.
+            //runtime will fall through to NOTATION_NODE
+            case ENTITY_NODE:
+            case NOTATION_NODE:{
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+
+            }
+            //document, documentype nodes can't be adopted.
             //runtime will fall through to DocumentTypeNode
             case DOCUMENT_NODE:
-            case ENTITY_NODE:
-            case NOTATION_NODE:
             case DOCUMENT_TYPE_NODE: {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
