@@ -462,9 +462,9 @@ public class TraverseSchema implements
 
     private String resolvePrefixToURI (String prefix) throws Exception  {
         String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
-        if (uriStr == null) {
+        if (uriStr.length() == 0 && prefix.length() > 0) {
             // REVISIT: Localize
-            reportGenericSchemaError("prefix : [" + prefix +"] can not be resolved to a URI");
+            reportGenericSchemaError("prefix : [" + prefix +"] cannot be resolved to a URI");
             return "";
         }
 
