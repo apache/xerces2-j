@@ -14,10 +14,24 @@
    <BODY>
     <SPAN class='netscape'>
     <H1>Xerces 2 Schedule</H1>
-    <H2>Milestones</H2>
-    <xsl:for-each select='milestone'>
-     <xsl:apply-templates select='.'/>
-    </xsl:for-each>
+    <xsl:if test='milestone[task/@status="working" or task/@status="verify"]'>
+     <H2>Current Milestones</H2>
+     <xsl:for-each select='milestone[task/@status="working" or task/@status="verify"]'>
+      <xsl:apply-templates select='.'/>
+     </xsl:for-each>
+    </xsl:if>
+    <xsl:if test='milestone[not(task)]'>
+     <H2>Future Milestones</H2>
+     <xsl:for-each select='milestone[not(task)]'>
+      <xsl:apply-templates select='.'/>
+     </xsl:for-each>
+    </xsl:if>
+    <xsl:if test='milestone[task and not(task/@status="working" or task/@status="verify")]'>
+     <H2>Completed Milestones</H2>
+     <xsl:for-each select='milestone[task and not(task/@status="working" or task/@status="verify")]'>
+      <xsl:apply-templates select='.'/>
+     </xsl:for-each>
+    </xsl:if>
     </SPAN>
     <HR/>
     <SPAN class='netscape'>
@@ -88,15 +102,16 @@
         <xsl:when test='contributor'>
          <xsl:for-each select='contributor'>
           <xsl:choose>
-           <xsl:when test='id(@owner)/@email'>
-            <A href='mailto:{id(@owner)/@email}'><xsl:value-of select='id(@owner)'/></A>
+           <xsl:when test='id(@idref)/@email'>
+            <A href='mailto:{id(@idref)/@email}'><xsl:value-of select='id(@idref)'/></A>
            </xsl:when>
            <xsl:otherwise>
-            <xsl:value-of select='id(@owner)'/>
+            <xsl:value-of select='id(@idref)'/>
            </xsl:otherwise>
           </xsl:choose>
           <xsl:if test='not(position()=last())'>, </xsl:if>
          </xsl:for-each>
+	 - <EM>Contact task driver to contribute.</EM>
         </xsl:when>
         <xsl:otherwise>
          <EM>Contributors wanted! Contact task driver to contribute.</EM>

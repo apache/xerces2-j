@@ -13,7 +13,7 @@
   <task driver='andyc' status='done'>
    <title>Document design based on Xerces community feedback</title>
   </task>
-  <task driver='ericye' status='verify'>
+  <task driver='ericye' status='done'>
    <title>Support classes</title>
    <detail>
     This affects the following classes: 
