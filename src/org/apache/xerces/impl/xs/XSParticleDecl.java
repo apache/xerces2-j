@@ -131,6 +131,9 @@ public class XSParticleDecl implements XSParticle {
      * values from the spec are retrievable by these methods.
      */
     public int minEffectiveTotalRange() {
+        if (fType == this.PARTICLE_EMPTY) {
+            return 0;
+        }
         if (fType == PARTICLE_MODELGROUP) {
             return ((XSModelGroupImpl)fValue).minEffectiveTotalRange() * fMinOccurs;
         }
@@ -138,6 +141,9 @@ public class XSParticleDecl implements XSParticle {
     }
 
     public int maxEffectiveTotalRange() {
+        if (fType == this.PARTICLE_EMPTY) {
+            return 0;
+        }
         if (fType == PARTICLE_MODELGROUP) {
             int max = ((XSModelGroupImpl)fValue).maxEffectiveTotalRange();
             if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED)
