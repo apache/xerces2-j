@@ -8,6 +8,7 @@
            <li>Added full equivClass support for Schema [ericye]</li>
            <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec [ericye]</li>
            <li>Fixed "xml:space" bug in DTD validation [ericye, andyc]</li>
+           <li>Expanded "any" element support to model groups [ericye]</li>
            <li>Fixed "any" element bugs when there are multilple URIs [ericye]</li>
            <li>Cleaned up XMLValidator [ericye]</li>
            <li>Fixed misc. Schema bugs [ericye]</li>
