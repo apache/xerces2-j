@@ -196,9 +196,7 @@ public interface XMLDocumentFragmentHandler {
         throws XNIException;
 
     /**
-     * The start of an element. If the document specifies the start element
-     * by using an empty tag, then the startElement method will immediately
-     * be followed by the endElement method, with no intervening methods.
+     * The start of an element.
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
@@ -206,6 +204,17 @@ public interface XMLDocumentFragmentHandler {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
+        throws XNIException;
+
+    /**
+     * An empty element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void emptyElement(QName element, XMLAttributes attributes)
         throws XNIException;
 
     /**
