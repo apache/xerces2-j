@@ -61,6 +61,7 @@ package org.apache.xerces.impl.xs.psvi;
  * The interfaces represents the namespace schema information information 
  * item. Each namespace schema information information item corresponds to 
  * an XML Schema with unique namespace name.
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSNamespaceItem {
     /**

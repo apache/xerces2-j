@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents the Simple Type Definition schema component.
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     // Variety definitions

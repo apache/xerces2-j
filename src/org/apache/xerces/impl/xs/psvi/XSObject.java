@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 /**
  * The <code>XSObject</code> is a base object for the XML Schema component 
  * model. 
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSObject {
     /**

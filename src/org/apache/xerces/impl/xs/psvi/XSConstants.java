@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  *  This interface defines constants used by this specification.
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSConstants {
     // XML Schema Components

@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents is the Model Group Definition schema component.
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSModelGroupDefinition extends XSObject {
     /**

@@ -62,6 +62,7 @@ package org.apache.xerces.impl.xs.psvi;
  * declaration. Objects implementing <code>XSElementDeclaration</code>, 
  * <code>XSModelGroup</code> and <code>XSWildcard</code> interfaces also 
  * implement this interface. 
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSTerm extends XSObject {
 }

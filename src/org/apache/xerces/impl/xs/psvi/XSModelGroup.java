@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents the Model Group schema component.
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSModelGroup extends XSTerm {
     // Content model compositors

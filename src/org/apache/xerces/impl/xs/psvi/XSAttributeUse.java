@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents the Attribute Use schema component. 
+ * @deprecated The interface may be updated or replaced. 
  */
 public interface XSAttributeUse extends XSObject {
     /**
