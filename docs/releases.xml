@@ -2,9 +2,40 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
-    <s2 title='NEXT RELEASE DATE'>
+    <s2 title='May 10, 2000'>
         <ul>
-           <li>62: Cloned attributes return wrong owner element. [awiner@us.oracle.com]</li>
+           <li>Upgraded to SAX 2.0. [lehors]</li>
+           <li>Added support for WML DOM. [david]</li>
+           <li>Preliminary work for full schema support.
+              [andyc, gmarcy, jefreyr, ericye]</li>
+           <li>Reorganized DOM classes to use much less memory. [lehors]</li>
+           <li>Entities and entity reference nodes are now readonly as
+              expected. [lehors]</li>
+           <li>Entity references now have their replacement value when created
+              with createEntityReference. [lehors]</li>
+           <li>Fixed problem in Deferred DOM which made building it N^2 order.
+              [lehors]</li>
+           <li>Fixed handling of elements with IDs in Deferred DOM. [lehors]</li>
+           <li>Added support for namespaces in parameter entities. [lehors]</li>
+           <li>setNodeValue raised an exception when it should simply be a
+              no-op. [lehors]</li>
+           <li>Attributes returned by setNamedItem and setNamedItemNS could not
+              be reused. [lehors]</li>
+           <li>Implemented new DOM Level 2 methods hasAttribute and
+              hasAttributeNS. [lehors]</li>
+           <li>43: importNode now uses createElementNS and createAttributeNS
+              when necessary. [lehors]</li>
+           <li>59: after a first iteration over the whole list, item(index)
+              returned the wrong value. [lehors]</li>
+           <li>60: Fixed. [andyc]</li>
+           <li>62: Cloned attributes return wrong owner element.
+              [awiner@us.oracle.com]</li>
+           <li>Fixed caption element creation pb with HTMLTableElement.
+              [arkin]</li>
+           <li>Improved performance of XML serialize. Added support of
+              encodings and reuse of serializer. [arkin]</li>
+           <li>Updated XML serializer to not be strictly dependent on DOM Level
+              2. [andyc]</li>
         </ul>
     </s2>
     <s2 title="March 8, 2000">
