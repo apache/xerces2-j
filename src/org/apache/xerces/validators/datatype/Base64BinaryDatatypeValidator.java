@@ -57,6 +57,7 @@
 
 package org.apache.xerces.validators.datatype;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
@@ -100,7 +101,15 @@ public class Base64BinaryDatatypeValidator extends AbstractStringValidator{
     }
 
     protected int getLength( String content) {
-        return Base64.getDecodedDataLength(content.getBytes());
+      int x = 0;
+      try {
+        x = Base64.getDecodedDataLength(content.getBytes("utf-8"));
+      }
+      catch (UnsupportedEncodingException e) {
+      }
+      finally {
+        return x;
+      }
     }
 
     public int compare( String value1, String value2 ){

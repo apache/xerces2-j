@@ -57,6 +57,7 @@
 
 package org.apache.xerces.validators.datatype;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
@@ -99,7 +100,15 @@ public class HexBinaryDatatypeValidator extends AbstractStringValidator{
     }
     
     protected int getLength( String content) {
-        return HexBin.getDecodedDataLength(content.getBytes());
+      int x = 0;                                                     
+      try {                                                          
+        x = HexBin.getDecodedDataLength(content.getBytes("utf-8"));  
+      }                                                              
+      catch (UnsupportedEncodingException e) {                       
+      }                                                              
+      finally {                                                      
+        return x;                                                    
+      }                                                              
     }
 
 
