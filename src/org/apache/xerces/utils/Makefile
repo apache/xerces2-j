@@ -5,6 +5,7 @@ TARGETS=\
 	CharDataChunk.class\
 	ChunkyByteArray.class\
 	ChunkyCharArray.class\
+	Hash2intTable.class\
 	HexBin.class\
 	ImplementationMessages.class\
 	ISO8601Format.class\
