@@ -825,7 +825,7 @@ public abstract class XMLParser
      * This method is the equivalent to the feature:
      * <pre>
      * http://xml.org/sax/features/namespaces
-     * <pre>
+     * </pre>
      *
      * @param process True to process namespaces; false to not process.
      *
