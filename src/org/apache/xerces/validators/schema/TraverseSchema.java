@@ -1162,7 +1162,7 @@ public class TraverseSchema implements
             } 
 
             //TODO: If content is annotation again should raise validation error
-            // if( content.getLocalName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
+            // if( content.getLocalName().equal( SchemaSymbols.ELT_ANNOTATION ) {
             //   throw ValidationException(); }
             //
 
@@ -1245,7 +1245,7 @@ public class TraverseSchema implements
            }
            return null;
 	   }
-	   if (content.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+	   if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
 		   traverseAnnotationDecl( content );   
 		   content = XUtil.getNextSiblingElement(content);
 		   if (content == null ) {   //must be followed by <simpleType?>
@@ -1255,7 +1255,7 @@ public class TraverseSchema implements
 			   }
 			   return null;
 		   }
-		   if (content.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+		   if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
 			   reportSchemaError(SchemaMessageProvider.AnnotationError,
 								 new Object [] { elm.getAttribute( SchemaSymbols.ATT_NAME )});
 			   return null;
@@ -1336,7 +1336,8 @@ public class TraverseSchema implements
         if (content == null) {
             return (-1);
         }
-        String varietyProperty = content.getNodeName();
+        //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
+        String varietyProperty = content.getLocalName();
         String baseTypeQNameProperty = null;
         Vector dTValidators = null;
         int size = 0;  
@@ -1393,7 +1394,7 @@ public class TraverseSchema implements
             if (content == null) {
                 return (-1);
             }
-            if (content.getNodeName().equals( SchemaSymbols.ELT_SIMPLETYPE )) {  //Test...
+            if (content.getLocalName().equals( SchemaSymbols.ELT_SIMPLETYPE )) {  //Test...
               typeNameIndex = traverseSimpleTypeDecl(content); 
               if (DEBUG_UNION) { 
 				  System.out.println("[After traverseSimpleTypeDecl]: " +fStringPool.toString(typeNameIndex));
@@ -1492,7 +1493,7 @@ public class TraverseSchema implements
             while (content != null) { 
                 if (content.getNodeType() == Node.ELEMENT_NODE) {
                     numFacets++;
-                    if (content.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    if (content.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
                             numEnumerationLiterals++;
                             String enumVal = content.getAttribute(SchemaSymbols.ATT_VALUE);
                             enumData.addElement(enumVal);
@@ -1500,7 +1501,7 @@ public class TraverseSchema implements
                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
                     }
                     else {
-                         facetData.put(content.getNodeName(),content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                         facetData.put(content.getLocalName(),content.getAttribute( SchemaSymbols.ATT_VALUE ));
                     }
                 }
                     content = XUtil.getNextSiblingElement(content);
