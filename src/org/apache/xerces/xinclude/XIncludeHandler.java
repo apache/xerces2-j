@@ -84,6 +84,11 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  * </ul>
+ * Optional property:
+ * <ul>
+ *  <li>http://apache.org/xml/properties/input-buffer-size</li>
+ * </ul>
+ * 
  * Furthermore, the <code>NamespaceContext</code> used in the pipeline is required
  * to be an instance of <code>XIncludeNamespaceSupport</code>.
  * </p>
@@ -171,6 +176,10 @@ public class XIncludeHandler
     /** property identifier: security manager. */
     protected static final String SECURITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
+    /** property identifier: buffer size. */
+    public static final String BUFFER_SIZE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.BUFFER_SIZE_PROPERTY;
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES =
@@ -181,10 +190,10 @@ public class XIncludeHandler
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES =
-        { ERROR_REPORTER, ENTITY_RESOLVER, SECURITY_MANAGER };
+        { ERROR_REPORTER, ENTITY_RESOLVER, SECURITY_MANAGER, BUFFER_SIZE };
 
     /** Property defaults. */
-    private static final Object[] PROPERTY_DEFAULTS = { null, null, null };
+    private static final Object[] PROPERTY_DEFAULTS = { null, null, null, new Integer(XMLEntityManager.DEFAULT_BUFFER_SIZE) };
 
     // instance variables
 
@@ -198,8 +207,11 @@ public class XIncludeHandler
 
     // for XIncludeHandler
     protected XIncludeHandler fParentXIncludeHandler;
+    
+    // for buffer size in XIncludeTextReader
+    protected int fBufferSize = XMLEntityManager.DEFAULT_BUFFER_SIZE;
 
-    // It's "feels wrong" to store this value here.  However,
+    // It "feels wrong" to store this value here.  However,
     // calculating it can be time consuming, so we cache it.
     // It's never going to change in the lifetime of this XIncludeHandler
     protected String fParentRelativeURI;
@@ -213,6 +225,10 @@ public class XIncludeHandler
     protected XMLErrorReporter fErrorReporter;
     protected XMLEntityResolver fEntityResolver;
     protected SecurityManager fSecurityManager;
+    
+    // these are needed for text include processing
+    protected XIncludeTextReader fXInclude10TextReader;
+    protected XIncludeTextReader fXInclude11TextReader;
 
     // these are needed for XML Base processing
     protected XMLResourceIdentifier fCurrentBaseURI;
@@ -370,6 +386,32 @@ public class XIncludeHandler
         catch (XMLConfigurationException e) {
             fSecurityManager = null;
         }
+        
+        // Get buffer size.
+        try {
+            Integer value =
+                (Integer)componentManager.getProperty(
+                    BUFFER_SIZE);
+
+            if (value != null && value.intValue() > 0) {
+                fBufferSize = value.intValue();
+            }
+            else {
+            	fBufferSize = ((Integer)getPropertyDefault(BUFFER_SIZE)).intValue();
+            }
+        }
+        catch (XMLConfigurationException e) {
+        	fBufferSize = ((Integer)getPropertyDefault(BUFFER_SIZE)).intValue();
+        }
+        
+        // Reset XML 1.0 text reader.
+        if (fXInclude10TextReader != null) {
+        	fXInclude10TextReader.setBufferSize(fBufferSize);
+        }
+        // Reset XML 1.1 text reader.
+        if (fXInclude11TextReader != null) {
+            fXInclude11TextReader.setBufferSize(fBufferSize);   
+        }
 
         fSettings = new ParserConfigurationSettings();
         copyFeatures(componentManager, fSettings);
@@ -442,18 +484,36 @@ public class XIncludeHandler
             if (fChildConfig != null) {
                 fChildConfig.setProperty(propertyId, value);
             }
+            return;
         }
         if (propertyId.equals(ENTITY_RESOLVER)) {
             fEntityResolver = (XMLEntityResolver)value;
             if (fChildConfig != null) {
                 fChildConfig.setProperty(propertyId, value);
             }
+            return;
         }
         if (propertyId.equals(SECURITY_MANAGER)) {
             fSecurityManager = (SecurityManager)value;
             if (fChildConfig != null) {
                 fChildConfig.setProperty(propertyId, value);
             }
+            return;
+        }
+        if (propertyId.equals(BUFFER_SIZE)) {
+            Integer bufferSize = (Integer) value;
+            if (bufferSize != null && bufferSize.intValue() > 0) {
+                fBufferSize = bufferSize.intValue();
+                // Reset XML 1.0 text reader.
+                if (fXInclude10TextReader != null) {
+                    fXInclude10TextReader.setBufferSize(fBufferSize);
+                }
+                // Reset XML 1.1 text reader.
+                if (fXInclude11TextReader != null) {
+                    fXInclude11TextReader.setBufferSize(fBufferSize);
+                }
+            }
+            return;
         }
 
     } // setProperty(String,Object)
@@ -1253,21 +1313,34 @@ public class XIncludeHandler
             // we only care about encoding for parse="text"
             String encoding = attributes.getValue(XINCLUDE_ATTR_ENCODING);
             includedSource.setEncoding(encoding);
-
-            XIncludeTextReader reader = null;
+            XIncludeTextReader textReader = null;
+            
             try {
-                if (fIsXML11) {
-                    reader = new XInclude11TextReader(includedSource, this);
+                // Setup the appropriate text reader.
+                if (!fIsXML11) {
+                    if (fXInclude10TextReader == null) {
+                        fXInclude10TextReader = new XIncludeTextReader(includedSource, this, fBufferSize);
+                    }
+                    else {
+                        fXInclude10TextReader.setInputSource(includedSource);
+                    }
+                    textReader = fXInclude10TextReader;
                 }
                 else {
-                    reader = new XIncludeTextReader(includedSource, this);
+                    if (fXInclude11TextReader == null) {
+                        fXInclude11TextReader = new XInclude11TextReader(includedSource, this, fBufferSize);
+                    }
+                    else {
+                        fXInclude11TextReader.setInputSource(includedSource);
+                    }
+                    textReader = fXInclude11TextReader;
                 }
                 if (includedSource.getCharacterStream() == null
                     && includedSource.getByteStream() == null) {
-                    reader.setHttpProperties(accept, acceptLanguage);
+                	textReader.setHttpProperties(accept, acceptLanguage);
                 }
-                reader.setErrorReporter(fErrorReporter);
-                reader.parse();
+                textReader.setErrorReporter(fErrorReporter);
+                textReader.parse();
             }
             // encoding errors
             catch (MalformedByteSequenceException ex) {
@@ -1285,9 +1358,9 @@ public class XIncludeHandler
                 return false;
             }
             finally {
-                if (reader != null) {
+                if (textReader != null) {
                     try {
-                        reader.close();
+                        textReader.close();
                     }
                     catch (IOException e) {
                         reportResourceError(
@@ -2192,4 +2265,5 @@ public class XIncludeHandler
         }
         return true;
     }
+    
 }
