@@ -85,6 +85,8 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -116,6 +118,10 @@ public class XSDHandler {
     /** Feature identifier:  allow java encodings */
     protected static final String STANDARD_URI_CONFORMANT_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+        
+    /** Feature: disallow doctype*/
+    protected static final String DISALLOW_DOCTYPE = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;      
 
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
@@ -128,6 +134,24 @@ public class XSDHandler {
     /** Property identifier: entity resolver. */
     public static final String ENTITY_RESOLVER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+    /** Property identifier: entity manager. */
+    protected static final String ENTITY_MANAGER =
+            Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY; 
+    
+    /** Property identifier: error reporter. */
+    public static final String ERROR_REPORTER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+        
+    /** Property identifier: grammar pool. */
+    public static final String XMLGRAMMAR_POOL =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
+        
+    /** Property identifier: symbol table. */
+    public static final String SYMBOL_TABLE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+        
+    protected static final String SECURITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY; 
 
     protected static final boolean DEBUG_NODE_POOL = false;
                               
@@ -154,11 +178,6 @@ public class XSDHandler {
 
     protected XSDeclarationPool fDeclPool = null;
 
-    // are java encodings allowed?
-    private boolean fAllowJavaEncodings = false;
-    
-    // enforcing strict uri?
-    private boolean fStrictURI = false;
 
     // These tables correspond to the symbol spaces defined in the
     // spec.
@@ -310,11 +329,15 @@ public class XSDHandler {
     private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
 
     // Constructors
+    public XSDHandler(){
+        fSchemaParser = new SchemaParsingConfig();
+    }
 
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
     public XSDHandler (XSGrammarBucket gBucket) {
+        this();
         fGrammarBucket = gBucket;
 
         // Note: don't use SchemaConfiguration internally
@@ -323,21 +346,24 @@ public class XSDHandler {
         fSchemaGrammarDescription = new XSDDescription();
     } // end constructor
 
-    // This method initiates the parse of a schema.  It will likely be
-    // called from the Validator and it will make the
-    // resulting grammar available; it returns a reference to this object just
-    // in case.  An ErrorHandler, EntityResolver, XSGrammarBucket and SymbolTable must
-    // already have been set; the last thing this method does is reset
-    // this object (i.e., clean the registries, etc.).
+    
 
+    /**
+     * This method initiates the parse of a schema.  It will likely be
+     * called from the Validator and it will make the
+     * resulting grammar available; it returns a reference to this object just
+     * in case.  A reset(XMLComponentManager) must be called before this methods is called.
+     * @param is
+     * @param desc
+     * @param locationPairs
+     * @return
+     * @throws IOException
+     */
     public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc,
                                      Hashtable locationPairs)
             throws IOException {
-        fLocationPairs = locationPairs;
-               
-		if (fSchemaParser != null) {
-			fSchemaParser.resetNodePool();
-		}
+        fLocationPairs = locationPairs;               
+		fSchemaParser.resetNodePool();
 		
         SchemaGrammar grammar = null;
 		String schemaNamespace  = null;
@@ -365,7 +391,7 @@ public class XSDHandler {
         prepareForParse();
 
         // first phase:  construct trees.
-        Document schemaRoot = getSchema(schemaNamespace, is,
+        Document schemaRoot = getSchemaDocument(schemaNamespace, is,
                                         referType == XSDDescription.CONTEXT_PREPARSE,
                                         referType, null);
         if (schemaRoot == null) {
@@ -689,8 +715,7 @@ public class XSDHandler {
                 // built), ignore this one (don't traverse it).
                 if (findGrammar(fSchemaGrammarDescription) != null)
                     continue;
-                
-                newSchemaRoot = getSchema(fSchemaGrammarDescription, false, child);
+                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
                      (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
@@ -755,7 +780,7 @@ public class XSDHandler {
                 fSchemaGrammarDescription.setBaseSystemId((String)fDoc2SystemId.get(schemaRoot));
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(callerTNS);
-                newSchemaRoot = getSchema(fSchemaGrammarDescription, mustResolve, child);
+                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, mustResolve, child);
                 schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
             else {
@@ -1373,13 +1398,16 @@ public class XSDHandler {
         fKeyrefNamespaceContext[fKeyrefStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // storeKeyref (Element, XSDocumentInfo, XSElementDecl): void
 
-    // This method is responsible for schema resolution.  If it finds
-    // a schema document that the XMLEntityResolver resolves to with
-    // the given namespace and hint, it returns it.  It returns true
-    // if this is the first time it's seen this document, false
-    // otherwise.  schemaDoc is null if and only if no schema document
-    // was resolved to.
-    private Document getSchema(XSDDescription desc,
+    
+    /**
+     * resolveSchema method is responsible for resolving location of the schema (using XMLEntityResolver), 
+     * and if it was succefully resolved getting the schema Document.
+     * @param desc
+     * @param mustResolve
+     * @param referElement
+     * @return A schema Document or null.
+     */
+    private Document resolveSchema(XSDDescription desc,
                                boolean mustResolve, Element referElement) {
         XMLInputSource schemaSource=null;
         try {
@@ -1397,10 +1425,19 @@ public class XSDHandler {
                                     referElement);
             }
         }
-        return getSchema(desc.getTargetNamespace(), schemaSource, mustResolve, desc.getContextType(), referElement);
+        return getSchemaDocument(desc.getTargetNamespace(), schemaSource, mustResolve, desc.getContextType(), referElement);
     } // getSchema(String, String, String, boolean, short):  Document
 
-    private Document getSchema(String schemaNamespace, XMLInputSource schemaSource,
+    /**
+     * getSchemaDocument method uses XMLInputSource to parse a schema document. 
+     * @param schemaNamespace
+     * @param schemaSource
+     * @param mustResolve
+     * @param referType
+     * @param referElement
+     * @return A schema Document.
+     */
+    private Document getSchemaDocument(String schemaNamespace, XMLInputSource schemaSource,
                                boolean mustResolve, short referType, Element referElement) {
 
         boolean hasInput = true;
@@ -1432,13 +1469,7 @@ public class XSDHandler {
                    		return schemaDoc;
                		}	
                	}
-                // If this is the first schema this Handler has
-                // parsed, it has to construct a DOMParser
-                if (fSchemaParser == null) {
-                    //fSchemaParser = new DOMParser();
-                    fSchemaParser = new SchemaParsingConfig();
-                    resetSchemaParserErrorHandler();
-                }
+
                 fSchemaParser.parse(schemaSource);
                 schemaDoc = fSchemaParser.getDocument();
 
@@ -1564,64 +1595,74 @@ public class XSDHandler {
     public void setDeclPool (XSDeclarationPool declPool){
         fDeclPool = declPool;
     }
-    // this method reset properties that might change between parses.
-    // and process the jaxp schemaSource property
-    public void reset(XMLErrorReporter errorReporter,
-                      XMLEntityResolver entityResolver,
-                      SymbolTable symbolTable,
-                      XMLGrammarPool grammarPool,
-                      boolean allowJavaEncodings,
-                      boolean strictURI) {
 
-        fErrorReporter = errorReporter;
-        fEntityResolver = entityResolver;
-        fSymbolTable = symbolTable;
-        fGrammarPool = grammarPool;
-        fAllowJavaEncodings = allowJavaEncodings;
-        fStrictURI = strictURI;
+    public void reset(XMLComponentManager componentManager) {
 
-        resetSchemaParserErrorHandler();
+        // set symbol table
+        fSymbolTable = (SymbolTable) componentManager.getProperty(SYMBOL_TABLE);
         
-    } // reset(ErrorReporter, EntityResolver, SymbolTable, XMLGrammarPool)
-
-    void resetSchemaParserErrorHandler() {
-        if (fSchemaParser != null) {
-            try {
-                XMLErrorHandler currErrorHandler =
-                                     fErrorReporter.getErrorHandler();
-                // Setting a parser property can be much more expensive
-                // than checking its value.  Don't set the ERROR_HANDLER
-                // property unless it's actually changed.
-                if (currErrorHandler
-                    != fSchemaParser.getProperty(ERROR_HANDLER)) {
-                    fSchemaParser.setProperty(ERROR_HANDLER, currErrorHandler);
-                }
-            } catch (Exception e) {
+        //set entity resolver
+        fEntityResolver = (XMLEntityResolver) componentManager.getProperty(ENTITY_MANAGER);
+        XMLEntityResolver er = (XMLEntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
+        if (er != null)
+            fSchemaParser.setEntityResolver(er);
+        
+        // set error reporter
+        fErrorReporter =
+            (XMLErrorReporter) componentManager.getProperty(ERROR_REPORTER);
+        try {
+            XMLErrorHandler currErrorHandler = fErrorReporter.getErrorHandler();
+            // Setting a parser property can be much more expensive
+            // than checking its value.  Don't set the ERROR_HANDLER
+            // property unless it's actually changed.
+            if (currErrorHandler != fSchemaParser.getProperty(ERROR_HANDLER)) {
+                fSchemaParser.setProperty(ERROR_HANDLER, currErrorHandler);
             }
-            // make sure the following are set correctly:
-            // continue-after-fatal-error
-            // allow-java-encodings
-            // standard-uri-conformant
-            try {
-                fSchemaParser.setFeature(CONTINUE_AFTER_FATAL_ERROR, fErrorReporter.getFeature(CONTINUE_AFTER_FATAL_ERROR));
-            } catch (Exception e) {
-            }
-            try {
-                fSchemaParser.setFeature(ALLOW_JAVA_ENCODINGS, fAllowJavaEncodings);
-            } catch (Exception e) {
-            }
-            try {
-                fSchemaParser.setFeature(STANDARD_URI_CONFORMANT_FEATURE, fStrictURI);
-            } catch (Exception e) {
-            }
-            try {
-                if (fEntityResolver != fSchemaParser.getProperty(ENTITY_RESOLVER)) {
-                    fSchemaParser.setProperty(ENTITY_RESOLVER, fEntityResolver);
-                }
-            } catch (Exception e) {
-            }
+        } catch (XMLConfigurationException e) {
         }
-    } // resetSchemaParserErrorHandler()
+
+        try {
+            fSchemaParser.setFeature(
+                CONTINUE_AFTER_FATAL_ERROR,
+                fErrorReporter.getFeature(CONTINUE_AFTER_FATAL_ERROR));
+        } catch (XMLConfigurationException e) {
+        }
+
+        try {
+            fSchemaParser.setFeature(
+                ALLOW_JAVA_ENCODINGS,
+                componentManager.getFeature(ALLOW_JAVA_ENCODINGS));
+        } catch (XMLConfigurationException e) {
+        }
+        try {
+            fSchemaParser.setFeature(
+                STANDARD_URI_CONFORMANT_FEATURE,
+                componentManager.getFeature(STANDARD_URI_CONFORMANT_FEATURE));
+        } catch (XMLConfigurationException e) {
+        }
+
+        try {
+            fGrammarPool =
+                (XMLGrammarPool) componentManager.getProperty(XMLGRAMMAR_POOL);
+        } catch (XMLConfigurationException e) {
+            fGrammarPool = null;
+        }
+        // security features
+        try {
+            fSchemaParser.setFeature( DISALLOW_DOCTYPE, 
+                componentManager.getFeature(DISALLOW_DOCTYPE));
+        } catch (XMLConfigurationException e) {
+        }
+        try {
+            Object security = componentManager.getProperty(SECURITY_MANAGER);
+            if (security != null){
+                fSchemaParser.setProperty(SECURITY_MANAGER, security);
+            }
+        } catch (XMLConfigurationException e) {
+        }
+
+    } // reset(XMLComponentManager)
+
 
     /**
      * Traverse all the deferred local elements. This method should be called
