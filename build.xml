@@ -114,8 +114,8 @@ Copyright:
     <echo message=" tests    --> compiles the tests source code"/>
     <echo message=" tests-dom3    --> 'tests' + DOM Level 3 support."/>
     <echo message=" deprecatedjars --> generates xerces.jar and samples jar"/>
-    <echo message=" dtdjars --> generates xercesImpl containing no schema support, xercesSamples &amp; xmlParserAPIs jars"/>
-    <echo message=" tinyjars --> generates xercesImpl with no schema support or HTML/WML DOM, xercesSamples &amp; xmlParserAPIs jars"/>
+    <echo message=" dtdjars --> generates xercesImpl containing no schema support or WML/HTML DOM and xercesSamples &amp; xmlParserAPIs jars"/>
+    <echo message=" xml11jars --> EXPERIMENTAL!  Generates xercesImpl containing very preliminary XML 1.1 support, as well as xercesSamples &amp; xmlParserAPIs jars"/>
     <echo message=" dvjar --> generates a Schema datatype jar"/>
     <echo message=" pack-tools --> generates the tools distributions (zip and tar.gz)"/>
     <echo message=" pack-src   --> generates the source distributions (zip and tar.gz)"/>
@@ -723,17 +723,18 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the DTD-only implementation class package                   -->
+  <!-- Creates the dtd implementation class package                       -->
+  <!-- (that is, with no schema support or WML/HTML DOM.)                  -->
   <!-- =================================================================== -->
   <target name="dtdjar" depends="dtdcompile">
-    <jar jarfile="${build.dir}/${jar.parser}"
+    <jar jarfile="${build.dir}/dtd-${jar.parser}"
          basedir="${build.dest}"
          compress="true"
          includes="org/apache/**, META-INF/**"/>
   </target>
 
   <!-- =================================================================== -->
-  <!-- Compiles the DTD-only source directory                              -->
+  <!-- Compiles the dtd source directory                                  -->
   <!-- =================================================================== -->
   <target name="dtdcompile" depends="dtdprepare-src">
     <copy todir="${build.dest}">
@@ -753,119 +754,9 @@ Copyright:
 
 
   <!-- =================================================================== -->
-  <!-- Compiles the DTD-only source code 
-        Need to include org.apache.xerces.impl.xs.XSTypeDecl and 
-       org.apache.xerces.impl.XSSimpleType to be able to ask isIDType() in 
-       DOM Parser. Need to come up with better way to query isIDType..
-       Also includes org.apache.xerces.impl.xs.psvi for same reason. 
-       -->
+  <!-- Compiles the dtd source code package                               -->
   <!-- =================================================================== -->
   <target name="dtdprepare-src" depends="prepare-common">
-    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration"
-      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
-
-    <!-- copy src files -->
-    <copy todir="${build.src}">
-        <fileset 
-            dir="${src.dir}"
-            includes="**/Makefile, **/Makefile.incl, javax/**, org/**" 
-            excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
-                       **/SchemaImporter.java **/RevalidatingDOMParser.java
-                       **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java 
-                       **/v1/** **/v2/**
-                        **/RevalidatingDOMParser.java
-                        org/apache/xerces/impl/xs/AttributePSVImpl.java 
-                        org/apache/xerces/impl/xs/ElementPSVImpl.java
-                        org/apache/xerces/impl/xs/SchemaGrammar.java
-                        org/apache/xerces/impl/xs/SchemaNamespaceSupport.java
-                        org/apache/xerces/impl/xs/SchemaSymbols.java
-                        org/apache/xerces/impl/xs/SubstitutionGroupHandler.java
-                        org/apache/xerces/impl/xs/XSParticleDecl.java
-                        org/apache/xerces/impl/xs/XMLSchemaException.java
-                        org/apache/xerces/impl/xs/XMLSchemaLoader.java
-                        org/apache/xerces/impl/xs/XMLSchemaValidator.java
-                        org/apache/xerces/impl/xs/XSAttributeDecl.java
-                        org/apache/xerces/impl/xs/XSAttributeGroupDecl.java
-                        org/apache/xerces/impl/xs/XSAttributeUseImpl.java
-                        org/apache/xerces/impl/xs/XSComplexTypeDecl.java
-                        org/apache/xerces/impl/xs/XSConstraints.java
-                        org/apache/xerces/impl/xs/XSDDescription.java
-                        org/apache/xerces/impl/xs/XSDeclarationPool.java
-                        org/apache/xerces/impl/xs/XSElementDecl.java
-                        org/apache/xerces/impl/xs/XSGrammarBucket.java
-                        org/apache/xerces/impl/xs/XSGroupDecl.java
-                        org/apache/xerces/impl/xs/XSMessageFormatter.java
-                        org/apache/xerces/impl/xs/XSModelGroupImpl.java
-                        org/apache/xerces/impl/xs/XSModelImpl.java
-                        org/apache/xerces/impl/xs/XSNotationDecl.java
-                        org/apache/xerces/impl/xs/XSWildcardDecl.java
-                        org/apache/xerces/impl/dv/xs/**
-                        org/apache/xerces/impl/xs/identity/**
-                        org/apache/xerces/impl/xs/traversers/**
-                        org/apache/xerces/impl/xs/models/**
-                        org/apache/xerces/impl/xs/util/**
-                        org/apache/xerces/impl/xs/dom/**
-                        org/apache/xerces/impl/xpath/**
-                        org/apache/xerces/impl/xpath/regex/**
-                        org/apache/xerces/impl/dv/Schema*.java
-                        org/apache/xerces/impl/msg/XMLSchema**
-                        org/apache/xerces/impl/validation/XMLGrammarPoolImpl.java
-                        org/apache/xerces/parsers/DOMASBuilderImpl.java
-                        org/apache/xerces/parsers/StandardParserConfiguration.java
-                        org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
-                        org/apache/xerces/parsers/CachingParserPool.java
-                        org/apache/xerces/dom/ASModelImpl.java
-                        org/apache/xerces/dom/ASDOMImplementationImpl.java
-           ">
-        </fileset>
-    </copy>
-    
-    <!-- substitute tokens as needed -->
-    <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
-             token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Builds xercesImpl (DTD-only), xmlParserAPIs and sample jar files    -->
-  <!-- =================================================================== -->
-  <target name="dtdjars" depends="dtdjar, sampjar, apijar">
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates the tiny implementation class package                       -->
-  <!-- =================================================================== -->
-  <target name="tinyjar" depends="tinycompile">
-    <jar jarfile="${build.dir}/${jar.parser}"
-         basedir="${build.dest}"
-         compress="true"
-         includes="org/apache/**, META-INF/**"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the tiny source directory                                  -->
-  <!-- =================================================================== -->
-  <target name="tinycompile" depends="tinyprepare-src">
-    <copy todir="${build.dest}">
-      <fileset dir="${build.src}"
-        includes="**/*.res, **/*.properties">
-      </fileset>
-    </copy>
-
-    <javac srcdir="${build.src}"
-           destdir="${build.dest}"
-           debug="${debug}"
-           deprecation="${deprecation}"
-           optimize="${optimize}"
-           includeAntRuntime="false"
-           includeJavaRuntime="true"/>
-  </target>
-
-
-  <!-- =================================================================== -->
-  <!-- Compiles the tiny source code package                               -->
-  <!-- =================================================================== -->
-  <target name="tinyprepare-src" depends="prepare-common">
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration"
       tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
 
@@ -894,10 +785,12 @@ Copyright:
                         org/apache/xerces/impl/validation/XMLGrammarPoolImpl.java
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
                         org/apache/xerces/parsers/StandardParserConfiguration.java
+                        org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
                         org/apache/xerces/parsers/CachingParserPool.java
                         org/apache/xerces/dom/ASModelImpl.java
                         org/apache/xerces/dom/ASDOMImplementationImpl.java
+                        org/apache/xerces/impl/XML11*.java
                         org/apache/html/**
                         org/apache/wml/**
            ">
@@ -920,9 +813,35 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds xercesImpl (tiny), xmlParserAPIs, and sample jars            -->
+  <!-- Builds xercesImpl (dtd), xmlParserAPIs, and sample jars            -->
   <!-- =================================================================== -->
-  <target name="tinyjars" depends="tinyjar, sampjar, apijar">
+  <target name="dtdjars" depends="dtdjar, sampjar, apijar">
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the XML 1.1-enabled implementation class package, excluding DOM Level 3     -->
+  <!-- =================================================================== -->
+  <target name="xml11jar" depends="compile">
+    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XML11Configuration"
+      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"
+      overwrite="yes"/>
+    <jar jarfile="${build.dir}/xml11-${jar.parser}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="org/apache/**, META-INF/**
+                   org/w3c/dom/ls/**
+                   org/w3c/dom/DOMError.class
+                   org/w3c/dom/DOMErrorHandler.class
+                   org/w3c/dom/DOMImplementationSource.class
+                   org/w3c/dom/DOMImplementationRegistry.class
+                   org/w3c/dom/DOMLocator.class
+                   org/w3c/dom/UserDataHandler.class"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds XML 1.1-enabled xercesImpl, xmlParserAPIs and sample jar files               -->
+  <!-- =================================================================== -->
+  <target name="xml11jars" depends="xml11jar, sampjar, apijar">
   </target>
 
   <!-- =================================================================== -->
@@ -997,7 +916,7 @@ Copyright:
 
 
   <!-- =================================================================== -->
-  <!--  Retreive the XML Conformance test suite from sourceforge           -->
+  <!--  Retrieve the XML Conformance test suite from sourceforge           -->
   <!-- =================================================================== -->
   <target name="get-conftests" depends="init">
     <mkdir dir="tests/conformance"/>
@@ -1220,7 +1139,7 @@ Copyright:
   <!-- Creates the implementation class package with DOM Level 3           -->
   <!-- =================================================================== -->
   <target name="jar-dom3" depends="compile-dom3">
-    <jar jarfile="${build.dir}/${jar.parser}"
+    <jar jarfile="${build.dir}/dom3-${jar.parser}"
          basedir="${build.dest}"
          compress="true"
          includes="org/apache/**, META-INF/**" />
@@ -1230,7 +1149,7 @@ Copyright:
   <!-- Creates the API class package with DOM Level 3                      -->
   <!-- =================================================================== -->
   <target name="apijar-dom3" depends="compile-dom3">
-    <jar jarfile="${build.dir}/${jar.apis}"
+    <jar jarfile="${build.dir}/dom3-${jar.apis}"
          basedir="${build.dest}"
          compress="true"
          includes="org/xml/**, org/w3c/**, javax/**" />
