@@ -828,7 +828,7 @@ public class TraverseSchema implements
                 traverseSimpleTypeDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE )) {
                 traverseComplexTypeDecl(child);
-            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { // && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { 
                 traverseElementDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //traverseAttributeGroupDecl(child);
@@ -2258,11 +2258,13 @@ public class TraverseSchema implements
                 if (targetElement == null ) {
                     reportGenericSchemaError("Element " + localpart + " not found in the Schema");
                     //REVISIT, for now, the QName anyway
-                    return new QName(-1,fStringPool.addSymbol(localpart), -1, fStringPool.addSymbol(uriString));
-                    //return new QName(-1,-1,-1,-1);
+                    return eltName;
+                    //return new QName(-1,fStringPool.addSymbol(localpart), -1, fStringPool.addSymbol(uriString));
                 }
                 else {
-                    eltName= traverseElementDecl(targetElement);
+                    // do nothing here, other wise would cause infinite loop for 
+                    //   <element name="recur"><complexType><element ref="recur"> ...
+                    //eltName= traverseElementDecl(targetElement);
                 }
             }
             return eltName;
