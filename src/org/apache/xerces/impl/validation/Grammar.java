@@ -678,8 +678,8 @@ public class Grammar {
     * @return 
     */
    public int getAttributeDeclIndex(int elementDeclIndex, String attributeDeclName) {
-      throw new RuntimeException("implement Grammar#getAttributeDeclIndex(int,String):int");
-   } // getAttributeDeclIndex
+       return -1; // should be overide by sub classes
+   }
 
    /**
     * getAttributeDecl

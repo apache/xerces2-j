@@ -919,6 +919,22 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
         return (fAttributeDeclIsExternal[chunk][index] != 0);
     }
 
+    public int getAttributeDeclIndex(int elementDeclIndex, String attributeDeclName) {
+        if (elementDeclIndex == -1) {
+            return -1;
+        }
+        int attDefIndex = getFirstAttributeDeclIndex(elementDeclIndex);
+        while (attDefIndex != -1) {
+            getAttributeDecl(attDefIndex, fAttributeDecl);
+
+            if (fAttributeDecl.name.rawname == attributeDeclName 
+                || attributeDeclName.equals(fAttributeDecl.name.rawname) ) {
+                return attDefIndex;
+            }
+            attDefIndex = getNextAttributeDeclIndex(attDefIndex);
+        }
+        return -1;
+    } // getAttributeDeclIndex (int,QName)
 
    //
    //
