@@ -107,7 +107,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
     public StringDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                      boolean derivedByList ) throws InvalidDatatypeFacetException {
-        
+
         setBasetype( base ); // Set base type 
 
         fDerivedByList = derivedByList;
@@ -177,7 +177,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                                                "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -185,7 +185,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                            "'must be less than the value of maxLength = '" + fMaxLength + "'.");
+                                                                 "'must be less than the value of maxLength = '" + fMaxLength + "'.");
                     }
                 }
 
@@ -278,20 +278,11 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
      */
     public Object validate(String content, Object state)  throws InvalidDatatypeValueException
     {
-        if ( fFacetsDefined == 0 )// No Facets to validate
-            return null;
-
         if ( fDerivedByList == false  ) {
-            checkContent( content );
+            if (fFacetsDefined != 0 )//Any facets to validate
+                checkContent( content );
         } else { //derived by list 
-            StringTokenizer parsedList = new StringTokenizer( content );
-            try {
-                while ( parsedList.hasMoreTokens() ) {
-                    checkContentList( parsedList.nextToken() );
-                }
-            } catch ( NoSuchElementException e ) {
-                e.printStackTrace();
-            }
+            checkContentList( content, state );
         }
         return null;
     }
@@ -320,24 +311,24 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             if ( content.length() > fMaxLength ) {
                 throw new InvalidDatatypeValueException("Value '"+content+
                                                         "' with length '"+content.length()+
-                                          "' exceeds maximum length facet of '"+fMaxLength+"'.");
+                                                        "' exceeds maximum length facet of '"+fMaxLength+"'.");
             }
         }
         if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
             if ( content.length() < fMinLength ) {
                 throw new InvalidDatatypeValueException("Value '"+content+
-                                                    "' with length '"+content.length()+
-                                    "' is less than minimum length facet of '"+fMinLength+"'." );
+                                                        "' with length '"+content.length()+
+                                                        "' is less than minimum length facet of '"+fMinLength+"'." );
             }
         }
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( content.length() != fLength ) {
-                        throw new InvalidDatatypeValueException("Value '"+content+
-                                                         "' with length '"+content.length()+
-                                               "' is not equal to length facet '"+fLength+"'.");
-                    }
-                }
+            if ( content.length() != fLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' with length '"+content.length()+
+                                                        "' is not equal to length facet '"+fLength+"'.");
+            }
+        }
 
 
 
@@ -351,7 +342,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             comparisonResult  = compare( content, fMaxExclusive );
             if ( comparisonResult >= 0 ) {
                 throw new InvalidDatatypeValueException( "MaxExclusive:Value '"+content+ "'  must be " +
-                        "lexicographically less than" + fMaxExclusive );
+                                                         "lexicographically less than" + fMaxExclusive );
 
             }
 
@@ -361,7 +352,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             comparisonResult  = compare( content, fMaxInclusive );
             if ( comparisonResult > 0 )
                 throw new InvalidDatatypeValueException( "MaxInclusive:Value '"+content+ "' must be " +
-                        "lexicographically less or equal than" + fMaxInclusive );
+                                                         "lexicographically less or equal than" + fMaxInclusive );
         }
 
         if ( isMinExclusiveDefined == true ) {
@@ -372,7 +363,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
             if ( comparisonResult <= 0 )
                 throw new InvalidDatatypeValueException( "MinExclusive:Value '"+content+ "' must be " +
-                        "lexicographically greater than" + fMinExclusive );
+                                                         "lexicographically greater than" + fMinExclusive );
         }
         if ( isMinInclusiveDefined == true ) {
             int comparisonResult;
@@ -380,7 +371,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             //System.out.println( "inclusive = " + comparisonResult );
             if ( comparisonResult < 0 )
                 throw new InvalidDatatypeValueException( "MinInclusive:Value '"+content+ "' must be " +
-                       "lexicographically greater or equal than '" + fMinInclusive  + "'." );
+                                                         "lexicographically greater or equal than '" + fMinInclusive  + "'." );
         }
 
 
@@ -388,7 +379,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             //RegularExpression regex = new RegularExpression(fPattern );
             if ( fRegex == null || fRegex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+
-                     "' does not match regular expression facet '" + fPattern + "'." );
+                                                        "' does not match regular expression facet '" + fPattern + "'." );
         }
 
     }
@@ -430,9 +421,49 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     }
 
     // Private methods
-    private void checkContentList( String content )throws InvalidDatatypeValueException
+    private void checkContentList( String content,  Object state )throws InvalidDatatypeValueException
     {
-        //Revisit
+        StringTokenizer parsedList = new StringTokenizer( content );
+        try {
+            int numberOfTokens =  parsedList.countTokens();
+            while ( parsedList.hasMoreTokens() ) {       //Check actual list content
+
+                if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
+                    if ( numberOfTokens > fMaxLength ) {
+                        throw new InvalidDatatypeValueException("Value '"+content+
+                                                                "' with length ='"+  numberOfTokens + "'tokens"+
+                                                                "' exceeds maximum length facet with  '"+fMaxLength+"' tokens.");
+                    }
+                }
+                if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
+                    if ( numberOfTokens < fMinLength ) {
+                        throw new InvalidDatatypeValueException("Value '"+content+
+                                                                "' with length ='"+ numberOfTokens+ "'tokens" +
+                                                                "' is less than minimum length facet with '"+fMinLength+"' tokens." );
+                    }
+                }
+
+                if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
+                    if ( numberOfTokens != fLength ) {
+                        throw new InvalidDatatypeValueException("Value '"+content+
+                                                                "' with length ='"+ numberOfTokens+ "'tokens" +
+                                                                "' is not equal to length facet with '"+fLength+"'. tokens");
+                    }
+                }
+
+                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
+                    if ( fEnumeration.contains( content ) == false )
+                        throw new InvalidDatatypeValueException("Value '"+
+                                                                content+"' must be one of "+fEnumeration);
+                }
+
+                if ( this.fBaseValidator != null ) {//validate against parent type if any
+                    this.fBaseValidator.validate( content, state );
+                }
+            }
+        } catch ( NoSuchElementException e ) {
+            e.printStackTrace();
+        }
     }
 
     private void setBasetype( DatatypeValidator base) {
