@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.
+ * Copyright (c) 1999-2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,7 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -406,11 +407,10 @@ public class XMLDocumentScannerImpl
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name,
-                            String publicId, String systemId,
-                            String baseSystemId,
+                            XMLResourceIdentifier identifier,
                             String encoding) throws XNIException {
 
-        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
+        super.startEntity(name, identifier, encoding);
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
@@ -418,10 +418,8 @@ public class XMLDocumentScannerImpl
         }
 
         // call handler
-        if (fDocumentHandler != null) {
-            if (name.equals("[xml]")) {
-                fDocumentHandler.startDocument(fEntityScanner, encoding, fAugmentations);
-            }
+        if (fDocumentHandler != null && name.equals("[xml]")) {
+            fDocumentHandler.startDocument(fEntityScanner, encoding, fAugmentations);
         }
 
     } // startEntity(String,String,String,String,String)
@@ -440,10 +438,8 @@ public class XMLDocumentScannerImpl
         super.endEntity(name);
 
         // call handler
-        if (fDocumentHandler != null) {
-            if (name.equals("[xml]")) {
-                fDocumentHandler.endDocument(fAugmentations);
-            }
+        if (fDocumentHandler != null && name.equals("[xml]")) {
+            fDocumentHandler.endDocument(fAugmentations);
         }
 
     } // endEntity(String)

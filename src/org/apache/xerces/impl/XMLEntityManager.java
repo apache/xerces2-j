@@ -79,6 +79,7 @@ import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
@@ -281,6 +282,11 @@ public class XMLEntityManager
 
     /** Shared declared entities. */
     protected Hashtable fDeclaredEntities;
+
+    // temp vars
+
+    /** Resource identifer. */
+    private final XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
 
     //
     // Constructors
@@ -550,13 +556,9 @@ public class XMLEntityManager
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
             if (fEntityHandler != null) {
-                final String publicId = null;
-                final String systemId = null;
-                final String baseSystemId = null;
-                final String encoding = null;
-                fEntityHandler.startEntity(entityName,
-                                           publicId, systemId,
-                                           baseSystemId, encoding);
+                String encoding = null;
+                fResourceIdentifier.clear();
+                fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
                 fEntityHandler.endEntity(entityName);
             }
             return;
@@ -571,19 +573,17 @@ public class XMLEntityManager
             if (unparsed || (general && !fExternalGeneralEntities) ||
                 (parameter && !fExternalParameterEntities)) {
                 if (fEntityHandler != null) {
-                    String publicId = null;
-                    String systemId = null;
-                    String baseSystemId = null;
+                    fResourceIdentifier.clear();
                     final String encoding = null;
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
-                        publicId = externalEntity.publicId;
-                        systemId = externalEntity.systemId;
-                        baseSystemId = expandSystemId(systemId, externalEntity.baseSystemId);
+                        String expandedSystemId = expandSystemId(externalEntity.systemId, externalEntity.baseSystemId);
+                        fResourceIdentifier.setValues(externalEntity.publicId,
+                                                      externalEntity.systemId,
+                                                      externalEntity.baseSystemId,
+                                                      expandedSystemId);
                     }
-                    fEntityHandler.startEntity(entityName,
-                                               publicId, systemId,
-                                               baseSystemId, encoding);
+                    fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
                 return;
@@ -609,19 +609,17 @@ public class XMLEntityManager
                                            new Object[] { entityName, path },
                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 if (fEntityHandler != null) {
-                    String publicId = null;
-                    String systemId = null;
-                    String baseSystemId = null;
+                    fResourceIdentifier.clear();
                     final String encoding = null;
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
-                        publicId = externalEntity.publicId;
-                        systemId = externalEntity.systemId;
-                        baseSystemId = expandSystemId(systemId, externalEntity.baseSystemId);
+                        String expandedSystemId = expandSystemId(externalEntity.systemId, externalEntity.baseSystemId);
+                        fResourceIdentifier.setValues(externalEntity.publicId,
+                                                      externalEntity.systemId,
+                                                      externalEntity.baseSystemId,
+                                                      expandedSystemId);
                     }
-                    fEntityHandler.startEntity(entityName,
-                                               publicId, systemId,
-                                               baseSystemId, encoding);
+                    fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
                 return;
@@ -805,8 +803,8 @@ public class XMLEntityManager
 
         // call handler
         if (fEntityHandler != null) {
-            fEntityHandler.startEntity(name, publicId, systemId,
-                                       baseSystemId, encoding);
+            fResourceIdentifier.setValues(publicId, systemId, baseSystemId, expandedSystemId);
+            fEntityHandler.startEntity(name, fResourceIdentifier, encoding);
         }
 
     } // startEntity(String,XMLInputSource)

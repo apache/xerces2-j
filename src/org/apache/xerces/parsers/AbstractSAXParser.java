@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.
+ * Copyright (c) 2001-2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,6 +73,7 @@ import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParseException;
@@ -310,11 +311,11 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
-                            String baseSystemId, String encoding, Augmentations augs)
+    public void startGeneralEntity(String name, XMLResourceIdentifier identifier, 
+                                   String encoding, Augmentations augs)
         throws XNIException {
         
-        startEntity(name, publicId, systemId, baseSystemId, encoding);
+        startParameterEntity(name, identifier, encoding, augs);
 
     } // startEntity(String,String,String,String,String)
 
@@ -337,9 +338,9 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name, Augmentations augs) throws XNIException {
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 
-        endEntity(name);
+        endParameterEntity(name, augs);
 
     } // endEntity(String)
 
@@ -589,7 +590,15 @@ public abstract class AbstractSAXParser
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
 
-            comment (text);
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.comment(text.ch, 0, text.length);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
 
     } // comment(XMLString)
 
@@ -613,7 +622,27 @@ public abstract class AbstractSAXParser
     public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
 
-        processingInstruction (target, data);
+        //
+        // REVISIT - I keep running into SAX apps that expect
+        //   null data to be an empty string, which is contrary
+        //   to the comment for this method in the SAX API.
+        //
+
+        try {
+            // SAX1
+            if (fDocumentHandler != null) {
+                fDocumentHandler.processingInstruction(target,
+                                                       data.toString());
+            }
+
+            // SAX2
+            if (fContentHandler != null) {
+                fContentHandler.processingInstruction(target, data.toString());
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
 
     } // processingInstruction(String,XMLString)
 
@@ -643,78 +672,19 @@ public abstract class AbstractSAXParser
 
     } // endDocument()
 
-
     //
     // XMLDTDHandler methods
     //
 
+    /** Start external subset. */
+    public void startExternalSubset(Augmentations augs) throws XNIException {
+        startParameterEntity("[dtd]", null, null, augs);
+    }
 
-    /**
-     * A processing instruction. Processing instructions consist of a
-     * target name and, optionally, text data. The data is only meaningful
-     * to the application.
-     * <p>
-     * Typically, a processing instruction's data will contain a series
-     * of pseudo-attributes. These pseudo-attributes follow the form of
-     * element attributes but are <strong>not</strong> parsed or presented
-     * to the application as anything other than text. The application is
-     * responsible for parsing the data.
-     *
-     * @param target The target.
-     * @param data   The data or null if none specified.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void processingInstruction(String target, XMLString data)
-        throws XNIException {
-
-        //
-        // REVISIT - I keep running into SAX apps that expect
-        //   null data to be an empty string, which is contrary
-        //   to the comment for this method in the SAX API.
-        //
-
-        try {
-            // SAX1
-            if (fDocumentHandler != null) {
-                fDocumentHandler.processingInstruction(target,
-                                                       data.toString());
-            }
-
-            // SAX2
-            if (fContentHandler != null) {
-                fContentHandler.processingInstruction(target, data.toString());
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // processingInstruction(String,XMLString)
-
-
-
-    /**
-     * A comment.
-     *
-     * @param text The text in the comment.
-     *
-     * @throws XNIException Thrown by application to signal an error.
-     */
-    public void comment(XMLString text) throws XNIException {
-
-        try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.comment(text.ch, 0, text.length);
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // comment(XMLString)
-
+    /** End external subset. */
+    public void endExternalSubset(Augmentations augs) throws XNIException {
+        endParameterEntity("[dtd]", augs);
+    }
 
     /**
      * This method notifies of the start of an entity. The DTD has the
@@ -742,8 +712,9 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
-                            String baseSystemId, String encoding)
+    public void startParameterEntity(String name, 
+                                     XMLResourceIdentifier identifier,
+                                     String encoding, Augmentations augs)
         throws XNIException {
 
         try {
@@ -776,7 +747,7 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endParameterEntity(String name, Augmentations augs) throws XNIException {
 
         try {
             // SAX2 extension
@@ -798,7 +769,7 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel)
+    public void elementDecl(String name, String contentModel, Augmentations augs)
         throws XNIException {
 
         try {
@@ -836,8 +807,8 @@ public abstract class AbstractSAXParser
      */
     public void attributeDecl(String elementName, String attributeName,
                               String type, String[] enumeration,
-                              String defaultType, XMLString defaultValue)
-        throws XNIException {
+                              String defaultType, XMLString defaultValue,
+                              Augmentations augs) throws XNIException {
 
         try {
             // SAX2 extension
@@ -888,8 +859,8 @@ public abstract class AbstractSAXParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text,
-                                   XMLString nonNormalizedText)
-        throws XNIException {
+                                   XMLString nonNormalizedText,
+                                   Augmentations augs) throws XNIException {
 
         try {
             // SAX2 extensions
@@ -917,7 +888,8 @@ public abstract class AbstractSAXParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId,
-                                   String systemId, String baseSystemId) throws XNIException {
+                                   String systemId, String baseSystemId,
+                                   Augmentations augs) throws XNIException {
 
         try {
             // SAX2 extension
@@ -944,8 +916,8 @@ public abstract class AbstractSAXParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId,
-                                   String systemId, String notation)
-        throws XNIException {
+                                   String systemId, String notation,
+                                   Augmentations augs) throws XNIException {
 
         try {
             // SAX2 extension
@@ -971,8 +943,8 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId)
-        throws XNIException {
+    public void notationDecl(String name, String publicId, String systemId,
+                             Augmentations augs) throws XNIException {
 
         try {
             // SAX1 and SAX2
@@ -991,7 +963,7 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws XNIException {
+    public void endDTD(Augmentations augs) throws XNIException {
         fInDTD = false;
 
         try {

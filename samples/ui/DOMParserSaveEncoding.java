@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,14 +55,19 @@
  * <http://www.apache.org/>.
  */
 package ui;
+
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.util.EncodingMap;
+import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XNIException;
+
 import org.xml.sax.InputSource;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.apache.xerces.util.EncodingMap;
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.xni.XNIException;
 
 /**
  *  The DOMParserSaveEncoding class extends DOMParser. It also provides
@@ -96,14 +101,13 @@ public class DOMParserSaveEncoding extends DOMParser {
             javaEncoding = "UTF8";
         return(javaEncoding);
     }
-    public void startEntity(String name, 
-                            String publicId, String systemId, 
-                            String baseSystemId,
-                            String encoding) throws XNIException {
+    public void startGeneralEntity(String name, 
+                            XMLResourceIdentifier identifier,
+                            String encoding, Augmentations augs) throws XNIException {
         if( encoding != null){
             setMimeEncoding( encoding);
         }
-        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
+        super.startGeneralEntity(name, identifier, encoding, augs);
     }
 
 }

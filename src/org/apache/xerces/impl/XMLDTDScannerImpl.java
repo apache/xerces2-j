@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
+import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
@@ -72,6 +73,7 @@ import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -333,7 +335,7 @@ public class XMLDTDScannerImpl
         if (fScannerState == SCANNER_STATE_TEXT_DECL) {
             // call handler
             if (fDTDHandler != null) {
-                fDTDHandler.startDTD(fEntityScanner);
+                fDTDHandler.startDTD(fEntityScanner, null);
                 fStartDTDCalled = true;
             }
             // set starting state for internal subset
@@ -344,7 +346,7 @@ public class XMLDTDScannerImpl
             if (!scanDecls(complete)) {
                 // call handler
                 if (fDTDHandler != null && hasExternalSubset == false) {
-                    fDTDHandler.endDTD();
+                    fDTDHandler.endDTD(null);
                 }
                 // we're done, set starting state for external subset
                 setScannerState(SCANNER_STATE_TEXT_DECL);
@@ -447,17 +449,18 @@ public class XMLDTDScannerImpl
      * @param encoding
      */
     public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
+                            XMLResourceIdentifier identifier,
                             String encoding) throws XNIException {
 
-        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
+        super.startEntity(name, identifier, encoding);
 
-        if (name.equals("[dtd]")) {
+        boolean dtdEntity = name.equals("[dtd]");
+        if (dtdEntity) {
             // call handler
-            if (fDTDHandler != null && fStartDTDCalled == false) {
-                fDTDHandler.startDTD(fEntityScanner);
+            if (fDTDHandler != null && !fStartDTDCalled ) {
+                fDTDHandler.startDTD(fEntityScanner, null);
             }
+            fDTDHandler.startExternalSubset(null);
             fExtEntityDepth++;
         }
         else if (name.charAt(0) == '%') {
@@ -468,19 +471,19 @@ public class XMLDTDScannerImpl
         }
 
         // call handler
-        if (fDTDHandler != null && fReportEntity) {
-            fDTDHandler.startEntity(name, publicId, systemId, 
-                                    baseSystemId, encoding);
+        if (fDTDHandler != null && !dtdEntity && fReportEntity) {
+            fDTDHandler.startParameterEntity(name, identifier, encoding, null);
         }
 
-    } // startEntity(String,String,String,String,String)
+    } // startEntity(String,XMLResourceIdentifier,String)
 
     /**
      * endEntity
      * 
      * @param name 
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name) 
+        throws XNIException {
 
         super.endEntity(name);
 
@@ -508,19 +511,21 @@ public class XMLDTDScannerImpl
         }
 
         // call handler
-        if (fDTDHandler != null && reportEntity) {
-            fDTDHandler.endEntity(name);
+        boolean dtdEntity = name.equals("[dtd]");
+        if (fDTDHandler != null && !dtdEntity && reportEntity) {
+            fDTDHandler.endParameterEntity(name, null);
         }
 
         // end DTD
-        if (name.equals("[dtd]")) {
+        if (dtdEntity) {
             if (fIncludeSectDepth != 0) {
                 reportFatalError("IncludeSectUnterminated", null);
             }
             fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
             if (fDTDHandler != null) {
-                fDTDHandler.endDTD();
+                fDTDHandler.endExternalSubset(null);
+                fDTDHandler.endDTD(null);
             }
             fExtEntityDepth--;
         }
@@ -641,7 +646,7 @@ public class XMLDTDScannerImpl
 
                 // call handler
                 if (fDTDHandler != null) {
-                    fDTDHandler.textDecl(version, encoding);
+                    fDTDHandler.textDecl(version, encoding, null);
                 }
             }
         }
@@ -666,7 +671,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.processingInstruction(target, data);
+            fDTDHandler.processingInstruction(target, data, null);
         }
 
     } // scanPIData(String)
@@ -687,7 +692,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.comment(fStringBuffer);
+            fDTDHandler.comment(fStringBuffer, null);
         }
 
     } // scanComment()
@@ -726,7 +731,7 @@ public class XMLDTDScannerImpl
 
         // content model
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.startContentModel(name);
+            fDTDContentModelHandler.startContentModel(name, null);
         }
         String contentModel = null;
         fReportEntity = true;
@@ -734,14 +739,14 @@ public class XMLDTDScannerImpl
             contentModel = "EMPTY";
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.empty();
+                fDTDContentModelHandler.empty(null);
             }
         }
         else if (fEntityScanner.skipString("ANY")) {
             contentModel = "ANY";
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.any();
+                fDTDContentModelHandler.any(null);
             }
         }
         else {
@@ -750,7 +755,7 @@ public class XMLDTDScannerImpl
                                  new Object[]{name});
             }
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.startGroup();
+                fDTDContentModelHandler.startGroup(null);
             }
             fStringBuffer.clear();
             fStringBuffer.append('(');
@@ -769,7 +774,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.endContentModel();
+            fDTDContentModelHandler.endContentModel(null);
         }
 
         fReportEntity = false;
@@ -783,7 +788,7 @@ public class XMLDTDScannerImpl
         
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.elementDecl(name, contentModel);
+            fDTDHandler.elementDecl(name, contentModel, null);
         }
 
     } // scanElementDecl()
@@ -809,14 +814,15 @@ public class XMLDTDScannerImpl
         fStringBuffer.append("#PCDATA");
         // call handler
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.pcdata();
+            fDTDContentModelHandler.pcdata(null);
         }
         skipSeparator(false, !scanningInternalSubset());
         while (fEntityScanner.skipChar('|')) {
             fStringBuffer.append('|');
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_CHOICE);
+                fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_CHOICE,
+                                                  null);
             }
             skipSeparator(false, !scanningInternalSubset());
 
@@ -828,7 +834,7 @@ public class XMLDTDScannerImpl
             fStringBuffer.append(childName);
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.element(childName);
+                fDTDContentModelHandler.element(childName, null);
             }
             skipSeparator(false, !scanningInternalSubset());
         }
@@ -840,8 +846,9 @@ public class XMLDTDScannerImpl
             fStringBuffer.append(")*");
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.endGroup();
-                fDTDContentModelHandler.occurrence(XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE);
+                fDTDContentModelHandler.endGroup(null);
+                fDTDContentModelHandler.occurrence(XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE,
+                                                   null);
             }
         }
         else if (childName != null) {
@@ -852,7 +859,7 @@ public class XMLDTDScannerImpl
             fStringBuffer.append(')');
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.endGroup();
+                fDTDContentModelHandler.endGroup(null);
             }
         }
         else {
@@ -891,7 +898,7 @@ public class XMLDTDScannerImpl
                 fStringBuffer.append('(');
                 // call handler
                 if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.startGroup();
+                    fDTDContentModelHandler.startGroup(null);
                 }
                 // push current op on stack and reset it
                 pushContentStack(currentOp);
@@ -908,7 +915,7 @@ public class XMLDTDScannerImpl
             }
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.element(childName);
+                fDTDContentModelHandler.element(childName, null);
             }
             fStringBuffer.append(childName);
             c = fEntityScanner.peekChar();
@@ -925,7 +932,7 @@ public class XMLDTDScannerImpl
                     else {
                         oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
                     }
-                    fDTDContentModelHandler.occurrence(oc);
+                    fDTDContentModelHandler.occurrence(oc, null);
                 }
                 fEntityScanner.scanChar();
                 fStringBuffer.append((char)c);
@@ -937,7 +944,8 @@ public class XMLDTDScannerImpl
                     currentOp = c;
                     // call handler
                     if (fDTDContentModelHandler != null) {
-                        fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_SEQUENCE);
+                        fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_SEQUENCE,
+                                                          null);
                     }
                     fEntityScanner.scanChar();
                     fStringBuffer.append(',');
@@ -947,7 +955,8 @@ public class XMLDTDScannerImpl
                     currentOp = c;
                     // call handler
                     if (fDTDContentModelHandler != null) {
-                        fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_CHOICE);
+                        fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_CHOICE,
+                                                          null);
                     }
                     fEntityScanner.scanChar();
                     fStringBuffer.append('|');
@@ -959,7 +968,7 @@ public class XMLDTDScannerImpl
                 }
                 // call handler
                 if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.endGroup();
+                    fDTDContentModelHandler.endGroup(null);
                 }
                 // restore previous op
                 currentOp = popContentStack();
@@ -974,7 +983,7 @@ public class XMLDTDScannerImpl
                     // call handler
                     if (fDTDContentModelHandler != null) {
                         oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE;
-                        fDTDContentModelHandler.occurrence(oc);
+                        fDTDContentModelHandler.occurrence(oc, null);
                     }
                 }
                 else if (fEntityScanner.skipString(")+")) {
@@ -982,7 +991,7 @@ public class XMLDTDScannerImpl
                     // call handler
                     if (fDTDContentModelHandler != null) {
                         oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
-                        fDTDContentModelHandler.occurrence(oc);
+                        fDTDContentModelHandler.occurrence(oc, null);
                     }
                 }
                 else if (fEntityScanner.skipString(")*")) {
@@ -990,7 +999,7 @@ public class XMLDTDScannerImpl
                     // call handler
                     if (fDTDContentModelHandler != null) {
                         oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
-                        fDTDContentModelHandler.occurrence(oc);
+                        fDTDContentModelHandler.occurrence(oc, null);
                     }
                 }
                 else {
@@ -1035,7 +1044,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.startAttlist(elName);
+            fDTDHandler.startAttlist(elName, null);
         }
 
         // spaces
@@ -1045,7 +1054,7 @@ public class XMLDTDScannerImpl
                 // yes, stop here
                 // call handler
                 if (fDTDHandler != null) {
-                    fDTDHandler.endAttlist();
+                    fDTDHandler.endAttlist(null);
                 }
                 fMarkUpDepth--;
                 return;
@@ -1096,12 +1105,12 @@ public class XMLDTDScannerImpl
                 // REVISIT: should probably check whether fLiteral.ch is null instead. LM.
                 if (defaultType!=null && (defaultType.equals("#REQUIRED") || 
                                           defaultType.equals("#IMPLIED"))) {
-                  fDTDHandler.attributeDecl(elName, name, type, enum,
-                                           defaultType, null);
+                    fDTDHandler.attributeDecl(elName, name, type, enum,
+                                              defaultType, null, null);
                 }
                 else {
-                  fDTDHandler.attributeDecl(elName, name, type, enum,
-                                           defaultType, fLiteral);
+                    fDTDHandler.attributeDecl(elName, name, type, enum,
+                                              defaultType, fLiteral, null);
                 }
             }
             skipSeparator(false, !scanningInternalSubset());
@@ -1109,7 +1118,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.endAttlist();
+            fDTDHandler.endAttlist(null);
         }
         fMarkUpDepth--;
         fReportEntity = true;
@@ -1437,19 +1446,20 @@ public class XMLDTDScannerImpl
             }
             if (fDTDHandler != null) {
                 if (notation != null) {
-                    fDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation);
+                    fDTDHandler.unparsedEntityDecl(name, publicId, systemId, 
+                                                   notation, null);
                 }
                 else {
                     String baseSystemId = fEntityScanner.getBaseSystemId();
                     fDTDHandler.externalEntityDecl(name, publicId, systemId, 
-                                                   baseSystemId);
+                                                   baseSystemId, null);
                 }
             }
         }
         else {
             fEntityManager.addInternalEntity(name, fLiteral.toString());
             if (fDTDHandler != null) {
-                fDTDHandler.internalEntityDecl(name, fLiteral, fLiteral2); 
+                fDTDHandler.internalEntityDecl(name, fLiteral, fLiteral2, null); 
             }
         }
         fReportEntity = true;
@@ -1627,7 +1637,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.notationDecl(name, publicId, systemId);
+            fDTDHandler.notationDecl(name, publicId, systemId, null);
         }
         fReportEntity = true;
 
@@ -1663,8 +1673,8 @@ public class XMLDTDScannerImpl
             }
 
             if (fDTDHandler != null) {
-                fDTDHandler.startConditional(
-                                            XMLDTDHandler.CONDITIONAL_INCLUDE);
+                fDTDHandler.startConditional(XMLDTDHandler.CONDITIONAL_INCLUDE,
+                                             null);
             }
             fIncludeSectDepth++;
             // just stop there and go back to the main loop
@@ -1674,7 +1684,8 @@ public class XMLDTDScannerImpl
             skipSeparator(false, !scanningInternalSubset());
             // call handler
             if (fDTDHandler != null) {
-                fDTDHandler.startConditional(XMLDTDHandler.CONDITIONAL_IGNORE);
+                fDTDHandler.startConditional(XMLDTDHandler.CONDITIONAL_IGNORE,
+                                             null);
             }
             if (!fEntityScanner.skipChar('[')) {
                 reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
@@ -1730,8 +1741,8 @@ public class XMLDTDScannerImpl
                                 if (fDTDHandler != null) {
                                     fLiteral.setValues(fIgnoreConditionalBuffer.ch, 0,
                                                        fIgnoreConditionalBuffer.length - 2);
-                                    fDTDHandler.characters(fLiteral);
-                                    fDTDHandler.endConditional();
+                                    fDTDHandler.ignoredCharacters(fLiteral, null);
+                                    fDTDHandler.endConditional(null);
                                 }
                                 return;
                             } else if(fDTDHandler != null) {
@@ -1826,7 +1837,7 @@ public class XMLDTDScannerImpl
                 }
                 // call handler
                 if (fDTDHandler != null) {
-                    fDTDHandler.endConditional();
+                    fDTDHandler.endConditional(null);
                 }
                 // decreaseMarkupDepth();
                 fIncludeSectDepth--;

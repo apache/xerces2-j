@@ -202,19 +202,13 @@ public interface XMLDocumentHandler {
         throws XNIException;
 
     /**
-     * This method notifies the start of an entity.
+     * This method notifies the start of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId
-     *                 The base system identifier of the entity if
-     *                 the entity is external, null otherwise.
+     * @param name     The name of the general entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -222,14 +216,12 @@ public interface XMLDocumentHandler {
      *                 parsed from a java.io.Reader).
      * @param augs     Additional information that may include infoset augmentations
      *                 
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
+     * @exception XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding,
-                            Augmentations augs) throws XNIException;
+    public void startGeneralEntity(String name, 
+                                   XMLResourceIdentifier identifier,
+                                   String encoding,
+                                   Augmentations augs) throws XNIException;
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -252,7 +244,7 @@ public interface XMLDocumentHandler {
     public void textDecl(String version, String encoding, Augmentations augs) throws XNIException;
 
     /**
-     * This method notifies the end of an entity.
+     * This method notifies the end of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -263,7 +255,7 @@ public interface XMLDocumentHandler {
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void endEntity(String name, Augmentations augs) throws XNIException;
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException;
 
     /**
      * Character content.

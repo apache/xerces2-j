@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,6 +76,7 @@ import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -500,12 +501,7 @@ public class XMLDocumentFragmentScannerImpl
      * general entities are just specified by their name.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -515,8 +511,7 @@ public class XMLDocumentFragmentScannerImpl
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
+                            XMLResourceIdentifier identifier,
                             String encoding) throws XNIException {
 
         // keep track of this entity before fEntityDepth is increased
@@ -527,17 +522,16 @@ public class XMLDocumentFragmentScannerImpl
         }
         fEntityStack[fEntityDepth] = fMarkupDepth;
 
-        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
+        super.startEntity(name, identifier, encoding);
 
         // call handler
-        if (fDocumentHandler != null) {
-            if (!name.equals("[xml]") && !fScanningAttribute) {
-                fDocumentHandler.startEntity(name, publicId, systemId, 
-                                             baseSystemId, encoding, fAugmentations);
+        if (fDocumentHandler != null && !fScanningAttribute) {
+            if (!name.equals("[xml]")) {
+                fDocumentHandler.startGeneralEntity(name, identifier, encoding, fAugmentations);
             }
         }
 
-    } // startEntity(String,String,String,String,String)
+    } // startEntity(String,XMLResourceIdentifier,String)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
@@ -558,9 +552,9 @@ public class XMLDocumentFragmentScannerImpl
         }
 
         // call handler
-        if (fDocumentHandler != null) {
-            if (!name.equals("[xml]") && !fScanningAttribute) {
-                fDocumentHandler.endEntity(name, fAugmentations);
+        if (fDocumentHandler != null && !fScanningAttribute) {
+            if (!name.equals("[xml]")) {
+                fDocumentHandler.endGeneralEntity(name, fAugmentations);
             }
         }
         
@@ -1002,12 +996,11 @@ public class XMLDocumentFragmentScannerImpl
             // call handler
             if (fDocumentHandler != null) {
                 if (fNotifyCharRefs) {
-                    fDocumentHandler.startEntity(fCharRefLiteral, null,
-                                                 null, null, null, fAugmentations);
+                    fDocumentHandler.startGeneralEntity(fCharRefLiteral, null, null, fAugmentations);
                 }
                 fDocumentHandler.characters(fStringBuffer2, fAugmentations);
                 if (fNotifyCharRefs) {
-                    fDocumentHandler.endEntity(fCharRefLiteral, fAugmentations);
+                    fDocumentHandler.endGeneralEntity(fCharRefLiteral, fAugmentations);
                 }
             }
         }
@@ -1083,7 +1076,7 @@ public class XMLDocumentFragmentScannerImpl
     private void handleCharacter(char c, String entity) throws XNIException {
         if (fDocumentHandler != null) {
             if (fNotifyBuiltInRefs) {
-                fDocumentHandler.startEntity(entity, null, null, null, null, fAugmentations);
+                fDocumentHandler.startGeneralEntity(entity, null, null, fAugmentations);
             }
             
             fSingleChar[0] = c;
@@ -1091,7 +1084,7 @@ public class XMLDocumentFragmentScannerImpl
             fDocumentHandler.characters(fString, fAugmentations);
             
             if (fNotifyBuiltInRefs) {
-                fDocumentHandler.endEntity(entity, fAugmentations);
+                fDocumentHandler.endGeneralEntity(entity, fAugmentations);
             }
         }
     } // handleCharacter(char)

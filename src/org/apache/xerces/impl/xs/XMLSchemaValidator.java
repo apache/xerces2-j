@@ -91,6 +91,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -699,16 +700,14 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name,
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding,
-                            Augmentations augs) throws XNIException {
+    public void startGeneralEntity(String name,
+                                   XMLResourceIdentifier identifier,
+                                   String encoding,
+                                   Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startEntity(name, publicId, systemId,
-                                         baseSystemId, encoding, augs);
+            fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
         }
 
     } // startEntity(String,String,String,String,String)
@@ -798,11 +797,11 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name, Augmentations augs) throws XNIException {
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name, augs);
+            fDocumentHandler.endGeneralEntity(name, augs);
         }
 
     } // endEntity(String)

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  
+ * Copyright (c) 2001-2002 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -303,13 +304,7 @@ public abstract class AbstractXMLDocumentParser
      * appearing as part of attribute values.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId
-     *                 The base system identifier of the entity if
-     *                 the entity is external, null otherwise.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -317,15 +312,13 @@ public abstract class AbstractXMLDocumentParser
      *                 parsed from a java.io.Reader).
      * @param augs     Additional information that may include infoset augmentations
      *                 
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
+     * @exception XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding,
-                            Augmentations augs) throws XNIException{
-    }
+    public void startGeneralEntity(String name, 
+                                   XMLResourceIdentifier identifier,
+                                   String encoding,
+                                   Augmentations augs) throws XNIException {
+    } // startGeneralEntity(String,XMLResourceIdentifier,String,Augmentations)
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -360,10 +353,9 @@ public abstract class AbstractXMLDocumentParser
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void endEntity(String name, Augmentations augs) throws XNIException{
-    }
-
-
+    public void endGeneralEntity(String name, Augmentations augs) 
+        throws XNIException {
+    } // endGeneralEntity(String,Augmentations)
     
     /**
      * A comment.
@@ -409,11 +401,74 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD(XMLLocator locator) throws XNIException {
+    public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
         fInDTD = true;
     } // startDTD(XMLLocator)
 
 
+    /**
+     * The start of the DTD external subset.
+     *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startExternalSubset(Augmentations augmentations) 
+        throws XNIException {
+    } // startExternalSubset(Augmentations)
+
+    /**
+     * The end of the DTD external subset.
+     *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endExternalSubset(Augmentations augmentations) 
+        throws XNIException {
+    } // endExternalSubset(Augmentations)
+
+    /**
+     * This method notifies the start of an entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name     The name of the entity.
+     * @param identifier The resource identifier.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException Thrown by handler to signal an error.
+     */
+    public void startParameterEntity(String name, 
+                                     XMLResourceIdentifier identifier,
+                                     String encoding,
+                                     Augmentations augs) throws XNIException {
+    } // startParameterEntity(String,XMLResourceIdentifier,String,Augmentations)
+
+    /**
+     * This method notifies the end of an entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name   The name of the entity.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endParameterEntity(String name, Augmentations augs) 
+        throws XNIException {
+    } // endParameterEntity(String,Augmentations)
+    
     /**
      * Character content.
      * 
@@ -423,114 +478,7 @@ public abstract class AbstractXMLDocumentParser
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-     public void characters(XMLString text) throws XNIException{
-     }
-
-    /**
-     * This method notifies of the start of an entity. The document entity
-     * has the pseudo-name of "[xml]"; The DTD has the pseudo-name of "[dtd]" 
-     * parameter entity names start with '%'; and general entity names are
-     * just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the start of the document entity by calling the
-     * startEntity method with the entity name "[xml]" <em>before</em> calling
-     * the startDocument method. When exposing entity boundaries through the
-     * XNI API, the document entity is never reported, however.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
-     * @param encoding The auto-detected IANA encoding name of the entity
-     *                 stream. This value will be null in those situations
-     *                 where the entity encoding is not auto-detected (e.g.
-     *                 internal parameter entities).
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding) throws XNIException {
-    } // startEntity(String,String,String,String,String)
-
-    /**
-     * Notifies of the presence of a TextDecl line in an entity. If present,
-     * this method will be called immediately following the startEntity call.
-     * <p>
-     * <strong>Note:</strong> This method will never be called for the
-     * document entity; it is only called for external general entities
-     * referenced in document content.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     * 
-     * @param version  The XML version, or null if not specified.
-     * @param encoding The IANA encoding name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void textDecl(String version, String encoding) throws XNIException {
-    } // textDecl(String,String)
-
-    /**
-     * A comment.
-     * 
-     * @param text The text in the comment.
-     *
-     * @throws XNIException Thrown by application to signal an error.
-     */
-    public void comment(XMLString text) throws XNIException {
-    } // comment(XMLString)
-
-    /**
-     * A processing instruction. Processing instructions consist of a
-     * target name and, optionally, text data. The data is only meaningful
-     * to the application.
-     * <p>
-     * Typically, a processing instruction's data will contain a series
-     * of pseudo-attributes. These pseudo-attributes follow the form of
-     * element attributes but are <strong>not</strong> parsed or presented
-     * to the application as anything other than text. The application is
-     * responsible for parsing the data.
-     * 
-     * @param target The target.
-     * @param data   The data or null if none specified.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void processingInstruction(String target, XMLString data)
-        throws XNIException {
-    } // processingInstruction(String,XMLString)
-
-    /**
-     * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]" 
-     * parameter entity names start with '%'; and general entity names are
-     * just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the end of the document entity by calling the
-     * endEntity method with the entity name "[xml]" <em>after</em> calling
-     * the endDocument method. When exposing entity boundaries through the
-     * XNI API, the document entity is never reported, however.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     * 
-     * @param name The name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endEntity(String name) throws XNIException {
-    } // endEntity(String)
+     public void ignoredCharacters(XMLString text, Augmentations augs) throws XNIException {}
 
     /**
      * An element declaration.
@@ -540,7 +488,7 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel)
+    public void elementDecl(String name, String contentModel, Augmentations augs)
         throws XNIException {
     } // elementDecl(String,String)
 
@@ -552,7 +500,7 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws XNIException {
+    public void startAttlist(String elementName, Augmentations augs) throws XNIException {
     } // startAttlist(String)
 
     /**
@@ -578,7 +526,7 @@ public abstract class AbstractXMLDocumentParser
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
-                              String defaultType, XMLString defaultValue)
+                              String defaultType, XMLString defaultValue, Augmentations augs)
         throws XNIException {
     } // attributeDecl(String,String,String,String[],String,XMLString)
 
@@ -587,7 +535,7 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws XNIException {
+    public void endAttlist(Augmentations augs) throws XNIException {
     } // endAttlist()
 
     /**
@@ -605,7 +553,7 @@ public abstract class AbstractXMLDocumentParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text,
-                                   XMLString nonNormalizedText) 
+                                   XMLString nonNormalizedText, Augmentations augs) 
         throws XNIException {
     } // internalEntityDecl(String,XMLString,XMLString)
 
@@ -625,7 +573,7 @@ public abstract class AbstractXMLDocumentParser
      */
     public void externalEntityDecl(String name, 
                                    String publicId, String systemId,
-                                   String baseSystemId) throws XNIException {
+                                   String baseSystemId, Augmentations augs) throws XNIException {
     } // externalEntityDecl(String,String,String,String)
 
     /**
@@ -642,7 +590,7 @@ public abstract class AbstractXMLDocumentParser
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation) throws XNIException {
+                                   String notation, Augmentations augs) throws XNIException {
     } // unparsedEntityDecl(String,String,String,String)
 
     /**
@@ -656,7 +604,7 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId)
+    public void notationDecl(String name, String publicId, String systemId, Augmentations augs)
         throws XNIException {
     } // notationDecl(String,String,String)
 
@@ -671,7 +619,7 @@ public abstract class AbstractXMLDocumentParser
      * @see XMLDTDHandler#CONDITIONAL_INCLUDE
      * @see XMLDTDHandler#CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws XNIException {
+    public void startConditional(short type, Augmentations augs) throws XNIException {
     } // startConditional(short)
 
     /**
@@ -679,7 +627,7 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws XNIException {
+    public void endConditional(Augmentations augs) throws XNIException {
     } // endConditional()
 
     /**
@@ -687,7 +635,7 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws XNIException {
+    public void endDTD(Augmentations augs) throws XNIException {
         fInDTD = false;
     } // endDTD()
 
@@ -696,34 +644,34 @@ public abstract class AbstractXMLDocumentParser
     //
 
     /** Start content model. */
-    public void startContentModel(String elementName) throws XNIException {}
+    public void startContentModel(String elementName, Augmentations augs) throws XNIException {}
 
     /** ANY. */
-    public void any() throws XNIException {}
+    public void any(Augmentations augs) throws XNIException {}
 
     /** EMPTY. */
-    public void empty() throws XNIException {}
+    public void empty(Augmentations augs) throws XNIException {}
 
     /** Start group. */
-    public void startGroup() throws XNIException {}
+    public void startGroup(Augmentations augs) throws XNIException {}
 
     /** #PCDATA. */
-    public void pcdata() throws XNIException {}
+    public void pcdata(Augmentations augs) throws XNIException {}
 
     /** Element. */
-    public void element(String elementName) throws XNIException {}
+    public void element(String elementName, Augmentations augs) throws XNIException {}
 
     /** Separator. */
-    public void separator(short separator) throws XNIException {}
+    public void separator(short separator, Augmentations augs) throws XNIException {}
 
     /** Occurrence. */
-    public void occurrence(short occurrence) throws XNIException {}
+    public void occurrence(short occurrence, Augmentations augs) throws XNIException {}
 
     /** End group. */
-    public void endGroup() throws XNIException {}
+    public void endGroup(Augmentations augs) throws XNIException {}
 
     /** End content model. */
-    public void endContentModel() throws XNIException {}
+    public void endContentModel(Augmentations augs) throws XNIException {}
 
     //
     // Protected methods

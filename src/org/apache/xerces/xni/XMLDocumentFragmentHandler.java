@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001-2002 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,38 +92,38 @@ public interface XMLDocumentFragmentHandler {
      *                         for copying the namespace bindings from the
      *                         the current context (and its parent contexts)
      *                         if that information is important.
+     * @param augmentations    Additional information that may include infoset
+     *                         augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocumentFragment(XMLLocator locator,
-                                      NamespaceContext namespaceContext) 
+                                      NamespaceContext namespaceContext,
+                                      Augmentations augmentations) 
         throws XNIException;
 
     /**
-     * This method notifies the start of an entity.
+     * This method notifies the start of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param name     The name of the general entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding) throws XNIException;
+    public void startGeneralEntity(String name, 
+                                   XMLResourceIdentifier identifier,
+                                   String encoding,
+                                   Augmentations augmentations) throws XNIException;
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -138,31 +138,40 @@ public interface XMLDocumentFragmentHandler {
      * 
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws XNIException;
+    public void textDecl(String version, String encoding,
+                         Augmentations augmentations) throws XNIException;
 
     /**
-     * This method notifies the end of an entity.
+     * This method notifies the end of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      * 
-     * @param name The name of the entity.
+     * @param name The name of the general entity.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException;
+    public void endGeneralEntity(String name, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * A comment.
      * 
      * @param text The text in the comment.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException;
+    public void comment(XMLString text, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * A processing instruction. Processing instructions consist of a
@@ -177,10 +186,13 @@ public interface XMLDocumentFragmentHandler {
      * 
      * @param target The target.
      * @param data   The data or null if none specified.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data,
+                                      Augmentations augmentations)
         throws XNIException;
 
     /**
@@ -189,10 +201,13 @@ public interface XMLDocumentFragmentHandler {
      * 
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri,
+                                   Augmentations augmentations)
         throws XNIException;
 
     /**
@@ -200,31 +215,38 @@ public interface XMLDocumentFragmentHandler {
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
-        throws XNIException;
+    public void startElement(QName element, XMLAttributes attributes,
+                             Augmentations augmentations) throws XNIException;
 
     /**
      * An empty element.
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes)
-        throws XNIException;
+    public void emptyElement(QName element, XMLAttributes attributes,
+                             Augmentations augmentations) throws XNIException;
 
     /**
      * Character content.
      * 
      * @param text The content.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException;
+    public void characters(XMLString text, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * Ignorable whitespace. For this method to be called, the document
@@ -235,49 +257,69 @@ public interface XMLDocumentFragmentHandler {
      * content model.
      * 
      * @param text The ignorable whitespace.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException;
+    public void ignorableWhitespace(XMLString text,
+                                    Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * The end of an element.
      * 
      * @param element The name of the element.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws XNIException;
+    public void endElement(QName element, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * The end of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
      * 
      * @param prefix The namespace prefix.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws XNIException;
+    public void endPrefixMapping(String prefix, Augmentations augmentations) 
+        throws XNIException;
 
     /** 
      * The start of a CDATA section. 
      *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws XNIException;
+    public void startCDATA(Augmentations augmentations) throws XNIException;
 
     /**
      * The end of a CDATA section. 
      *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws XNIException;
+    public void endCDATA(Augmentations augmentations) throws XNIException;
 
     /**
      * The end of the document fragment.
      *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocumentFragment() throws XNIException;
+    public void endDocumentFragment(Augmentations augmentations) 
+        throws XNIException;
 
 } // interface XMLDocumentFragmentHandler

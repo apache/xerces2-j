@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.
+ * Copyright (c) 1999-2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,8 +57,6 @@
 
 package xni;
 
-
-
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLNamespaceBinder;
 
@@ -78,15 +76,15 @@ import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.Printer;
 import org.apache.xml.serialize.LineSeparator;
 
-
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.XMLLocator;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
 
 import org.apache.xerces.xni.psvi.ItemPSVI;
 import org.apache.xerces.xni.psvi.ElementPSVI;
@@ -344,14 +342,12 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name,
-                            String publicId, String systemId,
-                            String baseSystemId,
+    public void startGeneralEntity(String name,
+                            XMLResourceIdentifier identifier,
                             String encoding, Augmentations augs)
     throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startEntity(name, publicId, systemId,
-                                         baseSystemId, encoding, augs);
+            fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
         }
     } // startEntity(String,String,String,String,String)
 
@@ -759,9 +755,9 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name, Augmentations augs) throws XNIException {
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name, augs);
+            fDocumentHandler.endGeneralEntity(name, augs);
         }
     } // endEntity(String)
 

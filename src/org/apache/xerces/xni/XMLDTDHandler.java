@@ -103,34 +103,33 @@ public interface XMLDTDHandler {
      *                 recommended that a locator be supplied that can 
      *                 at least report the base system identifier of the
      *                 DTD.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD(XMLLocator locator) throws XNIException;
+    public void startDTD(XMLLocator locator, Augmentations augmentations) 
+        throws XNIException;
 
     /**
-     * This method notifies of the start of an entity. The DTD has the 
-     * pseudo-name of "[dtd]" and parameter entity names start with '%'.
-     * <p>
+     * This method notifies of the start of a parameter entity. The parameter
+     * entity name start with a '%' character.
      * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param name     The name of the parameter entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding) throws XNIException;
+    public void startParameterEntity(String name, 
+                                     XMLResourceIdentifier identifier,
+                                     String encoding,
+                                     Augmentations augmentations) throws XNIException;
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -141,30 +140,60 @@ public interface XMLDTDHandler {
      * 
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws XNIException;
+    public void textDecl(String version, String encoding,
+                         Augmentations augmentations) throws XNIException;
 
     /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]" and parameter entity names start with '%'.
-     * <p>
+     * This method notifies the end of a parameter entity. Parameter entity
+     * names begin with a '%' character.
      * 
-     * @param name The name of the entity.
+     * @param name The name of the parameter entity.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException;
+    public void endParameterEntity(String name, Augmentations augmentations) 
+        throws XNIException;
+
+    /**
+     * The start of the DTD external subset.
+     *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startExternalSubset(Augmentations augmentations) 
+        throws XNIException;
+
+    /**
+     * The end of the DTD external subset.
+     *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endExternalSubset(Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * A comment.
      * 
      * @param text The text in the comment.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException;
+    public void comment(XMLString text, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * A processing instruction. Processing instructions consist of a
@@ -179,10 +208,13 @@ public interface XMLDTDHandler {
      * 
      * @param target The target.
      * @param data   The data or null if none specified.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data,
+                                      Augmentations augmentations)
         throws XNIException;
 
     /**
@@ -190,10 +222,13 @@ public interface XMLDTDHandler {
      * 
      * @param name         The name of the element.
      * @param contentModel The element content model.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel)
+    public void elementDecl(String name, String contentModel,
+                            Augmentations augmentations)
         throws XNIException;
 
     /**
@@ -201,10 +236,13 @@ public interface XMLDTDHandler {
      * 
      * @param elementName The name of the element that this attribute
      *                    list is associated with.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws XNIException;
+    public void startAttlist(String elementName,
+                             Augmentations augmentations) throws XNIException;
 
     /**
      * An attribute declaration.
@@ -224,20 +262,26 @@ public interface XMLDTDHandler {
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
-                              String defaultType, XMLString defaultValue)
+                              String defaultType, XMLString defaultValue,
+                              Augmentations augmentations)
         throws XNIException;
 
     /**
      * The end of an attribute list.
      *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws XNIException;
+    public void endAttlist(Augmentations augmentations) throws XNIException;
 
     /**
      * An internal entity declaration.
@@ -250,11 +294,14 @@ public interface XMLDTDHandler {
      *             value contains the same sequence of characters that was in 
      *             the internal entity declaration, without any entity
      *             references expanded.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text, 
-                                   XMLString nonNormalizedText) 
+                                   XMLString nonNormalizedText,
+                                   Augmentations augmentations) 
         throws XNIException;
 
     /**
@@ -268,12 +315,16 @@ public interface XMLDTDHandler {
      * @param systemId The system identifier of the entity.
      * @param baseSystemId The base system identifier where this entity
      *                     is declared.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, 
                                    String publicId, String systemId,
-                                   String baseSystemId) throws XNIException;
+                                   String baseSystemId,
+                                   Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * An unparsed entity declaration.
@@ -284,12 +335,15 @@ public interface XMLDTDHandler {
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
      * @param notation The name of the notation.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation) throws XNIException;
+                                   String notation, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * A notation declaration
@@ -299,44 +353,60 @@ public interface XMLDTDHandler {
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId)
-        throws XNIException;
+    public void notationDecl(String name, String publicId, String systemId,
+                             Augmentations augmentations) throws XNIException;
 
     /**
      * The start of a conditional section.
      * 
      * @param type The type of the conditional section. This value will
      *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see #CONDITIONAL_INCLUDE
      * @see #CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws XNIException;
+    public void startConditional(short type, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * Characters within an IGNORE conditional section.
      *
      * @param text The ignored text.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException;
+    public void ignoredCharacters(XMLString text, Augmentations augmentations) 
+        throws XNIException;
 
     /**
      * The end of a conditional section.
      *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws XNIException;
+    public void endConditional(Augmentations augmentations) throws XNIException;
 
     /**
      * The end of the DTD.
      *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws XNIException;
+    public void endDTD(Augmentations augmentations) throws XNIException;
 
 } // interface XMLDTDHandler

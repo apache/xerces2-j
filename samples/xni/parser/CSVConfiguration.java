@@ -125,9 +125,6 @@ public class CSVConfiguration
     /** An empty list of attributes. */
     protected static final XMLAttributes EMPTY_ATTRS = new XMLAttributesImpl();
 
-    /** An empty list of augmentations. */
-    protected final Augmentations fAugmentations = new AugmentationsImpl();
-
     /** A newline XMLString. */
     private final XMLString NEWLINE = new XMLStringBuffer("\n");
 
@@ -189,73 +186,73 @@ public class CSVConfiguration
 
         // start document
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(null, "UTF-8", fAugmentations);
-            fDocumentHandler.xmlDecl("1.0", "UTF-8", "true", fAugmentations);
-            fDocumentHandler.doctypeDecl("csv", null, null, fAugmentations);
+            fDocumentHandler.startDocument(null, "UTF-8", null);
+            fDocumentHandler.xmlDecl("1.0", "UTF-8", "true", null);
+            fDocumentHandler.doctypeDecl("csv", null, null, null);
         }
         if (fDTDHandler != null) {
-            fDTDHandler.startDTD(null);
-            fDTDHandler.elementDecl("csv", "(row)*");
-            fDTDHandler.elementDecl("row", "(col)*");
-            fDTDHandler.elementDecl("col", "(#PCDATA)");
+            fDTDHandler.startDTD(null, null);
+            fDTDHandler.elementDecl("csv", "(row)*", null);
+            fDTDHandler.elementDecl("row", "(col)*", null);
+            fDTDHandler.elementDecl("col", "(#PCDATA)", null);
         }
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.startContentModel("csv");
-            fDTDContentModelHandler.startGroup();
-            fDTDContentModelHandler.element("row");
-            fDTDContentModelHandler.endGroup();
+            fDTDContentModelHandler.startContentModel("csv", null);
+            fDTDContentModelHandler.startGroup(null);
+            fDTDContentModelHandler.element("row", null);
+            fDTDContentModelHandler.endGroup(null);
             short csvOccurs = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
-            fDTDContentModelHandler.occurrence(csvOccurs);
-            fDTDContentModelHandler.endContentModel();
+            fDTDContentModelHandler.occurrence(csvOccurs, null);
+            fDTDContentModelHandler.endContentModel(null);
             
-            fDTDContentModelHandler.startContentModel("row");
-            fDTDContentModelHandler.startGroup();
-            fDTDContentModelHandler.element("col");
-            fDTDContentModelHandler.endGroup();
+            fDTDContentModelHandler.startContentModel("row", null);
+            fDTDContentModelHandler.startGroup(null);
+            fDTDContentModelHandler.element("col", null);
+            fDTDContentModelHandler.endGroup(null);
             short rowOccurs = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
-            fDTDContentModelHandler.occurrence(rowOccurs);
-            fDTDContentModelHandler.endContentModel();
+            fDTDContentModelHandler.occurrence(rowOccurs, null);
+            fDTDContentModelHandler.endContentModel(null);
         
-            fDTDContentModelHandler.startContentModel("col");
-            fDTDContentModelHandler.startGroup();
-            fDTDContentModelHandler.pcdata();
-            fDTDContentModelHandler.endGroup();
-            fDTDContentModelHandler.endContentModel();
+            fDTDContentModelHandler.startContentModel("col", null);
+            fDTDContentModelHandler.startGroup(null);
+            fDTDContentModelHandler.pcdata(null);
+            fDTDContentModelHandler.endGroup(null);
+            fDTDContentModelHandler.endContentModel(null);
         }
         if (fDTDHandler != null) {
-            fDTDHandler.endDTD();
+            fDTDHandler.endDTD(null);
         }
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(CSV, EMPTY_ATTRS, fAugmentations);
+            fDocumentHandler.startElement(CSV, EMPTY_ATTRS, null);
         }
 
         // read lines
         String line;
         while ((line = bufferedReader.readLine()) != null) {
             if (fDocumentHandler != null) {
-                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE, fAugmentations);
-                fDocumentHandler.startElement(ROW, EMPTY_ATTRS, fAugmentations);
+                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE, null);
+                fDocumentHandler.startElement(ROW, EMPTY_ATTRS, null);
                 StringTokenizer tokenizer = new StringTokenizer(line, ",");
                 while (tokenizer.hasMoreTokens()) {
-                    fDocumentHandler.ignorableWhitespace(NEWLINE_TWO_SPACES, fAugmentations);
-                    fDocumentHandler.startElement(COL, EMPTY_ATTRS, fAugmentations);
+                    fDocumentHandler.ignorableWhitespace(NEWLINE_TWO_SPACES, null);
+                    fDocumentHandler.startElement(COL, EMPTY_ATTRS, null);
                     String token = tokenizer.nextToken();
                     fStringBuffer.clear();
                     fStringBuffer.append(token);
-                    fDocumentHandler.characters(fStringBuffer, fAugmentations);
-                    fDocumentHandler.endElement(COL, fAugmentations);
+                    fDocumentHandler.characters(fStringBuffer, null);
+                    fDocumentHandler.endElement(COL, null);
                 }
-                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE, fAugmentations);
-                fDocumentHandler.endElement(ROW, fAugmentations);
+                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE, null);
+                fDocumentHandler.endElement(ROW, null);
             }
         }
         bufferedReader.close();
 
         // end document
         if (fDocumentHandler != null) {
-            fDocumentHandler.ignorableWhitespace(NEWLINE, fAugmentations);
-            fDocumentHandler.endElement(CSV, fAugmentations);
-            fDocumentHandler.endDocument(fAugmentations);
+            fDocumentHandler.ignorableWhitespace(NEWLINE, null);
+            fDocumentHandler.endElement(CSV, null);
+            fDocumentHandler.endDocument(null);
         }
 
     } // parse(XMLInputSource)

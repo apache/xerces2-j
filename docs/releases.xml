@@ -6,6 +6,15 @@
   <desc>
   </desc>
   <changes>
+   <update>
+    <note>
+     Updated Xerces Native Interface to add augmentations to
+     document fragment handler, DTD handler, and the DTD content
+     model handler interfaces. Additional methods were also 
+     renamed and/or modified.
+    </note>
+    <submitter name='Andy Clark'/>
+   </update>
    <add>
     <note>
      Added ability to override default parser configuration.

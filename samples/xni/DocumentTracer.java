@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -407,25 +408,19 @@ public class DocumentTracer
 
     } //  endCDATA()
 
-     /** Start entity. */
-    public void startEntity(String name,
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding, Augmentations augs) throws XNIException {
+    /** Start entity. */
+    public void startGeneralEntity(String name,
+                                   XMLResourceIdentifier identifier,
+                                   String encoding, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
-        fOut.print("startEntity(");
+        fOut.print("startGeneralEntity(");
         fOut.print("name=");
         printQuotedString(name);
         fOut.print(',');
-        fOut.print("publicId=");
-        printQuotedString(publicId);
-        fOut.print(',');
-        fOut.print("systemId=");
-        printQuotedString(systemId);
-        fOut.print(',');
-        fOut.print("baseSystemId=");
-        printQuotedString(baseSystemId);
+        fOut.print("identifier=");
+        fOut.print(identifier);
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
@@ -479,20 +474,17 @@ public class DocumentTracer
     } // processingInstruction(String,XMLString)
 
     /** End entity. */
-    public void endEntity(String name, Augmentations augs) throws XNIException {
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
-        fOut.print("endEntity(");
+        fOut.print("endGeneralEntity(");
         fOut.print("name=");
         printQuotedString(name);
         fOut.println(')');
         fOut.flush();
 
     } // endEntity(String)
-
-
-
 
     /** End document. */
     public void endDocument(Augmentations augs) throws XNIException {
@@ -507,8 +499,9 @@ public class DocumentTracer
     //
     // XMLDTDHandler
     //
+    
     /** Start DTD. */
-    public void startDTD(XMLLocator locator) throws XNIException {
+    public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("startDTD(");
@@ -540,38 +533,51 @@ public class DocumentTracer
 
     } // startDTD(XMLLocator)
 
-
-
-    /** Characters.*/
-    public void characters(XMLString text) throws XNIException {
+    /** Start external subset. */
+    public void startExternalSubset(Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.print("characters(");
+        fOut.println("startExternalSubset()");
+        fOut.flush();
+        fIndent++;
+
+    } // startExternalSubset(Augmentations)
+
+    /** End external subset. */
+    public void endExternalSubset(Augmentations augs) throws XNIException {
+
+        fIndent--;
+        printIndent();
+        fOut.println("endExternalSubset()");
+        fOut.flush();
+
+    } // endExternalSubset(Augmentations)
+
+    /** Characters.*/
+    public void ignoredCharacters(XMLString text, Augmentations augs) throws XNIException {
+
+        printIndent();
+        fOut.print("ignoredCharacters(");
         fOut.print("text=");
         printQuotedString(text.ch, text.offset, text.length);
         fOut.println(')');
         fOut.flush();
 
     } // characters(XMLString)
+    
     /** Start entity. */
-    public void startEntity(String name,
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding) throws XNIException {
+    public void startParameterEntity(String name,
+                                     XMLResourceIdentifier identifier,
+                                     String encoding, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
-        fOut.print("startEntity(");
+        fOut.print("startParameterEntity(");
         fOut.print("name=");
         printQuotedString(name);
         fOut.print(',');
-        fOut.print("publicId=");
-        printQuotedString(publicId);
-        fOut.print(',');
-        fOut.print("systemId=");
-        printQuotedString(systemId);
-        fOut.print(',');
-        fOut.print("baseSystemId=");
-        printQuotedString(baseSystemId);
+        fOut.print("identifier=");
+        fOut.print(identifier);
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
@@ -581,55 +587,12 @@ public class DocumentTracer
 
     } // startEntity(String,String,String,String)
 
-    /** Text declaration. */
-    public void textDecl(String version, String encoding) throws XNIException {
-
-        printIndent();
-        fOut.print("textDecl(");
-        fOut.print("version=");
-        printQuotedString(version);
-        fOut.print(',');
-        fOut.print("encoding=");
-        printQuotedString(encoding);
-        fOut.println(')');
-        fOut.flush();
-
-    } // textDecl(String,String)
-
-    /** Comment. */
-    public void comment(XMLString text) throws XNIException {
-
-        printIndent();
-        fOut.print("comment(");
-        fOut.print("text=");
-        printQuotedString(text.ch, text.offset, text.length);
-        fOut.println(')');
-        fOut.flush();
-
-    } // comment(XMLText)
-
-    /** Processing instruction. */
-    public void processingInstruction(String target, XMLString data)
-        throws XNIException {
-
-        printIndent();
-        fOut.print("processingInstruction(");
-        fOut.print("target=");
-        printQuotedString(target);
-        fOut.print(',');
-        fOut.print("data=");
-        printQuotedString(data.ch, data.offset, data.length);
-        fOut.println(')');
-        fOut.flush();
-
-    } // processingInstruction(String,XMLString)
-
     /** End entity. */
-    public void endEntity(String name) throws XNIException {
+    public void endParameterEntity(String name, Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
-        fOut.print("endEntity(");
+        fOut.print("endParameterEntity(");
         fOut.print("name=");
         printQuotedString(name);
         fOut.println(')');
@@ -637,8 +600,8 @@ public class DocumentTracer
 
     } // endEntity(String)
 
-        /** Element declaration. */
-    public void elementDecl(String name, String contentModel)
+    /** Element declaration. */
+    public void elementDecl(String name, String contentModel, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -654,7 +617,7 @@ public class DocumentTracer
     } // elementDecl(String,String)
 
     /** Start attribute list. */
-    public void startAttlist(String elementName) throws XNIException {
+    public void startAttlist(String elementName, Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("startAttlist(");
@@ -669,8 +632,8 @@ public class DocumentTracer
     /** Attribute declaration. */
     public void attributeDecl(String elementName, String attributeName,
                               String type, String[] enumeration,
-                              String defaultType, XMLString defaultValue)
-        throws XNIException {
+                              String defaultType, XMLString defaultValue, 
+                              Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("attributeDecl(");
@@ -715,7 +678,7 @@ public class DocumentTracer
     } // attributeDecl(String,String,String,String[],String,XMLString)
 
     /** End attribute list. */
-    public void endAttlist() throws XNIException {
+    public void endAttlist(Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -726,7 +689,8 @@ public class DocumentTracer
 
     /** Internal entity declaration. */
     public void internalEntityDecl(String name, XMLString text,
-                                   XMLString nonNormalizedText)
+                                   XMLString nonNormalizedText,
+                                   Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -748,7 +712,8 @@ public class DocumentTracer
     /** External entity declaration. */
     public void externalEntityDecl(String name,
                                    String publicId, String systemId,
-                                   String baseSystemId) throws XNIException {
+                                   String baseSystemId, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
         fOut.print("externalEntityDecl(");
@@ -770,8 +735,8 @@ public class DocumentTracer
 
     /** Unparsed entity declaration. */
     public void unparsedEntityDecl(String name, String publicId,
-                                   String systemId, String notation)
-        throws XNIException {
+                                   String systemId, String notation,
+                                   Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("externalEntityDecl(");
@@ -792,8 +757,8 @@ public class DocumentTracer
     } // unparsedEntityDecl(String,String,String,String)
 
     /** Notation declaration. */
-    public void notationDecl(String name, String publicId, String systemId)
-        throws XNIException {
+    public void notationDecl(String name, String publicId, String systemId, 
+                             Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("notationDecl(");
@@ -811,7 +776,8 @@ public class DocumentTracer
     } // notationDecl(String,String,String)
 
     /** Start conditional section. */
-    public void startConditional(short type) throws XNIException {
+    public void startConditional(short type, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
         fOut.print("startConditional(");
@@ -836,7 +802,7 @@ public class DocumentTracer
     } // startConditional(short)
 
     /** End conditional section. */
-    public void endConditional() throws XNIException {
+    public void endConditional(Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -846,7 +812,7 @@ public class DocumentTracer
     } // endConditional()
 
     /** End DTD. */
-    public void endDTD() throws XNIException {
+    public void endDTD(Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -860,7 +826,8 @@ public class DocumentTracer
     //
 
     /** Start content model. */
-    public void startContentModel(String elementName) throws XNIException {
+    public void startContentModel(String elementName, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
         fOut.print("startContentModel(");
@@ -873,7 +840,7 @@ public class DocumentTracer
     } // startContentModel(String)
 
     /** Any. */
-    public void any() throws XNIException {
+    public void any(Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.println("any()");
@@ -882,7 +849,7 @@ public class DocumentTracer
     } // any()
 
     /** Empty. */
-    public void empty() throws XNIException {
+    public void empty(Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.println("empty()");
@@ -891,7 +858,7 @@ public class DocumentTracer
     } // empty()
 
     /** Start group. */
-    public void startGroup() throws XNIException {
+    public void startGroup(Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.println("startGroup()");
@@ -901,7 +868,7 @@ public class DocumentTracer
     } // childrenStartGroup()
 
     /** #PCDATA. */
-    public void pcdata() throws XNIException {
+    public void pcdata(Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.println("pcdata()");
@@ -910,7 +877,8 @@ public class DocumentTracer
     } // pcdata()
 
     /** Element. */
-    public void element(String elementName) throws XNIException {
+    public void element(String elementName, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
         fOut.print("element(");
@@ -922,7 +890,8 @@ public class DocumentTracer
     } // element(String)
 
     /** separator. */
-    public void separator(short separator) throws XNIException {
+    public void separator(short separator, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
         fOut.print("separator(");
@@ -946,7 +915,8 @@ public class DocumentTracer
     } // separator(short)
 
     /** Occurrence. */
-    public void occurrence(short occurrence) throws XNIException {
+    public void occurrence(short occurrence, Augmentations augs) 
+        throws XNIException {
 
         printIndent();
         fOut.print("occurrence(");
@@ -974,7 +944,7 @@ public class DocumentTracer
     } // occurrence(short)
 
     /** End group. */
-    public void endGroup() throws XNIException {
+    public void endGroup(Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -984,7 +954,7 @@ public class DocumentTracer
     } // childrenEndGroup()
 
     /** End content model. */
-    public void endContentModel() throws XNIException {
+    public void endContentModel(Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();

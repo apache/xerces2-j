@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001-2002 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 
@@ -298,15 +299,14 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, 
-                            String systemId, String baseSystemId,
-                            String encoding, Augmentations augs) throws XNIException {
+    public void startGeneralEntity(String name, 
+                                   XMLResourceIdentifier identifier, 
+                                   String encoding, Augmentations augs) 
+        throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startEntity(name, publicId, 
-                                         systemId, baseSystemId,
-                                         encoding, augs);
+            fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
         }
-    } // startEntity(String,String,String,String,String)
+    } // startGeneralEntity(String,XMLResourceIdentifier,String,Augmentations)
     
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -341,11 +341,11 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name, Augmentations augs) throws XNIException {
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name, augs);
+            fDocumentHandler.endGeneralEntity(name, augs);
         }
-    } // endEntity(String)
+    } // endGeneralEntity(String,Augmentations)
     
     /**
      * Character content.

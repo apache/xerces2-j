@@ -290,7 +290,7 @@ public class Writer
                 fOut.print('\n');
             }
             fOut.print("<!--");
-            normalizeAndPrint(text);
+            fOut.print(text.toString());
             fOut.print("-->");
             if (!fSeenRootElement) {
                 fOut.print('\n');

@@ -67,6 +67,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -1050,12 +1051,7 @@ public abstract class XMLScanner
      * specified by their name.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -1065,14 +1061,13 @@ public abstract class XMLScanner
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
+                            XMLResourceIdentifier identifier,
                             String encoding) throws XNIException {
 
         // keep track of the entity depth
         fEntityDepth++;
 
-    } // startEntity(String,String,String,String,String)
+    } // startEntity(String,XMLResourceIdentifier,String)
 
     /**
      * This method notifies the end of an entity. The document entity has

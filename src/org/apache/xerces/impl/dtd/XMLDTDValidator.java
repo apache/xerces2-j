@@ -86,6 +86,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -263,6 +264,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /** Skip validation. */
     private boolean fSkipValidation;
+
+    /** True if in DTD. */
+    protected boolean fInDTD;
 
     /** True if in an ignore conditional section of the DTD. */
     protected boolean fInDTDIgnore;
@@ -519,6 +523,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fSeenDoctypeDecl = false;
         fInCDATASection = false;
         // initialize state
+        fInDTD = false;
         fInDTDIgnore = false;
         fStandaloneIsYes = false;
         fSeenRootElement = false;
@@ -979,38 +984,32 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     // XMLDocumentHandler and XMLDTDHandler methods
     //
 
-    /**
-     * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]" parameter entity names start with '%'; and 
-     * general entity names are just the entity name.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
-     * @param encoding The auto-detected IANA encoding name of the entity
-     *                 stream. This value will be null in those situations
-     *                 where the entity encoding is not auto-detected (e.g.
-     *                 internal parameter entities).
-     *
-     * @param augs   Additional information that may include infoset augmentations
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding, 
-                            Augmentations augs) throws XNIException {
+    /** Start external subset. */
+    public void startExternalSubset(Augmentations augs) throws XNIException {
+        fDTDGrammar.startExternalSubset(augs);
+    }
 
+    /** End external subset. */
+    public void endExternalSubset(Augmentations augs) throws XNIException {
+        fDTDGrammar.startExternalSubset(augs);
+    }
+
+    /** Start general entity. */
+    public void startGeneralEntity(String name, 
+                                   XMLResourceIdentifier identifier,
+                                   String encoding, 
+                                   Augmentations augs) throws XNIException {
+        checkStandaloneEntityRef(name);
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
+        }
+    }
+
+    /** Check standalone entity reference. */
+    protected void checkStandaloneEntityRef(String name) throws XNIException {
         // check VC: Standalone Document Declartion, entities references appear in the document.
         if (fPerformValidation && fDTDGrammar != null) {
-            if (fStandaloneIsYes && !name.startsWith("[")) {
+            if (fStandaloneIsYes) {
                 int entIndex = fDTDGrammar.getEntityDeclIndex(name);
                 if (entIndex > -1) {
                     fDTDGrammar.getEntityDecl(entIndex, fEntityDecl);
@@ -1022,42 +1021,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 }
             }
         }
-
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startEntity(name, publicId, systemId, 
-                                         baseSystemId, encoding, augs);
-        }
-
-
-    } // startEntity(String,String,String,String,String, Augmentations)
-
-
-    /**
-     * Notifies of the presence of a TextDecl line in an entity. If present,
-     * this method will be called immediately following the startEntity call.
-     * <p>
-     * <strong>Note:</strong> This method will never be called for the
-     * document entity; it is only called for external general entities
-     * referenced in document content.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     * 
-     * @param version  The XML version, or null if not specified.
-     * @param encoding The IANA encoding name of the entity.
-     * @param augs     Additional information that may include infoset augmentations
-     *                 
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
-     */
-    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
-
-        if (fDocumentHandler != null) {
-            fDocumentHandler.textDecl(version, encoding, augs);
-        }
-
-    } // textDecl(String,String)
-
+    }
 
     /**
      * A comment.
@@ -1070,8 +1034,16 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     public void comment(XMLString text, Augmentations augs) throws XNIException {
 
         // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.comment(text, augs);
+        if (fInDTD) {
+            fDTDGrammar.comment(text, augs);
+            if (fDTDHandler != null) {
+                fDTDHandler.comment(text, augs);
+            }
+        }
+        else {
+            if (fDocumentHandler != null) {
+                fDocumentHandler.comment(text, augs);
+            }
         }
 
     } // comment(XMLString)
@@ -1098,34 +1070,27 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     throws XNIException {
 
         // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.processingInstruction(target, data, augs);
+        if (fInDTD) {
+            fDTDGrammar.processingInstruction(target, data, augs);
+            if (fDTDHandler != null) {
+                fDTDHandler.processingInstruction(target, data, augs);
+            }
+        }
+        else {
+            if (fDocumentHandler != null) {
+                fDocumentHandler.processingInstruction(target, data, augs);
+            }
         }
     } // processingInstruction(String,XMLString)
 
 
-    /**
-     * This method notifies the end of an entity.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     * 
-     * @param name   The name of the entity.
-     * @param augs   Additional information that may include infoset augmentations
-     *               
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
-     */
-    public void endEntity(String name, Augmentations augs) throws XNIException {
-
+    /** End general entity. */
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name, augs);
+            fDocumentHandler.endGeneralEntity(name, augs);
         }
-
     } // endEntity(String)
-
-
 
     //
     // XMLDTDHandler methods
@@ -1136,7 +1101,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD(XMLLocator locator) throws XNIException {
+    public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
+
+        fInDTD = true;
 
         // initialize state
         fNDataDeclNotations.clear();
@@ -1149,28 +1116,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fGrammarBucket.putGrammar("", fDTDGrammar);
 
         // call handlers
-        fDTDGrammar.startDTD(locator);
+        fDTDGrammar.startDTD(locator, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.startDTD(locator);
+            fDTDHandler.startDTD(locator, augs);
         }
 
     } // startDTD(XMLLocator)
-
-    /**
- * A comment.
- * 
- * @param text The text in the comment.
- *
- * @throws XNIException Thrown by application to signal an error.
- */
-    public void comment(XMLString text) throws XNIException {
-
-        // call handlers
-        fDTDGrammar.comment(text);
-        if (fDTDHandler != null) {
-            fDTDHandler.comment(text);
-        }
-    }  
 
     /**
      * Character content.
@@ -1179,11 +1130,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException {
+    public void ignoredCharacters(XMLString text, Augmentations augs) throws XNIException {
 
         // ignored characters in DTD
         if (fDTDHandler != null) {
-            fDTDHandler.characters(text);
+            fDTDHandler.ignoredCharacters(text, augs);
         }
     }
 
@@ -1199,12 +1150,19 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws XNIException {
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.textDecl(version, encoding);
-        if (fDTDHandler != null) {
-            fDTDHandler.textDecl(version, encoding);
+        if (fInDTD) {
+            fDTDGrammar.textDecl(version, encoding, augs);
+            if (fDTDHandler != null) {
+                fDTDHandler.textDecl(version, encoding, augs);
+            }
+        }
+        else {
+            if (fDocumentHandler != null) {
+                fDocumentHandler.textDecl(version, encoding, augs);
+            }
         }
     }
 
@@ -1226,17 +1184,16 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding) throws XNIException {
+    public void startParameterEntity(String name, 
+                                     XMLResourceIdentifier identifier,
+                                     String encoding,
+                                     Augmentations augs) throws XNIException {
 
+        checkStandaloneEntityRef(name);
         // call handlers
-        fDTDGrammar.startEntity(name, publicId, systemId, 
-                                baseSystemId, encoding);
+        fDTDGrammar.startParameterEntity(name, identifier, encoding, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.startEntity(name, publicId, systemId, 
-                                    baseSystemId, encoding);
+            fDTDHandler.startParameterEntity(name, identifier, encoding, augs);
         }
     }
     /**
@@ -1247,40 +1204,15 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endParameterEntity(String name, Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.endEntity(name);
+        fDTDGrammar.endParameterEntity(name, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.endEntity(name);
+            fDTDHandler.endParameterEntity(name, augs);
         }
     } 
 
-    /**
-     * A processing instruction. Processing instructions consist of a
-     * target name and, optionally, text data. The data is only meaningful
-     * to the application.
-     * <p>
-     * Typically, a processing instruction's data will contain a series
-     * of pseudo-attributes. These pseudo-attributes follow the form of
-     * element attributes but are <strong>not</strong> parsed or presented
-     * to the application as anything other than text. The application is
-     * responsible for parsing the data.
-     * 
-     * @param target The target.
-     * @param data   The data or null if none specified.
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
-     */
-    public void processingInstruction(String target, XMLString data)
-    throws XNIException {
-
-        // call handlers
-        fDTDGrammar.processingInstruction(target, data);
-        if (fDTDHandler != null) {
-            fDTDHandler.processingInstruction(target, data);
-        }
-    } 
     /**
      * An element declaration.
      * 
@@ -1289,7 +1221,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel)
+    public void elementDecl(String name, String contentModel, Augmentations augs)
     throws XNIException {
 
         //check VC: Unique Element Declaration
@@ -1306,9 +1238,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         // call handlers
-        fDTDGrammar.elementDecl(name, contentModel);
+        fDTDGrammar.elementDecl(name, contentModel, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.elementDecl(name, contentModel);
+            fDTDHandler.elementDecl(name, contentModel, augs);
         }
 
     } // elementDecl(String,String)
@@ -1321,12 +1253,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws XNIException {
+    public void startAttlist(String elementName, Augmentations augs) 
+        throws XNIException {
 
         // call handlers
-        fDTDGrammar.startAttlist(elementName);
+        fDTDGrammar.startAttlist(elementName, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.startAttlist(elementName);
+            fDTDHandler.startAttlist(elementName, augs);
         }
 
     } // startAttlist(String)
@@ -1354,8 +1287,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
-                              String defaultType, XMLString defaultValue)
-    throws XNIException {
+                              String defaultType, XMLString defaultValue,
+                              Augmentations augs) throws XNIException {
 
         if (type != fCDATASymbol && defaultValue != null) {
             normalizeDefaultAttrValue(defaultValue);
@@ -1489,11 +1422,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         // call handlers
         fDTDGrammar.attributeDecl(elementName, attributeName, 
                                   type, enumeration,
-                                  defaultType, defaultValue);
+                                  defaultType, defaultValue, augs);
         if (fDTDHandler != null) {
             fDTDHandler.attributeDecl(elementName, attributeName, 
                                       type, enumeration, 
-                                      defaultType, defaultValue);
+                                      defaultType, defaultValue, augs);
         }
 
     } // attributeDecl(String,String,String,String[],String,XMLString)
@@ -1503,12 +1436,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws XNIException {
+    public void endAttlist(Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.endAttlist();
+        fDTDGrammar.endAttlist(augs);
         if (fDTDHandler != null) {
-            fDTDHandler.endAttlist();
+            fDTDHandler.endAttlist(augs);
         }
 
     } // endAttlist()
@@ -1528,13 +1461,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text,
-                                   XMLString nonNormalizedText) 
-    throws XNIException {
+                                   XMLString nonNormalizedText,
+                                   Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.internalEntityDecl(name, text, nonNormalizedText);
+        fDTDGrammar.internalEntityDecl(name, text, nonNormalizedText, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.internalEntityDecl(name, text, nonNormalizedText);
+            fDTDHandler.internalEntityDecl(name, text, nonNormalizedText, augs);
         }
 
     } // internalEntityDecl(String,XMLString,XMLString)
@@ -1555,13 +1488,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void externalEntityDecl(String name, 
                                    String publicId, String systemId,
-                                   String baseSystemId) throws XNIException {
+                                   String baseSystemId,
+                                   Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.externalEntityDecl(name, publicId, systemId, baseSystemId);
+        fDTDGrammar.externalEntityDecl(name, publicId, systemId, baseSystemId, augs);
         if (fDTDHandler != null) {
             fDTDHandler.externalEntityDecl(name, publicId, systemId,
-                                           baseSystemId);
+                                           baseSystemId, augs);
         }
 
     } // externalEntityDecl(String,String,String,String)
@@ -1580,7 +1514,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation) throws XNIException {
+                                   String notation, 
+                                   Augmentations augs) throws XNIException {
 
         // VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
@@ -1588,9 +1523,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         // call handlers
-        fDTDGrammar.unparsedEntityDecl(name, publicId, systemId, notation);
+        fDTDGrammar.unparsedEntityDecl(name, publicId, systemId, notation, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation);
+            fDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation, augs);
         }
 
     } // unparsedEntityDecl(String,String,String,String)
@@ -1606,13 +1541,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId)
-    throws XNIException {
+    public void notationDecl(String name, String publicId, String systemId,
+                             Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.notationDecl(name, publicId, systemId);
+        fDTDGrammar.notationDecl(name, publicId, systemId, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.notationDecl(name, publicId, systemId);
+            fDTDHandler.notationDecl(name, publicId, systemId, augs);
         }
 
     } // notationDecl(String,String,String)
@@ -1628,15 +1563,15 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @see XMLDTDHandler#CONDITIONAL_INCLUDE
      * @see XMLDTDHandler#CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws XNIException {
+    public void startConditional(short type, Augmentations augs) throws XNIException {
 
         // set state
         fInDTDIgnore = type == XMLDTDHandler.CONDITIONAL_IGNORE;
 
         // call handlers
-        fDTDGrammar.startConditional(type);
+        fDTDGrammar.startConditional(type, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.startConditional(type);
+            fDTDHandler.startConditional(type, augs);
         }
 
     } // startConditional(short)
@@ -1646,15 +1581,15 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws XNIException {
+    public void endConditional(Augmentations augs) throws XNIException {
 
         // set state
         fInDTDIgnore = false;
 
         // call handlers
-        fDTDGrammar.endConditional();
+        fDTDGrammar.endConditional(augs);
         if (fDTDHandler != null) {
-            fDTDHandler.endConditional();
+            fDTDHandler.endConditional(augs);
         }
 
     } // endConditional()
@@ -1664,10 +1599,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws XNIException {
+    public void endDTD(Augmentations augs) throws XNIException {
+
+        fInDTD = false;
 
         // save grammar
-        fDTDGrammar.endDTD();
+        fDTDGrammar.endDTD(augs);
 
         // check VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
@@ -1708,7 +1645,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         // call handlers
         if (fDTDHandler != null) {
-            fDTDHandler.endDTD();
+            fDTDHandler.endDTD(augs);
         }
 
     } // endDTD()
@@ -1718,7 +1655,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     //
 
     /** Start content model. */
-    public void startContentModel(String elementName) throws XNIException {
+    public void startContentModel(String elementName, Augmentations augs) 
+        throws XNIException {
 
         if (fValidation) {
             fDTDElementDeclName = elementName;
@@ -1726,52 +1664,52 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         // call handlers
-        fDTDGrammar.startContentModel(elementName);
+        fDTDGrammar.startContentModel(elementName, augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.startContentModel(elementName);
+            fDTDContentModelHandler.startContentModel(elementName, augs);
         }
 
     } // startContentModel(String)
 
     /** ANY. */
-    public void any() throws XNIException {
-        fDTDGrammar.any();
+    public void any(Augmentations augs) throws XNIException {
+        fDTDGrammar.any(augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.any();
+            fDTDContentModelHandler.any(augs);
         }
     } // any()
 
     /** EMPTY. */
-    public void empty() throws XNIException {
-        fDTDGrammar.empty();
+    public void empty(Augmentations augs) throws XNIException {
+        fDTDGrammar.empty(augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.empty();
+            fDTDContentModelHandler.empty(augs);
         }
     } // empty()
 
     /** Start group. */
-    public void startGroup() throws XNIException {
+    public void startGroup(Augmentations augs) throws XNIException {
 
         fMixed = false;
         // call handlers
-        fDTDGrammar.startGroup();
+        fDTDGrammar.startGroup(augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.startGroup();
+            fDTDContentModelHandler.startGroup(augs);
         }
 
     } // startGroup()
 
     /** #PCDATA. */
-    public void pcdata() {
+    public void pcdata(Augmentations augs) {
         fMixed = true;
-        fDTDGrammar.pcdata();
+        fDTDGrammar.pcdata(augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.pcdata();
+            fDTDContentModelHandler.pcdata(augs);
         }
     } // pcdata()
 
     /** Element. */
-    public void element(String elementName) throws XNIException {
+    public void element(String elementName, Augmentations augs) throws XNIException {
 
         // check VC: No duplicate Types, in a single mixed-content declaration
         if (fMixed && fValidation) {
@@ -1787,53 +1725,55 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         // call handlers
-        fDTDGrammar.element(elementName);
+        fDTDGrammar.element(elementName, augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.element(elementName);
+            fDTDContentModelHandler.element(elementName, augs);
         }
 
     } // childrenElement(String)
 
     /** Separator. */
-    public void separator(short separator) throws XNIException {
+    public void separator(short separator, Augmentations augs) 
+        throws XNIException {
 
         // call handlers
-        fDTDGrammar.separator(separator);
+        fDTDGrammar.separator(separator, augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.separator(separator);
+            fDTDContentModelHandler.separator(separator, augs);
         }
 
     } // separator(short)
 
     /** Occurrence. */
-    public void occurrence(short occurrence) throws XNIException {
+    public void occurrence(short occurrence, Augmentations augs) 
+        throws XNIException {
 
         // call handlers
-        fDTDGrammar.occurrence(occurrence);
+        fDTDGrammar.occurrence(occurrence, augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.occurrence(occurrence);
+            fDTDContentModelHandler.occurrence(occurrence, augs);
         }
 
     } // occurrence(short)
 
     /** End group. */
-    public void endGroup() throws XNIException {
+    public void endGroup(Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.endGroup();
+        fDTDGrammar.endGroup(augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.endGroup();
+            fDTDContentModelHandler.endGroup(augs);
         }
 
     } // endGroup()
 
     /** End content model. */
-    public void endContentModel() throws XNIException {
+    public void endContentModel(Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.endContentModel();
+        fDTDGrammar.endContentModel(augs);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.endContentModel();
+            fDTDContentModelHandler.endContentModel(augs);
         }
 
     } // endContentModel()

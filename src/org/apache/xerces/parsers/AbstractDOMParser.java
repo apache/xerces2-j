@@ -74,6 +74,7 @@ import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -389,16 +390,16 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding, 
-                            Augmentations augs) throws XNIException {
+    public void startGeneralEntity(String name, 
+                                   XMLResourceIdentifier identifier,
+                                   String encoding, Augmentations augs) 
+        throws XNIException {
 
         // REVISIT: investigate fInDTD & fInDocument flags
         // this method now only called by DocumentHandler
         // comment(), endEntity(), processingInstruction(), textDecl()
         // REVISIT: need to set the Entity.actualEncoding somehow
-        if (fInDocument && !fInDTD && fCreateEntityRefNodes ) {
+        if (fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
                 EntityReference er = fDocument.createEntityReference(name);
                 // we don't need synchronization now, because entity ref will be
@@ -952,9 +953,9 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name, Augmentations augs) throws XNIException {
+    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 
-        if (fInDocument && !fInDTD && fCreateEntityRefNodes) {
+        if (fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
                 if (fDocumentType != null) {
                     NamedNodeMap entities = fDocumentType.getEntities();
@@ -1018,8 +1019,8 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD(XMLLocator locator) throws XNIException {
-        super.startDTD(locator);
+    public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
+        super.startDTD(locator, augs);
         if (fDeferNodeExpansion || fDocumentImpl != null) {
             fInternalSubset = new StringBuffer(1024);
         }
@@ -1030,8 +1031,8 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws XNIException {
-        super.endDTD();
+    public void endDTD(Augmentations augs) throws XNIException {
+        super.endDTD(augs);
         String internalSubset = fInternalSubset != null && fInternalSubset.length() > 0
                               ? fInternalSubset.toString() : null;
         if (fDeferNodeExpansion) {
@@ -1046,48 +1047,15 @@ public abstract class AbstractDOMParser
         }
     } // endDTD()
 
-    /**
-     * This method notifies of the start of an entity. The DTD has the 
-     * pseudo-name of "[dtd]" and parameter entity names start with '%'.
-     * <p>
-     * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
-     * @param encoding The auto-detected IANA encoding name of the entity
-     *                 stream. This value will be null in those situations
-     *                 where the entity encoding is not auto-detected (e.g.
-     *                 internal parameter entities).
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
-                            String encoding) throws XNIException {
-        if (name.equals("[dtd]")) {
-            fInDTDExternalSubset = true;
-        }
-    } // startEntity(String,String,String,String,String)
+    /** Start external subset. */
+    public void startExternalSubset(Augmentations augs) throws XNIException {
+        fInDTDExternalSubset = true;
+    } // startExternalSubset(Augmentations)
 
-    /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]" and parameter entity names start with '%'.
-     * <p>
-     * 
-     * @param name The name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endEntity(String name) throws XNIException {
-        if (name.equals("[dtd]")) {
-            fInDTDExternalSubset = false;
-        }
-    } // endEntity(String)
+    /** End external subset. */
+    public void endExternalSubset(Augmentations augs) throws XNIException {
+        fInDTDExternalSubset = false;
+    } // endExternalSubset(Augmentations)
 
     /**
      * An internal entity declaration.
@@ -1104,8 +1072,8 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text, 
-                                   XMLString nonNormalizedText) 
-        throws XNIException {
+                                   XMLString nonNormalizedText,
+                                   Augmentations augs) throws XNIException {
 
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {
@@ -1183,7 +1151,8 @@ public abstract class AbstractDOMParser
      */
     public void externalEntityDecl(String name, 
                                    String publicId, String systemId,
-                                   String baseSystemId) throws XNIException {
+                                   String baseSystemId,
+                                   Augmentations augs) throws XNIException {
 
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {
@@ -1265,7 +1234,8 @@ public abstract class AbstractDOMParser
      */
     public void unparsedEntityDecl(String name, 
                                    String publicId, String systemId, 
-                                   String notation) throws XNIException {
+                                   String notation, Augmentations augs) 
+        throws XNIException {
 
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {
@@ -1341,8 +1311,8 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId)
-        throws XNIException {
+    public void notationDecl(String name, String publicId, String systemId,
+                             Augmentations augs) throws XNIException {
 
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {
@@ -1409,7 +1379,7 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel)
+    public void elementDecl(String name, String contentModel, Augmentations augs)
         throws XNIException {
 
         // internal subset string
@@ -1446,8 +1416,8 @@ public abstract class AbstractDOMParser
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
-                              String defaultType, XMLString defaultValue)
-        throws XNIException {
+                              String defaultType, XMLString defaultValue,
+                              Augmentations augs) throws XNIException {
 
         // internal subset string
         if (fInternalSubset != null && !fInDTDExternalSubset) {

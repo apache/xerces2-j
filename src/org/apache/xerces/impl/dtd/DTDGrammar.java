@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,10 +75,12 @@ import org.apache.xerces.impl.dv.dtd.DatatypeValidator;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.util.SymbolTable;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 
@@ -293,7 +295,7 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD(XMLLocator locator) throws XNIException {
+    public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
         //Initialize stack
         fOpStack = null;
         fNodeIndexStack = null;
@@ -323,28 +325,26 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
-                            String publicId, String systemId, 
-                            String baseSystemId,
-                            String encoding) throws XNIException {
+    public void startParameterEntity(String name, 
+                                     XMLResourceIdentifier identifier,
+                                     String encoding,
+                                     Augmentations augs) throws XNIException {
 
-        if (name.startsWith("%")) {
-            // keep track of this entity before fEntityDepth is increased
-            if (fPEDepth == fPEntityStack.length) {
-                boolean[] entityarray = new boolean[fPEntityStack.length * 2];
-                System.arraycopy(fPEntityStack, 0, entityarray, 0, fPEntityStack.length);
-                fPEntityStack = entityarray;
-            }
-            fPEntityStack[fPEDepth] = fReadingExternalDTD;
-            fPEDepth++;
+        // keep track of this entity before fEntityDepth is increased
+        if (fPEDepth == fPEntityStack.length) {
+            boolean[] entityarray = new boolean[fPEntityStack.length * 2];
+            System.arraycopy(fPEntityStack, 0, entityarray, 0, fPEntityStack.length);
+            fPEntityStack = entityarray;
         }
+        fPEntityStack[fPEDepth] = fReadingExternalDTD;
+        fPEDepth++;
+    
+    } // startParameterEntity(String,XMLResourceIdentifier,String,Augmentations)
 
-        if ( name.equals("[dtd]") || 
-            (name.startsWith("%") && systemId != null )) {
-            fReadingExternalDTD = true;
-        }
-
-    } // startEntity(String,String,String,String)
+    /** Start external subset. */
+    public void startExternalSubset(Augmentations augs) throws XNIException {
+        fReadingExternalDTD = true;
+    } // startExternalSubset(Augmentations)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
@@ -359,17 +359,17 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endParameterEntity(String name, Augmentations augs) throws XNIException {
 
-        if (name.equals("[dtd]")) {
-            fReadingExternalDTD = false;
-        }
-        if (name.startsWith("%")) {
-            fPEDepth--;
-            fReadingExternalDTD = fPEntityStack[fPEDepth];
-        }
+        fPEDepth--;
+        fReadingExternalDTD = fPEntityStack[fPEDepth];
 
-    } // endEntity(String)
+    } // endParameterEntity(String,Augmentations)
+
+    /** End external subset. */
+    public void endExternalSubset(Augmentations augs) throws XNIException {
+        fReadingExternalDTD = false;
+    } // endExternalSubset(Augmentations)
 
     /**
      * An element declaration.
@@ -379,7 +379,7 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel)
+    public void elementDecl(String name, String contentModel, Augmentations augs)
         throws XNIException {
 
         XMLElementDecl tmpElementDecl = (XMLElementDecl) fElementDeclTab.get(name) ;
@@ -480,8 +480,8 @@ public class DTDGrammar
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
-                              String defaultType, XMLString defaultValue) 
-        throws XNIException {
+                              String defaultType, XMLString defaultValue,
+                              Augmentations augs) throws XNIException {
 
         if ( this.fElementDeclTab.containsKey( (String) elementName) ) {
             //if ElementDecl has already being created in the Grammar then remove from table, 
@@ -607,8 +607,8 @@ public class DTDGrammar
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text,
-                                   XMLString nonNormalizedText)
-        throws XNIException {
+                                   XMLString nonNormalizedText,
+                                   Augmentations augs) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
@@ -640,7 +640,8 @@ public class DTDGrammar
      */
     public void externalEntityDecl(String name, 
                                    String publicId, String systemId,
-                                   String baseSystemId) throws XNIException {
+                                   String baseSystemId,
+                                   Augmentations augs) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
@@ -670,8 +671,8 @@ public class DTDGrammar
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId, 
-                                   String systemId, String notation)
-        throws XNIException {
+                                   String systemId, String notation,
+                                   Augmentations augs) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
@@ -698,8 +699,8 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId)
-        throws XNIException {
+    public void notationDecl(String name, String publicId, String systemId,
+                             Augmentations augs) throws XNIException {
 
         XMLNotationDecl  notationDecl = new XMLNotationDecl();
         notationDecl.setValues(name,publicId,systemId);
@@ -716,7 +717,7 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDTD() throws XNIException {
+    public void endDTD(Augmentations augs) throws XNIException {
 
         // REVISIT: What is this for? -Ac
         /*
@@ -755,7 +756,8 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws XNIException {}
+    public void textDecl(String version, String encoding, Augmentations augs) 
+        throws XNIException {}
 
     /**
      * A comment.
@@ -764,7 +766,7 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException {}
+    public void comment(XMLString text, Augmentations augs) throws XNIException {}
     
     /**
      * A processing instruction. Processing instructions consist of a
@@ -782,7 +784,8 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data) throws XNIException {}
+    public void processingInstruction(String target, XMLString data,
+                                      Augmentations augs) throws XNIException {}
 
     /**
      * The start of an attribute list.
@@ -792,14 +795,15 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startAttlist(String elementName) throws XNIException {}
+    public void startAttlist(String elementName, Augmentations augs) 
+        throws XNIException {}
 
     /**
      * The end of an attribute list.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endAttlist() throws XNIException {}
+    public void endAttlist(Augmentations augs) throws XNIException {}
 
     /**
      * The start of a conditional section.
@@ -812,21 +816,23 @@ public class DTDGrammar
      * @see XMLDTDHandler#CONDITIONAL_INCLUDE
      * @see XMLDTDHandler#CONDITIONAL_IGNORE
      */
-    public void startConditional(short type) throws XNIException {}
+    public void startConditional(short type, Augmentations augs) 
+        throws XNIException {}
 
     /**
      * Characters within an IGNORE conditional section.
      *
      * @param text The ignored text.
      */
-    public void characters(XMLString text) throws XNIException {}
+    public void ignoredCharacters(XMLString text, Augmentations augs) 
+        throws XNIException {}
 
     /**
      * The end of a conditional section.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endConditional() throws XNIException {}
+    public void endConditional(Augmentations augs) throws XNIException {}
 
     //
     // XMLDTDContentModelHandler methods
@@ -841,7 +847,7 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startContentModel(String elementName)
+    public void startContentModel(String elementName, Augmentations augs)
         throws XNIException {
       
         XMLElementDecl elementDecl = (XMLElementDecl) this.fElementDeclTab.get( elementName);
@@ -864,7 +870,7 @@ public class DTDGrammar
      * @see #any
      * @see #empty
      */
-    public void startGroup() throws XNIException {
+    public void startGroup(Augmentations augs) throws XNIException {
         fDepth++;
         initializeContentModelStack();
         fMixed = false;
@@ -879,7 +885,7 @@ public class DTDGrammar
      *
      * @see #startGroup
      */
-    public void pcdata() throws XNIException {
+    public void pcdata(Augmentations augs) throws XNIException {
         fMixed = true;
     } // pcdata()
 
@@ -890,7 +896,7 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void element(String elementName) throws XNIException {
+    public void element(String elementName, Augmentations augs) throws XNIException {
         if (fMixed) {
             if (fNodeIndexStack[fDepth] == -1 ) {
                 fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
@@ -917,7 +923,7 @@ public class DTDGrammar
      * @see org.apache.xerces.xni.XMLDTDContentModelHandler#SEPARATOR_CHOICE
      * @see org.apache.xerces.xni.XMLDTDContentModelHandler#SEPARATOR_SEQUENCE
      */
-    public void separator(short separator) throws XNIException {
+    public void separator(short separator, Augmentations augs) throws XNIException {
 
         if (!fMixed) {
             if (fOpStack[fDepth] != XMLContentSpec.CONTENTSPECNODE_SEQ && separator == XMLDTDContentModelHandler.SEPARATOR_CHOICE ) {
@@ -950,7 +956,7 @@ public class DTDGrammar
      * @see org.apache.xerces.xni.XMLDTDContentModelHandler#OCCURS_ZERO_OR_MORE
      * @see org.apache.xerces.xni.XMLDTDContentModelHandler#OCCURS_ONE_OR_MORE
      */
-    public void occurrence(short occurrence) throws XNIException {
+    public void occurrence(short occurrence, Augmentations augs) throws XNIException {
 
         if (!fMixed) {
             if (occurrence == XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE ) {
@@ -969,7 +975,7 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endGroup() throws XNIException {
+    public void endGroup(Augmentations augs) throws XNIException {
 
         if (!fMixed) {
             if (fPrevNodeIndexStack[fDepth] != -1) {
@@ -991,7 +997,7 @@ public class DTDGrammar
      * @see #empty
      * @see #startGroup
      */
-    public void any() throws XNIException {}
+    public void any(Augmentations augs) throws XNIException {}
 
     /**
      * A content model of EMPTY.
@@ -1001,14 +1007,14 @@ public class DTDGrammar
      * @see #any
      * @see #startGroup
      */
-    public void empty() throws XNIException {}
+    public void empty(Augmentations augs) throws XNIException {}
 
     /**
      * The end of a content model.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endContentModel() throws XNIException {}
+    public void endContentModel(Augmentations augs) throws XNIException {}
 
     //
     // Grammar methods

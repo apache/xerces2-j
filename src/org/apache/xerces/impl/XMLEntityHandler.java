@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl;
 
+import  org.apache.xerces.xni.XMLResourceIdentifier;
 import  org.apache.xerces.xni.XNIException;
 
 /**
@@ -82,12 +83,7 @@ public interface XMLEntityHandler {
      * general entities are just specified by their name.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -97,8 +93,7 @@ public interface XMLEntityHandler {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
-                            String publicId, String systemId,
-                            String baseSystemId,
+                            XMLResourceIdentifier identifier,
                             String encoding) throws XNIException;
 
     /**
