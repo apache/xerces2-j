@@ -126,6 +126,10 @@ extends AbstractDOMParser implements DOMBuilder {
     protected static final String DYNAMIC_VALIDATION = 
     Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
+    /** Feature identifier: expose schema normalized value */
+    protected static final String NORMALIZE_DATA =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
+
 
     // DOM L3 Schema validation types:
     protected static final String XML_SCHEMA_VALIDATION = "http://www.w3.org/2001/XMLSchema";
