@@ -289,6 +289,9 @@ public final class Constants {
     /** Error handler property ("internal/error-handler"). */
     public static final String ERROR_HANDLER_PROPERTY = "internal/error-handler";
 
+    /** XInclude handler property ("internal/xinclude-handler"). */
+    public static final String XINCLUDE_HANDLER_PROPERTY = "internal/xinclude-handler";
+
     /** Entity manager property ("internal/entity-manager"). */
     public static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
 
@@ -333,6 +336,9 @@ public final class Constants {
     
     /** Namespace binder property ("internal/namespace-binder"). */
     public static final String NAMESPACE_BINDER_PROPERTY = "internal/namespace-binder";
+
+    /** Namespace context property ("internal/namespace-context"). */
+    public static final String NAMESPACE_CONTEXT_PROPERTY = "internal/namespace-context";
 
     /** Validation manager property ("internal/validation-manager"). */
     public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";

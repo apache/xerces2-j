@@ -143,9 +143,13 @@ public class XMLDocumentScannerImpl
     protected static final String DTD_SCANNER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
 
-    // property identifier:  ValidationManager
+    /** property identifier:  ValidationManager */
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+
+    /** property identifier:  NamespaceContext */
+    protected static final String NAMESPACE_CONTEXT =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
 
     // recognized features and properties
 
@@ -164,13 +168,15 @@ public class XMLDocumentScannerImpl
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
         DTD_SCANNER,
-        VALIDATION_MANAGER
+        VALIDATION_MANAGER,
+        NAMESPACE_CONTEXT,
     };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS = {
         null,
-        null
+        null,
+        null,
     };
 
     //
@@ -293,7 +299,6 @@ public class XMLDocumentScannerImpl
         fDoctypePublicId = null;
         fDoctypeSystemId = null;
         fSeenDoctypeDecl = false;
-        fNamespaceContext.reset();
 
         // xerces features
         try {
@@ -317,6 +322,15 @@ public class XMLDocumentScannerImpl
         catch (XMLConfigurationException e) {
             fValidationManager = null;
         }
+
+        try {
+            fNamespaceContext = (NamespaceContext)componentManager.getProperty(NAMESPACE_CONTEXT);
+        }
+        catch (XMLConfigurationException e) { }
+        if (fNamespaceContext == null) {
+            fNamespaceContext = new NamespaceSupport();
+        }
+        fNamespaceContext.reset();
 
         // initialize vars
         fScanningDTD = false;
@@ -420,6 +434,12 @@ public class XMLDocumentScannerImpl
             if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
                 fDTDScanner = (XMLDTDScanner)value;
             }
+            if (property.equals(Constants.NAMESPACE_CONTEXT_PROPERTY)) {
+                if (value != null) {
+                    fNamespaceContext = (NamespaceContext)value;
+                }
+            }
+
             return;
         }
 

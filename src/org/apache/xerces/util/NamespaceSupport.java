@@ -301,7 +301,7 @@ public class NamespaceSupport implements NamespaceContext {
 		return new Prefixes(fPrefixes, count);
 	}
     
-    final class Prefixes implements Enumeration {
+    protected final class Prefixes implements Enumeration {
         private String[] prefixes;
         private int counter = 0;
         private int size = 0;
