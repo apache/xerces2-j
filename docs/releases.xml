@@ -2,6 +2,16 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title='May 19, 2000'>
+        <ul>
+           <li>Reworked internals for XML Schema support [andyc, ericye, 
+	       jeffreyr]</li>
+	   <li>Updated XML Schema support to April working draft [ericye, 
+	       jeffreyr]</li>
+	   <li>Changed code to notify error handler of content model 
+	       validation errors before calling endElement [lehors]</li>
+        </ul>
+    </s2>
     <s2 title='May 9, 2000'>
         <ul>
            <li>Upgraded to SAX 2.0. [lehors]</li>
