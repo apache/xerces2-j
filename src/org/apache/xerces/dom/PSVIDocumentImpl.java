@@ -57,6 +57,11 @@
 
 package org.apache.xerces.dom;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 // REVISIT: This is a HACK! DO NOT MODIFY THIS import.
 //          It allows us to expose DOM L3 implemenation via org.w3c.dom packages
 import org.apache.xerces.dom3.DOMConfiguration;
@@ -143,6 +148,19 @@ public class PSVIDocumentImpl extends DocumentImpl {
     public DOMConfiguration getDomConfig(){
         super.getDomConfig();
         return fConfiguration;
+    }
+    
+    // REVISIT: Forbid serialization of PSVI DOM until
+    // we support object serialization of grammars -- mrglavas
+    
+    private void writeObject(ObjectOutputStream out)
+        throws IOException {
+        throw new NotSerializableException(getClass().getName());
+	}
+
+    private void readObject(ObjectInputStream in) 
+        throws IOException, ClassNotFoundException {
+        throw new NotSerializableException(getClass().getName());
     }
     
 } // class PSVIDocumentImpl

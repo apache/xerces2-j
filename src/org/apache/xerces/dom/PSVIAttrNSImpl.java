@@ -57,6 +57,11 @@
 
 package org.apache.xerces.dom;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.*;
 
@@ -268,5 +273,17 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
     public ShortList getItemValueTypes() {
         return this.fItemValueTypes;
     }
+    
+    // REVISIT: Forbid serialization of PSVI DOM until
+    // we support object serialization of grammars -- mrglavas
+    
+    private void writeObject(ObjectOutputStream out)
+        throws IOException {
+        throw new NotSerializableException(getClass().getName());
+    }
 
+    private void readObject(ObjectInputStream in) 
+        throws IOException, ClassNotFoundException {
+        throw new NotSerializableException(getClass().getName());
+    }
 }
