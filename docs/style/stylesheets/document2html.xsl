@@ -258,7 +258,7 @@
     <table width="100%" cellspacing="3" cellpadding="0" border="0">
       <tr>
         <td width="20" valign="top">
-          <img src="resources/note.gif" width="20" height="24" vspace="0" hspace="0" border="0" alt="Note"/>
+          <img src="resources/note.gif" width="20" height="24" vspace="0" hspace="0" border="0" alt="Note:"/>
         </td>
         <td valign="top">
           <font size="-1" face="arial,helvetica,sanserif" color="#000000">
