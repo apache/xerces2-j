@@ -61,6 +61,7 @@ import java.util.*;
 import org.w3c.dom.*;
 import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.XMLManipulator;
 /*import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.GrammarResolver;
 import org.apache.xerces.validators.common.Grammar;
@@ -362,7 +363,6 @@ public class XSAttributeChecker {
 
         // step 4: for each element, make a list of possible attributes
         Hashtable attrList;
-        Object[] attrArray;
         OneElement oneEle;
 
         // for element "attribute" - global
@@ -896,6 +896,7 @@ public class XSAttributeChecker {
 
     public void reset() {
         fIdDefs.clear();
+        // REVISIT: set new error reporter?
         //???fErrorReporter = null;
         fNonSchemaAttrs.clear();
     }
@@ -904,7 +905,7 @@ public class XSAttributeChecker {
     // @param: element    - which element to check
     // @param: isGlobal   - whether a child of <schema> or <redefine>
     // @return: Hashtable - list of attributes and values
-    public Hashtable checkAttributes(Element element, boolean isGlobal) throws Exception {
+    public Hashtable checkAttributes(Element element, boolean isGlobal) {
         if (element == null)
             return null;
 
@@ -912,11 +913,11 @@ public class XSAttributeChecker {
         // G_ for global;
         // LN_ for local + name;
         // LR_ for local + ref;
-        String elName = element.getLocalName(), name;
+        String elName = XMLManipulator.getLocalName(element), name;
         if (isGlobal) {
             name = PRE_GLOBAL + elName;
         } else {
-            if (element.getAttributeNode(SchemaSymbols.ATT_REF) == null)
+            if (XMLManipulator.getAttr(element, SchemaSymbols.ATT_REF) == null)
                 name = PRE_LOC_NAME + elName;
             else
                 name = PRE_LOC_REF + elName;
@@ -934,23 +935,23 @@ public class XSAttributeChecker {
         Hashtable attrList = oneEle.attrList;
 
         // traverse all attributes
-        NamedNodeMap attrs = element.getAttributes();
+        Attr[] attrs = XMLManipulator.getAttrs(element);
         Attr sattr = null;
-        int i = 0;
-        while ((sattr = (Attr)attrs.item(i++)) != null) {
+        for (int i = 0; i < attrs.length; i++) {
+            sattr = attrs[i++];
             // get the attribute name/value
-            String attrName = sattr.getName();
-            String attrVal = sattr.getValue();
+            String attrName = XMLManipulator.getLocalName(sattr);
+            String attrVal = XMLManipulator.getValue(sattr);
 
             // skip anything starts with x/X m/M l/L ???
             // simply put their values in the return hashtable
             if (attrName.toLowerCase().startsWith("xml")) {
-                attrValues.put(attrName, new Object[] {sattr.getValue(), Boolean.FALSE});
+                attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
                 continue;
             }
 
             // for attributes with namespace prefix
-            String attrURI = sattr.getNamespaceURI();
+            String attrURI = XMLManipulator.getNamespaceURI(sattr);
             if (attrURI != null && attrURI.length() != 0) {
                 // attributes with schema namespace are not allowed
                 // and not allowed on "document" and "appInfo"
@@ -964,7 +965,7 @@ public class XSAttributeChecker {
                     // schema traversal (because it's "lax")
                     attrValues.put(attrName,
                                    new Object[] {attrVal, Boolean.FALSE});
-                    String attrRName = attrURI + "," + sattr.getLocalName();
+                    String attrRName = attrURI + "," + attrName;
                     Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
                     if (values == null) {
                         values = new Vector();
@@ -1016,12 +1017,12 @@ public class XSAttributeChecker {
         }
 
         // traverse all required attributes
-        Object[] reqAttrs = oneEle.attrArray;
-        for (i = 0; i < reqAttrs.length; i++) {
-            OneAttr oneAttr = (OneAttr)reqAttrs[i];
+        OneAttr[] reqAttrs = oneEle.attrArray;
+        for (int i = 0; i < reqAttrs.length; i++) {
+            OneAttr oneAttr = reqAttrs[i];
 
             // if the attribute appreared, skip to the next one
-            if (element.getAttributeNode(oneAttr.name) != null)
+            if (XMLManipulator.getAttr(element, oneAttr.name) != null)
                 continue;
 
             // if the attribute is required, report an error
@@ -1206,7 +1207,7 @@ public class XSAttributeChecker {
     }
 
     // report an error. copied from TraverseSchema
-    private void reportSchemaError(String key, Object args[]) throws Exception {
+    private void reportSchemaError(String key, Object args[]) {
         if (fErrorReporter == null) {
             System.out.println("__TraverseSchemaError__ : " + key);
             for (int i=0; i< args.length ; i++) {
@@ -1333,7 +1334,7 @@ class OneElement {
     // the list of attributes that can appear in one element
     public Hashtable attrList;
     // the array of attributes that can appear in one element
-    public Object[] attrArray;
+    public OneAttr[] attrArray;
     // does this element allow attributes from non-schema namespace
     public boolean allowNonSchemaAttr;
 
@@ -1345,10 +1346,10 @@ class OneElement {
         this.attrList = attrList;
 
         int count = attrList.size();
-        this.attrArray = new Object[count];
+        this.attrArray = new OneAttr[count];
         Enumeration enum = attrList.elements();
         for (int i = 0; i < count; i++)
-            this.attrArray[i] = enum.nextElement();
+            this.attrArray[i] = (OneAttr)enum.nextElement();
 
         this.allowNonSchemaAttr = allowNonSchemaAttr;
     }

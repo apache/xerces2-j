@@ -124,6 +124,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     int traverseChoice (Element choiceDecl,
                         XSDocumentInfo schemaDoc,
                         SchemaGrammar grammar) {
+        return -1;
     }
 
 

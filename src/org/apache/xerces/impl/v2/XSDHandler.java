@@ -66,7 +66,6 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLManipulator;
-//import GrammarResolver;???
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Attr;
@@ -178,6 +177,8 @@ class XSDHandler {
         fErrorReporter = errorReporter;
         fGrammarResolver = gResolver;
         fSymbolTable = symbolTable;
+        //REVISIT: get schema grammar instead of validator factory
+        //SchemaGrammar fGrammar4Schema = fGrammarResolver.getGrammar(SchemaSymbols.URI_SCHEMAFORSCHEMA);
         fDatatypeRegistry = new DatatypeValidatorFactoryImpl();
         fDatatypeRegistry.expandRegistryToFullSchemaSet();
         createTraversers();
