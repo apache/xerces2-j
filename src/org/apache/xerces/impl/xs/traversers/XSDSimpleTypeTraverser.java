@@ -126,6 +126,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     // the factory used to query/create simple types
     private final SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
 
+    // whether the type being parsed is a S4S built-in type.
+    private boolean fIsBuiltIn = false;
+
     XSDSimpleTypeTraverser (XSDHandler handler,
                             XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
@@ -246,7 +249,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // get base type from "base" attribute
         XSSimpleType baseValidator = null;
         if ((restriction || list) && baseTypeName != null) {
-            baseValidator = findDTValidator(child, baseTypeName, refType, schemaDoc);
+            baseValidator = findDTValidator(child, name, baseTypeName, refType, schemaDoc);
+            // if its the built-in type, return null from here
+            if (baseValidator == null && fIsBuiltIn) {
+                fIsBuiltIn = false;
+                return null;
+            }
         }
 
         // get types from "memberTypes" attribute
@@ -259,7 +267,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             // for each qname in the list
             for (int i = 0; i < size; i++) {
                 // get the type decl
-                dv = findDTValidator(child, (QName)memberTypes.elementAt(i),
+                dv = findDTValidator(child, name, (QName)memberTypes.elementAt(i),
                                      XSConstants.DERIVATION_UNION, schemaDoc);
                 if (dv != null) {
                     // if it's a union, expand it
@@ -401,7 +409,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     //return XSSimpleType available for the baseTypeStr, null if not found or disallowed.
     // also throws an error if the base type won't allow itself to be used in this context.
     // REVISIT: can this code be re-used?
-    private XSSimpleType findDTValidator(Element elm, QName baseTypeStr, short baseRefContext, XSDocumentInfo schemaDoc) {
+    private XSSimpleType findDTValidator(Element elm, String refName,
+                                         QName baseTypeStr, short baseRefContext,
+                                         XSDocumentInfo schemaDoc) {
         if (baseTypeStr == null)
             return null;
 
@@ -411,6 +421,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if (baseType.getTypeCategory() != XSTypeDecl.SIMPLE_TYPE ||
                 baseType == SchemaGrammar.fAnySimpleType &&
                 baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
+                // if the base type is anySimpleType and the current type is
+                // a S4S built-in type, return null. (not an error).
+                if (baseType == SchemaGrammar.fAnySimpleType &&
+                    checkBuiltIn(refName, schemaDoc.fTargetNamespace)) {
+                    return null;
+                }
                 reportSchemaError("st-props-correct.4.1", new Object[]{baseTypeStr.rawname}, elm);
                 return SchemaGrammar.fAnySimpleType;
             }
@@ -428,6 +444,16 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
 
         return (XSSimpleType)baseType;
+    }
+
+    // check whethe the type denoted by the name and namespace is a S4S
+    // built-in type. update fIsBuiltIn at the same time.
+    private final boolean checkBuiltIn(String name, String namespace) {
+        if (namespace != SchemaSymbols.URI_SCHEMAFORSCHEMA)
+            return false;
+        if (SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(name) != null)
+            fIsBuiltIn = true;
+        return fIsBuiltIn;
     }
 
     // find if a datatype validator is a list or has list datatype member.
