@@ -47,7 +47,6 @@ SAMPLESJARFILE = xercesSamples.jar
 
 #define the package value	
 PACKAGES = org.apache.xerces.parsers \
-           org.apache.xerces.framework \
            org.apache.xerces.dom \
            org.apache.xerces.dom.events \
            org.apache.xml.serialize \
