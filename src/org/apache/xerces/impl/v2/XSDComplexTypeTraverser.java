@@ -57,6 +57,9 @@
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XInt;
+import org.apache.xerces.util.XIntPool;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
 
@@ -71,10 +74,13 @@ import org.w3c.dom.Element;
  *   mixed = boolean : false
  *   name = NCName
  *   {any attributes with non-schema namespace . . .}>
- *   Content: (annotation?, (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?))))
+ *   Content: (annotation?, (simpleContent | complexContent | 
+ *            ((group | all | choice | sequence)?, 
+ *            ((attribute | attributeGroup)*, anyAttribute?))))
  * </complexType>
  * @version $Id$
  */
+
 class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
 
@@ -84,25 +90,235 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         super(handler, errorReporter, gAttrCheck);
     }
 
-    XSComplexTypeDecl traverseLocal(Element elmNode,
-                                    XSDocumentInfo schemaDoc,
-                                    SchemaGrammar grammar) {
 
-        return null;
+    private class ComplexTypeRecoverableError extends Exception {
+      ComplexTypeRecoverableError() {super();}
+      ComplexTypeRecoverableError(String s) {super(s);}
     }
 
-    XSComplexTypeDecl traverseGlobal (Element elmNode,
-                                      XSDocumentInfo schemaDoc,
-                                      SchemaGrammar grammar){
+    /**
+     * Traverse local complexType declarations 
+     *
+     * @param Element
+     * @param XSDocumentInfo
+     * @param SchemaGrammar
+     * @return XSComplexTypeDecl 
+     */
+    XSComplexTypeDecl traverseLocal(Element complexTypeNode,
+                      XSDocumentInfo schemaDoc,
+                      SchemaGrammar grammar) {
 
-        return null;
+
+        Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, false, 
+                              schemaDoc.fNamespaceSupport);
+        String complexTypeName = genAnonTypeName(complexTypeNode);
+        XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode, 
+                                 complexTypeName, attrValues, schemaDoc, grammar);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+
+        return type;
+    }
+
+    /**
+     * Traverse global complexType declarations 
+     *
+     * @param Element
+     * @param XSDocumentInfo
+     * @param SchemaGrammar
+     * @return XSComplexTypeDecXSComplexTypeDecl 
+     */
+    XSComplexTypeDecl traverseGlobal (Element complexTypeNode,
+                        XSDocumentInfo schemaDoc,
+                        SchemaGrammar grammar){
+
+        Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, true, 
+                              schemaDoc.fNamespaceSupport);
+        String complexTypeName = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
+        XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode, 
+                                 complexTypeName, attrValues, schemaDoc, grammar);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+
+        return type;
+    }
+
+
+    private XSComplexTypeDecl traverseComplexTypeDecl(Element complexTypeDecl, 
+                                                      String complexTypeName, 
+                                                      Object[] attrValues, 
+                                                      XSDocumentInfo schemaDoc,
+                                                      SchemaGrammar grammar) {
+
+        Boolean abstractAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_ABSTRACT];
+        XInt    blockAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_BLOCK];
+        Boolean mixedAtt     = (Boolean) attrValues[XSAttributeChecker.ATTIDX_MIXED];
+        XInt    finalAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_FINAL];
+
+        XSComplexTypeDecl complexType = new XSComplexTypeDecl(); 
+        complexType.fName = schemaDoc.fTargetNamespace + "," + 
+                               complexTypeName;
+        complexType.fBlock = blockAtt == null ? 
+                             SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
+        complexType.fFinal = finalAtt == null ?
+                             SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
+        if (abstractAtt.booleanValue())
+            complexType.setIsAbstractType();
+        
+
+        Element child = null;
+        
+        try {
+            // ---------------------------------------------------------------
+            // First, handle any ANNOTATION declaration and get next child
+            // ---------------------------------------------------------------
+            child = checkContent(complexTypeDecl, 
+                    DOMUtil.getFirstChildElement(complexTypeDecl), true);
+
+            // ---------------------------------------------------------------
+            // Process the content of the complex type definition
+            // ---------------------------------------------------------------
+            if (child==null) {
+              //
+              // EMPTY complexType with complexContent
+              //
+              processComplexContent(child, complexType, null, mixedAtt.booleanValue(),
+                                    schemaDoc, grammar);
+            } 
+            else if (DOMUtil.getLocalName(child).equals
+                    (SchemaSymbols.ELT_SIMPLECONTENT)) {
+              //
+              // SIMPLE CONTENT - to be done
+              //
+            }
+            else if (DOMUtil.getLocalName(child).equals
+                    (SchemaSymbols.ELT_COMPLEXCONTENT)) {
+              //
+              // EXPLICIT COMPLEX CONTENT - to be done
+              //
+            }
+            else {
+              //
+              // We must have ....
+              // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
+              // Note that it's possible that only attributes are specified.
+              //
+              processComplexContent(child, complexType, null, mixedAtt.booleanValue(), 
+                                    schemaDoc, grammar);
+            }
+       }    
+       catch (ComplexTypeRecoverableError e) {
+         String message = e.getMessage();
+         System.out.println(message);
+         //handleComplexTypeError(message,typeNameIndex,typeInfo);
+       }
+
+       return complexType;
+             
+            
     }
 
     private void processComplexContent(Element complexContentChild,
-                                       XSComplexTypeDecl typeInfo,
-                                       QName baseName,
-                                       boolean isMixed) throws Exception {
+                                 XSComplexTypeDecl typeInfo, QName baseName,
+                                 boolean isMixed, 
+                                 XSDocumentInfo schemaDoc, SchemaGrammar grammar)
+                                 throws ComplexTypeRecoverableError {
 
+       Element attrNode = null;
+       XSParticleDecl particle = null; 
+       String typeName = typeInfo.fName; 
+
+       if (complexContentChild != null) {
+           // -------------------------------------------------------------
+           // GROUP, ALL, SEQUENCE or CHOICE, followed by attributes, if specified.
+           // Note that it's possible that only attributes are specified.
+           // -------------------------------------------------------------
+
+
+          String childName = complexContentChild.getLocalName();
+
+          if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+
+               particle = fSchemaHandler.fGroupTraverser.traverseLocal(complexContentChild, 
+                                         schemaDoc, grammar);
+               attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+           }
+           else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+               particle = traverseSequence(complexContentChild,schemaDoc,grammar,
+                                  NOT_ALL_CONTEXT);
+               attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+           }
+           else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+               particle = traverseChoice(complexContentChild,schemaDoc,grammar,
+                                  NOT_ALL_CONTEXT);
+               attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+           }
+           else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+               particle = traverseAll(complexContentChild,schemaDoc,grammar,
+                                  PROCESSING_ALL_GP);
+               attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
+           }
+           else if (isAttrOrAttrGroup(complexContentChild)) {
+               attrNode = complexContentChild;
+           }
+           else {
+               throw new ComplexTypeRecoverableError(
+                "Invalid child '"+ childName +"' in the complex type");
+           }
+       }
+
+       typeInfo.fParticle = particle;
+
+       // -----------------------------------------------------------------------
+       // Merge in information from base, if it exists - TO BE DONE
+       // -----------------------------------------------------------------------
+
+       // -----------------------------------------------------------------------
+       // Set the content type 
+       // -----------------------------------------------------------------------
+
+       if (isMixed) {
+
+           // if there are no children, detect an error
+           // See the definition of content type in Structures 3.4.1
+           // This is commented out for now, until I get a clarification from schema WG
+           // LM.
+
+           if (typeInfo.fParticle == null) {
+             //throw new ComplexTypeRecoverableError("Type '" + typeName + "': The content of a mixed complexType must not be empty");
+
+             // for "mixed" complex type with empty content
+             // we add an optional leaf node to the content model
+             // with empty namespace and -1 name (which won't match any element)
+             // so that the result content model is emptible and only match
+             // with cdata
+
+             // TO BE DONE
+
+           }
+
+           else
+             typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+       }
+       else if (typeInfo.fParticle == null)
+           typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_EMPTY;
+       else
+           typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
+
+
+       // -------------------------------------------------------------
+       // REVISIT - to we need to add a template element for the type?
+       // -------------------------------------------------------------
+
+       // -------------------------------------------------------------
+       // Now, check attributes and handle - TO BE DONE
+       // -------------------------------------------------------------
+
+
+    } // end processComplexContent
+
+
+    private boolean isAttrOrAttrGroup(Element child) {
+       // REVISIT - TO BE DONE
+       return false;
     }
 
     private void traverseSimpleContentDecl(Element simpleContentDecl,
@@ -113,6 +329,26 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                             XSComplexTypeDecl typeInfo,
                                             boolean mixedOnComplexTypeDecl){
     }
+
+    /* 
+     * Generate a name for an anonymous type
+     */
+    private String genAnonTypeName(Element complexTypeDecl) {
+
+        // Generate a unique name for the anonymous type by concatenating together the
+        // names of parent nodes
+        // The name is quite good for debugging/error purposes, but we may want to 
+        // revisit how this is done for performance reasons (LM).
+        String typeName;
+        Element node=complexTypeDecl;
+        typeName="#AnonType_";
+        while ((Element)node.getParentNode()!=null) {
+          node = (Element)node.getParentNode();
+          typeName = typeName+node.getAttribute(SchemaSymbols.ATT_NAME);
+        }
+        return typeName;
+    }
+
 
     // HELP FUNCTIONS:
     //
