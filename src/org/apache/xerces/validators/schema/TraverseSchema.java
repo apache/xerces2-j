@@ -4076,12 +4076,161 @@ public class TraverseSchema implements
             }
             allChildCount++;
         }
-        left = buildAllModel(allChildren,allChildCount);
-
+        try {
+           left = allCalcWrapper(allChildren, allChildCount);
+        } catch (java.lang.OutOfMemoryError e) {
+            reportGenericSchemaError("The size of the <all>"
+                + " declaration in your schema is too large for this parser"
+                + " and elements using it will not validate correctly.");
+        }
         return left;
     }
     
-    /** builds the all content model */
+    // allCalcWrapper initiates the recursive calculation of the purmutations
+    // of targetArray. 
+    // @param initialArray:  the wrray we're passed, whose size may
+    // not reflect the real number of elements to be permuted.
+    // @param size:  te true size of this array.
+    private int allCalcWrapper (int[] initialArray, int size)
+            throws Exception {
+        int permSize = size/2;
+        int[] targetArray = new int[size];
+        System.arraycopy(initialArray, 0, targetArray, 0, size);
+        
+        if(targetArray.length == 1) {
+            return targetArray[0];
+        } else if (targetArray.length < 1) {
+            return -2;
+        } else if (permSize > targetArray.length) {
+            reportGenericSchemaError("The size of the permutations " 
+                + permSize + 
+                " cannot be greater than the length of the array to be permuted; error in processing of <all>!");
+            return -2;
+        } else if (targetArray.length <= 3) {
+            return allCombo(targetArray);
+        } else {
+            return allCalc (targetArray, 0, permSize, 0, new
+                int[targetArray.length-permSize], -2);
+        }
+    } // allCalcWrapper
+
+    // allCombo generates all combinations of the given array.  It
+    // assumes the array has either 2 or 3 elements, and is hardcoded
+    // for speed.  
+    private int allCombo(int[] targetArray) 
+            throws Exception {
+        if(targetArray.length == 2) {
+            int left, right;  
+            int[] lA = {targetArray[0], targetArray[1]};
+            int[] rA = {targetArray[1], targetArray[0]};
+            left = createSeq(lA);
+            right = createSeq(rA);
+            return fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, left, right, false);
+        } else if (targetArray.length == 3) {
+            int tempChoice;
+            int[] a1 = {targetArray[0], targetArray[1], targetArray[2]}; 
+            int[] a2 = {targetArray[0], targetArray[2], targetArray[1]};
+            int[] a3 = {targetArray[1], targetArray[0], targetArray[2]};
+            int[] a4 = {targetArray[1], targetArray[2], targetArray[0]};
+            int[] a5 = {targetArray[2], targetArray[1], targetArray[0]};
+            int[] a6 = {targetArray[2], targetArray[0], targetArray[1]};
+            int s1 = createSeq(a1);
+            int s2 = createSeq(a2);
+            int s3 = createSeq(a3);
+            int s4 = createSeq(a4);
+            int s5 = createSeq(a5);
+            int s6 = createSeq(a6);
+            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                    s1, s2, false);
+            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                    tempChoice, s3, false);
+            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                    tempChoice, s4, false);
+            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                    tempChoice, s5, false);
+            return fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                    tempChoice, s6, false);
+        } else {
+            return -2;
+        }
+    } // end allCombo
+    
+    // The purpose of allCalc is to produce all permutations of
+    // permSize elements that can be derived from targetArray.
+    // @param targetArray:  the array from which permutations
+    // must be extracted;
+    // @param targetPosition:  position in the target array of the
+    // last element in targetArray that was completely processed;
+    // @param permSize:  the size of the permutation set
+    // @param progressIndicator:  indication of the number of meaningful
+    // elements in complementArray;
+    // @param complementArray:  contains the set of elements that were
+    // contained in the global targetArray array and are not
+    // present in this invocation's targetArray.
+    // @param choiceHead:  index of the head of curretn <choice>
+    // linked list.
+    private int allCalc(int[] targetArray, int targetPosition, int 
+            permSize, int progressIndicator, int[] 
+            complementArray, int choiceHead) 
+                    throws Exception {
+        if (targetArray.length-permSize-targetPosition == 1) { //base case
+            int[] newTargetArray = new int[permSize+targetPosition];
+            int allSeq;     // pointer to sequence of <all>'s
+            for (int i=targetPosition; i<targetArray.length; i++){
+                arrayProducer(targetArray, i,
+                    newTargetArray, complementArray,
+                    progressIndicator);
+                // newTargetArray and complementArray must be recursed
+                // upon...
+                int c1 = allCalcWrapper(newTargetArray, newTargetArray.length);
+                int c2 = allCalcWrapper(complementArray, complementArray.length);
+                allSeq = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                    c1, c2, false);
+                if (choiceHead != -2) { 
+                    choiceHead =
+                        fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                        choiceHead, allSeq, false);
+                } else {
+                    choiceHead = allSeq;
+                } 
+            }
+            return choiceHead;
+        } else { // recursive case
+            for (int i=targetPosition; i<targetArray.length; i++){
+                int[] newTargetArray = new
+                    int[targetArray.length-1];
+                arrayProducer(targetArray, i, 
+                    newTargetArray, complementArray,
+                    progressIndicator);
+                choiceHead = allCalc(newTargetArray, targetPosition, permSize,
+                    progressIndicator+1, complementArray, choiceHead);
+                targetPosition++;
+                permSize--;
+            }
+            return choiceHead;
+        } // end else...if 
+    }// allCalc 
+
+    // The purpose of arrayProducer is to create two arrays out of
+    // targetArray:  the first, newTargetArray, will contain all the
+    // elements of targetArray except the tPos-th; complementArray
+    // will have its cPos-th element set to targetArray[tPos].  
+    // It is assumed that tPos, cPos and targetArray have meaningful
+    // values; complementArray should already have been allocated and
+    // newTargetArray should also have been allocated previously.
+    private void arrayProducer(int [] targetArray, int tPos, 
+            int[] newTargetArray, int[] complementArray, 
+            int cPos) {
+        complementArray[cPos] = targetArray[tPos];
+        if (tPos > 0) 
+            System.arraycopy(targetArray, 0, newTargetArray, 0, tPos);
+        if (tPos < targetArray.length-1) 
+            System.arraycopy(targetArray, tPos+1, newTargetArray, tPos, targetArray.length-tPos-1);
+    } // end arrayProducer
+
+    /****************************************
+     * The following code is no longre used...
+    // builds the all content model 
     private int buildAllModel(int children[], int count) throws Exception {
 
         // build all model
@@ -4110,7 +4259,7 @@ public class TraverseSchema implements
         return -1;
     }
 
-    /** Builds the all model. */
+   // Builds the all model. 
     private int buildAllModel(int src[], int offset,
                               XMLContentSpec choice) throws Exception {
 
@@ -4154,6 +4303,7 @@ public class TraverseSchema implements
         return choiceIndex;
 
     } // buildAllModel(int[],int,ContentSpecNode,ContentSpecNode):int
+    ****************************************/
 
     /** Creates a sequence. */
     private int createSeq(int src[]) throws Exception {
@@ -4172,7 +4322,9 @@ public class TraverseSchema implements
 
     } // createSeq(int[]):int
 
-    /** Shifts a value into position. */
+    /****************************************
+     * More coe that is no longer necessary...
+    // Shifts a value into position.    
     private void shift(int src[], int pos, int offset) {
 
         int temp = src[offset];
@@ -4183,7 +4335,7 @@ public class TraverseSchema implements
 
     } // shift(int[],int,int)
 
-    /** Simple sort. */
+    // Simple sort. 
     private void sort(int src[], final int offset, final int length) {
 
         for (int i = offset; i < offset + length - 1; i++) {
@@ -4202,7 +4354,7 @@ public class TraverseSchema implements
 
     } // sort(int[],int,int)
 
-    /** Swaps two values. */
+    // Swaps two values. 
     private void swap(int src[], int i, int j) {
 
         int temp = src[i];
@@ -4210,6 +4362,7 @@ public class TraverseSchema implements
         src[j] = temp;
 
     } // swap(int[],int,int)
+    ***************************************/
 
     
 
