@@ -101,7 +101,7 @@ public class XMLElementDecl {
     public ContentModelValidator contentModelValidator;
 
     /** simpleType */
-    public XMLSimpleType simpleType;
+    public XMLSimpleType simpleType = new XMLSimpleType();
 
     //
     // Methods

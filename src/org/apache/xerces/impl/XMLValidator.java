@@ -178,6 +178,11 @@ public class XMLValidator
         fInDTD = false;
         fInDTDIgnore = false;
 
+        fValidation = configurationManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
+
+        // plug in the components
+        fErrorReporter = (XMLErrorReporter) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
+
     } // reset(XMLComponentManager)
 
     /**

@@ -244,8 +244,10 @@ public class Grammar {
       }
 
       /* Validators are null until we add that code */
-      elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index];
-
+      //elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index];
+      if (elementDecl.type == XMLElementDecl.TYPE_CHILDREN || elementDecl.type == XMLElementDecl.TYPE_MIXED) {
+          elementDecl.contentModelValidator = getElementContentModelValidator(elementDeclIndex);
+      }
       
 
       //elementDecl.contentModelValidator = null;
@@ -329,11 +331,304 @@ public class Grammar {
    }
 
    /**
+    * getContentSpecAsString
+    *
+    * @param elementDeclIndex
+    *
+    * @ return String
+    */
+
+   public String getContentSpecAsString(int elementDeclIndex ){
+       if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+          return null;
+       }
+
+       int chunk = elementDeclIndex >> CHUNK_SHIFT;
+       int index = elementDeclIndex &  CHUNK_MASK;
+
+       int contentSpecIndex = fElementDeclContentSpecIndex[chunk][index];
+
+       // lookup content spec node
+       XMLContentSpec contentSpec = new XMLContentSpec();
+
+       if (getContentSpec(contentSpecIndex, contentSpec)) {
+
+           // build string
+           StringBuffer str = new StringBuffer();
+           int    parentContentSpecType = contentSpec.type & 0x0f;
+           int    nextContentSpec;
+           switch (parentContentSpecType) {
+               case XMLContentSpec.CONTENTSPECNODE_LEAF: {
+                   str.append('(');
+                   if (contentSpec.value == null && contentSpec.otherValue == null) {
+                       str.append("#PCDATA");
+                   }
+                   else {
+                       str.append(contentSpec.value);
+                   }
+                   str.append(')');
+                   break;
+               }
+               case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
+                   getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                   nextContentSpec = contentSpec.type;
+
+                   if (nextContentSpec == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                       str.append('(');
+                       str.append(contentSpec.value);
+                       str.append(')');
+                   } else if( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                           nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                           nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                       str.append('(' );
+                       appendContentSpec( contentSpec, str, 
+                                                                true, parentContentSpecType );
+                       str.append(')');
+
+                   } else {
+                       appendContentSpec( contentSpec, str, 
+                                                                true, parentContentSpecType );
+                   }
+                   str.append('?');
+                   break;
+               }
+               case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
+                   getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                   nextContentSpec = contentSpec.type;
+
+                   if ( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                       str.append('(');
+                       if (contentSpec.value == null && contentSpec.otherValue == null) {
+                           str.append("#PCDATA");
+                       }
+                       else if (contentSpec.otherValue != null) {
+                           str.append("##any:uri="+contentSpec.otherValue);
+                       }
+                       else if (contentSpec.value == null) {
+                           str.append("##any");
+                       }
+                       else {
+                            appendContentSpec( contentSpec, str, 
+                                                   true, parentContentSpecType );
+                       }
+                       str.append(')');
+
+                   } else if( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                       nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                       nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                       str.append('(' );
+                       appendContentSpec( contentSpec, str, 
+                                                           true, parentContentSpecType );
+                       str.append(')');
+                   } else {
+                       appendContentSpec( contentSpec, str, 
+                                                               true, parentContentSpecType );
+
+                       //str.append(stringPool.toString(contentSpec.value));
+                   }
+                   str.append('*');
+                   break;
+               }
+               case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
+                   getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                   nextContentSpec = contentSpec.type;
+
+                   if ( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                       str.append('(');
+                       if (contentSpec.value == null && contentSpec.otherValue == null) {
+                           str.append("#PCDATA");
+                       }
+                       else if (contentSpec.otherValue != null) {
+                           str.append("##any:uri="+contentSpec.otherValue);
+                       }
+                       else if (contentSpec.value == null) {
+                           str.append("##any");
+                       }
+                       else {
+                           str.append(contentSpec.value);
+                       }
+                       str.append(')');
+                   } else if( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                       nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                       nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                       str.append('(' );
+                       appendContentSpec( contentSpec, str, 
+                                                     true, parentContentSpecType );
+                       str.append(')');
+                   } else {
+                       appendContentSpec( contentSpec, str,
+                                                           true, parentContentSpecType);
+                   }
+                   str.append('+');
+                   break;
+               }
+               case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+               case XMLContentSpec.CONTENTSPECNODE_SEQ: {
+                   appendContentSpec(
+                                     contentSpec, str, true, parentContentSpecType );
+                   break;
+               }
+               case XMLContentSpec.CONTENTSPECNODE_ANY: {
+                   str.append("##any");
+                   if (contentSpec.otherValue != null) {
+                       str.append(":uri=");
+                       str.append(contentSpec.otherValue);
+                   }
+                   break;
+               }
+               case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER: {
+                   str.append("##other:uri=");
+                   str.append(contentSpec.otherValue);
+                   break;
+               }
+               case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL: {
+                   str.append("##local");
+                   break;
+               }
+               default: {
+                   str.append("???");
+               }
+
+           } // switch type
+
+           // return string
+           return str.toString();
+       }
+
+       // not found
+       return null;
+
+   }
+
+   private void appendContentSpec(XMLContentSpec contentSpec, 
+                                         StringBuffer str, 
+                                         boolean parens,
+                                         int     parentContentSpecType ) {
+
+       int thisContentSpec = contentSpec.type & 0x0f;
+       switch (thisContentSpec) {
+           case XMLContentSpec.CONTENTSPECNODE_LEAF: {
+               if (contentSpec.value == null && contentSpec.otherValue == null) {
+                   str.append("#PCDATA");
+               }
+               else if (contentSpec.value == null && contentSpec.otherValue != null) {
+                   str.append("##any:uri="+contentSpec.otherValue);
+               }
+               else if (contentSpec.value == null) {
+                   str.append("##any");
+               }
+               else {
+                   str.append(contentSpec.value);
+               }
+               break;
+           }
+           case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
+               if( parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                   parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE ||
+                   parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                   getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                   str.append('(');
+                   appendContentSpec(contentSpec, str, true, thisContentSpec );
+                   str.append(')');
+
+               } 
+               else {
+                   getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                   appendContentSpec( contentSpec, str, true, thisContentSpec );
+               }
+               str.append('?');
+               break;
+           }
+           case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
+               if( parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE ||
+                  parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE ||
+                  parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                  getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                  str.append('(');
+                  appendContentSpec(contentSpec, str, true, thisContentSpec);
+                  str.append(')' );
+               } else{
+                   getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                   appendContentSpec(contentSpec, str, true, thisContentSpec);
+               }
+               str.append('*');
+               break;
+           }
+           case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
+               if( parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE   ||
+                   parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                   parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+
+                 str.append('(');
+                 getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                 appendContentSpec(contentSpec, str, true, thisContentSpec);
+                 str.append(')' );
+               } else {
+                   getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+                   appendContentSpec(contentSpec, str, true, thisContentSpec);
+               }
+               str.append('+');
+               break;
+           }
+           case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+           case XMLContentSpec.CONTENTSPECNODE_SEQ: {
+               if (parens) {
+                   str.append('(');
+               }
+               int type = contentSpec.type;
+               int otherValue = ((int[])contentSpec.otherValue)[0];
+               getContentSpec(((int[])contentSpec.value)[0], contentSpec);
+               appendContentSpec(contentSpec, str, contentSpec.type != type, thisContentSpec);
+               if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
+                   str.append('|');
+               }
+               else {
+                   str.append(',');
+               }
+               // REVISIT: Do we need this? -Ac
+               //if (++index == CHUNK_SIZE) {
+                 //  chunk++;
+                 //  index = 0;
+               // }
+               getContentSpec(((int[])contentSpec.otherValue)[0], contentSpec);
+               appendContentSpec(contentSpec, str, true, thisContentSpec);
+               if (parens) {
+                   str.append(')');
+               }
+               break;
+           }
+           case XMLContentSpec.CONTENTSPECNODE_ANY: {
+               str.append("##any");
+               if (contentSpec.otherValue != null) {
+                   str.append(":uri=");
+                   str.append(contentSpec.otherValue);
+               }
+               break;
+           }
+           case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER: {
+               str.append("##other:uri=");
+               str.append(contentSpec.otherValue);
+               break;
+           }
+           case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL: {
+               str.append("##local");
+               break;
+           }
+           default: {
+               str.append("???");
+               break;
+           }
+
+       } // switch type
+
+   } // appendContentSpec(XMLContentSpec.Provider,StringPool,XMLContentSpec,StringBuffer,boolean)
+
+   /**
     * getFirstAttributeDeclIndex
     * 
     * @param elementDeclIndex 
     * 
-    * @return 
+    * @return int
     */
    public int getFirstAttributeDeclIndex(int elementDeclIndex) {
       int chunk = elementDeclIndex >> CHUNK_SHIFT;
@@ -575,7 +870,7 @@ public class Grammar {
       }
 
       if (isDTD()) {
-          fScopeElementUriLocalpartHash.put(scope, elementName, null, elementDeclIndex);
+          fScopeElementUriLocalpartHash.put(scope, elementDecl.name.rawname, null, elementDeclIndex);
       }
       else {
           fScopeElementUriLocalpartHash.put( scope, elementDecl.name.localpart, 
@@ -1015,6 +1310,7 @@ public class Grammar {
       fElementDeclType[chunk] = new short[CHUNK_SIZE];
       fElementDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
       fElementDeclContentModelValidator[chunk] = new ContentModelValidator[CHUNK_SIZE];
+      fElementDeclContentSpecIndex[chunk] = new int[CHUNK_SIZE];
       fElementDeclFirstAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
       fElementDeclLastAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
       fElementDeclDefaultValue[chunk] = new String[CHUNK_SIZE]; 

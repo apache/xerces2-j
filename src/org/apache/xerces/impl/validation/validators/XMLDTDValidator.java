@@ -281,20 +281,19 @@ public class XMLDTDValidator
             //fInElementContent = false;
         }
         else {
-            //  0. resolve the element
+            //  resolve the element
             fCurrentElementIndex = fCurrentGrammar.getElementDeclIndex(element, -1);
 
             fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
-            if (fCurrentContentSpecType == -1 && fValidation ) {
-                // REVISIT
-                /****
-                reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
-                                          XMLMessages.VC_ELEMENT_VALID,
-                                          element.rawname);
-                /****/
+            if (fCurrentElementIndex == -1 && fValidation ) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                           "MSG_ELEMENT_NOT_DECLARED",
+                                           new Object[]{ element.rawname },
+                                           XMLErrorReporter.SEVERITY_ERROR);
             }
             
-            //  1. insert default attributes
+            //  0. insert default attributes
+            //  1. normalize the attributes
             //  2. validate the attrivute list.
             // TO DO: 
             // addDefaultAttributesAndValidate(fCurrentElementIndex, attriubtes, fStandaloneIsNo);
@@ -398,9 +397,6 @@ public class XMLDTDValidator
      */
     public void endElement(QName element) throws SAXException {
 
-        String prefixIndex = fCurrentElement.prefix;
-        String elementType = fCurrentElement.rawname;
-
         fElementDepth--;
         if (fValidation) {
             int elementIndex = fCurrentElementIndex;
@@ -413,22 +409,21 @@ public class XMLDTDValidator
 
 
                 if (result != -1) {
-                    // TO DO : fix this
-                    /****
-                    int majorCode = result != childrenLength ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
-                    fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                    fCurrentGrammar.getElementDecl(elementIndex, fTempElementDecl);
                     if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
-                        reportRecoverableXMLError(majorCode,
-                                                  0,
-                                                  fStringPool.toString(elementType),
-                                                  "EMPTY");
-                    } else
-                        reportRecoverableXMLError(majorCode,
-                                                  0,
-                                                  fStringPool.toString(elementType),
-                                                  XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));
-                                                  
-                    /****/
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                   "MSG_CONTENT_INVALID",
+                                                   new Object[]{ element.rawname, "EMPTY" },
+                                                   XMLErrorReporter.SEVERITY_ERROR);
+                    } else {
+                        String messageKey = result != childrenLength ? 
+                                            "MSG_CONTENT_INVALID" : "MSG_CONTENT_INCOMPLETE";
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                   messageKey,
+                                                   new Object[]{ element.rawname, 
+                                                       fCurrentGrammar.getContentSpecAsString(elementIndex) },
+                                                   XMLErrorReporter.SEVERITY_ERROR);
+                    }
                 }
             }
             fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;

@@ -308,13 +308,29 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
       XMLElementDecl tmpElementDecl;
       if (( tmpElementDecl = (XMLElementDecl) fElementDeclTab.get(name) ) == null ) {
          XMLElementDecl elementDecl       = new XMLElementDecl();
-         QName          elementName       = new QName();
+         QName          elementName       = new QName(null, name, name, null);
          XMLSimpleType  elementSimpleType = new XMLSimpleType();
 
          elementName.localpart             = name;
          elementDecl.name                  = elementName;
          elementDecl.simpleType            = elementSimpleType;
          elementDecl.contentModelValidator = null;
+         elementDecl.scope= -1;
+         
+         if (contentModel.equals("EMPTY")) {
+             elementDecl.type = XMLElementDecl.TYPE_EMPTY;
+         }
+         else if (contentModel.equals("ANY")) {
+             elementDecl.type = XMLElementDecl.TYPE_ANY;
+         }
+         else if (contentModel.startsWith("(") ) {
+             if (contentModel.indexOf("#PCDATA") > 0 ) {
+                 elementDecl.type = XMLElementDecl.TYPE_MIXED;
+             }
+             else {
+                 elementDecl.type = XMLElementDecl.TYPE_CHILDREN;
+             }
+         }
 
 
          //int elementDeclIdx = this.getElementDeclIndex( elementDecl.name );
@@ -384,7 +400,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
          this.fElementDeclTab.remove( (String) elementName );
 
          //Get Grammar index to grammar array
-         int elementIndex       = getElementDeclIndex( elementName, 0 );
+         int elementIndex       = getElementDeclIndex( elementName, -1 );
 
 
          fCurrentAttributeIndex = createAttributeDecl();// Create current Attribute Decl
@@ -643,11 +659,11 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
    public void childrenStartGroup() throws SAXException {
       fDepth++;
       initializeContentModelStack();
-      try {
-         addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, fElementDecl.name.rawname );
-      } catch ( Exception ex) {
-         ex.printStackTrace();
-      }
+      //try {
+         //addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, fElementDecl.name.rawname );
+      //} catch ( Exception ex) {
+         //ex.printStackTrace();
+      //}
       //System.out.println("group = " );
    } // childrenStartGroup
 
@@ -661,7 +677,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     * @see TYPE_CHILDREN
     */
    public void childrenElement(String elementName) throws SAXException {
-      //System.out.println("chil elem = " + elementName );
+       fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, elementName);
    } // childrenElement
 
    /**

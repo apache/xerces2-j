@@ -67,6 +67,7 @@ import org.apache.xerces.impl.XMLInputSource;
 import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.impl.validation.validators.XMLDTDValidator;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -186,7 +187,9 @@ public abstract class XMLDocumentParser
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fProperties.put(DTD_SCANNER, fDTDScanner);
 
-        fValidator = new XMLValidator();
+        //REVISIT, for now, plug in the default DTD validator;
+        //fValidator = new XMLValidator();
+        fValidator = new XMLDTDValidator();
         final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
         fProperties.put(VALIDATOR, fValidator);
         
