@@ -609,7 +609,7 @@ public class XMLSchemaValidator
                 fDocumentHandler.emptyElement(element, attributes, modifiedAugs);
             } else {
                 fDocumentHandler.startElement(element, attributes, modifiedAugs);
-                fDocumentHandler.characters(fDefaultValue, modifiedAugs);
+                fDocumentHandler.characters(fDefaultValue, null);
                 fDocumentHandler.endElement(element, modifiedAugs);
             }
         }
@@ -687,9 +687,9 @@ public class XMLSchemaValidator
         // call handlers
         if (fDocumentHandler != null) {
             if (fSchemaElementDefault || fDefaultValue == null) {
-                   fDocumentHandler.endElement(element, modifiedAugs);
+                fDocumentHandler.endElement(element, modifiedAugs);
             } else {
-                fDocumentHandler.characters(fDefaultValue, modifiedAugs);
+                fDocumentHandler.characters(fDefaultValue, null);
                 fDocumentHandler.endElement(element, modifiedAugs);
             }
         }
@@ -2670,22 +2670,21 @@ public class XMLSchemaValidator
         XMLString defaultValue = null;
         // 1 If the item is ?valid? with respect to an element declaration as per Element Locally Valid (Element) (?3.3.4) and the {value constraint} is present, but clause 3.2 of Element Locally Valid (Element) (?3.3.4) above is not satisfied and the item has no element or character information item [children], then schema. Furthermore, the post-schema-validation infoset has the canonical lexical representation of the {value constraint} value as the item's [schema normalized value] property.
         if (fCurrentElemDecl != null && fCurrentElemDecl.fDefault != null &&
-            fBuffer.toString().length() == 0 && fChildCount == 0 && !fNil) {
+            fBuffer.length() == 0 && fChildCount == 0 && !fNil) {
 
             // PSVI: specified
             fCurrentPSVI.fSpecified = false;
 
             int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
-            char [] chars = new char[bufLen];
-            fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, chars, 0);
-            defaultValue = new XMLString(chars, 0, bufLen);
+            if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < bufLen) {
+                fNormalizedStr.ch = new char[bufLen];
+            }
+            fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, fNormalizedStr.ch, 0);
+            fNormalizedStr.offset = 0;
+            fNormalizedStr.length = bufLen;
+            defaultValue = fNormalizedStr;
         }
         // fixed values are handled later, after xsi:type determined.
-
-
-        if (fCurrentElemDecl != null &&
-            fCurrentElemDecl.getConstraintType() == XSConstants.VC_DEFAULT) {
-        }
 
         if (fDoValidation) {
             String content = fBuffer.toString();
@@ -2760,7 +2759,8 @@ public class XMLSchemaValidator
                 }
             }
 
-            if (fNormalizeData && fDocumentHandler != null && fUnionType) {
+            if (defaultValue == null && fNormalizeData &&
+                fDocumentHandler != null && fUnionType) {
                 // for union types we need to send data because we delayed sending
                 // this data when we received it in the characters() call.
                 if (fValidatedInfo.normalizedValue != null)
