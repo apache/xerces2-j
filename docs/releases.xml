@@ -2,6 +2,13 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+  <s2 title='July 23, 2001 (version 1.4.2)'>
+    <ul>
+        <li>Performance fixes [Henry Zongaro/Lisa Martin]</li>
+        <li>Patches for improving serializer extensibility [Gunnlaugur Thor Briem/Elena Litani]</li>
+        <li>Bug fixes (schema implementation, build, etc.) [Sandy Gao, Neil Graham, Elena Litani, Lisa Martin]</li>
+    </ul>
+  </s2>
   <s2 title='June 22, 2001 (version 1.4.1)'>
     <ul>
         <li>Added support for all IANA encoding aliases which have a clear mapping to 
