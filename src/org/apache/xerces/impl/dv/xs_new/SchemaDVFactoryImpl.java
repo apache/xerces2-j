@@ -228,23 +228,23 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         //REVISIT: passing "anyType" here.
         XSSimpleTypeDecl anySimpleType = XSSimpleTypeDecl.fAnySimpleType;
         fBuiltInTypes.put(ANYSIMPLETYPE, anySimpleType);
-        XSSimpleTypeDecl stringDV = new XSSimpleTypeDecl(anySimpleType, STRING, XSSimpleTypeDecl.DV_STRING);
+        XSSimpleTypeDecl stringDV = new XSSimpleTypeDecl(anySimpleType, STRING, XSSimpleTypeDecl.DV_STRING, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false );
         fBuiltInTypes.put(STRING, stringDV);
-        fBuiltInTypes.put(BOOLEAN, new XSSimpleTypeDecl(anySimpleType, STRING, XSSimpleTypeDecl.DV_BOOLEAN));
-        XSSimpleTypeDecl decimalDV = new XSSimpleTypeDecl(anySimpleType, DECIMAL, XSSimpleTypeDecl.DV_DECIMAL);
+        fBuiltInTypes.put(BOOLEAN, new XSSimpleTypeDecl(anySimpleType, STRING, XSSimpleTypeDecl.DV_BOOLEAN, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_FINITE, false));
+        XSSimpleTypeDecl decimalDV = new XSSimpleTypeDecl(anySimpleType, DECIMAL, XSSimpleTypeDecl.DV_DECIMAL, XSSimpleType.ORDERED_TOTAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, true);
         fBuiltInTypes.put(DECIMAL, decimalDV);
 
-        fBuiltInTypes.put(ANYURI, new XSSimpleTypeDecl(anySimpleType, ANYURI, XSSimpleTypeDecl.DV_ANYURI));
-        fBuiltInTypes.put(BASE64BINARY, new XSSimpleTypeDecl(anySimpleType, BASE64BINARY, XSSimpleTypeDecl.DV_BASE64BINARY));
-        fBuiltInTypes.put(DURATION, new XSSimpleTypeDecl(anySimpleType, DURATION, XSSimpleTypeDecl.DV_DURATION));
-        fBuiltInTypes.put(DATETIME, new XSSimpleTypeDecl(anySimpleType, DATETIME, XSSimpleTypeDecl.DV_DATETIME));
-        fBuiltInTypes.put(TIME, new XSSimpleTypeDecl(anySimpleType, TIME, XSSimpleTypeDecl.DV_TIME));
-        fBuiltInTypes.put(DATE, new XSSimpleTypeDecl(anySimpleType, DATE, XSSimpleTypeDecl.DV_DATE));
-        fBuiltInTypes.put(YEARMONTH, new XSSimpleTypeDecl(anySimpleType, YEARMONTH, XSSimpleTypeDecl.DV_GYEARMONTH));
-        fBuiltInTypes.put(YEAR, new XSSimpleTypeDecl(anySimpleType, YEAR, XSSimpleTypeDecl.DV_GYEAR));
-        fBuiltInTypes.put(MONTHDAY, new XSSimpleTypeDecl(anySimpleType, MONTHDAY, XSSimpleTypeDecl.DV_GMONTHDAY));
-        fBuiltInTypes.put(DAY, new XSSimpleTypeDecl(anySimpleType, DAY, XSSimpleTypeDecl.DV_GDAY));
-        fBuiltInTypes.put(MONTH, new XSSimpleTypeDecl(anySimpleType, MONTH, XSSimpleTypeDecl.DV_GMONTH));
+        fBuiltInTypes.put(ANYURI, new XSSimpleTypeDecl(anySimpleType, ANYURI, XSSimpleTypeDecl.DV_ANYURI, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(BASE64BINARY, new XSSimpleTypeDecl(anySimpleType, BASE64BINARY, XSSimpleTypeDecl.DV_BASE64BINARY, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(DURATION, new XSSimpleTypeDecl(anySimpleType, DURATION, XSSimpleTypeDecl.DV_DURATION, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(DATETIME, new XSSimpleTypeDecl(anySimpleType, DATETIME, XSSimpleTypeDecl.DV_DATETIME, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(TIME, new XSSimpleTypeDecl(anySimpleType, TIME, XSSimpleTypeDecl.DV_TIME, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(DATE, new XSSimpleTypeDecl(anySimpleType, DATE, XSSimpleTypeDecl.DV_DATE, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(YEARMONTH, new XSSimpleTypeDecl(anySimpleType, YEARMONTH, XSSimpleTypeDecl.DV_GYEARMONTH, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(YEAR, new XSSimpleTypeDecl(anySimpleType, YEAR, XSSimpleTypeDecl.DV_GYEAR, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(MONTHDAY, new XSSimpleTypeDecl(anySimpleType, MONTHDAY, XSSimpleTypeDecl.DV_GMONTHDAY, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(DAY, new XSSimpleTypeDecl(anySimpleType, DAY, XSSimpleTypeDecl.DV_GDAY, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(MONTH, new XSSimpleTypeDecl(anySimpleType, MONTH, XSSimpleTypeDecl.DV_GMONTH, XSSimpleType.ORDERED_PARTIAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
 
         facets.fractionDigits = 0;
         XSSimpleTypeDecl integerDV = new XSSimpleTypeDecl(decimalDV, INTEGER, URI_SCHEMAFORSCHEMA, (short)0);
@@ -317,10 +317,10 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         fBuiltInTypes.put(POSITIVEINTEGER, positiveIntegerDV);
 
 
-        fBuiltInTypes.put(FLOAT, new XSSimpleTypeDecl(anySimpleType, FLOAT, XSSimpleTypeDecl.DV_FLOAT));
-        fBuiltInTypes.put(DOUBLE, new XSSimpleTypeDecl(anySimpleType, DOUBLE, XSSimpleTypeDecl.DV_DOUBLE));
-        fBuiltInTypes.put(HEXBINARY, new XSSimpleTypeDecl(anySimpleType, HEXBINARY, XSSimpleTypeDecl.DV_HEXBINARY));
-        fBuiltInTypes.put(NOTATION, new XSSimpleTypeDecl(anySimpleType, NOTATION, XSSimpleTypeDecl.DV_NOTATION));
+        fBuiltInTypes.put(FLOAT, new XSSimpleTypeDecl(anySimpleType, FLOAT, XSSimpleTypeDecl.DV_FLOAT, XSSimpleType.ORDERED_TOTAL, true, XSSimpleType.CARDINALITY_FINITE, true));
+        fBuiltInTypes.put(DOUBLE, new XSSimpleTypeDecl(anySimpleType, DOUBLE, XSSimpleTypeDecl.DV_DOUBLE, XSSimpleType.ORDERED_TOTAL, true, XSSimpleType.CARDINALITY_FINITE, true));
+        fBuiltInTypes.put(HEXBINARY, new XSSimpleTypeDecl(anySimpleType, HEXBINARY, XSSimpleTypeDecl.DV_HEXBINARY, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
+        fBuiltInTypes.put(NOTATION, new XSSimpleTypeDecl(anySimpleType, NOTATION, XSSimpleTypeDecl.DV_NOTATION, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
 
 
         facets.whiteSpace =  XSSimpleType.WS_REPLACE;
@@ -350,10 +350,10 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         ncnameDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_TOKEN_NCNAME);
         fBuiltInTypes.put(NCNAME, ncnameDV);
 
-        fBuiltInTypes.put(QNAME, new XSSimpleTypeDecl(anySimpleType, QNAME, XSSimpleTypeDecl.DV_QNAME));
+        fBuiltInTypes.put(QNAME, new XSSimpleTypeDecl(anySimpleType, QNAME, XSSimpleTypeDecl.DV_QNAME, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
 
-        fBuiltInTypes.put(ID, new XSSimpleTypeDecl(ncnameDV,  ID , XSSimpleTypeDecl.DV_ID ));
-        XSSimpleTypeDecl idrefDV = new XSSimpleTypeDecl(ncnameDV,  IDREF , XSSimpleTypeDecl.DV_IDREF);
+        fBuiltInTypes.put(ID, new XSSimpleTypeDecl(ncnameDV,  ID, XSSimpleTypeDecl.DV_ID, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false ));
+        XSSimpleTypeDecl idrefDV = new XSSimpleTypeDecl(ncnameDV,  IDREF , XSSimpleTypeDecl.DV_IDREF, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false);
         fBuiltInTypes.put(IDREF, idrefDV);
 
         facets.minLength = 1;
@@ -362,7 +362,7 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         idrefsDV.applyFacets1(facets, XSSimpleType.FACET_MINLENGTH, (short)0);
         fBuiltInTypes.put(IDREFS, idrefsDV);
 
-        XSSimpleTypeDecl entityDV = new XSSimpleTypeDecl(ncnameDV, ENTITY , XSSimpleTypeDecl.DV_ENTITY);
+        XSSimpleTypeDecl entityDV = new XSSimpleTypeDecl(ncnameDV, ENTITY , XSSimpleTypeDecl.DV_ENTITY, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false);
         fBuiltInTypes.put(ENTITY, entityDV);
 
         facets.minLength = 1;

@@ -148,7 +148,6 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         "preserve", "collapse", "replace",
     };
 
-    //private short fPrimitiveDV = -1;
     private XSSimpleTypeDecl fItemType;
     private XSSimpleTypeDecl[] fMemberTypes;
 
@@ -162,13 +161,13 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     private short fFacetsDefined = 0;
     private short fFixedFacet = 0;
 
+    //for constraining facets
     private short fWhiteSpace = 0;
     private int fLength = -1;
     private int fMinLength = -1;
     private int fMaxLength = -1;
     private int fTotalDigits = -1;
     private int fFractionDigits = -1;
-    private short fTokenType = SPECIAL_TOKEN_NONE;
     private Vector fPattern;
     private Vector fEnumeration;
     private Object fMaxInclusive;
@@ -176,17 +175,24 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     private Object fMinExclusive;
     private Object fMinInclusive;
 
+    private short fTokenType = SPECIAL_TOKEN_NONE;
+
+    // for fundamental facets
+    private short fOrdered;
+    private short fCardinality;
+    private boolean fBounded;
+    private boolean fNumeric;
+
     private ValidatedInfo fTempInfo = new ValidatedInfo();
 
     //Create a new built-in primitive types (and id/idref/entity)
-    protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV) {
+    protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
+                               short ordered, boolean bounded,
+                               short cardinality, boolean numeric) {
         fBase = base;
         fTypeName = name;
         fTargetNamespace = SchemaDVFactoryImpl.URI_SCHEMAFORSCHEMA;
         fVariety = VARIETY_ATOMIC;
-        //fPrimitiveDV = validateDV;
-        //if (validateDV == DV_ID || validateDV == DV_IDREF || validateDV == DV_ENTITY)
-        //    fPrimitiveDV = DV_STRING;
         fValidationDV = validateDV;
         fFacetsDefined = FACET_WHITESPACE;
         if (validateDV == DV_STRING) {
@@ -208,7 +214,6 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         fValidationDV = fBase.fValidationDV;
         switch (fVariety) {
         case VARIETY_ATOMIC:
-            //fPrimitiveDV = fBase.fPrimitiveDV;
             break;
         case VARIETY_LIST:
             fItemType = fBase.fItemType;
@@ -235,6 +240,9 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         fTokenType = fBase.fTokenType;
         fFixedFacet = fBase.fFixedFacet;
         fFacetsDefined = fBase.fFacetsDefined;
+
+        //we also set fundamental facets information in case applyFacets is not called.
+        caclFundamentalFacets();
     }
 
     //Create a new simple type for list.
@@ -250,6 +258,9 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         fFacetsDefined = FACET_WHITESPACE;
         fFixedFacet = FACET_WHITESPACE;
         fWhiteSpace = WS_COLLAPSE;
+
+        //setting fundamental facets
+        caclFundamentalFacets();
     }
 
     //Create a new simple type for union.
@@ -268,6 +279,9 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // if fFacetsDefined != 0
         fFacetsDefined = FACET_WHITESPACE;
         fWhiteSpace = WS_COLLAPSE;
+
+        //setting fundamental facets
+        caclFundamentalFacets();
     }
 
     public short getXSType () {
@@ -1009,9 +1023,10 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // step 5: mark fixed values
         fFixedFacet |= fBase.fFixedFacet;
 
-        //inherit baseBuiltInTypeName.
+        //step 6: setting fundamental facets
+        caclFundamentalFacets();
 
-    } //init4Restriction()
+    } //applyFacets()
 
     /**
      * validate a value, and return the compiled form
@@ -1273,7 +1288,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                     regex = (RegularExpression)fPattern.elementAt(idx);
                     if (!regex.matches(nvalue)){
                         throw new InvalidDatatypeValueException("Value '"+content+
-                                                                "' does not match regular expression facet '" + fPattern + "'" );
+                                                                "' does not match regular expression facet '" + regex + "'" );
                     }
                 }
             }
@@ -1442,6 +1457,204 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         }
     }
 
-    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE);
+    public short getOrderedFacet() {
+        return fOrdered;
+    }
+
+    public boolean isBounded(){
+        return fBounded;
+    }
+
+    public short getCardinalityFacet(){
+        return fCardinality;
+    }
+
+    public boolean isNumeric(){
+        return fNumeric;
+    }
+
+    private void caclFundamentalFacets() {
+        setOrdered();
+        setNumeric();
+        setBounded();
+        setCardinality();
+    }
+
+    private void setOrdered(){
+
+        // When {variety} is atomic, {value} is inherited from {value} of {base type definition}. For all ·primitive· types {value} is as specified in the table in Fundamental Facets (C.1).
+        if(fVariety == VARIETY_ATOMIC){
+            this.fOrdered = fBase.fOrdered;
+        }
+
+        // When {variety} is list, {value} is false.
+        else if(fVariety == VARIETY_LIST){
+            this.fOrdered = ORDERED_FALSE;
+        }
+
+        // When {variety} is union, the {value} is partial unless one of the following:
+        // 1. If every member of {member type definitions} is derived from a common ancestor other than the simple ur-type, then {value} is the same as that ancestor's ordered facet.
+        // 2. If every member of {member type definitions} has a {value} of false for the ordered facet, then {value} is false.
+        else if(fVariety == VARIETY_UNION){
+            int length = fMemberTypes.length;
+            // REVISIT: is the length possible to be 0?
+            if (length == 0) {
+                this.fOrdered = ORDERED_PARTIAL;
+                return;
+            }
+            // we need to process the first member type before entering the loop
+            short ancestorId = getPrimitiveDV(fMemberTypes[0].fValidationDV);
+            boolean commonAnc = ancestorId != DV_ANYSIMPLETYPE;
+            boolean allFalse = fMemberTypes[0].fOrdered == ORDERED_FALSE;
+            // for the other member types, check whether the value is false
+            // and whether they have the same ancestor as the first one
+            for (int i = 1; i < fMemberTypes.length && (commonAnc || allFalse); i++) {
+                if (commonAnc)
+                    commonAnc = ancestorId == getPrimitiveDV(fMemberTypes[i].fValidationDV);
+                if (allFalse)
+                    allFalse = fMemberTypes[i].fOrdered == ORDERED_FALSE;
+            }
+            if (commonAnc) {
+                // REVISIT: all member types should have the same ordered value
+                //          just use the first one. Can we assume this?
+                this.fOrdered = fMemberTypes[0].fOrdered;
+            } else if (allFalse) {
+                this.fOrdered = ORDERED_FALSE;
+            } else {
+                this.fOrdered = ORDERED_PARTIAL;
+            }
+        }
+
+    }//setOrdered
+
+    private void setNumeric(){
+        if(fVariety == VARIETY_ATOMIC){
+            this.fNumeric = fBase.fNumeric;
+        }
+        else if(fVariety == VARIETY_LIST){
+            this.fNumeric = false;
+        }
+        else if(fVariety == VARIETY_UNION){
+            XSSimpleType [] memberTypes = this.getMemberTypes();
+            for(int i = 0 ; i < memberTypes.length ; i++){
+                if( ! memberTypes[i].isNumeric() ){
+                    this.fNumeric = false;
+                    return;
+                }
+            }
+            this.fNumeric = true;
+        }
+
+    }//setNumeric
+
+    private void setBounded(){
+        if(fVariety == VARIETY_ATOMIC){
+            if( (((this.fFacetsDefined & FACET_MININCLUSIVE) != 0)  || ((this.fFacetsDefined & FACET_MINEXCLUSIVE) != 0))
+                &&  (((this.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)  || ((this.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0)) ){
+                this.fBounded = true;
+            }
+            else{
+                this.fBounded = false;
+            }
+        }
+        else if(fVariety == VARIETY_LIST){
+            if( ((this.fFacetsDefined & FACET_LENGTH) != 0 ) || ( ((this.fFacetsDefined & FACET_MINLENGTH) != 0 )
+                                                            &&  ((this.fFacetsDefined & FACET_MAXLENGTH) != 0 )) ){
+                this.fBounded = true;
+            }
+            else{
+                this.fBounded = false;
+            }
+
+        }
+        else if(fVariety == VARIETY_UNION){
+
+            XSSimpleTypeDecl [] memberTypes = this.fMemberTypes;
+            short ancestorId = 0 ;
+
+            if(memberTypes.length > 0){
+                ancestorId = getPrimitiveDV(memberTypes[0].fValidationDV);
+            }
+
+            for(int i = 0 ; i < memberTypes.length ; i++){
+                if( ! memberTypes[i].isBounded() || (ancestorId != getPrimitiveDV(memberTypes[i].fValidationDV)) ){
+                    this.fBounded = false;
+                    return;
+                }
+            }
+            this.fBounded = true;
+        }
+
+    }//setBounded
+
+    private boolean specialCardinalityCheck(){
+        if( (fBase.fValidationDV == XSSimpleTypeDecl.DV_DATE) || (fBase.fValidationDV == XSSimpleTypeDecl.DV_GYEARMONTH)
+            || (fBase.fValidationDV == XSSimpleTypeDecl.DV_GYEAR) || (fBase.fValidationDV == XSSimpleTypeDecl.DV_GMONTHDAY)
+            || (fBase.fValidationDV == XSSimpleTypeDecl.DV_GDAY) || (fBase.fValidationDV == XSSimpleTypeDecl.DV_GMONTH) ){
+            return true;
+        }
+        return false;
+
+    } //specialCardinalityCheck()
+
+    private void setCardinality(){
+        if(fVariety == VARIETY_ATOMIC){
+            if(fBase.fCardinality == CARDINALITY_FINITE){
+                this.fCardinality = CARDINALITY_FINITE;
+            }
+            else {// (fBase.fCardinality == CARDINALITY_COUNTABLY_INFINITE)
+                if ( ((this.fFacetsDefined & FACET_LENGTH) != 0 ) || ((this.fFacetsDefined & FACET_MAXLENGTH) != 0 )
+                     || ((this.fFacetsDefined & FACET_TOTALDIGITS) != 0 ) ){
+                    this.fCardinality = CARDINALITY_FINITE;
+                }
+                else if( (((this.fFacetsDefined & FACET_MININCLUSIVE) != 0 ) || ((this.fFacetsDefined & FACET_MINEXCLUSIVE) != 0 ))
+                        && (((this.fFacetsDefined & FACET_MAXINCLUSIVE) != 0 ) || ((this.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0 )) ){
+                    if( ((this.fFacetsDefined & FACET_FRACTIONDIGITS) != 0 ) || specialCardinalityCheck()){
+                        this.fCardinality = CARDINALITY_FINITE;
+                    }
+                    else{
+                        this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+                    }
+                }
+                else{
+                    this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+                }
+            }
+        }
+        else if(fVariety == VARIETY_LIST){
+            if( ((this.fFacetsDefined & FACET_LENGTH) != 0 ) || ( ((this.fFacetsDefined & FACET_MINLENGTH) != 0 )
+                                                            && ((this.fFacetsDefined & FACET_MAXLENGTH) != 0 )) ){
+                this.fCardinality = CARDINALITY_FINITE;
+            }
+            else{
+                this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+            }
+
+        }
+        else if(fVariety == VARIETY_UNION){
+            XSSimpleType [] memberTypes = this.getMemberTypes();
+            for(int i = 0 ; i < memberTypes.length ; i++){
+                if( ! (memberTypes[i].getCardinalityFacet() == CARDINALITY_FINITE) ){
+                    this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+                    return;
+                }
+            }
+            this.fCardinality = CARDINALITY_FINITE;
+        }
+
+    }//setCardinality
+
+    private short getPrimitiveDV(short validationDV){
+
+        if (validationDV == DV_ID || validationDV == DV_IDREF || validationDV == DV_ENTITY){
+            return DV_STRING;
+        }
+        else{
+            return validationDV;
+        }
+
+    }//getPrimitiveDV()
+
+    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, CARDINALITY_FINITE, false);
 
 } // class XSComplexTypeDecl

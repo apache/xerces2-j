@@ -96,6 +96,7 @@ public class MonthDV extends AbstractDateTimeDV {
      */
     protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
 
+        //REVISIT: change --MM-- to --MM
         resetBuffer(str);
 
         //create structure to hold an object
@@ -136,6 +137,11 @@ public class MonthDV extends AbstractDateTimeDV {
 
     /**
      * Overwrite compare algorithm to optimize month comparison
+     *
+     * REVISIT: this one is lack of the third parameter: boolean strict, so it
+     *          doesn't override the method in the base. But maybe this method
+     *          is not correctly implemented, and I did encounter errors when
+     *          trying to add the extra parameter. I'm leaving it as is. -SG
      *
      * @param date1
      * @param date2

@@ -236,20 +236,48 @@ public interface XSSimpleType extends XSTypeDecl {
      * REVISIT: this method makes ID special, which is not a good design.
      *          but since ID is not a primitive, there doesn't seem to be a
      *          clean way of doing it except to define special method like this.
+     * 
+     * @return  whether this simple type is or is derived from ID.
      */
     public boolean isIDType();
 
     /**
      * Check whether this type is or is derived from NOTATION.
      * REVISIT: this method makes NOTATION special, which is not a good design.
+     * 
+     * @return  whether this simple type is or is derived from NOTATION.
      */
     public boolean isNOTATIONType();
 
-    // REVISIT: the following methods are for PSVI. they are not implemented yet.
+    // REVISIT: it's not decided yet how to return the facets,
+    //          as String's or as values (Object's).
     //public XSFacet[] getFacets();
-    // the following four are for fundamental facets
-    //public short getOrderedFacet();
-    //public boolean isBounded();
-    //public boolean isNumeric();
-    //public short getCardinalityFacet();
+    
+    /**
+     * Return the value of the "ordered" fundamental facet.
+     * 
+     * @return  a constant corresponding to the "ordered" facet.
+     */
+    public short getOrderedFacet();
+    
+    /**
+     * Return the value of the "bounded" fundamental facet.
+     * 
+     * @return  whether the this type is bounded.
+     */
+    public boolean isBounded();
+    
+    /**
+     * Return the value of the "numeric" fundamental facet.
+     * 
+     * @return  whether the this type is numeric.
+     */
+    public boolean isNumeric();
+    
+    /**
+     * Return the value of the "cardinality" fundamental facet.
+     * 
+     * @return  a constant corresponding to the "cardinality" facet.
+     */
+    public short getCardinalityFacet();
 }
