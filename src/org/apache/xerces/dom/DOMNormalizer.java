@@ -58,7 +58,8 @@
 package org.apache.xerces.dom;
 
 
-import org.w3c.dom.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMError;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
@@ -83,8 +84,12 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.Grammar;
 
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Text;
 import java.util.Vector;
-import org.w3c.dom.*;
 
 /**
  * This class adds implementation for normalizeDocument method.

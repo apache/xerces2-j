@@ -70,7 +70,7 @@ import org.apache.xerces.dom.CoreDocumentImpl;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMErrorHandler;
 import org.w3c.dom.ls.DOMBuilder;
 import org.w3c.dom.ls.DOMEntityResolver;
 import org.w3c.dom.ls.DOMBuilderFilter;

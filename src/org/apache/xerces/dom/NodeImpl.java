@@ -63,7 +63,7 @@ import java.io.Serializable;
 import java.util.Vector;
 
 
-import org.w3c.dom.UserDataHandler;
+import org.apache.xerces.dom3.UserDataHandler;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 World Wide Web Consortium,
+ * Copyright (c) 2002 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -13,6 +13,12 @@
 package org.apache.xerces.dom3;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * <code>DOMErrorHandler</code> is a callback interface that the DOM 
  * implementation can call when reporting errors that happens while 
  * processing XML data, or when doing some other processing (e.g. validating 
@@ -20,8 +26,8 @@ package org.apache.xerces.dom3;
  * <p>The application that is using the DOM implementation is expected to 
  * implement this interface.How does one register an error handler in the 
  * core? Passed as an argument to super-duper-normalize or registered on the 
- * DOMImplementation?
- * <p>See also the <a href='http://www.w3.org/2001/09/WD-DOM-Level-3-Core-20010919'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * DOMImplementation?Document interface has an attribute errorHandler.
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DOMErrorHandler {
     /**

@@ -13,7 +13,7 @@
 package org.w3c.dom.ls;
 
 import org.w3c.dom.events.Event;
-import org.w3c.dom.DOMError;
+import org.apache.xerces.dom3.DOMError;
 
 /**
  * DOM Level 3 WD Experimental:

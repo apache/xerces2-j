@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 World Wide Web Consortium,
+ * Copyright (c) 2002 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -10,18 +10,23 @@
  * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
  */
 
-//package org.w3c.dom; 
 package org.apache.xerces.dom3;
 
 import org.w3c.dom.DOMImplementation;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * This interface permits a DOM implementer to supply one or more 
  * implementations, based upon requested features. Each implemented 
  * <code>DOMImplementationSource</code> object is listed in the 
  * binding-specific list of available sources so that its 
  * <code>DOMImplementation</code> objects are made available.
- * <p>See also the <a href='http://www.w3.org/2001/10/WD-DOM-Level-3-Core-20011017'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DOMImplementationSource {
     /**

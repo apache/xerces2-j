@@ -60,11 +60,11 @@ package org.apache.xerces.util;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
-
+                             
 import org.w3c.dom.Node;
-import org.w3c.dom.DOMError;
-import org.w3c.dom.DOMLocator;
-import org.w3c.dom.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMLocator;
+import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
 

@@ -58,8 +58,8 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.DOMImplementationRegistry;
-import org.w3c.dom.DOMImplementationSource;
+import org.apache.xerces.dom3.DOMImplementationRegistry;
+import org.apache.xerces.dom3.DOMImplementationSource;
 
 import org.apache.xerces.dom.CoreDOMImplementationImpl;
 import org.apache.xerces.dom.DOMImplementationImpl;

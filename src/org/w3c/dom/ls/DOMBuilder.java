@@ -15,7 +15,7 @@ package org.w3c.dom.ls;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMErrorHandler;
 
 /**
  * DOM Level 3 WD Experimental:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 World Wide Web Consortium,
+ * Copyright (c) 2002 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -13,8 +13,14 @@
 package org.apache.xerces.dom3;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * <code>DOMError</code> is an interface that describes an error.
- * <p>See also the <a href='http://www.w3.org/2001/09/WD-DOM-Level-3-Core-20010919'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DOMError {
     /**
@@ -44,13 +50,11 @@ public interface DOMError {
     public String getMessage();
 
     /**
-     * The byte or character offset into the input source, if we're parsing a 
-     * file or a byte stream then this will be the byte offset into that 
-     * stream, but if a character media is parsed then the offset will be 
-     * the character offset.exception is a reserved word, we need to rename 
-     * it.
+     * The related platform dependent exception if any.exception is a reserved 
+     * word, we need to rename it.Change to "relatedException". (F2F 26 Sep 
+     * 2001)
      */
-    public Object getException();
+    public Object getRelatedException();
 
     /**
      * The location of the error.

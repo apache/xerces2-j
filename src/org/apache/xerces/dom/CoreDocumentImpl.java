@@ -84,8 +84,8 @@ import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
 // DOM Level 3
-import org.w3c.dom.UserDataHandler;
-import org.w3c.dom.DOMErrorHandler;
+import org.apache.xerces.dom3.UserDataHandler;
+import org.apache.xerces.dom3.DOMErrorHandler;
 
 
 import org.w3c.dom.events.Event;
