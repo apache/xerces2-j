@@ -357,6 +357,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		fPatternStr = fBase.fPatternStr;
 		fEnumeration = fBase.fEnumeration;
 		fEnumerationType = fBase.fEnumerationType;
+        fEnumerationItemType = fBase.fEnumerationItemType;
 		fWhiteSpace = fBase.fWhiteSpace;
 		fMaxExclusive = fBase.fMaxExclusive;
 		fMaxInclusive = fBase.fMaxInclusive;
@@ -462,6 +463,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		fPatternStr = fBase.fPatternStr;
 		fEnumeration = fBase.fEnumeration;
 		fEnumerationType = fBase.fEnumerationType;
+        fEnumerationItemType = fBase.fEnumerationItemType;
 		fWhiteSpace = fBase.fWhiteSpace;
 		fMaxExclusive = fBase.fMaxExclusive;
 		fMaxInclusive = fBase.fMaxInclusive;
@@ -2794,6 +2796,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		fPatternStr = null;
 		fEnumeration = null;
 		fEnumerationType = null;
+        fEnumerationItemType = null;
 		fLexicalPattern = null;
 		fLexicalEnumeration = null;
 		fMaxInclusive = null;
