@@ -3565,11 +3565,17 @@ public final class XMLValidator
         } 
         catch (NullPointerException ex) {
             children = fElementChildren[fElementDepth] = new QName[256];
+            for (int i=0; i<256; i++) {
+                children[i] = new QName();
+            }
             childCount = 0; // should really assert this...
             children[childCount].localpart = -1;
         } 
         catch (ArrayIndexOutOfBoundsException ex) {
             QName[] newChildren = new QName[childCount * 2];
+            for (int i=0; i<childCount*2; i++) {
+                children[i] = new QName();
+            }
             System.arraycopy(children, 0, newChildren, 0, childCount);
             children = fElementChildren[fElementDepth] = newChildren;
             children[childCount].localpart = -1;

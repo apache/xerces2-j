@@ -1673,7 +1673,7 @@ public class TraverseSchema implements
                 
         Element equivClassElementDecl = null;
         if ( equivClass.length() > 0 ) {
-            equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, equivClass);
+            equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, getLocalPart(equivClass));
             if (equivClassElementDecl == null) {
                 reportGenericSchemaError("Equivclass affiliation element "
                                          +equivClass
@@ -1732,7 +1732,7 @@ public class TraverseSchema implements
             }
             String prefix = "";
             String localpart = type;
-            int colonptr = ref.indexOf(":");
+            int colonptr = type.indexOf(":");
             if ( colonptr > 0) {
                 prefix = type.substring(0,colonptr);
                 localpart = type.substring(colonptr+1);
@@ -1859,6 +1859,15 @@ public class TraverseSchema implements
             localpart = fullName.substring(colonAt+1);
         }
         return fStringPool.addSymbol(localpart);
+    }
+    
+    String getLocalPart(String fullName){
+        int colonAt = fullName.indexOf(":"); 
+        String localpart = fullName;
+        if (  colonAt > -1 ) {
+            localpart = fullName.substring(colonAt+1);
+        }
+        return localpart;
     }
     
     private void checkEquivClassOK(Element elementDecl, Element equivClassElementDecl){
@@ -2746,14 +2755,14 @@ public class TraverseSchema implements
         void initializeRegistry() {
             Hashtable facets = null;
             fRegistry.put("boolean", new BooleanValidator());
-            //DatatypeValidator integerValidator = new IntegerValidator();
-            //fRegistry.put("integer", integerValidator);
+            DatatypeValidator integerValidator = new IntegerValidator();
+            fRegistry.put("integer", integerValidator);
             fRegistry.put("string", new StringValidator());
             fRegistry.put("decimal", new DecimalValidator());
             fRegistry.put("float", new FloatValidator());
             fRegistry.put("double", new DoubleValidator());
-            fRegistry.put("timeDuration", new TimeDurationValidator());
-            fRegistry.put("timeInstant", new TimeInstantValidator());
+            //fRegistry.put("timeDuration", new TimeDurationValidator());
+            //fRegistry.put("timeInstant", new TimeInstantValidator());
             fRegistry.put("binary", new BinaryValidator());
             fRegistry.put("uri", new URIValidator());
             //REVISIT - enable the below
