@@ -369,6 +369,15 @@ Copyright:
       doctitle='Xerces Native Interface'
       bottom='${copyright}'
       />
+    <mkdir dir='${build.dir}/docs/javadocs/xs'/>
+    <javadoc packagenames='org.apache.xerces.xs'
+      locale='en_US'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xs'
+      author='true' version='true'
+      windowtitle='XML Schema API' 
+      doctitle='XML Schema API'
+      bottom='${copyright}'
+      />
     <mkdir dir='${build.dir}/docs/javadocs/dom3-api'/>
     <javadoc packagenames='org.apache.xerces.dom3.*'
      locale='en_US'
