@@ -106,12 +106,13 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         }
 
         // get global decl
-        attrGrp = grammar.getGlobalAttributeGroupDecl(refAttr.localpart);
+        attrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTEGROUP_TYPE, refAttr);
+
 
         // no children are allowed here except annotation, which is optional.
         Element child = DOMUtil.getFirstChildElement(elmNode);
-        String childName = child.getLocalName();
         if (child != null) {
+            String childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
