@@ -23,7 +23,7 @@
         xmlns:n1="http://www.w3.org" -->
    <x xmlns="http://www.w3.org" xmlns:n1="http://www.w3.org">
   	<good a="1" b="2"/>
-  	<good a="1" n1:a="2"/>
+  	<good a="1" n1:a="2" xmlns:n1="http://www.w3.org"/>
    </x>
 <!--add element in the same scope-->
 <s:bar xmlns:s="urn:schemas-xmlsoap-org:soap.v1"/>
