@@ -62,7 +62,7 @@ Copyright:
     <property name="Name" value="xerces-J"/>
     <property name="version" value="1.2.2"/>
     <property name="version_postfix" value=".1.2.2"/>
-    <property name="appendit=-_1_2_2"/>
+    <property name="appendit" value="1_2_2"/>
     <property name="year" value="1999-2000"/>
 	<property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
@@ -292,9 +292,9 @@ Copyright:
     <copyfile src="${basedir}/build.bat" dest="${distsrc.dir}/build.bat" />
 
     <zip zipfile="${build.dir}/${Name}-src${version_postfix}.zip" basedir="${build.dir}"
-         includes="${Name}-src${version_postfix}/**"/>
+         includes="${name}-${appendit}/**"/>
     <tar tarfile="${build.dir}/${Name}-src${version_postfix}.tar" basedir="${build.dir}"
-         includes="${Name}-src${version_postfix}/**"/>
+         includes="${name}-${appendit}/**"/>
     <gzip zipfile="${build.dir}/${Name}-src${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-src${version_postfix}.tar" />
   </target>
@@ -322,9 +322,9 @@ Copyright:
     <copyfile src="Readme.html" dest="${distbin.dir}/Readme.html"/>
 
     <zip zipfile="${build.dir}/${Name}-bin${version_postfix}.zip" basedir="${build.dir}"
-         includes="${Name}-bin${version_postfix}/**"/>
+         includes="${name}-${appendit}/**"/>
     <tar tarfile="${build.dir}/${Name}-bin${version_postfix}.tar" basedir="${build.dir}"
-         includes="${Name}-bin${version_postfix}/**"/>
+         includes="${name}-${appendit}/**"/>
     <gzip zipfile="${build.dir}/${Name}-bin${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-bin${version_postfix}.tar" />
 
