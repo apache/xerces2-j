@@ -65,6 +65,7 @@ import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.ChunkyCharArray;
+import org.apache.xerces.utils.Hash2intTable;
 import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
@@ -134,6 +135,10 @@ public final class XMLValidator
     private int fElementCount = 0;
     // REVISIT: Validation. Convert elementType to <uri,localpart> tuple!
     private int[][] fElementType = new int[INITIAL_CHUNK_COUNT][];
+    // REVISIT: For now, Qname seems to be a overkill 
+    private QName[][] fElementQName = new QName[INITIAL_CHUNK_COUNT][];
+    private int[][] fScope = new int[INITIAL_CHUNK_COUNT][];
+
     private byte[][] fElementDeclIsExternal = new byte[INITIAL_CHUNK_COUNT][];
     private int[][] fContentSpecType = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fContentSpec = new int[INITIAL_CHUNK_COUNT][];
@@ -186,11 +191,14 @@ public final class XMLValidator
     private AttributeValidator fAttValidatorDATATYPE = null;
 
     // Package access for use by AttributeValidator classes.
-
+    
     StringPool fStringPool = null;
     boolean fValidating = false;
     boolean fInElementContent = false;
     int fStandaloneReader = -1;
+
+    // REVISIT: should this be pacakge access?
+    GrammarPool fGrammarPool = null;
 
     // settings
 
@@ -208,6 +216,11 @@ public final class XMLValidator
     private XMLErrorReporter fErrorReporter = null;
     private DefaultEntityHandler fEntityHandler = null;
     private QName fCurrentElement = new QName();
+
+    //REVISIT: validation
+    private int[] fScopeStack = new int[8];
+    private int[] fSchemaURIStack = new int[8];
+
     private int[] fElementTypeStack = new int[8];
     private int[] fElementEntityStack = new int[8];
     private int[] fElementIndexStack = new int[8];
@@ -225,6 +238,11 @@ public final class XMLValidator
     private int fCurrentElementIndex = -1;
     private int fCurrentContentSpecType = -1;
     private boolean fSeenDoctypeDecl = false;
+
+    private final int TOP_LEVEL_SCOPE = 0;
+    private int fCurrentScope = TOP_LEVEL_SCOPE;
+    private int fCurrentSchemaURI = -1;
+    private Hash2intTable fNameScopeToIndex = new Hash2intTable();
 
     // state and stuff
 
@@ -291,6 +309,9 @@ public final class XMLValidator
         fErrorReporter = errorReporter;
         fEntityHandler = entityHandler;
         fDocumentScanner = documentScanner;
+
+	//REVISIT: get the only instance of GrammarPool
+        fGrammarPool = GrammarPool.instanceGrammarPool();
 
         // initialize
         fAttrList = new XMLAttrList(fStringPool);
@@ -717,6 +738,17 @@ public final class XMLValidator
         fElementDepth++;
         if (fElementDepth == fElementTypeStack.length) {
             int[] newStack = new int[fElementDepth * 2];
+            
+	    // REVISIT: validation
+	    System.arraycopy(fScopeStack, 0, newStack, 0, fElementDepth);
+            fScopeStack = newStack;
+            newStack = new int[fElementDepth * 2];
+            System.arraycopy(fSchemaURIStack, 0, newStack, 0, fElementDepth);
+            fSchemaURIStack = newStack;
+            
+	    newStack = new int[fElementDepth * 2];
+
+
             System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
             fElementTypeStack = newStack;
             newStack = new int[fElementDepth * 2];
@@ -742,6 +774,13 @@ public final class XMLValidator
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
         fElementChildCount[fElementDepth] = 0;
+
+	//REVISIT: Validation
+	int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
+	int index = fCurrentElementIndex & CHUNK_MASK;
+	fCurrentScope = fScope[chunk][index];
+	fScopeStack[fElementDepth] = fCurrentScope;
+	fSchemaURIStack[fElementDepth] = fCurrentSchemaURI;
 
     } // callStartElement(QName)
 
@@ -781,6 +820,8 @@ public final class XMLValidator
         if (fNamespacesEnabled) {
             fNamespacesScope.decreaseDepth();
         }
+
+	// now pop this element off the top of the element stack
         if (fElementDepth-- < 0) {
             throw new RuntimeException("FWK008 Element stack underflow");
         }
@@ -800,6 +841,8 @@ public final class XMLValidator
             }
             return;
         }
+
+	//restore enclosing element to all the "current" variables
         // REVISIT: Validation. This information needs to be stored.
         fCurrentElement.prefix = -1;
         fCurrentElement.localpart = fElementTypeStack[fElementDepth];
@@ -807,6 +850,15 @@ public final class XMLValidator
         fCurrentElementEntity = fElementEntityStack[fElementDepth];
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
+
+	//REVISIT: Validation
+	fCurrentScope = fScopeStack[fElementDepth];
+	// if enclosing element's Schema is different, need to switch "context"
+	if ( fCurrentSchemaURI != fSchemaURIStack[fElementDepth] ) {
+	    fCurrentSchemaURI = fSchemaURIStack[fElementDepth];
+	    switchSchema(fCurrentSchemaURI);
+	}
+
         if (fValidating) {
             fBufferDatatype = false;
         }
@@ -2395,18 +2447,41 @@ public final class XMLValidator
 
     } // addDefaultAttributes(int,XMLAttrList,int,boolean,boolean):int
 
+    public void setCurrentScope(int scope) {
+	fCurrentScope = scope;
+    }
+
+    public int getCurrentScope() {
+	return fCurrentScope;
+    }
+
+    
     // string pool to declaration mapping
 
     /** Sets the string pool to declaration mapping. */
-    private void setDeclaration(QName qname, int decl) {
+    /*private void setDeclaration(QName qname, int decl) {
         // REVISIT: Validation. Key from <uri, localpart> tuple.
         int stringIndex = qname.rawname;
         ensureDeclarationCapacity(stringIndex);
         fDeclaration[stringIndex] = decl;
+    }*/
+
+    //REVISIT: ye
+    private void setDeclaration(QName qname, int decl) {
+        // REVISIT: 1)Where will the fCurrentScope come from?
+        //          2)Should uri be checked if present? 
+        int uri = qname.uri;
+
+	if (uri==-1) {
+	    fNameScopeToIndex.put(qname.localpart, fCurrentScope, decl);
+	}
+	else {
+	    fNameScopeToIndex.put(qname.localpart, TOP_LEVEL_SCOPE, decl);
+	}
     }
 
     /** Returns the string pool to declaration mapping. */
-    private int getDeclaration(QName qname) {
+    /*private int getDeclaration(QName qname) {
         // REVISIT: Validation. Key from <uri, localpart> tuple.
         int stringIndex = qname.rawname;
         if (fDeclaration == null || 
@@ -2414,7 +2489,28 @@ public final class XMLValidator
             return -1;
         }
         return fDeclaration[stringIndex];
-    }
+    }*/
+
+    //REVISIT: ye
+    private int getDeclaration(QName qname) {
+    // REVISIT: should we pass in the scope? switchNS(uri) should be done
+	//      before we come in.
+	int uri = qname.uri;
+	if (uri == -1) {
+	    return fNameScopeToIndex.get(qname.localpart,fCurrentScope);
+	}
+	else {
+	    return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
+	}
+	/*else if ( uri == fCurrentSchemaURI ) {
+	    return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
+	}
+	else {
+	    switchNS(uri); //REVISIT: or this should be done before we come in.?? 
+	    return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
+	}*/
+   }
+
 
     // content specs
 
@@ -2492,9 +2588,19 @@ public final class XMLValidator
             byte[][] newByteArray = new byte[chunk * 2][];
             System.arraycopy(fElementDeclIsExternal, 0, newByteArray, 0, chunk);
             fElementDeclIsExternal = newByteArray;
-            int[][] newIntArray = new int[chunk * 2][];
+	    //REVISIT: fElementType            
+	    int[][] newIntArray = new int[chunk * 2][];
             System.arraycopy(fElementType, 0, newIntArray, 0, chunk);
             fElementType = newIntArray;
+	    //REVISIT: fElementQName           
+	    QName[][] newQNameArray = new QName[chunk * 2][];
+            System.arraycopy(fElementQName, 0, newQNameArray, 0, chunk);
+            fElementQName = newQNameArray;
+	    //REVISIT: fScope             
+	    newIntArray = new int[chunk * 2][];
+            System.arraycopy(fScope, 0, newIntArray, 0, chunk);
+            fScope = newIntArray;
+
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fContentSpecType, 0, newIntArray, 0, chunk);
             fContentSpecType = newIntArray;
@@ -2513,7 +2619,15 @@ public final class XMLValidator
         } catch (NullPointerException ex) {
             // ignore
         }
-        fElementType[chunk] = new int[CHUNK_SIZE];
+        //REVISIT: fElementType, fElementQName, fScope
+	fElementType[chunk] = new int[CHUNK_SIZE];
+	fElementQName[chunk] = new QName[CHUNK_SIZE];
+	fScope[chunk] = new int[CHUNK_SIZE];
+	//by default, all the scope should be top-level
+	for (int i=0; i<CHUNK_SIZE; i++) {
+	    fScope[chunk][i] = TOP_LEVEL_SCOPE;
+	}
+
         fElementDeclIsExternal[chunk] = new byte[CHUNK_SIZE];
         fContentSpecType[chunk] = new int[CHUNK_SIZE];
         fContentSpec[chunk] = new int[CHUNK_SIZE];
@@ -2707,6 +2821,8 @@ public final class XMLValidator
             // REVISIT: Validation. This should be the tuple.
             if (fAttName[chunk][index] == attribute.rawname || 
                 fStringPool.equalNames(fAttName[chunk][index], attribute.rawname)) {
+            //if (fAttQName[chunk][index].localpart == attribute.localpart ||
+                // fAttQName[chunk][index].uri == attribute.uri)  {
                 return attDefIndex;
             }
             attDefIndex = fNextAttDef[chunk][index];
@@ -2790,6 +2906,20 @@ public final class XMLValidator
 
     } // rootElementSpecified(QName)
 
+    /** Switchs to correct validating symbol tables when Schema changes.*/
+
+    private void switchSchema (int schemaURI) {
+	Grammar newSchema = fGrammarPool.getGrammar(fStringPool.toString(schemaURI));
+	if ( newSchema == null ) {
+	    //REVISIT: should try to read the schema again here.
+	}
+	else {
+	    //REVISIT: copy all the reference the validating tables from the grammar to all the tables in hand.
+	    //         Don't forget to copy all the counters as well.
+	}
+    }
+    
+
     /** Binds namespaces to the element and attributes. */
     private void bindNamespacesToElementAndAttributes(QName element, 
                                                       XMLAttrList attrList)
@@ -2843,6 +2973,13 @@ public final class XMLValidator
             }
             element.uri = elementURI;
         }
+
+	//REVISIT: is this the right place to check on if the Schema has changed?
+	if (element.uri != fCurrentSchemaURI) {
+	    fCurrentSchemaURI = element.uri;
+	    switchSchema(fCurrentSchemaURI);
+	}
+
         if (fAttrListHandle != -1) {
             int index = attrList.getFirstAttr(fAttrListHandle);
             while (index != -1) {
