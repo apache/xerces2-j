@@ -35,6 +35,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.Augmentations;
@@ -273,9 +274,12 @@ public class XIncludeHandler
     // used for passing features on to child XIncludeHandler objects
     protected ParserConfigurationSettings fSettings;
 
-    // The current element depth.  We start at depth 0 (before we've reached any elements)
+    // The current element depth.  We start at depth 0 (before we've reached any elements).
     // The first element is at depth 1.
     private int fDepth;
+    
+    // The current element depth of the result infoset.
+    private int fResultDepth;
 
     // this value must be at least 1
     private static final int INITIAL_SIZE = 8;
@@ -307,6 +311,9 @@ public class XIncludeHandler
 
     // track whether a DTD is being parsed
     private boolean fInDTD;
+    
+    // track whether the root element of the result infoset has been processed
+    private boolean fSeenRootElement;
 
     // Constructors
 
@@ -336,11 +343,13 @@ public class XIncludeHandler
         throws XNIException {
         fNamespaceContext = null;
         fDepth = 0;
+        fResultDepth = 0;
         fNotations = new Vector();
         fUnparsedEntities = new Vector();
         fParentRelativeURI = null;
         fIsXML11 = false;
         fInDTD = false;
+        fSeenRootElement = false;
 
         fBaseURIScope.clear();
         fBaseURI.clear();
@@ -786,19 +795,26 @@ public class XIncludeHandler
                     "FallbackChild",
                     new Object[] { element.rawname });
             }
-            if (fDocumentHandler != null
-                    && getState() == STATE_NORMAL_PROCESSING) {
+            if (getState() == STATE_NORMAL_PROCESSING) {
+                if (fResultDepth++ == 0 && isRootDocument()) {
+                    checkMultipleRootElements();
+                }
+                if (fDocumentHandler != null) {
+                    augs = modifyAugmentations(augs);
+                    attributes = processAttributes(attributes);
+                    fDocumentHandler.startElement(element, attributes, augs);
+                }            
+            }
+        }
+        else if (getState() == STATE_NORMAL_PROCESSING) {
+            if (fResultDepth++ == 0 && isRootDocument()) {
+                checkMultipleRootElements();
+            }
+            if (fDocumentHandler != null) {
                 augs = modifyAugmentations(augs);
                 attributes = processAttributes(attributes);
                 fDocumentHandler.startElement(element, attributes, augs);
-            }
-        }
-        else if (
-            fDocumentHandler != null
-                && getState() == STATE_NORMAL_PROCESSING) {
-            augs = modifyAugmentations(augs);
-            attributes = processAttributes(attributes);
-            fDocumentHandler.startElement(element, attributes, augs);
+            }            
         }
     }
 
@@ -838,19 +854,26 @@ public class XIncludeHandler
                     "FallbackChild",
                     new Object[] { element.rawname });
             }
-            if (fDocumentHandler != null
-                    && getState() == STATE_NORMAL_PROCESSING) {
+            if (getState() == STATE_NORMAL_PROCESSING) {
+                if (fResultDepth == 0 && isRootDocument()) {
+                    checkMultipleRootElements();
+                }
+                if (fDocumentHandler != null) {
+                    augs = modifyAugmentations(augs);
+                    attributes = processAttributes(attributes);
+                    fDocumentHandler.emptyElement(element, attributes, augs);
+                }
+            }
+        }
+        else if (getState() == STATE_NORMAL_PROCESSING) {
+            if (fResultDepth == 0 && isRootDocument()) {
+                checkMultipleRootElements();
+            }
+            if (fDocumentHandler != null) {
                 augs = modifyAugmentations(augs);
                 attributes = processAttributes(attributes);
                 fDocumentHandler.emptyElement(element, attributes, augs);
             }
-        }
-        else if (
-            fDocumentHandler != null
-                && getState() == STATE_NORMAL_PROCESSING) {
-            augs = modifyAugmentations(augs);
-            attributes = processAttributes(attributes);
-            fDocumentHandler.emptyElement(element, attributes, augs);
         }
         // reset the out of scope stack elements
         setSawFallback(fDepth + 1, false);
@@ -885,6 +908,7 @@ public class XIncludeHandler
         else if (
             fDocumentHandler != null
                 && getState() == STATE_NORMAL_PROCESSING) {
+            --fResultDepth;
             fDocumentHandler.endElement(element, augs);
         }
 
@@ -913,9 +937,15 @@ public class XIncludeHandler
         String encoding,
         Augmentations augs)
         throws XNIException {
-        if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
-            fDocumentHandler.startGeneralEntity(name, resId, encoding, augs);
+        if (getState() == STATE_NORMAL_PROCESSING) {
+            if (fResultDepth == 0 && isRootDocument()) {
+                if (augs != null && Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
+                    reportFatalError("UnexpandedEntityReferenceIllegal");
+                }
+            }
+            else if (fDocumentHandler != null) {
+                fDocumentHandler.startGeneralEntity(name, resId, encoding, augs);
+            }
         }
     }
 
@@ -930,48 +960,61 @@ public class XIncludeHandler
     public void endGeneralEntity(String name, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
+            && getState() == STATE_NORMAL_PROCESSING
+            && (fResultDepth != 0 || !isRootDocument())) {
             fDocumentHandler.endGeneralEntity(name, augs);
         }
     }
 
     public void characters(XMLString text, Augmentations augs)
         throws XNIException {
-        if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
-            // we need to change the depth like this so that modifyAugmentations() works
-            fDepth++;
-            augs = modifyAugmentations(augs);
-            fDocumentHandler.characters(text, augs);
-            fDepth--;
+        if (getState() == STATE_NORMAL_PROCESSING) {
+            if (fResultDepth == 0 && isRootDocument()) {
+                checkWhitespace(text);
+            }
+            else if (fDocumentHandler != null) {
+                // we need to change the depth like this so that modifyAugmentations() works
+                fDepth++;
+                augs = modifyAugmentations(augs);
+                fDocumentHandler.characters(text, augs);
+                fDepth--;
+            }
         }
     }
 
     public void ignorableWhitespace(XMLString text, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
+            && getState() == STATE_NORMAL_PROCESSING
+            && (fResultDepth != 0 || !isRootDocument())) {
             fDocumentHandler.ignorableWhitespace(text, augs);
         }
     }
 
     public void startCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
+            && getState() == STATE_NORMAL_PROCESSING
+            && (fResultDepth != 0 || !isRootDocument())) {
             fDocumentHandler.startCDATA(augs);
         }
     }
 
     public void endCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
+            && getState() == STATE_NORMAL_PROCESSING
+            && (fResultDepth != 0 || !isRootDocument())) {
             fDocumentHandler.endCDATA(augs);
         }
     }
 
     public void endDocument(Augmentations augs) throws XNIException {
-        if (isRootDocument() && fDocumentHandler != null) {
-            fDocumentHandler.endDocument(augs);
+        if (isRootDocument()) {
+            if (!fSeenRootElement) {
+                reportFatalError("RootElementRequired");
+            }
+            if (fDocumentHandler != null) {
+                fDocumentHandler.endDocument(augs);
+            }
         }
     }
 
@@ -2174,6 +2217,31 @@ public class XIncludeHandler
         else {
             fParentXIncludeHandler.checkAndSendNotation(not);
         }
+    }
+    
+    /**
+     * Checks whether the string only contains white space characters.
+     * 
+     * @param value the text to check
+     */
+    private void checkWhitespace(XMLString value) {
+        int end = value.offset + value.length;
+        for (int i = value.offset; i < end; ++i) {
+            if (!XMLChar.isSpace(value.ch[i])) {
+                reportFatalError("ContentIllegalAtTopLevel");
+                return;
+            }
+        }
+    }
+    
+    /**
+     * Checks whether the root element has already been processed.
+     */
+    private void checkMultipleRootElements() {
+        if (fSeenRootElement) {
+            reportFatalError("MultipleRootElements");
+        }
+        fSeenRootElement = true;
     }
 
     // It would be nice if we didn't have to repeat code like this, but there's no interface that has
