@@ -175,6 +175,18 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
  
         // Remove prohibited attributes from the set
         attrGrp.removeProhibitedAttrs();
+        
+        // check for restricted redefine:
+        XSAttributeGroupDecl redefinedAttrGrp = (XSAttributeGroupDecl)fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(
+                XSDHandler.ATTRIBUTEGROUP_TYPE, 
+                new QName(fSchemaHandler.EMPTY_STRING, nameAttr, nameAttr, schemaDoc.fTargetNamespace), 
+                schemaDoc); 
+        if(redefinedAttrGrp != null) {
+            String err = attrGrp.validRestrictionOf(redefinedAttrGrp);
+            if (err != null) {
+                reportSchemaError("src-redefine.7.2.2", new Object [] {nameAttr, err});
+            }
+        }
 
         // make an entry in global declarations.
         grammar.addGlobalAttributeGroupDecl(attrGrp);
