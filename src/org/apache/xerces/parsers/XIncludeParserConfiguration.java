@@ -78,7 +78,7 @@ import org.apache.xerces.xni.parser.XMLDocumentSource;
  * @author Peter McCracken, IBM
  * @see org.apache.xerces.xinclude.XIncludeHandler
  */
-public class XIncludeParserConfiguration extends XML11Configuration {
+public class XIncludeParserConfiguration extends IntegratedParserConfiguration {
 
     private XIncludeHandler fXIncludeHandler;
 
