@@ -1,12 +1,12 @@
 # Makefile for directory ./dom
 
 TARGETS=\
+	Counter.class\
 	DOMAddLines.class\
-	DOMCount.class\
-	DOMFilter.class\
 	DOMGenerate.class\
 	DOMParserWrapper.class\
-	DOMWriter.class
+	GetElementsByTagName.class\
+	Writer.class
 
 DIRS = traversal wrappers
 

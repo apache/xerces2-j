@@ -1,7 +1,7 @@
 # Makefile for directory ./dom/wrappers
 
 TARGETS=\
-	DOMParser.class
+	Xerces.class
 
 DIRS = 
 
