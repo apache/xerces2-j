@@ -898,7 +898,9 @@ public abstract class NodeImpl
                 thisDepth +=1;
                 if (node == otherNode) 
                   // The other node is an ancestor of the owning element
+                  {
                   return TREE_POSITION_PRECEDING;
+                  }
                 thisAncestor = node;
             }
         }
@@ -922,16 +924,30 @@ public abstract class NodeImpl
         if (thisAncestor != otherAncestor) 
           return TREE_POSITION_DISCONNECTED; 
 
-        // Determine which node is of the greatest depth.  
+      
+        // Go up the parent chain of the deeper node, until we find a node 
+        // with the same depth as the shallower node
+
         if (thisDepth > otherDepth) {
           for (int i=0; i<thisDepth - otherDepth; i++)
             thisNode = thisNode.getParentNode();
+          // Check if the node we have reached is in fact "otherNode". This can
+          // happen in the case of attributes.  In this case, otherNode 
+          // "precedes" this.
+          if (thisNode == otherNode) 
+            return TREE_POSITION_PRECEDING;
         }
+ 
         else {
           for (int i=0; i<otherDepth - thisDepth; i++)
             otherNode = otherNode.getParentNode();
+          // Check if the node we have reached is in fact "thisNode".  This can
+          // happen in the case of attributes.  In this case, otherNode 
+          // "follows" this.
+          if (otherNode == thisNode) 
+            return TREE_POSITION_FOLLOWING;
         }
-          
+             
         // We now have nodes at the same depth in the tree.  Find a common 
         // ancestor.                                   
         Node thisNodeP, otherNodeP;
@@ -944,7 +960,10 @@ public abstract class NodeImpl
              otherNodeP = otherNodeP.getParentNode();
         }
 
+        // At this point, thisNode and otherNode are direct children of 
+        // the common ancestor.  
         // See whether thisNode or otherNode is the leftmost
+
         for (Node current=thisNodeP.getFirstChild(); 
                   current!=null;
                   current=current.getNextSibling()) {
