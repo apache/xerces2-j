@@ -280,7 +280,7 @@ public class HTMLSerializer
         if ( attrs != null ) {
             for ( i = 0 ; i < attrs.getLength() ; ++i ) {
                 _printer.printSpace();
-                name = attrs.getRawName( i ).toLowerCase();;
+                name = attrs.getQName( i ).toLowerCase();;
                 value = attrs.getValue( i );
                 if ( _xhtml || namespaceURI != null ) {
                     // XHTML: print empty string for null values.

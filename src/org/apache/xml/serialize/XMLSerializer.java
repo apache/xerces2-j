@@ -232,7 +232,7 @@ public final class XMLSerializer
             for ( i = 0 ; i < attrs.getLength() ; ++i ) {
                 _printer.printSpace();
                 
-                name = attrs.getRawName( i );
+                name = attrs.getQName( i );
                 if ( name == null ) {
                     String prefix;
                     String attrURI;
