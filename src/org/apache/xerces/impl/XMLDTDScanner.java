@@ -88,6 +88,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  * @author Glenn Marcy, IBM
+ * @author Eric Ye, IBM
  *
  * @version $Id$
  */
@@ -127,13 +128,7 @@ public class XMLDTDScanner
     // Data
     //
 
-    // features
 
-    /** 
-     * Validation. This feature identifier is:
-     * http://xml.org/sax/features/validation
-     */
-    protected boolean fValidation;
 
     /** fErrorReporter */
     protected XMLErrorReporter fErrorReporter;
@@ -149,6 +144,15 @@ public class XMLDTDScanner
 
     /** Scanner state. */
     protected int fScannerState;
+
+    /** fStandalone **/
+    protected boolean fStandalone;
+
+    /** fSeenExternalDTD **/
+    protected boolean fSeenExternalDTD;
+
+    /** fSeenExternalPE **/
+    protected boolean fSeenExternalPE;
 
     // private data
 
@@ -186,6 +190,15 @@ public class XMLDTDScanner
     //
     // Methods
     //
+    
+    /**
+     * Sets whether the document entity is standalone.
+     *
+     * @param standalone True if document entity is standalone.
+     */
+    public void setStandalone(boolean standalone) {
+        fStandalone = standalone;
+    } // setStandalone(boolean)
 
     /**
      * Scan an external DTD.
@@ -204,6 +217,8 @@ public class XMLDTDScanner
 
         // set starting state
         setScannerState(SCANNER_STATE_TEXT_DECL);
+
+        fSeenExternalDTD = true;
 
         scanTextDecl(complete);
 
@@ -313,8 +328,6 @@ public class XMLDTDScanner
 
         super.reset(componentManager);
 
-        // sax features
-        fValidation = componentManager.getFeature(VALIDATION);
 
         // Xerces properties
         fGrammarPool = (GrammarPool)
@@ -330,6 +343,10 @@ public class XMLDTDScanner
         fIncludeSectDepth = 0;
         fMarkUpDepth = 0;
         fPEDepth = 0;
+
+        fStandalone = false;
+        fSeenExternalDTD = false;
+        fSeenExternalPE = false;
 
     } // reset
 
@@ -1202,9 +1219,10 @@ public class XMLDTDScanner
                 }
             }
             // AttValue 
+            boolean isVC = !fStandalone  &&  (fSeenExternalDTD || fSeenExternalPE) ;
             scanAttributeValue(defaultVal, atName,
                                fAttributes, 0, type.equals("CDATA"),
-                               scanningInternalSubset());
+                               isVC);
         }
         return defaultType;
 
@@ -1309,6 +1327,10 @@ public class XMLDTDScanner
         scanExternalID(fStrings, false);
         String systemId = fStrings[0];
         String publicId = fStrings[1];
+
+        if (isPEDecl && systemId != null) {
+            fSeenExternalPE = true;
+        }
 
         String notation = null;
         // NDATA

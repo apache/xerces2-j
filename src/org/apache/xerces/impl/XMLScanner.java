@@ -92,6 +92,7 @@ import org.xml.sax.SAXNotSupportedException;
  *
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM
+ * @author Eric Ye, IBM
  *
  * @version $Id$
  */
@@ -102,6 +103,14 @@ public abstract class XMLScanner
     // Data
     //
 
+    // features
+
+    /** 
+     * Validation. This feature identifier is:
+     * http://xml.org/sax/features/validation
+     */
+    protected boolean fValidation;
+    
     // properties
 
     /** Symbol table. */
@@ -217,6 +226,9 @@ public abstract class XMLScanner
         fGtSymbol = fSymbolTable.addSymbol("gt");
         fQuotSymbol = fSymbolTable.addSymbol("quot");
         fAposSymbol = fSymbolTable.addSymbol("apos");
+        
+        // sax features
+        fValidation = componentManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
 
     } // reset(XMLComponentManager)
 
@@ -612,8 +624,8 @@ public abstract class XMLScanner
      * @param attrIndex The index of the attribute to use from the list.
      * @param cdata Specifies whether the attribute is of type CDATA or not, so
      *              that the appropriate normalization can be performed.
-     * @param checkEntities Specifies whether undeclared entities should be
-     *                      checked.
+     * @param checkEntities true if undeclared entities should be reported as VC violation,  
+     *                      false if undeclared entities should be reported as WFC violation.
      *
      * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
      * at the time of calling is lost.
@@ -835,10 +847,20 @@ public abstract class XMLScanner
                                                  new Object[] { entityName });
                             }
                             else {
-                                if (checkEntities &&
-                                    !fEntityManager.isDeclaredEntity(entityName)) {
-                                    reportFatalError("EntityNotDeclared",
-                                                     new Object[]{entityName});
+                                if (!fEntityManager.isDeclaredEntity(entityName)) {
+                                    //WFC & VC: Entity Declared
+                                    if (checkEntities) {
+                                        if (fValidation) {
+                                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                                       "EntityNotDeclared",
+                                                                       new Object[]{entityName},
+                                                                       XMLErrorReporter.SEVERITY_ERROR);
+                                        }
+                                    }
+                                    else {
+                                        reportFatalError("EntityNotDeclared",
+                                                         new Object[]{entityName});
+                                    }
                                 }
                                 fEntityManager.startEntity(entityName, true);
                             }
