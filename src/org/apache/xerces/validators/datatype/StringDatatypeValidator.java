@@ -100,7 +100,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
 
     public  StringDatatypeValidator () throws InvalidDatatypeFacetException{
-        //System.out.println( "Inside constructor" );
         this( null, null, false ); // Native, No Facets defined, Restriction
 
     }
@@ -112,6 +111,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
         // Set Facets if any defined
 
+        //fFacetsDefined = 0;
         if ( facets != null  ){
             if ( derivedByList == false) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
@@ -173,15 +173,15 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                                                "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and minLength to be members of facets." );
+                                "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                                 "must be less than the value of maxLength = " + fMaxLength );
+                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
+                            "'must be less than the value of maxLength = '" + fMaxLength + "'.");
                     }
                 }
 
@@ -317,12 +317,28 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             if ( content.length() > fMaxLength ) {
                 throw new InvalidDatatypeValueException("Value '"+content+
                                                         "' with length '"+content.length()+
-                                                        "' exceeds maximum length of "+fMaxLength+".");
+                                          "' exceeds maximum length facet of '"+fMaxLength+"'.");
             }
         }
+        if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
+            if ( content.length() < fMinLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                    "' with length '"+content.length()+
+                                    "' is less than minimum length facet of '"+fMinLength+"'." );
+            }
+        }
+
+        if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
+                    if ( content.length() != fLength ) {
+                        throw new InvalidDatatypeValueException("Value '"+content+
+                                                         "' with length '"+content.length()+
+                                               "' is not equal to length facet '"+fLength+"'.");
+                    }
+                }
+
+
+
         if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-
-
             if ( fEnumeration.contains( content ) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
         }
@@ -359,6 +375,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
                                                          "lexicographically greater or equal than" + fMinInclusive );
         }
+
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             RegularExpression regex = new RegularExpression(fPattern, "X" );

@@ -61,6 +61,7 @@ import java.lang.reflect.*;
 import org.apache.xerces.validators.datatype.*;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.datatype.DatatypeValidatorFactory;
+import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 
 
@@ -210,7 +211,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_DURATION, "P0Y" );
-            facets.put(SchemaSymbols.ELT_PERIOD,   "PY24H" );
+//            facets.put(SchemaSymbols.ELT_PERIOD,   "PY24H" ); Bug -- WORK TODO
             createDatatypeValidator("time", 
                                                  getDatatypeValidator( "recurringDuration"), facets, false );
 
@@ -252,9 +253,13 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     }
 
     public DatatypeValidator createDatatypeValidator(String typeName, 
-                                                     DatatypeValidator base, Hashtable facets, boolean list ){
+            DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
 
         DatatypeValidator simpleType = null;
+
+        if (this.fDebug == true) {
+            System.out.println("type name = " + typeName );
+        }
 
         if ( base != null ) {
             try {
@@ -297,7 +302,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
     private static Object createDatatypeValidator(Constructor validatorConstructor, 
-                                                  Object[] arguments) {
+                   Object[] arguments)  throws  InvalidDatatypeFacetException {
         Object validator = null;
         try {
             validator = validatorConstructor.newInstance(arguments);
@@ -325,7 +330,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 System.out.println("!! The original error message is: " + e.getTargetException().getMessage() );
                 e.getTargetException().printStackTrace();
             } else {
-                return null;
+                 throw new InvalidDatatypeFacetException( e.getTargetException().getMessage() );
+                //System.out.println("Exception: " + e.getTargetException
+                //validator = null;
             }
         }
         return validator;

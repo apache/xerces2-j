@@ -67,6 +67,6 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  */
 public interface DatatypeValidatorFactory {
     public DatatypeValidator createDatatypeValidator(String typeName, 
-                            DatatypeValidator base, Hashtable facets, boolean list );
+                    DatatypeValidator base, Hashtable facets, boolean list ) throws  InvalidDatatypeFacetException;
 }
 
