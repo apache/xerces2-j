@@ -183,8 +183,8 @@ public class NotationImpl
 
     	if (isReadOnly()) {
     		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR,
-			"DOM001 Modification not allowed");
+    		DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null));
         }
         if (needsSyncData()) {
             synchronizeData();
@@ -201,8 +201,8 @@ public class NotationImpl
 
     	if(isReadOnly()) {
     		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR,
-			"DOM001 Modification not allowed");
+    		DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null));
         }
         if (needsSyncData()) {
             synchronizeData();
