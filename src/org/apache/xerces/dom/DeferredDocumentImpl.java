@@ -358,8 +358,8 @@ public class DeferredDocumentImpl
 				    String attrName, String attrURI,
 				    String attrValue, boolean specified) {
         // create attribute
-	int attrNodeIndex =
-	    createDeferredAttribute(attrName, attrURI, attrValue, specified);
+	int attrNodeIndex = createDeferredAttribute(attrName, attrURI,
+                                                    attrValue, specified);
 	int attrChunk = attrNodeIndex >> CHUNK_SHIFT;
 	int attrIndex  = attrNodeIndex & CHUNK_MASK;
 	// set attribute's parent to element
@@ -388,8 +388,8 @@ public class DeferredDocumentImpl
     } // setDeferredAttribute(int,String,String,String,boolean):int
 
     /** Creates an attribute in the table. */
-    public int createDeferredAttribute(String attrName,
-                                       String attrValue, boolean specified) {
+    public int createDeferredAttribute(String attrName, String attrValue,
+                                       boolean specified) {
         return createDeferredAttribute(attrName, null, attrValue, specified);
     }
 
@@ -404,7 +404,8 @@ public class DeferredDocumentImpl
         setChunkValue(fNodeName, attrName, chunk, index);
         setChunkValue(fNodeURI, attrURI, chunk, index);
         setChunkValue(fNodeValue, attrValue, chunk, index);
-        setChunkIndex(fNodeExtra, specified ? 1 : 0, chunk, index);
+        int extra = specified ? SPECIFIED : 0;
+        setChunkIndex(fNodeExtra, extra, chunk, index);
 
         // return node index
         return nodeIndex;
@@ -610,6 +611,20 @@ public class DeferredDocumentImpl
         return oldAttrIndex;
 
     } // setAttributeNode(int,int):int
+
+
+    /** Adds an attribute node to the specified element. */
+    public void setIdAttributeNode(int elemIndex, int attrIndex) {
+
+        int chunk = attrIndex >> CHUNK_SHIFT;
+        int index = attrIndex & CHUNK_MASK;
+        int extra = getChunkIndex(fNodeExtra, chunk, index);
+        extra = extra | IDATTRIBUTE;
+        setChunkIndex(fNodeExtra, extra, chunk, index);
+
+        String value = getChunkValue(fNodeValue, chunk, index);
+        putIdentifier(value, elemIndex);
+    }
 
     /** Inserts a child before the specified node in the table. */
     public int insertBefore(int parentIndex, int newChildIndex, int refChildIndex) {

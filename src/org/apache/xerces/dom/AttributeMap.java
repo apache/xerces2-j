@@ -309,6 +309,11 @@ public class AttributeMap extends NamedNodeMapImpl {
         n.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
         n.isSpecified(true);
+        // update id table if needed
+        if (n.isIdAttribute()) {
+            ownerDocument.removeIdentifier(n.getValue());
+            n.isIdAttribute(false);
+        }
 
         // notify document
         ownerDocument.removedAttrNode(n, ownerNode, name);
@@ -414,6 +419,11 @@ public class AttributeMap extends NamedNodeMapImpl {
         n.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
         n.isSpecified(true);
+        // update id table if needed
+        if (n.isIdAttribute()) {
+            ownerDocument.removeIdentifier(n.getValue());
+            n.isIdAttribute(false);
+        }
 
         // notify document
         ownerDocument.removedAttrNode(n, ownerNode, name);

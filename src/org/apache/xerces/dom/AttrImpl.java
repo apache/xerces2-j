@@ -318,14 +318,18 @@ public class AttrImpl
                                    "DOM001 Modification not allowed");
         }
         CoreDocumentImpl ownerDocument = ownerDocument();
+        Element ownerElement = getOwnerElement();
         String oldvalue = "";
-        if (ownerDocument.getMutationEvents()) {
-            // Can no longer just discard the kids; they may have
-            // event listeners waiting for them to disconnect.
-            if (needsSyncChildren()) {
-                synchronizeChildren();
-            }
-            if (value != null) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+        if (value != null) {
+            if (ownerDocument.getMutationEvents()) {
+                // Can no longer just discard the kids; they may have
+                // event listeners waiting for them to disconnect.
                 if (hasStringValue()) {
                     oldvalue = (String) value;
                     // create an actual text node as our child so
@@ -352,20 +356,26 @@ public class AttrImpl
                     }
                 }
             }
-        }
-        else
-        {
-            // simply discard children if any
-            if (!hasStringValue() && value != null) {
-                // remove ref from first child to last child
-                ChildNode firstChild = (ChildNode) value;
-                firstChild.previousSibling = null;
-                firstChild.isFirstChild(false);
-                firstChild.ownerNode = ownerDocument;
+            else {
+                if (hasStringValue()) {
+                    oldvalue = (String) value;
+                }
+                else {
+                    // simply discard children if any
+                    oldvalue = getValue();
+                    // remove ref from first child to last child
+                    ChildNode firstChild = (ChildNode) value;
+                    firstChild.previousSibling = null;
+                    firstChild.isFirstChild(false);
+                    firstChild.ownerNode = ownerDocument;
+                }
+                // then remove ref to current value
+                value = null;
+                needsSyncChildren(false);
             }
-            // then remove ref to current value
-            value = null;
-            needsSyncChildren(false);
+            if (isIdAttribute() && ownerElement != null) {
+                ownerDocument.removeIdentifier(oldvalue);
+            }
         }
 
         // Create and add the new one, generating only non-aggregate events
@@ -387,6 +397,9 @@ public class AttrImpl
             hasStringValue(true);
             changed();
         }
+        if (isIdAttribute() && ownerElement != null) {
+            ownerDocument.putIdentifier(newvalue, ownerElement);
+        }
 
     } // setValue(String)
 
@@ -396,6 +409,9 @@ public class AttrImpl
      */
     public String getValue() {
 
+        if (needsSyncData()) {
+            synchronizeData();
+        }
         if (needsSyncChildren()) {
             synchronizeChildren();
         }

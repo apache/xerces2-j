@@ -63,6 +63,7 @@ import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DocumentTypeImpl;
 import org.apache.xerces.dom.ElementDefinitionImpl;
+import org.apache.xerces.dom.ElementImpl;
 import org.apache.xerces.dom.EntityImpl;
 import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.NodeImpl;
@@ -774,7 +775,7 @@ public abstract class AbstractDOMParser
                     attrImpl.setSpecified(specified);
                     // identifier registration
                     if (attributes.getType(i).equals("ID")) {
-                        fDocumentImpl.putIdentifier(attrValue, el);
+                        ((ElementImpl) el).setIdAttributeNode(attr);
                     }
                 }
                 // REVISIT: Handle entities in attribute value.
@@ -802,14 +803,14 @@ public abstract class AbstractDOMParser
                     }
 
                 }
-                fDeferredDocumentImpl.setDeferredAttribute(el,
+                int attr = fDeferredDocumentImpl.setDeferredAttribute(el,
                                                     attributes.getQName(i),
                                                     attributes.getURI(i),
                                                     attrValue,
                                                     attributes.isSpecified(i));
                 // identifier registration
                 if (attributes.getType(i).equals("ID")) {
-                    fDeferredDocumentImpl.putIdentifier(attrValue, el);
+                    fDeferredDocumentImpl.setIdAttributeNode(el, attr);
                 }
             }
             fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, el);
@@ -1640,6 +1641,7 @@ public abstract class AbstractDOMParser
                 // add default attribute
                 int attrIndex = fDeferredDocumentImpl.createDeferredAttribute(
                                     attributeName, defaultValue.toString(), false);
+                // REVISIT: set ID type correctly
                 fDeferredDocumentImpl.appendChild(elementDefIndex, attrIndex);
             }
 

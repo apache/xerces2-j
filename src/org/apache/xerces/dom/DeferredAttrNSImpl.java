@@ -144,7 +144,10 @@ public final class DeferredAttrNSImpl
             localName = name.substring(index + 1);
         }
 
-        isSpecified(ownerDocument.getNodeExtra(fNodeIndex) == 1);
+        int extra = ownerDocument.getNodeExtra(fNodeIndex);
+        isSpecified((extra & SPECIFIED) != 0);
+        isIdAttribute((extra & IDATTRIBUTE) != 0);
+
         namespaceURI = ownerDocument.getNodeURI(fNodeIndex);
         // hide the fact that our parser uses an empty string for null
         if (namespaceURI != null && namespaceURI.length() == 0) {

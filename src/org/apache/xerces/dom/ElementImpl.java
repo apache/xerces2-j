@@ -823,6 +823,29 @@ public class ElementImpl
         }
     }
 
+    /**
+     * NON-DOM: register the given attribute node as an ID attribute
+     */
+    public void setIdAttributeNode(Attr at) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+    	if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+    	
+            if (at.getOwnerElement() != this) {
+                throw new DOMException(DOMException.NOT_FOUND_ERR, 
+                                       "DOM008 Not found");
+            }
+        }
+        ((AttrImpl) at).isIdAttribute(true);
+        ownerDocument.putIdentifier(at.getValue(), this);
+    }
+
     //
     // Protected methods
     //

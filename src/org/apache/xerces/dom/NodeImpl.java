@@ -154,6 +154,7 @@ public abstract class NodeImpl
     protected final static short IGNORABLEWS  = 0x1<<6;
     protected final static short HASSTRING    = 0x1<<7;
     protected final static short UNNORMALIZED = 0x1<<8;
+    protected final static short IDATTRIBUTE  = 0x1<<9;
 
     //
     // Constructors
@@ -1255,6 +1256,14 @@ public abstract class NodeImpl
             ownerNode.isNormalized(false);
         }
         flags = (short) (value ? flags & ~UNNORMALIZED : flags | UNNORMALIZED);
+    }
+
+    final boolean isIdAttribute() {
+        return (flags & IDATTRIBUTE) != 0;
+    }
+
+    final void isIdAttribute(boolean value) {
+        flags = (short) (value ? flags | IDATTRIBUTE : flags & ~IDATTRIBUTE);
     }
 
     //
