@@ -221,9 +221,9 @@ public class DOMNormalizer implements XMLGrammarPool  {
         }
         fDocument = document;
         fErrorHandler = fDocument.getErrorHandler();
-        fValidationHandler.setBaseURI(fDocument.fDocumentURI);
         
-        if (fValidationHandler != null) {        
+        if (fValidationHandler != null) { 
+            fValidationHandler.setBaseURI(fDocument.fDocumentURI);
             fValidationHandler.startDocument(null, fDocument.encoding, null);
         }
 

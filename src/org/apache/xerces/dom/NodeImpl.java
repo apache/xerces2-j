@@ -1012,11 +1012,10 @@ public abstract class NodeImpl
      * @since DOM Level 3
      */
     public String lookupNamespaceURI(String specifiedPrefix) {
-
         short type = this.getNodeType();
         switch (type) {
         case Node.ELEMENT_NODE : {  
-
+                
                 String namespace = this.getNamespaceURI();
                 String prefix = this.getPrefix();
                 if (namespace !=null) {
@@ -1028,7 +1027,8 @@ public abstract class NodeImpl
                         // non default namespace
                         return namespace;
                     }
-                } else if (this.hasAttributes()) {
+                } 
+                if (this.hasAttributes()) {
                     NamedNodeMap map = this.getAttributes();
                     int length = map.getLength();
                     for (int i=0;i<length;i++) {

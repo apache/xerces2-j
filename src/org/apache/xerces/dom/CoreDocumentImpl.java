@@ -930,6 +930,8 @@ public class CoreDocumentImpl
             if (fGrammar != null) {
                 fConfiguration.setProperty(DOMValidationConfiguration.GRAMMAR_POOL, domNormalizer);
             }
+        } else { // remove validation handler
+                domNormalizer.setValidationHandler(null);
         }
         domNormalizer.reset(fConfiguration);
         domNormalizer.normalizeDocument(this);
