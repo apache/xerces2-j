@@ -544,4 +544,5 @@ public class XSWildcardDecl  {
 
         return fDescription;
     }
+    
 } // class XSWildcardDecl
