@@ -167,11 +167,9 @@ public final class ChunkyByteArray extends InputStream {
         int index = offset & CHUNK_MASK;
         try {
             return fData[chunk][index];
-        }
-        catch (NullPointerException ex) {
+        } catch (NullPointerException ex) {
             // ignore -- let fill create new chunk
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             // current chunk array is not big enough; resize
             byte newdata[][] = new byte[fData.length * 2][];
             System.arraycopy(fData, 0, newdata, 0, fData.length);
@@ -192,7 +190,7 @@ public final class ChunkyByteArray extends InputStream {
      *         <code>false</code> otherwise.
      */
     public boolean atEOF(int offset) {
-        return (offset > fLength);
+        return(offset > fLength);
     }
 
 
@@ -203,9 +201,11 @@ public final class ChunkyByteArray extends InputStream {
      * @exception IOException
      */
     public void close() throws IOException {
-        if( fInputStream != null )
-           fInputStream.close(); 
+        if ( fInputStream != null ) {
+             fInputStream.close(); 
+             fInputStream = null; // Null it 
         }
+    }
 
 
     //
