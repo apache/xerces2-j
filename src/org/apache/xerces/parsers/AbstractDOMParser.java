@@ -646,7 +646,6 @@ public abstract class AbstractDOMParser
                         // REVISIT: when DOM Level 3 is REC rely on
                         //          Document.support instead of specific class
                         // set DOM error checking off
-                        fDocumentImpl.setStrictErrorChecking(false);
                         // set actual encoding
                         fDocumentImpl.setActualEncoding(encoding);
                         // set documentURI
@@ -671,9 +670,9 @@ public abstract class AbstractDOMParser
             fDeferredDocumentImpl = new DeferredDocumentImpl(fNamespaceAware);
             fDocument = fDeferredDocumentImpl;
             fDocumentIndex = fDeferredDocumentImpl.createDeferredDocument();
-            // REVISIT: when DOM Level 3 is REC rely on
+            // REVISIT: strict error checking is not implemented in deferred dom.
             //          Document.support instead of specific class
-            fDeferredDocumentImpl.setStrictErrorChecking(false);
+
             // set actual encoding
             fDeferredDocumentImpl.setActualEncoding(encoding);
             // set documentURI
