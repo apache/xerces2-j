@@ -511,7 +511,7 @@ public class XMLNamespaceBinder
                               ? attributes.getLocalName(i) : fEmptySymbol;
                 String uri = attributes.getValue(i);
                 uri = fSymbolTable.addSymbol(uri);
-                fNamespaceSupport.declarePrefix(prefix, uri);
+                fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
 
                 // call handler
                 if (fDocumentHandler != null) {
@@ -622,7 +622,11 @@ public class XMLNamespaceBinder
     public void endElement(QName element) throws XNIException {
 
         // bind element
-        element.uri = fNamespaceSupport.getURI(element.prefix);
+        String eprefix = element.prefix != null ? element.prefix : fEmptySymbol;
+        element.uri = fNamespaceSupport.getURI(eprefix);
+        if (element.uri != null) {
+            element.prefix = eprefix;
+        }
         
         // call handlers
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
