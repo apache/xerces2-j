@@ -8,7 +8,6 @@ TARGETS=\
 	CachingParserPool.class\
         DOMParser.class\
         DTDParser.class\
-	ParserConfiguration.class\
         SAXParser.class\
         SchemaParser.class\
 	StandardParserConfiguration.class\
