@@ -523,8 +523,10 @@ public class DTDGrammar
 
         //Get Grammar index to grammar array
         int elementIndex       = getElementDeclIndex( elementName, -1 );
+        
+	//return, when more than one definition is provided for the same attribute of given element type
+	//only the first declaration is binding and later declarations are ignored
         if (getAttributeDeclIndex(elementIndex, attributeName) != -1) {
-            // REVISIT: BUG - need warn-on-duplicate-attdef feature support
             return;
         }
 

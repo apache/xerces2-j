@@ -154,6 +154,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     protected static final String SCHEMA_VALIDATION = 
     Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_VALIDATION_FEATURE;
 
+    /** Feature identifier: warn on duplicate attdef */
+    protected static final String WARN_ON_DUPLICATE_ATTDEF = 
+    Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE; 
+
+
+
     // property identifiers
 
     /** Property identifier: symbol table. */
@@ -226,6 +232,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     protected boolean fDynamicValidation;
 
+	/** warn on duplicate attribute definition, this feature works only when validation is true */
+	protected boolean fWarnDuplicateAttdef;
+	
     // properties
 
     /** Symbol table. */
@@ -562,6 +571,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         catch (XMLConfigurationException e) {
             fDynamicValidation = false;
         }
+        
+        try {
+            fWarnDuplicateAttdef = componentManager.getFeature(WARN_ON_DUPLICATE_ATTDEF);
+        }
+        catch (XMLConfigurationException e) {
+            fWarnDuplicateAttdef = false;
+        }
+
 
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.reset();
@@ -1371,6 +1388,25 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         if (fValidation) {
+        
+        	boolean	duplicateAttributeDef = false ;
+                                        
+        	//Get Grammar index to grammar array
+        	int elementIndex       = fDTDGrammar.getElementDeclIndex( elementName, -1 );        	
+        	if (fDTDGrammar.getAttributeDeclIndex(elementIndex, attributeName) != -1) {        
+        		//more than one attribute definition is provided for the same attribute of a given element type.
+        		duplicateAttributeDef = true ;
+                		
+        		//this feature works only when valiation is true.
+        		if(fWarnDuplicateAttdef){
+				fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+							 "MSG_DUPLICATE_ATTRIBUTE_DEFINITION", 
+							 new Object[]{ elementName, attributeName },
+							 XMLErrorReporter.SEVERITY_WARNING );
+			}        		
+        	}
+                
+        	
             //
             // a) VC: One ID per Element Type, If duplicate ID attribute
             // b) VC: ID attribute Default. if there is a declareared attribute
@@ -1391,11 +1427,25 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     fTableOfIDAttributeNames.put(elementName, attributeName);
                 }
                 else {
-                    String previousIDAttributeName = (String)fTableOfIDAttributeNames.get( elementName );//rule a)
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                	//we should not report an error, when there is duplicate attribute definition for given element type
+                	//according to XML 1.0 spec, When more than one definition is provided for the same attribute of a given
+                	//element type, the first declaration is binding and later declaration are *ignored*. So processor should 
+                	//ignore the second declarations, however an application would be warned of the duplicate attribute defintion 
+                	// if http://apache.org/xml/features/validation/warn-on-duplicate-attdef feature is set to true,
+                	// one typical case where this could be a  problem, when any XML file  
+                	// provide the ID type information through internal subset so that it is available to the parser which read 
+                	//only internal subset. Now that attribute declaration(ID Type) can again be part of external parsed entity 
+                	//referenced. At that time if parser doesn't make this distinction it will throw an error for VC One ID per 
+                	//Element Type, which (second defintion) actually should be ignored. Application behavior may differ on the
+                	//basis of error or warning thrown. - nb.
+
+                	if(!duplicateAttributeDef){
+                    		String previousIDAttributeName = (String)fTableOfIDAttributeNames.get( elementName );//rule a)
+                    		fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_MORE_THAN_ONE_ID_ATTRIBUTE",
                                                new Object[]{ elementName, previousIDAttributeName, attributeName},
                                                XMLErrorReporter.SEVERITY_ERROR);
+                	}
                 }
             }
 
@@ -1414,11 +1464,21 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     fTableOfNOTATIONAttributeNames.put( elementName, attributeName);
                 }
                 else {
-                    String previousNOTATIONAttributeName = (String) fTableOfNOTATIONAttributeNames.get( elementName );
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                	//we should not report an error, when there is duplicate attribute definition for given element type
+                	//according to XML 1.0 spec, When more than one definition is provided for the same attribute of a given
+                	//element type, the first declaration is binding and later declaration are *ignored*. So processor should 
+                	//ignore the second declarations, however an application would be warned of the duplicate attribute defintion 
+                	// if http://apache.org/xml/features/validation/warn-on-duplicate-attdef feature is set to true, Application behavior may differ on the basis of error or 
+                	//warning thrown. - nb.
+
+                	if(!duplicateAttributeDef){
+                
+                    		String previousNOTATIONAttributeName = (String) fTableOfNOTATIONAttributeNames.get( elementName );
+                    		fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE",
                                                new Object[]{ elementName, previousNOTATIONAttributeName, attributeName},
                                                XMLErrorReporter.SEVERITY_ERROR);
+                         }
                 }
             }
 
