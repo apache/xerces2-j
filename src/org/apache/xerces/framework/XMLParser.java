@@ -593,6 +593,14 @@ public abstract class XMLParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getDynamicValidationEnabled();
     }
+
+    /**
+     *
+     */
+    protected void setNormalizeAttributeValues(boolean normalize) {
+        fValidator.setNormalizeAttributeValues(normalize);
+    }
+
     /**
      * Allows the parser to have the choice to load DTD grammar when 
      * validation is off.
@@ -1147,7 +1155,13 @@ public abstract class XMLParser
                 throw new SAXNotSupportedException(featureId);
             }
             //
-            // http://apache.org/xml/features/validation/default-attribute-values
+            // http://apache.org/xml/features/validation/normalize-attribute-values
+            //
+            if (feature.equals("validation/normalize-attribute-values")) {
+                setNormalizeAttributeValues(state);
+            }
+            //
+            // http://apache.org/xml/features/validation/validate-content-models
             //
             if (feature.equals("validation/validate-content-models")) {
                 // REVISIT

@@ -257,6 +257,7 @@ NamespacesScope.NamespacesHandler {
    private boolean fDynamicDisabledByValidation = false;
    private boolean fWarningOnDuplicateAttDef = false;
    private boolean fWarningOnUndeclaredElements = false;
+   private boolean fNormalizeAttributeValues = true;
    private boolean fLoadDTDGrammar = true;
 
    // declarations
@@ -498,6 +499,11 @@ NamespacesScope.NamespacesHandler {
    /** Returns true if validation is dynamic. */
    public boolean getDynamicValidationEnabled() {
       return fDynamicValidation;
+   }
+
+   /** Sets fNormalizeAttributeValues **/
+   public void setNormalizeAttributeValues(boolean normalize){
+      fNormalizeAttributeValues = normalize;
    }
 
    /** Sets fLoadDTDGrammar when validation is off **/
@@ -2779,7 +2785,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                    fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
                                    fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
                                  ) {
-                                 validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
+                                  int normalizedValue = validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
+                                  attrList.setAttValue(index, normalizedValue);
+                                 
                               }
 
                               // check to see if this attribute matched an attribute wildcard
@@ -2951,8 +2959,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
    } // validateElementAndAttributes(QName,XMLAttrList)
 
 
-   //validate attributes in DTD fashion
-   private void validateDTDattribute(QName element, int attValue, 
+   /**
+    * Validate attributes in DTD fashion.
+    * @return normalized attribute value
+    */
+   private int validateDTDattribute(QName element, int attValue, 
                                      XMLAttributeDecl attributeDecl) throws Exception{
       AttributeValidator av = null;
       switch (attributeDecl.type) {
@@ -2996,6 +3007,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 av = fAttValidatorENTITY;
             }*/
 
+            if (fNormalizeAttributeValues) {
+                if (attributeDecl.list) {
+                    attValue = normalizeListAttribute(value);
+                } else {
+                    if (value != unTrimValue) {
+                        attValue = fStringPool.addSymbol(value);
+                    }
+                }
+            }
          }
          break;
       case XMLAttributeDecl.TYPE_ENUMERATION:
@@ -3024,6 +3044,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                reportRecoverableXMLError(ex.getMajorCode(),
                                          ex.getMinorCode(),
                                          fStringPool.toString( attributeDecl.name.rawname), value );
+            }
+
+            if (fNormalizeAttributeValues && value != unTrimValue) {
+                attValue = fStringPool.addSymbol(value);
             }
          }
          break;
@@ -3058,6 +3082,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                }
             }
 
+            if (fNormalizeAttributeValues) {
+                if (attributeDecl.list) {
+                    attValue = normalizeListAttribute(value);
+                } else {
+                    if (value != unTrimValue) {
+                        attValue = fStringPool.addSymbol(value);
+                    }
+                }
+            }
          }
          break;
       case XMLAttributeDecl.TYPE_NOTATION:
@@ -3118,12 +3151,56 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                          fStringPool.toString(attributeDecl.name.rawname), value);//TODO NMTOKENS messge
             }
 
+            if (fNormalizeAttributeValues) {
+                if (attributeDecl.list) {
+                    attValue = normalizeListAttribute(value);
+                } else {
+                    if (value != unTrimValue) {
+                        attValue = fStringPool.addSymbol(value);
+                    }
+                }
+            }
          }
          break;
       }
-      if ( av != null )
-         av.normalize(element, attributeDecl.name, attValue, 
-                      attributeDecl.type, attributeDecl.enumeration);
+      if ( av != null ) {
+          int newValue = av.normalize(element, attributeDecl.name, attValue, 
+                                  attributeDecl.type, attributeDecl.enumeration);
+          if (fNormalizeAttributeValues)
+              attValue = newValue;
+      }
+      return attValue;
+   }
+
+   /**
+    * @param value This is already trimmed.
+    */
+   private int normalizeListAttribute(String value) {
+       int length = value.length();
+       StringBuffer buffer = null;
+       int state = 0;           // 0:non-S, 1: 1st S, 2: non-1st S
+       int copyStart = 0;
+       for (int i = 0;  i < length;  i++) {
+           int ch = value.charAt(i);
+           if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
+               if (state == 0) {
+                   state = 1;
+               } else if (state == 1) {
+                   state = 2;
+                   if (buffer == null)
+                       buffer = new StringBuffer(length);
+                   buffer.append(value.substring(copyStart, i));
+               }
+           } else {
+               if (state == 2)
+                   copyStart = i;
+               state = 0;
+           }
+       }
+       if (buffer == null)
+           return fStringPool.addSymbol(value);
+       buffer.append(value.substring(copyStart));
+       return fStringPool.addSymbol(new String(buffer));
    }
 
    /** Character data in content. */
