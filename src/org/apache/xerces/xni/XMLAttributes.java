@@ -80,7 +80,12 @@ public interface XMLAttributes {
     //
 
     /**
-     * Adds an attribute. 
+     * Adds an attribute. The attribute's non-normalized value of the
+     * attribute will have the same value as the attribute value until
+     * set using the <code>setNonNormalizedValue</code> method. Also,
+     * the added attribute will be marked as specified in the XML instance
+     * document unless set otherwise using the <code>setSpecified</code>
+     * method.
      * <p>
      * <strong>Note:</strong> If an attribute of the same name already
      * exists, the old values for the attribute are replaced by the new
@@ -98,6 +103,9 @@ public interface XMLAttributes {
      * @param attrValue The attribute value.
      * 
      * @return Returns the attribute index.
+     *
+     * @see #setNonNormalizedValue
+     * @see #setSpecified
      */
     public int addAttribute(QName attrName, String attrType, String attrValue);
 
@@ -286,10 +294,13 @@ public interface XMLAttributes {
     public String getType(String uri, String localName);
 
     /**
-     * Sets the value of the attribute at the specified index.
+     * Sets the value of the attribute at the specified index. This
+     * method will overwrite the non-normalized value of the attribute.
      * 
      * @param attrIndex The attribute index.
      * @param attrValue The new attribute value.
+     *
+     * @see #setNonNormalizedValue
      */
     public void setValue(int attrIndex, String attrValue);
 

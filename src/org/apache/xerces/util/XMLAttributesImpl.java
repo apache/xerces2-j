@@ -133,9 +133,14 @@ public class XMLAttributesImpl
     //
 
     /**
-     * Adds an attribute. 
+     * Adds an attribute. The attribute's non-normalized value of the
+     * attribute will have the same value as the attribute value until
+     * set using the <code>setNonNormalizedValue</code> method. Also,
+     * the added attribute will be marked as specified in the XML instance
+     * document unless set otherwise using the <code>setSpecified</code>
+     * method.
      * <p>
-     * <strong>Note:</strogn> If an attribute of the same name already
+     * <strong>Note:</strong> If an attribute of the same name already
      * exists, the old values for the attribute are replaced by the new
      * values.
      * 
@@ -151,6 +156,9 @@ public class XMLAttributesImpl
      * @param attrValue The attribute value.
      * 
      * @return Returns the attribute index.
+     *
+     * @see #setNonNormalizedValue
+     * @see #setSpecified
      */
     public int addAttribute(QName name, String type, String value) {
 
@@ -175,6 +183,7 @@ public class XMLAttributesImpl
         attribute.name.setValues(name);
         attribute.type = type;
         attribute.value = value;
+        attribute.nonNormalizedValue = value;
         attribute.specified = false;
 
         // return
@@ -244,13 +253,18 @@ public class XMLAttributesImpl
     } // setType(int,String)
 
     /**
-     * Sets the value of the attribute at the specified index.
+     * Sets the value of the attribute at the specified index. This
+     * method will overwrite the non-normalized value of the attribute.
      * 
      * @param attrIndex The attribute index.
      * @param attrValue The new attribute value.
+     *
+     * @see #setNonNormalizedValue
      */
     public void setValue(int attrIndex, String attrValue) {
-        fAttributes[attrIndex].value = attrValue;
+        Attribute attribute = fAttributes[attrIndex];
+        attribute.value = attrValue;
+        attribute.nonNormalizedValue = attrValue;
     } // setValue(int,String)
 
     /**
@@ -261,6 +275,9 @@ public class XMLAttributesImpl
      * @param attrValue The new non-normalized attribute value.
      */
     public void setNonNormalizedValue(int attrIndex, String attrValue) {
+        if (attrValue == null) {
+            attrValue = fAttributes[attrIndex].value;
+        }
         fAttributes[attrIndex].nonNormalizedValue = attrValue;
     } // setNonNormalizedValue(int,String)
 
@@ -273,9 +290,6 @@ public class XMLAttributesImpl
      */
     public String getNonNormalizedValue(int attrIndex) {
         String value = fAttributes[attrIndex].nonNormalizedValue;
-        if (value == null) {
-            value = fAttributes[attrIndex].value;
-        }
         return value;
     } // getNonNormalizedValue(int):String
 
