@@ -1700,7 +1700,7 @@ public class XMLDTDScanner
                             break;
                     }
                 }
-                else {
+                else if (fEntityScanner.peekChar() != quote) {
                     fStringBuffer2.append((char)fEntityScanner.scanChar());
                 }
             } while (fEntityScanner.scanLiteral(quote, fString) != quote);
