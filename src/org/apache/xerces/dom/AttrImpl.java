@@ -353,21 +353,31 @@ public class AttrImpl
     
     public void normalize() {
 
-    	Node kid, next;
-    	for (kid = firstChild; kid != null; kid = next) {
-    		next = kid.getNextSibling();
+        Node kid, next;
+        for (kid = firstChild; kid != null; kid = next) {
+            next = kid.getNextSibling();
 
-    		// If kid and next are both Text nodes (but _not_ CDATASection,
-    		// which is a subclass of Text), they can be merged.
-    		if (next != null
-			 && kid.getNodeType() == Node.TEXT_NODE
-			 && next.getNodeType() == Node.TEXT_NODE)
-    	    {
-    			((Text)kid).appendData(next.getNodeValue());
-    			removeChild(next);
-    			next = kid; // Don't advance; there might be another.
-    		}
-
+            // If kid is a text node, we need to check for one of two
+            // conditions:
+            //   1) There is an adjacent text node
+            //   2) There is no adjacent text node, but kid is
+            //      an empty text node.
+            if ( kid.getNodeType() == Node.TEXT_NODE )
+            {
+                // If an adjacent text node, merge it with kid
+                if ( next!=null && next.getNodeType() == Node.TEXT_NODE )
+                {
+                    ((Text)kid).appendData(next.getNodeValue());
+                    removeChild( next );
+                    next = kid; // Don't advance; there might be another.
+                }
+                else
+                {
+                    // If kid is empty, remove it
+                    if ( kid.getNodeValue().length()==0 )
+                        removeChild( kid );
+                }
+            }
         }
 
     } // normalize()

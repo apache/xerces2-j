@@ -287,25 +287,45 @@ public class ElementImpl
      * normal Text or with other CDATASections.
      */
     public void normalize() {
-
     	Node kid, next;
     	for (kid = getFirstChild(); kid != null; kid = next) {
     		next = kid.getNextSibling();
 
-    		// If kid and next are both Text nodes (but _not_ CDATASection,
-    		// which is a subclass of Text), they can be merged.
-    		if (next != null
-			 && kid.getNodeType() == Node.TEXT_NODE
-			 && next.getNodeType() == Node.TEXT_NODE)
-    	    {
-    			((Text)kid).appendData(next.getNodeValue());
-    			removeChild(next);
-    			next = kid; // Don't advance; there might be another.
-    		}
+            // If kid is a text node, we need to check for one of two
+            // conditions:
+            //   1) There is an adjacent text node
+            //   2) There is no adjacent text node, but kid is
+            //      an empty text node.
+            if ( kid.getNodeType() == Node.TEXT_NODE )
+            {
+                // If an adjacent text node, merge it with kid
+                if ( next!=null && next.getNodeType() == Node.TEXT_NODE )
+                {
+                    ((Text)kid).appendData(next.getNodeValue());
+                    removeChild( next );
+                    next = kid; // Don't advance; there might be another.
+                }
+                else
+                {
+                    // If kid is empty, remove it
+                    if ( kid.getNodeValue().length()==0 )
+                        removeChild( kid );
+                }
+            }
 
     		// Otherwise it might be an Element, which is handled recursively
     		else if (kid.getNodeType() ==  Node.ELEMENT_NODE) {
                 ((Element)kid).normalize();
+            }
+        }
+
+        // We must also normalize all of the attributes
+        if ( attributes!=null )
+        {
+            for( int i=0; i<attributes.getLength(); ++i )
+            {
+                Node attr = attributes.item(i);
+                attr.normalize();
             }
         }
 
