@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,12 +99,6 @@ public class XML11DTDValidator extends XMLDTDValidator {
         super.reset(manager);
     } //reset(XMLComponentManager)
 
-    // returns whether a character is space according to the
-    // version of XML this validator supports.
-    protected boolean isSpace(int c) {
-        return XML11Char.isXML11Space(c);
-    } // isSpace(int):  boolean
-
     protected void init() {
         if(fValidation || fDynamicValidation) {
             super.init();
@@ -112,9 +106,9 @@ public class XML11DTDValidator extends XMLDTDValidator {
 
             try {
                 fValID       = fDatatypeValidatorFactory.getBuiltInDV("XML11ID");
-                fValIDRef    = fDatatypeValidatorFactory.getBuiltInDV("XML11IDREFS");
+                fValIDRef    = fDatatypeValidatorFactory.getBuiltInDV("XML11IDREF");
                 fValIDRefs   = fDatatypeValidatorFactory.getBuiltInDV("XML11IDREFS");
-                fValNMTOKEN  = fDatatypeValidatorFactory.getBuiltInDV("XML11NMTOKENSymbol");
+                fValNMTOKEN  = fDatatypeValidatorFactory.getBuiltInDV("XML11NMTOKEN");
                 fValNMTOKENS = fDatatypeValidatorFactory.getBuiltInDV("XML11NMTOKENS");
 
             }
