@@ -660,18 +660,94 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
 
     public void scanQName(char fastcheck, QName qname) throws Exception {
 
-        // DEFECT !! no code // Defect #126
+        // REVISIT: possible bugs with surrogate characters  -el
         int nameOffset = fCurrentOffset;
-        skipPastName(fastcheck);
-        int nameLength = fCurrentOffset - nameOffset;
-        if (nameLength == 0) {
-            qname.clear();
-            return;
+        int ch;
+        int prefixend=-1;
+        int offset=fCurrentOffset;
+        ch = getChar(fCurrentOffset);
+        if (ch < 0x80) {
+            if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0) {
+                qname.clear();
+                return;
+            }
+            if (ch == ':') {
+                qname.clear();
+                return;
+            }
         }
-        qname.prefix = -1;
-        qname.localpart = -1;
-        qname.rawname = addSymbol(nameOffset, nameLength);
+        else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
+            if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
+                return;
+        }
+
+        while (true) {
+            fCurrentOffset += fBytesPerChar;
+            fCharacterCounter++;
+            ch = getChar(fCurrentOffset);
+            if (fastcheck == ch) {
+                break;
+            }
+            if (ch < 0x80) {
+                if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0) {
+                    break;
+                }
+                if (ch == ':') {
+                    if (prefixend != -1) {
+                        break;
+                    }
+                    prefixend = fCurrentOffset;
+                    //
+                   // We need to peek ahead one character.  If the next character is not a
+                   // valid initial name character, or is another colon, then we cannot meet
+                   // both the Prefix and LocalPart productions for the QName production,
+                   // which means that there is no Prefix and we need to terminate the QName
+                   // at the first colon.  --JR's comments
+                   //
+
+                    ch = getChar(fCurrentOffset+fBytesPerChar);
+                    boolean lpok = true;
+                    if (ch < 0x80) {
+                        if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0 || ch == ':') {
+                            lpok = false;
+                        }
+                    }
+                    else {
+                        if (!fCalledCharPropInit) {
+                            XMLCharacterProperties.initCharFlags();
+                            fCalledCharPropInit = true;
+                        }
+                        if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0) {
+                            lpok = false;
+                        }
+                    }
+                    if (!lpok) {
+                        prefixend = -1;
+                        break;
+                    }
+                }
+            }
+            else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
+                if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0) {
+                    break;
+                }
+            }
+        }//end while loop
+        int length = fCurrentOffset - offset;
+        qname.prefix = prefixend == -1 ? -1 : addSymbol(offset, prefixend - offset);
+        qname.rawname = addSymbol(offset, length);
+        qname.localpart = prefixend == -1 ? qname.rawname : addSymbol(prefixend + fBytesPerChar, fCurrentOffset - (prefixend + fBytesPerChar));
         qname.uri = -1;
+
+
 
     } // scanQName(char,QName)
 
