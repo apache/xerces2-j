@@ -1026,7 +1026,7 @@ public abstract class NodeImpl
      * @param n node which was directly inserted or removed
      * @param e event to be sent to that node and its subtree
      */
-    void dispatchEventToSubtree(ChildNode n,Event e)
+    void dispatchEventToSubtree(Node n,Event e)
     {
       if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
@@ -1036,17 +1036,17 @@ public abstract class NodeImpl
 	    // ***** Recursive implementation. This is excessively expensive,
 	    // and should be replaced in conjunction with optimization
 	    // mentioned above.
-	    n.dispatchEvent(e);
+	    ((NodeImpl)n).dispatchEvent(e);
 	    if(n.getNodeType()==Node.ELEMENT_NODE)
 	    {
 	        NamedNodeMap a=n.getAttributes();
 	        for(int i=a.getLength()-1;i>=0;--i)
-	            dispatchEventToSubtree(((ChildNode)a.item(i)),e);
+	            dispatchEventToSubtree(a.item(i),e);
 	    }
-	    dispatchEventToSubtree((ChildNode)n.getFirstChild(),e);
-	    dispatchEventToSubtree(n.nextSibling,e);
+	    dispatchEventToSubtree(n.getFirstChild(),e);
+	    dispatchEventToSubtree(n.getNextSibling(),e);
 	  }
-	} // dispatchEventToSubtree(NodeImpl,Event) :void
+	} // dispatchEventToSubtree(Node,Event) :void
 
     /** NON-DOM INTERNAL: Return object for getEnclosingAttr. Carries
      * (two values, the Attr node affected (if any) and its previous 
