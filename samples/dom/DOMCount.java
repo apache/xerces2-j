@@ -122,9 +122,9 @@ public class DOMCount {
             (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
             DOMCount counter = new DOMCount();
             long before = System.currentTimeMillis();
-            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+//            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
 
-                               setDeferredDOM );
+//                               setDeferredDOM );
             parser.setFeature( "http://xml.org/sax/features/validation", 
                                setValidation );
             parser.setFeature( "http://xml.org/sax/features/namespaces",
@@ -137,8 +137,11 @@ public class DOMCount {
             long after = System.currentTimeMillis();
             counter.printResults(uri, after - before);
         } catch (org.xml.sax.SAXParseException spe) {
+		spe.printStackTrace();
         } catch (org.xml.sax.SAXNotRecognizedException ex ){
+		System.out.println("The DOM parser does not recognize one of the features you specified.");
         } catch (org.xml.sax.SAXNotSupportedException ex ){
+		System.out.println("The DOM parser does not support one of the features you specified...");
         } catch (org.xml.sax.SAXException se) {
             if (se.getException() != null)
                 se.getException().printStackTrace(System.err);
