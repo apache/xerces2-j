@@ -1398,8 +1398,7 @@ public class XMLEntityManager
          */
         public void setEncoding(String encoding) throws IOException {
             if (fCurrentEntity.stream != null) {
-                OneCharReader ocreader = (OneCharReader)fCurrentEntity.reader;
-                fCurrentEntity.reader = ocreader.getReader();
+                fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding);
             }
         } // setEncoding(String)
 
@@ -2506,15 +2505,6 @@ public class XMLEntityManager
         } // <init>(Reader)
 
         //
-        // Public methods
-        //
-
-        /** Returns the reader that is being wrapped. */
-        public Reader getReader() {
-            return in;
-        } // getReader():Reader
-
-        //
         // Reader methods
         //
 
@@ -2525,7 +2515,7 @@ public class XMLEntityManager
             // already passed the first piece of markup and
             // the encoding was not set
             if (seenEndOfMarkup) {
-                fCurrentEntity.reader = getReader();
+                fCurrentEntity.reader = super.in;
                 return fCurrentEntity.reader.read();
             }
 
