@@ -199,7 +199,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                                                  getDatatypeValidator( "unsignedShort"), facets, false );
 
             facets = new Hashtable();
-            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
+            facets.put(SchemaSymbols.ELT_MININCLUSIVE, "1" );
             createDatatypeValidator("positiveInteger",
                                                  getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
