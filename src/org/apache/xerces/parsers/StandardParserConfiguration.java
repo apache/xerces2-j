@@ -271,6 +271,7 @@ public class StandardParserConfiguration
      */
     public StandardParserConfiguration(SymbolTable symbolTable,
                                        GrammarPool grammarPool) {
+        this(symbolTable, grammarPool, null);
     } // <init>(SymbolTable,GrammarPool)
     /**
      * Constructs a parser configuration using the specified symbol table,

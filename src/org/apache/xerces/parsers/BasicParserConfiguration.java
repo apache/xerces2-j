@@ -322,12 +322,24 @@ public abstract class BasicParserConfiguration
         fDocumentHandler = handler;
     }
 
+    public XMLDocumentHandler getDocumentHandler() {
+        return fDocumentHandler;
+    }
+
     public void setDTDHandler(XMLDTDHandler handler) {
         fDTDHandler = handler;
     }
 
+    public XMLDTDHandler getDTDHandler() {
+        return fDTDHandler;
+    }
+
     public void setDTDContentModelHandler(XMLDTDContentModelHandler handler) {
         fDTDContentModelHandler = handler;
+    }
+
+    public XMLDTDContentModelHandler getDTDContentModelHandler() {
+        return fDTDContentModelHandler;
     }
 
     /**
@@ -450,6 +462,11 @@ public abstract class BasicParserConfiguration
     public void setLocale(Locale locale) throws XNIException {
         fLocale = locale;
     } // setLocale(Locale)
+
+    /** Returns the locale. */
+    public Locale getLocale() {
+        return fLocale;
+    } // getLocale():Locale
 
     //
     // Protected methods

@@ -277,6 +277,11 @@ public abstract class AbstractConfiguration
         fEntityResolver = resolver;
     } // setEntityResolver(XMLEntityResolver)
 
+    /** Returns the registered entity resolver. */
+    public XMLEntityResolver getEntityResolver() {
+        return fEntityResolver;
+    } // getEntityResolver():XMLEntityResolver
+
     /**
      * Sets the error handler.
      *
@@ -285,7 +290,12 @@ public abstract class AbstractConfiguration
     public void setErrorHandler(XMLErrorHandler handler) {
         fErrorHandler = handler;
     } // setErrorHandler(XMLErrorHandler)
-    
+
+    /** Returns the registered error handler. */
+    public XMLErrorHandler getErrorHandler() {
+        return fErrorHandler;
+    } // getErrorHandler():XMLErrorHandler
+
     /**
      * Sets the document handler to receive information about the document.
      * 
@@ -294,6 +304,11 @@ public abstract class AbstractConfiguration
     public void setDocumentHandler(XMLDocumentHandler handler) {
         fDocumentHandler = handler;
     } // setDocumentHandler(XMLDocumentHandler)
+
+    /** Returns the registered document handler. */
+    public XMLDocumentHandler getDocumentHandler() {
+        return fDocumentHandler;
+    } // getDocumentHandler():XMLDocumentHandler
 
     /**
      * Sets the DTD handler.
@@ -304,6 +319,11 @@ public abstract class AbstractConfiguration
         fDTDHandler = handler;
     } // setDTDHandler(XMLDTDHandler)
 
+    /** Returns the registered DTD handler. */
+    public XMLDTDHandler getDTDHandler() {
+        return fDTDHandler;
+    } // getDTDHandler():XMLDTDHandler
+
     /**
      * Sets the DTD content model handler.
      * 
@@ -312,7 +332,12 @@ public abstract class AbstractConfiguration
     public void setDTDContentModelHandler(XMLDTDContentModelHandler handler) {
         fDTDContentModelHandler = handler;
     } // setDTDContentModelHandler(XMLDTDContentModelHandler)
-    
+
+    /** Returns the registered DTD content model handler. */
+    public XMLDTDContentModelHandler getDTDContentModelHandler() {
+        return fDTDContentModelHandler;
+    } // getDTDContentModelHandler():XMLDTDContentModelHandler 
+
     /**
      * Parse an XML document.
      * <p>
@@ -354,7 +379,13 @@ public abstract class AbstractConfiguration
     public void setLocale(Locale locale) {
         fLocale = locale;
     } // setLocale(Locale)
-    
+
+
+    /** Returns the locale. */
+    public Locale getLocale() {
+        return fLocale;
+    } // getLocale():Locale
+
     //
     // Protected methods
     //
