@@ -473,7 +473,8 @@ public class TraverseSchema implements
         }
 
         //REVISIT, !!!! a hack: needs to be updated later, cause now we only use localpart to key build-in datatype.
-        if (prefix.length()==0 && uriStr.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+        if ( prefix.length()==0 && uriStr.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+             && ! fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
             uriStr = "";
         }
 
@@ -1922,7 +1923,7 @@ public class TraverseSchema implements
     private int traverseAttributeDecl( Element attrDecl, ComplexTypeInfo typeInfo ) throws Exception {
         String attNameStr    = attrDecl.getAttribute(SchemaSymbols.ATT_NAME);
         int attName          = fStringPool.addSymbol(attNameStr);// attribute name
-        String isQName       = attrDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);//form attribute
+        String isQName       = attrDecl.getAttribute(SchemaSymbols.ATT_FORM);//form attribute
 
         DatatypeValidator dv = null;
         // attribute type
@@ -2157,7 +2158,7 @@ public class TraverseSchema implements
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
-            reportGenericSchemaError("!!Schema not found : " + uriStr);
+            reportGenericSchemaError("!!Schema not found in #addAttributeDeclFromAnotherSchema, schema uri : " + uriStr);
             return -1;
         }
 
@@ -2260,7 +2261,7 @@ public class TraverseSchema implements
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
-            reportGenericSchemaError("!!Schema not found : " + uriStr);
+            reportGenericSchemaError("!!Schema not found in #traverseAttributeGroupDeclFromAnotherSchema, schema uri : " + uriStr);
             return -1;
         }
         // attribute name
@@ -2384,7 +2385,7 @@ public class TraverseSchema implements
         String fixed = elementDecl.getAttribute(SchemaSymbols.ATT_FIXED);
         String equivClass = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
         // form attribute
-        String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
+        String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_FORM);
 
         String fromAnotherSchema = null;
 
@@ -2853,6 +2854,7 @@ public class TraverseSchema implements
             int localpartIndex = fStringPool.addSymbol(localpart);
             
             String uriStr = resolvePrefixToURI(prefix);
+
             if (!uriStr.equals(fTargetNSURIString)) {
                 return traverseGroupDeclFromAnotherSchema(localpart, uriStr);
             }
@@ -2969,7 +2971,9 @@ public class TraverseSchema implements
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
-            reportGenericSchemaError("!!Schema not found : " + uriStr);
+            reportGenericSchemaError("!!Schema not found in #traverseGroupDeclFromAnotherSchema, "+
+                                     "schema uri: " + uriStr
+                                     +", groupName: " + groupName);
             return -1;
         }
         
