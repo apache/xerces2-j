@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,14 @@ public class SAXParser
      */
     public SAXParser() {
         super(new StandardParserConfiguration());
-    } // <init>
+    } // <init>()
+
+    /**
+     * Constructs a SAX parser using the specified parser configuration.
+     */
+    public SAXParser(XMLParserConfiguration config) {
+        super(config);
+    } // <init>(XMLParserConfiguration)
 
     /**
      * Constructs a SAX parser using the specified symbol table.
@@ -99,6 +106,6 @@ public class SAXParser
      */
     public SAXParser(SymbolTable symbolTable, GrammarPool grammarPool) {
         super(new StandardParserConfiguration(symbolTable, grammarPool));
-    }
+    } // <init>(SymbolTable,GrammarPool)
 
 } // class SAXParser
