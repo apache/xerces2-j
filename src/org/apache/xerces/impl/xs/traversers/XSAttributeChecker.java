@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -224,14 +224,14 @@ public class XSAttributeChecker {
     protected static final int DT_BLOCK1           = -2;
     protected static final int DT_FINAL            = -3;
     protected static final int DT_FINAL1           = -4;
-    protected static final int DT_FORM             = -5;
-    protected static final int DT_MAXOCCURS        = -6;
-    protected static final int DT_MAXOCCURS1       = -7;
-    protected static final int DT_MEMBERTYPES      = -8;
-    protected static final int DT_MINOCCURS1       = -9;
-    protected static final int DT_NAMESPACE        = -10;
-    protected static final int DT_PROCESSCONTENTS  = -11;
-    protected static final int DT_NSTRING          = -12;
+    protected static final int DT_FINAL2           = -5;
+    protected static final int DT_FORM             = -6;
+    protected static final int DT_MAXOCCURS        = -7;
+    protected static final int DT_MAXOCCURS1       = -8;
+    protected static final int DT_MEMBERTYPES      = -9;
+    protected static final int DT_MINOCCURS1       = -10;
+    protected static final int DT_NAMESPACE        = -11;
+    protected static final int DT_PROCESSCONTENTS  = -12;
     protected static final int DT_USE              = -13;
     protected static final int DT_WHITESPACE       = -14;
     protected static final int DT_BOOLEAN          = -15;
@@ -336,7 +336,7 @@ public class XSAttributeChecker {
                                                         ATTIDX_FINAL,
                                                         null);
         allAttrs[ATT_FINAL_D_D]         =   new OneAttr(SchemaSymbols.ATT_FINALDEFAULT,
-                                                        DT_FINAL,
+                                                        DT_FINAL2,
                                                         ATTIDX_FINALDEFAULT,
                                                         INT_EMPTY_SET);
         allAttrs[ATT_FIXED_N]           =   new OneAttr(SchemaSymbols.ATT_FIXED,
@@ -468,7 +468,7 @@ public class XSAttributeChecker {
                                                         ATTIDX_VALUE,
                                                         null);
         allAttrs[ATT_VERSION_N]         =   new OneAttr(SchemaSymbols.ATT_VERSION,
-                                                        DT_NSTRING,
+                                                        DT_TOKEN,
                                                         ATTIDX_VERSION,
                                                         null);
         allAttrs[ATT_XPATH_R]           =   new OneAttr(SchemaSymbols.ATT_XPATH,
@@ -828,7 +828,7 @@ public class XSAttributeChecker {
 
         // for element "simpleType" - global
         attrList = Container.getContainer(3);
-        // final = (#all | (list | union | restriction))
+        // final = (#all | List of (list | union | restriction))
         attrList.put(SchemaSymbols.ATT_FINAL, allAttrs[ATT_FINAL1_N]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -839,7 +839,7 @@ public class XSAttributeChecker {
 
         // for element "simpleType" - local
         attrList = Container.getContainer(2);
-        // final = (#all | (list | union | restriction))
+        // final = (#all | List of (list | union | restriction))
         attrList.put(SchemaSymbols.ATT_FINAL, allAttrs[ATT_FINAL1_N]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -875,7 +875,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_BLOCKDEFAULT, allAttrs[ATT_BLOCK_D_D]);
         // elementFormDefault = (qualified | unqualified) : unqualified
         attrList.put(SchemaSymbols.ATT_ELEMENTFORMDEFAULT, allAttrs[ATT_ELEMENT_FD_D]);
-        // finalDefault = (#all | List of (extension | restriction))  : ''
+        // finalDefault = (#all | List of (extension | restriction | list | union))  : ''
         attrList.put(SchemaSymbols.ATT_FINALDEFAULT, allAttrs[ATT_FINAL_D_D]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -1378,7 +1378,7 @@ public class XSAttributeChecker {
             retValue = fXIntPool.getXInt(choice);
             break;
         case DT_FINAL1:
-            // final = (#all | (list | union | restriction))
+            // final = (#all | List of (list | union | restriction))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
                 //choice = SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
@@ -1391,17 +1391,64 @@ public class XSAttributeChecker {
                          XSConstants.DERIVATION_RESTRICTION|XSConstants.DERIVATION_LIST|
                          XSConstants.DERIVATION_UNION;
             }
-            else if (value.equals (SchemaSymbols.ATTVAL_LIST)) {
-                choice = XSConstants.DERIVATION_LIST;
+            else {
+                // use the default \t\r\n\f delimiters
+                StringTokenizer t = new StringTokenizer(value);
+                while (t.hasMoreTokens()) {
+                    String token = t.nextToken ();
+
+                    if (token.equals (SchemaSymbols.ATTVAL_LIST)) {
+                        choice |= XSConstants.DERIVATION_LIST;
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_UNION)) {
+                        choice |= XSConstants.DERIVATION_UNION;
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
+                        choice |= XSConstants.DERIVATION_RESTRICTION;
+                    }
+                    else {
+                        throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (list | union | restriction))"});
+                    }
+                }
             }
-            else if (value.equals (SchemaSymbols.ATTVAL_UNION)) {
-                choice = XSConstants.DERIVATION_UNION;
-            }
-            else if (value.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
-                choice = XSConstants.DERIVATION_RESTRICTION;
+            retValue = fXIntPool.getXInt(choice);
+            break;
+        case DT_FINAL2:
+            // finalDefault = (#all | List of (extension | restriction | list | union))
+            choice = 0;
+            if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
+                //choice = SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
+                //         SchemaSymbols.UNION;
+                // REVISIT: if #all, then make the result the combination of
+                //          everything: substitution/externsion/restriction/list/union.
+                //          would this be a problem?
+                // same reason as above DT_BLOCK1/DT_FINAL
+                choice = XSConstants.DERIVATION_SUBSTITUTION|XSConstants.DERIVATION_EXTENSION|
+                         XSConstants.DERIVATION_RESTRICTION|XSConstants.DERIVATION_LIST|
+                         XSConstants.DERIVATION_UNION;
             }
             else {
-                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | (list | union | restriction))"});
+                // use the default \t\r\n\f delimiters
+                StringTokenizer t = new StringTokenizer(value);
+                while (t.hasMoreTokens()) {
+                    String token = t.nextToken ();
+
+                    if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
+                        choice |= XSConstants.DERIVATION_EXTENSION;
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
+                        choice |= XSConstants.DERIVATION_RESTRICTION;
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_LIST)) {
+                        choice |= XSConstants.DERIVATION_LIST;
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_UNION)) {
+                        choice |= XSConstants.DERIVATION_UNION;
+                    }
+                    else {
+                        throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (extension | restriction | list | union))"});
+                    }
+                }
             }
             retValue = fXIntPool.getXInt(choice);
             break;
@@ -1529,20 +1576,6 @@ public class XSAttributeChecker {
             else
                 throw new InvalidDatatypeValueException("cvc-enumeration-valid",
                                                         new Object[]{value, "(lax | skip | strict)"});
-            break;
-        case DT_NSTRING:
-            StringBuffer buf = new StringBuffer(value);
-            boolean changed = false;
-            int len = value.length();
-            char ch;
-            for (int i = 0; i < len; i++) {
-                ch = buf.charAt(i);
-                if (ch == 0x9 || ch == 0xa || ch == 0xd) {
-                    buf.setCharAt(i, ' ');
-                    changed = true;
-                }
-            }
-            retValue = changed ? buf.toString() : value;
             break;
         case DT_USE:
             // use = (optional | prohibited | required)
