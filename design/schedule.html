@@ -6,96 +6,100 @@
   <LINK href="site.css" rel="stylesheet" type="text/css">
  </HEAD>
  <BODY>
-  <H1>Xerces 2 Schedule</H1>
-  <A name="M1"></A>
-  <H2>       Milestone #1       (M1)      </H2>
-  <P>
-   <TABLE border="0">
-    <TR>
-     <TH>Title:</TH>
-     <TD>Parser without DTD support</TD>
-    </TR>
-    <TR>
-     <TH>Goals:</TH>
+  <SPAN class="netscape">
+   <H1>Xerces 2 Schedule</H1>
+   <A name="M1"></A>
+   <H2>       Milestone #1       (M1)      </H2>
+   <P>
+    <TABLE border="0">
+     <TR>
+      <TH>Title:</TH>
+      <TD>Parser without DTD support</TD>
+     </TR>
+     <TR>
+      <TH>Goals:</TH>
 
-     <TD>XMLString<BR>XMLStringBuffer<BR>XMLErrorReporter<BR>XMLDocumentScanner<BR>XMLAttributes<BR>XMLEntityManager<BR>XMLEntityReader<BR>CachingParserPool
-      (only supporting the SymbolTable)<BR>XMLParser/XMLDocumentParser
-      (SAXParser?
-      DOMParser?)<BR>XMLChar<BR>EncodingMap<BR>SymbolTable<BR>QName<BR>Some MessageFormatter</TD>
-    </TR>
-   </TABLE>
-  </P>
-  <A name="M2"></A>
-  <H2>       Milestone #2       (M2)      </H2>
-  <P>
-   <TABLE border="0">
-    <TR>
-     <TH>Title:</TH>
-     <TD>Parser with DTD scanning without validation</TD>
-    </TR>
-    <TR>
-     <TH>Depends:</TH>
-     <TD><A href="#M1">M1</A></TD>
-    </TR>
-    <TR>
-     <TH>Goals:</TH>
-     <TD>CachingParserPool (supporting GrammarPool)<BR>XMLDTDScanner<BR>XMLGrammarParser/DTDParser<BR>GrammarPool<BR>Grammar/DTDGrammar<BR>XMLElementDecl<BR>XMLAttributeDecl<BR>XMLSimpleType<BR>XMLEntityDecl<BR>XMLNotationDecl</TD>
-    </TR>
-   </TABLE>
-  </P>
-  <A name="M3"></A>
-  <H2>       Milestone #3       (M3)      </H2>
-  <P>
-   <TABLE border="0">
-    <TR>
-     <TH>Title:</TH>
-     <TD>Parser with DTD scanning + datatypes validation</TD>
-    </TR>
-    <TR>
-     <TH>Depends:</TH>
-     <TD><A href="#M2">M2</A></TD>
-    </TR>
-    <TR>
-     <TH>Goals:</TH>
-     <TD>XMLValidator<BR>DatatypeValidatorFactoryImpl<BR>AbstractDatatypeValidator<BR>StringDatatypeValidator<BR>InvalidDatatypeFacetException<BR>InvalidDatatypeValueException</TD>
-    </TR>
-   </TABLE>
-  </P>
-  <A name="M4"></A>
-  <H2>       Milestone #4       (M4)      </H2>
-  <P>
-   <TABLE border="0">
-    <TR>
-     <TH>Title:</TH>
-     <TD>Parser with DTD scanning + datatypes and content model validation</TD>
-    </TR>
-    <TR>
-     <TH>Depends:</TH>
-     <TD><A href="#M3">M3</A></TD>
-    </TR>
-    <TR>
-     <TH>Goals:</TH>
-     <TD>SimpleContentModel<BR>MixedContentModel<BR>DFAContentModel</TD>
-    </TR>
-   </TABLE>
-  </P>
-  <A name="M5"></A>
-  <H2>       Milestone #5       (M5)      </H2>
-  <P>
-   <TABLE border="0">
-    <TR>
-     <TH>Title:</TH>
-     <TD>Parser with DTD scanning and Schema parsing + validation</TD>
-    </TR>
-    <TR>
-     <TH>Depends:</TH>
-     <TD><A href="#M4">M4</A></TD>
-    </TR>
-    <TR>
-     <TH>Goals:</TH>
-     <TD>SchemaGrammar<BR>SchemaParser</TD>
-    </TR>
-   </TABLE>
-  </P>
-  <HR>     Last modified: $Date$</BODY>
+      <TD>XMLString<BR>XMLStringBuffer<BR>XMLErrorReporter<BR>XMLDocumentScanner<BR>XMLAttributes<BR>XMLEntityManager<BR>XMLEntityReader<BR>CachingParserPool
+       (only supporting the SymbolTable)<BR>XMLParser/XMLDocumentParser
+       (SAXParser?
+       DOMParser?)<BR>XMLChar<BR>EncodingMap<BR>SymbolTable<BR>QName<BR>Some MessageFormatter</TD>
+     </TR>
+    </TABLE>
+   </P>
+   <A name="M2"></A>
+   <H2>       Milestone #2       (M2)      </H2>
+   <P>
+    <TABLE border="0">
+     <TR>
+      <TH>Title:</TH>
+      <TD>Parser with DTD scanning without validation</TD>
+     </TR>
+     <TR>
+      <TH>Depends:</TH>
+      <TD><A href="#M1">M1</A></TD>
+     </TR>
+     <TR>
+      <TH>Goals:</TH>
+      <TD>CachingParserPool (supporting GrammarPool)<BR>XMLDTDScanner<BR>XMLGrammarParser/DTDParser<BR>GrammarPool<BR>Grammar/DTDGrammar<BR>XMLElementDecl<BR>XMLAttributeDecl<BR>XMLSimpleType<BR>XMLEntityDecl<BR>XMLNotationDecl</TD>
+     </TR>
+    </TABLE>
+   </P>
+   <A name="M3"></A>
+   <H2>       Milestone #3       (M3)      </H2>
+   <P>
+    <TABLE border="0">
+     <TR>
+      <TH>Title:</TH>
+      <TD>Parser with DTD scanning + datatypes validation</TD>
+     </TR>
+     <TR>
+      <TH>Depends:</TH>
+      <TD><A href="#M2">M2</A></TD>
+     </TR>
+     <TR>
+      <TH>Goals:</TH>
+      <TD>XMLValidator<BR>DatatypeValidatorFactoryImpl<BR>AbstractDatatypeValidator<BR>StringDatatypeValidator<BR>InvalidDatatypeFacetException<BR>InvalidDatatypeValueException</TD>
+     </TR>
+    </TABLE>
+   </P>
+   <A name="M4"></A>
+   <H2>       Milestone #4       (M4)      </H2>
+   <P>
+    <TABLE border="0">
+     <TR>
+      <TH>Title:</TH>
+      <TD>Parser with DTD scanning + datatypes and content model validation</TD>
+     </TR>
+     <TR>
+      <TH>Depends:</TH>
+      <TD><A href="#M3">M3</A></TD>
+     </TR>
+     <TR>
+      <TH>Goals:</TH>
+      <TD>SimpleContentModel<BR>MixedContentModel<BR>DFAContentModel</TD>
+     </TR>
+    </TABLE>
+   </P>
+   <A name="M5"></A>
+   <H2>       Milestone #5       (M5)      </H2>
+   <P>
+    <TABLE border="0">
+     <TR>
+      <TH>Title:</TH>
+      <TD>Parser with DTD scanning and Schema parsing + validation</TD>
+     </TR>
+     <TR>
+      <TH>Depends:</TH>
+      <TD><A href="#M4">M4</A></TD>
+     </TR>
+     <TR>
+      <TH>Goals:</TH>
+      <TD>SchemaGrammar<BR>SchemaParser</TD>
+     </TR>
+    </TABLE>
+   </P>
+  </SPAN>
+  <HR>
+  <SPAN class="netscape">      Last modified: $Date$</SPAN>
+ </BODY>
 </HTML>

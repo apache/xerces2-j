@@ -9,6 +9,7 @@
     <LINK rel='stylesheet' type='text/css' href='site.css'/>
    </HEAD>
    <BODY>
+    <SPAN class='netscape'>
     <H1>Xerces 2 Schedule</H1>
     <xsl:for-each select='milestone'>
      <A name='{@id}'/>
@@ -20,8 +21,11 @@
       <xsl:apply-templates select='.'/>
      </P>
     </xsl:for-each>
+    </SPAN>
     <HR/>
-    Last modified: <xsl:value-of select='date'/>
+    <SPAN class='netscape'>
+     Last modified: <xsl:value-of select='date'/>
+    </SPAN>
    </BODY>
   </HTML>
  </xsl:template>

@@ -8,20 +8,23 @@
               font-weight: normal;
               text-align: center; vertical-align: middle }
    .component { color: black; background: silver;
-                border: solid black 2 }
+                border-style: solid; border-color: black; border-width: 2 }
    .manager { color: black; background: #DDDDFF; 
-              border: solid black 1;
+              border-style: solid; border-color: black; border-width: 1;
               text-align: center; vertical-align: middle }
    .config-component { color: black; background: #FFDDDD; 
-                       border: solid black 1; font-weight: normal; 
+                       border-style: solid; border-color: black; border-width: 1;
+                       font-weight: normal; 
                        text-align: center; vertical-align: middle }
    .non-config-component { color: black; background: silver; 
-                           border: solid black 1; font-weight: normal; 
+                           border-style: solid; border-color: black; border-width: 1;
+                           font-weight: normal; 
                            text-align: center; vertical-align: middle }
    .note { font-size: smaller }
   </style>
  </head>
  <body>
+  <span class='netscape'>
   <a name='TOP'></a>
   <h1>Architecture Overview</h1>
   <h2>Table of Contents</h2>
@@ -161,7 +164,7 @@
        <tr align='center' valign='middle'>
         <th class='manager' colspan='9'>Parser</td>
        </tr>
-       <tr bgcolor='silver' align='center' valign='middle'>
+       <tr align='center' valign='middle'>
         <td class='non-config-component'>Symbol<br>Table</td>
         <td class='config-component'>Error<br>Reporter</td>
         <td class='config-component'>Entity<br>Manager</td>
@@ -186,6 +189,7 @@
    The following list includes only those features which are of 
    general use to most components and should not not be considered a 
    complete list.
+   <span class='netscape'>
    <dl>
     <dt><tt>http://xml.org/sax/features/namespaces</tt></dt>
     <dd>Sets whether the parser should process namespaces.</dd>
@@ -200,6 +204,7 @@
      <code>false</code> overrides this setting.
     </dd>
    </dl>
+   </span>
   </p>
   <p>
    The SAX2 property mechanism is used to communicate information about
@@ -208,6 +213,7 @@
    parser instances but does not mean that every parser configuration
    will have all of these components. All of the following properties 
    are <strong>read-only</strong>.
+   <span class='netscape'>
    <dl>
     <dt><tt>http://apache.org/xml/properties/internal/symbol-table</tt></dt>
     <dd>
@@ -260,6 +266,7 @@
      <code><a href='design.html#DatatypeValidatorFactory'>DatatypeValidatorFactory</a></code>.
     </dd>
    </dl>
+   </span>
   </p>
   <a name='Configuration.SettingsManagement'></a>
   <h3>Settings Management</h3>
@@ -270,6 +277,7 @@
    <code><a href='design.html#XMLComponent'>XMLComponent</a></code> 
    interface. For this configuration system to work, the parser
    must adhere to the following guidelines:
+   <span class='netscape'>
    <ul>
     <li>
      Before each parse, the parser <strong>must</strong> call the 
@@ -286,6 +294,7 @@
      and those settings may directly affect the operation of components.
     </li>
    </ul>
+   </span>
   </p>
   <a name='Configuration.ParserInitialization'></a>
   <h3>Parser Initialization</h3>
@@ -311,8 +320,11 @@
     </tr>
    </table>
   </p>
+  </span>
   <a name='BOTTOM'></a>
   <hr>
-  Last modified: $Date$
+  <span class='netscape'>
+   Last modified: $Date$
+  </span>
  </body>
 </html>
