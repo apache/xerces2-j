@@ -78,6 +78,7 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 import java.io.IOException;
+import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
@@ -233,6 +234,15 @@ public class XMLSchemaValidator
     protected final static String ELEM_PSVI = "ELEM_PSVI";
     protected final static String ATTR_PSVI = "ATTR_PSVI";
 
+    // since it is the responsibility of each component to an
+    // Augmentations parameter if one is null, to save ourselves from
+    // having to create this object continually, it is created here.
+    // If it is not present in calls that we're passing on, we *must*
+    // clear this before we introduce it into the pipeline.  
+    protected final AugmentationsImpl fAugmentations = new AugmentationsImpl();
+
+    // this is included for the convenience of handleEndElement
+    protected XMLString fDefaultValue;
 
     /** Validation. */
     protected boolean fValidation = false;
@@ -516,13 +526,13 @@ public class XMLSchemaValidator
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
-        handleStartElement(element, attributes, augs);
+        Augmentations modifiedAugs = handleStartElement(element, attributes, augs);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes, augs);
+            fDocumentHandler.startElement(element, attributes, modifiedAugs );
         }
 
-    } // startElement(QName,XMLAttributes)
+    } // startElement(QName,XMLAttributes, Augmentations)
 
     /**
      * An empty element.
@@ -536,15 +546,16 @@ public class XMLSchemaValidator
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
-        handleStartElement(element, attributes, augs);
+        Augmentations modifiedAugs = handleStartElement(element, attributes, augs);
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, change emptyElement call to
         // start + characters + end
-        XMLString defaultValue = handleEndElement(element, augs);
+        modifiedAugs = handleEndElement(element, modifiedAugs);
+        XMLString defaultValue = fDefaultValue;
         // call handlers
         if (fDocumentHandler != null) {
 
-            fDocumentHandler.emptyElement(element, attributes, augs);
+            fDocumentHandler.emptyElement(element, attributes, modifiedAugs);
 
             // REVISIT: should we send default element value?
             /*if (defaultValue == null) {
@@ -557,7 +568,7 @@ public class XMLSchemaValidator
             */
         }
 
-    } // emptyElement(QName,XMLAttributes)
+    } // emptyElement(QName,XMLAttributes, Augmentations)
 
     /**
      * Character content.
@@ -612,16 +623,17 @@ public class XMLSchemaValidator
 
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, add a characters call.
-        XMLString defaultValue = handleEndElement(element, augs);
+        Augmentations modifiedAugs = handleEndElement(element, augs);
+        XMLString defaultValue  = fDefaultValue;
         // call handlers
         if (fDocumentHandler != null) {
             // REVISIT: should we send default element values??
             //if (defaultValue != null)
             //    fDocumentHandler.characters(defaultValue);
-            fDocumentHandler.endElement(element, augs);
+            fDocumentHandler.endElement(element, modifiedAugs);
         }
 
-    } // endElement(QName)
+    } // endElement(QName, Augmentations)
 
     /**
      * The end of a namespace prefix mapping. This method will only be
@@ -688,7 +700,7 @@ public class XMLSchemaValidator
             fDocumentHandler.endDocument(augs);
         }
 
-    } // endDocument()
+    } // endDocument(Augmentations)
 
     //
     // XMLDocumentHandler and XMLDTDHandler methods
@@ -760,7 +772,7 @@ public class XMLSchemaValidator
     public void comment(XMLString text, Augmentations augs) throws XNIException {
 
         // record the fact that there is a comment child.
-        fSawChidren = true;
+        fSawChildren = true;
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -790,7 +802,7 @@ public class XMLSchemaValidator
     throws XNIException {
 
         // record the fact that there is a PI child.
-        fSawChidren = true;
+        fSawChildren = true;
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -924,7 +936,7 @@ public class XMLSchemaValidator
     boolean[] fStringContent = new boolean[INITIAL_STACK_SIZE];
 
     /** Did we see children that are neither characters nor elements? */
-    boolean fSawChidren = false;
+    boolean fSawChildren = false;
 
     /** Stack to record if we other children that character or elements */
     boolean[] fSawChildrenStack = new boolean[INITIAL_STACK_SIZE];
@@ -1092,7 +1104,7 @@ public class XMLSchemaValidator
         fCurrCMState = null;
         fBuffer.setLength(0);
         fSawCharacters=false;
-        fSawChidren=false;
+        fSawChildren=false;
         fValidationRootDepth = -1;
         fValidationRoot = null;
         fSkipValidationDepth = -1;
@@ -1279,7 +1291,15 @@ public class XMLSchemaValidator
     } // handleIgnorableWhitespace(XMLString)
 
     /** Handle element. */
-    void handleStartElement(QName element, XMLAttributes attributes, Augmentations augs) {
+    Augmentations handleStartElement(QName element, XMLAttributes attributes, Augmentations augs) {
+
+        // should really determine whether a null augmentation is to 
+        // be returned on a case-by-case basis, rather than assuming
+        // this method will always produce augmentations...
+        if(augs == null) {
+            augs = fAugmentations;
+            augs.clear();
+        }
         if (DEBUG) {
             System.out.println("handleStartElement: " +element);
         }
@@ -1366,7 +1386,7 @@ public class XMLSchemaValidator
         // REVISIT:  is this the correct behaviour for ID constraints?  -NG
         if (fSkipValidationDepth >= 0) {
             fElementDepth++;
-            return;
+            return augs;
         }
 
         // if it's not the root element, we push the current states in the stacks
@@ -1379,7 +1399,7 @@ public class XMLSchemaValidator
             fTypeStack[fElementDepth] = fCurrentType;
             fCMStack[fElementDepth] = fCurrentCM;
             fStringContent[fElementDepth] = fSawCharacters;
-            fSawChildrenStack[fElementDepth] = fSawChidren;
+            fSawChildrenStack[fElementDepth] = fSawChildren;
         }
 
         // get the element decl for this element
@@ -1408,7 +1428,7 @@ public class XMLSchemaValidator
         // if the wildcard is skip, then return
         if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP) {
             fSkipValidationDepth = fElementDepth;
-            return;
+            return augs;
         }
 
         // try again to get the element decl
@@ -1457,7 +1477,7 @@ public class XMLSchemaValidator
             // otherwise, don't skip sub-elements
             if (fValidationRootDepth >= 0)
                 fSkipValidationDepth = fElementDepth;
-            return;
+            return augs;
         }
 
         // we found a decl or a type, but there is no vlaidatoin root,
@@ -1497,7 +1517,7 @@ public class XMLSchemaValidator
         // and the buffer to hold the value of the element
         fBuffer.setLength(0);
         fSawCharacters = false;
-        fSawChidren = false;
+        fSawChildren = false;
 
         // get information about xsi:nil
         String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
@@ -1541,16 +1561,21 @@ public class XMLSchemaValidator
                 matcher.startElement(element, attributes, fCurrentElemDecl);
             }
         }
+        return augs;
 
     } // handleStartElement(QName,XMLAttributes,boolean)
 
     /**
      *  Handle end element. If there is not text content, and there is a
-     *  {value constraint} on the corresponding element decl, then return
-     *  an XMLString representing the default value.
+     *  {value constraint} on the corresponding element decl, then 
+     * set the fDefaultValue XMLString representing the default value.
      */
-    XMLString handleEndElement(QName element, Augmentations augs) {
+    Augmentations handleEndElement(QName element, Augmentations augs) {
 
+        if(augs == null) { // again, always assume adding augmentations...
+            augs = fAugmentations;
+            augs.clear();
+        }
 
         fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
         if (fCurrentPSVI == null) {
@@ -1566,7 +1591,7 @@ public class XMLSchemaValidator
             // restore the states.
             if (fSkipValidationDepth == fElementDepth &&
                 fSkipValidationDepth > 0) {
-                // set the parial validation depth to the depth of parent
+                // set the partial validation depth to the depth of parent
                 fPartialValidationDepth = fSkipValidationDepth-1;
                 fSkipValidationDepth = -1;
                 fElementDepth--;
@@ -1577,7 +1602,7 @@ public class XMLSchemaValidator
                 fCurrentCM = fCMStack[fElementDepth];
                 fCurrCMState = fCMStateStack[fElementDepth];
                 fSawCharacters = fStringContent[fElementDepth];
-                fSawChidren = fSawChildrenStack[fElementDepth];
+                fSawChildren = fSawChildrenStack[fElementDepth];
             }
             else {
                 fElementDepth--;
@@ -1600,7 +1625,8 @@ public class XMLSchemaValidator
                 XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
             }
 
-            return null;
+            fDefaultValue = null;
+            return augs;
         }
 
         // now validate the content of the element
@@ -1690,7 +1716,7 @@ public class XMLSchemaValidator
             fCurrentCM = fCMStack[fElementDepth];
             fCurrCMState = fCMStateStack[fElementDepth];
             fSawCharacters = fStringContent[fElementDepth];
-            fSawChidren = fSawChildrenStack[fElementDepth];
+            fSawChildren = fSawChildrenStack[fElementDepth];
         }
 
         // need to pop context so that the bindings for this element is
@@ -1707,7 +1733,8 @@ public class XMLSchemaValidator
         fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALID_VALIDITY
                                                   : ElementPSVI.INVALID_VALIDITY;
 
-        return defaultValue;
+        fDefaultValue = defaultValue;
+        return augs;
     } // handleEndElement(QName,boolean)*/
 
     void handleStartPrefix(String prefix, String uri) {
@@ -2320,7 +2347,7 @@ public class XMLSchemaValidator
         if (!fNil) {
             // 2.1 If the {content type} is empty, then the element information item has no character or element information item [children].
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY &&
-                (fChildCount != 0 || textContent.length() != 0 || fSawChidren)) {
+                (fChildCount != 0 || textContent.length() != 0 || fSawChildren)) {
                 reportSchemaError("cvc-complex-type.2.1", new Object[]{element.rawname});
             }
             // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the normalized value of the element information item is valid with respect to that simple type definition as defined by String Valid (3.14.4).

@@ -415,7 +415,7 @@ public class XMLDocumentScannerImpl
 
         // call handler
         if (fDocumentHandler != null && name.equals("[xml]")) {
-            fDocumentHandler.startDocument(fEntityScanner, encoding, fAugmentations);
+            fDocumentHandler.startDocument(fEntityScanner, encoding, null);
         }
 
     } // startEntity(String,identifier,String)
@@ -435,7 +435,7 @@ public class XMLDocumentScannerImpl
 
         // call handler
         if (fDocumentHandler != null && name.equals("[xml]")) {
-            fDocumentHandler.endDocument(fAugmentations);
+            fDocumentHandler.endDocument(null);
         }
 
     } // endEntity(String)
@@ -486,7 +486,7 @@ public class XMLDocumentScannerImpl
             //       it knows the root element name and public and system
             //       identifier for the startDTD call. -Ac
             fDocumentHandler.doctypeDecl(fDoctypeName, fDoctypePublicId, fDoctypeSystemId,
-                                         fAugmentations);
+                                         null);
         }
 
         // is there an internal subset?

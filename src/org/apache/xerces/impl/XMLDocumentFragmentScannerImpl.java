@@ -245,8 +245,6 @@ public class XMLDocumentFragmentScannerImpl
     /** Content dispatcher. */
     protected Dispatcher fContentDispatcher = createContentDispatcher();
 
-    protected final Augmentations fAugmentations = new AugmentationsImpl();
-
     // temporary variables
 
     /** Array of 3 strings. */
@@ -527,7 +525,7 @@ public class XMLDocumentFragmentScannerImpl
         // call handler
         if (fDocumentHandler != null && !fScanningAttribute) {
             if (!name.equals("[xml]")) {
-                fDocumentHandler.startGeneralEntity(name, identifier, encoding, fAugmentations);
+                fDocumentHandler.startGeneralEntity(name, identifier, encoding, null);
             }
         }
 
@@ -554,7 +552,7 @@ public class XMLDocumentFragmentScannerImpl
         // call handler
         if (fDocumentHandler != null && !fScanningAttribute) {
             if (!name.equals("[xml]")) {
-                fDocumentHandler.endGeneralEntity(name, fAugmentations);
+                fDocumentHandler.endGeneralEntity(name, null);
             }
         }
         
@@ -610,10 +608,10 @@ public class XMLDocumentFragmentScannerImpl
         // call handler
         if (fDocumentHandler != null) {
             if (scanningTextDecl) {
-                fDocumentHandler.textDecl(version, encoding, fAugmentations);
+                fDocumentHandler.textDecl(version, encoding, null);
             }
             else {
-                fDocumentHandler.xmlDecl(version, encoding, standalone, fAugmentations);
+                fDocumentHandler.xmlDecl(version, encoding, standalone, null);
             }
         }
 
@@ -640,7 +638,7 @@ public class XMLDocumentFragmentScannerImpl
 
         // call handler
         if (fDocumentHandler != null) {
-            fDocumentHandler.processingInstruction(target, data, fAugmentations);
+            fDocumentHandler.processingInstruction(target, data, null);
         }
 
     } // scanPIData(String)
@@ -661,7 +659,7 @@ public class XMLDocumentFragmentScannerImpl
 
         // call handler
         if (fDocumentHandler != null) {
-            fDocumentHandler.comment(fStringBuffer, fAugmentations);
+            fDocumentHandler.comment(fStringBuffer, null);
         }
 
     } // scanComment()
@@ -738,11 +736,11 @@ public class XMLDocumentFragmentScannerImpl
         // call handler
         if (fDocumentHandler != null) {
             if (empty) {
-                fDocumentHandler.emptyElement(fElementQName, fAttributes, fAugmentations);
+                fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
                 handleEndElement(fElementQName, true);
             }
             else {
-                fDocumentHandler.startElement(fElementQName, fAttributes, fAugmentations);
+                fDocumentHandler.startElement(fElementQName, fAttributes, null);
             }
         }
 
@@ -831,7 +829,7 @@ public class XMLDocumentFragmentScannerImpl
             c = -1;
         }
         if (fDocumentHandler != null && content.length > 0) {
-            fDocumentHandler.characters(content, fAugmentations);
+            fDocumentHandler.characters(content, null);
         }
 
         if (c == ']' && fString.length == 0) {
@@ -851,7 +849,7 @@ public class XMLDocumentFragmentScannerImpl
                 }
             }
             if (fDocumentHandler != null) {
-                fDocumentHandler.characters(fStringBuffer, fAugmentations);
+                fDocumentHandler.characters(fStringBuffer, null);
             }
             c = -1;
         }
@@ -876,13 +874,13 @@ public class XMLDocumentFragmentScannerImpl
         
         // call handler
         if (fDocumentHandler != null) {
-            fDocumentHandler.startCDATA(fAugmentations);
+            fDocumentHandler.startCDATA(null);
         }
 
         while (true) {
             if (!fEntityScanner.scanData("]]", fString)) {
                 if (fDocumentHandler != null && fString.length > 0) {
-                    fDocumentHandler.characters(fString, fAugmentations);
+                    fDocumentHandler.characters(fString, null);
                 }
                 int brackets = 2;
                 while (fEntityScanner.skipChar(']')) {
@@ -893,7 +891,7 @@ public class XMLDocumentFragmentScannerImpl
                     for (int i = 2; i < brackets; i++) {
                         fStringBuffer.append(']');
                     }
-                    fDocumentHandler.characters(fStringBuffer, fAugmentations);
+                    fDocumentHandler.characters(fStringBuffer, null);
                 }
                 if (fEntityScanner.skipChar('>')) {
                     break;
@@ -901,12 +899,12 @@ public class XMLDocumentFragmentScannerImpl
                 if (fDocumentHandler != null) {
                     fStringBuffer.clear();
                     fStringBuffer.append("]]");
-                    fDocumentHandler.characters(fStringBuffer, fAugmentations);
+                    fDocumentHandler.characters(fStringBuffer, null);
                 }
             }
             else {
                 if (fDocumentHandler != null) {
-                    fDocumentHandler.characters(fString, fAugmentations);
+                    fDocumentHandler.characters(fString, null);
                 }
                 int c = fEntityScanner.peekChar();
                 if (c != -1 && XMLChar.isInvalid(c)) {
@@ -914,7 +912,7 @@ public class XMLDocumentFragmentScannerImpl
                         fStringBuffer.clear();
                         scanSurrogates(fStringBuffer);
                         if (fDocumentHandler != null) {
-                            fDocumentHandler.characters(fStringBuffer, fAugmentations);
+                            fDocumentHandler.characters(fStringBuffer, null);
                         }
                     }
                     else {
@@ -929,7 +927,7 @@ public class XMLDocumentFragmentScannerImpl
 
         // call handler
         if (fDocumentHandler != null) {
-            fDocumentHandler.endCDATA(fAugmentations);
+            fDocumentHandler.endCDATA(null);
         }
 
         return true;
@@ -996,11 +994,11 @@ public class XMLDocumentFragmentScannerImpl
             // call handler
             if (fDocumentHandler != null) {
                 if (fNotifyCharRefs) {
-                    fDocumentHandler.startGeneralEntity(fCharRefLiteral, null, null, fAugmentations);
+                    fDocumentHandler.startGeneralEntity(fCharRefLiteral, null, null, null);
                 }
-                fDocumentHandler.characters(fStringBuffer2, fAugmentations);
+                fDocumentHandler.characters(fStringBuffer2, null);
                 if (fNotifyCharRefs) {
-                    fDocumentHandler.endGeneralEntity(fCharRefLiteral, fAugmentations);
+                    fDocumentHandler.endGeneralEntity(fCharRefLiteral, null);
                 }
             }
         }
@@ -1076,15 +1074,15 @@ public class XMLDocumentFragmentScannerImpl
     private void handleCharacter(char c, String entity) throws XNIException {
         if (fDocumentHandler != null) {
             if (fNotifyBuiltInRefs) {
-                fDocumentHandler.startGeneralEntity(entity, null, null, fAugmentations);
+                fDocumentHandler.startGeneralEntity(entity, null, null, null);
             }
             
             fSingleChar[0] = c;
             fString.setValues(fSingleChar, 0, 1);
-            fDocumentHandler.characters(fString, fAugmentations);
+            fDocumentHandler.characters(fString, null);
             
             if (fNotifyBuiltInRefs) {
-                fDocumentHandler.endGeneralEntity(entity, fAugmentations);
+                fDocumentHandler.endGeneralEntity(entity, null);
             }
         }
     } // handleCharacter(char)
@@ -1130,7 +1128,7 @@ public class XMLDocumentFragmentScannerImpl
         
         // call handler
         if (fDocumentHandler != null && !isEmpty) {
-            fDocumentHandler.endElement(element, fAugmentations);
+            fDocumentHandler.endElement(element, null);
         }
 
         return fMarkupDepth;
@@ -1391,7 +1389,7 @@ public class XMLDocumentFragmentScannerImpl
                                             if (scanSurrogates(fStringBuffer)) {
                                                 // call handler
                                                 if (fDocumentHandler != null) {
-                                                    fDocumentHandler.characters(fStringBuffer, fAugmentations);
+                                                    fDocumentHandler.characters(fStringBuffer, null);
                                                 }
                                             }
                                         }
