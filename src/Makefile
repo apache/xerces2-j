@@ -83,8 +83,6 @@ source: ../bin/${JARFILE}
 #-src/org/apache/xerces/validators/schema
 	${MKDIR} ../class/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.class        ../class/org/apache/xerces/validators/schema
-	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../class/org/apache/xerces/validators/schema
-	${CP}  ../src/org/apache/xerces/validators/schema/*.ent          ../class/org/apache/xerces/validators/schema
 
 #-src/org/apache/xerces/validators/schema/identity
 	${MKDIR} ../class/org/apache/xerces/validators/schema/identity
@@ -284,8 +282,6 @@ package_src:
 #-src/org/apache/xerces/validaters/schema
 	${MKDIR} ../source/src/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.java        ../source/src/org/apache/xerces/validators/schema
-	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../source/src/org/apache/xerces/validators/schema
-	${CP}  ../src/org/apache/xerces/validators/schema/*.ent          ../source/src/org/apache/xerces/validators/schema
 
 #-src/org/apache/xerces/validaters/schema/identity
 	${MKDIR} ../source/src/org/apache/xerces/validators/schema/identity
