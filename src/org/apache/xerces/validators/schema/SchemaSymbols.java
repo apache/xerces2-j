@@ -74,6 +74,7 @@ public final  class SchemaSymbols {
     public static final String ELT_ANYATTRIBUTE =  "anyAttribute";
     public static final String ELT_ATTRIBUTE =  "attribute";
     public static final String ELT_ATTRIBUTEGROUP =  "attributeGroup";
+    public static final String ELT_CHOICE =  "choice";
     public static final String ELT_COMPLEXTYPE =  "complexType";
     public static final String ELT_CONTENT =  "content";
     public static final String ELT_DURATION =  "duration";
@@ -87,11 +88,13 @@ public final  class SchemaSymbols {
     public static final String ELT_KEYREF =  "keyref";
     public static final String ELT_LENGTH =  "length";
     public static final String ELT_MAXEXCLUSIVE =  "maxExclusive";
+    public static final String ELT_MAXINCLUSIVE =  "maxInclusive";
     public static final String ELT_MAXLENGTH =  "maxlength";
     public static final String ELT_MINEXCLUSIVE =  "minExclusive";
     public static final String ELT_MININCLUSIVE =  "minInclusive";
     public static final String ELT_MINLENGTH =  "minlength";
     public static final String ELT_NOTATION =  "notation";
+    public static final String ELT_PATTERN =  "pattern";
     public static final String ELT_PERIOD =  "period";
     public static final String ELT_PRECISION =  "precision";
     public static final String ELT_SCALE =  "scale";
@@ -133,9 +136,11 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_POUNDALL =  "#all";
     public static final String ATTVAL_BASE64 =  "base64";
     public static final String ATTVAL_BOOLEAN =  "boolean";
+    public static final String ATTVAL_DEFAULT =  "default";
     public static final String ATTVAL_ELEMENTONLY =  "elementOnly";
     public static final String ATTVAL_EMPTY =  "empty";
     public static final String ATTVAL_EXTENSION =  "extension";
+    public static final String ATTVAL_FIXED =  "fixed";
     public static final String ATTVAL_HEX =  "hex";
     public static final String ATTVAL_ID =  "ID";
     public static final String ATTVAL_LAX =  "lax";
