@@ -45,6 +45,40 @@ try {
 			<tr><th>Note:</th>		<td>This property is currently not supported because the contents of the 
    										XML string returned by this property is not well defined.</td></tr>
 		</table>
+                
+                <anchor name="xml-string"/>
+		<p>http://apache.org/xml/properties/schema/external-schemaLocation</p>
+		<table>
+			<tr><th>Type:</th>      <td>java.lang.String</td></tr>
+			<tr><th>Access:</th>	<td>read-write</td></tr>
+			<tr><th>Desc:</th>	<td>The XML Schema Recommendation explicitly states that the inclusion of schemaLocation/ noNamespaceSchemaLocation attributes is only a hint; it does not mandate 
+                        that these attributes must be used to locate schemas. This property 
+                        allows the user to specify a list of schemas to use.  
+                        If the targetNamespace of a schema (specified using this property)  
+                        matches the targetNamespace of a schema occuring in the instance document 
+                        in schemaLocation attribute, the schema specified by the user using this 
+                        property will be used (i.e., the instance document&apos;s schemaLocation attribute will be effectively ignored).
+                                                </td></tr>
+			<tr><th>Note:</th>	<td>The syntax is the same as for schemaLocation attributes in
+                        instance documents: e.g, "http://www.example.com file_name.xsd".
+                        The user can specify more than one XML Schema in the list.                         
+                        </td></tr>
+		</table>
+                
+                <anchor name="xml-string"/>
+		<p>http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation</p>
+		<table>
+			<tr><th>Type:</th>      <td>java.lang.String</td></tr>
+			<tr><th>Access:</th>	<td>read-write</td></tr>
+			<tr><th>Desc:</th>	<td>This property allows the user to specify an XML Schema with no namespace. 
+                                                </td></tr>
+			<tr><th>Note:</th>	<td>The syntax is a same as for the noNamespaceSchemaLocation
+                         attribute that may occur in an instance document:
+                        e.g."file_name.xsd". The user may specify only one XML Schema. For more information see the documentation for the 
+                        http://apache.org/xml/properties/schema/external-schemaLocation
+                        property</td></tr>
+		</table>
+
 	</s2>
 	
 	<s2 title="DOM Parser Properties">
