@@ -1099,7 +1099,7 @@ public class XMLEntityManager
 
     /** Prints the contents of the buffer. */
     final void print() {
-        if (true) {
+        if (DEBUG_BUFFER) {
             if (fCurrentEntity != null) {
                 System.out.print('[');
                 System.out.print(fCurrentEntity.count);
@@ -2155,7 +2155,7 @@ public class XMLEntityManager
          */
         public boolean scanData(String delimiter, XMLString data)
             throws IOException, SAXException {
-            if (true) {
+            if (DEBUG_BUFFER) {
                 System.out.print("(scanData: ");
                 print();
                 System.out.println();
@@ -2295,7 +2295,7 @@ public class XMLEntityManager
             data.setValues(fCurrentEntity.ch, offset, length);
 
             // return true if string was skipped
-            if (true) {
+            if (DEBUG_BUFFER) {
                 System.out.print(")scanData: ");
                 print();
                 System.out.println(" -> " + done);
