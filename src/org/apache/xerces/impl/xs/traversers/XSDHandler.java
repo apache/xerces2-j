@@ -325,12 +325,12 @@ public class XSDHandler {
     // the incremental size of the array to store deferred local elements
     private static final int INC_STACK_SIZE  = 10;
     // current position of the array (# of deferred local elements)
-    private int fLocalElemStackPos;
+    private int fLocalElemStackPos = 0;
 
-    private XSParticleDecl[] fParticle;
-    private Element[] fLocalElementDecl;
-    private int[] fAllContext;
-    private String [][] fLocalElemNamespaceContext;
+    private XSParticleDecl[] fParticle = new XSParticleDecl[INIT_STACK_SIZE];
+    private Element[] fLocalElementDecl = new Element[INIT_STACK_SIZE];
+    private int[] fAllContext = new int[INIT_STACK_SIZE];
+    private String [][] fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
 
     // these data members are needed for the deferred traversal
     // of keyrefs.
@@ -340,11 +340,11 @@ public class XSDHandler {
     // the incremental size of the array to store deferred keyrefs
     private static final int INC_KEYREF_STACK_AMOUNT = 2;
     // current position of the array (# of deferred keyrefs)
-    private int fKeyrefStackPos;
+    private int fKeyrefStackPos = 0;
 
-    private Element [] fKeyrefs;
-    private XSElementDecl [] fKeyrefElems;
-    private String [][] fKeyrefNamespaceContext;
+    private Element [] fKeyrefs = new Element[INIT_KEYREF_STACK];
+    private XSElementDecl [] fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];
+    private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
 
     // Constructors
 
@@ -383,6 +383,10 @@ public class XSDHandler {
 
     public SchemaGrammar parseSchema(String schemaNamespace,
                                      XMLInputSource is, short referType) {
+                                     
+        // before parsing a schema, need to reset all traversers and
+        // clear all registries
+        prepare();
         
         // first phase:  construct trees.
         Document schemaRoot = getSchema(schemaNamespace, is,
@@ -424,7 +428,7 @@ public class XSDHandler {
     // may wish to have setter methods for ErrorHandler,
     // EntityResolver...
 
-    private static String[][] NS_ERROR_CODES = {
+    private static final String[][] NS_ERROR_CODES = {
         {"src-include.2.1", "src-include.2.1"},
         {"src-redefine.3.1", "src-redefine.3.1"},
         {"src-import.3.1", "src-import.3.2"},
@@ -435,7 +439,7 @@ public class XSDHandler {
         {"TargetNamespace.1", "TargetNamespace.2"}
     };
     
-    private static String[] ELE_ERROR_CODES = {
+    private static final String[] ELE_ERROR_CODES = {
         "src-include.1", "src-redefine.2", "src-import.2", "schema_reference.4",
         "schema_reference.4", "schema_reference.4", "schema_reference.4", "schema_reference.4"
     };
@@ -1201,7 +1205,7 @@ public class XSDHandler {
         fKeyrefNamespaceContext[fKeyrefStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // storeKeyref (Element, XSDocumentInfo, XSElementDecl): void
 
-    private static String[] DOC_ERROR_CODES = {
+    private static final String[] DOC_ERROR_CODES = {
         "src-include.0", "src-redefine.0", "src-import.0", "schema_reference.4",
         "schema_reference.4", "schema_reference.4", "schema_reference.4", "schema_reference.4"
     };
@@ -1319,8 +1323,62 @@ public class XSDHandler {
         fWildCardTraverser = new XSDWildcardTraverser(this, fAttributeChecker);
     } // createTraversers()
 
-    // this method clears all the global structs of this object
-    // (except those passed in via the constructor).
+    // before parsing a schema, need to reset all traversers and
+    // clear all registries
+    void prepare() {
+        fUnparsedAttributeRegistry.clear();
+        fUnparsedAttributeGroupRegistry.clear();
+        fUnparsedElementRegistry.clear();
+        fUnparsedGroupRegistry.clear();
+        fUnparsedIdentityConstraintRegistry.clear();
+        fUnparsedNotationRegistry.clear();
+        fUnparsedTypeRegistry.clear();
+
+        fXSDocumentInfoRegistry.clear();
+        fDependencyMap.clear();
+        fTraversed.clear();
+        fDoc2SystemId.clear();
+        fDoc2XSDocumentMap.clear();
+        fRedefine2XSDMap.clear();
+        fResourceIdentifier.clear();
+        fRoot = null;
+        fLastSchemaWasDuplicate = false;
+
+        // clear local element stack
+        for (int i = 0; i < fLocalElemStackPos; i++) {
+            fParticle[i] = null;
+            fLocalElementDecl[i] = null;
+            fLocalElemNamespaceContext[i] = null;
+        }
+        fLocalElemStackPos = 0;
+
+        // and do same for keyrefs.
+        for (int i = 0; i < fKeyrefStackPos; i++) {
+            fKeyrefs[i] = null;
+            fKeyrefElems[i] = null;
+            fKeyrefNamespaceContext[i] = null;
+        }
+        fKeyrefStackPos = 0;
+
+        // reset traversers
+        fAttributeChecker.reset(fSymbolTable);
+        fAttributeGroupTraverser.reset(fSymbolTable);
+        fAttributeTraverser.reset(fSymbolTable);
+        fComplexTypeTraverser.reset(fSymbolTable);
+        fElementTraverser.reset(fSymbolTable);
+        fGroupTraverser.reset(fSymbolTable);
+        fKeyrefTraverser.reset(fSymbolTable);
+        fNotationTraverser.reset(fSymbolTable);
+        fSimpleTypeTraverser.reset(fSymbolTable);
+        fUniqueOrKeyTraverser.reset(fSymbolTable);
+        fWildCardTraverser.reset(fSymbolTable);
+
+        fRedefinedRestrictedAttributeGroupRegistry.clear();
+        fRedefinedRestrictedGroupRegistry.clear();
+    }
+    
+    // this method reset properties that might change between parses.
+    // and process the jaxp schemaSource property
     public void reset(XMLErrorReporter errorReporter,
                       XMLEntityResolver entityResolver,
                       SymbolTable symbolTable,
@@ -1342,53 +1400,6 @@ public class XSDHandler {
         }
         catch (Exception e) {
         }
-
-        fUnparsedAttributeRegistry.clear();
-        fUnparsedAttributeGroupRegistry.clear();
-        fUnparsedElementRegistry.clear();
-        fUnparsedGroupRegistry.clear();
-        fUnparsedIdentityConstraintRegistry.clear();
-        fUnparsedNotationRegistry.clear();
-        fUnparsedTypeRegistry.clear();
-
-        fXSDocumentInfoRegistry.clear();
-        fDependencyMap.clear();
-        fTraversed.clear();
-        fDoc2SystemId.clear();
-        fDoc2XSDocumentMap.clear();
-        fRedefine2XSDMap.clear();
-        fResourceIdentifier.clear();
-        fRoot = null;
-        fLastSchemaWasDuplicate = false;
-
-        fLocalElemStackPos = 0;
-        fParticle = new XSParticleDecl[INIT_STACK_SIZE];
-        fLocalElementDecl = new Element[INIT_STACK_SIZE];
-        fAllContext = new int[INIT_STACK_SIZE];
-        // err on the small side for num. of local namespaces declared...
-        fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
-
-        // and do same for keyrefs.
-        fKeyrefStackPos = 0;
-        fKeyrefs = new Element[INIT_KEYREF_STACK];
-        fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];
-        fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
-
-        // reset traversers
-        fAttributeChecker.reset(fSymbolTable);
-        fAttributeGroupTraverser.reset(fSymbolTable);
-        fAttributeTraverser.reset(fSymbolTable);
-        fComplexTypeTraverser.reset(fSymbolTable);
-        fElementTraverser.reset(fSymbolTable);
-        fGroupTraverser.reset(fSymbolTable);
-        fKeyrefTraverser.reset(fSymbolTable);
-        fNotationTraverser.reset(fSymbolTable);
-        fSimpleTypeTraverser.reset(fSymbolTable);
-        fUniqueOrKeyTraverser.reset(fSymbolTable);
-        fWildCardTraverser.reset(fSymbolTable);
-
-        fRedefinedRestrictedAttributeGroupRegistry.clear();
-        fRedefinedRestrictedGroupRegistry.clear();
 
         processJAXPSchemaSource(jaxpSchemaSource, entityResolver);
     } // reset(ErrorReporter, EntityResolver, SymbolTable)
