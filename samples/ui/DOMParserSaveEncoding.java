@@ -101,7 +101,7 @@ public class DOMParserSaveEncoding extends DOMParser {
         if( encoding != null){
             setMimeEncoding( encoding);
         }
-        super.startEntity(name, publicId, systemId, encoding, encoding );
+        super.startEntity(name, publicId, systemId, encoding );
     }
 
 }
