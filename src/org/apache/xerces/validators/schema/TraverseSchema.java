@@ -6965,6 +6965,11 @@ throws Exception {
 
         // check for <annotation> and get selector
         Element sElem = XUtil.getFirstChildElement(icElem);
+        if(sElem == null) {
+            // REVISIT: localize
+            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            return;
+        } 
         sElem = checkContent( icElem, sElem, false);
         // General Attribute Checking
         attrValues = fGeneralAttrCheck.checkAttributes(sElem, scope);
@@ -7001,7 +7006,10 @@ throws Exception {
 
         // get fields
         Element fElem = XUtil.getNextSiblingElement(sElem);
-
+        if(fElem == null) {
+            // REVISIT:  localize
+            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+        }
         while (fElem != null) {
             // General Attribute Checking
             attrValues = fGeneralAttrCheck.checkAttributes(fElem, scope);
