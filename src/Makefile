@@ -185,9 +185,16 @@ samples: ../bin/${SAMPLESJARFILE}
 	${MKDIR}  ../class/xni
 	${CP}  ../samples/xni/*.class  ../class/xni
 
+#-samples/util
+
+	${MKDIR}  ../class/util
+	${CP}  ../samples/util/*.class  ../class/util
+
+
+
 #Make the second jar file
 
-	cd ../class;$(JAR) c0vf ../bin/${SAMPLESJARFILE} Xerces_Ver_${PRODUCTVERSION}.info dom sax ui;cd ../src
+	cd ../class;$(JAR) c0vf ../bin/${SAMPLESJARFILE} Xerces_Ver_${PRODUCTVERSION}.info dom sax ui util xni;cd ../src
 
 # copy the license, ANT build file, Status file, and READMEs
 	${CP}  ../Readme.html ../bin
