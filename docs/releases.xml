@@ -2,7 +2,7 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
-  <s2 title='TBD'>
+  <s2 title='May 22, 2001 (version 1.4.0)'>
     <ul>
         <li>Completed implementation of schema Identity Constraints [Neil Graham]</li>
         <li>Update XPath support to bring it into compliance with Schema PR [Achille Fokoue Nkoutche/Neil Graham]</li>
