@@ -20,17 +20,25 @@ import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMStringList;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.util.XSGrammarPool;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.LSInputList;
 import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.ls.LSInput;
 
 /**
  * <p>An implementation of XSLoader which wraps XMLSchemaLoader.</p>
+ * 
+ * @xerces.internal
  * 
  * @author Michael Glavassevich, IBM
  */
@@ -40,7 +48,7 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
      * Grammar pool. Need this to prevent us from
      * getting two grammars from the same namespace.
      */
-    private final XSGrammarPool fGrammarPool = new XSGrammarPool();
+    private final XSGrammarPool fGrammarPool = new XSGrammarMerger();
     
     /** Schema loader. **/
     private final XMLSchemaLoader fSchemaLoader = new XMLSchemaLoader();
@@ -192,5 +200,124 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
      */
     public DOMStringList getParameterNames() {
         return fSchemaLoader.getParameterNames();
+    }
+    
+    /** 
+     * Grammar pool which merges grammars from the same namespace into one. This eliminates
+     * duplicate named components. It doesn't ensure that the grammar is consistent, however
+     * this no worse than than the behaviour of XMLSchemaLoader alone when used as an XSLoader.
+     */
+    private static final class XSGrammarMerger extends XSGrammarPool {
+        
+        public XSGrammarMerger () {}
+        
+        public void putGrammar(Grammar grammar) {
+            SchemaGrammar cachedGrammar = 
+                toSchemaGrammar(super.getGrammar(grammar.getGrammarDescription()));
+            if (cachedGrammar != null) {
+                SchemaGrammar newGrammar = toSchemaGrammar(grammar);
+                if (newGrammar != null) {
+                    mergeSchemaGrammars(cachedGrammar, newGrammar);
+                }
+            }
+            else {
+                super.putGrammar(grammar);
+            }
+        }
+        
+        private SchemaGrammar toSchemaGrammar (Grammar grammar) {
+            return (grammar instanceof SchemaGrammar) ? (SchemaGrammar) grammar : null;
+        }
+        
+        private void mergeSchemaGrammars(SchemaGrammar cachedGrammar, SchemaGrammar newGrammar) {
+
+            /** Add new top-level element declarations. **/
+            XSNamedMap map = newGrammar.getComponents(XSConstants.ELEMENT_DECLARATION);
+            int length = map.getLength();
+            for (int i = 0; i < length; ++i) {
+                XSElementDecl decl = (XSElementDecl) map.item(i);
+                if (cachedGrammar.getElementDeclaration(decl.getName()) == null) {
+                    cachedGrammar.addGlobalElementDecl(decl);
+                }
+            }
+            
+            /** Add new top-level attribute declarations. **/
+            map = newGrammar.getComponents(XSConstants.ATTRIBUTE_DECLARATION);
+            length = map.getLength();
+            for (int i = 0; i < length; ++i) {
+                XSAttributeDecl decl = (XSAttributeDecl) map.item(i);
+                if (cachedGrammar.getAttributeDeclaration(decl.getName()) == null) {
+                    cachedGrammar.addGlobalAttributeDecl(decl);
+                }
+            }
+            
+            /** Add new top-level type definitions. **/
+            map = newGrammar.getComponents(XSConstants.TYPE_DEFINITION);
+            length = map.getLength();
+            for (int i = 0; i < length; ++i) {
+                XSTypeDefinition decl = (XSTypeDefinition) map.item(i);
+                if (cachedGrammar.getGlobalTypeDecl(decl.getName()) == null) {
+                    cachedGrammar.addGlobalTypeDecl(decl);
+                }
+            }
+            
+            /** Add new top-level attribute group definitions. **/
+            map = newGrammar.getComponents(XSConstants.ATTRIBUTE_GROUP);
+            length = map.getLength();
+            for (int i = 0; i < length; ++i) {
+                XSAttributeGroupDecl decl = (XSAttributeGroupDecl) map.item(i);
+                if (cachedGrammar.getAttributeDeclaration(decl.getName()) == null) {
+                    cachedGrammar.addGlobalAttributeGroupDecl(decl);
+                }
+            }
+            
+            /** Add new top-level model group definitions. **/
+            map = newGrammar.getComponents(XSConstants.MODEL_GROUP);
+            length = map.getLength();
+            for (int i = 0; i < length; ++i) {
+                XSGroupDecl decl = (XSGroupDecl) map.item(i);
+                if (cachedGrammar.getGlobalGroupDecl(decl.getName()) == null) {
+                    cachedGrammar.addGlobalGroupDecl(decl);
+                }
+            }
+            
+            /** Add new top-level notation declarations. **/
+            map = newGrammar.getComponents(XSConstants.NOTATION_DECLARATION);
+            length = map.getLength();
+            for (int i = 0; i < length; ++i) {
+                XSNotationDecl decl = (XSNotationDecl) map.item(i);
+                if (cachedGrammar.getGlobalNotationDecl(decl.getName()) == null) {
+                    cachedGrammar.addGlobalNotationDecl(decl);
+                }
+            }
+            
+            /** 
+             * Add all annotations. Since these components are not named it's
+             * possible we'll add duplicate components. There isn't much we can
+             * do. It's no worse than XMLSchemaLoader when used as an XSLoader.
+             */
+            XSObjectList annotations = newGrammar.getAnnotations();
+            length = annotations.getLength();
+            for (int i = 0; i < length; ++i) {
+                cachedGrammar.addAnnotation((XSAnnotationImpl) annotations.item(i));
+            }
+            
+        }
+        
+        public boolean containsGrammar(XMLGrammarDescription desc) {
+            return false;
+        }
+        
+        public Grammar getGrammar(XMLGrammarDescription desc) {
+            return null;
+        }
+        
+        public Grammar retrieveGrammar(XMLGrammarDescription desc) {
+            return null;
+        }
+        
+        public Grammar [] retrieveInitialGrammarSet (String grammarType) {
+            return new Grammar[0];
+        }
     }
 }
