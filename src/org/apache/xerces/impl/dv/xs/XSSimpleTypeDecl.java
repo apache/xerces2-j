@@ -1363,29 +1363,32 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         Object ob = validatedInfo.actualValue;
         String content = validatedInfo.normalizedValue;
 
-        int length = fDVs[fValidationDV].getDataLength(ob);
+        // For QName and NOTATION types, we don't check length facets
+        if (fValidationDV != DV_QNAME && fValidationDV != DV_NOTATION) {
+            int length = fDVs[fValidationDV].getDataLength(ob);
 
-        // maxLength
-        if ( (fFacetsDefined & FACET_MAXLENGTH) != 0 ) {
-            if ( length > fMaxLength ) {
-                throw new InvalidDatatypeValueException("cvc-maxLength-valid",
-                                                        new Object[]{content, Integer.toString(length), Integer.toString(fMaxLength)});
+            // maxLength
+            if ( (fFacetsDefined & FACET_MAXLENGTH) != 0 ) {
+                if ( length > fMaxLength ) {
+                    throw new InvalidDatatypeValueException("cvc-maxLength-valid",
+                            new Object[]{content, Integer.toString(length), Integer.toString(fMaxLength)});
+                }
             }
-        }
 
-        //minLength
-        if ( (fFacetsDefined & FACET_MINLENGTH) != 0 ) {
-            if ( length < fMinLength ) {
-                throw new InvalidDatatypeValueException("cvc-minLength-valid",
-                                                        new Object[]{content, Integer.toString(length), Integer.toString(fMinLength)});
+            //minLength
+            if ( (fFacetsDefined & FACET_MINLENGTH) != 0 ) {
+                if ( length < fMinLength ) {
+                    throw new InvalidDatatypeValueException("cvc-minLength-valid",
+                            new Object[]{content, Integer.toString(length), Integer.toString(fMinLength)});
+                }
             }
-        }
 
-        //length
-        if ( (fFacetsDefined & FACET_LENGTH) != 0 ) {
-            if ( length != fLength ) {
-                throw new InvalidDatatypeValueException("cvc-length-valid",
-                                                        new Object[]{content, Integer.toString(length), Integer.toString(fLength)});
+            //length
+            if ( (fFacetsDefined & FACET_LENGTH) != 0 ) {
+                if ( length != fLength ) {
+                    throw new InvalidDatatypeValueException("cvc-length-valid",
+                            new Object[]{content, Integer.toString(length), Integer.toString(fLength)});
+                }
             }
         }
 
