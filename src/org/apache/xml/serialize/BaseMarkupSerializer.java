@@ -414,7 +414,7 @@ public abstract class BaseMarkupSerializer
 	    _thisIndent = 0;
 	    for ( i = start ; length-- > 0 ; ++i ) {
 		if ( chars[ i ] == '\n' || chars[ i ] == '\r' )
-		    breakLine();
+		    breakLine( true );
 		else
 		    _text.append( chars[ i ] );
 	    }
@@ -630,7 +630,7 @@ public abstract class BaseMarkupSerializer
 				    String systemId, String notationName )
     {
 	enterDTD();
-	if ( publicId != null ) {
+	if ( publicId == null ) {
 	    printText( "<!ENTITY " + name + " SYSTEM " );
 	    printDoctypeURL( systemId );
 	} else {
@@ -682,7 +682,7 @@ public abstract class BaseMarkupSerializer
 	if ( _dtdWriter == null ) {
 	    _line.append( _text );
 	    _text = new StringBuffer( 20 );
-	    flushLine();
+	    flushLine( false );
 	    _dtdWriter = new StringWriter();
 	    _docWriter = _writer;
 	    _writer = _dtdWriter;
@@ -701,7 +701,7 @@ public abstract class BaseMarkupSerializer
 	if ( _writer == _dtdWriter ) {
 	    _line.append( _text );
 	    _text = new StringBuffer( 20 );
-	    flushLine();
+	    flushLine( false );
 	    _writer = _docWriter;
 	    return _dtdWriter.toString();
 	} else
@@ -1009,7 +1009,7 @@ public abstract class BaseMarkupSerializer
 	    for ( index = 0 ; index < text.length() ; ++index ) {
 		ch = text.charAt( index );
 		if ( ch == '\n' || ch == '\r' )
-		    breakLine();
+		    breakLine( true );
 		else
 		    _text.append( ch );
 	    }
@@ -1045,7 +1045,7 @@ public abstract class BaseMarkupSerializer
 	    for ( index = 0 ; index < text.length() ; ++index ) {
 		ch = text.charAt( index );
 		if ( ch == '\n' || ch == '\r' )
-		    breakLine();
+		    breakLine( true );
 		else
 		    _text.append( ch );
 	    }
@@ -1093,14 +1093,13 @@ public abstract class BaseMarkupSerializer
 	// means we have to move that text into the line and
 	// start accumulating new text with printText().
 	if ( _text.length() > 0 ) {
-
 	    // If the text breaks a line bounary, wrap to the next line.
 	    // The printed line size consists of the indentation we're going
 	    // to use next, the accumulated line so far, some spaces and the
 	    // accumulated text so far.
 	    if ( _format.getLineWidth() > 0 &&
 		 _thisIndent + _line.length() + _spaces + _text.length() > _format.getLineWidth() ) {
-		flushLine();
+		flushLine( false );
 		try {
 		    // Print line and new line, then zero the line contents.
 		    _writer.write( _format.getLineSeparator() );
@@ -1136,6 +1135,11 @@ public abstract class BaseMarkupSerializer
      */
     protected final void breakLine()
     {
+	breakLine( false );
+    }
+
+    protected final void breakLine( boolean preserveSpace )
+    {
 	// Equivalent to calling printSpace and forcing a flushLine.
 	if ( _text.length() > 0 ) {
 	    while ( _spaces > 0 ) {
@@ -1145,7 +1149,7 @@ public abstract class BaseMarkupSerializer
 	    _line.append( _text );
 	    _text = new StringBuffer( 20 );
 	}
-        flushLine();
+        flushLine( preserveSpace );
 	try {
 	    // Print line and new line, then zero the line contents.
 	    _writer.write( _format.getLineSeparator() );
@@ -1165,14 +1169,14 @@ public abstract class BaseMarkupSerializer
      * accumulated text are two long to fit on a given line. At the end of
      * this method {@link #_line} is empty and {@link #_spaces} is zero.
      */
-    private void flushLine()
+    private void flushLine( boolean preserveSpace )
     {
         int     indent;
 
 	if ( _line.length() > 0 ) {
 	    try {
 
-		if ( _format.getIndenting() ) {
+		if ( _format.getIndenting() && ! preserveSpace ) {
 		    // Make sure the indentation does not blow us away.
 		    indent = _thisIndent;
 		    if ( ( 2 * indent ) > _format.getLineWidth() && _format.getLineWidth() > 0 )
