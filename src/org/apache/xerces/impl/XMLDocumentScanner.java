@@ -161,6 +161,9 @@ public class XMLDocumentScanner
     /** Scanner state: CDATA section. */
     protected static final int SCANNER_STATE_CDATA = 15;
 
+    /** Scanner state: Text declaration. */
+    protected static final int SCANNER_STATE_TEXT_DECL = 16;
+
     // debugging
 
     /** Debug scanner state. */
@@ -429,11 +432,23 @@ public class XMLDocumentScanner
     //
 
     /**
-     * startEntity
+     * This method notifies of the start of an entity. The document entity
+     * has the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
+     * parameter entity names start with '%'; and general entities are just
+     * specified by their name.
      * 
-     * @param name 
-     * @param publicId 
-     * @param systemId 
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
@@ -441,6 +456,11 @@ public class XMLDocumentScanner
         // keep track of this entity
         Entity entity = new Entity(name, publicId, systemId, fElementDepth);
         fEntityStack.push(entity);
+
+        // prepare to look for a TextDecl if external general entity
+        if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
+            setScannerState(SCANNER_STATE_TEXT_DECL);
+        }
 
         // call handler
         if (fDocumentHandler != null) {
@@ -455,9 +475,14 @@ public class XMLDocumentScanner
     } // startEntity(String,String,String,String)
 
     /**
-     * endEntity
+     * This method notifies the end of an entity. The document entity has
+     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
+     * parameter entity names start with '%'; and general entities are just
+     * specified by their name.
      * 
-     * @param name 
+     * @param name The name of the entity.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void endEntity(String name) throws SAXException {
 
@@ -491,6 +516,12 @@ public class XMLDocumentScanner
             }
         }
         /***/
+
+        // if we got a start/end external entity, then we need to
+        // stop looking for a text declaration
+        if (fScannerState == SCANNER_STATE_TEXT_DECL) {
+            setScannerState(SCANNER_STATE_CONTENT);
+        }
 
         // 2) scanner markup depth isn't what it was at the start of
         //    the entity
@@ -721,24 +752,28 @@ public class XMLDocumentScanner
 
         // internal subset
         if (fEntityScanner.skipChar('[')) {
-            /***
-            // TODO: scan internal subset
-            while (fEntityScanner.scanData("]", fString)) {
-                // skip to end of internal subset
-            }
-            /***/
             fEntityManager.setEntityHandler(fDTDScanner);
             final boolean complete = true;
             final boolean hasExternalDTD = systemId != null;
             fDTDScanner.scanDTDInternalSubset(complete, fStandalone, hasExternalDTD);
             fEntityManager.setEntityHandler(this);
-            /***/
+            // REVISIT: Do we need to emit an error here? We can usually
+            //          assume that it will be consumed by the DTD scanner
+            //          or else the DTD scanner will fail on seeing the
+            //          document content. However, there is the continue-
+            //          after-fatal-error setting... -Ac
+            if (!fEntityScanner.skipChar(']')) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "EXPECTED_SQUARE_BRACKET_TO_CLOSE_INTERNAL_SUBSET",
+                                           null,
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
             fEntityScanner.skipSpaces();
         }
 
         // end
+        fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('>')) {
-            System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "DoctypedeclUnterminated",
                                        new Object[]{name},
@@ -1287,6 +1322,7 @@ public class XMLDocumentScanner
                 case SCANNER_STATE_END_OF_INPUT: return "SCANNER_STATE_END_OF_INPUT";
                 case SCANNER_STATE_TERMINATED: return "SCANNER_STATE_TERMINATED";
                 case SCANNER_STATE_CDATA: return "SCANNER_STATE_CDATA";
+                case SCANNER_STATE_TEXT_DECL: return "SCANNER_STATE_TEXT_DECL";
             }
         }
 
