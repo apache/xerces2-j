@@ -2041,9 +2041,14 @@ public class XSDHandler {
      *             
      * Conclusion from the table: two XSDKey's are duplicate only when all of
      * the following are true:
-     * 1. They are both "redefine", or neither is "redefine" (which implies
-     *    that they are both "include");
-     * 2. They have the same namespace and location.
+     * 1. They are both "redefine", or neither is "redefine";
+     * 2. They have the same namespace;
+     * 3. They have the same non-null location.
+     * 
+     * About 3: if neither has a non-null location, then it's the case where
+     * 2 input streams are provided, but no system ID is provided. We can't tell
+     * whether the 2 streams have the same content, so we treat them as not
+     * duplicate.
      */
     private static class XSDKey {
         String systemId;
@@ -2077,13 +2082,15 @@ public class XSDHandler {
                     return false;
             }
             
-            // condition 2: same namespace and same locatoin
-            if (referNS != key.referNS ||
-                (systemId == null && key.systemId != null) ||
-                systemId != null && !systemId.equals(key.systemId)) {
+            // condition 2: same namespace
+            if (referNS != key.referNS)
+                return false;
+            
+            // condition 3: same non-null locatoin
+            if (systemId == null || !systemId.equals(key.systemId)) {
                 return false;
             }
-            
+
             return true;
         }
     }
