@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
+<faqs title="Using XML Catalogs">
+
+  <faq title="Usage">
+    <q>How do I use OASIS XML Catalogs with the parser?</q>
+    <a>
+     <p>
+      In order to use XML Catalogs with Xerces, the 
+      Apache <jump href="http://xml.apache.org/commons/">XML Commons</jump> Resolver: 
+      <code>resolver.jar</code> needs to be on your classpath (or accessible
+      in some other way to the ClassLoader). The resolver provides an implementation
+      of <jump href="http://www.oasis-open.org/committees/entity/spec.html">OASIS XML Catalogs</jump>
+      as well as some other catalog formats. The XML Commons Resolver 1.1 is included with 
+      the binary distribution of Xerces. For information about interacting directly with 
+      the Resolver's API visit the <jump href="http://xml.apache.org/commons/">XML Commons</jump>
+      site.
+     </p>
+     <p>
+      As a convienence for users the parser provides a utility class:
+      <code>org.apache.xerces.util.XMLCatalogResolver</code> which encapsulates
+      the XML Commons Resolver exposing methods relevant to resolving XML entities.
+      It implements both the (<code>org.apache.xerces.xni.parser.XMLEntityResolver</code>)
+      XNI entity resolver and the (<code>org.xml.sax.EntityResolver</code>) SAX entity resolver 
+      interfaces. In <code>XMLCatalogResolver</code> the resolveEntity methods only query the 
+      catalog for a mapping of the given identifier. These methods may be overrided if
+      other behaviour is required. 
+     </p>
+     <p>
+      To use <code>XMLCatalogResolver</code> as an XNI EntityResolver you need
+      to do something like this:
+     </p>
+     <source>import org.apache.xerces.util.XMLCatalogResolver;
+import org.xml.sax.*;
+
+...
+
+XMLReader reader;
+String [] catalogs =  
+  {"file:///C:/catalog/cat1.xml", "file:///C:/catalog/cat2.xml"};
+
+...
+
+// Create catalog resolver and set a catalog list.
+XMLCatalogResolver resolver = new XMLCatalogResolver();
+resolver.setPreferPublic(true);
+resolver.setCatalogList(catalogs);
+
+// Set the resolver on the parser.
+reader.setProperty(
+  "http://apache.org/xml/properties/internal/entity-resolver", 
+  resolver);
+
+...</source>
+     <p>
+      Note that setting an XNI entity resolver on a SAX or DOM parser will
+      replace any type of entity resolver which was previously registered. If 
+      some other type of resolver is registered on the parser it will replace 
+      any XNI entity resolver previously registered.
+     </p>
+     <p>
+      In addition to being used as an entity resolver, it is intended that 
+      the <code>XMLCatalogManager</code> may be used standalone to perform 
+      catalog resolution outside of a parsing context. It may also be shared
+      between several parsers and the application. See the <link idref="api">API</link> 
+      documentation for details.
+     </p>
+     <note>
+      The XMLCatalogResolver class requires XML Commons Resolver 1.1 
+      or a version compatible with 1.1.
+     </note>
+    </a>
+  </faq>
+  
+  <faq title="Resolving XML Schemas">
+    <q>How does XMLCatalogResolver resolve XML Schemas?</q>
+    <a>
+     <p>
+      If an instance of <code>XMLCatalogResolver</code> has been registered on the
+      parser as an entity resolver it will first try to lookup the schema in the catalog
+      by its target namespace if it has one using the catalog's <code>uri</code>
+      entries. If the schema has no target namespace, or the namespace is unavailable
+      or no mapping for the namespace could be found the resolver will then try 
+      to locate the schema using any location hints provided. These location hints 
+      are interpreted to be system identifiers.
+     </p>
+     <note>
+      When XMLCatalogResolver is registered as a SAX entity resolver, the
+      target namespace of the schema will not be available.
+     </note>
+     <p>
+      The example below demonstrates resolution of URI references for the 
+      purpose of reading XML Schema documents. It's assumed that all the files are 
+      located in the same directory and that the list of catalog entry files 
+      consists only of <strong>catalog.xml</strong> and that an instance of
+      <code>XMLCatalogResolver</code> has been registered on the parser as an XNI entity resolver. 
+      The parser has been instructed to parse and validate the instance document 
+      <strong>example.xml</strong> against an XML Schema. No location hints are provided so only 
+      the namespace of the schema components is known. When the parser attempts to locate the 
+      schema for the namespace <strong>"http://apache.org/xml/xcatalog/example"</strong> it 
+      would first query the catalog <strong>catalog.xml</strong> to resolve the namespace to 
+      the URI for the schema. The resolver would find that the mapping for the namespace URI is 
+      <strong>example.xsd</strong> and then return this to the parser. The parser would 
+      then load the schema, enabling it to validate the instance document.
+     </p>
+     <source><![CDATA[example.xml:
+<?xml version="1.0"?>
+<root xmlns="http://apache.org/xml/xcatalog/example">
+http://apache.org/xml/anyURI</root>
+
+example.xsd:
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://apache.org/xml/xcatalog/example"
+           targetNamespace="http://apache.org/xml/xcatalog/example">
+ <xs:element name="root" type="xs:anyURI"/>
+</xs:schema>
+
+catalog.xml:
+<!DOCTYPE catalog
+ PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+ "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+ <uri name="http://apache.org/xml/xcatalog/example"
+      uri="example.xsd"/>                  
+</catalog>]]></source>
+    </a>
+  </faq>
+  
+  <faq title="Resolving DTDs and other External Entities">
+    <q>How does XMLCatalogResolver resolve DTDs and other external entities?</q>
+    <a>
+     <p>
+      If an instance of <code>XMLCatalogResolver</code> has been registered on 
+      the parser as an entity resolver it will try to lookup the DTD
+      or external entity in the catalog using the system identifier and 
+      public identifier if one is available.
+     </p>
+     <p>
+      The example below demonstrates resolution of external identifiers for the
+      purpose of reading external entities. Resolution of external DTD subsets and 
+      external parameter entities can be done similarly. It's assumed that all the 
+      files are located in the same directory and that the list of catalog entry 
+      files consists only of <strong>catalog.xml</strong> and that an instance of
+      <code>XMLCatalogResolver</code> has been registered on the parser as an 
+      entity resolver. When the parser references the entity named <strong>text</strong> 
+      in the instance document <strong>example.xml</strong> it would query the catalog 
+      <strong>catalog.xml</strong> to resolve the public identifier.  Note that 
+      the system identifier is in an URN and after "unwrapping" is equivalent to 
+      the public identifier. Since there is no mapping in this catalog for the public 
+      identifier, <strong>catalog.xml</strong> would delegate to <strong>catalog2.xml</strong>
+      since the public id starts with <strong>"-//A//"</strong>. Upon reading 
+      <strong>catalog2.xml</strong> the resolver would find a mapping for 
+      <strong>"-//A//XML CATALOG IDENTIFIER//EN"</strong> and then return the 
+      URI <strong>example.ent</strong>. The parser would then open this resource and 
+      then report "Hello world!" as the replacement text for the entity named <strong>text</strong>.
+     </p>
+     <source><![CDATA[example.xml:
+<?xml version="1.0"?>
+<!DOCTYPE root [
+ <!ENTITY text PUBLIC "-//A//XML CATALOG IDENTIFIER//EN" 
+  "urn:publicid:-:A:XML+CATALOG+IDENTIFIER:EN">
+]>
+<root>&text;</root>
+
+example.ent:
+Hello world!
+
+catalog.xml:
+<!DOCTYPE catalog
+ PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+ "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+ <delegatePublic publicIdStartString="-//A//"
+                 catalog="catalog2.xml"/>
+</catalog>
+
+catalog2.xml:
+<!DOCTYPE catalog
+ PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+ "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+ <public publicId="-//A//XML CATALOG IDENTIFIER//EN" 
+         uri="example.ent"/>
+</catalog>]]></source>
+    </a>
+  </faq>
+  
+  <faq title="The XML Catalogs Processing Instruction">
+    <q>Does the parser read the 'oasis-xml-catalog' processing instruction?</q>
+    <a>
+     <p>
+      No, the parser has no built in support for these processing instructions,
+      however the XML Commons Resolver includes a SAX XMLFilter called
+      <code>org.apache.xml.resolver.tools.ResolvingXMLFilter</code> which
+      has been enabled to process them. 
+     </p>
+    </a>
+  </faq>
+
+  <faq title="Other Catalog Formats">
+    <q>Are other catalog formats supported?</q>
+    <a>
+     <p>
+      Xerces only includes a utility class for OASIS XML Catalogs, however
+      the XML Commons Resolver supports several other catalog formats
+      including: the plain text format described by 
+      <jump href="http://www.oasis-open.org/specs/a401.htm">TR 9401</jump>,
+      the XCatalog XML format defined by John Cowan, and an extended
+      version of OASIS XML Catalogs which supports suffix matching. for
+      more information visit the 
+      <jump href="http://xml.apache.org/commons/">XML Commons</jump> site.
+     </p>
+    </a>
+  </faq>
+
+</faqs>
