@@ -1,4 +1,5 @@
 TARGETS=\
+	AttributeValidator.class\
 	CMBinOp.class\
 	CMException.class\
 	CMLeaf.class\
@@ -10,7 +11,7 @@ TARGETS=\
 	MixedContentModel.class\
 	SimpleContentModel.class\
 	XMLContentModel.class\
-	GrammarPool.class \
+	GrammarResolver.class \
 	Grammar.class \
 	XMLValidator.class
 

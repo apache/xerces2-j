@@ -66,12 +66,11 @@ import org.apache.xerces.validators.common.Grammar;
  * pool.
  * This class is called from the validator.
  * Grammar pool maps to a set of Grammar Proxy classes.
- * @deprecated this class has been renamed GrammarResolver
  * 
  * @author Jeffrey Rodriguez
  */
-public class GrammarPool {
-    private static  GrammarPool  _instance = new GrammarPool();
+public class GrammarResolver {
+    private static  GrammarResolver  _instance = new GrammarResolver();
     /**
      *           Hashtable structure that represents a mapping
      *           between Namespace and a Grammar
@@ -82,7 +81,7 @@ public class GrammarPool {
      * initializeGrammarRegistry - Gets call to register initial
      * grammars such as DTD - Schema
      */
-    private GrammarPool() { // Part of the GrammarPool singleton pattern
+    private GrammarResolver() { // Part of the GrammarResolver singleton pattern
     }
 
 
@@ -164,7 +163,7 @@ public class GrammarPool {
     /**
      *         Reset internal Namespace/Grammar registry.
      */
-    public void resetGrammarPool() {
+    public void resetGrammarResolver() {
         fGrammarRegistry.clear( );
     }
     /**
@@ -172,7 +171,7 @@ public class GrammarPool {
      * @return           Only instance of Grammar pool ( Singleton
      *         pattern).
      */
-    static public GrammarPool instanceGrammarPool() {  // return a reference to the only instance of this class
+    static public GrammarResolver instanceGrammarResolver() {  // return a reference to the only instance of this class
         return _instance;
     }
 
@@ -193,7 +192,7 @@ public class GrammarPool {
     public static void main( String args[] ) 
     {
         //static final int NGRAMMARS  = 10;
-        GrammarPool grammarPool     = GrammarPool.instanceGrammarPool();
+        GrammarResolver grammarPool     = GrammarResolver.instanceGrammarResolver();
         Grammar     testGrammars[]  = new Grammar[NGRAMMARS]; 
         String      testNameSpace[] = {
         "http://www.foo1.org/",
