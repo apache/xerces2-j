@@ -816,7 +816,7 @@ public class DeferredDocumentImpl
                 // check to see if this element needs to be
                 // registered for its ID attributes
                 if (fIdElement != null) {
-                    int idIndex = DeferredDocumentImpl.binarySearch(fIdElement, 0, fIdCount, nodeIndex);
+                    int idIndex = DeferredDocumentImpl.binarySearch(fIdElement, 0, fIdCount - 1, nodeIndex);
                     while (idIndex != -1) {
 
                         if (DEBUG_IDS) {
