@@ -59,32 +59,27 @@
 
 package org.apache.xml.serialize;
 
-import org.w3c.dom.Node;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import org.apache.xerces.dom.DOMErrorImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.dom3.DOMConfiguration;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.SymbolTable;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
-import org.w3c.dom.DOMException;
-
-import org.apache.xerces.dom3.DOMErrorHandler;
-import org.apache.xerces.dom3.DOMConfiguration;
+import org.w3c.dom.Node;
 import org.w3c.dom.ls.DOMWriter;
 import org.w3c.dom.ls.DOMWriterFilter;
-import org.w3c.dom.traversal.NodeFilter;
-
-import org.apache.xerces.dom.DOMMessageFormatter;
-import org.apache.xerces.dom.DOMErrorImpl;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.util.NamespaceSupport;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.io.StringWriter;
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.lang.reflect.Method;
 
 
 /**
@@ -375,7 +370,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
                   DOMErrorImpl error = new DOMErrorImpl();
                   error.fException = e;
                   error.fMessage = e.getMessage();
-                  error.fSeverity = error.SEVERITY_ERROR;
+                  error.fSeverity = DOMError.SEVERITY_ERROR;
                   ser.fDOMErrorHandler.handleError(error);
 
             }

@@ -67,7 +67,6 @@
 package org.apache.xml.serialize;
 
 
-import java.util.Hashtable;
 import java.io.UnsupportedEncodingException;
 
 import org.w3c.dom.Document;

@@ -75,32 +75,17 @@ package org.apache.xml.serialize;
 
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.util.Enumeration;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-
-import org.apache.xerces.dom3.DOMError;
-
-import org.xml.sax.DocumentHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.AttributeList;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.util.NamespaceSupport;
-import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.XML11Char;
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XML11Char;
+import org.apache.xerces.util.XMLChar;
+import org.xml.sax.SAXException;
 
 /**
  * Implements an XML serializer supporting both DOM and SAX pretty

@@ -59,11 +59,9 @@
 package org.apache.xml.serialize;
 
 
-import java.io.Writer;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
+
 import org.apache.xerces.util.EncodingMap;
 
 
