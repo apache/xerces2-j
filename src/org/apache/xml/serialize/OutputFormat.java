@@ -905,16 +905,16 @@ public class OutputFormat
     {
         DocumentType doctype;
 
-        /* XXX  Delayed until DOM Level 2 is introduced into the code base
+           /*  DOM Level 2 was introduced into the code base*/
            doctype = doc.getDoctype();
            if ( doctype != null ) {
            // Note on catch: DOM Level 1 does not specify this method
            // and the code will throw a NoSuchMethodError
            try {
-           return doctype.getPublicID();
+           return doctype.getPublicId();
            } catch ( Error except ) {  }
            }
-        */
+        
         if ( doc instanceof HTMLDocument )
             return DTD.XHTMLPublicId;
         return null;
@@ -929,16 +929,16 @@ public class OutputFormat
     {
         DocumentType doctype;
 
-        /* XXX  Delayed until DOM Level 2 is introduced into the code base
+        /* DOM Level 2 was introduced into the code base*/
            doctype = doc.getDoctype();
            if ( doctype != null ) {
            // Note on catch: DOM Level 1 does not specify this method
            // and the code will throw a NoSuchMethodError
            try {
-           return doctype.getSystemID();
+           return doctype.getSystemId();
            } catch ( Error except ) { }
            }
-        */
+        
         if ( doc instanceof HTMLDocument )
             return DTD.XHTMLSystemId;
         return null;
