@@ -326,7 +326,7 @@ public class StandardParserConfiguration
         setFeature(ALLOW_JAVA_ENCODINGS, false);
         setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
         setFeature(LOAD_EXTERNAL_DTD, true);
-        setFeature(NOTIFY_BUILTIN_REFS, true);
+        setFeature(NOTIFY_BUILTIN_REFS, false);
         setFeature(NOTIFY_CHAR_REFS, false);
 
         // add default recognized properties

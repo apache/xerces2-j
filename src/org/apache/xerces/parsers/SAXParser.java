@@ -58,6 +58,7 @@
 package org.apache.xerces.parsers;
 
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -76,6 +77,14 @@ public class SAXParser
     extends AbstractSAXParser {
 
     //
+    // Constants
+    //
+
+    /** Feature identifier: notify built-in refereces. */
+    protected static final String NOTIFY_BUILTIN_REFS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_BUILTIN_REFS_FEATURE;
+
+    //
     // Constructors
     //
 
@@ -87,6 +96,8 @@ public class SAXParser
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
             "org.apache.xerces.parsers.StandardParserConfiguration"
             ));
+
+        fConfiguration.setFeature(NOTIFY_BUILTIN_REFS, true);
     } // <init>()
 
     /**
@@ -101,6 +112,7 @@ public class SAXParser
      */
     public SAXParser(SymbolTable symbolTable) {
         super(new StandardParserConfiguration(symbolTable));
+        fConfiguration.setFeature(NOTIFY_BUILTIN_REFS, true);
     } // <init>(SymbolTable)
 
     /**
@@ -109,6 +121,7 @@ public class SAXParser
      */
     public SAXParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super(new StandardParserConfiguration(symbolTable, grammarPool));
+        fConfiguration.setFeature(NOTIFY_BUILTIN_REFS, true);
     } // <init>(SymbolTable,XMLGrammarPool)
 
 } // class SAXParser
