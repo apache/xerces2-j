@@ -482,6 +482,11 @@ public class TraverseSchema implements
         public DatatypeValidator datatypeValidator;
     }
 
+    private class ComplexTypeRecoverableError extends Exception {
+        ComplexTypeRecoverableError() {super();}
+        ComplexTypeRecoverableError(String s) {super(s);}
+    }
+
     //REVISIT: verify the URI.
     public final static String SchemaForSchemaURI = "http://www.w3.org/TR-1/Schema";
 
@@ -2611,54 +2616,59 @@ public class TraverseSchema implements
         Element child = null;
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
 
-        // ------------------------------------------------------------------
-        // First, handle any ANNOTATION declaration and get next child
-        // ------------------------------------------------------------------
-        child = checkContent(complexTypeDecl,XUtil.getFirstChildElement(complexTypeDecl),
-                             true);
+        try {
 
-        // ------------------------------------------------------------------
-        // Process the content of the complex type declaration
-        // ------------------------------------------------------------------
-        if (child==null) {
-            //
-            // EMPTY complexType with complexContent 
-            //
-            processComplexContent(typeNameIndex, child, typeInfo, null, false);
-        }
-        else {
-            String childName = child.getLocalName();
-            int index = -2;
+          // ------------------------------------------------------------------
+          // First, handle any ANNOTATION declaration and get next child
+          // ------------------------------------------------------------------
+          child = checkContent(complexTypeDecl,XUtil.getFirstChildElement(complexTypeDecl),
+                               true);
 
-            if (childName.equals(SchemaSymbols.ELT_SIMPLECONTENT)) {
-                //
-                // SIMPLE CONTENT element
-                //
-                traverseSimpleContentDecl(typeNameIndex, child, typeInfo);
-                if (XUtil.getNextSiblingElement(child) != null) 
-                    reportGenericSchemaError("SimpleContent must be the only child in complexType "  
-                                             + typeName);
-            }
-            else if (childName.equals(SchemaSymbols.ELT_COMPLEXCONTENT)) {
-                //
-                // COMPLEX CONTENT element
-                //
-                traverseComplexContentDecl(typeNameIndex, child, typeInfo,   
-                      mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
-                if (XUtil.getNextSiblingElement(child) != null) 
-                    reportGenericSchemaError("ComplexContent must be the only child in complexType "  
-                                             + typeName);
-            }
-            else {
-                // 
-                // We must have ....
-                // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
-                // Note that it's possible that only attributes are specified.
-                //
-                processComplexContent(typeNameIndex, child, typeInfo, null, 
-                      mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
+          // ------------------------------------------------------------------
+          // Process the content of the complex type declaration
+          // ------------------------------------------------------------------
+          if (child==null) {
+              //
+              // EMPTY complexType with complexContent 
+              //
+              processComplexContent(typeNameIndex, child, typeInfo, null, false);
+          }
+          else {
+              String childName = child.getLocalName();
+              int index = -2;
+
+              if (childName.equals(SchemaSymbols.ELT_SIMPLECONTENT)) {
+                  //
+                  // SIMPLE CONTENT element
+                  //
+                  traverseSimpleContentDecl(typeNameIndex, child, typeInfo);
+                  if (XUtil.getNextSiblingElement(child) != null) 
+                      reportGenericSchemaError("Invalid child following the simpleContent child in a complexType");
+              }
+              else if (childName.equals(SchemaSymbols.ELT_COMPLEXCONTENT)) {
+                  //
+                  // COMPLEX CONTENT element
+                  //
+                  traverseComplexContentDecl(typeNameIndex, child, typeInfo,   
+                        mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
+                  if (XUtil.getNextSiblingElement(child) != null) 
+                      reportGenericSchemaError("Invalid child following the complexContent child in a complexType");
+              }
+              else {
+                  // 
+                  // We must have ....
+                  // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
+                  // Note that it's possible that only attributes are specified.
+                  //
+                  processComplexContent(typeNameIndex, child, typeInfo, null, 
+                        mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
        
-            }
+              }
+          }
+        }
+        catch (ComplexTypeRecoverableError e) {
+           String message = e.getMessage();
+           handleComplexTypeError(message,typeNameIndex,typeInfo);
         }
                 
             
@@ -2679,7 +2689,7 @@ public class TraverseSchema implements
                                " baseDTValidator=" + typeInfo.baseDataTypeValidator +
                                " baseCTInfo=" + typeInfo.baseComplexTypeInfo + 
                                " derivedBy=" + typeInfo.derivedBy + 
-                               " contentType=" + typeInfo.contentType +
+                             " contentType=" + typeInfo.contentType +
                                " contentSpecHandle=" + typeInfo.contentSpecHandle + 
                                " datatypeValidator=" + typeInfo.datatypeValidator);
 
@@ -2760,9 +2770,9 @@ public class TraverseSchema implements
                                      XUtil.getFirstChildElement(simpleContentDecl),false);
         
         // If there are no children, return
-        // TODO - should we raise an exception?
-        if (simpleContent==null)
-          return;
+        if (simpleContent==null) {
+          throw new ComplexTypeRecoverableError();
+        }
 
         // -----------------------------------------------------------------------
         // The content should be either "restriction" or "extension"
@@ -2772,8 +2782,13 @@ public class TraverseSchema implements
           typeInfo.derivedBy = SchemaSymbols.RESTRICTION;
         else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
           typeInfo.derivedBy = SchemaSymbols.EXTENSION;
-        else
-          reportGenericSchemaError("Invalid content for simpleContent"); 
+        else {
+          
+          throw new ComplexTypeRecoverableError(
+                     "The content of a simpleContent element of a "+
+                     "complexType definition is invalid.   The content must be " +
+                     "RESTRICTION or EXTENSION");
+        }
 
         // -----------------------------------------------------------------------
         // Get the attributes of the restriction/extension element
@@ -2792,9 +2807,10 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         // Handle the base type name 
         // -----------------------------------------------------------------------
-        if (base.length() < 0)  {
-          reportGenericSchemaError("Must specify BASE attribute");
-          return;
+        if (base.length() == 0)  {
+          throw new ComplexTypeRecoverableError(
+                  "The BASE attribute must be specified for the " +
+                  "simpleContent element of a complexType"); 
         }
 
         QName baseQName = parseBase(base);
@@ -2803,8 +2819,9 @@ public class TraverseSchema implements
         // check that the base isn't a complex type with complex content
         if (typeInfo.baseComplexTypeInfo != null)  {
              if (typeInfo.baseComplexTypeInfo.contentSpecHandle > -1) {
-                 reportGenericSchemaError("Base type cannot have complexContent");
-                 return;
+                 throw new ComplexTypeRecoverableError(
+                 "The type '"+ base +"' specified as a " + 
+                 "base in a simpleContent element must not have complexContent");
              }
         }
            
@@ -2820,8 +2837,12 @@ public class TraverseSchema implements
             //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
             //
             if (typeInfo.baseDataTypeValidator != null) {
-                reportGenericSchemaError("base is a simpleType, can't derive by restriction in " + typeName); 
-                return;
+                throw new ComplexTypeRecoverableError(
+                 "The type '" + base +"' is a simple type.  It cannot be used in a "+
+                 "derivation by RESTRICTION for a complexType");
+            }
+            else {
+               typeInfo.baseDataTypeValidator = typeInfo.baseComplexTypeInfo.datatypeValidator;
             }
 
             //
@@ -2893,9 +2914,10 @@ public class TraverseSchema implements
 
             if (child != null) {
                 // REVISIT: Shouldn't we allow attributes???
-                reportGenericSchemaError("Invalid child '"+child.getLocalName()+
-                                     "' in complexType : '" + typeName +
-                                     "', because it restricts another complexSimpleType");
+                throw new ComplexTypeRecoverableError(
+                  "Only facets and annotations are allowed " +
+                   " in the content of a RESTRICTION element for a "+
+                   " derived complexType");
             }
             
         } // end RESTRICTION
@@ -2904,6 +2926,9 @@ public class TraverseSchema implements
         // EXTENSION
         //
         else {
+            if (typeInfo.baseComplexTypeInfo != null)
+               typeInfo.baseDataTypeValidator = typeInfo.baseComplexTypeInfo.datatypeValidator;
+
             typeInfo.datatypeValidator = typeInfo.baseDataTypeValidator;
 
             //
@@ -2914,8 +2939,9 @@ public class TraverseSchema implements
                // Check that we have attributes
                //
                if (!isAttrOrAttrGroup(content)) {
-                   reportGenericSchemaError("Invalid child '"+content.getLocalName()+
-                                     "' in complexType : '" + typeName);
+                   throw new ComplexTypeRecoverableError(
+                             "Only annotations and attributes are allowed in the " +
+                             "content of an EXTENSION element for a complexType"); 
                }
                else {
                    attrNode = content;
@@ -2941,6 +2967,11 @@ public class TraverseSchema implements
         // Process attributes                                          
         // -----------------------------------------------------------------------
         processAttributes(attrNode,baseQName,typeInfo);
+
+        if (XUtil.getNextSiblingElement(simpleContent) != null) 
+            throw new ComplexTypeRecoverableError(
+               "Invalid child following the RESTRICTION or EXTENSION element in a " +
+               "complex type definition");
 
     }  // end traverseSimpleContentDecl
 
@@ -2975,6 +3006,7 @@ public class TraverseSchema implements
      * @param typeNameIndex
      * @param simpleContentTypeDecl
      * @param typeInfo                   
+     * @param mixedOnComplexTypeDecl                   
      * @return 
      */
     
@@ -3011,9 +3043,9 @@ public class TraverseSchema implements
                                  XUtil.getFirstChildElement(complexContentDecl),false);
         
         // If there are no children, return
-        // TODO - should we raise an exception?
-        if (complexContent==null)
-          return;
+        if (complexContent==null) {
+           throw new ComplexTypeRecoverableError();
+        }
 
         // -----------------------------------------------------------------------
         // The content should be either "restriction" or "extension"
@@ -3023,8 +3055,12 @@ public class TraverseSchema implements
           typeInfo.derivedBy = SchemaSymbols.RESTRICTION;
         else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
           typeInfo.derivedBy = SchemaSymbols.EXTENSION;
-        else
-          reportGenericSchemaError("Invalid content for complexContent"); 
+        else {
+           throw new ComplexTypeRecoverableError(
+                     "The content of a complexContent element of a " +
+                     "complexType definition is invalid.   The content must be " +
+                     "RESTRICTION or EXTENSION");
+        }
 
         // Get the attributes of the restriction/extension element
         String base = complexContent.getAttribute(SchemaSymbols.ATT_BASE);
@@ -3039,9 +3075,10 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         // Handle the base type name 
         // -----------------------------------------------------------------------
-        if (base.length() < 0)  {
-          reportGenericSchemaError("Must specify BASE attribute");
-          return;
+        if (base.length() == 0)  {
+           throw new ComplexTypeRecoverableError(
+                  "The BASE attribute must be specified for the " +
+                  "complexContent element of a complexType"); 
         }
 
         QName baseQName = parseBase(base);
@@ -3058,8 +3095,8 @@ public class TraverseSchema implements
        
             //Check that the base is a complex type                                  
             if (typeInfo.baseComplexTypeInfo == null)  {
-                 reportGenericSchemaError("Base type must be complex");
-                 return;
+                 throw new ComplexTypeRecoverableError(
+                   "The base type specified in a complexContent element must be a complexType");
             }
         }
 
@@ -3068,9 +3105,47 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         processComplexContent(typeNameIndex,content,typeInfo,baseQName,isMixed);
 
+        if (XUtil.getNextSiblingElement(complexContent) != null) 
+            throw new ComplexTypeRecoverableError(
+               "Invalid child following the RESTRICTION or EXTENSION element in a " +
+               "complex type definition");
 
     }  // end traverseComplexContentDecl
 
+
+    /**
+     * Handle complexType error                                            
+     *  
+     * @param message 
+     * @param typeNameIndex 
+     * @param typeInfo 
+     * @return 
+     */
+    private void handleComplexTypeError(String message, int typeNameIndex,  
+                                        ComplexTypeInfo typeInfo) throws Exception {
+
+        if (message != null)
+          reportGenericSchemaError(message);
+
+        //
+        //  Mock up the typeInfo structure so that there won't be problems during     
+        //  validation      
+        //
+        typeInfo.contentType = XMLElementDecl.TYPE_ANY;  // this should match anything
+        typeInfo.contentSpecHandle = -1;
+        typeInfo.derivedBy = 0;
+        typeInfo.datatypeValidator = null;
+        typeInfo.attlistHead = -1;
+
+        String typeName = fStringPool.toString(typeNameIndex);
+        int templateElementNameIndex = fStringPool.addSymbol("$"+typeName);
+        typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
+            new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
+            (fTargetNSURI==-1) ? -1 : fCurrentScope, typeInfo.scopeDefined,
+            typeInfo.contentType, 
+            typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
+        return;
+    }
 
     /**
      * Parse base string                                            
@@ -3116,7 +3191,7 @@ public class TraverseSchema implements
     }
     
     /**
-     * Process "base" information                                   
+     * Process "base" information for a complexType
      *  
      * @param baseTypeInfo        
      * @param baseName
@@ -3132,33 +3207,19 @@ public class TraverseSchema implements
         String typeURI = fStringPool.toString(baseName.uri);
         String localpart = fStringPool.toString(baseName.localpart);
         String base = fStringPool.toString(baseName.rawname);
-        String fullBaseName;
-        Element baseTypeNode;
-        int baseTypeSymbol;
+
 
         // -------------------------------------------------------------
-        // check if the base is "anyType"                       
+        // check if the base type is from another schema 
         // -------------------------------------------------------------
-        if (typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
-            localpart.equals("anyType")) {
-           return;
-        }
-        
-        // -------------------------------------------------------------
-        // check if the base type is from the same Schema
-        // -------------------------------------------------------------
-        if ( ! typeURI.equals(fTargetNSURIString) 
-             && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
-             && typeURI.length() != 0 ) { 
-            //REVISIT, !!!! a hack: for schema that has no target namespace, 
-            // e.g. personal-schema.xml
+        if (baseFromAnotherSchema(baseName)) {
             baseComplexTypeInfo = getTypeInfoFromNS(typeURI, localpart);
             if (baseComplexTypeInfo == null) {
                 baseDTValidator = getTypeValidatorFromNS(typeURI, localpart);
                 if (baseDTValidator == null) {
-                    reportGenericSchemaError("Could not find base type " +localpart 
-                                       + " in schema " + typeURI);
-                    return;
+                    throw new ComplexTypeRecoverableError(
+                       "Could not find base type " +localpart 
+                       + " in schema " + typeURI);
                 }
             }
         }
@@ -3167,7 +3228,7 @@ public class TraverseSchema implements
         // type must be from same schema
         // -------------------------------------------------------------
         else {
-            fullBaseName = typeURI+","+localpart;
+            String fullBaseName = typeURI+","+localpart;
 
             // assume the base is a complexType and try to locate the base type first
             baseComplexTypeInfo= (ComplexTypeInfo) fComplexTypeRegistry.get(fullBaseName);
@@ -3179,7 +3240,9 @@ public class TraverseSchema implements
                 baseDTValidator = getDatatypeValidator(typeURI, localpart);
 
                 if (baseDTValidator == null) {
-                    baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
+                    int baseTypeSymbol;
+                    Element baseTypeNode = getTopLevelComponentByName(
+                                   SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                     if (baseTypeNode != null) {
                         baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
                         baseComplexTypeInfo = (ComplexTypeInfo)
@@ -3187,7 +3250,8 @@ public class TraverseSchema implements
                         //REVISIT: should it be fullBaseName;
                     }
                     else {
-                        baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                        baseTypeNode = getTopLevelComponentByName(
+                                   SchemaSymbols.ELT_SIMPLETYPE, localpart);
                         if (baseTypeNode != null) {
                             baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
                             baseDTValidator = getDatatypeValidator(typeURI, localpart);
@@ -3196,21 +3260,16 @@ public class TraverseSchema implements
                             }
                         }
                         else {
-                            // REVISIT: Localize
-                            reportGenericSchemaError("Base type could not be found : " + base);
-                            return;
+                            throw new ComplexTypeRecoverableError(
+                                 "Base type could not be found : " + base);
                         }
                     }
                 }
             }
         } // end else (type must be from same schema)
 
-        if (baseComplexTypeInfo != null) {
-           typeInfo.baseComplexTypeInfo = baseComplexTypeInfo;
-           typeInfo.baseDataTypeValidator = baseComplexTypeInfo.datatypeValidator;
-        }
-        else
-           typeInfo.baseDataTypeValidator = baseDTValidator;
+        typeInfo.baseComplexTypeInfo = baseComplexTypeInfo;
+        typeInfo.baseDataTypeValidator = baseDTValidator;
 
 
     } // end processBaseTypeInfo
@@ -3271,7 +3330,8 @@ public class TraverseSchema implements
                attrNode = complexContentChild;
            }
            else {
-               reportGenericSchemaError("Invalid child of a complex type "+ childName);
+               throw new ComplexTypeRecoverableError(
+                "Invalid child '"+ childName +"' in a complex type");               
            }
        }
      
@@ -3367,8 +3427,11 @@ public class TraverseSchema implements
        // Now, check attributes and handle
        // -------------------------------------------------------------
        if (attrNode !=null) {
-           if (!isAttrOrAttrGroup(attrNode)) 
-              reportGenericSchemaError("Invalid child of a complex type");
+           if (!isAttrOrAttrGroup(attrNode)) {
+              throw new ComplexTypeRecoverableError(
+                  "Invalid child of a complex type "+ 
+                    attrNode.getLocalName());
+           }
            else
               processAttributes(attrNode,baseName,typeInfo);
        }
