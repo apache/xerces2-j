@@ -650,7 +650,6 @@ final class StringReader extends XMLEntityReader {
     //
     //
     public int scanQName(char fastcheck) throws Exception {
-        // DEFECT !! no code for namespace support
         int ch = fMostRecentChar;
         if (ch == -1) {
             return changeReaders().scanQName(fastcheck);
@@ -672,6 +671,10 @@ final class StringReader extends XMLEntityReader {
                 break;
         }
         int nameIndex = fStringPool.addSymbol(fData.substring(nameOffset, fCurrentOffset));
+        int index = fData.indexOf(':', nameOffset);
+        int prefixIndex = index == -1 ? -1 : fStringPool.addSymbol(fData.substring(nameOffset, index));
+        int localpartIndex = index == -1 ? nameIndex : fStringPool.addSymbol(fData.substring(index, fCurrentOffset));
+        nameIndex = fStringPool.addQName(nameIndex, prefixIndex, localpartIndex);
         return nameIndex;
     }
     //
