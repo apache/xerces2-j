@@ -76,6 +76,7 @@ import org.w3c.dom.ls.DOMEntityResolver;
 import org.w3c.dom.ls.DOMBuilderFilter;
 import org.w3c.dom.ls.DOMInputSource;
 
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.SymbolTable;
@@ -230,7 +231,9 @@ extends AbstractDOMParser implements DOMBuilder {
         super.reset();
 
         // DOM Filter
-        fSkippedElemStack.clear();
+        if (fSkippedElemStack!=null) {        
+            fSkippedElemStack.clear();
+        }
         fRejectedElement.clear();
         fFilterReject = false;
 

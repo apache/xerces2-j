@@ -1454,10 +1454,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                             break;
                         }
 
-                        default: {
-                            fCurrentNode = fCurrentNode.getParentNode(); 
+                        default: { 
+                            fCurrentNode = fCurrentNode.getParentNode();
                         }
                     }
+                } else {
+                    fCurrentNode = fCurrentNode.getParentNode();
                 }
             } 
 
