@@ -189,6 +189,8 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 				}
 			}
+			else {
+			
 			 // REVISIT: modify error exception to TYPE_MISMATCH
  			String msg = DOMMessageFormatter.formatMessage(
 			 DOMMessageFormatter.DOM_DOMAIN,
@@ -196,7 +198,8 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 			 new Object[] { name });
 			throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
 		}
-		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
+	}
+	else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
 			if (value instanceof DOMErrorHandler) {
 				serializer.fDOMErrorHandler = (DOMErrorHandler) value;
 			}
