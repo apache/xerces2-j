@@ -327,7 +327,7 @@ public class XMLDTDProcessor
 
         if (!parser_settings) {
             // parser settings have not been changed
-			reset();
+            reset();
             return;
         }
 
@@ -943,7 +943,7 @@ public class XMLDTDProcessor
             }
 
             //
-            //  VC: One Notaion Per Element Type, should check if there is a
+            //  VC: One Notation Per Element Type, should check if there is a
             //      duplicate NOTATION attribute
 
             if (type == XMLSymbols.fNOTATIONSymbol) {
@@ -1230,6 +1230,17 @@ public class XMLDTDProcessor
     public void notationDecl(String name, XMLResourceIdentifier identifier,
                              Augmentations augs) throws XNIException {
 
+        // VC: Unique Notation Name
+        if (fValidation) {
+            DTDGrammar grammar = (fDTDGrammar != null ? fDTDGrammar : fGrammarBucket.getActiveGrammar());
+            if (grammar.getNotationDeclIndex(name) != -1) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "UniqueNotationName",
+                                           new Object[]{name},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
+        }
+        
         // call handlers
         if(fDTDGrammar != null) 
             fDTDGrammar.notationDecl(name, identifier, augs);
@@ -1332,6 +1343,21 @@ public class XMLDTDProcessor
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_NOTATION_NOT_DECLARED_FOR_NOTATIONTYPE_ATTRIBUTE",
                                                new Object[]{attributeName, notation},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+            
+            // VC: No Notation on Empty Element
+            // An attribute of type NOTATION must not be declared on an element declared EMPTY.
+            Enumeration elementsWithNotations = fTableOfNOTATIONAttributeNames.keys();
+            while (elementsWithNotations.hasMoreElements()) {
+                String elementName = (String) elementsWithNotations.nextElement();
+                int elementIndex = grammar.getElementDeclIndex(elementName);
+                if (grammar.getContentSpecType(elementIndex) == XMLElementDecl.TYPE_EMPTY) {
+                    String attributeName = (String) fTableOfNOTATIONAttributeNames.get(elementName);
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "NoNotationOnEmptyElement",
+                                               new Object[]{elementName, attributeName},
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
