@@ -84,15 +84,30 @@ public class XSAttributeGroupDecl {
     // whether there is an attribute use whose type is or is derived from ID.
     public String fIDAttrName = null;
 
-    void addAttributeUse(XSAttributeUse attrUse) {
+    // add an attribute use
+    // if the type is derived from ID, but there is already another attribute
+    // use of type ID, then return the name of the other attribute use;
+    // otherwise, return null
+    String addAttributeUse(XSAttributeUse attrUse) {
         if (fAttrUseNum == fAttributeUses.length) {
             fAttributeUses = resize(fAttributeUses, fAttrUseNum*2);
         }
         fAttributeUses[fAttrUseNum++] = attrUse;
-        if (fIDAttrName == null &&
-            attrUse.fAttrDecl.fType instanceof IDDatatypeValidator) {
-            fIDAttrName = attrUse.fAttrDecl.fName;
+
+        // if this attribute use is prohibited, then don't check whether it's
+        // of type ID
+        if (attrUse.fUse == SchemaSymbols.USE_PROHIBITED)
+            return null;
+
+        if (attrUse.fAttrDecl.fType instanceof IDDatatypeValidator) {
+            // if there is already an attribute use of type ID, return it' sname
+            if (fIDAttrName == null)
+                fIDAttrName = attrUse.fAttrDecl.fName;
+            else
+                return fIDAttrName;
         }
+
+        return null;
     }
 
     public XSAttributeUse getAttributeUse(String uri, String localpart) {

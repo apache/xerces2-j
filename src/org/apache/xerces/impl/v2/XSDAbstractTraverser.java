@@ -290,7 +290,7 @@ abstract class XSDAbstractTraverser {
                     // ---------------------------------------------
                     fPattern.append("|");
                     fPattern.append(DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE ));
-                    
+
                     Element child = DOMUtil.getFirstChildElement( content );
                     if (child != null) {
                          // traverse annotation if any
@@ -353,7 +353,7 @@ abstract class XSDAbstractTraverser {
                     flags |= facetType;
                 }
                 fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
-                
+
                 Element child = DOMUtil.getFirstChildElement( content );
                 if (child != null) {
                      // traverse annotation if any
@@ -407,7 +407,12 @@ abstract class XSDAbstractTraverser {
                 if (tempAttrUse == null) break;
                 if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.fTargetNamespace,
                                             tempAttrUse.fAttrDecl.fName)==null) {
-                    attrGrp.addAttributeUse(tempAttrUse);
+                    String idName = attrGrp.addAttributeUse(tempAttrUse);
+                    if (idName != null) {
+                        reportGenericSchemaError("Two distinct members of the {attribute uses} '" +
+                                                 idName + "' and '" + tempAttrUse.fAttrDecl.fName +
+                                                 "' have {attribute declaration}s both of whose {type definition}s are or are derived from ID");
+                    }
                 }
                 else {
                     // REVISIT: what if one of the attribute uses is "prohibited"
@@ -426,7 +431,12 @@ abstract class XSDAbstractTraverser {
                     existingAttrUse = attrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
                                                               attrUseS[i].fAttrDecl.fName);
                     if (existingAttrUse == null) {
-                        attrGrp.addAttributeUse(attrUseS[i]);
+                        String idName = attrGrp.addAttributeUse(attrUseS[i]);
+                        if (idName != null) {
+                            reportGenericSchemaError("Two distinct members of the {attribute uses} '" +
+                                                     idName + "' and '" + attrUseS[i].fAttrDecl.fName +
+                                                     "' have {attribute declaration}s both of whose {type definition}s are or are derived from ID");
+                        }
                     }
                     else {
                         // REVISIT: what if one of the attribute uses is "prohibited"

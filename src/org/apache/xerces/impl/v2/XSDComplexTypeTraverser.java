@@ -713,8 +713,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
          existingAttrUse = toAttrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
                                                attrUseS[i].fAttrDecl.fName);
          if (existingAttrUse == null) {
-           toAttrGrp.addAttributeUse(attrUseS[i]);
-     }
+            String idName = toAttrGrp.addAttributeUse(attrUseS[i]);
+            if (idName != null) {
+                reportGenericSchemaError("Two distinct members of the {attribute uses} '" +
+                                         idName + "' and '" + attrUseS[i].fAttrDecl.fName +
+                                         "' have {attribute declaration}s both of whose {type definition}s are or are derived from ID");
+            }
+         }
          else {
            if (extension) {
               //REVISIT - should create a msg in properties file
