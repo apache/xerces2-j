@@ -183,8 +183,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
      */
     private static final RuntimeException abort = new RuntimeException();
     
-    
-    // 
     // Constructor
     // 
 
@@ -299,6 +297,19 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 if (DEBUG_ND) {
                     System.out.println("==>normalizeNode:{element} "+node.getNodeName());
                 }
+                //do the name check only when version of the document was changed.
+                if(fDocument.isXMLVersionChanged()){
+                    //take care of namespaces
+                    if(fNamespaceValidation){
+                        //checkQName does checking based on the version of the document
+                        fDocument.checkQName(node.getPrefix() , node.getLocalName()) ;
+                    }
+                    else{
+                        //REVISIT: checkQName takes care of the version of the document
+                        //but isXMLName doesn't.... why its so ?
+                        fDocument.isXMLName(node.getNodeName() , fDocument.isXML11Version());
+                    }
+                }
                 // push namespace context
                 fNamespaceContext.pushContext();
                 fLocalNSBinder.reset();
@@ -330,6 +341,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         }
                     }
                 }
+                
+                //Check the attribute names.... if the document version was changed.
+                //REVISIT: commenting this for now..
+                
+                //if(fDocument.isXMLVersionChanged()){
+                    //checkAttributeNames(elem, attributes);
+                //}
+                
                 if (fValidationHandler != null) {
                     // REVISIT: possible solutions to discard default content are:
                     //         either we pass some flag to XML Schema validator
@@ -404,6 +423,12 @@ public class DOMNormalizer implements XMLDocumentHandler {
         case Node.ENTITY_REFERENCE_NODE: { 
                 if (DEBUG_ND) {
                     System.out.println("==>normalizeNode:{entityRef} "+node.getNodeName());
+                }
+                //do the name check only when version of the document was changed.
+                if(fDocument.isXMLVersionChanged()){
+                    //REVISIT: checkQName takes care of the version of the document
+                    //but isXMLName doesn't.... why its so ?
+                    fDocument.isXMLName(node.getNodeName() , fDocument.isXML11Version());                    
                 }
 
                 if ((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0) {
@@ -548,6 +573,43 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
     }
 
+    //this function is called when normalizing the document
+    //REVISIT: we should also be checking attribute values
+    protected final void checkAttributeNames(ElementImpl element, AttributeMap attributes){
+        // 1. loop through all the attributes..
+        //2. Check that all names are valid as per the version of the document.
+        //3. Check that attribute values are valid as per the version of the document.
+        //Actual attribute values are available only after attribute normalization has been done.
+        //so this function should be called after namespaceFixup() because that function is 
+        //also responsible for normalizing attribure values
+        
+        //REVISIT: should we be doing this separately or in namespaceFixUp() function.
+        //TODO: we are not checking attriubte values yet....
+        
+        for( int i = 0 ; i < attributes.getLength(); i++){
+            Attr attr = (Attr)attributes.item(i) ;
+            if(attr != null){
+                //take care of namespaces
+                if(fNamespaceValidation){
+                    //checkQName does checking based on the version of the document
+                    fDocument.checkQName(attr.getPrefix() , attr.getLocalName()) ;
+                }
+                else{
+                    //REVISIT: checkQName takes care of the version of the document
+                    //but isXMLName doesn't.... why its so ?
+                    fDocument.isXMLName(attr.getNodeName() , fDocument.isXML11Version());
+                }
+            }
+        }
+        
+    }//checkAttributeNames
+    
+    // fix namespaces
+    // normalize attribute values
+    // remove default attributes
+    //REVISIT: this function does not do only namespace fix but other things like normalizeAttributeValue, remove default
+    //attributes -- we should choose appropriate name.
+    
     protected final void namespaceFixUp (ElementImpl element, AttributeMap attributes){
         if (DEBUG) {
             System.out.println("[ns-fixup] element:" +element.getNodeName()+
@@ -582,6 +644,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     if (value.equals(NamespaceContext.XMLNS_URI)) {
                         reportDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
                                        DOMError.SEVERITY_ERROR, attr, null);
+
                     } else {
                         // XML 1.0 Attribute value normalization
                         // value = normalizeAttributeValue(value, attr);
