@@ -723,6 +723,14 @@ public class XMLNamespaceBinder
                 String uri = attributes.getValue(i);
                 uri = fSymbolTable.addSymbol(uri);
 
+                // http://www.w3.org/TR/1999/REC-xml-names-19990114/#dt-prefix
+                if (uri == fEmptySymbol) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                               "EmptyPrefixedAttName",
+                                               new Object[]{element.rawname},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+
                 // declare prefix in context
                 fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
 
