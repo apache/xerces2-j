@@ -126,6 +126,11 @@ public class StandardParserConfiguration
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
 
 
+    /** Feature identifier: augment PSVI */
+    protected static final String SCHEMA_AUGMENT_PSVI =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
+
+
     /** feature identifier: XML Schema validation */
     protected static final String XMLSCHEMA_VALIDATION = 
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
@@ -206,16 +211,18 @@ public class StandardParserConfiguration
         // add default recognized features
         final String[] recognizedFeatures = {
             NORMALIZE_DATA,
-            SCHEMA_ELEMENT_DEFAULT
+            SCHEMA_ELEMENT_DEFAULT,
+            SCHEMA_AUGMENT_PSVI, 
         };
         addRecognizedFeatures(recognizedFeatures);
 
         // set state for default features
         setFeature(SCHEMA_ELEMENT_DEFAULT, true);
         setFeature(NORMALIZE_DATA, true);
+        setFeature(SCHEMA_AUGMENT_PSVI, true);
 
         // add default recognized properties
-	
+    
     } // <init>(SymbolTable,XMLGrammarPool)
 
     //
