@@ -230,7 +230,6 @@ public class XMLSchemaValidator
         SCHEMA_VALIDATION,
         DYNAMIC_VALIDATION,
         SCHEMA_FULL_CHECKING,
-        SCHEMA_AUGMENT_PSVI
     };
 
     /** Recognized properties. */
@@ -636,7 +635,11 @@ public class XMLSchemaValidator
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, change emptyElement call to
         // start + characters + end
-        modifiedAugs = handleEndElement(element, modifiedAugs);
+        fDefaultValue = null;
+        // fElementDepth == -2 indicates that the schema validator was removed
+        // from the pipeline. then we don't need to call handleEndElement.
+        if (fElementDepth != -2)
+            modifiedAugs = handleEndElement(element, modifiedAugs);
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -718,6 +721,7 @@ public class XMLSchemaValidator
 
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, add a characters call.
+        fDefaultValue = null;
         Augmentations modifiedAugs = handleEndElement(element, augs);
         // call handlers
         if (fDocumentHandler != null) {
@@ -1064,7 +1068,7 @@ public class XMLSchemaValidator
     /** Partial validation depth */
     int fPartialValidationDepth;
 
-    /** Element depth. */
+    /** Element depth: -2: validator not in pipeline; >= -1 current depth. */
     int fElementDepth;
 
     /** Child count. */
@@ -1811,6 +1815,21 @@ public class XMLSchemaValidator
                 // for dynamic validation, skip the whole content,
                 // because no grammar was found.
                 if (fDynamicValidation) {
+                    // no schema grammar was found, but it's either dynamic
+                    // validation, or another kind of grammar was found (DTD,
+                    // for example). The intended behavior here is to skip
+                    // the whole document. To improve performance, we try to
+                    // remove the validator from the pipeline, since it's not
+                    // supposed to do anything.
+                    if (fDocumentSource != null) {
+                        fDocumentSource.setDocumentHandler(fDocumentHandler);
+                        if (fDocumentHandler != null)
+                            fDocumentHandler.setDocumentSource(fDocumentSource);
+                        // indicate that the validator was removed.
+                        fElementDepth = -2;
+                        return augs;
+                    }
+
                     fSkipValidationDepth = fElementDepth;
                     if (fAugPSVI)
                         augs = getEmptyAugs(augs);
@@ -2002,7 +2021,6 @@ public class XMLSchemaValidator
                 XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
             }
 
-            fDefaultValue = null;
             if (fAugPSVI)
                 augs = getEmptyAugs(augs);
             return augs;
