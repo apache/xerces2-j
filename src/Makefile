@@ -85,6 +85,10 @@ source: ../bin/${JARFILE}
 	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../class/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.ent          ../class/org/apache/xerces/validators/schema
 
+#-src/org/apache/xerces/validators/schema/identity
+	${MKDIR} ../class/org/apache/xerces/validators/schema/identity
+	${CP}  ../src/org/apache/xerces/validators/schema/identity/*.class        ../class/org/apache/xerces/validators/schema/identity
+
 #-src/org/apache/xml/serialize
 	${MKDIR} ../class/org/apache/xml/serialize
 	${CP}  ../src/org/apache/xml/serialize/*.class                  ../class/org/apache/xml/serialize
@@ -281,6 +285,10 @@ package_src:
 	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../source/src/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.ent          ../source/src/org/apache/xerces/validators/schema
 
+#-src/org/apache/xerces/validaters/schema/identity
+	${MKDIR} ../source/src/org/apache/xerces/validators/schema/identity
+	${CP}  ../src/org/apache/xerces/validators/schema/identity/*.java        ../source/src/org/apache/xerces/validators/schema/identity
+
 #-src/org/apache/xml/serialize
 	${MKDIR} ../source/src/org/apache/xml/serialize
 	${CP}  ../src/org/apache/xml/serialize/*.java                   ../source/src/org/apache/xml/serialize
@@ -412,6 +420,9 @@ package_src:
 
 #-src/org/apache/xerces/validaters/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/Makefile        ../source/src/org/apache/xerces/validators/schema
+
+#-src/org/apache/xerces/validaters/schema/identity
+	${CP}  ../src/org/apache/xerces/validators/schema/identity/Makefile        ../source/src/org/apache/xerces/validators/schema/identity
 
 #-src/org/apache/xml/serialize
 	${CP}  ../src/org/apache/xml/serialize/Makefile                    ../source/src/org/apache/xml/serialize
