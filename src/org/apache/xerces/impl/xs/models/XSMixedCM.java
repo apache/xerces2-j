@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.models;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
-
+import org.apache.xerces.impl.xs.XMLSchemaException;
 
 /**
  * XSMixedCM is a derivative of the abstract content model base class that
