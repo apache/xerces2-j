@@ -267,4 +267,4 @@ public interface XMLParserConfiguration
      */
     public void setLocale(Locale locale) throws XNIException;
 
-} // interface ParserConfiguration
+} // interface XMLParserConfiguration

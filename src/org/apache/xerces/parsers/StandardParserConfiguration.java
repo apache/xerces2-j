@@ -79,12 +79,15 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentScanner;
 import org.apache.xerces.xni.parser.XMLDTDScanner;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
-//import org.xml.sax.Locator;
+import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
 
 /**
  * This is the "standard" parser configuration. It extends the basic
- * configuration with the standard set of parser components.
+ * configuration with the standard set of parser components. Since
+ * the Xerces2 reference implementation document and DTD scanner
+ * implementations are capable of acting as pull parsers, the
+ * standard configuration implements the 
+ * <code>XMLPullParserConfiguration</code> interface.
  * <p>
  * In addition to the features and properties recognized by the base
  * parser configuration, this class recognizes these additional 
@@ -105,7 +108,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  *   <li>http://apache.org/xml/properties/internal/document-scanner</li>
  *   <li>http://apache.org/xml/properties/internal/dtd-scanner</li>
  *   <li>http://apache.org/xml/properties/internal/grammar-pool</li>
- *   <li>http://apache.org/xml/properties/internal/validator</li>
+ *   <li>http://apache.org/xml/properties/internal/validator/dtd</li>
  *   <li>http://apache.org/xml/properties/internal/datatype-validator-factory</li>
  *  </ul>
  * </ul>
@@ -116,7 +119,8 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * @version $Id$
  */
 public class StandardParserConfiguration
-    extends BasicParserConfiguration {
+    extends BasicParserConfiguration 
+    implements XMLPullParserConfiguration {
 
     //
     // Constants
@@ -391,6 +395,88 @@ public class StandardParserConfiguration
     } // setLocale(Locale)
 
     //
+    // XMLPullParserConfiguration methods
+    //
+
+    // parsing
+
+    /**
+     * Sets the input source for the document to parse.
+     *
+     * @param inputSource The document's input source.
+     *
+     * @exception XMLConfigurationException Thrown if there is a 
+     *                        configuration error when initializing the
+     *                        parser.
+     * @exception IOException Thrown on I/O error.
+     *
+     * @see #parse(boolean)
+     */
+    public void setInputSource(XMLInputSource inputSource)
+        throws XMLConfigurationException, IOException {
+
+        try {
+            reset();
+            fScanner.setInputSource(inputSource);
+        } 
+        catch (XNIException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } 
+        catch (IOException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } 
+        catch (Exception ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw new XNIException(ex);
+        }
+
+    } // setInputSource(XMLInputSource)
+
+    /**
+     * Parses the document in a pull parsing fashion.
+     *
+     * @param complete True if the pull parser should parse the
+     *                 remaining document completely.
+     *
+     * @returns True if there is more document to parse.
+     *
+     * @exception XNIException Any XNI exception, possibly wrapping 
+     *                         another exception.
+     * @exception IOException  An IO exception from the parser, possibly
+     *                         from a byte stream or character stream
+     *                         supplied by the parser.
+     *
+     * @see #setInputSource
+     */
+    public boolean parse(boolean complete) throws XNIException, IOException {
+        
+        try {
+            return fScanner.scanDocument(complete);
+        } 
+        catch (XNIException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } 
+        catch (IOException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } 
+        catch (Exception ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw new XNIException(ex);
+        }
+
+    } // parse(boolean):boolean
+
+    //
     // XMLParserConfiguration methods
     //
 
@@ -411,9 +497,8 @@ public class StandardParserConfiguration
         fParseInProgress = true;
 
         try {
-            reset();
-            fScanner.setInputSource(source);
-            fScanner.scanDocument(true);
+            setInputSource(source);
+            parse(true);
         } 
         catch (XNIException ex) {
             if (PRINT_EXCEPTION_STACK_TRACE)
