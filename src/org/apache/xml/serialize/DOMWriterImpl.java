@@ -72,6 +72,7 @@ import org.w3c.dom.traversal.NodeFilter;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.NamespaceSupport;
 
 import java.io.IOException;
@@ -418,11 +419,8 @@ public class DOMWriterImpl implements DOMWriter {
         serializer.fNSBinder.reset(serializer.fSymbolTable);
         // during serialization always have a mapping to empty string
         // so we assume there is a declaration.
-        serializer.fNSBinder.declarePrefix(serializer.fEmptySymbol, serializer.fEmptySymbol);
+        serializer.fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
         serializer.fNamespaceCounter = 1;
-        serializer.fXmlSymbol = serializer.fSymbolTable.addSymbol("xml");
-        serializer.fXmlnsSymbol = serializer.fSymbolTable.addSymbol("xmlns");
-        serializer.fEmptySymbol = serializer.fSymbolTable.addSymbol("");
         return true;
 
     }

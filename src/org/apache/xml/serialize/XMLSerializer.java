@@ -89,6 +89,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.dom.DOMMessageFormatter;
@@ -151,10 +152,6 @@ extends BaseMarkupSerializer {
     /** symbol table for serialization */
     protected SymbolTable fSymbolTable;    
 
-    protected String fEmptySymbol;
-    protected String fXmlSymbol;
-    protected String fXmlnsSymbol;
-
     // is node dom level 1 node?
     protected boolean fDOML1 = false;
     // counter for new prefix names
@@ -166,7 +163,7 @@ extends BaseMarkupSerializer {
      * the serialization. 
      * NOTE: if this field is set to true the following 
      * fields need to be initialized: fNSBinder, fLocalNSBinder, fSymbolTable, 
-     * fEmptySymbol, fXmlSymbol, fXmlnsSymbol, fNamespaceCounter.
+     * XMLSymbols.EMPTY_STRING, fXmlSymbol, fXmlnsSymbol, fNamespaceCounter.
      */
     protected boolean fNamespaces = false;
 
@@ -776,14 +773,14 @@ extends BaseMarkupSerializer {
                 attr = (Attr) attrMap.item( i );
                 uri = attr.getNamespaceURI();
                 // check if attribute is a namespace decl 
-                if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
 
                     value = attr.getNodeValue();
                     if (value == null) {
-                        value=fEmptySymbol;
+                        value=XMLSymbols.EMPTY_STRING;
                     }
 
-                    if (value.equals(NamespaceSupport.XMLNS_URI)) {
+                    if (value.equals(XMLSymbols.XMLNS_URI)) {
                         if (fDOMErrorHandler != null) {
                             modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
                                            DOMError.SEVERITY_ERROR, attr);
@@ -796,9 +793,9 @@ extends BaseMarkupSerializer {
                     } else {
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 
-                                  prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                                  prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
                         String localpart = fSymbolTable.addSymbol( attr.getLocalName());
-                        if (prefix == fXmlnsSymbol) { //xmlns:prefix
+                        if (prefix == XMLSymbols.PREFIX_XMLNS) { //xmlns:prefix
                             value = fSymbolTable.addSymbol(value);
                             // record valid decl
                             if (value.length() != 0) {
@@ -812,7 +809,7 @@ extends BaseMarkupSerializer {
                             // empty prefix is always bound ("" or some string)
 
                             value = fSymbolTable.addSymbol(value);
-                            fNSBinder.declarePrefix(fEmptySymbol, value);
+                            fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
                             continue;
                         }
                     }  // end-else: valid declaration
@@ -876,7 +873,7 @@ extends BaseMarkupSerializer {
             if (uri != null) {  // Element has a namespace
                 uri = fSymbolTable.addSymbol(uri);
                 prefix = (prefix == null || 
-                          prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                          prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
                 if (fNSBinder.getURI(prefix) == uri) {
                     // The xmlns:prefix=namespace or xmlns="default" was declared at parent.
                     // The binder always stores mapping of empty prefix to "".
@@ -907,14 +904,14 @@ extends BaseMarkupSerializer {
                         }
                     }
                 } else { // uri=null and no colon (DOM L2 node)
-                    uri = fNSBinder.getURI(fEmptySymbol);
+                    uri = fNSBinder.getURI(XMLSymbols.EMPTY_STRING);
 
                     if (uri !=null && uri.length() > 0) {
                         // there is a default namespace decl that is bound to
                         // non-zero length uri, output xmlns=""
-                        printNamespaceAttr(fEmptySymbol, fEmptySymbol);
-                        fLocalNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
-                        //fNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
+                        printNamespaceAttr(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+                        fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+                        //fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
                     }
                 }
             }
@@ -944,12 +941,12 @@ extends BaseMarkupSerializer {
                 }
                 // make sure that value is never null.
                 if (value == null) {
-                    value=fEmptySymbol;
+                    value=XMLSymbols.EMPTY_STRING;
                 }
 
                 if (uri != null) {  // attribute has namespace !=null
                     prefix = attr.getPrefix();
-                    prefix = prefix == null ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                    prefix = prefix == null ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
                     String localpart = fSymbolTable.addSymbol( attr.getLocalName());
 
 
@@ -957,13 +954,13 @@ extends BaseMarkupSerializer {
                     // ---------------------------------------------------
                     // print namespace declarations namespace declarations 
                     // ---------------------------------------------------
-                    if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                    if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
                         // check if we need to output this declaration
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 
-                                  prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                                  prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
                         localpart = fSymbolTable.addSymbol( attr.getLocalName());
-                        if (prefix == fXmlnsSymbol) { //xmlns:prefix
+                        if (prefix == XMLSymbols.PREFIX_XMLNS) { //xmlns:prefix
                             localUri = fLocalNSBinder.getURI(localpart);  // local prefix mapping
                             value = fSymbolTable.addSymbol(value);
                             if (value.length() != 0 ) {
@@ -982,14 +979,14 @@ extends BaseMarkupSerializer {
                         } else { // xmlns
                             // empty prefix is always bound ("" or some string)
 
-                            uri = fNSBinder.getURI(fEmptySymbol);
-                            localUri=fLocalNSBinder.getURI(fEmptySymbol);
+                            uri = fNSBinder.getURI(XMLSymbols.EMPTY_STRING);
+                            localUri=fLocalNSBinder.getURI(XMLSymbols.EMPTY_STRING);
                             value = fSymbolTable.addSymbol(value);
                             if (localUri != null) {
                                 // declaration was redeclared and printed above
-                                fNSBinder.declarePrefix(fEmptySymbol, value);
+                                fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
                             } else {
-                                printNamespaceAttr(fEmptySymbol, value);
+                                printNamespaceAttr(XMLSymbols.EMPTY_STRING, value);
                             }
                             continue;
                         }
@@ -1000,7 +997,7 @@ extends BaseMarkupSerializer {
                     // find if for this prefix a URI was already declared
                     String declaredURI =  fNSBinder.getURI(prefix);
 
-                    if (prefix == fEmptySymbol || declaredURI != uri) {
+                    if (prefix == XMLSymbols.EMPTY_STRING || declaredURI != uri) {
                         // attribute has no prefix (default namespace decl does not apply to attributes) 
                         // OR
                         // attribute prefix is not declared
@@ -1017,7 +1014,7 @@ extends BaseMarkupSerializer {
 
                         }
 
-                        if (declaredPrefix !=null && declaredPrefix !=fEmptySymbol) {
+                        if (declaredPrefix !=null && declaredPrefix !=XMLSymbols.EMPTY_STRING) {
                             // use the prefix that was found
                             prefix = declaredPrefix;
                             name=prefix+":"+localpart;
@@ -1026,7 +1023,7 @@ extends BaseMarkupSerializer {
                                 System.out.println("==> cound not find prefix for the attribute: " +prefix);
                             }
 
-                            if (prefix != fEmptySymbol && fLocalNSBinder.getURI(prefix) == null) {
+                            if (prefix != XMLSymbols.EMPTY_STRING && fLocalNSBinder.getURI(prefix) == null) {
                                 // the current prefix is not null and it has no in scope declaration
 
                                 // use this prefix
@@ -1049,7 +1046,7 @@ extends BaseMarkupSerializer {
                         // change prefix for this attribute
                     }
 
-                    printAttribute (name, (value==null)?fEmptySymbol:value, attr.getSpecified());
+                    printAttribute (name, (value==null)?XMLSymbols.EMPTY_STRING:value, attr.getSpecified());
                 } else { // attribute uri == null
 
                     // data
@@ -1125,11 +1122,11 @@ extends BaseMarkupSerializer {
 
     private void printNamespaceAttr(String prefix, String uri) throws IOException{
         _printer.printSpace();
-        if (prefix == fEmptySymbol) {
+        if (prefix == XMLSymbols.EMPTY_STRING) {
             if (DEBUG) {
                 System.out.println("=>add xmlns=\""+uri+"\" declaration");
             }
-            _printer.printText( fXmlnsSymbol );
+            _printer.printText( XMLSymbols.PREFIX_XMLNS );
         } else {
             if (DEBUG) {
                 System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
