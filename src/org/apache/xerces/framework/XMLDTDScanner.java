@@ -1156,6 +1156,9 @@ public final class XMLDTDScanner {
                 return false;
             }
             fEntityReader.skipPastSpaces();
+            if( getReadingExternalEntity() == true ) {  //Are we in external subset?
+               checkForPEReference(false);//If so Check for PE Ref
+             }
             return scanSystemLiteral();
         }
         if (fEntityReader.skippedString(public_string)) {
