@@ -40,12 +40,18 @@
      system property is queried for the class name of the parser configuration.
     </li>
     <li>
+     Next, if a file called <code>xerces.properties</code> exists in the lib
+     subdirectory of the JRE installation and the 
+     <code>org.apache.xerces.xni.parser.XMLParserConfiguration</code> property
+     is defined it, then its value will be read from the file.
+    </li>
+    <li>
      Next, the <code>org.apache.xerces.xni.parser.XMLParserConfiguration</code>
      file is requested from the <code>META-INF/services/</code> directory. 
      This file contains the class name of the parser configuration.
     </li>
     <li>
-     Finally, the <code>org.apache.xerces.parsers.StandardParserConfiguration</code>
+     Finally, the <code>&DefaultConfigLong;</code>
      is used as the default parser configuration.
     </li>
    </ol>
