@@ -109,7 +109,7 @@ public class XSEmptyCM  implements XSCMValidator {
     public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler){
 
         // error state
-        if (currentState[0] == XSCMValidator.FIRST_ERROR) {
+        if (currentState[0] < 0) {
             currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
             return null;
         }

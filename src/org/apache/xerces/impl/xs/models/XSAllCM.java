@@ -160,6 +160,18 @@ public class XSAllCM implements XSCMValidator {
      */
     public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler) {
 
+        // error state
+        if (currentState[0] < 0) {
+            currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
+            Object matchingDecl = null;
+            for (int i = 0; i < fNumElements; i++) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i]);
+                if (matchingDecl != null)
+                    break;
+            }
+            return matchingDecl;
+        }
+
         Object matchingDecl = null;
 
         for (int i = 0; i < fNumElements; i++) {
