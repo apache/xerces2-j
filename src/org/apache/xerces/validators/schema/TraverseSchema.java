@@ -1177,6 +1177,13 @@ public class TraverseSchema implements
             if (source.getPublicId () != null)
                 location = source.getPublicId ();
 
+            // make sure we're not redefining ourselves!
+            if(source.getSystemId().equals(fCurrentSchemaURL)) {
+                // REVISIT:  localize
+                reportGenericSchemaError("src-redefine.2:  a schema cannot redefine itself");
+                fRedefineSucceeded = false;
+                return;
+            }
             location += (',' + source.getSystemId ());
         }
         if (fRedefineLocations.get((Object)location) != null) {
