@@ -140,6 +140,11 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/javax/xml/parsers
 	${CP}  ../src/javax/xml/parsers/*.class                  ../class/javax/xml/parsers
 
+#-copy over files for META-INF
+	${MKDIR} ../class/META-INF/services 
+	${CP} ../src/org/apache/xerces/jaxp/javax.xml.parsers.DocumentBuilderFactory 	../class/META-INF/services/javax.xml.parsers.DocumentBuilderFactory
+	${CP} ../src/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory 	../class/META-INF/services/javax.xml.parsers.SAXParserFactory
+
 #-src/org/apache/xerces/jaxp
 	${MKDIR} ../class/org/apache/xerces/jaxp
 	${CP}  ../src/org/apache/xerces/jaxp/*.class                  ../class/org/apache/xerces/jaxp
@@ -147,7 +152,7 @@ source: ../bin/${JARFILE}
 
 #make the first jar file
 	echo ${PRODUCTVERSION}> ../class/Xerces_Ver_${PRODUCTVERSION}.info
-	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org javax; cd ../src
+	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org javax META-INF ; cd ../src
 
 ###################################
 #copy the .class files under samples
@@ -331,6 +336,8 @@ package_src:
 #-src/org/apache/xerces/jaxp
 	${MKDIR} ../source/src/org/apache/xerces/jaxp
 	${CP}  ../src/org/apache/xerces/jaxp/*.java                  ../source/src/org/apache/xerces/jaxp
+	${CP}  ../src/org/apache/xerces/jaxp/javax.xml.parsers.DocumentBuilderFactory                  ../source/src/org/apache/xerces/jaxp
+	${CP}  ../src/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory                  ../source/src/org/apache/xerces/jaxp
 
 ###################################
 #copy the .java and .dtd files unser samples
