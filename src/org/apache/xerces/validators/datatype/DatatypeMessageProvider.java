@@ -147,8 +147,11 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
         IllegalIntegerFacet = 12,
         NotReal = 13,
         IllegalRealFacet = 14,
-        // ...
-        MSG_MAX_CODE = 15;
+        ScaleLargerThanPrecision = 15,
+        PrecisionExceeded = 16,
+        ScaleExceeded = 17,
+       // ...
+        MSG_MAX_CODE = 18;
 
     //
     // Minor Codes
@@ -171,6 +174,9 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
         "NotInteger",                   //  11, "{0} is not an integer."
         "IllegalIntegerFacet",          //  12, "Illegal Facet for Integer type."
         "NotReal",                      //  13, "{0} is not a double."
-        "IllegalRealFacet",             //  14, "Illegal Facet for Real type." 
+        "IllegalRealFacet",             //  14, "Illegal Facet for Real type."
+        "ScaleLargerThanPrecision",     //  15, "Scale Facet must be less than or equal to Precision Facet"
+        "PrecisionExceeded",            //  16, "{0} has exceeded the precision Facet {1}"},
+        "ScaleExceeded",                //  17, "{0} has execeed the scale Facet {1}"},
     };
 }

@@ -59,30 +59,30 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
-import java.util.Enumeration;
 
 /**
  *
- * StringValidator validates that XML content is a W3C string type.
+ * URIValidator validates that XML content is a W3C uri type,
+ * according to RFC 2396
  *
  * @author Ted Leung
- * @version
+ * @version Revision: %M% %I% %W% %Q%
  */
 
-public class StringValidator implements InternalDatatypeValidator {
+public class URIValidator implements InternalDatatypeValidator {
 	
     private Locale fLocale = null;
 	
 	/**
-     * validate that a string is a W3C string type
+     * validate that a string is a W3C uri type
      *
      * validate returns true or false depending on whether the string content is an
-     * instance of the W3C string datatype
+     * instance of the W3C uri datatype
      * 
      * @param content A string containing the content to be validated
      *
      * @exception throws InvalidDatatypeException if the content is
-     *  not a W3C string type
+     *  not a W3C uri type
      */
 
 	public void validate(String content) throws InvalidDatatypeValueException {
@@ -93,21 +93,6 @@ public class StringValidator implements InternalDatatypeValidator {
 	}
 	
 	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-        for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-            String key = (String) e.nextElement();
-            if (key.equals(DatatypeValidator.LENGTH)) {
-            } else if (key.equals(DatatypeValidator.MINLENGTH)) {
-            } else if (key.equals(DatatypeValidator.MAXLENGTH)) {
-            } else if (key.equals(DatatypeValidator.MAXINCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.MININCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.MINEXCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.PATTERN)) {
-            } else if (key.equals(DatatypeValidator.ENUMERATION)) {
-            } else {
-                throw new IllegalFacetException();
-            }
-        }
 	}
 	
 	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {

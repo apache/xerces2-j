@@ -85,7 +85,9 @@ public class DatatypeMessages extends ListResourceBundle {
         { "IllegalIntegerFacet", "Illegal Facet for Integer type." },
         { "NotReal", "{0} is not a double." },
         { "IllegalRealFacet", "Illegal Facet for Real type." },
-
+        { "ScaleLargerThanPrecision", "Scale Facet must be less than or equal to Precision Facet" },
+        { "PrecisionExceeded", "{0} has exceeded the precision Facet {1}"},
+        { "ScaleExceeded", "{0} has execeed the scale Facet {1}"},
     };
 
     /** Returns the list resource bundle contents. */

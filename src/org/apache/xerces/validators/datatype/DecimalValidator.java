@@ -57,6 +57,8 @@
 
 package org.apache.xerces.validators.datatype;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -72,16 +74,20 @@ import java.util.Vector;
 
 public class DecimalValidator implements InternalDatatypeValidator {
 	
-	double fMaxInclusive = 0;
+	BigDecimal fMaxInclusive = null;
 	boolean fIsMaxInclusive = false;
-	double fMaxExclusive = 0;
+	BigDecimal fMaxExclusive = null;
 	boolean fIsMaxExclusive = false;
-	double fMinInclusive = 0;
+	BigDecimal fMinInclusive = null;
 	boolean fIsMinInclusive = false;
-	double fMinExclusive = 0;
+	BigDecimal fMinExclusive = null;
 	boolean fIsMinExclusive = false;
-	double fEnumValues[] = null;
+	BigDecimal fEnumValues[] = null;
 	boolean fHasEnums = false;
+    int fPrecision = 0;
+    boolean fIsPrecision = false;
+    int fScale = 0;
+    boolean fIsScale = false;
 	DecimalValidator fBaseValidator = null;
 	private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 	private Locale fLocale = null;
@@ -99,15 +105,27 @@ public class DecimalValidator implements InternalDatatypeValidator {
      */
 
 	public void validate(String content) throws InvalidDatatypeValueException {
-	    double d = 0;
+	    BigDecimal d = null;
         try {
-            d = Double.valueOf(content).doubleValue();
+            d = new BigDecimal(content);
         } catch (NumberFormatException nfe) {
             throw new InvalidDatatypeValueException(
 				getErrorString(DatatypeMessageProvider.NotDecimal,
 							   DatatypeMessageProvider.MSG_NONE,
 							   new Object[] { content }));
         }
+        if (fIsScale)
+            if (d.scale() > fScale)
+                throw new InvalidDatatypeValueException(
+                    getErrorString(DatatypeMessageProvider.ScaleExceeded,
+                                   DatatypeMessageProvider.MSG_NONE,
+                                   new Object[] { content }));
+        if (fIsPrecision)
+            if (d.unscaledValue().toString(10).length() > fPrecision) 
+                throw new InvalidDatatypeValueException(
+                    getErrorString(DatatypeMessageProvider.PrecisionExceeded,
+                                   DatatypeMessageProvider.MSG_NONE,
+                                   new Object[] {content} ));
         boundsCheck(d);
         if (fHasEnums)
             enumCheck(d);
@@ -125,21 +143,23 @@ public class DecimalValidator implements InternalDatatypeValidator {
 	        if (key.equals(DatatypeValidator.ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
-	        double decimalValue = 0;
+	        BigDecimal decimalValue = null;
 	        try {
-	            decimalValue = Double.valueOf(value).doubleValue();
+	            decimalValue = new BigDecimal(value);
 	        } catch (NumberFormatException nfe) {
                 facetsAreConsistent = false;
 	        }
 	        if (key.equals(DatatypeValidator.MININCLUSIVE) && fIsMinInclusive) {
-                facetsAreConsistent = fMinInclusive <= decimalValue;
+                facetsAreConsistent = (fMinInclusive.compareTo(decimalValue) < 0);
 	        } else if (key.equals(DatatypeValidator.MINEXCLUSIVE) && fIsMinExclusive) {
-	            facetsAreConsistent = fMinExclusive < decimalValue;
+	            facetsAreConsistent = (fMinExclusive.compareTo(decimalValue) < 0);
 	        } else if (key.equals(DatatypeValidator.MAXINCLUSIVE) && fIsMaxInclusive) {
-	            facetsAreConsistent = fMaxInclusive >= decimalValue;
+	            facetsAreConsistent = (fMaxInclusive.compareTo(decimalValue) >= 0);
 	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE) && fIsMaxExclusive) {
-	            facetsAreConsistent = fMaxExclusive > decimalValue;
-	        }
+	            facetsAreConsistent = (fMaxExclusive.compareTo(decimalValue) > 0);
+	        } else if (key.equals(DatatypeValidator.SCALE) && fIsScale && fIsPrecision){
+                facetsAreConsistent = fScale <= fPrecision;
+            }
 	    }
 	    return facetsAreConsistent;
 	}
@@ -160,9 +180,9 @@ public class DecimalValidator implements InternalDatatypeValidator {
 	        if (key.equals(DatatypeValidator.ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
-	        double decimalValue = 0;
+	        BigDecimal decimalValue = null;
 	        try {
-	            decimalValue = Integer.parseInt(value);
+	            decimalValue = new BigDecimal(value);
 	        } catch (NumberFormatException nfe) {
 	            throw new IllegalFacetValueException(
 					getErrorString(DatatypeMessageProvider.IllegalFacetValue,
@@ -183,7 +203,11 @@ public class DecimalValidator implements InternalDatatypeValidator {
 	            fMaxExclusive = decimalValue;
 	        } else if (key.equals(DatatypeValidator.ENUMERATION)) {
 	        } else if (key.equals(DatatypeValidator.PRECISION)) {
+                fIsPrecision = true;
+                fPrecision = decimalValue.intValue();
 	        } else if (key.equals(DatatypeValidator.SCALE)) {
+                fIsScale = true;
+                fScale = decimalValue.intValue();
 	        } else if (key.equals(DatatypeValidator.LENGTH) ||
 	                 key.equals(DatatypeValidator.MINLENGTH) ||
                      key.equals(DatatypeValidator.MAXLENGTH) ||
@@ -204,14 +228,21 @@ public class DecimalValidator implements InternalDatatypeValidator {
 								   new Object [] { key }));
 	    }
 	    
+        // check for scale <= precision
+        if (fIsScale && fIsPrecision && fScale > fPrecision)
+          throw new IllegalFacetException(
+            getErrorString(DatatypeMessageProvider.ScaleLargerThanPrecision,
+                           DatatypeMessageProvider.MSG_NONE,
+                           null));
+        
         // check the enum values after any range constraints are in place
         Vector v = (Vector) facets.get(DatatypeValidator.ENUMERATION);    
 	    if (v != null) {
 	        fHasEnums = true;
-	        fEnumValues = new double[v.size()];
+	        fEnumValues = new BigDecimal[v.size()];
 	        for (int i = 0; i < v.size(); i++)
 	            try {
-	                fEnumValues[i] = Double.valueOf((String) v.elementAt(i)).doubleValue();
+	                fEnumValues[i] = new BigDecimal((String) v.elementAt(i));
 	                boundsCheck(fEnumValues[i]);
 	            } catch (InvalidDatatypeValueException idve) {
 	                throw new IllegalFacetValueException(
@@ -235,37 +266,37 @@ public class DecimalValidator implements InternalDatatypeValidator {
     /*
      * check that a facet is in range, assumes that facets are compatible -- compatibility ensured by setFacets
      */
-    private void boundsCheck(double d) throws InvalidDatatypeValueException {
+    private void boundsCheck(BigDecimal d) throws InvalidDatatypeValueException {
         boolean minOk = false;
         boolean maxOk = false;
         if (fIsMaxInclusive)
-            maxOk = (d <= fMaxInclusive);
+            maxOk = (d.compareTo(fMaxInclusive) <= 0);
         else if (fIsMaxExclusive)
-            maxOk = (d < fMaxExclusive);
+            maxOk = (d.compareTo(fMaxExclusive) < 0);
         else 
             maxOk = (!fIsMaxInclusive && !fIsMaxExclusive);
         
         if (fIsMinInclusive)
-            minOk = (d >= fMinInclusive);
+            minOk = (d.compareTo(fMinInclusive) >= 0);
         else if (fIsMinExclusive) 
-            minOk = (d > fMinInclusive);
+            minOk = (d.compareTo(fMinInclusive) > 0);
         else 
             minOk = (!fIsMinInclusive && !fIsMinExclusive);
         if (!(minOk && maxOk))
             throw new InvalidDatatypeValueException(
 				getErrorString(DatatypeMessageProvider.OutOfBounds,
 							   DatatypeMessageProvider.MSG_NONE,
-							   new Object [] { new Double(d) }));
+							   new Object [] { d }));
     }
     
-    private void enumCheck(double v) throws InvalidDatatypeValueException {
+    private void enumCheck(BigDecimal v) throws InvalidDatatypeValueException {
         for (int i = 0; i < fEnumValues.length; i++) {
             if (v == fEnumValues[i]) return;
         }
         throw new InvalidDatatypeValueException(
 			getErrorString(DatatypeMessageProvider.NotAnEnumValue,
 						   DatatypeMessageProvider.MSG_NONE,
-						   new Object [] { new Double(v) }));
+						   new Object [] { v }));
     }
 
     /**
