@@ -206,13 +206,17 @@ public final class REUtil {
 
     /**
      * Sample entry.
-     * <div>Usage: <KBD>com.ibm.regex.REUtil &lt;regex&gt; &lt;string&gt;</KBD></div>
+     * <div>Usage: <KBD>org.apache.xerces.utils.regex.REUtil &lt;regex&gt; &lt;string&gt;</KBD></div>
      */
     public static void main(String[] argv) {
         String pattern = null;
         try {
             String options = "";
             String target = null;
+            if( argv.length == 0 ) {
+                System.out.println( "Error:Usage: java REUtil -i|-m|-s|-u|-w|-X regularExpression String" );
+                System.exit( 0 );
+            }
             for (int i = 0;  i < argv.length;  i ++) {
                 if (argv[i].length() == 0 || argv[i].charAt(0) != '-') {
                     if (pattern == null)
@@ -255,7 +259,7 @@ public final class REUtil {
             if (pattern == null) {
                 pe.printStackTrace();
             } else {
-                System.err.println("com.ibm.regex.ParseException: "+pe.getMessage());
+                System.err.println("org.apache.xerces.utils.regex.ParseException: "+pe.getMessage());
                 String indent = "        ";
                 System.err.println(indent+pattern);
                 int loc = pe.getLocation();
@@ -276,7 +280,7 @@ public final class REUtil {
      * Creates a RegularExpression instance.
      * This method caches created instances.
      *
-     * @see com.ibm.regex.RegularExpression#RegularExpression(java.lang.String, java.lang.String)
+     * @see org.apache.xerces.utils.regex.RegularExpression#RegularExpression(java.lang.String, java.lang.String)
      */
     public static RegularExpression createRegex(String pattern, String options)
         throws ParseException {
@@ -309,7 +313,7 @@ public final class REUtil {
 
     /**
      *
-     * @see com.ibm.regex.RegularExpression#matches(java.lang.String)
+     * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String)
      */
     public static boolean matches(String regex, String target) throws ParseException {
         return REUtil.createRegex(regex, null).matches(target);
@@ -317,7 +321,7 @@ public final class REUtil {
 
     /**
      *
-     * @see com.ibm.regex.RegularExpression#matches(java.lang.String)
+     * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String)
      */
     public static boolean matches(String regex, String options, String target) throws ParseException {
         return REUtil.createRegex(regex, options).matches(target);

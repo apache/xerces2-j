@@ -116,15 +116,15 @@ class RegexParser {
     Vector references = null;
 
     public RegexParser() {
-        this.setLocale(Locale.getDefault());
+        //TODO IBM-JR this.setLocale(Locale.getDefault());
     }
     public RegexParser(Locale locale) {
-        this.setLocale(locale);
+        //TODO IBM-JR this.setLocale(locale);
     }
 
     public void setLocale(Locale locale) {
         try {
-            this.resources = ResourceBundle.getBundle("com.ibm.regex.message", locale);
+            this.resources = ResourceBundle.getBundle("org.apache.xerces.utils.regex.message", locale);
         } catch (MissingResourceException mre) {
             throw new RuntimeException("Installation Problem???  Couldn't load messages: "
                                        +mre.getMessage());
