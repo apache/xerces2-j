@@ -510,7 +510,7 @@ Copyright:
     <copy todir="${build.src}">
         <fileset 
             dir="${src.dir}"
-            includes="**/v2/**/*.java"
+            includes="**/v2/**/*.java **/v2/**/*.properties"
             excludes="**/v2/new_datatypes/**">
         </fileset>
     </copy>
