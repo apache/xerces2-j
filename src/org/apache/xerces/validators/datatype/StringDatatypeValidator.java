@@ -426,39 +426,37 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         StringTokenizer parsedList = new StringTokenizer( content );
         try {
             int numberOfTokens =  parsedList.countTokens();
+            if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
+                if ( numberOfTokens > fMaxLength ) {
+                    throw new InvalidDatatypeValueException("Value '"+content+
+                                                            "' with length ='"+  numberOfTokens + "'tokens"+
+                                                            "' exceeds maximum length facet with  '"+fMaxLength+"' tokens.");
+                }
+            }
+            if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
+                if ( numberOfTokens < fMinLength ) {
+                    throw new InvalidDatatypeValueException("Value '"+content+
+                                                            "' with length ='"+ numberOfTokens+ "'tokens" +
+                                                            "' is less than minimum length facet with '"+fMinLength+"' tokens." );
+                }
+            }
+
+            if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
+                if ( numberOfTokens != fLength ) {
+                    throw new InvalidDatatypeValueException("Value '"+content+
+                                                            "' with length ='"+ numberOfTokens+ "'tokens" +
+                                                            "' is not equal to length facet with '"+fLength+"'. tokens");
+                }
+            }
+
+            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
+                if ( fEnumeration.contains( content ) == false )
+                    throw new InvalidDatatypeValueException("Value '"+
+                                                            content+"' must be one of "+fEnumeration);
+            }
             while ( parsedList.hasMoreTokens() ) {       //Check actual list content
-
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( numberOfTokens > fMaxLength ) {
-                        throw new InvalidDatatypeValueException("Value '"+content+
-                                                                "' with length ='"+  numberOfTokens + "'tokens"+
-                                                                "' exceeds maximum length facet with  '"+fMaxLength+"' tokens.");
-                    }
-                }
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( numberOfTokens < fMinLength ) {
-                        throw new InvalidDatatypeValueException("Value '"+content+
-                                                                "' with length ='"+ numberOfTokens+ "'tokens" +
-                                                                "' is less than minimum length facet with '"+fMinLength+"' tokens." );
-                    }
-                }
-
-                if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( numberOfTokens != fLength ) {
-                        throw new InvalidDatatypeValueException("Value '"+content+
-                                                                "' with length ='"+ numberOfTokens+ "'tokens" +
-                                                                "' is not equal to length facet with '"+fLength+"'. tokens");
-                    }
-                }
-
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    if ( fEnumeration.contains( content ) == false )
-                        throw new InvalidDatatypeValueException("Value '"+
-                                                                content+"' must be one of "+fEnumeration);
-                }
-
                 if ( this.fBaseValidator != null ) {//validate against parent type if any
-                    this.fBaseValidator.validate( content, state );
+                    this.fBaseValidator.validate( parsedList.nextToken(), state );
                 }
             }
         } catch ( NoSuchElementException e ) {
