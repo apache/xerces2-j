@@ -325,14 +325,18 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
 
     }
-
-    public int compare( String content1, String content2) {
+    public int compare( String content1, String content2)  {
         //implement compareDates using the compare() method
-        parse(content1, fDateValue);
-        parse(content2,fTempDate);
-        int result = compareDates(fDateValue, fTempDate, true);
+        try{        
+            parse(content1, fDateValue);
+            parse(content2,fTempDate);
+            int result = compareDates(fDateValue, fTempDate, true);
+            return (result==INDETERMINATE)?-1:result;
+        }
+        catch ( RuntimeException e ) {
+            return -1;
         
-        return (result==INDETERMINATE)?-1:result;
+        }
     }
 
 
