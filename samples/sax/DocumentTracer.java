@@ -63,8 +63,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import org.apache.xerces.parsers.SAXParser;
-
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -135,9 +133,6 @@ public class DocumentTracer
     
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
-
-    /** Default canonical output (false). */
-    protected static final boolean DEFAULT_CANONICAL = false;
 
     //
     // Data
@@ -284,7 +279,7 @@ public class DocumentTracer
     } // startPrefixMapping(String,String)
 
     /** Start element. */
-    public void startElement(String uri, String localpart, String rawname, 
+    public void startElement(String uri, String localName, String qname, 
                              Attributes attributes) throws SAXException {
 
         printIndent();
@@ -292,11 +287,11 @@ public class DocumentTracer
         fOut.print("uri=");
         printQuotedString(uri);
         fOut.print(',');
-        fOut.print("localpart=");
-        printQuotedString(localpart);
+        fOut.print("localName=");
+        printQuotedString(localName);
         fOut.print(',');
-        fOut.print("rawname=");
-        printQuotedString(rawname);
+        fOut.print("qname=");
+        printQuotedString(qname);
         fOut.print(',');
         fOut.print("attributes=");
         if (attributes == null) {
@@ -310,19 +305,26 @@ public class DocumentTracer
                     System.out.print(',');
                 }
                 String attrURI = attributes.getURI(i);
-                String attrLocalpart = attributes.getLocalName(i);
-                String attrRawname = attributes.getQName(i);
+                String attrLocalName = attributes.getLocalName(i);
+                String attrQName = attributes.getQName(i);
+                String attrType = attributes.getType(i);
+                String attrValue = attributes.getValue(i);
                 fOut.print('{');
                 fOut.print("uri=");
                 printQuotedString(attrURI);
                 fOut.print(',');
-                fOut.print("localpart=");
-                printQuotedString(attrLocalpart);
+                fOut.print("localName=");
+                printQuotedString(attrLocalName);
                 fOut.print(',');
-                fOut.print("rawname=");
-                printQuotedString(attrRawname);
-                fOut.print("}=");
-                printQuotedString(attributes.getValue(i));
+                fOut.print("qname=");
+                printQuotedString(attrQName);
+                fOut.print(',');
+                fOut.print("type=");
+                printQuotedString(attrType);
+                fOut.print(',');
+                fOut.print("value=");
+                printQuotedString(attrValue);
+                fOut.print('}');
             }
             fOut.print('}');
         }
@@ -333,7 +335,7 @@ public class DocumentTracer
     } // startElement(String,String,String,Attributes)
 
     /** End element. */
-    public void endElement(String uri, String localpart, String rawname) 
+    public void endElement(String uri, String localName, String qname) 
         throws SAXException {
 
         fIndent--;
@@ -342,11 +344,11 @@ public class DocumentTracer
         fOut.print("uri=");
         printQuotedString(uri);
         fOut.print(',');
-        fOut.print("localpart=");
-        printQuotedString(localpart);
+        fOut.print("localName=");
+        printQuotedString(localName);
         fOut.print(',');
-        fOut.print("rawname=");
-        printQuotedString(rawname);
+        fOut.print("qname=");
+        printQuotedString(qname);
         fOut.println(')');
         fOut.flush();
 
@@ -401,9 +403,19 @@ public class DocumentTracer
                 if (i > 0) {
                     System.out.print(',');
                 }
-                printQuotedString(attributes.getName(i));
-                fOut.print('=');
-                printQuotedString(attributes.getValue(i));
+                String attrName = attributes.getName(i);
+                String attrType = attributes.getType(i);
+                String attrValue = attributes.getValue(i);
+                fOut.print('{');
+                fOut.print("name=");
+                printQuotedString(attrName);
+                fOut.print(',');
+                fOut.print("type=");
+                printQuotedString(attrType);
+                fOut.print(',');
+                fOut.print("value=");
+                printQuotedString(attrValue);
+                fOut.print('}');
             }
             fOut.print('}');
         }
@@ -753,36 +765,12 @@ public class DocumentTracer
 
     } // printError(String,SAXParseException)
 
-    //
-    // Private methods
-    //
-
     /** Prints the indent. */
-    private void printIndent() {
+    protected void printIndent() {
         for (int i = 0; i < fIndent; i++) {
             fOut.print(' ');
         }
     }
-
-    /** Returns a string of the location. */
-    private String getLocationString(SAXParseException ex) {
-        StringBuffer str = new StringBuffer();
-
-        String systemId = ex.getSystemId();
-        if (systemId != null) {
-            int index = systemId.lastIndexOf('/');
-            if (index != -1) 
-                systemId = systemId.substring(index + 1);
-            str.append(systemId);
-        }
-        str.append(':');
-        str.append(ex.getLineNumber());
-        str.append(':');
-        str.append(ex.getColumnNumber());
-
-        return str.toString();
-
-    } // getLocationString(SAXParseException):String
 
     //
     // MAIN
@@ -791,58 +779,167 @@ public class DocumentTracer
     /** Main. */
     public static void main(String[] argv) throws Exception {
         
-        // construct handler
+        // is there anything to do?
+        if (argv.length == 0) {
+            printUsage();
+            System.exit(1);
+        }
+
+        // variables
         DocumentTracer tracer = new DocumentTracer();
-
-        // construct parser; set features
-        XMLReader parser = new SAXParser();
-        try {
-            parser.setFeature("http://xml.org/sax/features/namespaces", true);
-        }
-        catch (SAXException e) {
-            e.printStackTrace(System.err);
-        }
-        try {
-            parser.setFeature("http://xml.org/sax/features/validation", true);
-        }
-        catch (SAXException e) {
-            e.printStackTrace(System.err);
-        }
-
-        // set handlers
-        parser.setDTDHandler(tracer);
-        parser.setErrorHandler(tracer);
-        if (parser instanceof Parser) {
-            ((Parser)parser).setDocumentHandler(tracer);
-        }
-        else {
-            parser.setContentHandler(tracer);
-            try {
-                parser.setProperty("http://xml.org/sax/properties/declaration-handler", tracer);
-            }
-            catch (SAXException e) {
-                e.printStackTrace(System.err);
-            }
-            try {
-                parser.setProperty("http://xml.org/sax/properties/lexical-handler", tracer);
-            }
-            catch (SAXException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-
-        // parser files
+        PrintWriter out = new PrintWriter(System.out);
+        XMLReader parser = null;
+        boolean namespaces = DEFAULT_NAMESPACES;
+        boolean validation = DEFAULT_VALIDATION;
+        boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        
+        // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
-            System.err.println("# argv["+i+"]: "+arg);
+            if (arg.startsWith("-")) {
+                String option = arg.substring(1);
+                if (option.equals("p")) {
+                    // get parser name
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -p option.");
+                    }
+                    String parserName = argv[i];
+
+                    // create parser
+                    try {
+                        parser = XMLReaderFactory.createXMLReader(parserName);
+                    }
+                    catch (Exception e) {
+                        try {
+                            Parser sax1Parser = ParserFactory.makeParser(parserName);
+                            parser = new ParserAdapter(sax1Parser);
+                            System.err.println("warning: Features and properties not supported on SAX1 parsers.");
+                        }
+                        catch (Exception ex) {
+                            parser = null;
+                            System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");
+                        }
+                    }
+                    continue;
+                }
+                if (option.equalsIgnoreCase("n")) {
+                    namespaces = option.equals("n");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("v")) {
+                    validation = option.equals("v");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("s")) {
+                    schemaValidation = option.equals("s");
+                    continue;
+                }
+                if (option.equals("h")) {
+                    printUsage();
+                    continue;
+                }
+            }
+
+            // use default parser?
+            if (parser == null) {
+
+                // create parser
+                try {
+                    parser = XMLReaderFactory.createXMLReader(DEFAULT_PARSER_NAME);
+                }
+                catch (Exception e) {
+                    System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");
+                    continue;
+                }
+            }
+
+            // set parser features
+            try {
+                parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(VALIDATION_FEATURE_ID, validation);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+VALIDATION_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
+            }
+            catch (SAXNotRecognizedException e) {
+                // ignore
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+            }
+    
+            // set handlers
+            parser.setDTDHandler(tracer);
+            parser.setErrorHandler(tracer);
+            if (parser instanceof XMLReader) {
+                parser.setContentHandler(tracer);
+                try {
+                    parser.setProperty("http://xml.org/sax/properties/declaration-handler", tracer);
+                }
+                catch (SAXException e) {
+                    e.printStackTrace(System.err);
+                }
+                try {
+                    parser.setProperty("http://xml.org/sax/properties/lexical-handler", tracer);
+                }
+                catch (SAXException e) {
+                    e.printStackTrace(System.err);
+                }
+            }
+            else {
+                ((Parser)parser).setDocumentHandler(tracer);
+            }
+    
+            // parse file
             try {
                 parser.parse(arg);
             }
-            catch (SAXException e) {
-                Exception ex = e.getException();
-                throw ex != null ? ex : e;
+            catch (SAXParseException e) {
+                // ignore
+            }
+            catch (Exception e) {
+                System.err.println("error: Parse error occurred - "+e.getMessage());
             }
         }
+
     } // main(String[])
+
+    //
+    // Private static methods
+    //
+
+    /** Prints the usage. */
+    private static void printUsage() {
+
+        System.err.println("usage: java sax.DocumentTracer (options) uri ...");
+        System.err.println();
+        
+        System.err.println("options:");
+        System.err.println("  -p name  Select parser by name.");
+        System.err.println("  -n | -N  Turn on/off namespace processing.");
+        System.err.println("  -v | -V  Turn on/off validation.");
+        System.err.println("  -s | -S  Turn on/off Schema validation support.");
+        System.err.println("           NOTE: Not supported by all parsers.");
+        System.err.println("  -h       This help screen.");
+        System.err.println();
+
+        System.err.println("defaults:");
+        System.err.println("  Parser:     "+DEFAULT_PARSER_NAME);
+        System.out.print("  Namespaces: ");
+        System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
+        System.out.print("  Validation: ");
+        System.err.println(DEFAULT_VALIDATION ? "on" : "off");
+        System.out.print("  Schema:     ");
+        System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+
+    } // printUsage()
 
 } // class DocumentTracer

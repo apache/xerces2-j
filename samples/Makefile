@@ -2,8 +2,7 @@
 
 TARGETS=
 
-#DIRS = dom sax ui
-DIRS = util dom sax socket util xni
+DIRS = dom sax socket xni
 
 TOP = ..
 include $(TOP)/src/Makefile.incl

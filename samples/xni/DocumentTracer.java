@@ -57,9 +57,11 @@
 
 package xni;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.QName;
@@ -70,6 +72,8 @@ import org.apache.xerces.xni.XMLAttributes;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -86,14 +90,43 @@ public class DocumentTracer
     implements ErrorHandler {
 
     //
+    // Constants
+    //
+
+    // feature ids
+
+    /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
+    protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
+    
+    /** Validation feature id (http://xml.org/sax/features/validation). */
+    protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
+
+    /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
+    protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
+
+    // default settings
+
+    /** Default namespaces support (true). */
+    protected static final boolean DEFAULT_NAMESPACES = true;
+
+    /** Default validation support (false). */
+    protected static final boolean DEFAULT_VALIDATION = false;
+    
+    /** Default Schema validation support (true). */
+    protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+
+    //
     // Data
     //
 
     /** Temporary QName. */
     private QName fQName = new QName();
 
+    /** Print writer. */
+    protected PrintWriter fOut;
+
     /** Indent level. */
-    private int fIndent;
+    protected int fIndent;
 
     //
     // Constructors
@@ -101,6 +134,7 @@ public class DocumentTracer
 
     /** Default constructor. */
     public DocumentTracer() {
+        setOutput(new PrintWriter(System.out));
         setErrorHandler(this);
     } // <init>()
 
@@ -108,564 +142,842 @@ public class DocumentTracer
     // Public methods
     //
 
-    /** Resets the test parser. */
-    public void reset() throws SAXException {
-        super.reset();
-        fIndent = 0;
-    } // reset()
+    /** Sets the output stream for printing. */
+    public void setOutput(OutputStream stream, String encoding)
+        throws UnsupportedEncodingException {
+
+        if (encoding == null) {
+            encoding = "UTF8";
+        }
+
+        Writer writer = new OutputStreamWriter(stream, encoding);
+        fOut = new PrintWriter(writer);
+
+    } // setOutput(OutputStream,String)
+
+    /** Sets the output writer. */
+    public void setOutput(Writer writer) {
+            
+        fOut = writer instanceof PrintWriter
+             ? (PrintWriter)writer : new PrintWriter(writer);
+
+    } // setOutput(Writer)
 
     //
     // XMLDocumentHandler methods
     //
 
+    /** Start document. */
     public void startDocument() throws SAXException {
+
+        fIndent = 0;
         printIndent();
-        System.out.println("startDocument()");
+        fOut.println("startDocument()");
+        fOut.flush();
         fIndent++;
-    }
 
-    public void xmlDecl(String version, String encoding, String actualEncoding, String standalone)
-        throws SAXException {
+    } // startDocument()
+
+    /** XML Declaration. */
+    public void xmlDecl(String version, String encoding, String actualEncoding,
+                        String standalone) throws SAXException {
+
         printIndent();
-        System.out.print("xmlDecl(");
-        System.out.print("version="+quoteString(version));
-        System.out.print(',');
-        System.out.print("encoding="+quoteString(encoding));
-        System.out.print(',');
-        System.out.print("actualEncoding="+quoteString(actualEncoding));
-        System.out.print(',');
-        System.out.print("standalone="+quoteString(standalone));
-        System.out.println(')');
-    }
+        fOut.print("xmlDecl(");
+        fOut.print("version=");
+        printQuotedString(version);
+        fOut.print(',');
+        fOut.print("encoding=");
+        printQuotedString(encoding);
+        fOut.print(',');
+        fOut.print("actualEncoding=");
+        printQuotedString(actualEncoding);
+        fOut.print(',');
+        fOut.print("standalone=");
+        printQuotedString(standalone);
+        fOut.println(')');
 
-    public void doctypeDecl(String rootElement, String publicId, String systemId)
-        throws SAXException {
+    } // xmlDecl(String,String,String,String)
+
+    /** Doctype declaration. */
+    public void doctypeDecl(String rootElement, String publicId, 
+                            String systemId) throws SAXException {
+
         printIndent();
-        System.out.print("doctypeDecl(");
-        System.out.print("rootElement="+quoteString(rootElement));
-        System.out.print(',');
-        System.out.print("publicId="+quoteString(publicId));
-        System.out.print(',');
-        System.out.print("systemId="+quoteString(systemId));
-        System.out.println(')');
-    }
+        fOut.print("doctypeDecl(");
+        fOut.print("rootElement=");
+        printQuotedString(rootElement);
+        fOut.print(',');
+        fOut.print("publicId=");
+        printQuotedString(publicId);
+        fOut.print(',');
+        fOut.print("systemId=");
+        printQuotedString(systemId);
+        fOut.println(')');
+        fOut.flush();
 
+    } // doctypeDecl(String,String,String)
+
+    /** Start prefix mapping. */
     public void startPrefixMapping(String prefix, String uri)
         throws SAXException {
-        printIndent();
-        System.out.print("startPrefixMapping(");
-        System.out.print("prefix="+quoteString(prefix));
-        System.out.print(',');
-        System.out.print("uri="+quoteString(uri));
-        System.out.println(')');
-        fIndent++;
-    }
 
+        printIndent();
+        fOut.print("startPrefixMapping(");
+        fOut.print("prefix=");
+        printQuotedString(prefix);
+        fOut.print(',');
+        fOut.print("uri=");
+        printQuotedString(uri);
+        fOut.println(')');
+        fOut.flush();
+        fIndent++;
+
+    } // startPrefixMapping(String,String)
+
+    /** Start element. */
     public void startElement(QName element, XMLAttributes attributes)
         throws SAXException {
+
         printIndent();
-        System.out.print("startElement(");
-        System.out.print("element={"+element+'}');
-        System.out.print(',');
-        System.out.print("attributes=");
+        fOut.print("startElement(");
+        fOut.print("element=");
+        fOut.print('{');
+        fOut.print("prefix=");
+        printQuotedString(element.prefix);
+        fOut.print(',');
+        fOut.print("localpart=");
+        printQuotedString(element.localpart);
+        fOut.print(',');
+        fOut.print("rawname=");
+        printQuotedString(element.rawname);
+        fOut.print(',');
+        fOut.print("uri=");
+        printQuotedString(element.uri);
+        fOut.print('}');
+        fOut.print(',');
+        fOut.print("attributes=");
         if (attributes == null) {
-            System.out.println("null");
+            fOut.println("null");
         }
         else {
-            System.out.print('{');
+            fOut.print('{');
             int length = attributes.getLength();
             for (int i = 0; i < length; i++) {
-                attributes.getName(i, fQName);
                 if (i > 0) {
-                    System.out.print(',');
+                    fOut.print(',');
                 }
-                System.out.print('{');
-                System.out.print(fQName);
-                System.out.print("}=");
-                System.out.print(quoteString(attributes.getValue(i)));
+                attributes.getName(i, fQName);
+                String attrType = attributes.getType(i);
+                String attrValue = attributes.getValue(i);
+                fOut.print("name=");
+                fOut.print('{');
+                fOut.print("prefix=");
+                printQuotedString(fQName.prefix);
+                fOut.print(',');
+                fOut.print("localpart=");
+                printQuotedString(fQName.localpart);
+                fOut.print(',');
+                fOut.print("rawname=");
+                printQuotedString(fQName.rawname);
+                fOut.print(',');
+                fOut.print("uri=");
+                printQuotedString(fQName.uri);
+                fOut.print('}');
+                fOut.print(',');
+                fOut.print("type=");
+                printQuotedString(attrType);
+                fOut.print(',');
+                fOut.print("value=");
+                printQuotedString(attrValue);
                 int entityCount = attributes.getEntityCount(i);
                 for (int j = 0; j < entityCount; j++) {
-                    System.out.print(",[");
-                    System.out.print(quoteString(attributes.getEntityName(i, j)));
-                    System.out.print(',');
-                    System.out.print(attributes.getEntityOffset(i, j));
-                    System.out.print(',');
-                    System.out.print(attributes.getEntityLength(i, j));
-                    System.out.print(']');
+                    String entityName = attributes.getEntityName(i, j);
+                    int entityOffset = attributes.getEntityOffset(i, j);
+                    int entityLength = attributes.getEntityLength(i, j);
+                    fOut.print(',');
+                    fOut.print('[');
+                    fOut.print("name=");
+                    printQuotedString(entityName);
+                    fOut.print(',');
+                    fOut.print("offset=");
+                    fOut.print(entityOffset);
+                    fOut.print(',');
+                    fOut.print("length=");
+                    fOut.print(entityLength);
+                    fOut.print(']');
                 }
+                fOut.print('}');
             }
-            System.out.print('}');
+            fOut.print('}');
         }
-        System.out.println(')');
+        fOut.println(')');
+        fOut.flush();
         fIndent++;
-    }
 
+    } // startElement(QName,XMLAttributes)
+
+    /** Characters. */
     public void characters(XMLString text) throws SAXException {
-        printIndent();
-        System.out.print("characters(");
-        System.out.print("text="+quoteString(text.toString()));
-        System.out.println(')');
-    }
 
+        printIndent();
+        fOut.print("characters(");
+        fOut.print("text=");
+        printQuotedString(text.ch, text.offset, text.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // characters(XMLString)
+
+    /** Ignorable whitespace. */
     public void ignorableWhitespace(XMLString text) throws SAXException {
-        printIndent();
-        System.out.print("ignorableWhitespace(");
-        System.out.print("text="+quoteString(text.toString()));
-        System.out.println(')');
-    }
 
+        printIndent();
+        fOut.print("ignorableWhitespace(");
+        fOut.print("text=");
+        printQuotedString(text.ch, text.offset, text.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // ignorableWhitespace(XMLString)
+
+    /** End element. */
     public void endElement(QName element) throws SAXException {
+
         fIndent--;
         printIndent();
-        System.out.print("endElement(");
-        System.out.print("element={"+element);
-        System.out.println("})");
-    }
+        fOut.print("endElement(");
+        fOut.print("element=");
+        fOut.print('{');
+        fOut.print("prefix=");
+        printQuotedString(element.prefix);
+        fOut.print(',');
+        fOut.print("localpart=");
+        printQuotedString(element.localpart);
+        fOut.print(',');
+        fOut.print("rawname=");
+        printQuotedString(element.rawname);
+        fOut.print(',');
+        fOut.print("uri=");
+        printQuotedString(element.uri);
+        fOut.print('}');
+        fOut.println(')');
+        fOut.flush();
 
+    } // endElement(QName)
+
+    /** End prefix mapping. */
     public void endPrefixMapping(String prefix) throws SAXException {
+
         fIndent--;
         printIndent();
-        System.out.print("endPrefixMapping(");
-        System.out.print("prefix="+quoteString(prefix));
-        System.out.println(')');
-    }
+        fOut.print("endPrefixMapping(");
+        fOut.print("prefix=");
+        printQuotedString(prefix);
+        fOut.println(')');
+        fOut.flush();
 
+    } // endPrefixMapping(String)
+
+    /** Start CDATA section. */
     public void startCDATA() throws SAXException {
+
         printIndent();
-        System.out.println("startCDATA()");
+        fOut.println("startCDATA()");
+        fOut.flush();
         fIndent++;
-    }
 
+    } // startCDATA()
+
+    /** End CDATA section. */
     public void endCDATA() throws SAXException {
-        fIndent--;
-        printIndent();
-        System.out.println("endCDATA()");
-    }
 
-    public void endDocument() throws SAXException {
         fIndent--;
         printIndent();
-        System.out.println("endDocument()");
-    }
+        fOut.println("endCDATA()");
+        fOut.flush();
+
+    } //  endCDATA()
+
+    /** End document. */
+    public void endDocument() throws SAXException {
+
+        fIndent--;
+        printIndent();
+        fOut.println("endDocument()");
+        fOut.flush();
+
+    } // endDocument();
 
     //
     // XMLDocumentHandler and XMLDTDHandler methods
     //
 
+    /** Start entity. */
     public void startEntity(String name, String publicId, String systemId, 
                             String encoding) throws SAXException {
+
         printIndent();
-        System.out.print("startEntity(");
-        System.out.print("name="+quoteString(name));
-        System.out.print(',');
-        System.out.print("publicId="+quoteString(publicId));
-        System.out.print(',');
-        System.out.print("systemId="+quoteString(systemId));
-        System.out.print(',');
-        System.out.print("encoding="+quoteString(encoding));
-        System.out.println(')');
+        fOut.print("startEntity(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.print(',');
+        fOut.print("publicId=");
+        printQuotedString(publicId);
+        fOut.print(',');
+        fOut.print("systemId=");
+        printQuotedString(systemId);
+        fOut.print(',');
+        fOut.print("encoding=");
+        printQuotedString(encoding);
+        fOut.println(')');
+        fOut.flush();
         fIndent++;
-    }
 
+    } // startEntity(String,String,String,String)
+
+    /** Text declaration. */
     public void textDecl(String version, String encoding) throws SAXException {
-        printIndent();
-        System.out.print("textDecl(");
-        System.out.print("version="+quoteString(version));
-        System.out.print(',');
-        System.out.print("encoding="+quoteString(encoding));
-        System.out.println(')');
-    }
 
+        printIndent();
+        fOut.print("textDecl(");
+        fOut.print("version=");
+        printQuotedString(version);
+        fOut.print(',');
+        fOut.print("encoding=");
+        printQuotedString(encoding);
+        fOut.println(')');
+        fOut.flush();
+
+    } // textDecl(String,String)
+
+    /** Comment. */
     public void comment(XMLString text) throws SAXException {
-        printIndent();
-        System.out.print("comment(");
-        System.out.print("text="+quoteString(text.toString()));
-        System.out.println(')');
-    }
 
+        printIndent();
+        fOut.print("comment(");
+        fOut.print("text=");
+        printQuotedString(text.ch, text.offset, text.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // comment(XMLText)
+
+    /** Processing instruction. */
     public void processingInstruction(String target, XMLString data)
         throws SAXException {
-        printIndent();
-        System.out.print("processingInstruction(");
-        System.out.print("target="+quoteString(target));
-        System.out.print(',');
-        System.out.print("data="+quoteString(data.toString()));
-        System.out.println(')');
-    }
 
+        printIndent();
+        fOut.print("processingInstruction(");
+        fOut.print("target=");
+        printQuotedString(target);
+        fOut.print(',');
+        fOut.print("data=");
+        printQuotedString(data.ch, data.offset, data.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // processingInstruction(String,XMLString)
+
+    /** End entity. */
     public void endEntity(String name) throws SAXException {
+
         fIndent--;
         printIndent();
-        System.out.print("endEntity(");
-        System.out.print("name="+quoteString(name));
-        System.out.println(')');
-    }
+        fOut.print("endEntity(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.println(')');
+        fOut.flush();
+
+    } // endEntity(String)
 
     //
     // XMLDTDHandler methods
     //
 
+    /** Start DTD. */
     public void startDTD() throws SAXException {
-        printIndent();
-        System.out.println("startDTD()");
-        fIndent++;
-    } // startDTD
 
+        printIndent();
+        fOut.println("startDTD()");
+        fOut.flush();
+        fIndent++;
+
+    } // startDTD()
+
+    /** Element declaration. */
     public void elementDecl(String name, String contentModel)
         throws SAXException {
-        printIndent();
-        System.out.print("elementDecl(");
-        System.out.print("name="+quoteString(name));
-        System.out.print(',');
-        System.out.print("contentModel="+quoteString(contentModel));
-        System.out.println(')');
-    } // elementDecl
 
+        printIndent();
+        fOut.print("elementDecl(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.print(',');
+        fOut.print("contentModel=");
+        printQuotedString(contentModel);
+        fOut.println(')');
+        fOut.flush();
+
+    } // elementDecl(String,String)
+
+    /** Start attribute list. */
     public void startAttlist(String elementName) throws SAXException {
-        printIndent();
-        System.out.print("startAttlist(");
-        System.out.print("elementName="+quoteString(elementName));
-        System.out.println(')');
-        fIndent++;
-    } // startAttlist
 
+        printIndent();
+        fOut.print("startAttlist(");
+        fOut.print("elementName=");
+        printQuotedString(elementName);
+        fOut.println(')');
+        fOut.flush();
+        fIndent++;
+
+    } // startAttlist(String)
+
+    /** Attribute declaration. */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue)
         throws SAXException {
+
         printIndent();
-        System.out.print("attributeDecl(");
-        System.out.print("elementName="+quoteString(elementName));
-        System.out.print(',');
-        System.out.print("attributeName="+quoteString(attributeName));
-        System.out.print(',');
-        System.out.print("type="+quoteString(type));
-        System.out.print(',');
-        System.out.print("enumeration=");
+        fOut.print("attributeDecl(");
+        fOut.print("elementName=");
+        printQuotedString(elementName);
+        fOut.print(',');
+        fOut.print("attributeName=");
+        printQuotedString(attributeName);
+        fOut.print(',');
+        fOut.print("type=");
+        printQuotedString(type);
+        fOut.print(',');
+        fOut.print("enumeration=");
         if (enumeration == null) {
-            System.out.print("null");
+            fOut.print("null");
         }
         else {
-            System.out.print('{');
+            fOut.print('{');
             for (int i = 0; i < enumeration.length; i++) {
-                System.out.print(quoteString(enumeration[i]));
+                printQuotedString(enumeration[i]);
                 if (i < enumeration.length - 1) {
-                    System.out.print(',');
+                    fOut.print(',');
                 }
             }
-            System.out.print('}');
+            fOut.print('}');
         }
-        System.out.print(',');
-        System.out.print("defaultType="+quoteString(defaultType));
-        System.out.print(',');
-        System.out.print("defaultValue=");
+        fOut.print(',');
+        fOut.print("defaultType=");
+        printQuotedString(defaultType);
+        fOut.print(',');
+        fOut.print("defaultValue=");
         if (defaultValue == null) {
-            System.out.print("null");
+            fOut.print("null");
         }
         else {
-            System.out.print(quoteString(defaultValue.toString()));
+            printQuotedString(defaultValue.ch, defaultValue.offset,
+                              defaultValue.length);
         }
-        System.out.println(')');
-    } // attributeDecl
+        fOut.println(')');
+        fOut.flush();
 
+    } // attributeDecl(String,String,String,String[],String,XMLString)
+
+    /** End attribute list. */
     public void endAttlist() throws SAXException {
+
         fIndent--;
         printIndent();
-        System.out.println("endAttlist()");
-    } // endAttlist
+        fOut.println("endAttlist()");
+        fOut.flush();
 
+    } // endAttlist()
+
+    /** Internal entity declaration. */
     public void internalEntityDecl(String name, XMLString text)
         throws SAXException {
-        printIndent();
-        System.out.print("internalEntityDecl(");
-        System.out.print("name="+quoteString(name));
-        System.out.print(',');
-        System.out.print("text="+quoteString(text.toString()));
-        System.out.println(')');
-    } // internalEntityDecl
 
-    public void externalEntityDecl(String name, String publicId, String systemId)
+        printIndent();
+        fOut.print("internalEntityDecl(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.print(',');
+        fOut.print("text=");
+        printQuotedString(text.ch, text.offset, text.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // internalEntityDecl(String,XMLString)
+
+    /** External entity declaration. */
+    public void externalEntityDecl(String name, String publicId, 
+                                   String systemId) throws SAXException {
+
+        printIndent();
+        fOut.print("externalEntityDecl(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.print(',');
+        fOut.print("publicId=");
+        printQuotedString(publicId);
+        fOut.print(',');
+        fOut.print("systemId=");
+        printQuotedString(systemId);
+        fOut.println(')');
+        fOut.flush();
+
+    } // externalEntityDecl(String,String,String)
+
+    /** Unparsed entity declaration. */
+    public void unparsedEntityDecl(String name, String publicId, 
+                                   String systemId, String notation)
         throws SAXException {
-        printIndent();
-        System.out.print("externalEntityDecl(");
-        System.out.print("name="+quoteString(name));
-        System.out.print(',');
-        System.out.print("publicId="+quoteString(publicId));
-        System.out.print(',');
-        System.out.print("systemId="+quoteString(systemId));
-        System.out.println(')');
-    } // externalEntityDecl
 
-    public void unparsedEntityDecl(String name, String publicId, String systemId, String notation)
-        throws SAXException {
         printIndent();
-        System.out.print("externalEntityDecl(");
-        System.out.print("name="+quoteString(name));
-        System.out.print(',');
-        System.out.print("publicId="+quoteString(publicId));
-        System.out.print(',');
-        System.out.print("systemId="+quoteString(systemId));
-        System.out.print(',');
-        System.out.print("notation="+quoteString(notation));
-        System.out.println(')');
-    } // unparsedEntityDecl
+        fOut.print("externalEntityDecl(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.print(',');
+        fOut.print("publicId=");
+        printQuotedString(publicId);
+        fOut.print(',');
+        fOut.print("systemId=");
+        printQuotedString(systemId);
+        fOut.print(',');
+        fOut.print("notation=");
+        printQuotedString(notation);
+        fOut.println(')');
+        fOut.flush();
 
+    } // unparsedEntityDecl(String,String,String,String)
+
+    /** Notation declaration. */
     public void notationDecl(String name, String publicId, String systemId)
         throws SAXException {
-        printIndent();
-        System.out.print("notationDecl(");
-        System.out.print("name="+quoteString(name));
-        System.out.print(',');
-        System.out.print("publicId="+quoteString(publicId));
-        System.out.print(',');
-        System.out.print("systemId="+quoteString(systemId));
-        System.out.println(')');
-    } // notationDecl
 
-    public void startConditional(short type) throws SAXException {
         printIndent();
-        System.out.print("startConditional(");
-        System.out.print("type=");
+        fOut.print("notationDecl(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.print(',');
+        fOut.print("publicId=");
+        printQuotedString(publicId);
+        fOut.print(',');
+        fOut.print("systemId=");
+        printQuotedString(systemId);
+        fOut.println(')');
+        fOut.flush();
+
+    } // notationDecl(String,String,String)
+
+    /** Start conditional section. */
+    public void startConditional(short type) throws SAXException {
+
+        printIndent();
+        fOut.print("startConditional(");
+        fOut.print("type=");
         switch (type) {
             case XMLDTDHandler.CONDITIONAL_IGNORE: {
-                System.out.print("CONDITIONAL_IGNORE");
+                fOut.print("CONDITIONAL_IGNORE");
                 break;
             }
             case XMLDTDHandler.CONDITIONAL_INCLUDE: {
-                System.out.print("CONDITIONAL_INCLUDE");
+                fOut.print("CONDITIONAL_INCLUDE");
                 break;
             }
             default: {
-                System.out.print("??? ("+type+')');
+                fOut.print("??? ("+type+')');
             }
         }
-        System.out.println(')');
+        fOut.println(')');
+        fOut.flush();
         fIndent++;
-    } // startConditional
 
+    } // startConditional(short)
+
+    /** End conditional section. */
     public void endConditional() throws SAXException {
-        fIndent--;
-        printIndent();
-        System.out.println("endConditional()");
-    } // endConditional
 
-    public void endDTD() throws SAXException {
         fIndent--;
         printIndent();
-        System.out.println("endDTD()");
-    } // endDTD
+        fOut.println("endConditional()");
+        fOut.flush();
+
+    } // endConditional()
+
+    /** End DTD. */
+    public void endDTD() throws SAXException {
+
+        fIndent--;
+        printIndent();
+        fOut.println("endDTD()");
+        fOut.flush();
+
+    } // endDTD()
 
     //
     // XMLDTDContentModelHandler methods
     //
 
+    /** Start content model. */
     public void startContentModel(String elementName, short type)
         throws SAXException {
+
         printIndent();
-        System.out.print("startContentModel(");
-        System.out.print("elementName="+quoteString(elementName));
-        System.out.print(',');
-        System.out.print("type=");
+        fOut.print("startContentModel(");
+        fOut.print("elementName=");
+        printQuotedString(elementName);
+        fOut.print(',');
+        fOut.print("type=");
         switch (type) {
             case XMLDTDContentModelHandler.TYPE_ANY: {
-                System.out.print("TYPE_ANY");
+                fOut.print("TYPE_ANY");
                 break;
             }
             case XMLDTDContentModelHandler.TYPE_EMPTY: {
-                System.out.print("TYPE_EMPTY");
+                fOut.print("TYPE_EMPTY");
                 break;
             }
             case XMLDTDContentModelHandler.TYPE_MIXED: {
-                System.out.print("TYPE_MIXED");
+                fOut.print("TYPE_MIXED");
                 break;
             }
             case XMLDTDContentModelHandler.TYPE_CHILDREN: {
-                System.out.print("TYPE_CHILDREN");
+                fOut.print("TYPE_CHILDREN");
                 break;
             }
             default: {
-                System.out.print("??? ("+type+')');
+                fOut.print("??? ("+type+')');
             }
         }
-        System.out.println(')');
+        fOut.println(')');
+        fOut.flush();
         fIndent++;
-    } // startContentModel
 
+    } // startContentModel(String,short)
+
+    /** Mixed element. */
     public void mixedElement(String elementName) throws SAXException {
-        printIndent();
-        System.out.print("mixedElement(");
-        System.out.print("elementName="+quoteString(elementName));
-        System.out.println(')');
-    } // mixedElement
 
+        printIndent();
+        fOut.print("mixedElement(");
+        fOut.print("elementName=");
+        printQuotedString(elementName);
+        fOut.println(')');
+        fOut.flush();
+
+    } // mixedElement(String)
+
+    /** Children start group. */
     public void childrenStartGroup() throws SAXException {
+
         printIndent();
-        System.out.println("childrenStartGroup()");
+        fOut.println("childrenStartGroup()");
+        fOut.flush();
         fIndent++;
-    } // childrenStartGroup
 
+    } // childrenStartGroup()
+
+    /** Children element. */
     public void childrenElement(String elementName) throws SAXException {
-        printIndent();
-        System.out.print("childrenElement(");
-        System.out.print("elementName="+quoteString(elementName));
-        System.out.println(')');
-    } // childrenElement
 
-    public void childrenSeparator(short separator) throws SAXException {
         printIndent();
-        System.out.print("childrenSeparator(");
-        System.out.print("separator=");
+        fOut.print("childrenElement(");
+        fOut.print("elementName=");
+        printQuotedString(elementName);
+        fOut.println(')');
+        fOut.flush();
+
+    } // childrenElement(String)
+
+    /** Children separator. */
+    public void childrenSeparator(short separator) throws SAXException {
+
+        printIndent();
+        fOut.print("childrenSeparator(");
+        fOut.print("separator=");
         switch (separator) {
             case XMLDTDContentModelHandler.SEPARATOR_CHOICE: {
-                System.out.print("SEPARATOR_CHOICE");
+                fOut.print("SEPARATOR_CHOICE");
                 break;
             }
             case XMLDTDContentModelHandler.SEPARATOR_SEQUENCE: {
-                System.out.print("SEPARATOR_SEQUENCE");
+                fOut.print("SEPARATOR_SEQUENCE");
                 break;
             }
             default: {
-                System.out.print("??? ("+separator+')');
+                fOut.print("??? ("+separator+')');
             }
         }
-        System.out.println(')');
-    } // childrenSeparator
+        fOut.println(')');
+        fOut.flush();
 
+    } // childrenSeparator(short)
+
+    /** Children occurrence. */
     public void childrenOccurrence(short occurrence) throws SAXException {
+
         printIndent();
-        System.out.print("childrenOccurrence(");
-        System.out.print("occurrence=");
+        fOut.print("childrenOccurrence(");
+        fOut.print("occurrence=");
         switch (occurrence) {
             case XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE: {
-                System.out.print("OCCURS_ONE_OR_MORE");
+                fOut.print("OCCURS_ONE_OR_MORE");
                 break;
             }
             case XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE: {
-                System.out.print("OCCURS_ZERO_OR_MORE");
+                fOut.print("OCCURS_ZERO_OR_MORE");
                 break;
             }
             case XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE: {
-                System.out.print("OCCURS_ZERO_OR_ONE");
+                fOut.print("OCCURS_ZERO_OR_ONE");
                 break;
             }
             default: {
-                System.out.print("??? ("+occurrence+')');
+                fOut.print("??? ("+occurrence+')');
             }
         }
-        System.out.println(')');
-    } // childrenOccurrence
+        fOut.println(')');
+        fOut.flush();
 
+    } // childrenOccurrence(short)
+
+    /** Children end group. */
     public void childrenEndGroup() throws SAXException {
-        fIndent--;
-        printIndent();
-        System.out.println("childrenEndGroup()");
-    } // childrenEndGroup
 
-    public void endContentModel() throws SAXException {
         fIndent--;
         printIndent();
-        System.out.println("endContentModel()");
-    } // endContentModel
+        fOut.println("childrenEndGroup()");
+        fOut.flush();
+
+    } // childrenEndGroup()
+
+    /** End content model. */
+    public void endContentModel() throws SAXException {
+
+        fIndent--;
+        printIndent();
+        fOut.println("endContentModel()");
+        fOut.flush();
+
+    } // endContentModel()
 
     //
     // ErrorHandler methods
     //
 
     /** Warning. */
-    public void warning(SAXParseException ex) {
-        System.err.println("[Warning] "+
-                           getLocationString(ex)+": "+
-                           ex.getMessage());
-    }
+    public void warning(SAXParseException ex) throws SAXException {
+        printError("Warning", ex);
+    } // warning(SAXParseException)
 
     /** Error. */
-    public void error(SAXParseException ex) {
-        System.err.println("[Error] "+
-                           getLocationString(ex)+": "+
-                           ex.getMessage());
-    }
+    public void error(SAXParseException ex) throws SAXException {
+        printError("Error", ex);
+    } // error(SAXParseException)
 
     /** Fatal error. */
     public void fatalError(SAXParseException ex) throws SAXException {
-        System.err.println("[Fatal Error] "+
-                           getLocationString(ex)+": "+
-                           ex.getMessage());
+        printError("Fatal Error", ex);
         throw ex;
-    }
+    } // fatalError(SAXParseException)
 
     //
-    // Static methods
+    // Protected methods
     //
 
-    public static String quoteString(String s) {
+    /** Print quoted string. */
+    protected void printQuotedString(String s) {
+
         if (s == null) {
-            return "null";
+            fOut.print("null");
+            return;
         }
-        StringBuffer str = new StringBuffer();
-        str.append('"');
+
+        fOut.print('"');
         int length = s.length();
         for (int i = 0; i < length; i++) {
             char c = s.charAt(i);
-            switch (c) {
-                case '\n': {
-                    str.append("\\n");
-                    break;
-                }
-                case '\r': {
-                    str.append("\\r");
-                    break;
-                }
-                case '\t': {
-                    str.append("\\t");
-                    break;
-                }
-                case '\\': {
-                    str.append("\\\\");
-                    break;
-                }
-                case '"': {
-                    str.append("\\\"");
-                    break;
-                }
-                default: {
-                    str.append(c);
-                }
+            normalizeAndPrint(c);
+        }
+        fOut.print('"');
+
+    } // printQuotedString(String)
+
+    /** Print quoted string. */
+    protected void printQuotedString(char[] ch, int offset, int length) {
+
+        fOut.print('"');
+        for (int i = 0; i < length; i++) {
+            normalizeAndPrint(ch[offset + i]);
+        }
+        fOut.print('"');
+
+    } // printQuotedString(char[],int,int)
+
+    /** Normalize and print. */
+    protected void normalizeAndPrint(char c) {
+
+        switch (c) {
+            case '\n': {
+                fOut.print("\\n");
+                break;
+            }
+            case '\r': {
+                fOut.print("\\r");
+                break;
+            }
+            case '\t': {
+                fOut.print("\\t");
+                break;
+            }
+            case '\\': {
+                fOut.print("\\\\");
+                break;
+            }
+            case '"': {
+                fOut.print("\\\"");
+                break;
+            }
+            default: {
+                fOut.print(c);
             }
         }
-        str.append('"');
-        return str.toString();
-    }
 
-    //
-    // Private methods
-    //
+    } // normalizeAndPrint(char)
 
-    /** Prints the indent. */
-    private void printIndent() {
-        for (int i = 0; i < fIndent; i++) {
-            System.out.print(' ');
-        }
-    }
+    /** Prints the error message. */
+    protected void printError(String type, SAXParseException ex) {
 
-    /** Returns a string of the location. */
-    private String getLocationString(SAXParseException ex) {
-        StringBuffer str = new StringBuffer();
-
+        System.err.print("[");
+        System.err.print(type);
+        System.err.print("] ");
         String systemId = ex.getSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
-            if (index != -1) 
+            if (index != -1)
                 systemId = systemId.substring(index + 1);
-            str.append(systemId);
+            System.err.print(systemId);
         }
-        str.append(':');
-        str.append(ex.getLineNumber());
-        str.append(':');
-        str.append(ex.getColumnNumber());
+        System.err.print(':');
+        System.err.print(ex.getLineNumber());
+        System.err.print(':');
+        System.err.print(ex.getColumnNumber());
+        System.err.print(": ");
+        System.err.print(ex.getMessage());
+        System.err.println();
+        System.err.flush();
 
-        return str.toString();
+    } // printError(String,SAXParseException)
 
-    } // getLocationString(SAXParseException):String
+    /** Prints the indent. */
+    protected void printIndent() {
+
+        for (int i = 0; i < fIndent; i++) {
+            fOut.print(' ');
+        }
+
+    } // printIndent()
 
     //
     // MAIN
@@ -673,30 +985,104 @@ public class DocumentTracer
 
     /** Main. */
     public static void main(String[] argv) throws Exception {
+        
+        // is there anything to do?
+        if (argv.length == 0) {
+            printUsage();
+            System.exit(1);
+        }
+
+        // variables
         XMLDocumentParser parser = new DocumentTracer();
+        boolean namespaces = DEFAULT_NAMESPACES;
+        boolean validation = DEFAULT_VALIDATION;
+        boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        
+        // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
-            System.err.println("# argv["+i+"]: "+arg);
-            //print(arg);
+            if (arg.startsWith("-")) {
+                String option = arg.substring(1);
+                if (option.equalsIgnoreCase("n")) {
+                    namespaces = option.equals("n");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("v")) {
+                    validation = option.equals("v");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("s")) {
+                    schemaValidation = option.equals("s");
+                    continue;
+                }
+                if (option.equals("h")) {
+                    printUsage();
+                    continue;
+                }
+            }
+
+            // set parser features
+            try {
+                parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(VALIDATION_FEATURE_ID, validation);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+VALIDATION_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
+            }
+            catch (SAXNotRecognizedException e) {
+                // ignore
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+            }
+    
+            // parse file
             try {
                 parser.parse(arg);
             }
-            catch (SAXException e) {
-                Exception ex = e.getException();
-                throw ex != null ? ex : e;
+            catch (SAXParseException e) {
+                // ignore
+            }
+            catch (Exception e) {
+                System.err.println("error: Parse error occurred - "+e.getMessage());
             }
         }
+
     } // main(String[])
 
-    /** Prints the file. */
-    private static void print(String filename) throws IOException {
-        InputStream in = new FileInputStream(filename);
-        int c = -1;
-        while ((c = in.read()) != -1) {
-            System.out.print((char)c);
-        }
-        System.out.println();
-        in.close();
-    } // print(String)
+    //
+    // Private static methods
+    //
+
+    /** Prints the usage. */
+    private static void printUsage() {
+
+        System.err.println("usage: java xni.DocumentTracer (options) uri ...");
+        System.err.println();
+        
+        System.err.println("options:");
+        System.err.println("  -n | -N  Turn on/off namespace processing.");
+        System.err.println("  -v | -V  Turn on/off validation.");
+        System.err.println("  -s | -S  Turn on/off Schema validation support.");
+        System.err.println("  -h       This help screen.");
+        System.err.println();
+
+        System.err.println("defaults:");
+        System.out.print("  Namespaces: ");
+        System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
+        System.out.print("  Validation: ");
+        System.err.println(DEFAULT_VALIDATION ? "on" : "off");
+        System.out.print("  Schema:     ");
+        System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+
+    } // printUsage()
 
 } // class DocumentTracer

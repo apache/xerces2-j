@@ -65,6 +65,7 @@ import java.io.UnsupportedEncodingException;
 import sax.helpers.AttributesImpl;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -72,6 +73,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.ParserAdapter;
+import org.xml.sax.helpers.ParserFactory;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
@@ -465,8 +468,15 @@ public class Writer
                         parser = XMLReaderFactory.createXMLReader(parserName);
                     }
                     catch (Exception e) {
-                        parser = null;
-                        System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");
+                        try {
+                            Parser sax1Parser = ParserFactory.makeParser(parserName);
+                            parser = new ParserAdapter(sax1Parser);
+                            System.err.println("warning: Features and properties not supported on SAX1 parsers.");
+                        }
+                        catch (Exception ex) {
+                            parser = null;
+                            System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");
+                        }
                     }
                     continue;
                 }
