@@ -123,7 +123,7 @@ implements XMLContentSpec.Provider {
     private int fAttributeDeclCount;
     private QName fAttributeDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
     private int   fAttributeDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
-    private String   fAttributeDeclDefaultType[][] = new String[INITIAL_CHUNK_COUNT][];
+    private int   fAttributeDeclDefaultType[][] = new int[INITIAL_CHUNK_COUNT][];
     private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
     private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
     private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
@@ -367,8 +367,8 @@ implements XMLContentSpec.Provider {
         ensureAttributeDeclCapacity(chunk);
         fAttributeDeclName[chunk][index]                    = new QName();
         fAttributeDeclType[chunk][index]                    = -1;
-        fAttributeDeclDefaultType[chunk][index]             = null; 
         fAttributeDeclDatatypeValidator[chunk][index]       = null;
+        fAttributeDeclDefaultType[chunk][index] = XMLAttributeDecl.DEFAULT_TYPE_NOTHING;
         fAttributeDeclDefaultValue[chunk][index]            = null;
         fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
         return fAttributeDeclCount++;
@@ -704,7 +704,7 @@ implements XMLContentSpec.Provider {
         }
         fAttributeDeclName[chunk] = new QName[CHUNK_SIZE];
         fAttributeDeclType[chunk] = new int[CHUNK_SIZE];
-        fAttributeDeclDefaultType[chunk] = new String[CHUNK_SIZE];
+        fAttributeDeclDefaultType[chunk] = new int[CHUNK_SIZE];
         fAttributeDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
         fAttributeDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
         fAttributeDeclNextAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
