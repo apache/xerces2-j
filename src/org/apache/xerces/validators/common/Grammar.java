@@ -341,18 +341,60 @@ implements XMLContentSpec.Provider {
             return fElementDeclNameIndex[chunk][0] == 0;
         } catch (ArrayIndexOutOfBoundsException ex) {
             fElementDeclNameIndex = resize(fElementDeclNameIndex, fElementDeclNameIndex.length * 2);
+            fElementDeclType = resize(fElementDeclType, fElementDeclType.length * 2);
+            fElementDeclDatatypeValidator = resize(fElementDeclDatatypeValidator, fElementDeclDatatypeValidator.length * 2);
+            fElementDeclContentSpecIndex = resize(fElementDeclContentSpecIndex, fElementDeclContentSpecIndex.length * 2);
+            fElementDeclContentModelValidator = resize(fElementDeclContentModelValidator, fElementDeclContentModelValidator.length * 2);
+            fElementDeclFirstAttributeDeclIndex = resize(fElementDeclNameIndex, fElementDeclFirstAttributeDeclIndex.length * 2);
+            fElementDeclLastAttributeDeclIndex = resize(fElementDeclLastAttributeDeclIndex, fElementDeclNameIndex.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
         fElementDeclNameIndex[chunk] = new int[CHUNK_SIZE];
+        fElementDeclType[chunk] = new int[CHUNK_SIZE];
+        fElementDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
+        fElementDeclContentSpecIndex[chunk] = new int[CHUNK_SIZE];
+        fElementDeclContentModelValidator[chunk] = new XMLContentModel[CHUNK_SIZE];
+        fElementDeclFirstAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
+        fElementDeclLastAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
         return true;
     }
 
     private boolean ensureContentSpecCapacity(int chunk) {
+        try {
+            return fContentSpecType[chunk][0] == 0;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fContentSpecType = resize(fContentSpecType, fContentSpecType.length * 2);
+            fContentSpecValue = resize(fContentSpecValue, fContentSpecValue.length * 2);
+            fContentSpecOtherValue = resize(fContentSpecOtherValue, fContentSpecOtherValue.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+        fContentSpecType[chunk] = new int[CHUNK_SIZE];
+        fContentSpecValue[chunk] = new int[CHUNK_SIZE];
+        fContentSpecOtherValue[chunk] = new int[CHUNK_SIZE];
         return true;
     }
 
     private boolean ensureAttributeDeclCapacity(int chunk) {
+        try {
+            return fAttributeDeclName[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fAttributeDeclName = resize(fAttributeDeclName, fAttributeDeclName.length * 2);
+            fAttributeDeclType = resize(fAttributeDeclType, fAttributeDeclType.length * 2);
+            fAttributeDeclDefaultType = resize(fAttributeDeclDefaultType, fAttributeDeclDefaultType.length * 2);
+            fAttributeDeclDatatypeValidator = resize(fAttributeDeclDatatypeValidator, fAttributeDeclDatatypeValidator.length * 2);
+            fAttributeDeclDefaultValue = resize(fAttributeDeclDefaultValue, fAttributeDeclDefaultValue.length * 2);
+            fAttributeDeclNextAttributeDeclIndex = resize(fAttributeDeclNextAttributeDeclIndex, fAttributeDeclNextAttributeDeclIndex.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+        fAttributeDeclName[chunk] = new QName[CHUNK_SIZE];
+        fAttributeDeclType[chunk] = new int[CHUNK_SIZE];
+        fAttributeDeclDefaultType[chunk] = new String[CHUNK_SIZE];
+        fAttributeDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
+        fAttributeDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
+        fAttributeDeclNextAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
         return true;
     }
 
@@ -365,23 +407,27 @@ implements XMLContentSpec.Provider {
     }
 
     private DatatypeValidator[][] resize(DatatypeValidator array[][], int newsize) {
-        // TODO
-        return array;
+        DatatypeValidator newarray[][] = new DatatypeValidator[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
     }
 
     private XMLContentModel[][] resize(XMLContentModel array[][], int newsize) {
-        // TODO
-        return array;
+        XMLContentModel newarray[][] = new XMLContentModel[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
     }
 
     private QName[][] resize(QName array[][], int newsize) {
-        // TODO
-        return array;
+        QName newarray[][] = new QName[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
     }
 
     private String[][] resize(String array[][], int newsize) {
-        // TODO
-        return array;
+        String newarray[][] = new String[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
     }
 
 } // class Grammar
