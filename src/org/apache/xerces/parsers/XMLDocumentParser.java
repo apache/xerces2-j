@@ -59,6 +59,7 @@ package org.apache.xerces.parsers;
 
 import java.io.IOException;
 import org.apache.xerces.framework.XMLString;
+import org.apache.xerces.readers.XMLEntityManager;
 import org.apache.xerces.scanners.XMLAttributes;
 import org.apache.xerces.scanners.XMLDTDScanner;
 import org.apache.xerces.scanners.XMLDocumentHandler;
@@ -85,6 +86,9 @@ public abstract class XMLDocumentParser
     //
     // Data
     //
+
+    /** Entity manager. */
+    protected XMLEntityManager fEntityManager;
 
     /** fScanner */
     protected XMLDocumentScanner fScanner;
@@ -140,6 +144,9 @@ public abstract class XMLDocumentParser
         fGrammarPool = grammarPool;
         fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/grammar-pool",
                         fGrammarPool);
+        fEntityManager = new XMLEntityManager();
+        fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/entity-manager",
+                        fEntityManager);
         fScanner = new XMLDocumentScanner();
         fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/document-scanner",
                         fScanner);
@@ -410,6 +417,7 @@ public abstract class XMLDocumentParser
 
         super.reset();
         // reset every component
+        fEntityManager.reset(this);
         fScanner.reset(this);
         // fDTDScanner.reset(this);
         // fValidator.reset(this);
