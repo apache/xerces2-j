@@ -591,37 +591,7 @@ public class DeferredDocumentImpl
         int chunk = childIndex >> CHUNK_SHIFT;
         int index = childIndex & CHUNK_MASK;
         setChunkIndex(fNodeLastChild, childIndex, pchunk, pindex);
-
-        int prev = childIndex;
-        while (prev != -1) {
-            childIndex = prev;
-            prev = getChunkIndex(fNodePrevSib, chunk, index);
-            chunk = prev >> CHUNK_SHIFT;
-            index = prev & CHUNK_MASK;
-        }
-
     } // setAsLastChild(int,int)
-
-    /** Sets the first child of the parentIndex to childIndex. */
-    public void setAsFirstChild(int parentIndex, int childIndex) {
-        /*
-        int pchunk = parentIndex >> CHUNK_SHIFT;
-        int pindex = parentIndex & CHUNK_MASK;
-        int chunk = childIndex >> CHUNK_SHIFT;
-        int index = childIndex & CHUNK_MASK;
-        setChunkIndex(fNodeLastChild, childIndex, pchunk, pindex);
-
-        int prev = childIndex;
-        while (prev != -1) {
-            childIndex = prev;
-            prev = getChunkIndex(fNodePrevSib, chunk, index);
-            chunk = prev >> CHUNK_SHIFT;
-            index = prev & CHUNK_MASK;
-        }
-        */
-    } // setAsLastChild(int,int)
-
-    // methods used when objects are "fluffed-up"
 
     /** 
      * Returns the parent node of the given node. 
@@ -728,39 +698,6 @@ public class DeferredDocumentImpl
                     : getChunkIndex(fNodePrevSib, chunk, index);
 
     } // getReadPrevSibling(int,boolean):int
-
-    /** 
-     * Returns the first child of the given node at an EXTREME PRICE!!
-     * @param free True to free child index.
-     */
-    public int getFirstChild(int nodeIndex, boolean free) {
-        if (nodeIndex == -1) {
-            return -1;
-        }
-        int index = getLastChild(nodeIndex, false);
-        while (index != -1) {
-            index = getPrevSibling(index, false);
-        }
-        return index;
-    } // getLastChild(int,boolean):int
-
-    /** 
-     * Returns the next sibling of the given node at an EXTREME PRICE!!
-     * @param free True to free child index.
-     */
-    public int getNextSibling(int nodeIndex, boolean free) {
-        if (nodeIndex == -1) {
-            return -1;
-        }
-        int pindex = getParentNode(nodeIndex, false);
-        int index = getLastChild(pindex, false);
-        int next = -1;
-        while (index != nodeIndex && index != -1) {
-            next = index;
-            index = getPrevSibling(next, false);
-        }
-        return next;
-    } // getNextSibling(int,boolean):int
 
     /**
      * Returns the index of the element definition in the table
