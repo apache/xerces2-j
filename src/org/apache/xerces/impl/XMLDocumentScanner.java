@@ -196,6 +196,9 @@ public class XMLDocumentScanner
     /** Entity stack. */
     protected Stack fEntityStack = new Stack();
 
+    /** Entity depth. */
+    protected int fEntityDepth;
+
     /** Scanner state. */
     protected int fScannerState;
 
@@ -367,6 +370,7 @@ public class XMLDocumentScanner
 
         // initialize vars
         fEntityStack.removeAllElements();
+        fEntityDepth = 0;
         fNamespaceSupport.reset();
 
         fElementDepth = 0;
@@ -470,6 +474,7 @@ public class XMLDocumentScanner
         // keep track of this entity
         Entity entity = new Entity(name, publicId, systemId, fElementDepth);
         fEntityStack.push(entity);
+        fEntityDepth++;
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
@@ -511,6 +516,7 @@ public class XMLDocumentScanner
         // sanity check
         // REVISIT: Shouldn't the entity manager perform this sanity
         //          check? -Ac
+        fEntityDepth--;
         Entity entity = (Entity)fEntityStack.pop();
         if (!name.equals(entity.name)) {
             // REVISIT: report error
@@ -996,6 +1002,7 @@ public class XMLDocumentScanner
                 System.out.println("*** set attribute offset: "+fAttributeOffset);
             }
             fStringBuffer.clear();
+            int entityDepth = fEntityStack.size();
             do {
                 //System.out.println(">>> appending \""+fString.toString()+'"');
                 fStringBuffer.append(fString);
@@ -1068,12 +1075,14 @@ public class XMLDocumentScanner
                             int ndepth = fEntityStack.size();
                             // if we actually got a new entity and it's external
                             // parse text decl if there is any
-                            if (odepth != ndepth && fEntityScanner.isExternal()) {
-                                if (DEBUG_ATTR_ENTITIES) {
-                                    System.out.println("*** scanning TextDecl");
-                                }
-                                if (fEntityScanner.skipString("<?xml")) {
-                                    scanXMLDeclOrTextDecl(true);
+                            if (odepth != ndepth) {
+                                if (fEntityScanner.isExternal()) {
+                                    if (DEBUG_ATTR_ENTITIES) {
+                                        System.out.println("*** scanning TextDecl");
+                                    }
+                                    if (fEntityScanner.skipString("<?xml")) {
+                                        scanXMLDeclOrTextDecl(true);
+                                    }
                                 }
                             }
                         }
@@ -1082,9 +1091,17 @@ public class XMLDocumentScanner
                 else if (c == '<') {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "LessthanInAttValue",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                               new Object[] { null, fAttributeQName.rawname }, 
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
-                c = fEntityScanner.scanLiteral(quote, fString);
+                while (true) {
+                    c = fEntityScanner.scanLiteral(quote, fString);
+                    if (c != quote || entityDepth == fEntityDepth) {
+                        break;
+                    }
+                    fStringBuffer.append(fString);
+                    fStringBuffer.append((char)fEntityScanner.scanChar());
+                }
             } while (c != quote);
             fAttributeOffset += fString.length;
             fStringBuffer.append(fString);
@@ -2214,41 +2231,37 @@ public class XMLDocumentScanner
 
             try {
                 do {
-    
-                    if (fEntityScanner.skipChar('<')) {
-                        setScannerState(SCANNER_STATE_START_OF_MARKUP);
-                        if (fEntityScanner.skipChar('?')) {
-                            scanPI();
-                        }
-                        else if ( fEntityScanner.skipChar('!')) {
-                            scanComment();
-                        }
-                        setScannerState(SCANNER_STATE_TRAILING_MISC);
+                    if (fScannerState == SCANNER_STATE_TERMINATED) {
+                        break;
                     }
-                    else if ( fEntityScanner.skipSpaces() ) {
-                        // do nothing
-                    }
-                    else {
-                        int ch = fEntityScanner.peekChar();
-    
-                        if (XMLChar.isInvalid(ch)) {
+                    if (fScannerState == SCANNER_STATE_TRAILING_MISC) {
+                        fEntityScanner.skipSpaces();
+                        if (fEntityScanner.skipChar('<')) {
+                            if (fEntityScanner.skipChar('?')) {
+                                scanPI();
+                            }
+                            else if ( fEntityScanner.skipChar('!')) {
+                                scanComment();
+                            }
+                        }
+                        else {
+                            int ch = fEntityScanner.peekChar();
                             if (ch == -1 ) {
                                 setScannerState(SCANNER_STATE_TERMINATED);
                                 return false;
                             }
+                            else if (XMLChar.isInvalid(ch)) {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MarkupNotRecognizedInMisc",
+                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            }
                             else {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "InvalidCharInMisc",
-                                                           new Object[] {Integer.toString(ch, 16)},
-                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                                setScannerState(SCANNER_STATE_TERMINATED);
-                                return false;
+                                // REVISIT: Should never get here!
                             }
                         }
-                        else {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MarkupNotRecognizedInMisc",
-                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
+                    }
+                    else {
+                        // REVISIT: Should never get here!
                     }
     
                 } while ( complete );
