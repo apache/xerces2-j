@@ -215,12 +215,11 @@ public class XMLCatalogResolver
     }
     
     /**
-     * <p>Returns the preference for whether the parser (or 
-     * another application) should use the literal system 
-     * identifier when resolving system identifiers when both it
-     * and the expanded system identifier are available. If this
-     * property has not yet been explicitly set its value is
-     * <code>true</code>.</p>
+     * <p>Returns the preference for whether the literal system 
+     * identifier should be used when resolving system 
+     * identifiers when both it and the expanded system 
+     * identifier are available. If this property has not yet 
+     * been explicitly set its value is <code>true</code>.</p>
      * 
      * @return the preference for using literal system identifers
      * for catalog resolution
