@@ -87,7 +87,10 @@ public abstract class CharacterDataImpl
     //
 
     /** Empty child nodes. */
-    private static transient NodeList singletonNodeList;
+    private static transient NodeList singletonNodeList = new NodeList() {
+        public Node item(int index) { return null; }
+        public int getLength() { return 0; }
+    };
 
     //
     // Constructors
@@ -107,14 +110,6 @@ public abstract class CharacterDataImpl
 
     /** Returns an empty node list. */
     public NodeList getChildNodes() {
-
-        if (singletonNodeList == null) {
-            singletonNodeList = new NodeList() {
-                public Node item(int index) { return null; }
-                public int getLength() { return 0; }
-            };
-        }
-
         return singletonNodeList;
     }
 
