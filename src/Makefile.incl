@@ -18,7 +18,7 @@ STYLEBOOK_CLPATH = $(TOP)/tools/xalan.jar$(CLPATHSEP)$(TOP)/tools/xerces.jar$(CL
 SB_CLPATH = $(STYLEBOOK_CLPATH)$(CLPATHSEP)$(CLASSPATH)
 
 JAR = jar
-JAVAC = javac
+JAVAC = javac -g 
 ifeq ($(JDK12BIN),)
 JAVA12 = java
 JAVADOC12 = javadoc

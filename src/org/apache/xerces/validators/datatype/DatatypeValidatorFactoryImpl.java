@@ -64,46 +64,106 @@ import org.apache.xerces.validators.datatype.DatatypeValidatorFactory;
 import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 
-
-
 /**
- * @version $Id$
- * @author  Jeffrey Rodriguez
+ * This class implements a factory of Datatype Validators. Internally the
+ * DatatypeValidators are kept in a registry.<BR>
+ * There is one instance of DatatypeValidatorFactoryImpl per Parser.<BR>
+ * There is one datatype Registry per instance of DatatypeValidatorFactoryImpl,
+ * such registry is first allocated with the number DatatypeValidators needed.<BR>
+ * e.g.
+ * If Parser finds an XML document with a DTD, a registry of DTD validators (only
+ * 9 validators) get initialized in the registry.
+ * The initialization process consist of instantiating the Datatype and
+ * facets and registering the Datatype into registry table.
+ * This implementatio uses a Hahtable as a registry table but future implementation
+ * should use a lighter object, maybe a Map class ( not use a derived Map class
+ * because of JDK 1.1.8 no supporting Map).<BR>
+ * <BR>
+ * As the Parser parses an instance document it knows if validation needs
+ * to be checked. If no validation is necesary we should not instantiate a
+ * DatatypeValidatorFactoryImpl.<BR>
+ * If validation is needed, we need to instantiate a DatatypeValidatorFactoryImpl.<BR>
+ * 
+ * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
+ * @version $Id$
  */
-
 public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
-    private static final boolean fDebug = false;
+    private static final boolean fDebug = true;
     private Hashtable fRegistry;
-    private int setInitialized;
-
-    public static final int FULLSCHEMASET = 1;
-    public static final int PARTIALDTDATTRIBUTESET = 2;
-
+    private boolean   fRegistryExpanded = false;
 
 
     public DatatypeValidatorFactoryImpl() {
-        //initializeRegistry();
     }
 
     /**
      * Initializes registry with primitive and derived
      * Simple types.
+     * 
+     * This method does not clear the registry to clear
+     * the registry you have to call resetRegistry.
+     * 
+     * The net effect of this method is to start with
+     * a the smallest set of datatypes needed by the
+     * validator.
+     * 
+     * If we start with DTD's then we initialize the
+     * table to only the 9 validators needed by DTD Validation.
+     * 
+     * If we start with Schema's then we initialize to
+     * to full set of validators.
+     * 
+     * @param registrySet
      */
-    public void initializeRegistry( int registrySet  ) {
-        DatatypeValidator  v = null;
-        setInitialized = registrySet;
+    public void initializeDTDRegistry() {
 
         if (fRegistry == null) {
             fRegistry = new Hashtable();
+            fRegistryExpanded = false;
+        }
+
+        //Register Primitive Datatypes
+
+        if (fRegistryExpanded == false) { //Core datatypes shared by DTD attributes and Schema
+
+            try {
+                fRegistry.put("string",            new StringDatatypeValidator() );
+                fRegistry.put("ID",                new IDDatatypeValidator());
+                fRegistry.put("IDREF",             new IDREFDatatypeValidator());
+                fRegistry.put("ENTITY",            new ENTITYDatatypeValidator());
+                fRegistry.put("NOTATION",          new NOTATIONDatatypeValidator());
+
+                createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
+
+                createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
+
+                Hashtable facets = new Hashtable();
+                facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
+                createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
+
+                createDatatypeValidator("NMTOKENS",  
+                                        getDatatypeValidator( "NMTOKEN" ), null, true );
+
+            } catch (InvalidDatatypeFacetException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+
+    public void expandRegistryToFullSchemaSet() {
+
+        if (fRegistry == null) {
+            fRegistry = new Hashtable(); // if it is null
+            fRegistryExpanded = false;
         }
         //Register Primitive Datatypes 
-
-        try {
-            if (registrySet == FULLSCHEMASET) {
-
-                fRegistry.put("string",            new StringDatatypeValidator() );
+        if (fRegistryExpanded == false) {
+            DatatypeValidator v;
+            try {
+                //fRegistry.put("string",            new StringDatatypeValidator() );
                 fRegistry.put("boolean",           new BooleanDatatypeValidator()  );
                 fRegistry.put("float",             new FloatDatatypeValidator());
                 fRegistry.put("double",            new DoubleDatatypeValidator());
@@ -112,12 +172,14 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fRegistry.put("recurringDuration", new RecurringDurationDatatypeValidator());
                 fRegistry.put("binary",            new BinaryDatatypeValidator());
                 fRegistry.put("uriReference",      new URIReferenceDatatypeValidator());
-                fRegistry.put("ID",                new IDDatatypeValidator());
-                fRegistry.put("IDREF",             new IDREFDatatypeValidator());
-                fRegistry.put("ENTITY",            new ENTITYDatatypeValidator());
-                fRegistry.put("NOTATION",          new NOTATIONDatatypeValidator());
+                //fRegistry.put("ID",                new IDDatatypeValidator());
+                //fRegistry.put("IDREF",             new IDREFDatatypeValidator());
+                //fRegistry.put("ENTITY",            new ENTITYDatatypeValidator());
+                //fRegistry.put("NOTATION",          new NOTATIONDatatypeValidator());
                 fRegistry.put("QName",             new QNameDatatypeValidator()); 
 
+
+                initializeDTDRegistry(); //Initialize common Schema/DTD Datatype validator set if not already initialized
 
                 Hashtable facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
@@ -125,16 +187,16 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createDatatypeValidator("language", new StringDatatypeValidator() , facets,
                                         false );
 
-                createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
+                //createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
 
-                createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
+                //createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
 
-                facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
-                createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
+                //facets = new Hashtable();
+                //facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
+                //createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
 
-                createDatatypeValidator("NMTOKENS",  
-                                        getDatatypeValidator( "NMTOKEN" ), null, true );
+                //createDatatypeValidator("NMTOKENS",  
+                //                        getDatatypeValidator( "NMTOKEN" ), null, true );
 
 
                 facets = new Hashtable();
@@ -260,34 +322,25 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 facets.put(SchemaSymbols.ELT_DURATION, "PT24H" );
                 createDatatypeValidator("recurringDate",
                                         getDatatypeValidator( "recurringDuration"),facets, false );
-            } else if (registrySet == this.PARTIALDTDATTRIBUTESET) {
-                fRegistry.put("string",            new StringDatatypeValidator() );
-                fRegistry.put("ID",                new IDDatatypeValidator());
-                fRegistry.put("IDREF",             new IDREFDatatypeValidator());
-                fRegistry.put("ENTITY",            new ENTITYDatatypeValidator());
-                fRegistry.put("NOTATION",          new NOTATIONDatatypeValidator());
-
-                createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
-
-                createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
-
-                Hashtable facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
-                createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
-
-                createDatatypeValidator("NMTOKENS",  
-                                        getDatatypeValidator( "NMTOKEN" ), null, true );
-
+                fRegistryExpanded = true;
+            } catch (InvalidDatatypeFacetException ex) {
+                ex.printStackTrace();
             }
-        } catch (InvalidDatatypeFacetException ex) {
-            ex.printStackTrace();
         }
     }
 
+    /**
+     * An optimization option that we should write in the future is to separate the static list
+     * of Datatype Validators from the dynamic part where anonymous, and user derived datatype are
+     * kept, then when we resetRegistry only the dynamic part of the registry should be cleared.
+     * So we don't end up clearing the static part of the table over and over every time that we
+     * do a parse cycle.
+     */
     public void resetRegistry() {
         if (fRegistry != null) {
             fRegistry.clear();
-            initializeRegistry( setInitialized );
+            fRegistryExpanded = false;
+            //initializeDTDRegistry();
         }
     }
 
@@ -339,7 +392,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         }
         return simpleType;// return it
     }
-
 
 
     private static Object createDatatypeValidator(Constructor validatorConstructor, 
@@ -412,23 +464,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
     private void addValidator(String name, DatatypeValidator v) {
         fRegistry.put(name,v);
-    }
-
-    //static public DatatypeValidatorFactoryImpl getDatatypeRegistry()  {
-    //  return _instance;
-    //}
-
-    static public void main( String argv[] ) {
-        //  DatatypeValidatorFactoryImpl  tstRegistry = DatatypeValidatorFactoryImpl.getDatatypeRegistry();
-        DatatypeValidatorFactoryImpl  tstRegistry = new DatatypeValidatorFactoryImpl();
-
-
-        DatatypeValidator   tstData1            = tstRegistry.getDatatypeValidator( "NTOKEN" );
-        DatatypeValidator   tstData2            = tstRegistry.getDatatypeValidator( "NTOKENS" );
-
-        System.out.println( "NMTOKEN = " + tstData1 );
-        System.out.println( "NMTOKENS = " + tstData2 );
-
     }
 }
 

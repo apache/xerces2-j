@@ -1491,7 +1491,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       fGrammarNameSpaceIndex = -1;
       //fGrammarResolver = null;
       if (fGrammarResolver != null) {
-         fGrammarResolver.clearGrammarResolver();
+         fGrammarResolver.clearGrammarResolver(); //This also clears the Datatype registry
       }
       fGrammarIsDTDGrammar = false;
       fGrammarIsSchemaGrammar = false;
@@ -1553,10 +1553,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
            //Datatype Registry
            if ( fGrammarResolver != null ) {
                fDataTypeReg = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
-                fDataTypeReg.initializeRegistry( DatatypeValidatorFactoryImpl.PARTIALDTDATTRIBUTESET );
+               fDataTypeReg.initializeDTDRegistry();
             }
            if ( fDataTypeReg != null ) {
-               fDataTypeReg.resetRegistry();
 
                 fValID       = fDataTypeReg.getDatatypeValidator("ID" );
                 fValIDRef    = fDataTypeReg.getDatatypeValidator("IDREF" );
