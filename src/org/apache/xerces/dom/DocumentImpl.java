@@ -541,6 +541,7 @@ public class DocumentImpl
             this.listener = listener;
             this.useCapture = useCapture;
         }
+
     } // LEntry
 	
     /**
@@ -627,7 +628,15 @@ public class DocumentImpl
             }
         }
     } // removeEventListener(NodeImpl,String,EventListener,boolean) :void
-	
+
+    protected void copyEventListeners(NodeImpl src, NodeImpl tgt) {
+        Vector nodeListeners = getEventListeners(src);
+	if (nodeListeners == null) {
+	    return;
+	}
+	setEventListeners(tgt, (Vector) nodeListeners.clone());
+    }
+
     /**
      * Introduced in DOM Level 2. <p>
      * Distribution engine for DOM Level 2 Events. 
@@ -826,7 +835,6 @@ public class DocumentImpl
 
         return evt.preventDefault;        
     } // dispatchEvent(NodeImpl,Event) :boolean
-
 
     /**
      * NON-DOM INTERNAL: DOMNodeInsertedIntoDocument and ...RemovedFrom...
@@ -1248,5 +1256,19 @@ public class DocumentImpl
         }
     }
     
+
+    /**
+     * A method to be called when an attribute node has been renamed
+     */
+    void renamedAttrNode(Attr oldAt, Attr newAt) {
+	// REVISIT: To be implemented!!!
+    }
+
+    /**
+     * A method to be called when an element has been renamed
+     */
+    void renamedElement(Element oldEl, Element newEl) {
+	// REVISIT: To be implemented!!!
+    }
 
 } // class DocumentImpl

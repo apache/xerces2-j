@@ -189,6 +189,17 @@ public class AttrImpl
     // for AttrNSImpl
     protected AttrImpl() {}
 
+    // Support for DOM Level 3 renameNode method.
+    // Note: This only deals with part of the pb. It is expected to be
+    // called after the Attr has been detached for one thing.
+    // CoreDocumentImpl does all the work.
+    void rename(String name) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        this.name = name;
+    }
+
     // create a real text node as child if we don't have one yet
     protected void makeChildNode() {
         if (hasStringValue()) {

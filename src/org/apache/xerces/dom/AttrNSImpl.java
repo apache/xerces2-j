@@ -105,7 +105,12 @@ public class AttrNSImpl
                          String qualifiedName) {
 
         super(ownerDocument, qualifiedName);
+        setName(namespaceURI, qualifiedName);
+    }
 
+    private void setName(String namespaceURI, String qualifiedName)
+        throws DOMException
+    {
         int index = qualifiedName.indexOf(':');
         String prefix;
 
@@ -116,7 +121,7 @@ public class AttrNSImpl
             prefix = null;
             localName = qualifiedName;
 
-            if (ownerDocument.errorChecking &&
+            if (ownerDocument().errorChecking &&
                 qualifiedName.equals("xmlns") &&
                 (namespaceURI == null || !namespaceURI.equals(xmlnsURI))) {
 
@@ -128,7 +133,7 @@ public class AttrNSImpl
             prefix = qualifiedName.substring(0, index); 
             localName = qualifiedName.substring(index+1);
         
-            if (ownerDocument.errorChecking) {
+            if (ownerDocument().errorChecking) {
                 if (this.namespaceURI == null
                     || (localName.length() == 0)
                     || (localName.indexOf(':') >= 0)) {
@@ -167,6 +172,18 @@ public class AttrNSImpl
     protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
                          String value) {
         super(ownerDocument, value);
+    }
+
+    // Support for DOM Level 3 renameNode method.
+    // Note: This only deals with part of the pb. It is expected to be
+    // called after the Attr has been detached for one thing.
+    // CoreDocumentImpl does all the work.
+    void rename(String namespaceURI, String qualifiedName) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+	this.name = qualifiedName;
+        setName(namespaceURI, qualifiedName);
     }
 
     /**

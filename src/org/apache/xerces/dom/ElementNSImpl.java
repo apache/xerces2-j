@@ -102,7 +102,12 @@ public class ElementNSImpl
         throws DOMException
     {
         super(ownerDocument, qualifiedName);
+        setName(namespaceURI, qualifiedName);
+    }
 
+    private void setName(String namespaceURI, String qualifiedName)
+        throws DOMException
+    {
         int index = qualifiedName.indexOf(':');
         String prefix;
 
@@ -154,6 +159,19 @@ public class ElementNSImpl
     protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
                             String value) {
         super(ownerDocument, value);
+    }
+
+    // Support for DOM Level 3 renameNode method.
+    // Note: This only deals with part of the pb. CoreDocumentImpl
+    // does all the work.
+    void rename(String namespaceURI, String qualifiedName)
+    {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+	this.name = qualifiedName;
+        setName(namespaceURI, qualifiedName);
+        reconcileDefaultAttributes();
     }
 
     /**

@@ -123,6 +123,17 @@ public class ElementImpl
     // for ElementNSImpl
     protected ElementImpl() {}
     
+    // Support for DOM Level 3 renameNode method.
+    // Note: This only deals with part of the pb. CoreDocumentImpl
+    // does all the work.
+    void rename(String name) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+	this.name = name;
+        reconcileDefaultAttributes();
+    }
+
     //
     // Node methods
     //
@@ -907,6 +918,20 @@ public class ElementImpl
 
     } // synchronizeData()
 
+    // support for DOM Level 3 renameNode method
+    // @param el The element from which to take the attributes
+    void moveSpecifiedAttributes(ElementImpl el) {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (el.hasAttributes()) {
+            if (attributes == null) {
+                attributes = new AttributeMap(this, null);
+            }
+            attributes.moveSpecifiedAttributes(el.attributes);
+        }
+    }
+
     /** Setup the default attributes. */
     protected void setupDefaultAttributes() {
         NamedNodeMapImpl defaults = getDefaultAttributes();
@@ -918,9 +943,7 @@ public class ElementImpl
     /** Reconcile default attributes. */
     protected void reconcileDefaultAttributes() {
         NamedNodeMapImpl defaults = getDefaultAttributes();
-        if (defaults != null) {
-            attributes.reconcileDefaults(defaults);
-        }
+	attributes.reconcileDefaults(defaults);
     }
 
     /** Get the default attributes. */

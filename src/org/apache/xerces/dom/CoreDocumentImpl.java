@@ -882,7 +882,132 @@ public class CoreDocumentImpl
                            String namespaceURI, 
                            String name)
                            throws DOMException{
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"not implemented.");
+
+	if (n.getOwnerDocument() != this) {
+	    throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+				   "DOM005 Wrong document");
+	}
+        switch (n.getNodeType()) {
+            case ELEMENT_NODE: {
+                ElementImpl el = (ElementImpl) n;
+		if (el instanceof ElementNSImpl) {
+                    ((ElementNSImpl) el).rename(namespaceURI, name);
+		}
+		else {
+		    if (namespaceURI == null) {
+                        el.rename(name);
+		    }
+		    else {
+			// we need to create a new object
+			ElementNSImpl nel =
+			    new ElementNSImpl(this, namespaceURI, name);
+
+			// register event listeners on new node
+			copyEventListeners(el, nel);
+
+			// remove user data from old node
+			Hashtable data = removeUserDataTable(el);
+
+			// remove old node from parent if any
+			Node parent = el.getParentNode();
+			Node nextSib = el.getNextSibling();
+			if (parent != null) {
+			    parent.removeChild(el);
+			}
+			// move children to new node
+			Node child = el.getFirstChild();
+			while (child != null) {
+			    el.removeChild(child);
+			    nel.appendChild(child);
+			    child = el.getFirstChild();
+			}
+			// move specified attributes to new node
+			nel.moveSpecifiedAttributes(el);
+		    
+			// attach user data to new node
+			setUserDataTable(nel, data);
+
+			// and fire user data NODE_RENAMED event
+			callUserDataHandlers(el, nel,
+					     UserDataHandler.NODE_RENAMED);
+
+			// insert new node where old one was
+			if (parent != null) {
+			    parent.insertBefore(nel, nextSib);
+			}
+			el = nel;
+		    }
+		}
+		// fire ElementNameChanged event
+		renamedElement((Element) n, el);
+		return el;
+	    }
+            case ATTRIBUTE_NODE: {
+                AttrImpl at = (AttrImpl) n;
+
+                // dettach attr from element
+                Element el = at.getOwnerElement();
+                if (el != null) {
+                    el.removeAttributeNode(at);
+                }
+		if (n instanceof AttrNSImpl) {
+		    ((AttrNSImpl) at).rename(namespaceURI, name);
+                    // reattach attr to element
+                    if (el != null) {
+                        el.setAttributeNodeNS(at);
+                    }
+		}
+		else {
+		    if (namespaceURI == null) {
+			at.rename(name);
+			// reattach attr to element
+                        if (el != null) {
+                            el.setAttributeNode(at);
+                        }
+		    }
+		    else {
+			// we need to create a new object
+			AttrNSImpl nat =
+			    new AttrNSImpl(this, namespaceURI, name);
+
+			// register event listeners on new node
+			copyEventListeners(at, nat);
+
+			// remove user data from old node
+			Hashtable data = removeUserDataTable(at);
+
+			// move children to new node
+			Node child = at.getFirstChild();
+			while (child != null) {
+			    at.removeChild(child);
+			    nat.appendChild(child);
+			    child = at.getFirstChild();
+			}
+		    
+			// attach user data to new node
+			setUserDataTable(nat, data);
+
+			// and fire user data NODE_RENAMED event
+			callUserDataHandlers(at, nat,
+					     UserDataHandler.NODE_RENAMED);
+
+			// reattach attr to element
+			if (el != null) {
+			    el.setAttributeNode(nat);
+			}
+			at = nat;
+		    }
+		}
+		// fire AttributeNameChanged event
+		renamedAttrNode((Attr) n, at);
+		
+		return at;
+	    }
+	    default: {
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                                       "cannot rename this type of node.");
+	    }
+	}
 
     }
 
@@ -2076,6 +2201,29 @@ public class CoreDocumentImpl
     }
 
     /**
+     * Remove user data table for the given node.
+     * @param n The node this operation applies to.
+     * @return The removed table.
+     */
+    Hashtable removeUserDataTable(Node n) {
+        if (userData == null) {
+            return null;
+        }
+        return (Hashtable) userData.get(n);
+    }
+
+    /**
+     * Set user data table for the given node.
+     * @param n The node this operation applies to.
+     * @param data The user data table.
+     */
+    void setUserDataTable(Node n, Hashtable data) {
+        if (data != null) {
+	    userData.put(n, data);
+	}
+    }
+
+    /**
      * Call user data handlers when a node is deleted (finalized)
      * @param n The node this operation applies to.
      * @param c The copy node or null.
@@ -2136,12 +2284,14 @@ public class CoreDocumentImpl
       */
     public void copyConfigurationProperties(XMLParserConfiguration config){
         // REVISIT: how should we copy symbol table?
-        //          it usually grows with the parser, do we need to carry all data per document?
+	// It usually grows with the parser, do we need to carry all
+	// data per document?
         fSymbolTable = new ShadowedSymbolTable((SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE));
         fEntityResolver =  config.getEntityResolver();
         
-        // REVISIT: store one grammar per document is not efficient and might not be enough
-        //          need to implement some grammar cashing possibly on DOM Implementation
+        // REVISIT: storing one grammar per document is not efficient
+        // and might not be enough. We need to implement some grammar
+        // cashing possibly on DOM Implementation
 
         XMLGrammarPool pool = (XMLGrammarPool)config.getProperty(DOMValidationConfiguration.GRAMMAR_POOL);
         if (pool != null) {
@@ -2151,7 +2301,8 @@ public class CoreDocumentImpl
                 // retrieve DTD grammar
                 // pool.retrieveGrammar();
             } else {
-                // retrieve XML Schema grammar based on teh namespace of the root element
+                // retrieve XML Schema grammar based on teh namespace
+                // of the root element
                 String targetNamespace = this.docElement.getNamespaceURI();
                 // pool.retrieveGrammar();
             }
@@ -2189,6 +2340,10 @@ public class CoreDocumentImpl
     protected void removeEventListener(NodeImpl node, String type,
                                        EventListener listener,
                                        boolean useCapture) {
+        // does nothing by default - overidden in subclass
+    }
+
+    protected void copyEventListeners(NodeImpl src, NodeImpl tgt) {
         // does nothing by default - overidden in subclass
     }
 
@@ -2284,6 +2439,18 @@ public class CoreDocumentImpl
      * A method to be called when an attribute node has been removed
      */
     void removedAttrNode(AttrImpl attr, NodeImpl oldOwner, String name) {
+    }
+
+    /**
+     * A method to be called when an attribute node has been renamed
+     */
+    void renamedAttrNode(Attr oldAt, Attr newAt) {
+    }
+
+    /**
+     * A method to be called when an element has been renamed
+     */
+    void renamedElement(Element oldEl, Element newEl) {
     }
 
 } // class CoreDocumentImpl
