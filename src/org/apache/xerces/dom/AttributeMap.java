@@ -80,7 +80,8 @@ import org.w3c.dom.Node;
 public class AttributeMap extends NamedNodeMapImpl {
     
     /** Serialization version. */
-    static final long serialVersionUID = -7315359030009568370L;
+    static final long serialVersionUID = 8872606282138665383L;
+
     //
     // Constructors
     //
