@@ -4305,7 +4305,7 @@ public class TraverseSchema implements
            }
        }
        else {
-           typeInfo.derivedBy = 0;
+           typeInfo.derivedBy = SchemaSymbols.RESTRICTION;
        }
 
        // -------------------------------------------------------------
@@ -4985,7 +4985,7 @@ public class TraverseSchema implements
          aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(schemaURI);
 
       int eltndx1 =  findElement(derivedScope, uri1, localpart1, aGrammar, null);
-      if (eltndx1 < 0) 
+      if (eltndx1 < 0)
          return;
 
       int eltndx2 = findElement(baseScope, uri2, localpart2, aGrammar, bInfo);
@@ -5047,6 +5047,9 @@ public class TraverseSchema implements
          return;
         }
       }
+
+      if (tempType != null && tempType == bType)
+        return;
 
       for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
         if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
