@@ -1086,7 +1086,8 @@ public abstract class BaseMarkupSerializer
             endCDATA();
             content();
             
-            if ( ((features & DOMSerializerImpl.ENTITIES) != 0)){
+            if (((features & DOMSerializerImpl.ENTITIES) != 0)
+                || (node.getFirstChild() == null)) {
                 if (fDOMFilter !=null && 
                       (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ENTITY_REFERENCE)!= 0) {
                       short code = fDOMFilter.acceptNode(node);

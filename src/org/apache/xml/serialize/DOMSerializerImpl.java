@@ -78,6 +78,10 @@ import org.w3c.dom.ls.LSSerializerFilter;
  */
 public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
+    // TODO: When DOM Level 3 goes to REC replace method calls using
+    // reflection for: getXmlEncoding, getInputEncoding and getXmlEncoding
+    // with regular static calls on the Document object.
+	
     // data
     // serializer
     private XMLSerializer serializer;
@@ -663,7 +667,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         if ((encoding = destination.getEncoding()) == null) {
             try {
                 Method getEncoding =
-                    fDocument.getClass().getMethod("getActualEncoding", new Class[] {});
+                    fDocument.getClass().getMethod("getInputEncoding", new Class[] {});
                 if (getEncoding != null) {
                     encoding = (String) getEncoding.invoke(fDocument, null);
                 }
@@ -802,7 +806,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
       * (or its owner document) in this order:
       * <ol>
       * <li>
-      * <code>Document.actualEncoding</code>,
+      * <code>Document.inputEncoding</code>,
       * </li>
       * <li>
       * <code>Document.xmlEncoding</code>.
@@ -856,7 +860,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
         try {
             Method getEncoding =
-                fDocument.getClass().getMethod("getActualEncoding", new Class[] {});
+                fDocument.getClass().getMethod("getInputEncoding", new Class[] {});
             if (getEncoding != null) {
                 encoding = (String) getEncoding.invoke(fDocument, null);
             }
