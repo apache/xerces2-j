@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1300,6 +1300,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         if (validatedInfo == null)
             validatedInfo = new ValidatedInfo();
+        else
+            validatedInfo.reset();
 
         // first normalize string value, and convert it to actual value
         boolean needNormalize = context==null||context.needToNormalize();
@@ -1321,6 +1323,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             
         if (validatedInfo == null)
             validatedInfo = new ValidatedInfo();
+        else
+            validatedInfo.reset();
 
         // first normalize string value, and convert it to actual value
         boolean needNormalize = context==null||context.needToNormalize();
