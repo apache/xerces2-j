@@ -469,8 +469,8 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
                    tokenType == SPECIAL_TOKEN_IDREFNCNAME ||
                    tokenType == SPECIAL_TOKEN_ENTITY) {
             // PATTERN "[\\i-[:]][\\c-[:]]*"
-            //!!!NOT IMPLEMENTED in XMLChar
-            seenErr = !XMLChar.isValidNCName(content);
+            // REVISIT: !!!NOT IMPLEMENTED in XMLChar
+            //seenErr = !XMLChar.isValidNCName(content);
         }
         if (seenErr) {
             throw new InvalidDatatypeValueException(
