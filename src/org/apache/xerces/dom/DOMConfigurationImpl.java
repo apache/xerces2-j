@@ -523,7 +523,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 setFeature(NORMALIZE_DATA, state);
                 features =
                     (short) (state ? features | DTNORMALIZATION : features & ~DTNORMALIZATION);
-
+                if (state) {
+                    features = (short) (features | VALIDATE);
+                }
             }
             else if (name.equals(Constants.DOM_NAMESPACES)) {
                 features = (short) (state ? features | NAMESPACES : features & ~NAMESPACES);
