@@ -789,9 +789,8 @@ public class ElementImpl
                 Node n1 = map1.item(i);
                 if (n1.getLocalName() == null) { // DOM Level 1 Node
                     Node n2 = map2.getNamedItem(n1.getNodeName());
-                    // REVISIT: as of 01/18/02 the spec doesn't say whether
-                    // this should be deep
-                    if (n2 == null || !((Node3) n1).isEqualNode(n2, deep)) {
+                    // Attr.isEqualNode is always deep
+                    if (n2 == null || !((Node3) n1).isEqualNode(n2, true)) {
                         return false;
                     }
                 }
