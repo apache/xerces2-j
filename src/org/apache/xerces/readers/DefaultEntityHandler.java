@@ -504,7 +504,9 @@ public class DefaultEntityHandler
                                         0,
                                         args,
                                         XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-        } catch (FileNotFoundException fnf) {
+        } catch (FileNotFoundException fnf) { 
+            // according to the JAXP spec, SAXExceptions should not be 
+            // generated in this case!  - neilg
             String errorSystemId = fSystemId;
             fEventHandler.endEntityReference(fEntityName, fEntityType, fEntityContext);
             popReader();
@@ -516,7 +518,8 @@ public class DefaultEntityHandler
                                         ImplementationMessages.IO0,
                                         0,
                                         args,
-                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+            throw fnf;
         } catch (UnsupportedEncodingException uee) {
             fEventHandler.endEntityReference(fEntityName, fEntityType, fEntityContext);
             popReader();
