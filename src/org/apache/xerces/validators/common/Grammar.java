@@ -205,27 +205,27 @@ implements XMLContentSpec.Provider {
     }
 
 
-    public boolean getElementContentModel(int elementDeclIndex,
-                                          XMLContentModel contentModel ) throws CMException {
+    public XMLContentModel getElementContentModel(int elementDeclIndex) throws CMException {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
-            return false;
+            return null;
+
 
         int chunk       = elementDeclIndex >> CHUNK_SHIFT;
         int index       = elementDeclIndex & CHUNK_MASK;
 
-        contentModel    =  fElementDeclContentModelValidator[chunk][index];
+        XMLContentModel contentModel    =  fElementDeclContentModelValidator[chunk][index];
 
         // If we have one, just return that. Otherwise, gotta create one
         if (contentModel != null)
-            return true;
+            return contentModel;
 
         // Get the type of content this element has
 
         int contentSpecIndex = fElementDeclContentSpecIndex[chunk][index]; 
 
         if ( contentSpecIndex == -1 )
-            return false;
+            return null;
 
         XMLContentSpec  contentSpec = new XMLContentSpec();
         getContentSpec( contentSpecIndex, contentSpec );
@@ -273,7 +273,7 @@ implements XMLContentSpec.Provider {
         fElementDeclContentModelValidator[chunk][index] = contentModel;
 
         //build it  ..... in XMLValidator
-        return true;
+        return contentModel;
     }
 
 
