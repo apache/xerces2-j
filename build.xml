@@ -167,7 +167,7 @@ Copyright:
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java **/v1/** **/v2/**
                        org/apache/xerces/dom3/*.java
-                       org/apache/xerces/dom3/ls">
+                       org/apache/xerces/dom3/ls/**">
         </fileset>
     </copy>
     
@@ -231,7 +231,7 @@ Copyright:
          basedir="${build.dest}"
          compress="true"
          includes="org/xml/**, org/w3c/**, javax/**"
-         excludes="org/w3c/dom/ls
+         excludes="org/w3c/dom/ls/**
                    org/w3c/dom/DOMError.class
                    org/w3c/dom/DOMErrorHandler.class
                    org/w3c/dom/DOMImplementationSource.class
