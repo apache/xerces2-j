@@ -282,6 +282,11 @@ public class DocumentImpl
         DocumentImpl newdoc = new DocumentImpl();
 
         // then the children by importing them
+
+        if (needsSyncChildren()) {
+                synchronizeChildren();
+             }
+
         if (deep) {
             for (ChildNode n = firstChild; n != null; n = n.nextSibling) {
                 newdoc.appendChild(newdoc.importNode(n, true));
