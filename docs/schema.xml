@@ -1,6 +1,5 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
-
 <s1 title="Schema">
 	<s2 title="Disclaimer">
 		<p>This package contains an implementation of the W3C XML 
@@ -78,48 +77,20 @@
             <li>Import</li>
         </ul>
     </s2>
-<!--
-	<s2 title="Structure Limitations">
-		<ul>
-			<li>elements, types, groups and attributeGroups
-			share the same namespace</li>
-			<li>All types, elements, groups and attributeGroups 
-			must be declared before they are used.</li>
-			<li>On types the following are unsupported:</li>
-				<ul>
-                    <li><code>final</code>, <code>abstract</code>,
-                    <code>exact</code>, <code>nullable</code>.</li>
-					<li>nested <code>element</code> declarations</li>
-				</ul>
-            <li>Only the <code>&lt;any/&gt;</code> wildcard is supported</li>
-            <li>Type derivation (section 3.6) is not supported</li>
-            <li>Unique, key and key reference constraints (section
-            3.7) are not supported.</li>
-			<li>None of the mechanisms in section 4, are supported.</li>
-		</ul>
-	</s2>
-	<s2 title="Datatype Limitations">
-		<ul>
-			<li>Datatype checking conforms to underlying Java types, not 
-			necessarily to schema rules:</li>
-		</ul>
-		<table>
-			<tr><th>Schema type</th><th>Java type</th></tr>
-			<tr><td>boolean</td><td>Boolean</td></tr>
-			<tr><td>integer</td><td>Integer</td></tr>
-			<tr><td>decimal</td><td>BigDecimal</td></tr>
-			<tr><td>float</td><td>float</td></tr>
-			<tr><td>double</td><td>double</td></tr>
-		</table>
-		<ul>
-			<li>The NMTOKEN, NMTOKENS, Name, NCName, ID, IDREF,
-			ENTITY, ENTITIES, NOTATION are only supported on attributes. At
-			the moment they cannot be applied to element content.</li>
-			<li>The recurringInstant, date, time, and language datatypes are not supported.</li>
-			<li>Datatype qualifiers on attributes are not supported.</li>
-	    </ul>
-	</s2>
--->
+    <s2 title='Datatypes Supported'>
+        <ul>
+            <li>Built-in simple types (primitive, derived)</li>
+            <li>Simple type derivation (restriction, list)</li>
+            <li>Regular expressions</li>
+            <li>Binary (base64, hex)</li>
+            <li>Constraining facets</li>
+        </ul>
+    </s2>
+    <s2 title='Datatypes NOT Supported'>
+        <ul>
+            <li>Date/time -- ISO8601 (work in progress)</li>
+        </ul>
+    </s2>
 	<s2 title="Other Limitations">
 		<p>The schema is specified by the xsi:schemaLocation attribute on the root 
 		element of the document. The xsi prefix must be bound to the 
@@ -137,16 +108,6 @@
 <source>&lt;document xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance' xsi:schemaLocation='document.xsd'&gt;
 ...
 &lt;/document&gt;</source>
-
-<!--
-		<p>Another requirement is that the XML Schema document's grammar must 
-		have a &lt;!DOCTYPE ...&gt; line specifying the DTD for XML Schema grammar. 
-		The DOCTYPE must specify the following system identifier:<br/></p>
-<source>http://www.w3.org/TR/1999/WD-xmlschema-1-19991217/structures.dtd</source>
-		<p>Also, there must be an attribute declaration for the xmlns attribute 
-		used to find the schema (document in the example above).</p>
--->
-		
 		<p>Review the sample file, 'data/personal.xsd' for an example of an XML 
 		Schema grammar.</p>
 	</s2>
