@@ -79,7 +79,7 @@ Copyright:
     <property name="tests.dir" value="./tests"/>
     <property name="tools.dir" value="./tools"/>
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
-    <property name="version.file" value="org/apache/xerces/framework/Version.java"/>
+    <property name="version.file" value="org/apache/xerces/impl/Version.java"/>
 
     <property name="packages" value="org.*"/>
 
@@ -164,7 +164,7 @@ Copyright:
 
     <!-- copy src files -->
     <copydir src="${src.dir}" dest="${build.src}" includes="**/Makefile, **/Makefile.incl, javax/**, org/**"
-             excludes="**/classfiles_updated **/CVS* **/.#*
+             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java "/>
