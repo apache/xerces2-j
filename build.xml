@@ -99,15 +99,19 @@ Copyright:
     <echo message=" sampjar  --> generates the xercesSamples.jar file"/>
     <echo message=" apijar   --> generates the xmlParserAPIs.jar file"/>
     <echo message=" jars --> generates xercesImpl, xercesSamples &amp; xmlParserAPIs jars"/>
-    <echo message=" jars-dom3  --> 'jars' + DOM Level 3 support."/>
-    <echo message=" apijar-dom3   --> 'apijar' +DOM Level 3 support."/>
+    <echo message=" jar-dom3  --> 'jar' + DOM Level 3 support"/>
     <echo message=" sampjar-dom3  --> 'sampjar' + DOM Level 3 support"/>
+    <echo message=" apijar-dom3   --> 'apijar' + DOM Level 3 support."/>
+    <echo message=" jars-dom3  --> 'jars' + DOM Level 3 support."/>
     <echo message=" docs     --> generates the HTML documentation"/>
     <echo message=" javadocs --> generates the API docs (needs Java 1.2 or higher)"/>
     <echo message=" samples  --> compiles the samples source code"/>
+    <echo message=" samples-dom3  --> 'samples' + DOM Level 3 support."/>
     <echo message=" compile  --> compiles the source code"/>
+    <echo message=" compile-dom3  --> 'compile' + DOM Level 3 support."/>
     <echo message=" deprecatedjar  --> generates the xerces.jar file"/>
     <echo message=" tests    --> compiles the tests source code"/>
+    <echo message=" tests-dom3    --> 'tests' + DOM Level 3 support."/>
     <echo message=" deprecatedjars --> generates xerces.jar and samples jar"/>
     <echo message=" dtdjars --> generates xercesImpl containing no schema support, xercesSamples &amp; xmlParserAPIs jars"/>
     <echo message=" tinyjars --> generates xercesImpl with no schema support or HTML/WML DOM, xercesSamples &amp; xmlParserAPIs jars"/>
@@ -118,6 +122,7 @@ Copyright:
     <echo message=" all      --> generates the binary, source and tools distributions"/>
     <echo message=" deprecatedall --> generates the binary, source and tools distributions with the xerces.jar"/>
     <echo message=" test     --> runs a sanity test on the sample files"/>
+    <echo message=" test-dom3     --> 'test' + DOM Level 3 support."/>
     <echo message=" clean    --> cleans up all generated files and directories"/>
     <echo message=" usage    --> provides help on using the build tool (default)"/>
     <echo message=""/>
@@ -268,7 +273,8 @@ Copyright:
   <target name="tests" depends="samples">
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
-        <fileset dir="${tests.dir}" />
+        <fileset dir="${tests.dir}"
+		 excludes="dom/rename/**">
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
