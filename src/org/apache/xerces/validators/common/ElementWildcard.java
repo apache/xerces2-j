@@ -73,9 +73,7 @@ public class ElementWildcard {
     private static StringPool fStringPool;
     private static XMLErrorReporter fErrorReporter;
     public static void setErrReporter (StringPool stringPool, XMLErrorReporter errorReporter) {
-        if (fStringPool == null)
         fStringPool = stringPool;
-        if (fErrorReporter == null)
         fErrorReporter = errorReporter;
     }
 
@@ -83,11 +81,10 @@ public class ElementWildcard {
         int type = wtype & 0x0f;
 
         if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-            if (wildcard == StringPool.EMPTY_STRING || wildcard == uri)
                 return true;
         }
-        else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-            if (uri == StringPool.EMPTY_STRING)
+        else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+            if (uri == wildcard)
                 return true;
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
@@ -102,23 +99,15 @@ public class ElementWildcard {
         int type1 = t1 & 0x0f, type2 = t2 & 0x0f;
 
         // if either one is "##any", then intersects
-        if (type1 == XMLContentSpec.CONTENTSPECNODE_ANY &&
-            w1 == StringPool.EMPTY_STRING ||
-            type2 == XMLContentSpec.CONTENTSPECNODE_ANY &&
-            w2 == StringPool.EMPTY_STRING) {
+        if (type1 == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            type2 == XMLContentSpec.CONTENTSPECNODE_ANY) {
             return true;
         }
 
         // if both are "some_namespace" and equal, then intersects
-        if (type1 == XMLContentSpec.CONTENTSPECNODE_ANY &&
-            type2 == XMLContentSpec.CONTENTSPECNODE_ANY &&
+        if (type1 == XMLContentSpec.CONTENTSPECNODE_ANY_NS &&
+            type2 == XMLContentSpec.CONTENTSPECNODE_ANY_NS &&
             w1 == w2) {
-            return true;
-        }
-
-        // if both are "##local", then intersects
-        if (type1 == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL &&
-            type2 == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
             return true;
         }
 
@@ -129,19 +118,11 @@ public class ElementWildcard {
             return true;
         }
 
-        // if one local and one other, then intersects
-        if (type1 == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL &&
-            type2 == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ||
-            type1 == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
-            type2 == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-            return true;
-        }
-
         // if one "##other" and one namespace, if not equal, then intersects
-        if ((type1 == XMLContentSpec.CONTENTSPECNODE_ANY &&
+        if ((type1 == XMLContentSpec.CONTENTSPECNODE_ANY_NS &&
              type2 == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ||
              type1 == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
-             type2 == XMLContentSpec.CONTENTSPECNODE_ANY) &&
+             type2 == XMLContentSpec.CONTENTSPECNODE_ANY_NS) &&
             w1 != w2) {
             return true;
         }
@@ -207,11 +188,11 @@ public class ElementWildcard {
         case XMLContentSpec.CONTENTSPECNODE_LEAF:
             return fStringPool.toString(uri) + ":" + fStringPool.toString(local);
         case XMLContentSpec.CONTENTSPECNODE_ANY:
-            return "##any:" + (uri == fStringPool.EMPTY_STRING ? "*" : fStringPool.toString(uri));
-        case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
-            return "##local:";
+            return "##any:*";
+        case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
+            return  fStringPool.toString(uri) + ":*";
         case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-            return "##other:" + fStringPool.toString(uri);
+            return "##other(" + fStringPool.toString(uri) + "):*";
         }
 
         return "";

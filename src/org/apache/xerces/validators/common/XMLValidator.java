@@ -456,7 +456,6 @@ public final class XMLValidator
       fGrammarResolver = grammarResolver;
 
       fSGComparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool, fErrorReporter);
-      ElementWildcard.setErrReporter(fStringPool, fErrorReporter);
 
         if (fValidating) { //optimization -el
       initDataTypeValidators();
@@ -2323,6 +2322,7 @@ public final class XMLValidator
 
    /** Queries the content model for the specified element index. */
    private XMLContentModel getElementContentModel(int elementIndex) throws CMException {
+      ElementWildcard.setErrReporter(fStringPool, fErrorReporter);
       XMLContentModel contentModel = null;
       if ( elementIndex > -1) {
          if ( fGrammar.getElementDecl(elementIndex,fTempElementDecl) ) {
@@ -3004,12 +3004,9 @@ public final class XMLValidator
                    && fElemMap[i].localpart == element.localpart)
                   break;
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-               int uri = fElemMap[i].uri;
-               if (uri == StringPool.EMPTY_STRING || uri == element.uri) {
                   break;
-               }
-            } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-               if (element.uri == StringPool.EMPTY_STRING) {
+            } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+               if (element.uri == fElemMap[i].uri) {
                   break;
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
@@ -3017,13 +3014,10 @@ public final class XMLValidator
                   break;
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_SKIP) {
-               int uri = fElemMap[i].uri;
-               if (uri == StringPool.EMPTY_STRING || uri == element.uri) {
                   skipThisOne = true;
                   break;
-               }
-            } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP) {
-               if (element.uri == StringPool.EMPTY_STRING) {
+            } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS_SKIP) {
+               if (element.uri == fElemMap[i].uri) {
                   skipThisOne = true;
                   break;
                }
@@ -3033,13 +3027,10 @@ public final class XMLValidator
                   break;
                }
             } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LAX) {
-               int uri = fElemMap[i].uri;
-               if (uri == StringPool.EMPTY_STRING || uri == element.uri) {
                   laxThisOne = true;
                   break;
-               }
-            } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX) {
-               if (element.uri == StringPool.EMPTY_STRING) {
+            } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS_LAX) {
+               if (element.uri == fElemMap[i].uri) {
                   laxThisOne = true;
                   break;
                }
@@ -3365,8 +3356,6 @@ public final class XMLValidator
                      elementIndex = typeInfo.templateElementIndex;
                   }
 
-               }
-
                // now switch the grammar
                fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
                boolean success = switchGrammar(fCurrentSchemaURI);
@@ -3377,6 +3366,7 @@ public final class XMLValidator
                                             + fStringPool.toString(fCurrentSchemaURI) 
                                             + " , can not be found");
                }
+            }
             }
 
          }

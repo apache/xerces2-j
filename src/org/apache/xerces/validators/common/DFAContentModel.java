@@ -416,15 +416,12 @@ public class DFAContentModel
                         }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                        int uri = fElemMap[elemIndex].uri;
-                        if (uri == StringPool.EMPTY_STRING || uri == curElem.uri) {
                             nextState = fTransTable[curState][elemIndex];
                             if (nextState != -1) 
                               break;
                         }
-                    }
-                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                        if (curElem.uri == StringPool.EMPTY_STRING) {
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+                        if (curElem.uri == fElemMap[elemIndex].uri) {
                             nextState = fTransTable[curState][elemIndex];
                             if (nextState != -1) 
                               break;
@@ -536,15 +533,12 @@ public class DFAContentModel
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                    int uri = fElemMap[elemIndex].uri;
-                    if (uri == StringPool.EMPTY_STRING || uri == curElem.uri) {
                         nextState = fTransTable[curState][elemIndex];
                         if (nextState != -1) 
                           break;
-                    }
                 }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                    if (curElem.uri == StringPool.EMPTY_STRING) {
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+                    if (curElem.uri == fElemMap[elemIndex].uri) {
                         nextState = fTransTable[curState][elemIndex];
                         if (nextState != -1) 
                           break;
@@ -1340,7 +1334,7 @@ public class DFAContentModel
         }
         case XMLContentSpec.CONTENTSPECNODE_ANY:
         case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-        case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+        case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
         {
             if (type == XMLContentSpec.CONTENTSPECNODE_ANY)
               System.out.print("Any Node: ");
@@ -1354,12 +1348,12 @@ public class DFAContentModel
               System.out.print("Any other lax Node: ");
             else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP)
               System.out.print("Any other skip Node: ");
-            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL)
-              System.out.print("Any local Node: ");
-            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX)
-              System.out.print("Any local lax Node: ");
-            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP)
-              System.out.print("Any local skip Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS)
+              System.out.print("Any namespace Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS_LAX)
+              System.out.print("Any namespace lax Node: ");
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS_SKIP)
+              System.out.print("Any namespace skip Node: ");
 
             System.out.print("firstPos=");
             System.out.print(nodeCur.firstPos().toString());
@@ -1397,7 +1391,7 @@ public class DFAContentModel
 
         // Recurse as required
         if ((nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
-            (nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            (nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_NS ||
             (nodeCur.type() & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
             // REVISIT: Don't waste these structures.
 			QName qname = new QName(-1, -1, -1, ((CMAny)nodeCur).getURI());

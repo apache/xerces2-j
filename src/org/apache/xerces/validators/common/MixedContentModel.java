@@ -239,13 +239,9 @@ public class MixedContentModel
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                    int uri = fChildren[inIndex].uri;
-                    if (uri != StringPool.EMPTY_STRING && uri != children[outIndex].uri) {
-                        return outIndex;
-                    }
                 }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                    if (children[outIndex].uri != StringPool.EMPTY_STRING) {
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+                    if (children[outIndex].uri != fChildren[inIndex].uri) {
                         return outIndex;
                     }
                 }
@@ -289,13 +285,10 @@ public class MixedContentModel
                         }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                        int uri = fChildren[inIndex].uri;
-                        if (uri == StringPool.EMPTY_STRING || uri == children[outIndex].uri) {
                             break;
-                        }
                     }
-                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-                        if (children[outIndex].uri == StringPool.EMPTY_STRING) {
+                    else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+                        if (children[outIndex].uri == fChildren[inIndex].uri) {
                             break;
                         }
                     }

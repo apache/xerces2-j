@@ -638,7 +638,7 @@ implements XMLContentSpec.Provider {
 
         if ((contentSpec.type & 0x0f ) == XMLContentSpec.CONTENTSPECNODE_ANY ||
             (contentSpec.type & 0x0f ) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ||
-            (contentSpec.type & 0x0f ) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+            (contentSpec.type & 0x0f ) == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
             // let fall through to build a DFAContentModel
         }
         else if (isMixed) {
@@ -825,15 +825,10 @@ implements XMLContentSpec.Provider {
         // We will build a node at this level for the new tree
         CMNode nodeRet = null;
         getContentSpec(startNode, contentSpec);
-        if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) {
-            //nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
+        if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ||
+            (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
             nodeRet = new CMAny(contentSpec.type, contentSpec.otherValue, fLeafCount++);
-        }
-        else if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
-            nodeRet = new CMAny(contentSpec.type, contentSpec.otherValue, fLeafCount++);
-        }
-        else if ((contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-            nodeRet = new CMAny(contentSpec.type, 0, fLeafCount++);
         }
         //
         //  If this node is a leaf, then it's an easy one. We just add it
@@ -962,7 +957,7 @@ implements XMLContentSpec.Provider {
         getContentSpec( contentSpecIndex, contentSpec);
         if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF ||
             (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
-            (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_NS ||
             (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
 
             // resize arrays, if needed

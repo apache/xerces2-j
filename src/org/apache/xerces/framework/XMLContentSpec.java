@@ -159,8 +159,8 @@ public class XMLContentSpec {
      */
     public static final int CONTENTSPECNODE_ANY_OTHER = 7;
 
-    /** Represents any local element (XML Schema: ##local). */
-    public static final int CONTENTSPECNODE_ANY_LOCAL = 8;
+    /** Represents any namespace element (including "##local"). */
+    public static final int CONTENTSPECNODE_ANY_NS = 8;
 
     /** Represents <ALL> */
     public static final int CONTENTSPECNODE_ALL = 9;
@@ -170,7 +170,7 @@ public class XMLContentSpec {
 
     public static final int CONTENTSPECNODE_ANY_OTHER_LAX = 23;
 
-    public static final int CONTENTSPECNODE_ANY_LOCAL_LAX = 24;
+    public static final int CONTENTSPECNODE_ANY_NS_LAX = 24;
 
     /** processContent is 'skip' **/
     
@@ -178,7 +178,7 @@ public class XMLContentSpec {
 
     public static final int CONTENTSPECNODE_ANY_OTHER_SKIP = 39;
 
-    public static final int CONTENTSPECNODE_ANY_LOCAL_SKIP = 40;
+    public static final int CONTENTSPECNODE_ANY_NS_SKIP = 40;
     //
     // Data
     //
@@ -413,10 +413,6 @@ public class XMLContentSpec {
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ANY: {
                     str.append("##any");
-                    if (contentSpec.otherValue != -1) {
-                        str.append(":uri=");
-                        str.append(stringPool.toString(contentSpec.otherValue));
-                    }
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER: {
@@ -424,8 +420,9 @@ public class XMLContentSpec {
                     str.append(stringPool.toString(contentSpec.otherValue));
                     break;
                 }
-                case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL: {
-                    str.append("##local");
+                case XMLContentSpec.CONTENTSPECNODE_ANY_NS: {
+                    str.append("namespace:uri=");
+                    str.append(stringPool.toString(contentSpec.otherValue));
                     break;
                 }
                 default: {
@@ -592,10 +589,6 @@ public class XMLContentSpec {
             }
             case XMLContentSpec.CONTENTSPECNODE_ANY: {
                 str.append("##any");
-                if (contentSpec.otherValue != -1) {
-                    str.append(":uri=");
-                    str.append(stringPool.toString(contentSpec.otherValue));
-                }
                 break;
             }
             case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER: {
@@ -603,8 +596,9 @@ public class XMLContentSpec {
                 str.append(stringPool.toString(contentSpec.otherValue));
                 break;
             }
-            case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL: {
-                str.append("##local");
+            case XMLContentSpec.CONTENTSPECNODE_ANY_NS: {
+                str.append("namespace:uri=");
+                str.append(stringPool.toString(contentSpec.otherValue));
                 break;
             }
             default: {

@@ -296,7 +296,7 @@ public class SchemaGrammar extends Grammar{
  
         if (((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) ||
             ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) ||
-            ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) ||
+            ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_NS) ||
             (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_LEAF)) {
 
           // When checking Unique Particle Attribution, rename leaf elements

@@ -78,7 +78,7 @@ public class CMAny
      * The any content model type. This value is one of the following:
      * XMLContentSpec.CONTENTSPECNODE_ANY, 
      * XMLContentSpec.CONTENTSPECNODE_ANY_OTHER,
-     * XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL.
+     * XMLContentSpec.CONTENTSPECNODE_ANY_NS.
      */
     private int fType;
 

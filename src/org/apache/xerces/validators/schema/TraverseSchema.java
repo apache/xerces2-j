@@ -2508,31 +2508,22 @@ public class TraverseSchema implements
 
         int processContentsAny = XMLContentSpec.CONTENTSPECNODE_ANY;
         int processContentsAnyOther = XMLContentSpec.CONTENTSPECNODE_ANY_OTHER;
-        int processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL;
+        int processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_NS;
 
         if (processContents.length() > 0 && !processContents.equals("strict")) {
             if (processContents.equals("lax")) {
                 processContentsAny = XMLContentSpec.CONTENTSPECNODE_ANY_LAX;
                 processContentsAnyOther = XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_LAX;
-                processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX;
+                processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_NS_LAX;
             }
             else if (processContents.equals("skip")) {
                 processContentsAny = XMLContentSpec.CONTENTSPECNODE_ANY_SKIP;
                 processContentsAnyOther = XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP;
-                processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP;
+                processContentsAnyLocal = XMLContentSpec.CONTENTSPECNODE_ANY_NS_SKIP;
             }
         }
 
         if (namespace.length() == 0 || namespace.equals("##any")) {
-            // REVISIT: Should the "any" namespace signifier also be changed
-            //          to StringPool.EMPTY_STRING instead of -1? -Ac
-            // REVISIT: is this the right way to do it? EMPTY_STRING does not 
-            //          seem to work in this case -el 
-			// Simplify! - ng
-            //String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
-			//???String uri = fTargetNSURIString;
-			//???int uriIndex = fStringPool.addSymbol(uri);
-            //???anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
             anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, StringPool.EMPTY_STRING, false);
         }
         else if (namespace.equals("##other")) {
@@ -2551,7 +2542,7 @@ public class TraverseSchema implements
                 if (token.equals("##targetNamespace"))
 			        token = fTargetNSURIString;
                 uriIndex = fStringPool.addSymbol(token);
-                choiceIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
+                choiceIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, uriIndex, false);
             }
 
             while (tokenizer.hasMoreElements()) {
@@ -2562,7 +2553,7 @@ public class TraverseSchema implements
                     if (token.equals("##targetNamespace"))
                         token = fTargetNSURIString;
                     uriIndex = fStringPool.addSymbol(token);
-                    leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
+                    leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, uriIndex, false);
                 }
 
                 choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, choiceIndex, leafIndex, false);
@@ -4430,7 +4421,7 @@ public class TraverseSchema implements
               // Elt:Any NSCompat
               case XMLContentSpec.CONTENTSPECNODE_ANY:
               case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
               {
                  checkNSCompat(csIndex1, derivedScope, csIndex2);
                  return;
@@ -4454,14 +4445,14 @@ public class TraverseSchema implements
 
          case XMLContentSpec.CONTENTSPECNODE_ANY: 
          case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-         case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+         case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
          {
             switch (tempContentSpec2.type & 0x0f) {
 
               // Any:Any NSSubset
               case XMLContentSpec.CONTENTSPECNODE_ANY:
               case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
               {
                  checkNSSubset(csIndex1, csIndex2);
                  return;
@@ -4489,7 +4480,7 @@ public class TraverseSchema implements
               // All:Any NSRecurseCheckCardinality
               case XMLContentSpec.CONTENTSPECNODE_ANY:
               case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
               {
                  checkNSRecurseCheckCardinality(csIndex1, tempVector1, derivedScope, csIndex2);
                  return;
@@ -4522,7 +4513,7 @@ public class TraverseSchema implements
               // Choice:Any NSRecurseCheckCardinality
               case XMLContentSpec.CONTENTSPECNODE_ANY:
               case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
               {
                  checkNSRecurseCheckCardinality(csIndex1, tempVector1, derivedScope, csIndex2);
                  return;
@@ -4556,7 +4547,7 @@ public class TraverseSchema implements
               // Choice:Any NSRecurseCheckCardinality
               case XMLContentSpec.CONTENTSPECNODE_ANY:
               case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
               {
                  checkNSRecurseCheckCardinality(csIndex1, tempVector1, derivedScope, csIndex2);
                  return;
@@ -4634,7 +4625,7 @@ public class TraverseSchema implements
 
        if (type == XMLContentSpec.CONTENTSPECNODE_LEAF ||
            (type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
-           (type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL  ||
+           (type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_NS  ||
            (type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ) {
           tempVector.addElement(new Integer(csIndex));
        }
@@ -4931,7 +4922,7 @@ throws Exception {
       if ((tempContentSpec1.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) 
         return true;
 
-      if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+      if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
         if (uriIndex == tempContentSpec1.otherValue) 
            return true; 
       }
@@ -4975,8 +4966,8 @@ throws Exception {
            return true; 
       }
 
-      if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
-        if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL &&
+      if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+        if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_NS &&
             tempContentSpec1.otherValue == tempContentSpec2.otherValue) 
            return true; 
 
@@ -5192,7 +5183,7 @@ throws Exception {
         int right = -1;
         if ( ctsp.type == ctsp.CONTENTSPECNODE_LEAF 
              || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY
-             || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_LOCAL
+             || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_NS
              || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_OTHER ) {
             return fSchemaGrammar.addContentSpecNode(ctsp.type, ctsp.value, ctsp.otherValue, false);
         }
