@@ -63,6 +63,7 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.datatype.*;
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
+
 /**
  * Title:
  * Description:
@@ -917,6 +918,8 @@ public class GeneralAttrCheck {
         }
     }
 
+    private Hashtable fIdDefs = new Hashtable();
+
     // used to store utility reference: error reproter. set via constructor.
     protected XMLErrorReporter fErrorReporter = null;
 
@@ -991,15 +994,20 @@ public class GeneralAttrCheck {
             String attrVal = sattr.getValue();
 
             try {
-                // URI doesn't validate relative URIs, so disable it too. //???
                 // no checking on string needs to be done here.
                 // no checking on xpath needs to be done here.
                 // xpath values are validated in xpath parser
                 if (oneAttr.dvIndex >= 0) {
                     if (oneAttr.dvIndex != DT_STRING &&
                         oneAttr.dvIndex != DT_XPATH &&
-                        oneAttr.dvIndex != DT_XPATH1)
-                        fExtraDVs[oneAttr.dvIndex].validate(attrVal, null);
+                        oneAttr.dvIndex != DT_XPATH1) {
+                        DatatypeValidator dv = fExtraDVs[oneAttr.dvIndex];
+                        if (dv instanceof IDDatatypeValidator) {
+                            dv.validate( attrVal, fIdDefs );
+                        } else {
+                            dv.validate( attrVal, null);
+                        }
+                    }
                     attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
                 } else {
                     attrVal = validate(attrName, attrVal, oneAttr.dvIndex);

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -159,85 +159,36 @@ public final class XMLValidator
    private static final int CHUNK_MASK = CHUNK_SIZE - 1;
    private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT));   // 2^10 = 1k
 
-   private Hashtable fIdDefs = null;
+   private Hashtable fIdDefs = new Hashtable();
+   private Hashtable fIdREFDefs = new Hashtable();
 
-
-   private  StateMessageDatatype fStoreIDRef = new StateMessageDatatype() {
+   private  StateMessageDatatype fValidateIDRef = new StateMessageDatatype() {
       private Hashtable fIdDefs;
       public Object getDatatypeObject(){
          return(Object) fIdDefs;
       }
-      public int    getDatatypeState(){
-         return IDREFDatatypeValidator.IDREF_STORE;
+      public int getDatatypeState(){
+         return IDREFDatatypeValidator.IDREF_VALIDATE;
       }
       public void setDatatypeObject( Object data ){
          fIdDefs = (Hashtable) data;
       }
    };
 
-   private StateMessageDatatype fResetID = new StateMessageDatatype() {
+   private  StateMessageDatatype fCheckIDRef = new StateMessageDatatype() {
+      private Object[] fLists;
       public Object getDatatypeObject(){
-         return(Object) null;
+         return(Object) fLists;
       }
-      public int    getDatatypeState(){
-         return IDDatatypeValidator.ID_CLEAR;
+      public int getDatatypeState(){
+         return IDREFDatatypeValidator.IDREF_CHECKID;
       }
       public void setDatatypeObject( Object data ){
+        fLists = (Object[]) data;
       }
    };
 
-
-   private StateMessageDatatype fResetIDRef = new StateMessageDatatype() {
-      public Object getDatatypeObject(){
-         return(Object) null;
-      }
-      public int    getDatatypeState(){
-         return IDREFDatatypeValidator.IDREF_CLEAR;
-      }
-      public void setDatatypeObject( Object data ){
-      }
-   };
-
-   private  StateMessageDatatype fValidateIDRef = new StateMessageDatatype() {
-      public Object getDatatypeObject(){
-         return(Object) null;
-      }
-      public int    getDatatypeState(){
-         return IDREFDatatypeValidator.IDREF_VALIDATE;
-      }
-      public void setDatatypeObject( Object data ){
-      }
-   };
-
-
-   private  StateMessageDatatype fValidateENTITYMsg = new StateMessageDatatype() {
-      private  Object  packagedMessage = null;
-      public Object getDatatypeObject(){
-         return packagedMessage;
-      }
-      public int    getDatatypeState(){
-         return ENTITYDatatypeValidator.ENTITY_INITIALIZE;//No state
-      }
-      public void setDatatypeObject( Object data ){
-         packagedMessage = data;// Set Entity Handler
-      }
-   };
-
-   /*
-   private  StateMessageDatatype fValidateNOTATIONMsg = new StateMessageDatatype() {
-       private  Object  packagedMessage = null;
-       public Object getDatatypeObject(){
-           return packagedMessage;
-       }
-       public int    getDatatypeState(){
-           return NOTATIONDatatypeValidator.ENTITY_INITIALIZE;//No state
-       }
-       public void setDatatypeObject( Object data ){
-           packagedMessage = data;// Set Entity Handler
-       }
-   };
-   */
-
+   private Object[] fEntityValParam = null;
    //
    // Data
    //
@@ -264,7 +215,7 @@ public final class XMLValidator
    private boolean fValidationEnabled = false;
    private boolean fDynamicValidation = false;
    private boolean fSchemaValidation = true;
-   private boolean fSchemaValidationFullChecking = false; 
+   private boolean fSchemaValidationFullChecking = false;
    private boolean fValidationEnabledByDynamic = false;
    private boolean fDynamicDisabledByValidation = false;
    private boolean fWarningOnDuplicateAttDef = false;
@@ -281,6 +232,13 @@ public final class XMLValidator
    private QName fCurrentElement = new QName();
 
    private ContentLeafNameTypeVector[] fContentLeafStack = new ContentLeafNameTypeVector[8];
+
+   //OTWI: on-the-way-in
+   private static boolean fOTWI = false;
+   private XMLContentModel[] fContentModelStack = new XMLContentModel[8];
+   // >= 0 normal state; -1: error; -2: on-the-way-out
+   private int[] fContentModelStateStack = new int[8];
+
    private int[] fValidationFlagStack = new int[8];
 
    private int[] fScopeStack = new int[8];
@@ -311,9 +269,9 @@ public final class XMLValidator
    private final int TOP_LEVEL_SCOPE = -1;
    private int fCurrentScope = TOP_LEVEL_SCOPE;
    private int fCurrentSchemaURI = StringPool.EMPTY_STRING;
-   private int fEmptyURI = StringPool.EMPTY_STRING; 
+   private int fEmptyURI = StringPool.EMPTY_STRING;
    private int fXsiPrefix = - 1;
-   private int fXsiURI = -2; 
+   private int fXsiURI = -2;
    private int fXsiTypeAttValue = -1;
    private DatatypeValidator fXsiTypeValidator = null;
 
@@ -360,7 +318,7 @@ public final class XMLValidator
     private short fWhiteSpace = DatatypeValidator.COLLAPSE;  //whiteSpace: preserve/replace/collapse
     private StringBuffer fStringBuffer = new StringBuffer(CHUNK_SIZE);  //holds normalized str value
     private StringBuffer fTempBuffer = new StringBuffer(CHUNK_SIZE);  //holds unnormalized str value
-    
+
 
 
    // symbols
@@ -399,7 +357,7 @@ public final class XMLValidator
 
     // identity constraint information
 
-    /** 
+    /**
      * Stack of active XPath matchers for identity constraints. All
      * active XPath matchers are notified of startElement, characters
      * and endElement callbacks in order to perform their matches.
@@ -436,6 +394,10 @@ public final class XMLValidator
       fErrorReporter = errorReporter;
       fEntityHandler = entityHandler;
       fDocumentScanner = documentScanner;
+
+      fEntityValParam = new Object[]{entityHandler, stringPool};
+      fValidateIDRef.setDatatypeObject(fIdREFDefs);
+      fCheckIDRef.setDatatypeObject(new Object[]{fIdDefs, fIdREFDefs});
 
       fEmptyURI = fStringPool.addSymbol("");
       fXsiURI = fStringPool.addSymbol(SchemaSymbols.URI_XSI);
@@ -497,13 +459,13 @@ public final class XMLValidator
    // settings
 
    /**
-    * Turning on validation/dynamic turns on validation if it is off, and 
+    * Turning on validation/dynamic turns on validation if it is off, and
     * this is remembered.  Turning off validation DISABLES validation/dynamic
     * if it is on.  Turning off validation/dynamic DOES NOT turn off
     * validation if it was explicitly turned on, only if it was turned on
     * BECAUSE OF the call to turn validation/dynamic on.  Turning on
     * validation will REENABLE and turn validation/dynamic back on if it
-    * was disabled by a call that turned off validation while 
+    * was disabled by a call that turned off validation while
     * validation/dynamic was enabled.
     */
    public void setValidationEnabled(boolean flag) throws Exception {
@@ -630,8 +592,8 @@ public final class XMLValidator
     //
 
    /**
-    * Start the value scope for the specified identity constraint. This 
-    * method is called when the selector matches in order to initialize 
+    * Start the value scope for the specified identity constraint. This
+    * method is called when the selector matches in order to initialize
     * the value store.
     *
     * @param identityConstraint The identity constraint.
@@ -647,7 +609,7 @@ public final class XMLValidator
 
     } // startValueScopeFor(IdentityConstraint identityConstraint)
 
-    /** 
+    /**
      * Request to activate the specified field. This method returns the
      * matcher for the field.
      *
@@ -740,9 +702,9 @@ public final class XMLValidator
      *          2 if there is only trailing whitespace,
      *          3 if there is both leading and trailing whitespace.
      */
-   
+
     private int normalizeWhitespace( StringBuffer chars, boolean collapse) {
-        int length = fTempBuffer.length(); 
+        int length = fTempBuffer.length();
         fStringBuffer.setLength(0);
         boolean skipSpace = collapse;
         boolean sawNonWS = false;
@@ -801,7 +763,7 @@ public final class XMLValidator
             if (fFirstChunk && fGrammar!=null) {
                 fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
                 fCurrentDV = fTempElementDecl.datatypeValidator;
-                if (fCurrentDV !=null) { 
+                if (fCurrentDV !=null) {
                     fWhiteSpace = fCurrentDV.getWSFacet();
                 }
             }
@@ -817,12 +779,12 @@ public final class XMLValidator
                 int spaces = normalizeWhitespace(fTempBuffer, (fWhiteSpace==DatatypeValidator.COLLAPSE));
                 int nLength = fStringBuffer.length();
                 if (nLength > 0) {
-                    if (!fFirstChunk && (fWhiteSpace==DatatypeValidator.COLLAPSE) && fTrailing) {                         
+                    if (!fFirstChunk && (fWhiteSpace==DatatypeValidator.COLLAPSE) && fTrailing) {
                          fStringBuffer.insert(0, ' ');
                          nLength++;
                     }
                     if ((length-offset)!=nLength) {
-                        char[] newChars = new char[nLength]; 
+                        char[] newChars = new char[nLength];
                         fStringBuffer.getChars(0, nLength , newChars, 0);
                         chars = newChars;
                         offset = 0;
@@ -833,7 +795,7 @@ public final class XMLValidator
                     }
                     fDatatypeBuffer.append(chars, offset, length);
                     fDocumentHandler.characters(chars, offset, length);
-                    
+
                     // call all active identity constraints
                     int count = fMatcherStack.getMatcherCount();
                     for (int i = 0; i < count; i++) {
@@ -851,7 +813,7 @@ public final class XMLValidator
             }
         }
     }
-      
+
        fFirstChunk = false;
        fDocumentHandler.characters(chars, offset, length);
 
@@ -875,9 +837,9 @@ public final class XMLValidator
         }
         if (fBufferDatatype) {
             fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
-                //REVISIT: add normalization according to datatypes 
+                //REVISIT: add normalization according to datatypes
             fCurrentDV = fTempElementDecl.datatypeValidator;
-            if (fCurrentDV !=null) { 
+            if (fCurrentDV !=null) {
                 fWhiteSpace = fCurrentDV.getWSFacet();
             }
             if (fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
@@ -919,7 +881,7 @@ public final class XMLValidator
    }
 
    /** Process whitespace. */
-   public void processWhitespace(char[] chars, int offset, int length) 
+   public void processWhitespace(char[] chars, int offset, int length)
    throws Exception {
 
       if (fInElementContent) {
@@ -988,7 +950,7 @@ public final class XMLValidator
    //
 
    /** Scans element type. */
-   public void scanElementType(XMLEntityHandler.EntityReader entityReader, 
+   public void scanElementType(XMLEntityHandler.EntityReader entityReader,
                                char fastchar, QName element) throws Exception {
 
       if (!fNamespacesEnabled) {
@@ -1011,8 +973,8 @@ public final class XMLValidator
    } // scanElementType(XMLEntityHandler.EntityReader,char,QName)
 
    /** Scans expected element type. */
-   public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, 
-                                          char fastchar, QName element) 
+   public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader,
+                                          char fastchar, QName element)
    throws Exception {
 
       if (fCurrentElementCharArrayRange == null) {
@@ -1024,8 +986,8 @@ public final class XMLValidator
    } // scanExpectedElementType(XMLEntityHandler.EntityReader,char,QName)
 
    /** Scans attribute name. */
-   public void scanAttributeName(XMLEntityHandler.EntityReader entityReader, 
-                                 QName element, QName attribute) 
+   public void scanAttributeName(XMLEntityHandler.EntityReader entityReader,
+                                 QName element, QName attribute)
    throws Exception {
 
       if (!fSeenRootElement) {
@@ -1191,11 +1153,11 @@ public final class XMLValidator
               matcher.startElement(element, fAttrList, fAttrListHandle, fCurrentElementIndex, (SchemaGrammar)fGrammar);
           }
       }
-      
+
       // call handler
       fDocumentHandler.startElement(element, fAttrList, fAttrListHandle);
       fElementDepth++;
-      fAttrListHandle = -1; 
+      fAttrListHandle = -1;
 
       //if (fElementDepth >= 0) {
       // REVISIT: Why are doing anything if the grammar is null? -Ac
@@ -1228,14 +1190,14 @@ public final class XMLValidator
             printChildren();
             printStack();
          }
-      
+
       }
 
       ensureStackCapacity(fElementDepth);
       fCurrentElement.setValues(element);
       fCurrentElementEntity = fEntityHandler.getReaderId();
 
-      fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
+      fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement);
 
       fElementEntityStack[fElementDepth] = fCurrentElementEntity;
       fElementIndexStack[fElementDepth] = fCurrentElementIndex;
@@ -1275,12 +1237,22 @@ public final class XMLValidator
 
    private void pushContentLeafStack() throws Exception {
       int contentType = getContentSpecType(fCurrentElementIndex);
-      if ( contentType == XMLElementDecl.TYPE_CHILDREN || 
+      if ( contentType == XMLElementDecl.TYPE_CHILDREN ||
            contentType == XMLElementDecl.TYPE_MIXED_COMPLEX) {
          XMLContentModel cm = getElementContentModel(fCurrentElementIndex);
          ContentLeafNameTypeVector cv = cm.getContentLeafNameTypeVector();
          if (cm != null) {
             fContentLeafStack[fElementDepth] = cv;
+            //OTWI: on-the-way-in
+            if (fOTWI) {
+                fContentModelStack[fElementDepth] = cm;
+                // for DFA, we validate on-the-way-in
+                // for other content models, we do it on-the-way-out
+                if (cm instanceof DFAContentModel)
+                    fContentModelStateStack[fElementDepth] = 0;
+                else
+                    fContentModelStateStack[fElementDepth] = -2;
+            }
          }
       }
    }
@@ -1326,6 +1298,16 @@ public final class XMLValidator
          ContentLeafNameTypeVector[] newStackV = new ContentLeafNameTypeVector[newElementDepth * 2];
          System.arraycopy(fContentLeafStack, 0, newStackV, 0, newElementDepth);
          fContentLeafStack = newStackV;
+
+         //OTWI: on-the-way-in
+         if (fOTWI) {
+             XMLContentModel[] newStackCM = new XMLContentModel[newElementDepth * 2];
+             System.arraycopy(fContentModelStack, 0, newStackCM, 0, newElementDepth);
+             fContentModelStack = newStackCM;
+             newStack = new int[newElementDepth * 2];
+             System.arraycopy(fContentModelStateStack, 0, newStack, 0, newElementDepth);
+             fContentModelStateStack = newStack;
+         }
       }
    }
 
@@ -1364,7 +1346,7 @@ public final class XMLValidator
                printChildren();
                printStack();
             }
-            int result = checkContent(elementIndex, 
+            int result = checkContent(elementIndex,
                                       children, childrenOffset, childrenLength);
 
             if ( DEBUG_SCHEMA_VALIDATION )
@@ -1406,7 +1388,7 @@ public final class XMLValidator
          // handle everything *but* keyref's.
          for (int i = oldCount - 1; i >= newCount; i--) {
              XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-             IdentityConstraint id; 
+             IdentityConstraint id;
              if((id = matcher.getIDConstraint()) != null  && id.getType() != IdentityConstraint.KEYREF) {
                  if (DEBUG_IDENTITY_CONSTRAINTS) {
                     System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
@@ -1419,7 +1401,7 @@ public final class XMLValidator
          // now handle keyref's/...
          for (int i = oldCount - 1; i >= newCount; i--) {
              XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-             IdentityConstraint id; 
+             IdentityConstraint id;
              if((id = matcher.getIDConstraint()) != null && id.getType() == IdentityConstraint.KEYREF) {
                  if (DEBUG_IDENTITY_CONSTRAINTS) {
                     System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
@@ -1455,17 +1437,12 @@ public final class XMLValidator
          //
          if (fValidating ) {
             try {
-                    this.fValIDRef.validate( null, this.fStoreIDRef ); //Store the ID list
-                    this.fValIDRefs.validate( null, this.fStoreIDRef );
-                    this.fValIDRef.validate( null, this.fValidateIDRef ); //Do final IDREF validation round  
-                    this.fValIDRefs.validate( null, this.fValidateIDRef );
-                    this.fValID.validate( null, this.fResetID );//Reset ID, IDREF, IDREFS validators here
-                    this.fValIDRef.validate(null, this.fResetIDRef );
-                    this.fValIDRefs.validate(null, this.fResetID );
-
+                this.fValIDRef.validate( null, this.fCheckIDRef ); //Do final IDREF validation round
+                this.fIdDefs.clear();
+                this.fIdREFDefs.clear();
             } catch ( InvalidDatatypeValueException ex ) {
-               reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
-                                          ex.getMessage() ); 
+               reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(),
+                                          ex.getMessage() );
             }
          }
          return;
@@ -1479,7 +1456,7 @@ public final class XMLValidator
 
       if (fNamespacesEnabled) { //If Namespace enable then localName != rawName
          fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
-      } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off 
+      } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off
          fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
       }
       fCurrentElement.rawname      = fElementQNamePartsStack[fElementDepth].rawname;
@@ -1493,7 +1470,7 @@ public final class XMLValidator
 
       fValidating = fValidationFlagStack[fElementDepth] == 0 ? true : false;
 
-      fCurrentScope = fScopeStack[fElementDepth];  
+      fCurrentScope = fScopeStack[fElementDepth];
 
       if ( DEBUG_SCHEMA_VALIDATION ) {
 
@@ -1514,8 +1491,8 @@ public final class XMLValidator
                  fGrammarIsSchemaGrammar = false;
                  fGrammarIsDTDGrammar = false;
                 } else if (!switchGrammar(fGrammarNameSpaceIndex)) {
-                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                               "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex) 
+                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR,
+                                               "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex)
                                                + " , can not be found");
              }
       }
@@ -1615,8 +1592,8 @@ public final class XMLValidator
       fRootElement.setValues(rootElement);
    }
 
-   /** 
-    * Returns true if the element declaration is external. 
+   /**
+    * Returns true if the element declaration is external.
     * <p>
     * <strong>Note:</strong> This method is primarilly useful for
     * DTDs with internal and external subsets.
@@ -1676,7 +1653,7 @@ public final class XMLValidator
    } // reportSchemaError(int,Object)
 
    /** Report a recoverable xml error. */
-   protected void reportRecoverableXMLError(int majorCode, int minorCode) 
+   protected void reportRecoverableXMLError(int majorCode, int minorCode)
    throws Exception {
 
       fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -1689,8 +1666,8 @@ public final class XMLValidator
    } // reportRecoverableXMLError(int,int)
 
    /** Report a recoverable xml error. */
-   protected void reportRecoverableXMLError(int majorCode, int minorCode, 
-                                            int stringIndex1) 
+   protected void reportRecoverableXMLError(int majorCode, int minorCode,
+                                            int stringIndex1)
    throws Exception {
 
       Object[] args = { fStringPool.toString(stringIndex1)};
@@ -1704,7 +1681,7 @@ public final class XMLValidator
    } // reportRecoverableXMLError(int,int,int)
 
    /** Report a recoverable xml error. */
-   protected void reportRecoverableXMLError(int majorCode, int minorCode, 
+   protected void reportRecoverableXMLError(int majorCode, int minorCode,
                                             String string1) throws Exception {
 
       Object[] args = { string1};
@@ -1718,8 +1695,8 @@ public final class XMLValidator
    } // reportRecoverableXMLError(int,int,String)
 
    /** Report a recoverable xml error. */
-   protected void reportRecoverableXMLError(int majorCode, int minorCode, 
-                                            int stringIndex1, int stringIndex2) 
+   protected void reportRecoverableXMLError(int majorCode, int minorCode,
+                                            int stringIndex1, int stringIndex2)
    throws Exception {
 
       Object[] args = { fStringPool.toString(stringIndex1), fStringPool.toString(stringIndex2)};
@@ -1733,8 +1710,8 @@ public final class XMLValidator
    } // reportRecoverableXMLError(int,int,int,int)
 
    /** Report a recoverable xml error. */
-   protected void reportRecoverableXMLError(int majorCode, int minorCode, 
-                                            String string1, String string2) 
+   protected void reportRecoverableXMLError(int majorCode, int minorCode,
+                                            String string1, String string2)
    throws Exception {
 
       Object[] args = { string1, string2};
@@ -1748,8 +1725,8 @@ public final class XMLValidator
    } // reportRecoverableXMLError(int,int,String,String)
 
    /** Report a recoverable xml error. */
-   protected void reportRecoverableXMLError(int majorCode, int minorCode, 
-                                            String string1, String string2, 
+   protected void reportRecoverableXMLError(int majorCode, int minorCode,
+                                            String string1, String string2,
                                             String string3) throws Exception {
 
       Object[] args = { string1, string2, string3};
@@ -1813,7 +1790,7 @@ public final class XMLValidator
       //  array. It can be equal, which means get appendable elements, but not
       //  greater.
       //
-      if (info.insertAt > info.childCount || info.curChildren == null ||  
+      if (info.insertAt > info.childCount || info.curChildren == null ||
           info.childCount < 1 || info.childCount > info.curChildren.length) {
          fErrorReporter.reportError(fErrorReporter.getLocator(),
                                     ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
@@ -1883,19 +1860,14 @@ public final class XMLValidator
 
    } // getLocatorImpl(LocatorImpl):LocatorImpl
 
-                                                           
+
    // initialization
 
    /** Reset pool. */
    private void poolReset() {
         if (fValidating) { // - el
-            try {
-                this.fValID.validate( null, this.fResetID );
-                this.fValIDRef.validate(null, this.fResetIDRef );
-                this.fValIDRefs.validate(null, this.fResetIDRef );
-            } catch (InvalidDatatypeValueException ex) { //should use error reporter
-                System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
-            }
+            this.fIdDefs.clear();
+            this.fIdREFDefs.clear();
         }
    } // poolReset()
 
@@ -1903,6 +1875,7 @@ public final class XMLValidator
    private void resetCommon(StringPool stringPool) throws Exception {
 
       fStringPool = stringPool;
+      fEntityValParam[1] = stringPool;
       fValidating = fValidationEnabled;
       fValidationEnabledByDynamic = false;
       fDynamicDisabledByValidation = false;
@@ -1921,16 +1894,16 @@ public final class XMLValidator
 
       fCurrentScope = TOP_LEVEL_SCOPE;
       fCurrentSchemaURI = StringPool.EMPTY_STRING;
-      fEmptyURI = StringPool.EMPTY_STRING; 
+      fEmptyURI = StringPool.EMPTY_STRING;
       fXsiPrefix = - 1;
       fXsiTypeValidator = null;
-      
+
       // xsi:nill
       fNil = false;
-      
+
       fGrammar = null;
       fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
-      
+
       // we will reset fGrammarResolver in XMLParser before passing it to Validator
       /*if (fGrammarResolver != null) {
          fGrammarResolver.clearGrammarResolver(); //This also clears the Datatype registry
@@ -1939,8 +1912,8 @@ public final class XMLValidator
       fGrammarIsSchemaGrammar = false;
 
       //Normalization
-      fCurrentDV = null; 
-      fFirstChunk = true; 
+      fCurrentDV = null;
+      fFirstChunk = true;
       fTrailing = false;
       fWhiteSpace = DatatypeValidator.COLLAPSE;
 
@@ -1993,38 +1966,26 @@ public final class XMLValidator
     * validation.
     * These Validators are known.
     * Later on if we ever find a Schema and need to do
-    * Schema validation then we will expand this 
+    * Schema validation then we will expand this
     * registry table of fDataTypeReg.
     */
    private void initDataTypeValidators() {
-       try {
-           //Initialize Validators
-           //Datatype Registry
-           if ( fGrammarResolver != null ) {
-               fDataTypeReg = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
-               fDataTypeReg.initializeDTDRegistry();
-            }
-           if ( fDataTypeReg != null ) {
+       //Initialize Validators
+       //Datatype Registry
+       if ( fGrammarResolver != null ) {
+           fDataTypeReg = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
+           fDataTypeReg.initializeDTDRegistry();
+        }
+       if ( fDataTypeReg != null ) {
 
-                fValID       = fDataTypeReg.getDatatypeValidator("ID" );
-                fValIDRef    = fDataTypeReg.getDatatypeValidator("IDREF" );
-                fValIDRefs   = fDataTypeReg.getDatatypeValidator("IDREFS" );
-                fValENTITY   = fDataTypeReg.getDatatypeValidator("ENTITY" );
-                fValENTITIES = fDataTypeReg.getDatatypeValidator("ENTITIES" );
-                fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
-                fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
-                fValNOTATION = fDataTypeReg.getDatatypeValidator("NOTATION" );
-
-
-               //Initialize ENTITY & ENTITIES Validatorh
-               Object[] packageArgsEntityVal = { (Object) this.fEntityHandler,
-                   (Object) this.fStringPool};
-                   fValidateENTITYMsg.setDatatypeObject( (Object ) packageArgsEntityVal);
-                   fValENTITY.validate( null, fValidateENTITYMsg );
-                   fValENTITIES.validate( null, fValidateENTITYMsg );
-           }
-       } catch ( InvalidDatatypeValueException ex ) {
-           System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+            fValID       = fDataTypeReg.getDatatypeValidator("ID" );
+            fValIDRef    = fDataTypeReg.getDatatypeValidator("IDREF" );
+            fValIDRefs   = fDataTypeReg.getDatatypeValidator("IDREFS" );
+            fValENTITY   = fDataTypeReg.getDatatypeValidator("ENTITY" );
+            fValENTITIES = fDataTypeReg.getDatatypeValidator("ENTITIES" );
+            fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
+            fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
+            fValNOTATION = fDataTypeReg.getDatatypeValidator("NOTATION" );
        }
    }
 
@@ -2112,7 +2073,7 @@ public final class XMLValidator
                }
             } else if (attValue != -1) {
                if (validationEnabled && standalone ) {
-                  if ( fGrammarIsDTDGrammar 
+                  if ( fGrammarIsDTDGrammar
                        && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
 
                      Object[] args = { fStringPool.toString(elementNameIndex),
@@ -2126,19 +2087,16 @@ public final class XMLValidator
                   }
                }
                if (validationEnabled) {
-                   if (attType == fIDREFSymbol) {
-                       this.fValIDRef.validate( fStringPool.toString(attValue), null );
-                   } else if (attType == fIDREFSSymbol) {
-                       this.fValIDRefs.validate( fStringPool.toString(attValue), null );
-                   }
+                   validateUsingDV (fTempAttDecl.datatypeValidator,
+                                    fStringPool.toString(attValue), true);
                }
                if (attrIndex == -1) {
                   attrIndex = attrList.startAttrList();
                }
                // REVISIT: Validation. What should the prefix be?
                fTempQName.setValues(attPrefix, attName, attName, fTempAttDecl.name.uri);
-               int newAttr = attrList.addAttr(fTempQName, 
-                                              attValue, attType, 
+               int newAttr = attrList.addAttr(fTempQName,
+                                              attValue, attType,
                                               false, false);
                if (lastCheck == -1) {
                   lastCheck = newAttr;
@@ -2211,7 +2169,7 @@ public final class XMLValidator
          /****
          if (fValidating && fGrammar != null && fGrammarIsDTDGrammar && attValue != -1) {
              normalizeAttValue(null, fTempAttDecl.name,
-                               attValue,attType,fTempAttDecl.list, 
+                               attValue,attType,fTempAttDecl.list,
                                fTempAttDecl.enumeration);
          }
          /****/
@@ -2262,7 +2220,7 @@ public final class XMLValidator
                }
             } else if (attValue != -1) {
                if (validationEnabled && standalone ){
-                  if ( fGrammarIsDTDGrammar 
+                  if ( fGrammarIsDTDGrammar
                        && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
 
                      Object[] args = { fStringPool.toString(elementNameIndex),
@@ -2276,20 +2234,16 @@ public final class XMLValidator
                   }
                }
                if (validationEnabled) {
-                    if (attType == fIDREFSymbol) {
-                        this.fValIDRef.validate( fStringPool.toString(attValue), null );
-                    }
-                    else if (attType == fIDREFSSymbol) {
-                        this.fValIDRefs.validate( fStringPool.toString(attValue), null );
-                    }
+                    validateUsingDV (fTempAttDecl.datatypeValidator,
+                                     fStringPool.toString(attValue), true);
                }
                if (attrIndex == -1) {
                   attrIndex = attrList.startAttrList();
                }
 
                fTempQName.setValues(attPrefix, attLocalpart, attName, fTempAttDecl.name.uri);
-               int newAttr = attrList.addAttr(fTempQName, 
-                                              attValue, attType, 
+               int newAttr = attrList.addAttr(fTempQName,
+                                              attValue, attType,
                                               false, false);
                if (lastCheck == -1) {
                   lastCheck = newAttr;
@@ -2393,7 +2347,7 @@ public final class XMLValidator
    private void rootElementSpecified(QName rootElement) throws Exception {
 
       if ( fLoadDTDGrammar )
-         // initialize the grammar to be the default one, 
+         // initialize the grammar to be the default one,
          // it definitely should be a DTD Grammar at this case;
          if (fGrammar == null) {
 
@@ -2417,7 +2371,7 @@ public final class XMLValidator
          }
 
       if (fValidating) {
-         if ( fGrammarIsDTDGrammar && 
+         if ( fGrammarIsDTDGrammar &&
               ((DTDGrammar) fGrammar).getRootElementQName(fRootElement) ) {
 
             String root1 = fStringPool.toString(fRootElement.rawname);
@@ -2425,7 +2379,7 @@ public final class XMLValidator
             if (!root1.equals(root2)) {
                reportRecoverableXMLError(XMLMessages.MSG_ROOT_ELEMENT_TYPE,
                                          XMLMessages.VC_ROOT_ELEMENT_TYPE,
-                                         fRootElement.rawname, 
+                                         fRootElement.rawname,
                                          rootElement.rawname);
             }
          }
@@ -2471,7 +2425,7 @@ public final class XMLValidator
    }
 
    /** Binds namespaces to the element and attributes. */
-   private void bindNamespacesToElementAndAttributes(QName element, 
+   private void bindNamespacesToElementAndAttributes(QName element,
                                                      XMLAttrList attrList)
    throws Exception {
 
@@ -2565,7 +2519,7 @@ public final class XMLValidator
                         //       namespace!!! -Ac
                         if (fNamespacesScope != null) {
                            //bind prefix "" to URI "" in this case
-                           fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""), 
+                           fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
                                                                    fStringPool.addSymbol(""));
                         }
                         /***/
@@ -2577,7 +2531,7 @@ public final class XMLValidator
                             fNil = (fStringPool.toString(attrList.getAttValue(index)).equals("true")) ? true: false;
 
                         }
-                     // REVISIT: should we break here? 
+                     // REVISIT: should we break here?
                      //break;
                   }
                }
@@ -2598,7 +2552,7 @@ public final class XMLValidator
             //TO DO: This should be a feature that can be turned on or off
             /*****
             for (int i=0; i< schemaCandidateURIs.size(); i++) {
-            
+
                 String uri = (String) schemaCandidateURIs.elementAt(i);
                 resolveSchemaGrammar(uri);
             }
@@ -2677,13 +2631,13 @@ public final class XMLValidator
    private void resolveSchemaGrammar( String loc, String uri) throws Exception {
 
       SchemaGrammar grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
-                  
+
       if (grammar == null) {
           if (fSchemaGrammarParser == null) {
               //
               // creating a parser for schema only once per parser instance
               // leads to less objects, but increases time we spend in reset()
-              // 
+              //
               fSchemaGrammarParser = new DOMParser();
               fSchemaGrammarParser.setEntityResolver( new Resolver(fEntityHandler) );
               fSchemaGrammarParser.setErrorHandler(  new ErrorHandler() );
@@ -2713,9 +2667,9 @@ public final class XMLValidator
          } catch ( IOException e ) {
             e.printStackTrace();
          } catch ( SAXException e ) {
-            reportRecoverableXMLError( XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+            reportRecoverableXMLError( XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                        XMLMessages.SCHEMA_GENERIC_ERROR, e.getMessage() );
-         } 
+         }
 
          Document     document   = fSchemaGrammarParser.getDocument(); //Our Grammar
 
@@ -2730,27 +2684,28 @@ public final class XMLValidator
                 root = document.getDocumentElement();// This is what we pass to TraverserSchema
             }
             if (root == null) {
-               reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Can't get back Schema document's root element :" + loc); 
+               reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Can't get back Schema document's root element :" + loc);
             } else {
                if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
-                  reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Schema in " + loc + " has a different target namespace " + 
-                                            "from the one specified in the instance document :" + uri); 
+                  reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Schema in " + loc + " has a different target namespace " +
+                                            "from the one specified in the instance document :" + uri);
                }
 
                grammar = new SchemaGrammar();
                grammar.setGrammarDocument(document);
-  
+
                 // Since we've just constructed a schema grammar, we should make sure we know what we've done.
                 fGrammarIsSchemaGrammar = true;
                 fGrammarIsDTDGrammar = false;
 
                 //At this point we should expand the registry table.
-                // pass parser's entity resolver (local Resolver), which also has reference to user's 
+                // pass parser's entity resolver (local Resolver), which also has reference to user's
                 // entity resolver, and also can fall-back to entityhandler's expandSystemId()
                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled());
-               fValID.validate( null, fResetID );//Reset ID for values appeared in the schema
+               this.fIdDefs.clear();
+               this.fIdREFDefs.clear();
 
-               //allowing xsi:schemaLocation to appear on any element 
+               //allowing xsi:schemaLocation to appear on any element
                String targetNS =   root.getAttribute("targetNamespace");
                fGrammarNameSpaceIndex = fStringPool.addSymbol(targetNS);
 
@@ -2761,7 +2716,7 @@ public final class XMLValidator
             e.printStackTrace(System.err);
          }
       }
-     
+
    }
 
    private void resolveSchemaGrammar(String uri) throws Exception{
@@ -2772,9 +2727,9 @@ public final class XMLValidator
 
    /*
     * for <notation> must resolve values "b:myNotation"
-    * 
+    *
     * @param value  string value of element or attribute
-    * @return 
+    * @return
     * @exception Exception
     */
    private String bindNotationURI (String value)  throws Exception{
@@ -2801,8 +2756,8 @@ public final class XMLValidator
                // might not work in all cases (need clarification from schema?)
                return  fStringPool.toString( fGrammarNameSpaceIndex)+":"+localpart;
            }
-               
-       
+
+
        }
        return value;
    }
@@ -2946,11 +2901,11 @@ public final class XMLValidator
    }
 
    /** Validates element and attributes. */
-   private void validateElementAndAttributes(QName element, 
-                                             XMLAttrList attrList) 
+   private void validateElementAndAttributes(QName element,
+                                             XMLAttrList attrList)
    throws Exception {
 
-      if ((fGrammarIsSchemaGrammar && fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )|| 
+      if ((fGrammarIsSchemaGrammar && fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )||
           (fGrammar == null && !fValidating && !fNamespacesEnabled) ) {
          fCurrentElementIndex = -1;
          fCurrentContentSpecType = -1;
@@ -2978,6 +2933,28 @@ public final class XMLValidator
       if ( fGrammarIsSchemaGrammar && fElementDepth > -1 && fContentLeafStack[fElementDepth] != null ) {
          ContentLeafNameTypeVector cv = fContentLeafStack[fElementDepth];
 
+         //OTWI: on-the-way-in
+         if (fOTWI) {
+         if (fContentModelStateStack[fElementDepth] >= 0) {
+            int pos = ((DFAContentModel)fContentModelStack[fElementDepth]).
+                      oneTransition(element, fContentModelStateStack, fElementDepth);
+            if (pos >= 0) {
+                switch (cv.leafTypes[pos]) {
+                case XMLContentSpec.CONTENTSPECNODE_ANY_SKIP:
+                case XMLContentSpec.CONTENTSPECNODE_ANY_NS_SKIP:
+                case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP:
+                      skipThisOne = true;
+                      break;
+                case XMLContentSpec.CONTENTSPECNODE_ANY_LAX:
+                case XMLContentSpec.CONTENTSPECNODE_ANY_NS_LAX:
+                case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_LAX:
+                      laxThisOne = true;
+                      break;
+                }
+            }
+         }
+         //OTWI: on-the-way-in
+         } else {
          QName[] fElemMap = cv.leafNames;
          for (int i=0; i<cv.leafCount; i++) {
             int type = cv.leafTypes[i]  ;
@@ -3026,7 +3003,8 @@ public final class XMLValidator
             }
 
          }
-
+         //OTWI: on-the-way-in
+         }
       }
 
       if (skipThisOne) {
@@ -3035,16 +3013,16 @@ public final class XMLValidator
 
          //REVISIT: is this the right place to check on if the Schema has changed?
 
-         if ( fNamespacesEnabled && fValidating && 
-              element.uri != fGrammarNameSpaceIndex && 
+         if ( fNamespacesEnabled && fValidating &&
+              element.uri != fGrammarNameSpaceIndex &&
               element.uri != StringPool.EMPTY_STRING) {
             fGrammarNameSpaceIndex = element.uri;
 
             boolean success = switchGrammar(fGrammarNameSpaceIndex);
 
             if (!success && !laxThisOne) {
-               reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                         "Grammar with uri 2: " + fStringPool.toString(fGrammarNameSpaceIndex) 
+               reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR,
+                                         "Grammar with uri 2: " + fStringPool.toString(fGrammarNameSpaceIndex)
                                          + " , can not be found");
             }
          }
@@ -3101,12 +3079,12 @@ public final class XMLValidator
                }
                //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
                /****/
-               if ( element.uri == StringPool.EMPTY_STRING && elementIndex == -1 
+               if ( element.uri == StringPool.EMPTY_STRING && elementIndex == -1
                && fNamespacesScope != null ) {
                elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
                // REVISIT:
                // this is a hack to handle the situation where namespace prefix "" is bound to nothing, and there
-               // is a "noNamespaceSchemaLocation" specified, and element 
+               // is a "noNamespaceSchemaLocation" specified, and element
                element.uri = StringPool.EMPTY_STRING;
                }
                /****/
@@ -3120,7 +3098,7 @@ public final class XMLValidator
                      System.out.println("!!! can not find elementDecl in the grammar, " +
                                         " the element localpart: " + element.localpart +
                                         "["+fStringPool.toString(element.localpart) +"]" +
-                                        " the element uri: " + element.uri + 
+                                        " the element uri: " + element.uri +
                                         "["+fStringPool.toString(element.uri) +"]" +
                                         " and the current enclosing scope: " + fCurrentScope );
                }
@@ -3129,7 +3107,7 @@ public final class XMLValidator
 
             if (DEBUG_SCHEMA_VALIDATION) {
                fGrammar.getElementDecl(elementIndex, fTempElementDecl);
-               System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
+               System.out.println("elementIndex: " + elementIndex+" \n and itsName : '"
                                   + fStringPool.toString(fTempElementDecl.name.localpart)
                                   +"' \n its ContentType:" + fTempElementDecl.type
                                   +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"+
@@ -3139,7 +3117,7 @@ public final class XMLValidator
 
          contentSpecType =  getContentSpecType(elementIndex);
 
-         if (fGrammarIsSchemaGrammar && elementIndex != -1) {
+         if (fGrammarIsSchemaGrammar) {
 
             // handle "xsi:type" right here
             if (fXsiTypeAttValue > -1) {
@@ -3162,10 +3140,10 @@ public final class XMLValidator
                         fGrammarNameSpaceIndex = fCurrentSchemaURI = uriIndex;
                         boolean success = switchGrammar(fCurrentSchemaURI);
                         if (!success && !fNeedValidationOff) {
-                           reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                                     XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                                     "Grammar with uri 3: " 
-                                                     + fStringPool.toString(fCurrentSchemaURI) 
+                           reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                                     XMLMessages.SCHEMA_GENERIC_ERROR,
+                                                     "Grammar with uri 3: "
+                                                     + fStringPool.toString(fCurrentSchemaURI)
                                                      + " , can not be found");
                         }
                      }
@@ -3176,13 +3154,13 @@ public final class XMLValidator
                Hashtable complexRegistry = ((SchemaGrammar)fGrammar).getComplexTypeRegistry();
                DatatypeValidatorFactoryImpl dataTypeReg = ((SchemaGrammar)fGrammar).getDatatypeRegistry();
                if (complexRegistry==null || dataTypeReg == null) {
-                  reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                            XMLMessages.SCHEMA_GENERIC_ERROR, 
+                  reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                            XMLMessages.SCHEMA_GENERIC_ERROR,
                                             fErrorReporter.getLocator().getSystemId()
                                             +" line"+fErrorReporter.getLocator().getLineNumber()
                                             +", canot resolve xsi:type = " + xsiType+"  ---2");
                } else {
-                  TraverseSchema.ComplexTypeInfo typeInfo = 
+                  TraverseSchema.ComplexTypeInfo typeInfo =
                   (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
 
                   if (typeInfo==null) {
@@ -3191,21 +3169,21 @@ public final class XMLValidator
                      } else
                         fXsiTypeValidator = dataTypeReg.getDatatypeValidator(uri+","+localpart);
                      if ( fXsiTypeValidator == null )
-                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                                  XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                                  "unresolved type : "+uri+","+localpart 
+                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                                  XMLMessages.SCHEMA_GENERIC_ERROR,
+                                                  "unresolved type : "+uri+","+localpart
                                                   +" found  in xsi:type handling");
-                     else { 
+                     else if (elementIndex != -1) {
                         // make sure the new type is related to the
                         // type of the expected element
                         XMLElementDecl tempElementDecl = new XMLElementDecl();
                         fGrammar.getElementDecl(elementIndex, tempElementDecl);
                         DatatypeValidator ancestorValidator = tempElementDecl.datatypeValidator;
                         DatatypeValidator tempVal = fXsiTypeValidator;
-                        for(; tempVal != null; tempVal = tempVal.getBaseValidator()) 
-                            // WARNING!!!  Comparison by reference. 
+                        for(; tempVal != null; tempVal = tempVal.getBaseValidator())
+                            // WARNING!!!  Comparison by reference.
                             if(tempVal == ancestorValidator) break;
-                        if(tempVal == null) { 
+                        if(tempVal == null) {
                             // now if ancestorValidator is a union, then we must
                             // look through its members to see whether we derive from any of them.
 			                if(ancestorValidator instanceof UnionDatatypeValidator) {
@@ -3214,8 +3192,8 @@ public final class XMLValidator
 			                    int subUnionSize = subUnionMemberDV.size();
 			                    boolean found = false;
 			                    for (int i=0; i<subUnionSize && !found; i++) {
-			                        DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
-			                        DatatypeValidator dTemp = fXsiTypeValidator; 
+			                        DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+			                        DatatypeValidator dTemp = fXsiTypeValidator;
 			                        for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
 			                            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
 			                            if(dTempSub == dTemp) {
@@ -3225,21 +3203,21 @@ public final class XMLValidator
 			                        }
 			                    }
 			                    if(!found) {
-                                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                        XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                        "Type : "+uri+","+localpart 
+                                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                        XMLMessages.SCHEMA_GENERIC_ERROR,
+                                        "Type : "+uri+","+localpart
                                         +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
 			                    }
 			                } else {
-                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                    XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                    "Type : "+uri+","+localpart 
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                    XMLMessages.SCHEMA_GENERIC_ERROR,
+                                    "Type : "+uri+","+localpart
                                     +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
                             }
                         } else { // check if element has block set
                             if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & SchemaSymbols.RESTRICTION) != 0) {
-                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                    XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                    XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Element " + fStringPool.toString(tempElementDecl.name.localpart)
                                     + "does not permit substitution by a type such as "+uri+","+localpart);
                             }
@@ -3252,41 +3230,43 @@ public final class XMLValidator
                      //
                      if (typeInfo.isAbstractType()) {
                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                               XMLMessages.SCHEMA_GENERIC_ERROR, 
-                               "Abstract type " + xsiType + " should not be used in xsi:type"); 
+                               XMLMessages.SCHEMA_GENERIC_ERROR,
+                               "Abstract type " + xsiType + " should not be used in xsi:type");
                      }
-                     // now we look at whether there is a type
-                     // relation and whether the type (and element) allow themselves to be substituted for.
+                     if (elementIndex != -1) {
+                         // now we look at whether there is a type
+                         // relation and whether the type (and element) allow themselves to be substituted for.
 
-                     TraverseSchema.ComplexTypeInfo tempType = typeInfo;
-                     TraverseSchema.ComplexTypeInfo destType = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex);
-                     for(; tempType != null && destType != null; tempType = tempType.baseComplexTypeInfo) {
-                        if(tempType.typeName.equals(destType.typeName))
-                            break; 
-                     }
-                     if(tempType == null) {
-                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                               XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                "Type : "+uri+","+localpart 
-                                +" does not derive from the type " + destType.typeName);
-                     } else if (destType == null) {
-                     // TO BE DONE:
-                     // if the original type is a simple type, check derivation ok.
-                     } else if (typeInfo != destType) { // now check whether the element or typeInfo's baseType blocks us.
-                        int derivationMethod = typeInfo.derivedBy;
-                        if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & derivationMethod) != 0) {
-                            XMLElementDecl tempElementDecl = new XMLElementDecl();
-                            fGrammar.getElementDecl(elementIndex, tempElementDecl);
+                         TraverseSchema.ComplexTypeInfo tempType = typeInfo;
+                         TraverseSchema.ComplexTypeInfo destType = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex);
+                         for(; tempType != null && destType != null; tempType = tempType.baseComplexTypeInfo) {
+                            if(tempType.typeName.equals(destType.typeName))
+                                break;
+                         }
+                         if(tempType == null) {
                             reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                               XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                "Element " + fStringPool.toString(tempElementDecl.name.localpart) +
-                                " does not permit xsi:type substitution in the manner required by type "+uri+","+localpart);
-                        } else if ((typeInfo.baseComplexTypeInfo.blockSet & derivationMethod) != 0) {
-                            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                               XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                "Type " + typeInfo.baseComplexTypeInfo.typeName + " does not permit other types, such as " 
-                                +uri+","+localpart + " to be substituted for itself using xsi:type");
-                        }
+                                   XMLMessages.SCHEMA_GENERIC_ERROR,
+                                    "Type : "+uri+","+localpart
+                                    +" does not derive from the type " + destType.typeName);
+                         } else if (destType == null) {
+                         // TO BE DONE:
+                         // if the original type is a simple type, check derivation ok.
+                         } else if (typeInfo != destType) { // now check whether the element or typeInfo's baseType blocks us.
+                            int derivationMethod = typeInfo.derivedBy;
+                            if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & derivationMethod) != 0) {
+                                XMLElementDecl tempElementDecl = new XMLElementDecl();
+                                fGrammar.getElementDecl(elementIndex, tempElementDecl);
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                   XMLMessages.SCHEMA_GENERIC_ERROR,
+                                    "Element " + fStringPool.toString(tempElementDecl.name.localpart) +
+                                    " does not permit xsi:type substitution in the manner required by type "+uri+","+localpart);
+                            } else if ((typeInfo.baseComplexTypeInfo.blockSet & derivationMethod) != 0) {
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                   XMLMessages.SCHEMA_GENERIC_ERROR,
+                                    "Type " + typeInfo.baseComplexTypeInfo.typeName + " does not permit other types, such as "
+                                    +uri+","+localpart + " to be substituted for itself using xsi:type");
+                            }
+                         }
                      }
                      elementIndex = typeInfo.templateElementIndex;
                   }
@@ -3295,7 +3275,7 @@ public final class XMLValidator
                fXsiTypeAttValue = -1;
             }
 
-            else {
+            else if (elementIndex != -1) {
                //
                // xsi:type was not specified...
                // If the corresponding type is abstract, detect an error
@@ -3303,62 +3283,62 @@ public final class XMLValidator
                TraverseSchema.ComplexTypeInfo typeInfo =
                  ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
 
-               if (typeInfo != null && 
+               if (typeInfo != null &&
                    typeInfo.isAbstractType()) {
                   reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                    XMLMessages.SCHEMA_GENERIC_ERROR,
                    "Element " + fStringPool.toString(element.rawname) + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type");
                }
             }
-               
 
-            //
-            // Check whether this element is abstract.  If so, an error
-            //
-            int miscFlags = ((SchemaGrammar) fGrammar).getElementDeclMiscFlags(elementIndex);
-            if ((miscFlags & SchemaSymbols.ABSTRACT) != 0) {
-              reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                XMLMessages.SCHEMA_GENERIC_ERROR,
-                "A member of abstract element " + fStringPool.toString(element.rawname) + "'s substitution group must be specified");
-            }
-            if (fNil && (miscFlags & SchemaSymbols.NILLABLE) == 0 ) {
-                fNil = false;
-                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
-                XMLMessages.SCHEMA_GENERIC_ERROR,
-                "xsi:nil must not be specified for the element "+ fStringPool.toString(element.rawname)+
-                                          " with {nillable} equals 'false'");            
-            }
-            //Change the current scope to be the one defined by this element.
-            fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(elementIndex);
+            if (elementIndex != -1) {
+                //
+                // Check whether this element is abstract.  If so, an error
+                //
+                int miscFlags = ((SchemaGrammar) fGrammar).getElementDeclMiscFlags(elementIndex);
+                if ((miscFlags & SchemaSymbols.ABSTRACT) != 0) {
+                  reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                    XMLMessages.SCHEMA_GENERIC_ERROR,
+                    "A member of abstract element " + fStringPool.toString(element.rawname) + "'s substitution group must be specified");
+                }
+                if (fNil && (miscFlags & SchemaSymbols.NILLABLE) == 0 ) {
+                    fNil = false;
+                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                    XMLMessages.SCHEMA_GENERIC_ERROR,
+                    "xsi:nil must not be specified for the element "+ fStringPool.toString(element.rawname)+
+                                              " with {nillable} equals 'false'");
+                }
+                //Change the current scope to be the one defined by this element.
+                fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(elementIndex);
 
-            //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
-            //       this element actually is of a type in another Schema.
-            String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
-            if (anotherSchemaURI != null) {
-               //before switch Grammar, set the elementIndex to be the template elementIndex of its type
-                // but if the content type is empty, we don't bother switching the grammar.
-               if (contentSpecType != -1 
-                   && contentSpecType != XMLElementDecl.TYPE_EMPTY ) {
-                  TraverseSchema.ComplexTypeInfo typeInfo = ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
-                  if (typeInfo != null) {
-                     elementIndex = typeInfo.templateElementIndex;
-                  }
+                //       here need to check if we need to switch Grammar by asking SchemaGrammar whether
+                //       this element actually is of a type in another Schema.
+                String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
+                if (anotherSchemaURI != null) {
+                   //before switch Grammar, set the elementIndex to be the template elementIndex of its type
+                    // but if the content type is empty, we don't bother switching the grammar.
+                   if (contentSpecType != -1
+                       && contentSpecType != XMLElementDecl.TYPE_EMPTY ) {
+                      TraverseSchema.ComplexTypeInfo typeInfo = ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
+                      if (typeInfo != null) {
+                         elementIndex = typeInfo.templateElementIndex;
+                      }
 
-               // now switch the grammar
-               fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
-               boolean success = switchGrammar(fCurrentSchemaURI);
-               if (!success && !fNeedValidationOff) {
-                  reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                            XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                            "Grammar with uri 4: " 
-                                            + fStringPool.toString(fCurrentSchemaURI) 
-                                            + " , can not be found");
-               }
-            }
-            }
+                      // now switch the grammar
+                      fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
+                      boolean success = switchGrammar(fCurrentSchemaURI);
+                      if (!success && !fNeedValidationOff) {
+                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                                   XMLMessages.SCHEMA_GENERIC_ERROR,
+                                                   "Grammar with uri 4: "
+                                                   + fStringPool.toString(fCurrentSchemaURI)
+                                                   + " , can not be found");
+                      }
+                    }
+                }
 
+             }
          }
-
          // since the elementIndex could change since last time we query the content type, so do it again.
          contentSpecType =  getContentSpecType(elementIndex);
 
@@ -3407,7 +3387,7 @@ public final class XMLValidator
 
                if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns)
                   if (fGrammar != null) {
-                     fTempQName.setValues(attrList.getAttrPrefix(index), 
+                     fTempQName.setValues(attrList.getAttrPrefix(index),
                                           attrList.getAttrLocalpart(index),
                                           attrList.getAttrName(index),
                                           attrList.getAttrURI(index) );
@@ -3429,12 +3409,12 @@ public final class XMLValidator
                                                          XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
                                                          XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
                                                          args,
-                                                         XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);   
+                                                         XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                               /******/
                            }
                         } else {
 
-                           fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
+                           fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
 
                            int attributeType = attributeTypeName(fTempAttDecl);
                            attrList.setAttType(index, attributeType);
@@ -3444,22 +3424,22 @@ public final class XMLValidator
                               if (fGrammarIsDTDGrammar) {
                                   int normalizedValue = validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                   attrList.setAttValue(index, normalizedValue);
-                                 
+
                               }
 
                               // check to see if this attribute matched an attribute wildcard
-                              else if ( fGrammarIsSchemaGrammar && 
-                                        (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
+                              else if ( fGrammarIsSchemaGrammar &&
+                                        (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY
                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
 
                                  if ((fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_SKIP) > 0) {
-                                    // attribute should just be bypassed, 
+                                    // attribute should just be bypassed,
                                  } else if ( (fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_STRICT) > 0
                                              || (fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_LAX) > 0) {
 
                                     boolean reportError = false;
-                                    boolean processContentStrict = 
+                                    boolean processContentStrict =
                                     (fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_STRICT) > 0;
 
                                     // ??? REVISIT: can't tell whether it's a local attribute
@@ -3470,7 +3450,7 @@ public final class XMLValidator
                                     //   }
                                     //} else {
                                     {
-                                       Grammar aGrammar = 
+                                       Grammar aGrammar =
                                        fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
 
                                        if (aGrammar == null || !(aGrammar instanceof SchemaGrammar) ) {
@@ -3500,26 +3480,14 @@ public final class XMLValidator
                                                    try {
                                                       String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
                                                       String  value       = unTrimValue.trim();
-                                                      if (attDV instanceof IDDatatypeValidator) {
-                                                         this.fStoreIDRef.setDatatypeObject( attDV.validate( value, null ) );
+                                                      fWhiteSpace = attDV.getWSFacet();
+                                                      if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
+                                                          attDV.validate(unTrimValue, null );
                                                       }
-                                                      if (attDV instanceof IDREFDatatypeValidator) {
-                                                         attDV.validate(value, null );
-                                                      }
-                                                       else {
-                                                              fWhiteSpace = attDV.getWSFacet();
-                                                              if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
-                                                                  attDV.validate(unTrimValue, null );
-                                                              }
-                                                              else { // normalize 
-                                                                  int normalizedValue = fStringPool.addString(value);
-                                                                  attrList.setAttValue(index,normalizedValue );
-                                                                  if (attDV instanceof NOTATIONDatatypeValidator 
-                                                                      && value !=null) {
-                                                                      value=bindNotationURI(value);
-                                                                  }
-                                                                  attDV.validate(value, null );
-                                                              }
+                                                      else { // normalize
+                                                          int normalizedValue = fStringPool.addString(value);
+                                                          attrList.setAttValue(index,normalizedValue );
+                                                          validateUsingDV(attDV, value, false);
                                                       }
                                                    } catch (InvalidDatatypeValueException idve) {
                                                       fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -3540,7 +3508,7 @@ public final class XMLValidator
 
                                        fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
 
-                                       fErrorReporter.reportError(fAttrNameLocator,    
+                                       fErrorReporter.reportError(fAttrNameLocator,
                                                                   XMLMessages.XML_DOMAIN,
                                                                   XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
                                                                   XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
@@ -3558,12 +3526,12 @@ public final class XMLValidator
                                  /****/
                                  fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
 
-                                 fErrorReporter.reportError(fAttrNameLocator,    
+                                 fErrorReporter.reportError(fAttrNameLocator,
                                                             XMLMessages.XML_DOMAIN,
                                                             XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
                                                             XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
                                                             args,
-                                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);   
+                                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                  /****/
                               } else {
                                  try {
@@ -3585,25 +3553,14 @@ public final class XMLValidator
                                                                     args,
                                                                     XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                     }
-                                    if (tempDV instanceof IDDatatypeValidator) {
-                                       this.fStoreIDRef.setDatatypeObject( tempDV.validate( value, null ) );
-                                    } else if (tempDV instanceof IDREFDatatypeValidator) {
-                                       tempDV.validate(value, null );
+                                    fWhiteSpace = tempDV.getWSFacet();
+                                    if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
+                                        tempDV.validate(unTrimValue, null );
                                     }
-                                    else {
-                                        fWhiteSpace = tempDV.getWSFacet();
-                                        if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
-                                            tempDV.validate(unTrimValue, null );
-                                        }
-                                        else { // normalize 
-                                            int normalizedValue = fStringPool.addString(value);
-                                            attrList.setAttValue(index,normalizedValue );
-                                            if (tempDV instanceof NOTATIONDatatypeValidator
-                                                && value !=null) {
-                                                value=bindNotationURI(value);
-                                            }
-                                            tempDV.validate(value, null );
-                                        }
+                                    else { // normalize
+                                        int normalizedValue = fStringPool.addString(value);
+                                        attrList.setAttValue(index,normalizedValue );
+                                        validateUsingDV(tempDV, value, false);
                                     }
                                  } catch (InvalidDatatypeValueException idve) {
                                     fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -3667,7 +3624,7 @@ public final class XMLValidator
     * Validate attributes in DTD fashion.
     * @return normalized attribute value
     */
-   private int validateDTDattribute(QName element, int attValue, 
+   private int validateDTDattribute(QName element, int attValue,
                                      XMLAttributeDecl attributeDecl) throws Exception{
       AttributeValidator av = null;
       switch (attributeDecl.type) {
@@ -3690,9 +3647,9 @@ public final class XMLValidator
 
             try {
                if ( isAlistAttribute ) {
-                  fValENTITIES.validate( value, null );
+                  fValENTITIES.validate( value, fEntityValParam );
                } else {
-                  fValENTITY.validate( value, null );
+                  fValENTITY.validate( value, fEntityValParam );
                }
             } catch ( InvalidDatatypeValueException ex ) {
                if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
@@ -3739,8 +3696,8 @@ public final class XMLValidator
                }
             }
             try {
-               this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
-               fValIDRef.validate( value, null ); //just in case we called id after IDREF
+               fValID.validate( value, fIdDefs );
+               fValIDRef.validate( value, this.fValidateIDRef ); //just in case we called id after IDREF
             } catch ( InvalidDatatypeValueException ex ) {
                reportRecoverableXMLError(ex.getMajorCode(),
                                          ex.getMinorCode(),
@@ -3774,9 +3731,9 @@ public final class XMLValidator
             }
             try {
                if ( isAlistAttribute ) {
-                  fValIDRefs.validate( value, null );
+                  fValIDRefs.validate( value, this.fValidateIDRef );
                } else {
-                  fValIDRef.validate( value, null );
+                  fValIDRef.validate( value, this.fValidateIDRef );
                }
             } catch ( InvalidDatatypeValueException ex ) {
                if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
@@ -3813,21 +3770,9 @@ public final class XMLValidator
                  }
              }
          }
-         try {
-             //this.fIdDefs = (Hashtable) fValID.validate( value, null );
-             //System.out.println("this.fIdDefs = " + this.fIdDefs );
-
-             this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
-         } catch ( InvalidDatatypeValueException ex ) {
-             reportRecoverableXMLError(ex.getMajorCode(),
-                                       ex.getMinorCode(),
-                                       fStringPool.toString( attributeDecl.name.rawname), value );
-         }
       }
         */
             av = fAttValidatorNOTATION;
-
-
          }
          break;
       case XMLAttributeDecl.TYPE_NMTOKEN:
@@ -3874,7 +3819,7 @@ public final class XMLValidator
          break;
       }
       if ( av != null ) {
-          int newValue = av.normalize(element, attributeDecl.name, attValue, 
+          int newValue = av.normalize(element, attributeDecl.name, attValue,
                                   attributeDecl.type, attributeDecl.enumeration);
           if (fNormalizeAttributeValues)
               attValue = newValue;
@@ -3972,9 +3917,9 @@ public final class XMLValidator
     *
     * @exception Exception Thrown on error.
     */
-   private int checkContent(int elementIndex, 
+   private int checkContent(int elementIndex,
                             QName[] children,
-                            int childOffset, 
+                            int childOffset,
                             int childCount) throws Exception {
 
       // Get the element name index from the element
@@ -4025,17 +3970,17 @@ public final class XMLValidator
       } else if (contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ||
                  contentType == XMLElementDecl.TYPE_MIXED_COMPLEX ||
                  contentType == XMLElementDecl.TYPE_CHILDREN) {
-         
-          // XML Schema REC: Validation Rule: Element Locally Valid (Element) 
-          // 3.2.1 The element information item must have no 
-          // character or element information item [children].  
+
+          // XML Schema REC: Validation Rule: Element Locally Valid (Element)
+          // 3.2.1 The element information item must have no
+          // character or element information item [children].
           //
           if (childCount == 0 && fNil) {
               fNil = false;
               //return success
               return -1;
           }
-          
+
           // Get the content model for this element, faulting it in if needed
          XMLContentModel cmElem = null;
          try {
@@ -4072,11 +4017,11 @@ public final class XMLValidator
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
          } else {
             try {
-                if (fCurrentDV == null) { //no character data   
+                if (fCurrentDV == null) { //no character data
                     fGrammar.getElementDecl(elementIndex, fTempElementDecl);
                     fCurrentDV = fTempElementDecl.datatypeValidator;
                 }
-                
+
                 // If there is xsi:type validator, substitute it.
                if ( fXsiTypeValidator != null ) {
                   fCurrentDV = fXsiTypeValidator;
@@ -4088,11 +4033,11 @@ public final class XMLValidator
                                      +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                } else {
                    String value =fDatatypeBuffer.toString();
+                   String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
                    // check for fixed/default values of elements here.
-                    if( ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex) != null && 
-                            ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex).equals("")) {
-                        if (!fNil) { 
-                            fCurrentDV.validate(value, null); 
+                    if( currentElementDefault == null || currentElementDefault.length() == 0) {
+                        if (!fNil) {
+                            validateUsingDV(fCurrentDV, value, false);
                         }
                         else if ( fNil && value.length() != 0 ) {
                             reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
@@ -4101,13 +4046,13 @@ public final class XMLValidator
                         }
                     }
                     else {
-                        String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
                         if ( (((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED) != 0 ) {
                             if ( value.length() == 0 ) {   // use fixed as default value
                                 // Note:  this is inefficient where the DOMParser
                                 // is concerned.  However, if we used the characters(int)
                                 // callback instead, this would be just as inefficient for SAX.
                                 fDocumentHandler.characters(currentElementDefault.toCharArray(), 0, currentElementDefault.length());
+                                validateUsingDV(fCurrentDV, currentElementDefault, true);
                             }
                             else { // must check in valuespace!
                                 if ( fCurrentDV.compare(value, currentElementDefault) != 0 ) {
@@ -4117,19 +4062,21 @@ public final class XMLValidator
                                                                0, null,
                                                                XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                 }
+                                validateUsingDV(fCurrentDV, value, true);
                             }
                         }
                         else {
                             if ( value.length() == 0 ) {   // use default value
                                 fDocumentHandler.characters(currentElementDefault.toCharArray(), 0, currentElementDefault.length());
+                                validateUsingDV(fCurrentDV, currentElementDefault, true);
                             }
-                            
+
                             else if (!fNil){ // must validate value
-                                fCurrentDV.validate(value, null); 
+                                validateUsingDV(fCurrentDV, value, false);
                             }
                         }
                     }
-               } 
+               }
             } catch (InvalidDatatypeValueException idve) {
                fErrorReporter.reportError(fErrorReporter.getLocator(),
                                           SchemaMessageProvider.SCHEMA_DOMAIN,
@@ -4158,7 +4105,7 @@ public final class XMLValidator
    } // checkContent(int,int,int[]):int
 
 
-   /** 
+   /**
     * Checks that all declared elements refer to declared elements
     * in their content models. This method calls out to the error
     * handler to indicate warnings.
@@ -4171,7 +4118,7 @@ public final class XMLValidator
 
        for (int i = 0; i < fElementCount; i++) {
            int type = fGrammar.getContentSpecType(i);
-           if (type == XMLElementDecl.TYPE_MIXED_SIMPLE || 
+           if (type == XMLElementDecl.TYPE_MIXED_SIMPLE ||
                type == XMLElementDecl.TYPE_MIXED_COMPLEX ||
                type == XMLElementDecl.TYPE_CHILDREN) {
                int chunk = i >> CHUNK_SHIFT;
@@ -4235,8 +4182,8 @@ public final class XMLValidator
       //
 
       /** Normalize. */
-      public int normalize(QName element, QName attribute, 
-                           int attValue, int attType, int enumHandle) 
+      public int normalize(QName element, QName attribute,
+                           int attValue, int attType, int enumHandle)
       throws Exception;
 
    } // interface AttributeValidator
@@ -4254,6 +4201,21 @@ public final class XMLValidator
       return getAttDefIsExternal(element, attribute);
    }
 
+   void validateUsingDV (DatatypeValidator dv, String content, boolean onlyVal3Types)
+       throws Exception, InvalidDatatypeValueException {
+       if (dv instanceof IDDatatypeValidator) {
+           dv.validate( content, fIdDefs );
+       } else if (dv instanceof IDREFDatatypeValidator) {
+           dv.validate( content, fValidateIDRef );
+       } else if (dv instanceof ENTITYDatatypeValidator) {
+           dv.validate( content, fEntityValParam);
+       } else if (!onlyVal3Types) {
+           if (dv instanceof NOTATIONDatatypeValidator && content != null) {
+               content = bindNotationURI(content);
+           }
+           dv.validate( content, null);
+       }
+   }
 
    //
    // Classes
@@ -4263,7 +4225,7 @@ public final class XMLValidator
    /**
     * AttValidatorNOTATION.
     */
-   final class AttValidatorNOTATION 
+   final class AttValidatorNOTATION
    implements AttributeValidator {
 
       //
@@ -4271,8 +4233,8 @@ public final class XMLValidator
       //
 
       /** Normalize. */
-      public int normalize(QName element, QName attribute, 
-                           int attValueHandle, int attType, 
+      public int normalize(QName element, QName attribute,
+                           int attValueHandle, int attType,
                            int enumHandle) throws Exception {
          //
          // Normalize attribute based upon attribute type...
@@ -4329,7 +4291,7 @@ public final class XMLValidator
    /**
     * AttValidatorENUMERATION.
     */
-   final class AttValidatorENUMERATION 
+   final class AttValidatorENUMERATION
    implements AttributeValidator {
 
       //
@@ -4337,8 +4299,8 @@ public final class XMLValidator
       //
 
       /** Normalize. */
-      public int normalize(QName element, QName attribute, 
-                           int attValueHandle, int attType, 
+      public int normalize(QName element, QName attribute,
+                           int attValueHandle, int attType,
                            int enumHandle) throws Exception {
          //
          // Normalize attribute based upon attribute type...
@@ -4527,7 +4489,7 @@ public final class XMLValidator
         // Public methods
         //
 
-        // destroys this ValueStore; useful when, for instanc,e a 
+        // destroys this ValueStore; useful when, for instanc,e a
         // locally-scoped ID constraint is involved.
         public void destroy() {
             fValuesCount = 0;
@@ -4538,10 +4500,10 @@ public final class XMLValidator
         // appends the contents of one ValueStore to those of us.
         public void append(ValueStoreBase newVal) {
             for (int i = 0; i < newVal.fValueTuples.size(); i++) {
-                OrderedHashtable o = (OrderedHashtable)newVal.fValueTuples.elementAt(i); 
-                if (!contains(o)) 
+                OrderedHashtable o = (OrderedHashtable)newVal.fValueTuples.elementAt(i);
+                if (!contains(o))
                     fValueTuples.addElement(o);
-            } 
+            }
         } // append(ValueStoreBase)
 
         /** Start scope for value store. */
@@ -4610,18 +4572,18 @@ public final class XMLValidator
                 return;
             }
 
-            
+
         } // endValueScope()
 
         // This is needed to allow keyref's to look for matched keys
         // in the correct scope.  Unique and Key may also need to
         // override this method for purposes of their own.
         // This method is called whenever the DocumentFragment
-        // of an ID Constraint goes out of scope.  
+        // of an ID Constraint goes out of scope.
         public void endDocumentFragment() throws Exception {
         } // endDocumentFragment():void
 
-        /** 
+        /**
          * Signals the end of the document. This is where the specific
          * instances of value stores can verify the integrity of the
          * identity constraints.
@@ -4673,7 +4635,7 @@ public final class XMLValidator
                 int code = SchemaMessageProvider.UnknownField;
                 reportSchemaError(code, new Object[]{field.toString()});
                 return;
-            }    
+            }
 
             // store value
             IDValue storedValue = fValues.valueAt(index);
@@ -4687,7 +4649,7 @@ public final class XMLValidator
                 if (contains(fValues)) {
                     duplicateValue(fValues);
                 }
-    
+
                 // store values
                 OrderedHashtable values = (OrderedHashtable)fValues.clone();
                 fValueTuples.addElement(values);
@@ -4695,15 +4657,15 @@ public final class XMLValidator
 
         } // addValue(String,Field)
 
-        /** 
+        /**
          * Returns true if this value store contains the specified
-         * values tuple. 
+         * values tuple.
          */
         public boolean contains(OrderedHashtable tuple) {
             if (DEBUG_VALUE_STORES) {
                 System.out.println("<VS>: "+this.toString()+"#contains("+toString(tuple)+")");
             }
-           
+
             // do sizes match?
             int tcount = tuple.size();
 
@@ -4733,13 +4695,13 @@ public final class XMLValidator
         // Protected methods
         //
 
-        /** 
+        /**
          * Called when a duplicate value is added. Subclasses should override
          * this method to perform error checking.
          *
          * @param tuple The duplicate value tuple.
          */
-        protected void duplicateValue(OrderedHashtable tuple) 
+        protected void duplicateValue(OrderedHashtable tuple)
             throws Exception {
             // no-op
         } // duplicateValue(Hashtable)
@@ -4806,12 +4768,12 @@ public final class XMLValidator
         // ValueStoreBase protected methods
         //
 
-        /** 
+        /**
          * Called when a duplicate value is added.
          *
          * @param tuple The duplicate value tuple.
          */
-        protected void duplicateValue(OrderedHashtable tuple) 
+        protected void duplicateValue(OrderedHashtable tuple)
             throws Exception {
             int code = SchemaMessageProvider.DuplicateUnique;
             String value = toString(tuple);
@@ -4844,12 +4806,12 @@ public final class XMLValidator
         // ValueStoreBase protected methods
         //
 
-        /** 
+        /**
          * Called when a duplicate value is added.
          *
          * @param tuple The duplicate value tuple.
          */
-        protected void duplicateValue(OrderedHashtable tuple) 
+        protected void duplicateValue(OrderedHashtable tuple)
             throws Exception {
             int code = SchemaMessageProvider.DuplicateKey;
             String value = toString(tuple);
@@ -4898,7 +4860,7 @@ public final class XMLValidator
             // verify references
             // get the key store corresponding (if it exists):
             fKeyValueStore = (ValueStoreBase)fValueStoreCache.fGlobalIDConstraintMap.get(((KeyRef)fIdentityConstraint).getKey());
-            
+
             if(fKeyValueStore == null) {
                 // report error
                 int code = SchemaMessageProvider.KeyRefOutOfScope;
@@ -4918,7 +4880,7 @@ public final class XMLValidator
                 }
             }
 
-        } // endDocumentFragment() 
+        } // endDocumentFragment()
 
         /** End document. */
         public void endDocument() throws Exception {
@@ -4950,24 +4912,24 @@ public final class XMLValidator
         /** Values stores associated to specific identity constraints. */
         protected final Hashtable fIdentityConstraint2ValueStoreMap = new Hashtable();
 
-        // sketch of algorithm:  
+        // sketch of algorithm:
         // - when a constraint is first encountered, its
         //  values are stored in the (local) fIdentityConstraint2ValueStoreMap;
-        // - Once it is validated (i.e., wen it goes out of scope), 
+        // - Once it is validated (i.e., wen it goes out of scope),
         //  its values are merged into the fGlobalIDConstraintMap;
         // - as we encounter keyref's, we look at the global table to
-        //  validate them.  
+        //  validate them.
         // the fGlobalIDMapStack has the following structure:
-        // - validation always occurs against the fGlobalIDConstraintMap 
+        // - validation always occurs against the fGlobalIDConstraintMap
         // (which comprises all the "eligible" id constraints);
         // When an endelement is found, this Hashtable is merged with the one
         // below in the stack.
         // When a start tag is encountered, we create a new
-        // fGlobalIDConstraintMap. 
-        // i.e., the top of the fGlobalIDMapStack always contains 
+        // fGlobalIDConstraintMap.
+        // i.e., the top of the fGlobalIDMapStack always contains
         // the preceding siblings' eligible id constraints;
         // the fGlobalIDConstraintMap contains descendants+self.
-        // keyrefs can only match descendants+self.  
+        // keyrefs can only match descendants+self.
         protected final Stack fGlobalMapStack = new Stack();
         protected final Hashtable fGlobalIDConstraintMap = new Hashtable();
 
@@ -5022,11 +4984,11 @@ public final class XMLValidator
             }
         } // endElement()
 
-        /** 
+        /**
          * Initializes the value stores for the specified element
-         * declaration. 
+         * declaration.
          */
-        public void initValueStoresFor(XMLElementDecl eDecl) 
+        public void initValueStoresFor(XMLElementDecl eDecl)
             throws Exception {
             if (DEBUG_VALUE_STORES) {
                 System.out.println("<VS>: "+toString()+"#initValueStoresFor("+
@@ -5113,8 +5075,8 @@ public final class XMLValidator
         } // getValueStoreFor(IdentityConstraint):ValueStoreBase
         // This method takes the contents of the (local) ValueStore
         // associated with id and moves them into the global
-        // hashtable, if id is a <unique> or a <key>.  
-        // If it's a <keyRef>, then we leave it for later. 
+        // hashtable, if id is a <unique> or a <key>.
+        // If it's a <keyRef>, then we leave it for later.
         public void transplant(IdentityConstraint id) throws Exception {
             if (id.getType() == IdentityConstraint.KEYREF ) return;
             ValueStoreBase newVals = (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(id);
@@ -5125,7 +5087,7 @@ public final class XMLValidator
                 fGlobalIDConstraintMap.put(id, currVals);
             } else
                 fGlobalIDConstraintMap.put(id, newVals);
-                
+
         } // transplant(id)
 
         /** Check identity constraints. */
@@ -5165,7 +5127,7 @@ public final class XMLValidator
     // utility classes
 
     /**
-     * Ordered hashtable. This class acts as a hashtable with 
+     * Ordered hashtable. This class acts as a hashtable with
      * <code>put()</code> and <code>get()</code> operations but also
      * allows values to be queried via the order that they were
      * added to the hashtable.
@@ -5178,7 +5140,7 @@ public final class XMLValidator
      *
      * @author Andy Clark, IBM
      */
-    static final class OrderedHashtable 
+    static final class OrderedHashtable
         implements Cloneable {
 
         //
@@ -5221,12 +5183,12 @@ public final class XMLValidator
             for (int i = 0; i < fSize; i++) {
                 // NOTE: Only way to be sure that the keys are the
                 //       same is by using a reference comparison. In
-                //       order to rely on the equals method, each 
+                //       order to rely on the equals method, each
                 //       field would have to take into account its
                 //       position in the identity constraint, the
                 //       identity constraint, the declaring element,
-                //       and the grammar that it is defined in. 
-                //       Otherwise, you have the possibility that 
+                //       and the grammar that it is defined in.
+                //       Otherwise, you have the possibility that
                 //       the equals method would return true for two
                 //       fields that look *very* similar.
                 //       The reference compare isn't bad, actually,

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -66,13 +66,13 @@ import org.apache.xerces.validators.schema.SchemaGrammar;
 
 /**
  * DFAContentModel is the derivative of ContentModel that does
- * all of the non-trivial element content validation. This class does 
- * the conversion from the regular expression to the DFA that 
+ * all of the non-trivial element content validation. This class does
+ * the conversion from the regular expression to the DFA that
  * it then uses in its validation algorithm.
  *
  * @version $Id$
  */
-public class DFAContentModel 
+public class DFAContentModel
     implements XMLContentModel {
 
     //
@@ -109,7 +109,7 @@ public class DFAContentModel
     private QName fElemMap[] = null;
 
     /**
-     * This is a map of whether the element map contains information 
+     * This is a map of whether the element map contains information
      * related to ANY models.
      */
     private int fElemMapType[] = null;
@@ -237,8 +237,8 @@ public class DFAContentModel
      * @exception CMException Thrown if DMA can't be built.
      */
 
-   // public DFAContentModel(StringPool stringPool, 
-   public DFAContentModel( CMNode syntaxTree, 
+   // public DFAContentModel(StringPool stringPool,
+   public DFAContentModel( CMNode syntaxTree,
                            int leafCount) throws CMException {
        this(syntaxTree, leafCount, false, false);
    }
@@ -253,8 +253,8 @@ public class DFAContentModel
      * @exception CMException Thrown if DMA can't be built.
      */
 
-   // public DFAContentModel(StringPool stringPool, 
-   public DFAContentModel( CMNode syntaxTree, 
+   // public DFAContentModel(StringPool stringPool,
+   public DFAContentModel( CMNode syntaxTree,
                            int leafCount, boolean dtd, boolean mixed) throws CMException {
 
         // Store away our index and pools in members
@@ -293,7 +293,7 @@ public class DFAContentModel
         //  string handlers around, this guy and all of his helper classes
         //  just throw a simple exception and we then pass it along.
         //
-       
+
 	DFAContentModel.time -= System.currentTimeMillis();
 
         buildDFA(syntaxTree);
@@ -301,7 +301,7 @@ public class DFAContentModel
 	DFAContentModel.time += System.currentTimeMillis();
 
 	if (DEBUG_VALIDATE_CONTENT)
-	    System.out.println("DFA build: " + DFAContentModel.time + "ms");                
+	    System.out.println("DFA build: " + DFAContentModel.time + "ms");
     }
 
     private static long time = 0;
@@ -309,15 +309,15 @@ public class DFAContentModel
     //
     // XMLContentModel methods
     //
-    
+
     /**
      * Check that the specified content is valid according to this
-     * content model. This method can also be called to do 'what if' 
+     * content model. This method can also be called to do 'what if'
      * testing of content models just to see if they would be valid.
      * <p>
-     * A value of -1 in the children array indicates a PCDATA node. All other 
+     * A value of -1 in the children array indicates a PCDATA node. All other
      * indexes will be positive and represent child elements. The count can be
-     * zero, since some elements have the EMPTY content model and that must be 
+     * zero, since some elements have the EMPTY content model and that must be
      * confirmed.
      *
      * @param children The children of this element.  Each integer is an index within
@@ -336,13 +336,13 @@ public class DFAContentModel
      */
     public int validateContent(QName children[], int offset, int length) throws CMException {
 
-        if (DEBUG_VALIDATE_CONTENT) 
+        if (DEBUG_VALIDATE_CONTENT)
             System.out.println("DFAContentModel#validateContent");
 
         //
         // A DFA content model must *always* have at least 1 child
         // so a failure is given if no children present.
-        // 
+        //
         // Defect 782: This is an incorrect statement because a DFA
         // content model is also used for constructions such as:
         //
@@ -400,7 +400,7 @@ public class DFAContentModel
                 if (fDTD) {
                     if (fElemMap[elemIndex].rawname == curElem.rawname) {
                         nextState = fTransTable[curState][elemIndex];
-                        if (nextState != -1) 
+                        if (nextState != -1)
                           break;
                     }
                 }
@@ -411,35 +411,35 @@ public class DFAContentModel
                             && fElemMap[elemIndex].localpart == curElem.localpart)
                             {
                             nextState = fTransTable[curState][elemIndex];
-                            if (nextState != -1) 
+                            if (nextState != -1)
                                 break;
                         }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                             nextState = fTransTable[curState][elemIndex];
-                            if (nextState != -1) 
+                            if (nextState != -1)
                               break;
                         }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
                         if (curElem.uri == fElemMap[elemIndex].uri) {
                             nextState = fTransTable[curState][elemIndex];
-                            if (nextState != -1) 
+                            if (nextState != -1)
                               break;
                         }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
                         if (fElemMap[elemIndex].uri != curElem.uri) {
                             nextState = fTransTable[curState][elemIndex];
-                            if (nextState != -1) 
+                            if (nextState != -1)
                               break;
                         }
                     }
                 }
             }
 
-            // If "nextState" is -1, we found a match, but the transition is invalid 
+            // If "nextState" is -1, we found a match, but the transition is invalid
             if (nextState == -1) {
-                if (DEBUG_VALIDATE_CONTENT) 
+                if (DEBUG_VALIDATE_CONTENT)
                     System.out.println("!!! not a legal transition");
                 return childIndex;
             }
@@ -459,7 +459,7 @@ public class DFAContentModel
                 return childIndex;
             }
 
-            curState = nextState;                              
+            curState = nextState;
             nextState = 0;
 
         }
@@ -469,7 +469,7 @@ public class DFAContentModel
         //  does not mean that we ended in a final state. So check whether
         //  our ending state is a final state.
         //
-        if (DEBUG_VALIDATE_CONTENT) 
+        if (DEBUG_VALIDATE_CONTENT)
             System.out.println("curState="+curState+", childCount="+length);
         if (!fFinalStateFlags[curState])
             return length;
@@ -483,9 +483,9 @@ public class DFAContentModel
             return name1.localpart == name2.localpart &&
                 name1.uri == name2.uri;
     }
-    
+
     public int validateContentSpecial(QName children[], int offset, int length) throws Exception{
-        if (DEBUG_VALIDATE_CONTENT) 
+        if (DEBUG_VALIDATE_CONTENT)
             System.out.println("DFAContentModel#validateContentSpecial");
 
         if (comparator==null) {
@@ -528,35 +528,35 @@ public class DFAContentModel
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                     if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex]) ) {
                         nextState = fTransTable[curState][elemIndex];
-                        if (nextState != -1) 
+                        if (nextState != -1)
                             break;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                         nextState = fTransTable[curState][elemIndex];
-                        if (nextState != -1) 
+                        if (nextState != -1)
                           break;
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
                     if (curElem.uri == fElemMap[elemIndex].uri) {
                         nextState = fTransTable[curState][elemIndex];
-                        if (nextState != -1) 
+                        if (nextState != -1)
                           break;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
                     if (fElemMap[elemIndex].uri != curElem.uri) {
                         nextState = fTransTable[curState][elemIndex];
-                        if (nextState != -1) 
+                        if (nextState != -1)
                           break;
                     }
                 }
-            
+
             }
 
-            // If "nextState" is -1, we found a match, but the transition is invalid 
+            // If "nextState" is -1, we found a match, but the transition is invalid
             if (nextState == -1) {
-                if (DEBUG_VALIDATE_CONTENT) 
+                if (DEBUG_VALIDATE_CONTENT)
                     System.out.println("!!! not a legal transition");
                 return childIndex;
             }
@@ -576,7 +576,7 @@ public class DFAContentModel
                 return childIndex;
             }
 
-            curState = nextState;                              
+            curState = nextState;
             nextState = 0;
 
         }
@@ -586,13 +586,89 @@ public class DFAContentModel
         //  does not mean that we ended in a final state. So check whether
         //  our ending state is a final state.
         //
-        if (DEBUG_VALIDATE_CONTENT) 
+        if (DEBUG_VALIDATE_CONTENT)
             System.out.println("curState="+curState+", childCount="+length);
         if (!fFinalStateFlags[curState])
             return length;
 
         // success!
         return -1;
+    }
+
+    /**
+     * one transition only
+     *
+     * @param curElem     The current element's QName
+     * @param stateStack  stack to store the previous state
+     * @param curPos      the current position of the stack
+     *
+     * @return The value -1 if not valid, otherwise the index of the matching leaf
+     *
+     * @exception CMException Thrown on error.
+     */
+    public int oneTransition(QName curElem, int[] stateStack, int curPos) throws Exception{
+        int curState = stateStack[curPos];
+
+        // if it's an illegal state, just return -1
+        if (curState < 0) {
+            return -1;
+        }
+
+        int nextState = 0;
+        int elemIndex = 0;
+
+        for (; elemIndex < fElemMapSize; elemIndex++) {
+            int type = fElemMapType[elemIndex] & 0x0f ;
+            if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                if (isEqual(curElem, fElemMap[elemIndex])) {
+                    nextState = fTransTable[curState][elemIndex];
+                    if (nextState != -1)
+                        break;
+                }
+            }
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+                    nextState = fTransTable[curState][elemIndex];
+                    if (nextState != -1)
+                      break;
+            }
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+                if (curElem.uri == fElemMap[elemIndex].uri) {
+                    nextState = fTransTable[curState][elemIndex];
+                    if (nextState != -1)
+                      break;
+                }
+            }
+            else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                if (fElemMap[elemIndex].uri != curElem.uri) {
+                    nextState = fTransTable[curState][elemIndex];
+                    if (nextState != -1)
+                      break;
+                }
+            }
+        }
+
+        // if we can't find a match, try substitutionGroup
+        if (elemIndex == fElemMapSize && comparator != null) {
+            for (elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+                if (fElemMapType[elemIndex] == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex])) {
+                        nextState = fTransTable[curState][elemIndex];
+                        if (nextState != -1)
+                            break;
+                    }
+                }
+            }
+        }
+
+        // if we still can't find a match, set the state to -1 (error)
+        // and return -1
+        if (elemIndex == fElemMapSize) {
+            stateStack[curPos] = -1;
+            return -1;
+        }
+
+        stateStack[curPos] = nextState;
+        return elemIndex;
     }
 
     public void setSubstitutionGroupComparator(SubstitutionGroupComparator comparator) {
@@ -620,14 +696,14 @@ public class DFAContentModel
      *             and which will contain the output information if successful.
      *
      * @return The value -1 if fully valid, else the 0 based index of the child
-     *         that first failed before the insertion point. If the value 
+     *         that first failed before the insertion point. If the value
      *         returned is equal to the number of children, then the specified
      *         children are valid but additional content is required to reach a
      *         valid ending state.
      *
      * @see InsertableElementsInfo
      */
-    public int whatCanGoHere(boolean fullyValid, 
+    public int whatCanGoHere(boolean fullyValid,
                              InsertableElementsInfo info) throws CMException {
 
         //
@@ -644,7 +720,7 @@ public class DFAContentModel
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                if (fElemMap[elemIndex].uri == curElem.uri && 
+                if (fElemMap[elemIndex].uri == curElem.uri &&
                     fElemMap[elemIndex].localpart == curElem.localpart)
                     break;
             }
@@ -672,7 +748,7 @@ public class DFAContentModel
         final int insertState = curState;
 
         //
-        //  Set any stuff we can know right off the bat for all cases. 
+        //  Set any stuff we can know right off the bat for all cases.
         //  We can set the valid EOC flag at this point
         //  since its just based on the state we ended in at the insert point.
         //  The 'canHoldPCData" will be true if it's a mixed content model.
@@ -791,7 +867,7 @@ public class DFAContentModel
     // Private methods
     //
 
-    /** 
+    /**
      * Builds the internal DFA transition table from the given syntax tree.
      *
      * @param syntaxTree The syntax tree.
@@ -829,7 +905,7 @@ public class DFAContentModel
         //  for that matter.)
         //
 
-	/* MODIFIED (Jan, 2001) 
+	/* MODIFIED (Jan, 2001)
 	 *
 	 * Use following rules.
 	 *   nullable(x+) := nullable(x), first(x+) := first(x),  last(x+) := last(x)
@@ -926,7 +1002,7 @@ public class DFAContentModel
                 else {
                     if (fElemMapType[inIndex] == fLeafListType[outIndex] &&
                         fElemMap[inIndex].uri == element.uri &&
-                            fElemMap[inIndex].localpart == element.localpart) 
+                            fElemMap[inIndex].localpart == element.localpart)
                         break;
                 }
             }
@@ -941,16 +1017,16 @@ public class DFAContentModel
                 //}
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
                 fElemMapSize++;
-            } 
+            }
         }
         // set up the fLeafNameTypeVector object if there is one.
         if (fLeafNameTypeVector != null) {
             fLeafNameTypeVector.setValues(fElemMap, fElemMapType, fElemMapSize);
         }
 
-	/*** 
-	* Optimization(Jan, 2001); We sort fLeafList according to 
-	* elemIndex which is *uniquely* associated to each leaf.  
+	/***
+	* Optimization(Jan, 2001); We sort fLeafList according to
+	* elemIndex which is *uniquely* associated to each leaf.
 	* We are *assuming* that each element appears in at least one leaf.
 	**/
 
@@ -974,7 +1050,7 @@ public class DFAContentModel
 		}
 	    }
 	    fLeafSorter[fSortCount++] = -1;
-	} 
+	}
 
 	/* Optimization(Jan, 2001) */
 
@@ -1175,7 +1251,7 @@ public class DFAContentModel
         //  And now we can say bye bye to the temp representation since we've
         //  built the DFA.
         //
-        if (DEBUG_VALIDATE_CONTENT) 
+        if (DEBUG_VALIDATE_CONTENT)
             dumpTree(fHeadNode, 0);
         fHeadNode = null;
         fLeafList = null;
@@ -1248,7 +1324,7 @@ public class DFAContentModel
                     fFollowList[index].union(first);
             }
         }
-       
+
         else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
             // Recurse only
             calcFollowList(((CMUniOp)nodeCur).getChild());
@@ -1366,7 +1442,7 @@ public class DFAContentModel
             throw new CMException(ImplementationMessages.VAL_NIICM);
         }
         }
-        
+
     }
 
 

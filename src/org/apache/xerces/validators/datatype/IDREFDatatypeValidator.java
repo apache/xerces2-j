@@ -75,14 +75,20 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  */
 public class IDREFDatatypeValidator extends StringDatatypeValidator {
     private static StringDatatypeValidator  fgStrValidator  = null;
-    private static Object                   fNullValue      = null;
-    protected static Hashtable              fTableOfId      = null; //This is pass to us through the state object
-    private static Hashtable                fTableIDRefs    = null;
+    private static Object                   fNullValue      = new Object();
 
-    public static final  int                IDREF_STORE     = 0;
-    public static final  int                IDREF_CLEAR     = 1;
-    public static final  int                IDREF_VALIDATE  = 2;
+    public static final  int                IDREF_VALIDATE  = 0;
+    public static final  int                IDREF_CHECKID   = 1;
 
+    static {
+        // make a string validator for NCName
+        if ( fgStrValidator == null ) {
+            Hashtable strFacets = new Hashtable();
+            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
+            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+        }
+    }
 
     public IDREFDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -97,14 +103,6 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
             return;
-
-        // make a string validator for NCName
-        if ( fgStrValidator == null ) {
-            Hashtable strFacets = new Hashtable();
-            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
-        }
 
         Vector enum = null;
         if ( facets != null )
@@ -146,43 +144,28 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
-
-        if ( state!= null ) {
-            StateMessageDatatype message = (StateMessageDatatype) state;
-            if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ) {
-                if ( this.fTableOfId != null ) {
-                    fTableOfId.clear(); //This is pass to us through the state object
-                    fTableOfId = null;
-                }
-                if ( this.fTableIDRefs != null ) {
-                    fTableIDRefs.clear();
-                    fTableIDRefs = null;
-                }
-            }
-            else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ) {
-                // Validate that all keyRef is a keyIds
-                this.checkIdRefs();
-            }
-            else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
-                this.fTableOfId = (Hashtable) message.getDatatypeObject();
-            }
-            return null;
+        StateMessageDatatype message = (StateMessageDatatype) state;
+        if (message != null && message.getDatatypeState() == IDREF_CHECKID) {
+            Object[] params = (Object[])message.getDatatypeObject();
+            checkIdRefs((Hashtable)params[0], (Hashtable)params[1]);
         }
+        else {
+            // use StringDatatypeValidator to validate content against facets
+            super.validate(content, state);
+            // check if content is a valid NCName
+            try {
+                fgStrValidator.validate(content, null);
+            }
+            catch ( InvalidDatatypeValueException idve ) {
+                InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "IDREF is not valid: " + content );
+                error.setMinorCode(XMLMessages.MSG_IDREF_INVALID);
+                error.setMajorCode(XMLMessages.VC_IDREF);
+                throw error;
+            }
 
-        // use StringDatatypeValidator to validate content against facets
-        super.validate(content, state);
-        // check if content is a valid NCName
-        try {
-            fgStrValidator.validate(content, null);
+            if ( message != null && message.getDatatypeState() == IDREF_VALIDATE )
+                addIdRef( content, (Hashtable)message.getDatatypeObject());
         }
-        catch ( InvalidDatatypeValueException idve ) {
-            InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "IDREF is not valid: " + content );
-            error.setMinorCode(XMLMessages.MSG_IDREF_INVALID);
-            error.setMajorCode(XMLMessages.VC_IDREF);
-            throw error;
-        }
-
-        addIdRef( content, state);// We are storing IDs
 
         return null;
     }
@@ -196,61 +179,31 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
     }
 
     /** addId. */
-    private void addIdRef(String content, Object state) {
-        if ( this.fTableOfId != null &&  this.fTableOfId.containsKey( content ) ) {
+    private void addIdRef(String content, Hashtable IDREFList) {
+        if ( IDREFList.containsKey( content ) )
             return;
-        }
-
-        if ( this.fTableIDRefs == null ) {
-            this.fTableIDRefs = new Hashtable();
-        }
-        else if ( fTableIDRefs.containsKey( content ) ) {
-            return;
-        }
-
-        if ( this.fNullValue == null ) {
-            fNullValue = new Object();
-        }
 
         try {
-            this.fTableIDRefs.put( content, fNullValue );
+            IDREFList.put( content, fNullValue );
         }
         catch ( OutOfMemoryError ex ) {
-            System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableIDRefs.size() + " Elements" );
+            System.out.println( "Out of Memory: Hashtable of ID's has " + IDREFList.size() + " Elements" );
             ex.printStackTrace();
         }
     } // addId(int):boolean
 
 
-    private void checkIdRefs() throws InvalidDatatypeValueException {
-
-        if ( this.fTableIDRefs == null )
-            return;
-
-        Enumeration en = this.fTableIDRefs.keys();
+    private void checkIdRefs(Hashtable IDList, Hashtable IDREFList) throws InvalidDatatypeValueException {
+        Enumeration en = IDREFList.keys();
 
         while ( en.hasMoreElements() ) {
             String key = (String)en.nextElement();
-            if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key) ) {
-
+            if ( !IDList.containsKey(key) ) {
                 InvalidDatatypeValueException error = new InvalidDatatypeValueException( key );
                 error.setMinorCode(XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED);
                 error.setMajorCode(XMLMessages.VC_IDREF);
                 throw error;
             }
         }
-
     } // checkIdRefs()
-
-    protected void resetIDRefs() {
-
-        if ( this.fTableOfId != null ) {
-            fTableOfId.clear(); 
-            fTableOfId = null;
-        }
-        if ( this.fTableIDRefs != null ) {
-            fTableIDRefs.clear();
-            fTableIDRefs = null;
-        }
-    }
 }

@@ -62,7 +62,6 @@ import java.util.Vector;
 import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.utils.StringPool;
-import org.apache.xerces.validators.datatype.StateMessageDatatype;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 
 
@@ -113,11 +112,16 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  */
 public class ENTITYDatatypeValidator extends StringDatatypeValidator {
     private static StringDatatypeValidator  fgStrValidator      = null;
-    private DefaultEntityHandler            fEntityHandler      = null;
-    private StringPool                      fStringPool         = null;
 
-    public  static final int                ENTITY_INITIALIZE   = 0;
-
+    static {
+        // make a string validator for NCName
+        if ( fgStrValidator == null) {
+            Hashtable strFacets = new Hashtable();
+            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
+            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+        }
+    }
 
     public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -132,20 +136,6 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
             return;
-
-        // make a string validator for NCName
-        if ( fgStrValidator == null) {
-            Hashtable strFacets = new Hashtable();
-            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
-        }
-
-        // inherit entity handler and string pool from base validator
-        if (base != null) {
-            this.fEntityHandler = ((ENTITYDatatypeValidator)base).fEntityHandler;
-            this.fStringPool = ((ENTITYDatatypeValidator)base).fStringPool;
-        }
 
         Vector enum = null;
         if (facets != null)
@@ -186,36 +176,26 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+        // use StringDatatypeValidator to validate content against facets
+        super.validate(content, state);
 
-        StateMessageDatatype message = (StateMessageDatatype) state;
+        // check if content is a valid NCName
+        try {
+            fgStrValidator.validate(content, null);
+        } catch (InvalidDatatypeValueException idve) {
+            InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
+            error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID);
+            error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
+            throw error;
+        }
 
-        if ( message!= null && message.getDatatypeState() == ENTITYDatatypeValidator.ENTITY_INITIALIZE ){
-            Object[]   unpackMessage = (Object[] ) message.getDatatypeObject();
-            this.fEntityHandler      = (DefaultEntityHandler) unpackMessage[0];
-            this.fStringPool         = (StringPool) unpackMessage[1];
-        } else {
-            if ( this.fEntityHandler == null ) {
-                throw new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization DefaultEntityHandler is null" );
-            }
-            if ( this.fStringPool == null ) {
-                throw new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization StrinPool is null" );
-            }
+        if (state != null) {
+            Object[] params = (Object[]) state;
+            DefaultEntityHandler entityHandler = (DefaultEntityHandler)params[0];
+            StringPool stringPool = (StringPool)params[1];
 
-            // use StringDatatypeValidator to validate content against facets
-            super.validate(content, state);
-
-            // check if content is a valid NCName
-            try {
-                fgStrValidator.validate(content, null);
-            } catch (InvalidDatatypeValueException idve) {
-                InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
-                error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID);
-                error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
-                throw error;
-            }
-
-            int attValueHandle = this.fStringPool.addSymbol( content );
-            if (!this.fEntityHandler.isUnparsedEntity( attValueHandle ) ) {
+            int attValueHandle = stringPool.addSymbol( content );
+            if (!entityHandler.isUnparsedEntity( attValueHandle ) ) {
                 InvalidDatatypeValueException error =
                 new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );
                 error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
@@ -223,6 +203,7 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
                 throw error;
             }
         }
+
         return null;
     }
 

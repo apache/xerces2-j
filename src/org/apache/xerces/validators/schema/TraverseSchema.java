@@ -1,8 +1,8 @@
-/* 
+/*
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 2000,2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -76,9 +76,9 @@ import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import  org.apache.xerces.validators.datatype.IDDatatypeValidator;
 import  org.apache.xerces.validators.datatype.NOTATIONDatatypeValidator;
-import  org.apache.xerces.validators.datatype.StringDatatypeValidator;  
+import  org.apache.xerces.validators.datatype.StringDatatypeValidator;
 import  org.apache.xerces.validators.datatype.ListDatatypeValidator;
-import  org.apache.xerces.validators.datatype.UnionDatatypeValidator; 
+import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
@@ -91,7 +91,7 @@ import java.net.MalformedURLException;
 //REVISIT: for now, import everything in the DOM package
 import  org.w3c.dom.*;
 
-//Unit Test 
+//Unit Test
 import  org.apache.xerces.parsers.DOMParser;
 import  org.apache.xerces.validators.common.XMLValidator;
 import  org.apache.xerces.validators.datatype.DatatypeValidator.*;
@@ -121,26 +121,26 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
  * to populate the Grammar internal representation by
  * instances of Grammar objects.
  * Traverse a Schema Grammar:
- * 
+ *
  * @author Eric Ye, IBM
  * @author Jeffrey Rodriguez, IBM
  * @author Andy Clark, IBM
- *  
+ *
  * @see org.apache.xerces.validators.common.Grammar
  *
  * @version $Id$
  */
-public class TraverseSchema implements 
+public class TraverseSchema implements
                             NamespacesScope.NamespacesHandler{
 
-    
+
     //CONSTANTS
     private static final int TOP_LEVEL_SCOPE = -1;
 
     /** Identity constraint keywords. */
     private static final String[][] IDENTITY_CONSTRAINTS = {
         { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_UNIQUE },
-        { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEY }, 
+        { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEY },
         { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEYREF },
     };
     private static final String redefIdentifier = "_redefined";
@@ -161,8 +161,8 @@ public class TraverseSchema implements
 
     /** Compile to true to debug identity constraints. */
     private static final boolean DEBUG_IDENTITY_CONSTRAINTS = false;
-    
-    /** 
+
+    /**
      * Compile to true to debug datatype validator lookup for
      * identity constraint support.
      */
@@ -188,9 +188,9 @@ public class TraverseSchema implements
 
     private Hashtable fComplexTypeRegistry = new Hashtable();
     private Hashtable fAttributeDeclRegistry = new Hashtable();
-    
+
     // stores the names of groups that we've traversed so we can avoid multiple traversals
-    // qualified group names are keys and their contentSpecIndexes are values.  
+    // qualified group names are keys and their contentSpecIndexes are values.
     private Hashtable fGroupNameRegistry = new Hashtable();
     // this Hashtable keeps track of whether a given redefined group does so by restriction.
     private Hashtable fRestrictedRedefinedGroupRegistry = new Hashtable();
@@ -207,7 +207,7 @@ public class TraverseSchema implements
     private Vector fTraversedRedefineElements = new Vector();
     // Hashtable associating attributeGroups within a <redefine> which
     // restrict attributeGroups in the original schema with the
-    // new name for those groups in the modified redefined schema.  
+    // new name for those groups in the modified redefined schema.
     private Hashtable fRedefineAttributeGroupMap = null;
 
     // simpleType data
@@ -243,13 +243,13 @@ public class TraverseSchema implements
 
     private EntityResolver  fEntityResolver = null;
     private SubstitutionGroupComparator fSComp = null;
-    
+
     private Hashtable fIdentityConstraints = new Hashtable();
     // Yet one more data structure; this one associates
     // <unique> and <key> QNames with their corresponding objects,
     // so that <keyRef>s can find them.
     private Hashtable fIdentityConstraintNames = new Hashtable();
-    
+
     // General Attribute Checking
     private GeneralAttrCheck fGeneralAttrCheck = null;
     private int fXsiURI;
@@ -257,7 +257,7 @@ public class TraverseSchema implements
    // REVISIT: maybe need to be moved into SchemaGrammar class
     public class ComplexTypeInfo {
         public String typeName;
-        
+
         public DatatypeValidator baseDataTypeValidator;
         public ComplexTypeInfo baseComplexTypeInfo;
 
@@ -292,14 +292,14 @@ public class TraverseSchema implements
            miscFlags |= CT_CONTAINS_ATTR_TYPE_ID;
         }
         public void setDeclSeen() {
-           miscFlags |= CT_DECL_SEEN;               
+           miscFlags |= CT_DECL_SEEN;
         }
-          
+
     }
     private static final int CT_IS_ABSTRACT=1;
     private static final int CT_CONTAINS_ATTR_TYPE_ID=2;
-    private static final int CT_DECL_SEEN=4;    // indicates that the declaration was 
-                                                // traversed as opposed to processed due 
+    private static final int CT_DECL_SEEN=4;    // indicates that the declaration was
+                                                // traversed as opposed to processed due
                                                 // to a forward reference
 
     private class ComplexTypeRecoverableError extends Exception {
@@ -337,7 +337,7 @@ public class TraverseSchema implements
        if (!fFullConstraintChecking) {
            return true;
        }
-       if (minEffectiveTotalRange(contentSpecIndex)==0) 
+       if (minEffectiveTotalRange(contentSpecIndex)==0)
          return true;
        else
          return false;
@@ -352,14 +352,14 @@ public class TraverseSchema implements
           return minEffectiveTotalRangeSeq(contentSpecIndex);
        }
        else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
-          return minEffectiveTotalRangeChoice(contentSpecIndex); 
+          return minEffectiveTotalRangeChoice(contentSpecIndex);
        }
        else {
           return(fSchemaGrammar.getContentSpecMinOccurs(contentSpecIndex));
        }
-       
+
     }
-    
+
     private int minEffectiveTotalRangeSeq(int csIndex) {
 
        fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
@@ -404,14 +404,14 @@ public class TraverseSchema implements
           return maxEffectiveTotalRangeSeq(contentSpecIndex);
        }
        else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
-          return maxEffectiveTotalRangeChoice(contentSpecIndex); 
+          return maxEffectiveTotalRangeChoice(contentSpecIndex);
        }
        else {
           return(fSchemaGrammar.getContentSpecMaxOccurs(contentSpecIndex));
        }
-       
+
     }
-    
+
     private int maxEffectiveTotalRangeSeq(int csIndex) {
 
        fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
@@ -420,26 +420,26 @@ public class TraverseSchema implements
        int right = tempContentSpec1.otherValue;
        int max = fSchemaGrammar.getContentSpecMaxOccurs(csIndex);
 
-       if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+       if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED)
          return SchemaSymbols.OCCURRENCE_UNBOUNDED;
 
        int maxLeft = maxEffectiveTotalRange(left);
        if (right == -2) {
-         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED)
            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
-         else 
+         else
            return max * maxLeft;
        }
        else {
          int maxRight = maxEffectiveTotalRange(right);
          if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED ||
-            maxRight == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+            maxRight == SchemaSymbols.OCCURRENCE_UNBOUNDED)
            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
          else
-           return max * (maxLeft + maxRight); 
+           return max * (maxLeft + maxRight);
        }
     }
-          
+
     private int maxEffectiveTotalRangeChoice(int csIndex) {
 
        fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
@@ -448,20 +448,20 @@ public class TraverseSchema implements
        int right = tempContentSpec1.otherValue;
        int max = fSchemaGrammar.getContentSpecMaxOccurs(csIndex);
 
-       if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+       if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED)
          return SchemaSymbols.OCCURRENCE_UNBOUNDED;
 
        int maxLeft = maxEffectiveTotalRange(left);
        if (right == -2) {
-         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED)
            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
-         else 
+         else
            return max * maxLeft;
        }
        else {
          int maxRight = maxEffectiveTotalRange(right);
          if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED ||
-            maxRight == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+            maxRight == SchemaSymbols.OCCURRENCE_UNBOUNDED)
            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
          else
            return max * ((maxLeft > maxRight)?maxLeft:maxRight);
@@ -478,7 +478,7 @@ public class TraverseSchema implements
         }
 
         //REVISIT, !!!! a hack: needs to be updated later, cause now we only use localpart to key build-in datatype.
-        if ( prefix.length()==0 && uriStr.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+        if ( prefix.length()==0 && uriStr.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
              && fTargetNSURIString.length() == 0) {
             uriStr = "";
         }
@@ -486,8 +486,8 @@ public class TraverseSchema implements
         return uriStr;
     }
 
-    public  TraverseSchema(Element root, StringPool stringPool, 
-                           SchemaGrammar schemaGrammar, 
+    public  TraverseSchema(Element root, StringPool stringPool,
+                           SchemaGrammar schemaGrammar,
                            GrammarResolver grammarResolver,
                            XMLErrorReporter errorReporter,
                            String schemaURL,
@@ -501,11 +501,11 @@ public class TraverseSchema implements
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
-    public  TraverseSchema(Element root, StringPool stringPool, 
-                           SchemaGrammar schemaGrammar, 
+    public  TraverseSchema(Element root, StringPool stringPool,
+                           SchemaGrammar schemaGrammar,
                            GrammarResolver grammarResolver,
                            XMLErrorReporter errorReporter,
-                           String schemaURL, 
+                           String schemaURL,
                            boolean fullChecking
                            ) throws Exception {
         fErrorReporter = errorReporter;
@@ -514,40 +514,40 @@ public class TraverseSchema implements
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
-    public  TraverseSchema(Element root, StringPool stringPool, 
-                           SchemaGrammar schemaGrammar, 
-                           GrammarResolver grammarResolver, 
+    public  TraverseSchema(Element root, StringPool stringPool,
+                           SchemaGrammar schemaGrammar,
+                           GrammarResolver grammarResolver,
                            boolean fullChecking
                            ) throws Exception {
         fFullConstraintChecking = fullChecking;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
-    public  void doTraverseSchema(Element root, StringPool stringPool, 
-                           SchemaGrammar schemaGrammar, 
+    public  void doTraverseSchema(Element root, StringPool stringPool,
+                           SchemaGrammar schemaGrammar,
                            GrammarResolver grammarResolver) throws Exception {
 
         fNamespacesScope = new NamespacesScope(this);
-        
+
         fSchemaRootElement = root;
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
         if (fFullConstraintChecking) {
-          fSchemaGrammar.setDeferContentSpecExpansion();                           
+          fSchemaGrammar.setDeferContentSpecExpansion();
           fSchemaGrammar.setCheckUniqueParticleAttribution();
         }
 
         fGrammarResolver = grammarResolver;
         fDatatypeRegistry = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
-        
+
         //Expand to registry type to contain all primitive datatype
-        fDatatypeRegistry.expandRegistryToFullSchemaSet(); 
+        fDatatypeRegistry.expandRegistryToFullSchemaSet();
 
         // General Attribute Checking
         fGeneralAttrCheck = new GeneralAttrCheck(fErrorReporter);
         fXsiURI = fStringPool.addSymbol(SchemaSymbols.URI_XSI);
 
-        if (root == null) { 
+        if (root == null) {
             // REVISIT: Anything to do?
             return;
         }
@@ -573,8 +573,8 @@ public class TraverseSchema implements
             reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchema");
         }
         else{
-            // for complex type registry, attribute decl registry and 
-            // namespace mapping, needs to check whether the passed in 
+            // for complex type registry, attribute decl registry and
+            // namespace mapping, needs to check whether the passed in
             // Grammar was a newly instantiated one.
             if (fSchemaGrammar.getComplexTypeRegistry() == null ) {
                 fSchemaGrammar.setComplexTypeRegistry(fComplexTypeRegistry);
@@ -601,7 +601,7 @@ public class TraverseSchema implements
             fSchemaGrammar.setTargetNamespaceURI(fTargetNSURIString);
             fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
         }
-        
+
 
 
         // Retrived the Namespace mapping from the schema element.
@@ -609,7 +609,7 @@ public class TraverseSchema implements
         int i = 0;
         Attr sattr = null;
 
-        boolean seenXMLNS = false;                                        
+        boolean seenXMLNS = false;
         while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
             String attName = sattr.getName();
             if (attName.startsWith("xmlns:")) {
@@ -632,23 +632,23 @@ public class TraverseSchema implements
                                                     fStringPool.addSymbol("") );
         }
 
-        fElementDefaultQualified = 
+        fElementDefaultQualified =
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
-        fAttributeDefaultQualified = 
+        fAttributeDefaultQualified =
             root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
         Attr blockAttr = root.getAttributeNode(SchemaSymbols.ATT_BLOCKDEFAULT);
-        if (blockAttr == null) 
+        if (blockAttr == null)
             fBlockDefault = 0;
         else
-            fBlockDefault = 
+            fBlockDefault =
                 parseBlockSet(blockAttr.getValue());
         Attr finalAttr = root.getAttributeNode(SchemaSymbols.ATT_FINALDEFAULT);
-        if (finalAttr == null) 
+        if (finalAttr == null)
             fFinalDefault = 0;
         else
-            fFinalDefault = 
+            fFinalDefault =
                 parseFinalSet(finalAttr.getValue());
-        
+
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
             //fElementDefaultQualified = true;
@@ -664,7 +664,7 @@ public class TraverseSchema implements
         extractTopLevel3Components(root);
 
         // process <redefine>, <include> and <import> info items.
-        Element child = XUtil.getFirstChildElement(root); 
+        Element child = XUtil.getFirstChildElement(root);
         for (; child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
@@ -673,18 +673,18 @@ public class TraverseSchema implements
                 traverseAnnotationDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
                 fNamespacesScope.increaseDepth();
-                traverseInclude(child); 
+                traverseInclude(child);
                 fNamespacesScope.decreaseDepth();
             } else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
-                traverseImport(child); 
+                traverseImport(child);
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
                 fRedefineSucceeded = true; // presume worked until proven failed.
-                traverseRedefine(child); 
+                traverseRedefine(child);
             } else
                 break;
         }
 
-        // child refers to the first info item which is not <annotation> or 
+        // child refers to the first info item which is not <annotation> or
         // one of the schema inclusion/importation declarations.
         for (; child != null;
             child = XUtil.getNextSiblingElement(child)) {
@@ -696,7 +696,7 @@ public class TraverseSchema implements
                 traverseSimpleTypeDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE )) {
                 traverseComplexTypeDecl(child);
-            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { 
+            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) {
                 traverseElementDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 traverseAttributeGroupDecl(child, null, null);
@@ -714,7 +714,7 @@ public class TraverseSchema implements
 
         // handle identity constraints
         // we must traverse <key>s and <unique>s before we tackel<keyref>s,
-        // since all have global scope and may be declared anywhere in the schema.  
+        // since all have global scope and may be declared anywhere in the schema.
         Enumeration elementIndexes = fIdentityConstraints.keys();
         while (elementIndexes.hasMoreElements()) {
             Integer elementIndexObj = (Integer)elementIndexes.nextElement();
@@ -747,7 +747,7 @@ public class TraverseSchema implements
 
 
     private void extractTopLevel3Components(Element root) throws Exception {
-        
+
         for (Element child = XUtil.getFirstChildElement(root); child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
@@ -759,7 +759,7 @@ public class TraverseSchema implements
                    reportGenericSchemaError("sch-props-correct: Duplicate declaration for an element " +
                                              compName);
                 }
-                else {                
+                else {
                     fSchemaGrammar.topLevelElemDecls.put(compName, child);
                 }
             }
@@ -770,7 +770,7 @@ public class TraverseSchema implements
                    reportGenericSchemaError("sch-props-correct: Duplicate declaration for a type " +
                                              compName);
                 }
-                else {                
+                else {
                     fSchemaGrammar.topLevelTypeDecls.put(compName, child);
                 }
             }
@@ -780,7 +780,7 @@ public class TraverseSchema implements
                    reportGenericSchemaError("sch-props-correct: Duplicate declaration for an attribute group " +
                                              compName);
                 }
-                else {                
+                else {
                 fSchemaGrammar.topLevelAttrGrpDecls.put(compName, child);
                 }
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
@@ -789,16 +789,16 @@ public class TraverseSchema implements
                    reportGenericSchemaError("sch-props-correct: Duplicate declaration for an attribute " +
                                              compName);
                 }
-                else {                
+                else {
                     fSchemaGrammar.topLevelAttrGrpDecls.put(compName, child);
                 }
             } else if ( name.equals(SchemaSymbols.ELT_GROUP) ) {
                 // Check if the group has already been declared
-                if (fSchemaGrammar.topLevelGroupDecls.get(compName) != null){ 
+                if (fSchemaGrammar.topLevelGroupDecls.get(compName) != null){
                    reportGenericSchemaError("sch-props-correct: Duplicate declaration for a group " +
                                              compName);
                 }
-                else {                
+                else {
                 fSchemaGrammar.topLevelGroupDecls.put(compName, child);
                 }
             } else if ( name.equals(SchemaSymbols.ELT_NOTATION) ) {
@@ -807,7 +807,7 @@ public class TraverseSchema implements
                    reportGenericSchemaError("sch-props-correct: Duplicate declaration for a notation " +
                                              compName);
                 }
-                else {                
+                else {
                 fSchemaGrammar.topLevelNotationDecls.put(compName, child);
             }
             }
@@ -923,7 +923,7 @@ public class TraverseSchema implements
             return;
         }
         String location = locationAttr.getValue();
-        
+
         // expand it before passing it to the parser
         InputSource source = null;
         if (fEntityResolver != null) {
@@ -948,10 +948,10 @@ public class TraverseSchema implements
 
         DOMParser parser = new IgnoreWhitespaceParser();
         parser.setEntityResolver( new Resolver() );
-        parser.setErrorHandler(  new ErrorHandler() 
+        parser.setErrorHandler(  new ErrorHandler()
             {
                 public void fatalError(SAXParseException ex) throws SAXException {
-                    StringBuffer str = new StringBuffer(); 
+                    StringBuffer str = new StringBuffer();
                     String systemId_ = ex.getSystemId();
                     if (systemId_ != null) {
                         int index = systemId_.lastIndexOf('/');
@@ -1006,22 +1006,22 @@ public class TraverseSchema implements
             else {
                 // We not creating another TraverseSchema object to compile
                 // the included schema file, because the scope count, anon-type count
-                // should not be reset for a included schema, this can be fixed by saving 
-                // the counters in the Schema Grammar, 
+                // should not be reset for a included schema, this can be fixed by saving
+                // the counters in the Schema Grammar,
                 if (fSchemaInfoListRoot == null) {
-                    fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                    fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
                         fBlockDefault, fFinalDefault,
-                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
                         fNamespacesScope, null, null);
                     fCurrentSchemaInfo = fSchemaInfoListRoot;
                 }
                 fSchemaRootElement = root;
                 fCurrentSchemaURL = location;
                 traverseIncludedSchemaHeader(root);
-                // and now we'd better save this stuff!  
-                fCurrentSchemaInfo = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
-                        fBlockDefault, fFinalDefault, 
-                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+                // and now we'd better save this stuff!
+                fCurrentSchemaInfo = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
+                        fBlockDefault, fFinalDefault,
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
                         fNamespacesScope, fCurrentSchemaInfo.getNext(), fCurrentSchemaInfo);
                 (fCurrentSchemaInfo.getPrev()).setNext(fCurrentSchemaInfo);
                 traverseIncludedSchema(root);
@@ -1044,7 +1044,7 @@ public class TraverseSchema implements
         int i = 0;
         Attr sattr = null;
 
-        boolean seenXMLNS = false;                                        
+        boolean seenXMLNS = false;
         while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
             String attName = sattr.getName();
             if (attName.startsWith("xmlns:")) {
@@ -1067,23 +1067,23 @@ public class TraverseSchema implements
                                                     fStringPool.addSymbol("") );
         }
 
-        fElementDefaultQualified = 
+        fElementDefaultQualified =
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
-        fAttributeDefaultQualified = 
+        fAttributeDefaultQualified =
             root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
         Attr blockAttr = root.getAttributeNode(SchemaSymbols.ATT_BLOCKDEFAULT);
-        if (blockAttr == null) 
+        if (blockAttr == null)
             fBlockDefault = 0;
         else
-            fBlockDefault = 
+            fBlockDefault =
                 parseBlockSet(blockAttr.getValue());
         Attr finalAttr = root.getAttributeNode(SchemaSymbols.ATT_FINALDEFAULT);
-        if (finalAttr == null) 
+        if (finalAttr == null)
             fFinalDefault = 0;
         else
-            fFinalDefault = 
+            fFinalDefault =
                 parseFinalSet(finalAttr.getValue());
-        
+
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
             fElementDefaultQualified = true;
@@ -1092,7 +1092,7 @@ public class TraverseSchema implements
 
         //fScopeCount++;
         fCurrentScope = -1;
-    } // traverseIncludedSchemaHeader 
+    } // traverseIncludedSchemaHeader
 
     private void traverseIncludedSchema(Element root) throws Exception {
         // General Attribute Checking
@@ -1103,7 +1103,7 @@ public class TraverseSchema implements
         extractTopLevel3Components(root);
 
         // handle <redefine>, <include> and <import> elements.
-        Element child = XUtil.getFirstChildElement(root); 
+        Element child = XUtil.getFirstChildElement(root);
         for (; child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
@@ -1113,13 +1113,13 @@ public class TraverseSchema implements
                 traverseAnnotationDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
                 fNamespacesScope.increaseDepth();
-                traverseInclude(child); 
+                traverseInclude(child);
                 fNamespacesScope.decreaseDepth();
             } else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
-                traverseImport(child); 
+                traverseImport(child);
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
                 fRedefineSucceeded = true; // presume worked until proven failed.
-                traverseRedefine(child); 
+                traverseRedefine(child);
             } else
                 break;
         }
@@ -1136,7 +1136,7 @@ public class TraverseSchema implements
                 traverseSimpleTypeDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE )) {
                 traverseComplexTypeDecl(child);
-            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { 
+            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) {
                 traverseElementDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 if(fRedefineAttributeGroupMap != null) {
@@ -1144,7 +1144,7 @@ public class TraverseSchema implements
                     String bName = (String)fRedefineAttributeGroupMap.get(dName);
                     if(bName != null) {
                         child.setAttribute(SchemaSymbols.ATT_NAME, bName);
-                        // Now we reuse this location in the array to store info we'll need for validation...  
+                        // Now we reuse this location in the array to store info we'll need for validation...
                         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
                         int templateElementNameIndex = fStringPool.addSymbol("$"+bName);
                         int typeNameIndex = fStringPool.addSymbol("%"+bName);
@@ -1155,7 +1155,7 @@ public class TraverseSchema implements
                         typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
                             new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
                             (fTargetNSURI==StringPool.EMPTY_STRING) ? StringPool.EMPTY_STRING : -2, typeInfo.scopeDefined,
-                            typeInfo.contentType, 
+                            typeInfo.contentType,
                             typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
 
                         Vector anyAttDecls = new Vector();
@@ -1192,12 +1192,12 @@ public class TraverseSchema implements
                 String bName = (String)fGroupNameRegistry.get(fTargetNSURIString +"," + dName);
                 if(bName != null) {
                     child.setAttribute(SchemaSymbols.ATT_NAME, bName);
-                    // Now we reuse this location in the array to store info we'll need for validation...  
+                    // Now we reuse this location in the array to store info we'll need for validation...
                     // note that traverseGroupDecl will happily do that for us!
                 }
                 traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
-                traverseNotationDecl(child); 
+                traverseNotationDecl(child);
             } else {
                 // REVISIT: Localize
                 reportGenericSchemaError("error in content of included <schema> element information item");
@@ -1207,10 +1207,10 @@ public class TraverseSchema implements
     }
 
     // This method's job is to open a redefined schema and store away its root element, defaultElementQualified and other
-    // such info, in order that it can be available when redefinition actually takes place.  
+    // such info, in order that it can be available when redefinition actually takes place.
     // It assumes that it will be called from the schema doing the redefining, and it assumes
     // that the other schema's info has already been saved, putting the info it finds into the
-    // SchemaInfoList element that is passed in.  
+    // SchemaInfoList element that is passed in.
     private void openRedefinedSchema(Element redefineDecl, SchemaInfo store) throws Exception {
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
@@ -1224,7 +1224,7 @@ public class TraverseSchema implements
             return;
         }
         String location = locationAttr.getValue();
-        
+
         // expand it before passing it to the parser
         InputSource source = null;
         if (fEntityResolver != null) {
@@ -1236,8 +1236,8 @@ public class TraverseSchema implements
             source = new InputSource(location);
         }
         else {
-            // Make sure we don't redefine the same schema twice; it's allowed 
-            // but the specs encourage us to avoid it.  
+            // Make sure we don't redefine the same schema twice; it's allowed
+            // but the specs encourage us to avoid it.
             if (source.getPublicId () != null)
                 location = source.getPublicId ();
 
@@ -1285,12 +1285,12 @@ public class TraverseSchema implements
             root = document.getDocumentElement();
         }
 
-        if (root == null) { // nothing to be redefined, so just continue; specs disallow an error here. 
+        if (root == null) { // nothing to be redefined, so just continue; specs disallow an error here.
             fRedefineSucceeded = false;
-            return; 
+            return;
         }
 
-        // now if root isn't null, it'll contain the root of the schema we need to redefine.  
+        // now if root isn't null, it'll contain the root of the schema we need to redefine.
         // We do this in two phases:  first, we look through the children of
         // redefineDecl.  Each one will correspond to an element of the
         // redefined schema that we need to redefine.  To do this, we rename the
@@ -1298,14 +1298,14 @@ public class TraverseSchema implements
         // the kid we're working on to refer to the renamed group or derive the
         // renamed type.  Once we've done this, we actually go through the
         // schema being redefined and convert it to a grammar.  Only then do we
-        // run through redefineDecl's kids and put them in the grammar.  
+        // run through redefineDecl's kids and put them in the grammar.
         //
         // This approach is kosher with the specs.  It does raise interesting
         // questions about error reporting, and perhaps also about grammar
         // access, but it is comparatively efficient (we need make at most
-        // only 2 traversals of any given information item) and moreover 
+        // only 2 traversals of any given information item) and moreover
         // we can use existing code to build the grammar structures once the
-        // first pass is out of the way, so this should be quite robust.  
+        // first pass is out of the way, so this should be quite robust.
 
         // check to see if the targetNameSpace is right
         String redefinedTargetNSURIString = getTargetNamespaceString(root);
@@ -1318,7 +1318,7 @@ public class TraverseSchema implements
         else {
             // targetNamespace is right, so let's do the renaming...
             // and let's keep in mind that the targetNamespace of the redefined
-            // elements is that of the redefined schema!  
+            // elements is that of the redefined schema!
             fSchemaRootElement = root;
             fCurrentSchemaURL = location;
             fNamespacesScope = new NamespacesScope(this);
@@ -1326,12 +1326,12 @@ public class TraverseSchema implements
                 fNamespacesScope.setNamespaceForPrefix(StringPool.EMPTY_STRING, fTargetNSURI);
             } else {
             }
-            // get default form xmlns bindings et al. 
+            // get default form xmlns bindings et al.
             traverseIncludedSchemaHeader(root);
             // and then save them...
-            store.setNext(new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
-                    fBlockDefault, fFinalDefault, 
-                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+            store.setNext(new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
+                    fBlockDefault, fFinalDefault,
+                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
                     fNamespacesScope, null, store));
             (store.getNext()).setPrev(store);
             fCurrentSchemaInfo = store.getNext();
@@ -1341,11 +1341,11 @@ public class TraverseSchema implements
 
     /****
      * <redefine
-       *        schemaLocation = uriReference 
+       *        schemaLocation = uriReference
        *        {any attributes with non-schema namespace . . .}>
        *        Content: (annotation | (
-     *            attributeGroup | complexType | group | simpleType))* 
-     *    </redefine> 
+     *            attributeGroup | complexType | group | simpleType))*
+     *    </redefine>
      */
     private void traverseRedefine(Element redefineDecl) throws Exception {
 
@@ -1354,11 +1354,11 @@ public class TraverseSchema implements
         NamespacesScope saveNSScope = (NamespacesScope)fNamespacesScope.clone();
 
         // only case in which need to save contents is when fSchemaInfoListRoot is null; otherwise we'll have
-        // done this already one way or another.  
+        // done this already one way or another.
         if (fSchemaInfoListRoot == null) {
-            fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
-                    fBlockDefault, fFinalDefault, 
-                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+            fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
+                    fBlockDefault, fFinalDefault,
+                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
                     fNamespacesScope, null, null);
             openRedefinedSchema(redefineDecl, fSchemaInfoListRoot);
             if(!fRedefineSucceeded)
@@ -1367,7 +1367,7 @@ public class TraverseSchema implements
             fNamespacesScope = (NamespacesScope)saveNSScope.clone();
 		    renameRedefinedComponents(redefineDecl,fSchemaInfoListRoot.getNext().getRoot(), fSchemaInfoListRoot.getNext());
         } else {
-            // may have a chain here; need to be wary!  
+            // may have a chain here; need to be wary!
             SchemaInfo curr = fSchemaInfoListRoot;
             for(; curr.getNext() != null; curr = curr.getNext());
             fCurrentSchemaInfo = curr;
@@ -1378,17 +1378,17 @@ public class TraverseSchema implements
             fNamespacesScope = (NamespacesScope)saveNSScope.clone();
 		    renameRedefinedComponents(redefineDecl,fCurrentSchemaInfo.getRoot(), fCurrentSchemaInfo);
         }
-        // Now we have to march through our nicely-renamed schemas from the 
+        // Now we have to march through our nicely-renamed schemas from the
         // bottom up.  When we do these traversals other <redefine>'s may
-        // perhaps be encountered; we leave recursion to sort this out.  
+        // perhaps be encountered; we leave recursion to sort this out.
 
         fCurrentSchemaInfo.restore();
         traverseIncludedSchema(fSchemaRootElement);
         fNamespacesScope = (NamespacesScope)saveNSScope.clone();
         // and last but not least:  traverse our own <redefine>--the one all
-        // this labour has been expended upon.  
+        // this labour has been expended upon.
         for (Element child = XUtil.getFirstChildElement(redefineDecl); child != null;
-           		child = XUtil.getNextSiblingElement(child)) { 
+           		child = XUtil.getNextSiblingElement(child)) {
            	String name = child.getLocalName();
 
 			// annotations can occur anywhere in <redefine>s!
@@ -1400,12 +1400,12 @@ public class TraverseSchema implements
                	traverseComplexTypeDecl(child);
            	} else if (name.equals(SchemaSymbols.ELT_GROUP)) {
                 String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
-                if(fGroupNameRegistry.get(fTargetNSURIString +","+ dName) == null || 
+                if(fGroupNameRegistry.get(fTargetNSURIString +","+ dName) == null ||
                         ((fRestrictedRedefinedGroupRegistry.get(fTargetNSURIString+","+dName) != null) &&
                         !((Boolean)fRestrictedRedefinedGroupRegistry.get(fTargetNSURIString+","+dName)).booleanValue())) { // extension!
                	    traverseGroupDecl(child);
                     continue;
-                } 
+                }
                	traverseGroupDecl(child);
                 Integer bCSIndexObj = null;
                 try {
@@ -1452,7 +1452,7 @@ public class TraverseSchema implements
                         ComplexTypeInfo bTypeInfo = (ComplexTypeInfo)bAttGrpStore[0];
                         SchemaGrammar bSchemaGrammar = (SchemaGrammar)bAttGrpStore[1];
                         Vector bAnyAttDecls = (Vector)bAttGrpStore[2];
-                        XMLAttributeDecl bAnyAttDecl =  
+                        XMLAttributeDecl bAnyAttDecl =
                             (bAnyAttDecls.size()>0 )? (XMLAttributeDecl)bAnyAttDecls.elementAt(0):null;
                         ComplexTypeInfo dTypeInfo = new ComplexTypeInfo();
                         int templateElementNameIndex = fStringPool.addSymbol("$"+dName);
@@ -1464,18 +1464,18 @@ public class TraverseSchema implements
                         dTypeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
                             new QName(-1, templateElementNameIndex,dTypeNameIndex,fTargetNSURI),
                             (fTargetNSURI==StringPool.EMPTY_STRING) ? StringPool.EMPTY_STRING : -2, dTypeInfo.scopeDefined,
-                            dTypeInfo.contentType, 
+                            dTypeInfo.contentType,
                             dTypeInfo.contentSpecHandle, -1, dTypeInfo.datatypeValidator);
 
                         Vector dAnyAttDecls = new Vector();
-                        XMLAttributeDecl dAnyAttDecl =  
+                        XMLAttributeDecl dAnyAttDecl =
                             (dAnyAttDecls.size()>0 )? (XMLAttributeDecl)dAnyAttDecls.elementAt(0):null;
                         traverseAttributeGroupDecl(child, dTypeInfo, dAnyAttDecls);
                         dTypeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(
                                 dTypeInfo.templateElementIndex);
                         try {
                             checkAttributesDerivationOKRestriction(dTypeInfo.attlistHead,fSchemaGrammar,
-                                dAnyAttDecl,bTypeInfo.attlistHead,bSchemaGrammar,bAnyAttDecl); 
+                                dAnyAttDecl,bTypeInfo.attlistHead,bSchemaGrammar,bAnyAttDecl);
                         }
                         catch (ComplexTypeRecoverableError e) {
                             String message = e.getMessage();
@@ -1499,21 +1499,21 @@ public class TraverseSchema implements
 	// redefineDecl is valid as far as content goes and with regard to
 	// properly referencing components to be redefined.  No traversing is done here!
     // This method also takes actions to find and, if necessary, modify the names
-    // of elements in <redefine>'s in the schema that's being redefined.  
+    // of elements in <redefine>'s in the schema that's being redefined.
 	private void renameRedefinedComponents(Element redefineDecl, Element schemaToRedefine, SchemaInfo currSchemaInfo) throws Exception {
 		for (Element child = XUtil.getFirstChildElement(redefineDecl);
 				child != null;
 				child = XUtil.getNextSiblingElement(child)) {
             String name = child.getLocalName();
-            if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) 
+            if (name.equals(SchemaSymbols.ELT_ANNOTATION) )
                 continue;
             else if (name.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
             	String typeName = child.getAttribute( SchemaSymbols.ATT_NAME );
                 if(fTraversedRedefineElements.contains(typeName))
                     continue;
                 if(validateRedefineNameChange(SchemaSymbols.ELT_SIMPLETYPE, typeName, typeName+redefIdentifier, child)) {
-					fixRedefinedSchema(SchemaSymbols.ELT_SIMPLETYPE, 
-						typeName, typeName+redefIdentifier, 
+					fixRedefinedSchema(SchemaSymbols.ELT_SIMPLETYPE,
+						typeName, typeName+redefIdentifier,
 						schemaToRedefine, currSchemaInfo);
 				}
 			} else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
@@ -1521,8 +1521,8 @@ public class TraverseSchema implements
                 if(fTraversedRedefineElements.contains(typeName))
                     continue;
                 if(validateRedefineNameChange(SchemaSymbols.ELT_COMPLEXTYPE, typeName, typeName+redefIdentifier, child)) {
-				    fixRedefinedSchema(SchemaSymbols.ELT_COMPLEXTYPE, 
-					    typeName, typeName+redefIdentifier, 
+				    fixRedefinedSchema(SchemaSymbols.ELT_COMPLEXTYPE,
+					    typeName, typeName+redefIdentifier,
 					    schemaToRedefine, currSchemaInfo);
 				}
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
@@ -1530,8 +1530,8 @@ public class TraverseSchema implements
                 if(fTraversedRedefineElements.contains(baseName))
                     continue;
                 if(validateRedefineNameChange(SchemaSymbols.ELT_ATTRIBUTEGROUP, baseName, baseName+redefIdentifier, child)) {
-					fixRedefinedSchema(SchemaSymbols.ELT_ATTRIBUTEGROUP, 
-						baseName, baseName+redefIdentifier, 
+					fixRedefinedSchema(SchemaSymbols.ELT_ATTRIBUTEGROUP,
+						baseName, baseName+redefIdentifier,
 						schemaToRedefine, currSchemaInfo);
                 }
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
@@ -1539,23 +1539,23 @@ public class TraverseSchema implements
                 if(fTraversedRedefineElements.contains(baseName))
                     continue;
                 if(validateRedefineNameChange(SchemaSymbols.ELT_GROUP, baseName, baseName+redefIdentifier, child)) {
-					fixRedefinedSchema(SchemaSymbols.ELT_GROUP, 
-						baseName, baseName+redefIdentifier, 
+					fixRedefinedSchema(SchemaSymbols.ELT_GROUP,
+						baseName, baseName+redefIdentifier,
 						schemaToRedefine, currSchemaInfo);
-				} 
+				}
 			} else {
                 fRedefineSucceeded = false;
             	// REVISIT: Localize
             	reportGenericSchemaError("invalid top-level content for <redefine>");
 				return;
-			} 
-		} // for 
+			}
+		} // for
 	} // renameRedefinedComponents
 
-	// This function looks among the children of curr for an element of type elementSought.  
+	// This function looks among the children of curr for an element of type elementSought.
 	// If it finds one, it evaluates whether its ref attribute contains a reference
 	// to originalName.  If it does, it returns 1 + the value returned by
-	// calls to itself on all other children.  In all other cases it returns 0 plus 
+	// calls to itself on all other children.  In all other cases it returns 0 plus
 	// the sum of the values returned by calls to itself on curr's children.
 	// It also resets the value of ref so that it will refer to the renamed type from the schema
 	// being redefined.
@@ -1564,7 +1564,7 @@ public class TraverseSchema implements
 		for (Element child = XUtil.getFirstChildElement(curr);
 				child != null; child = XUtil.getNextSiblingElement(child)) {
             String name = child.getLocalName();
-            if (!name.equals(elementSought)) 
+            if (!name.equals(elementSought))
 				result += changeRedefineGroup(originalName, elementSought, newName, child);
 			else {
 				String ref = child.getAttribute( SchemaSymbols.ATT_REF );
@@ -1580,20 +1580,20 @@ public class TraverseSchema implements
 					if(originalName.equals(new QName(-1, fStringPool.addSymbol(localpart), fStringPool.addSymbol(localpart), fStringPool.addSymbol(uriStr)))) {
                         if(prefix.equals(""))
 						    child.setAttribute(SchemaSymbols.ATT_REF, newName);
-                        else 
+                        else
 						    child.setAttribute(SchemaSymbols.ATT_REF, prefix + ":" + newName);
 						result++;
                         if(elementSought.equals(SchemaSymbols.ELT_GROUP)) {
 				            String minOccurs = child.getAttribute( SchemaSymbols.ATT_MINOCCURS );
 				            String maxOccurs = child.getAttribute( SchemaSymbols.ATT_MAXOCCURS );
-                            if(!((maxOccurs.length() == 0 || maxOccurs.equals("1")) 
+                            if(!((maxOccurs.length() == 0 || maxOccurs.equals("1"))
                                     && (minOccurs.length() == 0 || minOccurs.equals("1")))) {
                                 //REVISIT:  localize
                                 reportGenericSchemaError("src-redefine.6.1.2:  the group " + ref + " which contains a reference to a group being redefined must have minOccurs = maxOccurs = 1");
-                            } 
+                            }
                         }
 					}
-				} // if ref was null some other stage of processing will flag the error 
+				} // if ref was null some other stage of processing will flag the error
 			}
 		}
 		return result;
@@ -1601,11 +1601,11 @@ public class TraverseSchema implements
 
 	// This simple function looks for the first occurrence of an eltLocalname
 	// schema information item and appropriately changes the value of
-	// its name or type attribute from oldName to newName.  
-	// Root contains the root of the schema being operated upon.  
+	// its name or type attribute from oldName to newName.
+	// Root contains the root of the schema being operated upon.
     // If it turns out that what we're looking for is in a <redefine> though, then we
     // just rename it--and it's reference--to be the same and wait until
-    // renameRedefineDecls can get its hands on it and do it properly.  
+    // renameRedefineDecls can get its hands on it and do it properly.
 	private void fixRedefinedSchema(String eltLocalname, String oldName, String newName, Element schemaToRedefine,
                 SchemaInfo currSchema) throws Exception {
 
@@ -1621,7 +1621,7 @@ public class TraverseSchema implements
                     String redefName = redefChild.getLocalName();
                     if (redefName.equals(eltLocalname) ) {
             	        String infoItemName = redefChild.getAttribute( SchemaSymbols.ATT_NAME );
-				        if(!infoItemName.equals(oldName)) 
+				        if(!infoItemName.equals(oldName))
 					        continue;
 				        else { // found it!
 					        foundIt = true;
@@ -1644,12 +1644,12 @@ public class TraverseSchema implements
                             break;
 				        }
 			        }
-		        } //for 
+		        } //for
                 if (foundIt) break;
             }
             else if (name.equals(eltLocalname) ) {
             	String infoItemName = child.getAttribute( SchemaSymbols.ATT_NAME );
-				if(!infoItemName.equals(oldName)) 
+				if(!infoItemName.equals(oldName))
 					continue;
 				else { // found it!
 					foundIt = true;
@@ -1669,7 +1669,7 @@ public class TraverseSchema implements
     // it was possible to revise it correctly.  The definition of
     // correctly will depend on whether renameRedefineDecls
     // or fixRedefineSchema is the caller.
-    // this method also prepends a prefix onto newName if necessary; newName will never contain one. 
+    // this method also prepends a prefix onto newName if necessary; newName will never contain one.
     private boolean validateRedefineNameChange(String eltLocalname, String oldName, String newName, Element child) throws Exception {
         if (eltLocalname.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
 			QName processedTypeName = new QName(-1, fStringPool.addSymbol(oldName), fStringPool.addSymbol(oldName), fTargetNSURI);
@@ -1703,7 +1703,7 @@ public class TraverseSchema implements
 						// now we have to do the renaming...
                         String prefix = "";
                         int colonptr = derivedBase.indexOf(":");
-                        if ( colonptr > 0) 
+                        if ( colonptr > 0)
                             prefix = derivedBase.substring(0,colonptr) + ":";
             			grandKid.setAttribute( SchemaSymbols.ATT_BASE, prefix + newName );
                         return true;
@@ -1742,7 +1742,7 @@ public class TraverseSchema implements
                             fRedefineSucceeded = false;
                             // REVISIT: Localize
             	            reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
-					    } else if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) && 
+					    } else if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
 							    !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
                             fRedefineSucceeded = false;
             			    // REVISIT: Localize
@@ -1758,7 +1758,7 @@ public class TraverseSchema implements
 							    // now we have to do the renaming...
                                 String prefix = "";
                                 int colonptr = derivedBase.indexOf(":");
-                                if ( colonptr > 0) 
+                                if ( colonptr > 0)
                                     prefix = derivedBase.substring(0,colonptr) + ":";
             				    greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE, prefix + newName );
                                 return true;
@@ -1782,25 +1782,25 @@ public class TraverseSchema implements
 			QName processedBaseName = new QName(-1, fStringPool.addSymbol(oldName), fStringPool.addSymbol(oldName), fTargetNSURI);
 			int groupRefsCount = changeRedefineGroup(processedBaseName, eltLocalname, newName, child);
             if(!fRedefineSucceeded) {
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false)); 
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false));
             }
 			if(groupRefsCount > 1) {
                 fRedefineSucceeded = false;
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false)); 
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false));
 				// REVISIT:  localize
 				reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
 			} else if (groupRefsCount == 1) {
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false)); 
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false));
                 return true;
 			}  else {
                 fGroupNameRegistry.put(fTargetNSURIString + "," + oldName, newName);
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(true)); 
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(true));
             }
 		} else {
             fRedefineSucceeded = false;
            	// REVISIT: Localize
            	reportGenericSchemaError("internal Xerces error; please submit a bug with schema as testcase");
-		} 
+		}
         // if we get here then we must have reported an error and failed somewhere...
         return false;
     } // validateRedefineNameChange
@@ -1850,8 +1850,8 @@ public class TraverseSchema implements
                 // REVISIT:  localize
                 reportGenericSchemaError("src-import.1.1:  the namespace attribute of an <import> element must not be the same as the targetNamespace of the <import>ing schema");
             }
-        }  
-                
+        }
+
          SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
 
          if (importedGrammar == null) {
@@ -1860,10 +1860,10 @@ public class TraverseSchema implements
 
          DOMParser parser = new IgnoreWhitespaceParser();
          parser.setEntityResolver( new Resolver() );
-         parser.setErrorHandler(  new ErrorHandler() 
+         parser.setErrorHandler(  new ErrorHandler()
             {
                 public void fatalError(SAXParseException ex) throws SAXException {
-                    StringBuffer str = new StringBuffer(); 
+                    StringBuffer str = new StringBuffer();
                     String systemId_ = ex.getSystemId();
                     if (systemId_ != null) {
                         int index = systemId_.lastIndexOf('/');
@@ -1950,7 +1950,7 @@ public class TraverseSchema implements
 
     /**
     * <annotation>(<appinfo> | <documentation>)*</annotation>
-    * 
+    *
     * @param annotationDecl:  the DOM node corresponding to the <annotation> info item
     */
     private void traverseAnnotationDecl(Element annotationDecl) throws Exception {
@@ -1981,7 +1981,7 @@ public class TraverseSchema implements
     // @param: content - content must be annotation? or some other simple content
     // @param: isEmpty: -- true if the content allowed is (annotation?) only
     //                     false if must have some element (with possible preceding <annotation?>)
-    // 
+    //
     //REVISIT: this function should be used in all traverse* methods!
    private Element checkContent( Element elm, Element content, boolean isEmpty ) throws Exception {
        //isEmpty = true-> means content can be null!
@@ -1993,7 +1993,7 @@ public class TraverseSchema implements
            return null;
        }
        if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
-		   traverseAnnotationDecl( content );   
+		   traverseAnnotationDecl( content );
 		   content = XUtil.getNextSiblingElement(content);
 		   if (content == null ) {   //must be followed by <simpleType?>
 			   if (!isEmpty) {
@@ -2009,10 +2009,10 @@ public class TraverseSchema implements
 		   }
 		   //return null if expected only annotation?, else returns updated content
 	   }
-       return content;  
+       return content;
    }
 
-   
+
    //@param: elm - top element
    //@param: baseTypeStr - type (base/itemType/memberTypes)
    //@param: baseRefContext:  whether the caller is using this type as a base for restriction, union or list
@@ -2034,8 +2034,8 @@ public class TraverseSchema implements
         if (baseValidator == null) {
             Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
             if (baseTypeNode != null) {
-                traverseSimpleTypeDecl( baseTypeNode ); 
-                
+                traverseSimpleTypeDecl( baseTypeNode );
+
                 baseValidator = getDatatypeValidator(uri, localpart);
             }
         }
@@ -2064,15 +2064,15 @@ public class TraverseSchema implements
         if ( colonptr > 0) {
             localpart = type.substring(colonptr+1);
         }
-        if (localpart.equals("NOTATION")) {        
+        if (localpart.equals("NOTATION")) {
           reportGenericSchemaError("[enumeration-required-notation] It is an error for NOTATION to be used "+
-                                "directly in a schema in element/attribute '"+name+"'"); 
+                                "directly in a schema in element/attribute '"+name+"'");
         }
 
     }
 
    // @used in traverseSimpleType
-   // on return we need to pop the last simpleType name from 
+   // on return we need to pop the last simpleType name from
    // the name stack
     private int resetSimpleTypeNameStack(int returnValue){
        if (!fSimpleTypeNameStack.empty()) {
@@ -2083,7 +2083,7 @@ public class TraverseSchema implements
 
     // @used in traverseSimpleType
     // report an error cos-list-of-atomic and reset the last name of the list datatype we traversing
-    private void reportCosListOfAtomic () throws Exception{  
+    private void reportCosListOfAtomic () throws Exception{
        reportGenericSchemaError("cos-list-of-atomic: The itemType must have a {variety} of atomic or union (in which case all the {member type definitions} must be atomic)");
        fListName="";
     }
@@ -2107,23 +2107,23 @@ public class TraverseSchema implements
        return false;
     }
 
-    
-   
+
+
    /**
      * Traverse SimpleType declaration:
      * <simpleType
      *         final = #all | list of (restriction, union or list)
-     *         id = ID 
+     *         id = ID
      *         name = NCName>
      *         Content: (annotation? , ((list | restriction | union)))
      *       </simpleType>
      * traverse <list>|<restriction>|<union>
-     * 
+     *
      * @param simpleTypeDecl
-     * @return 
+     * @return
      */
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
-                
+
         // General Attribute Checking
         int scope = isTopLevel(simpleTypeDecl)?
                     GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
@@ -2139,18 +2139,18 @@ public class TraverseSchema implements
         //---------------------------------------------------
         if ( nameProperty.length() == 0) { // anonymous simpleType
             qualifiedName = "#S#"+(fSimpleTypeAnonCount++);
-            fStringPool.addSymbol(qualifiedName);   
+            fStringPool.addSymbol(qualifiedName);
         }
         else {
             if (fTargetNSURIString.length () != 0) {
                 qualifiedName = fTargetNSURIString+","+qualifiedName;
             }
-            fStringPool.addSymbol( nameProperty );        
+            fStringPool.addSymbol( nameProperty );
         }
 
         //----------------------------------------------------------------------
         //check if we have already traversed the same simpleType decl
-        //----------------------------------------------------------------------        
+        //----------------------------------------------------------------------
         if (fDatatypeRegistry.getDatatypeValidator(qualifiedName)!=null) {
             return resetSimpleTypeNameStack(fStringPool.addSymbol(qualifiedName));
         }
@@ -2161,29 +2161,29 @@ public class TraverseSchema implements
                return resetSimpleTypeNameStack(-1);
            }
         }
-        
+
 
         //----------------------------------------------------------
         // update _final_ registry
         //----------------------------------------------------------
         Attr finalAttr = simpleTypeDecl.getAttributeNode(SchemaSymbols.ATT_FINAL);
         int finalProperty = 0;
-        if(finalAttr != null) 
+        if(finalAttr != null)
             finalProperty = parseFinalSet(finalAttr.getValue());
         else
             finalProperty = parseFinalSet(null);
 
         // if we have a nonzero final , store it in the hash...
-        if(finalProperty != 0) 
+        if(finalProperty != 0)
             fSimpleTypeFinalRegistry.put(qualifiedName, new Integer(finalProperty));
 
 
         // -------------------------------
-        // remember name being traversed to 
+        // remember name being traversed to
         // avoid circular definitions in union
         // -------------------------------
         fSimpleTypeNameStack.push(qualifiedName);
-        
+
 
         //----------------------------------------------------------------------
         //annotation?,(list|restriction|union)
@@ -2204,13 +2204,13 @@ public class TraverseSchema implements
         String varietyProperty = content.getLocalName();
         String baseTypeQNameProperty = null;
         Vector dTValidators = null;
-        int size = 0;  
+        int size = 0;
         StringTokenizer unionMembers = null;
         boolean list = false;
         boolean union = false;
         boolean restriction = false;
         int numOfTypes = 0; //list/restriction = 1, union = "+"
-        
+
         if (varietyProperty.equals(SchemaSymbols.ELT_LIST)) { //traverse List
            baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_ITEMTYPE );
            list = true;
@@ -2236,7 +2236,7 @@ public class TraverseSchema implements
             else {
                 size = 1; //at least one must be seen as <simpleType> decl
             }
-            dTValidators = new Vector (size, 2); 
+            dTValidators = new Vector (size, 2);
         }
         else {
              reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
@@ -2250,25 +2250,25 @@ public class TraverseSchema implements
 
         int typeNameIndex;
         DatatypeValidator baseValidator = null;
-        
-        if ( baseTypeQNameProperty.length() == 0 ) { 
+
+        if ( baseTypeQNameProperty.length() == 0 ) {
             //---------------------------
             //must 'see' <simpleType>
             //---------------------------
 
             //content = {annotation?,simpleType?...}
             content = XUtil.getFirstChildElement(content);
-            
+
             //check content (annotation?, ...)
             content = checkContent(simpleTypeDecl, content, false);
             if (content == null) {
                 return resetSimpleTypeNameStack(-1);
             }
-            if (content.getLocalName().equals( SchemaSymbols.ELT_SIMPLETYPE )) { 
-              typeNameIndex = traverseSimpleTypeDecl(content); 
+            if (content.getLocalName().equals( SchemaSymbols.ELT_SIMPLETYPE )) {
+              typeNameIndex = traverseSimpleTypeDecl(content);
               if (typeNameIndex!=-1) {
                   baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
-                  if (baseValidator !=null && union) {  
+                  if (baseValidator !=null && union) {
                       dTValidators.addElement((DatatypeValidator)baseValidator);
                   }
               }
@@ -2285,9 +2285,9 @@ public class TraverseSchema implements
                  return resetSimpleTypeNameStack(-1);
             }
         } //end - must see simpleType?
-        else { 
+        else {
             //-----------------------------
-            //base was provided - get proper validator. 
+            //base was provided - get proper validator.
             //-----------------------------
             numOfTypes = 1;
             if (union) {
@@ -2312,7 +2312,7 @@ public class TraverseSchema implements
                 // (variety is list)cos-list-of-atomic
                 // ------------------------------
                 if (fListName.length() != 0 ) {
-                    if (baseValidator instanceof ListDatatypeValidator) {                   
+                    if (baseValidator instanceof ListDatatypeValidator) {
                         reportCosListOfAtomic();
                         return resetSimpleTypeNameStack(-1);
                     }
@@ -2325,7 +2325,7 @@ public class TraverseSchema implements
                         return resetSimpleTypeNameStack(-1);
 
                     }
-                    
+
                 }
                 if (union) {
                     dTValidators.addElement((DatatypeValidator)baseValidator); //add validator to structure
@@ -2340,20 +2340,20 @@ public class TraverseSchema implements
                 }
             }
         } //end - base is available
-        
-        
+
+
         // ------------------------------------------
-        // move to next child 
+        // move to next child
         // <base==empty)->[simpleType]->[facets]  OR
         // <base!=empty)->[facets]
         // ------------------------------------------
-        if (baseTypeQNameProperty.length() == 0) {  
+        if (baseTypeQNameProperty.length() == 0) {
             content = XUtil.getNextSiblingElement( content );
         }
-        else { 
+        else {
             content = XUtil.getFirstChildElement(content);
         }
-        
+
         // ------------------------------------------
         //get more types for union if any
         // ------------------------------------------
@@ -2363,7 +2363,7 @@ public class TraverseSchema implements
                 content = checkContent(simpleTypeDecl, content, true);
             }
             while (content!=null) {
-                typeNameIndex = traverseSimpleTypeDecl(content);   
+                typeNameIndex = traverseSimpleTypeDecl(content);
                 if (typeNameIndex!=-1) {
                     baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
                     if (baseValidator != null) {
@@ -2383,8 +2383,8 @@ public class TraverseSchema implements
                 content   = XUtil.getNextSiblingElement( content );
             }
         } // end - traverse Union
-        
-        
+
+
         if (fListName.length() != 0) {
             // reset fListName, meaning that we are done with
             // traversing <list> and its itemType resolves to atomic value
@@ -2392,7 +2392,7 @@ public class TraverseSchema implements
                 fListName = "";
             }
         }
-              
+
         int numFacets=0;
         fFacetData.clear();
         if (restriction && content != null) {
@@ -2402,12 +2402,12 @@ public class TraverseSchema implements
             content = checkContent(simpleTypeDecl, content , true);
             StringBuffer pattern = null;
             String facet;
-            while (content != null) { 
+            while (content != null) {
                 if (content.getNodeType() == Node.ELEMENT_NODE) {
                         // General Attribute Checking
                         contentAttrs = fGeneralAttrCheck.checkAttributes(content, scope);
                         numFacets++;
-                        facet =content.getLocalName(); 
+                        facet =content.getLocalName();
                         if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
                             numEnumerationLiterals++;
                             String enumVal = content.getAttribute(SchemaSymbols.ATT_VALUE);
@@ -2426,9 +2426,9 @@ public class TraverseSchema implements
                                 if(localName == null){
                                        localName = traverseNotationFromAnotherSchema( localpart, uriStr);
                                        if (localName == null) {
-                                            reportGenericSchemaError("Notation '" + localpart + 
-                                                                    "' not found in the grammar "+ uriStr); 
-                                                                    
+                                            reportGenericSchemaError("Notation '" + localpart +
+                                                                    "' not found in the grammar "+ uriStr);
+
                                        }
                                 }
                                 enumVal=nameProperty;
@@ -2439,14 +2439,14 @@ public class TraverseSchema implements
                         else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                                   reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
                                   new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
-                        }         
+                        }
                         else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
-                            if (pattern == null) {                                
+                            if (pattern == null) {
                                 pattern = new StringBuffer (content.getAttribute( SchemaSymbols.ATT_VALUE ));
                             }
-                            else { 
+                            else {
                                 // ---------------------------------------------
-                                //datatypes: 5.2.4 pattern: src-multiple-pattern 
+                                //datatypes: 5.2.4 pattern: src-multiple-pattern
                                 // ---------------------------------------------
                                 pattern.append("|");
                                 pattern.append(content.getAttribute( SchemaSymbols.ATT_VALUE ));
@@ -2458,7 +2458,7 @@ public class TraverseSchema implements
                                 reportSchemaError(SchemaMessageProvider.DatatypeError,
                                                   new Object [] {"The facet '" + facet + "' is defined more than once."} );
                              fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
-                             
+
                              if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals("true") ||
                                  content.getAttribute( SchemaSymbols.ATT_FIXED).equals("1")){
                                  // --------------------------------------------
@@ -2511,8 +2511,8 @@ public class TraverseSchema implements
             }
         }
 
-        
-        else if (list && content!=null) { 
+
+        else if (list && content!=null) {
             // report error - must not have any children!
             if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
@@ -2527,7 +2527,7 @@ public class TraverseSchema implements
                 //REVISIT: should we return?
             }
         }
-        else if (union && content!=null) { 
+        else if (union && content!=null) {
             //report error - must not have any children!
              if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
@@ -2542,17 +2542,17 @@ public class TraverseSchema implements
                 //REVISIT: should we return?
             }
         }
-     
+
         // ----------------------------------------------------------------------
-        // create & register validator for "generated" type if it doesn't exist 
+        // create & register validator for "generated" type if it doesn't exist
         // ----------------------------------------------------------------------
-        try { 
+        try {
            DatatypeValidator newValidator =
                  fDatatypeRegistry.getDatatypeValidator( qualifiedName );
 
            if( newValidator == null ) { // not previously registered
                if (list) {
-                    fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator, 
+                    fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator,
                                                                fFacetData,true);
                }
                else if (restriction) {
@@ -2562,9 +2562,9 @@ public class TraverseSchema implements
                else { //union
                    fDatatypeRegistry.createDatatypeValidator( qualifiedName, dTValidators);
                }
-                           
+
            }
-            
+
            } catch (Exception e) {
                reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
            }
@@ -2573,10 +2573,10 @@ public class TraverseSchema implements
 
 
     /*
-    * <any 
-    *   id = ID 
-    *   maxOccurs = string 
-    *   minOccurs = nonNegativeInteger 
+    * <any
+    *   id = ID
+    *   maxOccurs = string
+    *   minOccurs = nonNegativeInteger
     *   namespace = (##any | ##other) | List of (anyURI | (##targetNamespace | ##local))
     *   processContents = lax | skip | strict>
     *   Content: (annotation?)
@@ -2674,8 +2674,8 @@ public class TraverseSchema implements
     }
 
     /*
-    * <anyAttribute 
-    *   id = ID 
+    * <anyAttribute
+    *   id = ID
     *   namespace = ##any | ##other | ##local | list of {uri, ##targetNamespace}>
     *   Content: (annotation?)
     * </anyAttribute>
@@ -2699,7 +2699,7 @@ public class TraverseSchema implements
 
         if ( namespace.length() == 0 || namespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY) ) {
             anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_ANY;
-        } 
+        }
         else if (namespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
             anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_OTHER;
             anyAttDecl.name.uri = fStringPool.addSymbol(curTargetUri);
@@ -2745,7 +2745,7 @@ public class TraverseSchema implements
             anyAttDecl.defaultType |= XMLAttributeDecl.PROCESSCONTENTS_STRICT;
         }
 
-        return anyAttDecl; 
+        return anyAttDecl;
     }
 
     // Schema Component Constraint: Attribute Wildcard Intersection
@@ -3016,7 +3016,7 @@ public class TraverseSchema implements
     int[] intersect2sets(int[] one, int[] theOther){
         int[] result = new int[(one.length>theOther.length?one.length:theOther.length)];
 
-        // simple implemention, 
+        // simple implemention,
         int count = 0;
         for (int i=0; i<one.length; i++) {
             if (elementInSet(one[i], theOther))
@@ -3066,32 +3066,32 @@ public class TraverseSchema implements
     }
 
     // wrapper traverseComplexTypeDecl method
-    private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception { 
+    private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception {
         return traverseComplexTypeDecl (complexTypeDecl, false);
     }
 
     /**
      * Traverse ComplexType Declaration - Rec Implementation.
-     *  
-     *       <complexType 
-     *         abstract = boolean 
-     *         block = #all or (possibly empty) subset of {extension, restriction} 
-     *         final = #all or (possibly empty) subset of {extension, restriction} 
-     *         id = ID 
+     *
+     *       <complexType
+     *         abstract = boolean
+     *         block = #all or (possibly empty) subset of {extension, restriction}
+     *         final = #all or (possibly empty) subset of {extension, restriction}
+     *         id = ID
      *         mixed = boolean : false
      *         name = NCName>
-     *         Content: (annotation? , (simpleContent | complexContent | 
-     *                    ( (group | all | choice | sequence)? , 
-     *                    ( (attribute | attributeGroup)* , anyAttribute?))))  
+     *         Content: (annotation? , (simpleContent | complexContent |
+     *                    ( (group | all | choice | sequence)? ,
+     *                    ( (attribute | attributeGroup)* , anyAttribute?))))
      *       </complexType>
      * @param complexTypeDecl
      * @param forwardRef
-     * @return 
+     * @return
      */
-    
-    private int traverseComplexTypeDecl( Element complexTypeDecl, boolean forwardRef) 
+
+    private int traverseComplexTypeDecl( Element complexTypeDecl, boolean forwardRef)
             throws Exception {
-        
+
         // General Attribute Checking
         int scope = isTopLevel(complexTypeDecl)?
                     GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
@@ -3111,7 +3111,7 @@ public class TraverseSchema implements
         if (finalAttr != null)
             finalSet = finalAttr.getValue();
         String typeId = complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID );
-        String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
+        String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME);
         String mixed = complexTypeDecl.getAttribute(SchemaSymbols.ATT_MIXED);
         boolean isNamedType = false;
 
@@ -3123,38 +3123,38 @@ public class TraverseSchema implements
         }
 
         if ( DEBUGGING )
-            System.out.println("traversing complex Type : " + typeName); 
+            System.out.println("traversing complex Type : " + typeName);
 
         fCurrentTypeNameStack.push(typeName);
 
         int typeNameIndex = fStringPool.addSymbol(typeName);
 
-       
+
         // ------------------------------------------------------------------
         // Check if the type has already been registered
         // ------------------------------------------------------------------
         if (isTopLevel(complexTypeDecl)) {
-        
+
             String fullName = fTargetNSURIString+","+typeName;
             ComplexTypeInfo temp = (ComplexTypeInfo) fComplexTypeRegistry.get(fullName);
             if (temp != null ) {
                 // check for duplicate declarations
                 if (!forwardRef)  {
-                   if (temp.declSeen()) 
+                   if (temp.declSeen())
                       reportGenericSchemaError("sch-props-correct: Duplicate declaration for complexType " +
                                                 typeName);
-                   else 
+                   else
                       temp.setDeclSeen();
-                   
+
                 }
                 return fStringPool.addSymbol(fullName);
             }
             else {
-              // check if the type is the name of a simple type                
+              // check if the type is the name of a simple type
               if (getDatatypeValidator(fTargetNSURIString,typeName)!=null)
                 reportGenericSchemaError("sch-props-correct: Duplicate type declaration - type is " +
                                                 typeName);
-                  
+
             }
         }
 
@@ -3178,7 +3178,7 @@ public class TraverseSchema implements
           // ------------------------------------------------------------------
           if (child==null) {
               //
-              // EMPTY complexType with complexContent 
+              // EMPTY complexType with complexContent
               //
               processComplexContent(typeNameIndex, child, typeInfo, null, false);
           }
@@ -3191,7 +3191,7 @@ public class TraverseSchema implements
                   // SIMPLE CONTENT element
                   //
                   traverseSimpleContentDecl(typeNameIndex, child, typeInfo);
-                  if (XUtil.getNextSiblingElement(child) != null) 
+                  if (XUtil.getNextSiblingElement(child) != null)
                      throw new ComplexTypeRecoverableError(
                       "Invalid child following the simpleContent child in the complexType");
               }
@@ -3199,37 +3199,37 @@ public class TraverseSchema implements
                   //
                   // COMPLEX CONTENT element
                   //
-                  traverseComplexContentDecl(typeNameIndex, child, typeInfo,   
+                  traverseComplexContentDecl(typeNameIndex, child, typeInfo,
                         mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
-                  if (XUtil.getNextSiblingElement(child) != null) 
+                  if (XUtil.getNextSiblingElement(child) != null)
                      throw new ComplexTypeRecoverableError(
                       "Invalid child following the complexContent child in the complexType");
               }
               else {
-                  // 
+                  //
                   // We must have ....
                   // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
                   // Note that it's possible that only attributes are specified.
                   //
-                  processComplexContent(typeNameIndex, child, typeInfo, null, 
+                  processComplexContent(typeNameIndex, child, typeInfo, null,
                         mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
-       
+
               }
           }
-          typeInfo.blockSet = parseBlockSet(blockSet); 
+          typeInfo.blockSet = parseBlockSet(blockSet);
           // make sure block's value was absent, #all or in {extension, restriction}
           if( (blockSet != null ) && !blockSet.equals("") &&
                 (!blockSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
-                (((typeInfo.blockSet & SchemaSymbols.RESTRICTION) == 0) && 
-                ((typeInfo.blockSet & SchemaSymbols.EXTENSION) == 0))))  
+                (((typeInfo.blockSet & SchemaSymbols.RESTRICTION) == 0) &&
+                ((typeInfo.blockSet & SchemaSymbols.EXTENSION) == 0))))
             throw new ComplexTypeRecoverableError("The values of the 'block' attribute of a complexType must be either #all or a list of 'restriction' and 'extension'; " + blockSet + " was found");
 
-          typeInfo.finalSet = parseFinalSet(finalSet); 
+          typeInfo.finalSet = parseFinalSet(finalSet);
           // make sure final's value was absent, #all or in {extension, restriction}
           if( (finalSet != null ) && !finalSet.equals("") &&
                 (!finalSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
-                (((typeInfo.finalSet & SchemaSymbols.RESTRICTION) == 0) && 
-                ((typeInfo.finalSet & SchemaSymbols.EXTENSION) == 0))))  
+                (((typeInfo.finalSet & SchemaSymbols.RESTRICTION) == 0) &&
+                ((typeInfo.finalSet & SchemaSymbols.EXTENSION) == 0))))
             throw new ComplexTypeRecoverableError("The values of the 'final' attribute of a complexType must be either #all or a list of 'restriction' and 'extension'; " + finalSet + " was found");
 
         }
@@ -3237,14 +3237,14 @@ public class TraverseSchema implements
            String message = e.getMessage();
            handleComplexTypeError(message,typeNameIndex,typeInfo);
         }
-                
-            
+
+
         // ------------------------------------------------------------------
         // Finish the setup of the typeInfo and register the type
         // ------------------------------------------------------------------
-        typeInfo.scopeDefined = scopeDefined; 
-        if (isAbstract.equals(SchemaSymbols.ATTVAL_TRUE)) 
-          typeInfo.setIsAbstractType();  
+        typeInfo.scopeDefined = scopeDefined;
+        if (isAbstract.equals(SchemaSymbols.ATTVAL_TRUE))
+          typeInfo.setIsAbstractType();
         if (!forwardRef)
           typeInfo.setDeclSeen();
         typeName = fTargetNSURIString + "," + typeName;
@@ -3253,10 +3253,10 @@ public class TraverseSchema implements
         if ( DEBUGGING )
             System.out.println(">>>add complex Type to Registry: " + typeName +
                                " baseDTValidator=" + typeInfo.baseDataTypeValidator +
-                               " baseCTInfo=" + typeInfo.baseComplexTypeInfo + 
-                               " derivedBy=" + typeInfo.derivedBy + 
+                               " baseCTInfo=" + typeInfo.baseComplexTypeInfo +
+                               " derivedBy=" + typeInfo.derivedBy +
                              " contentType=" + typeInfo.contentType +
-                               " contentSpecHandle=" + typeInfo.contentSpecHandle + 
+                               " contentSpecHandle=" + typeInfo.contentSpecHandle +
                                " datatypeValidator=" + typeInfo.datatypeValidator);
 
         fComplexTypeRegistry.put(typeName,typeInfo);
@@ -3276,47 +3276,47 @@ public class TraverseSchema implements
 
     } // end traverseComplexTypeDecl
 
-      
+
     /**
-     * Traverse SimpleContent Declaration                          
-     *  
-     *       <simpleContent 
-     *         id = ID 
+     * Traverse SimpleContent Declaration
+     *
+     *       <simpleContent
+     *         id = ID
      *         {any attributes with non-schema namespace...}>
      *
-     *         Content: (annotation? , (restriction | extension)) 
+     *         Content: (annotation? , (restriction | extension))
      *       </simpleContent>
      *
      *       <restriction
      *         base = QNAME
-     *         id = ID           
+     *         id = ID
      *         {any attributes with non-schema namespace...}>
      *
      *         Content: (annotation?,(simpleType?, (minExclusive|minInclusive|maxExclusive
      *                    | maxInclusive | totalDigits | fractionDigits | length | minLength
-     *                    | maxLength | encoding | period | duration | enumeration 
-     *                    | pattern | whiteSpace)*) ? ,  
+     *                    | maxLength | encoding | period | duration | enumeration
+     *                    | pattern | whiteSpace)*) ? ,
      *                    ((attribute | attributeGroup)* , anyAttribute?))
      *       </restriction>
      *
      *       <extension
      *         base = QNAME
-     *         id = ID           
+     *         id = ID
      *         {any attributes with non-schema namespace...}>
      *         Content: (annotation? , ((attribute | attributeGroup)* , anyAttribute?))
      *       </extension>
      *
      * @param typeNameIndex
      * @param simpleContentTypeDecl
-     * @param typeInfo                   
-     * @return 
+     * @param typeInfo
+     * @return
      */
-    
+
     private void traverseSimpleContentDecl(int typeNameIndex,
-               Element simpleContentDecl, ComplexTypeInfo typeInfo) 
+               Element simpleContentDecl, ComplexTypeInfo typeInfo)
                throws Exception {
 
-        
+
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(simpleContentDecl, scope);
@@ -3324,7 +3324,7 @@ public class TraverseSchema implements
         String typeName = fStringPool.toString(typeNameIndex);
 
         // -----------------------------------------------------------------------
-        // Get attributes.   
+        // Get attributes.
         // -----------------------------------------------------------------------
         String simpleContentTypeId = simpleContentDecl.getAttribute(SchemaSymbols.ATTVAL_ID);
 
@@ -3336,7 +3336,7 @@ public class TraverseSchema implements
 
         Element simpleContent = checkContent(simpleContentDecl,
                                      XUtil.getFirstChildElement(simpleContentDecl),false);
-        
+
         // If there are no children, return
         if (simpleContent==null) {
           throw new ComplexTypeRecoverableError();
@@ -3354,7 +3354,7 @@ public class TraverseSchema implements
         else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
           typeInfo.derivedBy = SchemaSymbols.EXTENSION;
         else {
-          
+
           throw new ComplexTypeRecoverableError(
                      "The content of the simpleContent element is invalid.  The " +
                      "content must be RESTRICTION or EXTENSION");
@@ -3371,15 +3371,15 @@ public class TraverseSchema implements
         // Skip over any annotations in the restriction or extension elements
         // -----------------------------------------------------------------------
         Element content = checkContent(simpleContent,
-                              XUtil.getFirstChildElement(simpleContent),true); 
+                              XUtil.getFirstChildElement(simpleContent),true);
 
         // -----------------------------------------------------------------------
-        // Handle the base type name 
+        // Handle the base type name
         // -----------------------------------------------------------------------
         if (base.length() == 0)  {
           throw new ComplexTypeRecoverableError(
                   "The BASE attribute must be specified for the " +
-                  "RESTRICTION or EXTENSION element"); 
+                  "RESTRICTION or EXTENSION element");
         }
 
         QName baseQName = parseBase(base);
@@ -3387,22 +3387,22 @@ public class TraverseSchema implements
         Integer finalValue = (baseQName.uri == StringPool.EMPTY_STRING?
                 ((Integer)fSimpleTypeFinalRegistry.get(fStringPool.toString(baseQName.localpart))):
                 ((Integer)fSimpleTypeFinalRegistry.get(fStringPool.toString(baseQName.uri) + "," +fStringPool.toString(baseQName.localpart))));
-        if(finalValue != null && 
-                (finalValue.intValue() == typeInfo.derivedBy)) 
+        if(finalValue != null &&
+                (finalValue.intValue() == typeInfo.derivedBy))
             throw new ComplexTypeRecoverableError(
                   "The simpleType " + base + " that " + typeName + " uses has a value of \"final\" which does not permit extension");
 
         processBaseTypeInfo(baseQName,typeInfo);
-       
+
         // check that the base isn't a complex type with complex content
         if (typeInfo.baseComplexTypeInfo != null)  {
              if (typeInfo.baseComplexTypeInfo.contentType != XMLElementDecl.TYPE_SIMPLE) {
                  throw new ComplexTypeRecoverableError(
-                 "The type '"+ base +"' specified as the " + 
+                 "The type '"+ base +"' specified as the " +
                  "base in the simpleContent element must not have complexContent");
              }
         }
-           
+
         // -----------------------------------------------------------------------
         // Process the content of the derivation
         // -----------------------------------------------------------------------
@@ -3429,22 +3429,22 @@ public class TraverseSchema implements
             if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.RESTRICTION) != 0) {
                throw new ComplexTypeRecoverableError("Derivation by restriction is forbidden by either the base type " + base + " or the schema");
             }
-               
+
 
             // -----------------------------------------------------------------------
             // There may be a simple type definition in the restriction element
-            // The data type validator will be based on it, if specified          
+            // The data type validator will be based on it, if specified
             // -----------------------------------------------------------------------
-            if (content.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) { 
-                int simpleTypeNameIndex = traverseSimpleTypeDecl(content); 
+            if (content.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) {
+                int simpleTypeNameIndex = traverseSimpleTypeDecl(content);
                 if (simpleTypeNameIndex!=-1) {
                     DatatypeValidator dv=fDatatypeRegistry.getDatatypeValidator(
                        fStringPool.toString(simpleTypeNameIndex));
-                    
+
                   //check that this datatype validator is validly derived from the base
                   //according to derivation-ok-restriction 5.1.1
                   if (!checkSimpleTypeDerivationOK(dv,typeInfo.baseDataTypeValidator)) {
-                    throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.1:  The content type is not a valid restriction of the content type of the base"); 
+                    throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.1:  The content type is not a valid restriction of the content type of the base");
                   }
                   typeInfo.baseDataTypeValidator = dv;
                   content = XUtil.getNextSiblingElement(content);
@@ -3454,7 +3454,7 @@ public class TraverseSchema implements
                 }
             }
 
- 
+
             //
             // Build up facet information
             //
@@ -3468,7 +3468,7 @@ public class TraverseSchema implements
             scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
             Hashtable contentAttrs;
 
-            //REVISIT: there is a better way to do this, 
+            //REVISIT: there is a better way to do this,
             for (child = content;
                  child != null && (child.getLocalName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
@@ -3484,7 +3484,7 @@ public class TraverseSchema implements
                            child.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_PATTERN) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION));
-                 child = XUtil.getNextSiblingElement(child)) 
+                 child = XUtil.getNextSiblingElement(child))
             {
                 if ( child.getNodeType() == Node.ELEMENT_NODE ) {
                     Element facetElt = (Element) child;
@@ -3496,13 +3496,13 @@ public class TraverseSchema implements
                         enumData.addElement(facetElt.getAttribute(SchemaSymbols.ATT_VALUE));
                         //Enumerations can have annotations ? ( 0 | 1 )
                         Element enumContent =  XUtil.getFirstChildElement( facetElt );
-                        if( enumContent != null && 
+                        if( enumContent != null &&
                             enumContent.getLocalName().equals
                                   ( SchemaSymbols.ELT_ANNOTATION )){
-                            traverseAnnotationDecl( child );   
+                            traverseAnnotationDecl( child );
                         }
                         // TO DO: if Jeff check in new changes to TraverseSimpleType, copy them over
-                    } 
+                    }
                     else {
                         facetData.put(facetElt.getLocalName(),
                               facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
@@ -3515,7 +3515,7 @@ public class TraverseSchema implements
             }
 
             //
-            // If there were facets, create a new data type validator, otherwise 
+            // If there were facets, create a new data type validator, otherwise
             // the data type validator is from the base
             //
             if (numFacets > 0) {
@@ -3529,7 +3529,7 @@ public class TraverseSchema implements
 
             }
             else
-                typeInfo.datatypeValidator = 
+                typeInfo.datatypeValidator =
                              typeInfo.baseDataTypeValidator;
 
             if (child != null) {
@@ -3543,7 +3543,7 @@ public class TraverseSchema implements
                else
                   attrNode = child;
             }
-            
+
         } // end RESTRICTION
 
         //
@@ -3555,7 +3555,7 @@ public class TraverseSchema implements
               //
               // Check that the base's final set does not include EXTENSION
               //
-              if((typeInfo.baseComplexTypeInfo.finalSet & 
+              if((typeInfo.baseComplexTypeInfo.finalSet &
                    SchemaSymbols.EXTENSION) != 0) {
                  throw new ComplexTypeRecoverableError("Derivation by extension is forbidden by either the base type " + base + " or the schema");
               }
@@ -3564,7 +3564,7 @@ public class TraverseSchema implements
             typeInfo.datatypeValidator = typeInfo.baseDataTypeValidator;
 
             //
-            // Look for attributes 
+            // Look for attributes
             //
             if (content != null)  {
                //
@@ -3573,13 +3573,13 @@ public class TraverseSchema implements
                if (!isAttrOrAttrGroup(content)) {
                    throw new ComplexTypeRecoverableError(
                              "Only annotations and attributes are allowed in the " +
-                             "content of an EXTENSION element for a complexType with simpleContent"); 
+                             "content of an EXTENSION element for a complexType with simpleContent");
                }
                else {
                    attrNode = content;
                }
             }
-              
+
         }
 
         // -----------------------------------------------------------------------
@@ -3590,17 +3590,17 @@ public class TraverseSchema implements
         typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
              new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
              (fTargetNSURI==StringPool.EMPTY_STRING) ? StringPool.EMPTY_STRING : fCurrentScope, typeInfo.scopeDefined,
-             typeInfo.contentType, 
+             typeInfo.contentType,
              typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
         typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(
                                 typeInfo.templateElementIndex);
 
         // -----------------------------------------------------------------------
-        // Process attributes                                          
+        // Process attributes
         // -----------------------------------------------------------------------
         processAttributes(attrNode,baseQName,typeInfo);
 
-        if (XUtil.getNextSiblingElement(simpleContent) != null) 
+        if (XUtil.getNextSiblingElement(simpleContent) != null)
             throw new ComplexTypeRecoverableError(
                "Invalid child following the RESTRICTION or EXTENSION element in the " +
                "complex type definition");
@@ -3608,43 +3608,43 @@ public class TraverseSchema implements
     }  // end traverseSimpleContentDecl
 
     /**
-     * Traverse complexContent Declaration                          
-     *  
-     *       <complexContent 
-     *         id = ID 
-     *         mixed = boolean 
+     * Traverse complexContent Declaration
+     *
+     *       <complexContent
+     *         id = ID
+     *         mixed = boolean
      *         {any attributes with non-schema namespace...}>
      *
-     *         Content: (annotation? , (restriction | extension)) 
+     *         Content: (annotation? , (restriction | extension))
      *       </complexContent>
      *
      *       <restriction
      *         base = QNAME
-     *         id = ID           
+     *         id = ID
      *         {any attributes with non-schema namespace...}>
      *
-     *         Content: (annotation? , (group | all | choice | sequence)?, 
+     *         Content: (annotation? , (group | all | choice | sequence)?,
      *                  ((attribute | attributeGroup)* , anyAttribute?))
      *       </restriction>
      *
      *       <extension
      *         base = QNAME
-     *         id = ID           
+     *         id = ID
      *         {any attributes with non-schema namespace...}>
-     *         Content: (annotation? , (group | all | choice | sequence)?, 
+     *         Content: (annotation? , (group | all | choice | sequence)?,
      *                  ((attribute | attributeGroup)* , anyAttribute?))
      *       </extension>
      *
      * @param typeNameIndex
      * @param simpleContentTypeDecl
-     * @param typeInfo                   
-     * @param mixedOnComplexTypeDecl                   
-     * @return 
+     * @param typeInfo
+     * @param mixedOnComplexTypeDecl
+     * @return
      */
-    
-    private void traverseComplexContentDecl(int typeNameIndex,  
-               Element complexContentDecl, ComplexTypeInfo typeInfo, 
-               boolean mixedOnComplexTypeDecl) throws Exception { 
+
+    private void traverseComplexContentDecl(int typeNameIndex,
+               Element complexContentDecl, ComplexTypeInfo typeInfo,
+               boolean mixedOnComplexTypeDecl) throws Exception {
 
          // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
@@ -3653,11 +3653,11 @@ public class TraverseSchema implements
         String typeName = fStringPool.toString(typeNameIndex);
 
         // -----------------------------------------------------------------------
-        // Get the attributes                                                      
+        // Get the attributes
         // -----------------------------------------------------------------------
         String typeId = complexContentDecl.getAttribute(SchemaSymbols.ATTVAL_ID);
         String mixed = complexContentDecl.getAttribute(SchemaSymbols.ATT_MIXED);
-        
+
         // -----------------------------------------------------------------------
         // Determine whether the content is mixed, or element-only
         // Setting here overrides any setting on the complex type decl
@@ -3667,9 +3667,9 @@ public class TraverseSchema implements
            isMixed = true;
         else if (mixed.equals(SchemaSymbols.ATTVAL_FALSE))
            isMixed = false;
-        
+
         // -----------------------------------------------------------------------
-        // Since the type must have complex content, set the simple type validators 
+        // Since the type must have complex content, set the simple type validators
         // to null
         // -----------------------------------------------------------------------
         typeInfo.datatypeValidator = null;
@@ -3677,7 +3677,7 @@ public class TraverseSchema implements
 
         Element complexContent = checkContent(complexContentDecl,
                                  XUtil.getFirstChildElement(complexContentDecl),false);
-        
+
         // If there are no children, return
         if (complexContent==null) {
            throw new ComplexTypeRecoverableError();
@@ -3704,21 +3704,21 @@ public class TraverseSchema implements
 
         // Skip over any annotations in the restriction or extension elements
         Element content = checkContent(complexContent,
-                              XUtil.getFirstChildElement(complexContent),true); 
+                              XUtil.getFirstChildElement(complexContent),true);
 
         // -----------------------------------------------------------------------
-        // Handle the base type name 
+        // Handle the base type name
         // -----------------------------------------------------------------------
         if (base.length() == 0)  {
            throw new ComplexTypeRecoverableError(
                   "The BASE attribute must be specified for the " +
-                  "RESTRICTION or EXTENSION element"); 
+                  "RESTRICTION or EXTENSION element");
         }
 
         QName baseQName = parseBase(base);
 
         // -------------------------------------------------------------
-        // check if the base is "anyType"                       
+        // check if the base is "anyType"
         // -------------------------------------------------------------
         String baseTypeURI = fStringPool.toString(baseQName.uri);
         String baseLocalName = fStringPool.toString(baseQName.localpart);
@@ -3726,8 +3726,8 @@ public class TraverseSchema implements
             baseLocalName.equals("anyType"))) {
 
             processBaseTypeInfo(baseQName,typeInfo);
-       
-            //Check that the base is a complex type                                  
+
+            //Check that the base is a complex type
             if (typeInfo.baseComplexTypeInfo == null)  {
                  throw new ComplexTypeRecoverableError(
                    "The base type specified in the complexContent element must be a complexType");
@@ -3739,7 +3739,7 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         processComplexContent(typeNameIndex,content,typeInfo,baseQName,isMixed);
 
-        if (XUtil.getNextSiblingElement(complexContent) != null) 
+        if (XUtil.getNextSiblingElement(complexContent) != null)
             throw new ComplexTypeRecoverableError(
                "Invalid child following the RESTRICTION or EXTENSION element in the " +
                "complex type definition");
@@ -3748,27 +3748,27 @@ public class TraverseSchema implements
 
 
     /**
-     * Handle complexType error                                            
-     *  
-     * @param message 
-     * @param typeNameIndex 
-     * @param typeInfo 
-     * @return 
+     * Handle complexType error
+     *
+     * @param message
+     * @param typeNameIndex
+     * @param typeInfo
+     * @return
      */
-    private void handleComplexTypeError(String message, int typeNameIndex,  
+    private void handleComplexTypeError(String message, int typeNameIndex,
                                         ComplexTypeInfo typeInfo) throws Exception {
 
         String typeName = fStringPool.toString(typeNameIndex);
         if (message != null) {
-          if (typeName.startsWith("#")) 
+          if (typeName.startsWith("#"))
             reportGenericSchemaError("Anonymous complexType: " + message);
           else
             reportGenericSchemaError("ComplexType '" + typeName + "': " + message);
         }
 
         //
-        //  Mock up the typeInfo structure so that there won't be problems during     
-        //  validation      
+        //  Mock up the typeInfo structure so that there won't be problems during
+        //  validation
         //
         typeInfo.contentType = XMLElementDecl.TYPE_ANY;  // this should match anything
         typeInfo.contentSpecHandle = -1;
@@ -3780,49 +3780,49 @@ public class TraverseSchema implements
         typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
             new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
             (fTargetNSURI==StringPool.EMPTY_STRING) ? StringPool.EMPTY_STRING : fCurrentScope, typeInfo.scopeDefined,
-            typeInfo.contentType, 
+            typeInfo.contentType,
             typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
         return;
     }
 
     /**
-     * Generate a name for an anonymous type                        
-     *  
+     * Generate a name for an anonymous type
+     *
      * @param Element
      * @return String
      */
     private String genAnonTypeName(Element complexTypeDecl) throws Exception {
 
-        String typeName; 
+        String typeName;
 
-        // If the anonymous type is not nested within another type, we can 
+        // If the anonymous type is not nested within another type, we can
         // simply assign the type a numbered name
         //
-        if (fCurrentTypeNameStack.empty()) 
+        if (fCurrentTypeNameStack.empty())
             typeName = "#"+fAnonTypeCount++;
-          
-        // Otherwise, we must generate a name that can be looked up later 
+
+        // Otherwise, we must generate a name that can be looked up later
         // Do this by concatenating outer type names with the name of the parent
         // element
         else {
             String parentName = ((Element)complexTypeDecl.getParentNode()).getAttribute(
                                 SchemaSymbols.ATT_NAME);
             typeName = parentName + "_AnonType";
-            int index=fCurrentTypeNameStack.size() -1; 
+            int index=fCurrentTypeNameStack.size() -1;
 	    for (int i = index; i > -1; i--) {
-               String parentType = (String)fCurrentTypeNameStack.elementAt(i); 
+               String parentType = (String)fCurrentTypeNameStack.elementAt(i);
                typeName = parentType + "_" + typeName;
-               if (!(parentType.startsWith("#"))) 
+               if (!(parentType.startsWith("#")))
                   break;
             }
             typeName = "#" + typeName;
         }
-           
+
         return typeName;
     }
     /**
-     * Parse base string                                            
-     *  
+     * Parse base string
+     *
      * @param base
      * @return QName
      */
@@ -3842,48 +3842,48 @@ public class TraverseSchema implements
         int URIindex = fStringPool.addSymbol(resolvePrefixToURI(prefix));
         return new QName(prefixIndex,localpartIndex,nameIndex,URIindex);
     }
-    
+
     /**
-     * Check if base is from another schema                         
-     *  
+     * Check if base is from another schema
+     *
      * @param baseName
      * @return boolean
      */
     private boolean baseFromAnotherSchema(QName baseName) throws Exception {
 
         String typeURI = fStringPool.toString(baseName.uri);
-        if ( ! typeURI.equals(fTargetNSURIString) 
-             && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
-             && typeURI.length() != 0 ) 
-             //REVISIT, !!!! a hack: for schema that has no 
+        if ( ! typeURI.equals(fTargetNSURIString)
+             && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
+             && typeURI.length() != 0 )
+             //REVISIT, !!!! a hack: for schema that has no
              //target namespace, e.g. personal-schema.xml
           return true;
         else
           return false;
-                                        
+
     }
-    
+
     /**
      * Process "base" information for a complexType
-     *  
-     * @param baseTypeInfo        
+     *
+     * @param baseTypeInfo
      * @param baseName
      * @param typeInfo
-     * @return 
+     * @return
      */
-    
+
     private void processBaseTypeInfo(QName baseName, ComplexTypeInfo typeInfo) throws Exception {
 
         ComplexTypeInfo baseComplexTypeInfo = null;
         DatatypeValidator baseDTValidator = null;
-        
+
         String typeURI = fStringPool.toString(baseName.uri);
         String localpart = fStringPool.toString(baseName.localpart);
         String base = fStringPool.toString(baseName.rawname);
 
 
         // -------------------------------------------------------------
-        // check if the base type is from another schema 
+        // check if the base type is from another schema
         // -------------------------------------------------------------
         if (baseFromAnotherSchema(baseName)) {
             baseComplexTypeInfo = getTypeInfoFromNS(typeURI, localpart);
@@ -3891,7 +3891,7 @@ public class TraverseSchema implements
                 baseDTValidator = getTypeValidatorFromNS(typeURI, localpart);
                 if (baseDTValidator == null) {
                     throw new ComplexTypeRecoverableError(
-                       "Could not find base type " +localpart 
+                       "Could not find base type " +localpart
                        + " in schema " + typeURI);
                 }
             }
@@ -3906,7 +3906,7 @@ public class TraverseSchema implements
             // assume the base is a complexType and try to locate the base type first
             baseComplexTypeInfo= (ComplexTypeInfo) fComplexTypeRegistry.get(fullBaseName);
 
-            // if not found, 2 possibilities: 
+            // if not found, 2 possibilities:
             //           1: ComplexType in question has not been compiled yet;
             //           2: base is SimpleTYpe;
             if (baseComplexTypeInfo == null) {
@@ -3917,17 +3917,17 @@ public class TraverseSchema implements
                     Element baseTypeNode = getTopLevelComponentByName(
                                    SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                     if (baseTypeNode != null) {
-                        // Before traversing the base, make sure we're not already 
-                        // doing so.. 
+                        // Before traversing the base, make sure we're not already
+                        // doing so..
                         // ct-props-correct 3
                         if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
                             throw new ComplexTypeRecoverableError(
                                  "ct-props-correct.3:  Recursive type definition");
                         }
-                        
+
                         baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode, true );
                         baseComplexTypeInfo = (ComplexTypeInfo)
-                        fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); 
+                        fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol));
                         //REVISIT: should it be fullBaseName;
                     }
                     else {
@@ -3956,17 +3956,17 @@ public class TraverseSchema implements
     } // end processBaseTypeInfo
 
     /**
-     * Process content which is complex                             
-     *  
-     *     (group | all | choice | sequence) ? , 
+     * Process content which is complex
+     *
+     *     (group | all | choice | sequence) ? ,
      *     ((attribute | attributeGroup)* , anyAttribute?))
      *
      * @param typeNameIndex
      * @param complexContentChild
-     * @param typeInfo                   
-     * @return 
+     * @param typeInfo
+     * @return
      */
-    
+
     private void processComplexContent(int typeNameIndex,
                Element complexContentChild, ComplexTypeInfo typeInfo, QName baseName,
                boolean isMixed) throws Exception {
@@ -3985,7 +3985,7 @@ public class TraverseSchema implements
           String childName = complexContentChild.getLocalName();
 
           if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-               int groupIndex = traverseGroupDecl(complexContentChild); 
+               int groupIndex = traverseGroupDecl(complexContentChild);
 
                index = handleOccurrences(groupIndex,
                                 complexContentChild,
@@ -3994,17 +3994,17 @@ public class TraverseSchema implements
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-               index = handleOccurrences(traverseSequence(complexContentChild), 
+               index = handleOccurrences(traverseSequence(complexContentChild),
                                          complexContentChild);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-               index = handleOccurrences(traverseChoice(complexContentChild), 
+               index = handleOccurrences(traverseChoice(complexContentChild),
                                           complexContentChild);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-               index = handleOccurrences(traverseAll(complexContentChild), 
+               index = handleOccurrences(traverseAll(complexContentChild),
                                          complexContentChild, PROCESSING_ALL);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
@@ -4015,14 +4015,14 @@ public class TraverseSchema implements
            }
            else {
                throw new ComplexTypeRecoverableError(
-                "Invalid child '"+ childName +"' in the complex type");               
+                "Invalid child '"+ childName +"' in the complex type");
            }
        }
-     
+
        typeInfo.contentSpecHandle = index;
 
        // -----------------------------------------------------------------------
-       // Merge in information from base, if it exists           
+       // Merge in information from base, if it exists
        // -----------------------------------------------------------------------
        if (typeInfo.baseComplexTypeInfo != null) {
            int baseContentSpecHandle = typeInfo.baseComplexTypeInfo.contentSpecHandle;
@@ -4034,8 +4034,8 @@ public class TraverseSchema implements
               // check to see if the baseType permits derivation by restriction
               if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.RESTRICTION) != 0)
                     throw new ComplexTypeRecoverableError("Derivation by restriction is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
-               
-              // if the content is EMPTY, check that the base is correct 
+
+              // if the content is EMPTY, check that the base is correct
               // according to derivation-ok-restriction 5.2
               if (typeInfo.contentSpecHandle==-2) {
                  if (!(typeInfo.baseComplexTypeInfo.contentType==XMLElementDecl.TYPE_EMPTY ||
@@ -4043,13 +4043,13 @@ public class TraverseSchema implements
                     throw new ComplexTypeRecoverableError("derivation-ok-restrictoin.5.2 Content type of complexType is EMPTY but base is not EMPTY or does not have a particle which is emptiable");
                  }
               }
-                      
+
               //
               // The hairy derivation by restriction particle constraints
               // derivation-ok-restriction 5.3
               //
               else {
-                
+
                 try {
                   checkParticleDerivationOK(typeInfo.contentSpecHandle,fCurrentScope,
                        baseContentSpecHandle,typeInfo.baseComplexTypeInfo.scopeDefined,
@@ -4068,24 +4068,24 @@ public class TraverseSchema implements
                // check to see if the baseType permits derivation by extension
                if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.EXTENSION) != 0)
                     throw new ComplexTypeRecoverableError("cos-ct-extends.1.1: Derivation by extension is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
-               
+
                //
                // Check if the contentType of the base is consistent with the new type
-               // cos-ct-extends.1.4.2.2 
+               // cos-ct-extends.1.4.2.2
                if (typeInfo.baseComplexTypeInfo.contentType != XMLElementDecl.TYPE_EMPTY) {
-                  if (((typeInfo.baseComplexTypeInfo.contentType == XMLElementDecl.TYPE_CHILDREN) && 
+                  if (((typeInfo.baseComplexTypeInfo.contentType == XMLElementDecl.TYPE_CHILDREN) &&
                        isMixed) ||
                       ((typeInfo.baseComplexTypeInfo.contentType == XMLElementDecl.TYPE_MIXED_COMPLEX) &&
                       !isMixed)) {
-                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.2.2.1: The content type of the base type " + 
-                    fStringPool.toString(baseName.localpart) + " and derived type " + 
+                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.2.2.1: The content type of the base type " +
+                    fStringPool.toString(baseName.localpart) + " and derived type " +
                     typeName + " must both be mixed or element-only");
                   }
 
                }
 
                //
-               // Compose the final content model by concatenating the base and the 
+               // Compose the final content model by concatenating the base and the
                // current in sequence
                //
                if (baseFromAnotherSchema(baseName)) {
@@ -4104,15 +4104,15 @@ public class TraverseSchema implements
                        throw new ComplexTypeRecoverableError("cos-all-limited:  An \"all\" model group that is part of a complex type definition must constitute the entire {content type} of the definition.");
                    }
 
-                   typeInfo.contentSpecHandle = 
-                   fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
+                   typeInfo.contentSpecHandle =
+                   fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
                                                      baseContentSpecHandle,
                                                      typeInfo.contentSpecHandle,
                                                      false);
-               } 
+               }
 
                //
-               // Check that there is a particle in the final content 
+               // Check that there is a particle in the final content
                // cos-ct-extends.1.4.2.1
                // LM - commented out until I get a clarification from HT
                //
@@ -4126,11 +4126,11 @@ public class TraverseSchema implements
        }
 
        // -------------------------------------------------------------
-       // Set the content type                                                     
+       // Set the content type
        // -------------------------------------------------------------
        if (isMixed) {
 
-           // if there are no children, detect an error                   
+           // if there are no children, detect an error
            // See the definition of content type in Structures 3.4.1
 
            if (typeInfo.contentSpecHandle == -2) {
@@ -4155,7 +4155,7 @@ public class TraverseSchema implements
        typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
             new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
             (fTargetNSURI==StringPool.EMPTY_STRING) ? StringPool.EMPTY_STRING : fCurrentScope, typeInfo.scopeDefined,
-            typeInfo.contentType, 
+            typeInfo.contentType,
             typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(
                                typeInfo.templateElementIndex);
@@ -4178,14 +4178,14 @@ public class TraverseSchema implements
     } // end processComplexContent
 
     /**
-     * Process attributes of a complex type                              
-     *  
+     * Process attributes of a complex type
+     *
      * @param attrNode
-     * @param typeInfo                   
-     * @return 
+     * @param typeInfo
+     * @return
      */
-    
-    private void processAttributes(Element attrNode, QName baseName,            
+
+    private void processAttributes(Element attrNode, QName baseName,
                ComplexTypeInfo typeInfo) throws Exception {
 
 
@@ -4201,12 +4201,12 @@ public class TraverseSchema implements
 
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 traverseAttributeDecl(child, typeInfo, false);
-            } 
-            else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
+            }
+            else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
                 traverseAttributeGroupDecl(child,typeInfo,anyAttDecls);
 
             }
-            else if ( childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) { 
+            else if ( childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
                 attWildcard = traverseAnyAttribute(child);
             }
             else {
@@ -4246,7 +4246,7 @@ public class TraverseSchema implements
         if (baseTypeInfo != null && baseTypeInfo.attlistHead > -1 ) {
             int attDefIndex = baseTypeInfo.attlistHead;
             aGrammar = fSchemaGrammar;
-            String baseTypeSchemaURI = baseFromAnotherSchema(baseName)? 
+            String baseTypeSchemaURI = baseFromAnotherSchema(baseName)?
                            fStringPool.toString(baseName.uri):null;
             if (baseTypeSchemaURI != null) {
                 aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(baseTypeSchemaURI);
@@ -4260,7 +4260,7 @@ public class TraverseSchema implements
             while ( attDefIndex > -1 ) {
                 fTempAttributeDecl.clear();
                 aGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
-                if (fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
+                if (fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_ANY
                     ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
                     ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER ) {
                     if (attWildcard == null) {
@@ -4271,7 +4271,7 @@ public class TraverseSchema implements
                 }
                 // if found a duplicate, if it is derived by restriction,
                 // then skip the one from the base type
-                
+
                 int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name);
                 if ( temp > -1) {
                   if (typeInfo.derivedBy==SchemaSymbols.EXTENSION) {
@@ -4284,10 +4284,10 @@ public class TraverseSchema implements
                   }
                 }
 
-                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
-                                          fTempAttributeDecl.name, fTempAttributeDecl.type, 
-                                          fTempAttributeDecl.enumeration, fTempAttributeDecl.defaultType, 
-                                          fTempAttributeDecl.defaultValue, 
+                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
+                                          fTempAttributeDecl.name, fTempAttributeDecl.type,
+                                          fTempAttributeDecl.enumeration, fTempAttributeDecl.defaultType,
+                                          fTempAttributeDecl.defaultValue,
                                           fTempAttributeDecl.datatypeValidator,
                                           fTempAttributeDecl.list);
                 attDefIndex = aGrammar.getNextAttributeDeclIndex(attDefIndex);
@@ -4297,10 +4297,10 @@ public class TraverseSchema implements
         // att wildcard will inserted after all attributes were processed
         if (attWildcard != null) {
             if (attWildcard.type != -1) {
-                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
-                                          attWildcard.name, attWildcard.type, 
-                                          attWildcard.enumeration, attWildcard.defaultType, 
-                                          attWildcard.defaultValue, 
+                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
+                                          attWildcard.name, attWildcard.type,
+                                          attWildcard.enumeration, attWildcard.defaultType,
+                                          attWildcard.defaultValue,
                                           attWildcard.datatypeValidator,
                                           attWildcard.list);
             }
@@ -4310,10 +4310,10 @@ public class TraverseSchema implements
             }
         }
         else if (baseAttWildcard != null) {
-            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
-                                      baseAttWildcard.name, baseAttWildcard.type, 
-                                      baseAttWildcard.enumeration, baseAttWildcard.defaultType, 
-                                      baseAttWildcard.defaultValue, 
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
+                                      baseAttWildcard.name, baseAttWildcard.type,
+                                      baseAttWildcard.enumeration, baseAttWildcard.defaultType,
+                                      baseAttWildcard.defaultValue,
                                       baseAttWildcard.datatypeValidator,
                                       baseAttWildcard.list);
         }
@@ -4321,17 +4321,17 @@ public class TraverseSchema implements
         typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex
                                               (typeInfo.templateElementIndex);
 
-        // For derivation by restriction, ensure that the resulting attribute list 
+        // For derivation by restriction, ensure that the resulting attribute list
         // satisfies the constraints in derivation-ok-restriction 2,3,4
-        if ((typeInfo.derivedBy==SchemaSymbols.RESTRICTION) && 
+        if ((typeInfo.derivedBy==SchemaSymbols.RESTRICTION) &&
             (typeInfo.attlistHead>-1 && baseTypeInfo != null)) {
            checkAttributesDerivationOKRestriction(typeInfo.attlistHead,fSchemaGrammar,
                attWildcard,baseTypeInfo.attlistHead,aGrammar,baseAttWildcard);
         }
-        
+
     } // end processAttributes
 
-    // Check that the attributes of a type derived by restriction satisfy the 
+    // Check that the attributes of a type derived by restriction satisfy the
     // constraints of derivation-ok-restriction
 
     private void checkAttributesDerivationOKRestriction(int dAttListHead, SchemaGrammar dGrammar, XMLAttributeDecl dAttWildCard, int bAttListHead, SchemaGrammar bGrammar, XMLAttributeDecl bAttWildCard) throws ComplexTypeRecoverableError {
@@ -4339,9 +4339,9 @@ public class TraverseSchema implements
        int attDefIndex = dAttListHead;
 
        if (bAttListHead < 0) {
-          throw new ComplexTypeRecoverableError("derivation-ok-restriction.2:  Base type definition does not have any attributes"); 
+          throw new ComplexTypeRecoverableError("derivation-ok-restriction.2:  Base type definition does not have any attributes");
        }
-          
+
        // Loop thru the attributes
        while ( attDefIndex > -1 ) {
           fTempAttributeDecl.clear();
@@ -4356,16 +4356,16 @@ public class TraverseSchema implements
              bGrammar.getAttributeDecl(bAttDefIndex, fTemp2AttributeDecl);
 
              // derivation-ok-restriction.  Constraint 2.1.1
-             if ((fTemp2AttributeDecl.defaultType & 
+             if ((fTemp2AttributeDecl.defaultType &
                    XMLAttributeDecl.DEFAULT_TYPE_REQUIRED) > 0 &&
-                (fTempAttributeDecl.defaultType & 
+                (fTempAttributeDecl.defaultType &
                    XMLAttributeDecl.DEFAULT_TYPE_REQUIRED) <= 0) {
                throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.1:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' in derivation has an inconsistent REQUIRED setting to that of attribute in base");
              }
-             
+
              //
              // derivation-ok-restriction.  Constraint 2.1.2
-             // 
+             //
              if (!(checkSimpleTypeDerivationOK(
                   fTempAttributeDecl.datatypeValidator,
                   fTemp2AttributeDecl.datatypeValidator))) {
@@ -4374,47 +4374,47 @@ public class TraverseSchema implements
 
              //
              // derivation-ok-restriction.  Constraint 2.1.3
-             // 
-             if ((fTemp2AttributeDecl.defaultType & 
+             //
+             if ((fTemp2AttributeDecl.defaultType &
                    XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0) {
 
-               if (!((fTempAttributeDecl.defaultType & 
+               if (!((fTempAttributeDecl.defaultType &
                    XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0) ||
                    !fTempAttributeDecl.defaultValue.equals(fTemp2AttributeDecl.defaultValue)) {
-                  
+
                   throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.3:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' is either not fixed, or is not fixed with the same value as the attribute in the base");
                }
              }
-                    
+
           }
          else {
              //
              // derivation-ok-restriction.  Constraint 2.2
-             // 
+             //
              if ((bAttWildCard==null) ||
               !AWildCardAllowsNameSpace(bAttWildCard, dGrammar.getTargetNamespaceURI())) {
                 throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.2:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' has a target namespace which is not valid with respect to a base type definition's wildcard or, the base does not contain a wildcard");
-               
+
              }
          }
          attDefIndex = dGrammar.getNextAttributeDeclIndex(attDefIndex);
-             
+
        }
 
        // derivation-ok-restriction.  Constraint 4
        if (dAttWildCard!=null) {
           if (bAttWildCard==null) {
-            throw new ComplexTypeRecoverableError("derivation-ok-restriction.4.1: An attribute wildcard is present in the derived type, but not the base"); 
+            throw new ComplexTypeRecoverableError("derivation-ok-restriction.4.1: An attribute wildcard is present in the derived type, but not the base");
           }
-                
+
           if (!AWildCardSubset(dAttWildCard,bAttWildCard)) {
             throw new ComplexTypeRecoverableError("derivation-ok-restriction.4.2: The attribute wildcard in the derived type is not a valid subset of that in the base");
 
           }
        }
     }
-        
-    private boolean isAttrOrAttrGroup(Element e) 
+
+    private boolean isAttrOrAttrGroup(Element e)
     {
         String elementName = e.getLocalName();
 
@@ -4437,17 +4437,17 @@ public class TraverseSchema implements
                     int eltUriIndex = nameThenScope.uri;
                     int eltNameIndex = nameThenScope.localpart;
                     int enclosingScope = nameThenScope.prefix;
-                    ComplexTypeInfo typeInfo = 
+                    ComplexTypeInfo typeInfo =
                         (ComplexTypeInfo) fComplexTypeRegistry.get(fTargetNSURIString+","+typeName);
                     if (typeInfo==null) {
                         throw new Exception ( "Internal Error in void checkRecursingComplexType(). " );
                     }
                     else {
-                        int elementIndex = fSchemaGrammar.addElementDecl(new QName(-1, eltNameIndex, eltNameIndex, eltUriIndex), 
-                                                                         enclosingScope, typeInfo.scopeDefined, 
-                                                                         typeInfo.contentType, 
-                                                                         typeInfo.contentSpecHandle, 
-                                                                         typeInfo.attlistHead, 
+                        int elementIndex = fSchemaGrammar.addElementDecl(new QName(-1, eltNameIndex, eltNameIndex, eltUriIndex),
+                                                                         enclosingScope, typeInfo.scopeDefined,
+                                                                         typeInfo.contentType,
+                                                                         typeInfo.contentSpecHandle,
+                                                                         typeInfo.attlistHead,
                                                                          typeInfo.datatypeValidator);
                         fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
                     }
@@ -4458,56 +4458,56 @@ public class TraverseSchema implements
         }
     }
 
-    // Check that the particle defined by the derived ct tree is a valid restriction of 
-    // that specified by baseContentSpecIndex.   derivedScope and baseScope are the 
+    // Check that the particle defined by the derived ct tree is a valid restriction of
+    // that specified by baseContentSpecIndex.   derivedScope and baseScope are the
     // scopes of the particles, respectively.  bInfo is supplied when the base particle
     // is from a base type definition, and may be null - it helps determine other scopes
-    // that elements should be looked up in. 
+    // that elements should be looked up in.
 
     private void checkParticleDerivationOK(int derivedContentSpecIndex, int derivedScope, int baseContentSpecIndex, int baseScope, ComplexTypeInfo bInfo) throws Exception {
-        
+
 
        // Only do this if full checking is enabled
-       if (!fFullConstraintChecking) 
+       if (!fFullConstraintChecking)
            return;
 
-       // Check for pointless occurrences of all, choice, sequence.  The result is the 
-       // contentspec which is not pointless.   If the result is a non-pointless 
+       // Check for pointless occurrences of all, choice, sequence.  The result is the
+       // contentspec which is not pointless.   If the result is a non-pointless
        // group, Vector is filled  in with the children of interest
        int csIndex1 = derivedContentSpecIndex;
        fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
-       int csIndex2 = baseContentSpecIndex; 
+       int csIndex2 = baseContentSpecIndex;
        fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
 
        Vector tempVector1 = new Vector();
        Vector tempVector2 = new Vector();
 
        if (tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_SEQ ||
-           tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_CHOICE || 
+           tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
            tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_ALL) {
          csIndex1 = checkForPointlessOccurrences(csIndex1,tempVector1);
        }
        if (tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_SEQ ||
-           tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_CHOICE || 
+           tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
            tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_ALL) {
          csIndex2 = checkForPointlessOccurrences(csIndex2,tempVector2);
        }
-         
+
        fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
        fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
 
        switch (tempContentSpec1.type & 0x0f) {
-         case XMLContentSpec.CONTENTSPECNODE_LEAF: 
+         case XMLContentSpec.CONTENTSPECNODE_LEAF:
          {
             switch (tempContentSpec2.type & 0x0f) {
 
               // Elt:Elt NameAndTypeOK
-              case XMLContentSpec.CONTENTSPECNODE_LEAF: 
+              case XMLContentSpec.CONTENTSPECNODE_LEAF:
               {
                  checkNameAndTypeOK(csIndex1, derivedScope, csIndex2, baseScope, bInfo);
                  return;
               }
-              
+
               // Elt:Any NSCompat
               case XMLContentSpec.CONTENTSPECNODE_ANY:
               case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
@@ -4517,7 +4517,7 @@ public class TraverseSchema implements
                  return;
               }
 
-              // Elt:All RecurseAsIfGroup 
+              // Elt:All RecurseAsIfGroup
               case XMLContentSpec.CONTENTSPECNODE_CHOICE:
               case XMLContentSpec.CONTENTSPECNODE_SEQ:
               case XMLContentSpec.CONTENTSPECNODE_ALL:
@@ -4527,13 +4527,13 @@ public class TraverseSchema implements
               }
 
               default:
-              { 
-           	throw new ParticleRecoverableError("internal Xerces error"); 
+              {
+           	throw new ParticleRecoverableError("internal Xerces error");
               }
             }
          }
 
-         case XMLContentSpec.CONTENTSPECNODE_ANY: 
+         case XMLContentSpec.CONTENTSPECNODE_ANY:
          case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
          case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
          {
@@ -4557,13 +4557,13 @@ public class TraverseSchema implements
               }
 
               default:
-              { 
-           	throw new ParticleRecoverableError("internal Xerces error"); 
+              {
+           	throw new ParticleRecoverableError("internal Xerces error");
               }
             }
          }
 
-         case XMLContentSpec.CONTENTSPECNODE_ALL: 
+         case XMLContentSpec.CONTENTSPECNODE_ALL:
          {
             switch (tempContentSpec2.type & 0x0f) {
 
@@ -4590,13 +4590,13 @@ public class TraverseSchema implements
               }
 
               default:
-              { 
-           	throw new ParticleRecoverableError("internal Xerces error"); 
+              {
+           	throw new ParticleRecoverableError("internal Xerces error");
               }
             }
          }
 
-         case XMLContentSpec.CONTENTSPECNODE_CHOICE: 
+         case XMLContentSpec.CONTENTSPECNODE_CHOICE:
          {
             switch (tempContentSpec2.type & 0x0f) {
 
@@ -4623,14 +4623,14 @@ public class TraverseSchema implements
               }
 
               default:
-              { 
-           	throw new ParticleRecoverableError("internal Xerces error"); 
+              {
+           	throw new ParticleRecoverableError("internal Xerces error");
               }
             }
          }
 
 
-         case XMLContentSpec.CONTENTSPECNODE_SEQ: 
+         case XMLContentSpec.CONTENTSPECNODE_SEQ:
          {
             switch (tempContentSpec2.type & 0x0f) {
 
@@ -4667,8 +4667,8 @@ public class TraverseSchema implements
               }
 
               default:
-              { 
-           	throw new ParticleRecoverableError("internal Xerces error"); 
+              {
+           	throw new ParticleRecoverableError("internal Xerces error");
               }
             }
          }
@@ -4677,13 +4677,13 @@ public class TraverseSchema implements
 
     }
 
-    private int checkForPointlessOccurrences(int csIndex, Vector tempVector)  { 
+    private int checkForPointlessOccurrences(int csIndex, Vector tempVector)  {
 
-       // Note:  instead of using a Vector, we should use a growable array of int. 
+       // Note:  instead of using a Vector, we should use a growable array of int.
        // To be cleaned up in release 1.4.1. (LM)
 
        fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
-       
+
        if (tempContentSpec1.otherValue == -2) {
          gatherChildren(tempContentSpec1.type,tempContentSpec1.value,tempVector);
          if (tempVector.size() == 1) {
@@ -4699,13 +4699,13 @@ public class TraverseSchema implements
        gatherChildren(type,value, tempVector);
        gatherChildren(type,otherValue, tempVector);
 
-       
+
        return csIndex;
     }
 
 
     private void gatherChildren(int parentType, int csIndex, Vector tempVector) {
-       
+
        fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
        int min = fSchemaGrammar.getContentSpecMinOccurs(csIndex);
        int max = fSchemaGrammar.getContentSpecMaxOccurs(csIndex);
@@ -4720,7 +4720,7 @@ public class TraverseSchema implements
           tempVector.addElement(new Integer(csIndex));
        }
        else if (! (min==1 && max==1)) {
-          tempVector.addElement(new Integer(csIndex)); 
+          tempVector.addElement(new Integer(csIndex));
        }
        else if (right == -2) {
           gatherChildren(type,left,tempVector);
@@ -4732,16 +4732,16 @@ public class TraverseSchema implements
        else {
           tempVector.addElement(new Integer(csIndex));
        }
-          
+
     }
-       
+
 
     private void checkNameAndTypeOK(int csIndex1, int derivedScope, int csIndex2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
 
       fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
       fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
- 
-    
+
+
       int localpart1 = tempContentSpec1.value;
       int uri1 = tempContentSpec1.otherValue;
       int localpart2 = tempContentSpec2.value;
@@ -4756,12 +4756,12 @@ public class TraverseSchema implements
       if (!(localpart1==localpart2 && uri1==uri2)) {
 
         // we have non-matching names.   Check substitution groups.
-        if (fSComp == null) 
+        if (fSComp == null)
            fSComp = new SubstitutionGroupComparator(fGrammarResolver,fStringPool,fErrorReporter);
-        if (!checkSubstitutionGroups(localpart1,uri1,localpart2,uri2)) 
+        if (!checkSubstitutionGroups(localpart1,uri1,localpart2,uri2))
           throw new ParticleRecoverableError("rcase-nameAndTypeOK.1:  Element name/uri in restriction does not match that of corresponding base element");
       }
- 
+
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.3:  Element occurrence range not a restriction of base element's range: element is " +  fStringPool.toString(localpart1));
       }
@@ -4771,17 +4771,17 @@ public class TraverseSchema implements
       // get the element decl indices for the remainder...
       String schemaURI = fStringPool.toString(uri1);
       if ( !schemaURI.equals(fTargetNSURIString)
-            && schemaURI.length() != 0 ) 
+            && schemaURI.length() != 0 )
          aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(schemaURI);
 
       int eltndx1 =  findElement(derivedScope, localpart1, aGrammar, null);
-      if (eltndx1 < 0) 
+      if (eltndx1 < 0)
          return;
-         
+
       int eltndx2 = findElement(baseScope, localpart2, aGrammar, bInfo);
-      if (eltndx2 < 0) 
+      if (eltndx2 < 0)
          return;
-       
+
       int miscFlags1 = ((SchemaGrammar) aGrammar).getElementDeclMiscFlags(eltndx1);
       int miscFlags2 = ((SchemaGrammar) aGrammar).getElementDeclMiscFlags(eltndx2);
       boolean element1IsNillable = (miscFlags1 & SchemaSymbols.NILLABLE) !=0;
@@ -4790,76 +4790,76 @@ public class TraverseSchema implements
       boolean element1IsFixed = (miscFlags1 & SchemaSymbols.FIXED) !=0;
       String element1Value = aGrammar.getElementDefaultValue(eltndx1);
       String element2Value = aGrammar.getElementDefaultValue(eltndx2);
-      
+
       if (! (element2IsNillable || !element1IsNillable)) {
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.2:  Element " +fStringPool.toString(localpart1) + " is nillable in the restriction but not the base");
       }
 
-      if (! (element2Value == null || !element2IsFixed ||  
+      if (! (element2Value == null || !element2IsFixed ||
              (element1IsFixed && element1Value.equals(element2Value)))) {
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.4:  Element " +fStringPool.toString(localpart1) + " is either not fixed, or is not fixed with the same value as in the base");
       }
 
-      // check disallowed substitutions 
+      // check disallowed substitutions
       int blockSet1 = ((SchemaGrammar) aGrammar).getElementDeclBlockSet(eltndx1);
       int blockSet2 = ((SchemaGrammar) aGrammar).getElementDeclBlockSet(eltndx2);
-      if (((blockSet1 & blockSet2)!=blockSet2) || 
+      if (((blockSet1 & blockSet2)!=blockSet2) ||
             (blockSet1==0 && blockSet2!=0))
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Element " +fStringPool.toString(localpart1) + "'s disallowed subsitutions are not a superset of those of the base element's");
 
 
       // Need element decls for the remainder of the checks
-      aGrammar.getElementDecl(eltndx1, fTempElementDecl); 
-      aGrammar.getElementDecl(eltndx2, fTempElementDecl2); 
-         
-      // check identity constraints 
+      aGrammar.getElementDecl(eltndx1, fTempElementDecl);
+      aGrammar.getElementDecl(eltndx2, fTempElementDecl2);
+
+      // check identity constraints
       checkIDConstraintRestriction(fTempElementDecl, fTempElementDecl2, aGrammar, localpart1, localpart2);
 
       // check that the derived element's type is derived from the base's. - TO BE DONE
       checkTypesOK(fTempElementDecl,fTempElementDecl2,eltndx1,eltndx2,aGrammar,fStringPool.toString(localpart1));
-  
+
     }
 
     private void checkTypesOK(XMLElementDecl derived, XMLElementDecl base, int dndx, int bndx, SchemaGrammar aGrammar, String elementName) throws Exception {
-      
-      ComplexTypeInfo tempType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(dndx); 
+
+      ComplexTypeInfo tempType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(dndx);
       if (derived.type == XMLElementDecl.TYPE_SIMPLE ) {
- 
-        if (base.type != XMLElementDecl.TYPE_SIMPLE) 
+
+        if (base.type != XMLElementDecl.TYPE_SIMPLE)
             throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
 
         if (tempType == null) {
          if (!(checkSimpleTypeDerivationOK(derived.datatypeValidator,
-               base.datatypeValidator))) 
+               base.datatypeValidator)))
               throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
          return;
         }
       }
-      
-      ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx); 
+
+      ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx);
       for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
         if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
           throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
         }
         if (tempType.typeName.equals(bType.typeName))
-          break; 
+          break;
       }
       if(tempType == null) {
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
       }
     }
 
-    private void checkIDConstraintRestriction(XMLElementDecl derivedElemDecl, XMLElementDecl baseElemDecl, 
+    private void checkIDConstraintRestriction(XMLElementDecl derivedElemDecl, XMLElementDecl baseElemDecl,
                 SchemaGrammar grammar, int derivedElemName, int baseElemName) throws Exception {
         // this method throws no errors if the ID constraints on
         // the derived element are a logical subset of those on the
         // base element--that is, those that are present are
-        // identical to ones in the base element.  
+        // identical to ones in the base element.
         Vector derivedUnique = derivedElemDecl.unique;
         Vector baseUnique = baseElemDecl.unique;
         if(derivedUnique.size() > baseUnique.size()) {
-            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
-                    fStringPool.toString(derivedElemName) + 
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " +
+                    fStringPool.toString(derivedElemName) +
                     " has fewer <unique> Identity Constraints than the base element"+
                     fStringPool.toString(baseElemName));
         } else {
@@ -4875,8 +4875,8 @@ public class TraverseSchema implements
                 }
             }
             if(!found) {
-                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
-                    fStringPool.toString(derivedElemName) + 
+                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " +
+                    fStringPool.toString(derivedElemName) +
                     " has a <unique> Identity Constraint that does not appear on the base element"+
                     fStringPool.toString(baseElemName));
             }
@@ -4885,8 +4885,8 @@ public class TraverseSchema implements
         Vector derivedKey = derivedElemDecl.key;
         Vector baseKey = baseElemDecl.key;
         if(derivedKey.size() > baseKey.size()) {
-            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
-                    fStringPool.toString(derivedElemName) + 
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " +
+                    fStringPool.toString(derivedElemName) +
                     " has fewer <key> Identity Constraints than the base element"+
                     fStringPool.toString(baseElemName));
         } else {
@@ -4902,8 +4902,8 @@ public class TraverseSchema implements
                 }
             }
             if(!found) {
-                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
-                    fStringPool.toString(derivedElemName) + 
+                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " +
+                    fStringPool.toString(derivedElemName) +
                     " has a <key> Identity Constraint that does not appear on the base element"+
                     fStringPool.toString(baseElemName));
             }
@@ -4912,8 +4912,8 @@ public class TraverseSchema implements
         Vector derivedKeyRef = derivedElemDecl.keyRef;
         Vector baseKeyRef = baseElemDecl.keyRef;
         if(derivedKeyRef.size() > baseKeyRef.size()) {
-            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
-                    fStringPool.toString(derivedElemName) + 
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " +
+                    fStringPool.toString(derivedElemName) +
                     " has fewer <keyref> Identity Constraints than the base element"+
                     fStringPool.toString(baseElemName));
         } else {
@@ -4929,15 +4929,15 @@ public class TraverseSchema implements
                 }
             }
             if(!found) {
-                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
-                    fStringPool.toString(derivedElemName) + 
+                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " +
+                    fStringPool.toString(derivedElemName) +
                     " has a <keyref> Identity Constraint that does not appear on the base element"+
                     fStringPool.toString(baseElemName));
             }
         }
     } // checkIDConstraintRestriction
 
-    private boolean checkSubstitutionGroups(int local1, int uri1, int local2, int uri2) 
+    private boolean checkSubstitutionGroups(int local1, int uri1, int local2, int uri2)
 throws Exception {
 
        // check if either name is in the other's substitution group
@@ -4945,7 +4945,7 @@ throws Exception {
        QName name2 = new QName(-1,local2,local2,uri2);
 
        if (fSComp.isEquivalentTo(name1,name2) ||
-           fSComp.isEquivalentTo(name2,name1)) 
+           fSComp.isEquivalentTo(name2,name1))
          return true;
        else
          return false;
@@ -4953,8 +4953,8 @@ throws Exception {
     }
     private boolean checkOccurrenceRange(int min1, int max1, int min2, int max2) {
 
-      if ((min1 >= min2) && 
-          ((max2==SchemaSymbols.OCCURRENCE_UNBOUNDED) || (max1!=SchemaSymbols.OCCURRENCE_UNBOUNDED && max1<=max2))) 
+      if ((min1 >= min2) &&
+          ((max2==SchemaSymbols.OCCURRENCE_UNBOUNDED) || (max1!=SchemaSymbols.OCCURRENCE_UNBOUNDED && max1<=max2)))
         return true;
       else
         return false;
@@ -4968,13 +4968,13 @@ throws Exception {
       // if not found, check at global scope
       if (elementDeclIndex == -1) {
          elementDeclIndex = gr.getElementDeclIndex(nameIndex, -1);
-        
+
          // if still not found, and base is specified, look it up there
          if (elementDeclIndex == -1 && bInfo != null) {
             ComplexTypeInfo baseInfo = bInfo;
             while (baseInfo != null) {
                 elementDeclIndex = gr.getElementDeclIndex(nameIndex,baseInfo.scopeDefined);
-                if (elementDeclIndex > -1) 
+                if (elementDeclIndex > -1)
                    break;
                 baseInfo = baseInfo.baseComplexTypeInfo;
             }
@@ -4984,7 +4984,7 @@ throws Exception {
       return elementDeclIndex;
     }
 
-    private void checkNSCompat(int csIndex1, int derivedScope, int csIndex2) throws Exception { 
+    private void checkNSCompat(int csIndex1, int derivedScope, int csIndex2) throws Exception {
 
       int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
       int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
@@ -4996,12 +4996,12 @@ throws Exception {
         throw new ParticleRecoverableError("rcase-NSCompat.2:  Element occurrence range not a restriction of base any element's range");
       }
 
-      
+
       fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
       int uri = tempContentSpec1.otherValue;
 
       // check wildcard subset
-      if (!wildcardEltAllowsNamespace(csIndex2, uri)) 
+      if (!wildcardEltAllowsNamespace(csIndex2, uri))
         throw new ParticleRecoverableError("rcase-NSCompat.1:  Element's namespace not allowed by wildcard in base");
 
     }
@@ -5009,21 +5009,21 @@ throws Exception {
     private boolean wildcardEltAllowsNamespace(int wildcardNode, int uriIndex) {
 
       fSchemaGrammar.getContentSpec(wildcardNode, tempContentSpec1);
-      if ((tempContentSpec1.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) 
+      if ((tempContentSpec1.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY)
         return true;
 
       if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
-        if (uriIndex == tempContentSpec1.otherValue) 
-           return true; 
+        if (uriIndex == tempContentSpec1.otherValue)
+           return true;
       }
-      else { // must be ANY_OTHER 
+      else { // must be ANY_OTHER
         if (uriIndex != tempContentSpec1.otherValue && uriIndex != StringPool.EMPTY_STRING)
             return true;
       }
 
       return false;
     }
-       
+
 
     private void checkNSSubset(int csIndex1, int csIndex2) throws Exception {
       int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
@@ -5036,7 +5036,7 @@ throws Exception {
         throw new ParticleRecoverableError("rcase-NSSubset.2:  Wildcard's occurrence range not a restriction of base wildcard's range");
       }
 
-      if (!wildcardEltSubset(csIndex1, csIndex2)) 
+      if (!wildcardEltSubset(csIndex1, csIndex2))
          throw new ParticleRecoverableError("rcase-NSSubset.1:  Wildcard is not a subset of corresponding wildcard in base");
 
 
@@ -5047,23 +5047,23 @@ throws Exception {
       fSchemaGrammar.getContentSpec(wildcardNode, tempContentSpec1);
       fSchemaGrammar.getContentSpec(wildcardBaseNode, tempContentSpec2);
 
-      if ((tempContentSpec2.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) 
+      if ((tempContentSpec2.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY)
         return true;
 
       if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
         if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
-            tempContentSpec1.otherValue == tempContentSpec2.otherValue) 
-           return true; 
+            tempContentSpec1.otherValue == tempContentSpec2.otherValue)
+           return true;
       }
 
       if ((tempContentSpec1.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
         if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_NS &&
-            tempContentSpec1.otherValue == tempContentSpec2.otherValue) 
-           return true; 
+            tempContentSpec1.otherValue == tempContentSpec2.otherValue)
+           return true;
 
         if ((tempContentSpec2.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
-            tempContentSpec1.otherValue != tempContentSpec2.otherValue) 
-           return true; 
+            tempContentSpec1.otherValue != tempContentSpec2.otherValue)
+           return true;
 
       }
 
@@ -5073,28 +5073,28 @@ throws Exception {
     private void checkRecurseAsIfGroup(int csIndex1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
 
       fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
-     
+
        //  Treat the element as if it were in a group of the same type as csindex2
-      int indexOfGrp=fSchemaGrammar.addContentSpecNode(tempContentSpec2.type, 
+      int indexOfGrp=fSchemaGrammar.addContentSpecNode(tempContentSpec2.type,
                              csIndex1,-2, false);
       Vector tmpVector = new Vector();
       tmpVector.addElement(new Integer(csIndex1));
 
-      
-      if (tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_ALL || 
-          tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_SEQ) 
-         checkRecurse(indexOfGrp, tmpVector, derivedScope, csIndex2, 
+
+      if (tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_ALL ||
+          tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_SEQ)
+         checkRecurse(indexOfGrp, tmpVector, derivedScope, csIndex2,
                       tempVector2, baseScope, bInfo);
       else
-         checkRecurseLax(indexOfGrp, tmpVector, derivedScope, csIndex2, 
+         checkRecurseLax(indexOfGrp, tmpVector, derivedScope, csIndex2,
                          tempVector2, baseScope, bInfo);
-       
+
       tmpVector = null;
     }
 
     private void checkNSRecurseCheckCardinality(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2) throws Exception {
 
-      // Implement total range check 
+      // Implement total range check
       int min1 = minEffectiveTotalRange(csIndex1);
       int max1 = maxEffectiveTotalRange(csIndex1);
 
@@ -5106,7 +5106,7 @@ throws Exception {
         throw new ParticleRecoverableError("rcase-NSSubset.2:  Wildcard's occurrence range not a restriction of base wildcard's range");
       }
 
-      if (!wildcardEltSubset(csIndex1, csIndex2)) 
+      if (!wildcardEltSubset(csIndex1, csIndex2))
          throw new ParticleRecoverableError("rcase-NSSubset.1:  Wildcard is not a subset of corresponding wildcard in base");
       // Check that each member of the group is a valid restriction of the wildcard
       int count = tempVector1.size();
@@ -5114,11 +5114,11 @@ throws Exception {
          Integer particle1 = (Integer)tempVector1.elementAt(i);
          checkParticleDerivationOK(particle1.intValue(),derivedScope,csIndex2,-1,null);
       }
-      
+
     }
 
     private void checkRecurse(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
- 
+
       int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
       int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
       int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
@@ -5131,8 +5131,8 @@ throws Exception {
 
       int count1= tempVector1.size();
       int count2= tempVector2.size();
- 
-      int current = 0; 
+
+      int current = 0;
       label: for (int i = 0; i<count1; i++) {
 
         Integer particle1 = (Integer)tempVector1.elementAt(i);
@@ -5140,7 +5140,7 @@ throws Exception {
            Integer particle2 = (Integer)tempVector2.elementAt(j);
            current +=1;
            try {
-             checkParticleDerivationOK(particle1.intValue(),derivedScope, 
+             checkParticleDerivationOK(particle1.intValue(),derivedScope,
                 particle2.intValue(), baseScope, bInfo);
              continue label;
            }
@@ -5151,7 +5151,7 @@ throws Exception {
         }
         throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
       }
-      
+
       // Now, see if there are some elements in the base we didn't match up
       for (int j=current; j < count2; j++) {
         Integer particle2 = (Integer)tempVector2.elementAt(j);
@@ -5159,7 +5159,7 @@ throws Exception {
           throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
         }
       }
-      
+
     }
 
     private void checkRecurseUnordered(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
@@ -5184,13 +5184,13 @@ throws Exception {
         for (int j = 0; j<count2; j++) {
            Integer particle2 = (Integer)tempVector2.elementAt(j);
            try {
-             checkParticleDerivationOK(particle1.intValue(),derivedScope, 
+             checkParticleDerivationOK(particle1.intValue(),derivedScope,
                 particle2.intValue(), baseScope, bInfo);
-             if (foundIt[j]) 
+             if (foundIt[j])
 	        throw new ParticleRecoverableError("rcase-RecurseUnordered.2:  There is not a complete functional mapping between the particles");
              else
                 foundIt[j]=true;
-             
+
              continue label;
            }
            catch (ParticleRecoverableError e) {
@@ -5225,7 +5225,7 @@ throws Exception {
            Integer particle2 = (Integer)tempVector2.elementAt(j);
            current +=1;
            try {
-             checkParticleDerivationOK(particle1.intValue(),derivedScope, 
+             checkParticleDerivationOK(particle1.intValue(),derivedScope,
                 particle2.intValue(), baseScope, bInfo);
              continue label;
            }
@@ -5241,13 +5241,13 @@ throws Exception {
 
     private void checkMapAndSum(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
 
-      // See if the sequence group particle is a valid restriction of one of the particles 
+      // See if the sequence group particle is a valid restriction of one of the particles
       // of the choice
-      // This isn't what the spec says, but I can't make heads or tails of the 
+      // This isn't what the spec says, but I can't make heads or tails of the
       // algorithm in structures
 
       int count2 = tempVector2.size();
-      boolean foundit = false; 
+      boolean foundit = false;
       for (int i=0; i<count2; i++) {
          Integer particle = (Integer)tempVector2.elementAt(i);
          fSchemaGrammar.getContentSpec(particle.intValue(),tempContentSpec1);
@@ -5262,7 +5262,7 @@ throws Exception {
          }
       }
 
-      if (!foundit) 
+      if (!foundit)
 	throw new ParticleRecoverableError("rcase-MapAndSum:  There is not a complete functional mapping between the particles");
     }
 
@@ -5271,13 +5271,13 @@ throws Exception {
         aGrammar.getContentSpec(contentSpecHead, ctsp);
         int left = -1;
         int right = -1;
-        if ( ctsp.type == ctsp.CONTENTSPECNODE_LEAF 
+        if ( ctsp.type == ctsp.CONTENTSPECNODE_LEAF
              || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY
              || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_NS
              || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_OTHER ) {
             return fSchemaGrammar.addContentSpecNode(ctsp.type, ctsp.value, ctsp.otherValue, false);
         }
-		else if (ctsp.type == -1) 
+		else if (ctsp.type == -1)
 			// case where type being extended has no content
 			return -2;
         else {
@@ -5287,7 +5287,7 @@ throws Exception {
             else {
                 left = importContentSpec(aGrammar, ctsp.value);
             }
-            
+
             if ( ctsp.otherValue == -1 ) {
                 right = -1;
             }
@@ -5295,7 +5295,7 @@ throws Exception {
                 right = importContentSpec(aGrammar, ctsp.otherValue);
             }
             return fSchemaGrammar.addContentSpecNode(ctsp.type, left, right, false);
-        
+
         }
     }
 
@@ -5305,19 +5305,19 @@ throws Exception {
         return handleOccurrences(index, particle, NOT_ALL_CONTEXT);
     }
 
-    // Checks constraints for minOccurs, maxOccurs and expands content model 
+    // Checks constraints for minOccurs, maxOccurs and expands content model
     // accordingly
     private int handleOccurrences(int index, Element particle,
                                   int allContextFlags) throws Exception {
-        
+
         // if index is invalid, return
-        if (index < 0) 
+        if (index < 0)
           return index;
-        
+
         String minOccurs =
                     particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
         String maxOccurs =
-                    particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();    
+                    particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();
         boolean processingAll   = ((allContextFlags & PROCESSING_ALL) != 0);
         boolean groupRefWithAll = ((allContextFlags & GROUP_REF_WITH_ALL) != 0);
         boolean isGroupChild    = ((allContextFlags & CHILD_OF_GROUP) != 0);
@@ -5343,7 +5343,7 @@ throws Exception {
             maxOccurs = "1";
         }
 
-        // For the elements referenced in an <all>, minOccurs attribute 
+        // For the elements referenced in an <all>, minOccurs attribute
         // must be zero or one, and maxOccurs attribute must be one.
         if (processingAll || groupRefWithAll) {
             if ((groupRefWithAll || !minOccurs.equals("0")) &&
@@ -5411,25 +5411,25 @@ throws Exception {
 
     /**
      * Traverses Schema attribute declaration.
-     *   
-     *       <attribute 
+     *
+     *       <attribute
      *         default = string
      *         fixed = string
      *         form = (qualified | unqualified)
-     *         id = ID 
-     *         name = NCName 
-     *         ref = QName 
-     *         type = QName 
+     *         id = ID
+     *         name = NCName
+     *         ref = QName
+     *         type = QName
      *         use = (optional | prohibited | required) : optional
      *         {any attributes with non-schema namespace ...}>
      *         Content: (annotation? , simpleType?)
      *       <attribute/>
-     * 
-     * @param attributeDecl: the declaration of the attribute under 
+     *
+     * @param attributeDecl: the declaration of the attribute under
 	 * 		consideration
-	 * @param typeInfo: Contains the index of the element to which 
+	 * @param typeInfo: Contains the index of the element to which
 	 * 		the attribute declaration is attached.
-	 * @param referredTo:  true iff traverseAttributeDecl was called because 
+	 * @param referredTo:  true iff traverseAttributeDecl was called because
 	 *		of encountering a ``ref''property (used
 	 *		to suppress error-reporting).
      * @return 0 if the attribute schema is validated successfully, otherwise -1
@@ -5460,14 +5460,14 @@ throws Exception {
         Attr refAtt       = attrDecl.getAttributeNode(SchemaSymbols.ATT_REF);
         Attr datatypeAtt  = attrDecl.getAttributeNode(SchemaSymbols.ATT_TYPE);
         Attr useAtt       = attrDecl.getAttributeNode(SchemaSymbols.ATT_USE);
-        
+
         checkEnumerationRequiredNotation(attNameStr, datatypeStr);
-        
+
         ////// define attribute declaration Schema components
         int attName;        // attribute name indexed in the string pool
         int uriIndex;       // indexed for target namespace uri
         QName attQName;     // QName combining attName and uriIndex
-		
+
         // attribute type
         int attType;
         boolean attIsList    = false;
@@ -5567,7 +5567,7 @@ throws Exception {
             else {
                 uriIndex = fTargetNSURI;
             }
-            
+
             // attQName = new QName(-1,attName,attName,uriIndex);
             // Above line replaced by following 2 to work around a JIT problem.
             attQName = new QName();
@@ -5611,7 +5611,7 @@ throws Exception {
             }
 
             Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
-            if (referredAttribute != null) { 
+            if (referredAttribute != null) {
 					// don't need to traverse ref'd attribute if we're global; just make sure it's there...
                	 	traverseAttributeDecl(referredAttribute, typeInfo, true);
 
@@ -5686,7 +5686,7 @@ throws Exception {
         }
 
         // validation of attribute type is same for each case of declaration
-            if (simpleTypeChild != null) { 
+            if (simpleTypeChild != null) {
                 attType        = XMLAttributeDecl.TYPE_SIMPLE;
                 dataTypeSymbol = traverseSimpleTypeDecl(simpleTypeChild);
                 localpart = fStringPool.toString(dataTypeSymbol);
@@ -5706,7 +5706,7 @@ throws Exception {
             }
             String typeURI = resolvePrefixToURI(prefix);
 
-            if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+            if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
                  || typeURI.length()==0) {
 
                 dv = getDatatypeValidator("", localpart);
@@ -5760,7 +5760,7 @@ throws Exception {
                     }
                 }
             }
-				} 
+				}
 				else {
             attType        = XMLAttributeDecl.TYPE_SIMPLE;
             localpart      = "string";
@@ -5780,9 +5780,9 @@ throws Exception {
 
         ////// Check W3C's PR-Structure 3.2.6
         // --- Constraints on Attribute Declaration Schema Components
-        // check default value is valid for the datatype.  
+        // check default value is valid for the datatype.
         if (attType == XMLAttributeDecl.TYPE_SIMPLE && attValueConstraint != -1) {
-            try { 
+            try {
                 if (dv != null) {
                     if(defaultStr.length() > 0) {
                     //REVISIT
@@ -5796,7 +5796,7 @@ throws Exception {
                     reportSchemaError(SchemaMessageProvider.NoValidatorFor,
                             new Object [] { datatypeStr });
             } catch (InvalidDatatypeValueException idve) {
-				if (!referredTo) 
+				if (!referredTo)
                 	reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
                         new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });    //a-props-correct.2
             } catch (Exception e) {
@@ -5806,7 +5806,7 @@ throws Exception {
         }
 
         // check the coexistence of ID and value constraint
-        dvIsDerivedFromID = 
+        dvIsDerivedFromID =
           ((dv != null) && dv instanceof IDDatatypeValidator);
         if (dvIsDerivedFromID && attValueConstraint != -1)
         {
@@ -5832,16 +5832,16 @@ throws Exception {
             fAttributeDeclRegistry.put(attNameStr, new XMLAttributeDecl(fTempAttributeDecl));
         }
 
-        // add attribute to attr decl pool in fSchemaGrammar, 
+        // add attribute to attr decl pool in fSchemaGrammar,
         if (typeInfo != null) {
-            
+
             // check that there aren't duplicate attributes
             int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, attQName);
             if (temp > -1) {
-              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " + 
+              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " +
               fStringPool.toString(attQName.rawname) + " in type definition");
             }
-              
+
             // check that there aren't multiple attributes with type derived from ID
             if (dvIsDerivedFromID) {
                if (typeInfo.containsAttrTypeID())  {
@@ -5850,8 +5850,8 @@ throws Exception {
                typeInfo.setContainsAttrTypeID();
             }
 
-            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
-                                      attQName, attType, 
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
+                                      attQName, attType,
                                       dataTypeSymbol, attValueAndUseType,
                                       fStringPool.toString( attValueConstraint), dv, attIsList);
         }
@@ -5880,7 +5880,7 @@ throws Exception {
 
         if (tempAttrDecl == null) {
             // REVISIT: Localize
-            reportGenericSchemaError( "no attribute named \"" + name 
+            reportGenericSchemaError( "no attribute named \"" + name
                                       + "\" was defined in schema : " + uriStr);
             return -1;
         }
@@ -5891,12 +5891,12 @@ throws Exception {
             // check that there aren't duplicate attributes
             int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, tempAttrDecl.name);
             if (temp > -1) {
-              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " + 
+              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " +
               fStringPool.toString(tempAttrDecl.name.rawname) + " in type definition");
             }
 
             // check that there aren't multiple attributes with type derived from ID
-            if (tempAttrDecl.datatypeValidator != null && 
+            if (tempAttrDecl.datatypeValidator != null &&
                 tempAttrDecl.datatypeValidator instanceof IDDatatypeValidator) {
                if (typeInfo.containsAttrTypeID())  {
                  reportGenericSchemaError("ct-props-correct.5: More than one attribute derived from type ID cannot appear in the same complex type definition");
@@ -5904,11 +5904,11 @@ throws Exception {
                typeInfo.setContainsAttrTypeID();
             }
 
-            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex,
                                       tempAttrDecl.name, tempAttrDecl.type,
                                       -1, tempAttrDecl.defaultType,
-                                      tempAttrDecl.defaultValue, 
-                                      tempAttrDecl.datatypeValidator, 
+                                      tempAttrDecl.defaultValue,
+                                      tempAttrDecl.datatypeValidator,
                                       tempAttrDecl.list);
         }
 
@@ -5917,14 +5917,14 @@ throws Exception {
     }
 
     /*
-    * 
-    * <attributeGroup 
-    *   id = ID 
+    *
+    * <attributeGroup
+    *   id = ID
     *   name = NCName
     *   ref = QName>
     *   Content: (annotation?, (attribute|attributeGroup)*, anyAttribute?)
     * </>
-    * 
+    *
     */
     private int traverseAttributeGroupDecl( Element attrGrpDecl, ComplexTypeInfo typeInfo, Vector anyAttDecls ) throws Exception {
         // General Attribute Checking
@@ -5936,22 +5936,22 @@ throws Exception {
         // attributeGroup name
         String attGrpNameStr = attrGrpDecl.getAttribute(SchemaSymbols.ATT_NAME);
         int attGrpName = fStringPool.addSymbol(attGrpNameStr);
-        
-        String ref = attrGrpDecl.getAttribute(SchemaSymbols.ATT_REF); 
+
+        String ref = attrGrpDecl.getAttribute(SchemaSymbols.ATT_REF);
 		Element child = checkContent( attrGrpDecl, XUtil.getFirstChildElement(attrGrpDecl), true );
 
         if (!ref.equals("")) {
-			if(isTopLevel(attrGrpDecl)) 
-				// REVISIT:  localize 
+			if(isTopLevel(attrGrpDecl))
+				// REVISIT:  localize
    	    	    reportGenericSchemaError ( "An attributeGroup with \"ref\" present must not have <schema> or <redefine> as its parent");
 			if(!attGrpNameStr.equals(""))
-				// REVISIT:  localize 
+				// REVISIT:  localize
    	    	    reportGenericSchemaError ( "attributeGroup " + attGrpNameStr + " cannot refer to another attributeGroup, but it refers to " + ref);
             if (XUtil.getFirstChildElement(attrGrpDecl) != null ||
                 attrGrpDecl.getNodeValue() != null)
 				// REVISIT:  localize
    	    	    reportGenericSchemaError ( "An attributeGroup with \"ref\" present must be empty");
-            
+
             String prefix = "";
             String localpart = ref;
             int colonptr = ref.indexOf(":");
@@ -5961,11 +5961,11 @@ throws Exception {
             }
             String uriStr = resolvePrefixToURI(prefix);
             if (!uriStr.equals(fTargetNSURIString)) {
-                
+
                 traverseAttributeGroupDeclFromAnotherSchema(localpart, uriStr, typeInfo, anyAttDecls);
 
                 return -1;
-                // TO DO 
+                // TO DO
                 // REVISIST: different NS, not supported yet.
                 // REVISIT: Localize
                 //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
@@ -5980,8 +5980,8 @@ throws Exception {
                 }
             }
 
-			if(typeInfo != null) { 
- 				// only do this if we're traversing because we were ref'd here; when we come 
+			if(typeInfo != null) {
+ 				// only do this if we're traversing because we were ref'd here; when we come
 				// upon this decl by itself we're just validating.
             	Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
             	if (referredAttrGrp != null) {
@@ -5994,45 +5994,45 @@ throws Exception {
  				return -1;
 			}
         } else if (attGrpNameStr.equals(""))
-				// REVISIT:  localize 
+				// REVISIT:  localize
                 reportGenericSchemaError ( "an attributeGroup must have a name or a ref attribute present");
 
-        for (; 
+        for (;
              child != null ; child = XUtil.getNextSiblingElement(child)) {
-       
+
             if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
                 traverseAttributeDecl(child, typeInfo, false);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
 //				if(typeInfo != null)
- 					// only do this if we're traversing because we were ref'd here; when we come 
+ 					// only do this if we're traversing because we were ref'd here; when we come
 					// upon this decl by itself we're just validating.
                 	traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
             }
-            else 
+            else
 				break;
         }
 		if (child != null) {
 			if ( child.getLocalName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
-                if (anyAttDecls != null) { 
+                if (anyAttDecls != null) {
                      anyAttDecls.addElement(traverseAnyAttribute(child));
                 }
-				if (XUtil.getNextSiblingElement(child) != null) 
+				if (XUtil.getNextSiblingElement(child) != null)
 					// REVISIT:  localize
                 	reportGenericSchemaError ( "src-attribute_group.0: The content of an attributeGroup declaration must match (annotation?, ((attribute | attributeGroup)*, anyAttribute?))");
 				return -1;
 			}
-			else 
+			else
 				// REVISIT:  localize
                 reportGenericSchemaError ( "src-attribute_group.0: The content of an attributeGroup declaration must match (annotation?, ((attribute | attributeGroup)*, anyAttribute?))");
 		}
         return -1;
     } // end of method traverseAttributeGroup
-    
-    private int traverseAttributeGroupDeclFromAnotherSchema( String attGrpName , String uriStr, 
+
+    private int traverseAttributeGroupDeclFromAnotherSchema( String attGrpName , String uriStr,
                                                              ComplexTypeInfo typeInfo,
                                                              Vector anyAttDecls ) throws Exception {
-        
+
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || aGrammar == null || ! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
@@ -6043,11 +6043,11 @@ throws Exception {
         Element attGrpDecl = (Element) aGrammar.topLevelAttrGrpDecls.get((Object)attGrpName);
         if (attGrpDecl == null) {
             // REVISIT: Localize
-            reportGenericSchemaError( "no attribute group named \"" + attGrpName 
+            reportGenericSchemaError( "no attribute group named \"" + attGrpName
                                       + "\" was defined in schema : " + uriStr);
             return -1;
         }
-        
+
         NamespacesScope saveNSMapping = fNamespacesScope;
         int saveTargetNSUri = fTargetNSURI;
         fTargetNSURI = fStringPool.addSymbol(aGrammar.getTargetNamespaceURI());
@@ -6058,11 +6058,11 @@ throws Exception {
         int enumeration = -1;
 
 
-        Element child = checkContent(attGrpDecl, XUtil.getFirstChildElement(attGrpDecl), true); 
-        for (; 
+        Element child = checkContent(attGrpDecl, XUtil.getFirstChildElement(attGrpDecl), true);
+        for (;
              child != null ; child = XUtil.getNextSiblingElement(child)) {
 
-            //child attribute couldn't be a top-level attribute DEFINITION, 
+            //child attribute couldn't be a top-level attribute DEFINITION,
             if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
                 String childAttName = child.getAttribute(SchemaSymbols.ATT_NAME);
                 if ( childAttName.length() > 0 ) {
@@ -6072,9 +6072,9 @@ throws Exception {
                             addAttributeDeclFromAnotherSchema(childAttName, uriStr, typeInfo);
                             return -1;
                         }
-                    }       
+                    }
                 }
-                else 
+                else
                     traverseAttributeDecl(child, typeInfo, false);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
@@ -6098,7 +6098,7 @@ throws Exception {
         }
         return -1;
     } // end of method traverseAttributeGroupFromAnotherSchema
-    
+
 	// This simple method takes an attribute declaration as a parameter and
 	// returns null if there is no simpleType defined or the simpleType
 	// declaration if one exists.  It also throws an error if more than one
@@ -6139,39 +6139,39 @@ throws Exception {
      *         type = QName>
      *   Content: (annotation? , (simpleType | complexType)? , (unique | key | keyref)*)
      *   </element>
-     * 
-     * 
+     *
+     *
      *       The following are identity-constraint definitions
-     *        <unique 
-     *         id = ID 
+     *        <unique
+     *         id = ID
      *         name = NCName>
      *         Content: (annotation? , (selector , field+))
      *       </unique>
-     *       
-     *       <key 
-     *         id = ID 
+     *
+     *       <key
+     *         id = ID
      *         name = NCName>
      *         Content: (annotation? , (selector , field+))
      *       </key>
-     *       
-     *       <keyref 
-     *         id = ID 
-     *         name = NCName 
+     *
+     *       <keyref
+     *         id = ID
+     *         name = NCName
      *         refer = QName>
      *         Content: (annotation? , (selector , field+))
      *       </keyref>
-     *       
+     *
      *       <selector>
-     *         Content: XPathExprApprox : An XPath expression 
+     *         Content: XPathExprApprox : An XPath expression
      *       </selector>
-     *       
+     *
      *       <field>
-     *         Content: XPathExprApprox : An XPath expression 
+     *         Content: XPathExprApprox : An XPath expression
      *       </field>
-     *       
-     * 
+     *
+     *
      * @param elementDecl
-     * @return 
+     * @return
      * @exception Exception
      */
     private QName traverseElementDecl(Element elementDecl) throws Exception {
@@ -6185,7 +6185,7 @@ throws Exception {
         int contentSpecType      = -1;
         int contentSpecNodeIndex = -1;
         int typeNameIndex = -1;
-        int scopeDefined = -2; //signal a error if -2 gets gets through 
+        int scopeDefined = -2; //signal a error if -2 gets gets through
                                 //cause scope can never be -2.
         DatatypeValidator dv = null;
 
@@ -6202,9 +6202,9 @@ throws Exception {
         String refStr = elementDecl.getAttribute(SchemaSymbols.ATT_REF);
         String substitutionGroupStr = elementDecl.getAttribute(SchemaSymbols.ATT_SUBSTITUTIONGROUP);
         String typeStr = elementDecl.getAttribute(SchemaSymbols.ATT_TYPE);
-        
+
         checkEnumerationRequiredNotation(nameStr, typeStr);
-        
+
         if ( DEBUGGING )
             System.out.println("traversing element decl : " + nameStr );
 
@@ -6235,31 +6235,31 @@ throws Exception {
 			else if (refAtt != null)
 				// REVISIT:  localize
                 reportGenericSchemaError("globally-declared element " + nameStr + " cannot have a ref attribute");
-        
+
             int nameIndex = fStringPool.addSymbol(nameStr);
             int eltKey = fSchemaGrammar.getElementDeclIndex(fTargetNSURI, nameIndex,TOP_LEVEL_SCOPE);
             if (eltKey > -1 ) {
                 return new QName(-1,nameIndex,nameIndex,fTargetNSURI);
             }
         }
-        
+
         // parse out 'block', 'final', 'nillable', 'abstract'
         if (blockAtt == null)
             blockStr = null;
         int blockSet = parseBlockSet(blockStr);
         if( (blockStr != null) && !blockStr.equals("") &&
                 (!blockStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
-                (((blockSet & SchemaSymbols.RESTRICTION) == 0) && 
+                (((blockSet & SchemaSymbols.RESTRICTION) == 0) &&
                 (((blockSet & SchemaSymbols.EXTENSION) == 0) &&
-                ((blockSet & SchemaSymbols.SUBSTITUTION) == 0)))))  
+                ((blockSet & SchemaSymbols.SUBSTITUTION) == 0)))))
             reportGenericSchemaError("The values of the 'block' attribute of an element must be either #all or a list of 'substitution', 'restriction' and 'extension'; " + blockStr + " was found");
         if (finalAtt == null)
             finalStr = null;
         int finalSet = parseFinalSet(finalStr);
         if( (finalStr != null) && !finalStr.equals("") &&
                 (!finalStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
-                (((finalSet & SchemaSymbols.RESTRICTION) == 0) && 
-                ((finalSet & SchemaSymbols.EXTENSION) == 0))))  
+                (((finalSet & SchemaSymbols.RESTRICTION) == 0) &&
+                ((finalSet & SchemaSymbols.EXTENSION) == 0))))
             reportGenericSchemaError("The values of the 'final' attribute of an element must be either #all or a list of 'restriction' and 'extension'; " + finalStr + " was found");
         boolean isNillable = nillableStr.equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
         boolean isAbstract = abstractStr.equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
@@ -6276,7 +6276,7 @@ throws Exception {
 
         //if this is a reference to a global element
         if (refAtt != null) {
-            //REVISIT top level check for ref 
+            //REVISIT top level check for ref
         	if (abstractAtt != null || blockAtt != null || defaultAtt != null ||
                 finalAtt != null || fixedAtt != null || formAtt != null ||
                 nillableAtt != null || substitutionGroupAtt != null || typeAtt != null)
@@ -6287,12 +6287,12 @@ throws Exception {
 
             Element child = XUtil.getFirstChildElement(elementDecl);
         	if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
-            	if (XUtil.getNextSiblingElement(child) != null) 
+            	if (XUtil.getNextSiblingElement(child) != null)
                 	reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
 				else
 					traverseAnnotationDecl(child);
 			}
-			else if (child != null) 
+			else if (child != null)
                 reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
             String prefix = "";
             String localpart = refStr;
@@ -6326,7 +6326,7 @@ throws Exception {
                     //return new QName(-1,fStringPool.addSymbol(localpart), -1, fStringPool.addSymbol(uriString));
                 }
                 else {
-                    // do nothing here, other wise would cause infinite loop for 
+                    // do nothing here, other wise would cause infinite loop for
                     //   <element name="recur"><complexType><element ref="recur"> ...
                     //eltName= traverseElementDecl(targetElement);
                 }
@@ -6336,7 +6336,7 @@ throws Exception {
             // REVISIT: Localize
             reportGenericSchemaError("src-element.2.1: a local element must have a name or a ref attribute present");
 
-                
+
         // Handle the substitutionGroup
         Element substitutionGroupElementDecl = null;
         int substitutionGroupElementDeclIndex = -1;
@@ -6355,18 +6355,18 @@ throws Exception {
             substitutionGroupUri =  resolvePrefixToURI(getPrefix(substitutionGroupStr));
             substitutionGroupLocalpart = getLocalPart(substitutionGroupStr);
             substitutionGroupFullName = substitutionGroupUri+","+substitutionGroupLocalpart;
-           
-            if ( !substitutionGroupUri.equals(fTargetNSURIString) ) {  
+
+            if ( !substitutionGroupUri.equals(fTargetNSURIString) ) {
                 Grammar grammar = fGrammarResolver.getGrammar(substitutionGroupUri);
                 if (grammar != null && grammar instanceof SchemaGrammar) {
                     subGrammar = (SchemaGrammar) grammar;
-                    substitutionGroupElementDeclIndex = subGrammar.getElementDeclIndex(fStringPool.addSymbol(substitutionGroupUri), 
-                                                              fStringPool.addSymbol(substitutionGroupLocalpart), 
+                    substitutionGroupElementDeclIndex = subGrammar.getElementDeclIndex(fStringPool.addSymbol(substitutionGroupUri),
+                                                              fStringPool.addSymbol(substitutionGroupLocalpart),
                                                               TOP_LEVEL_SCOPE);
                     if (substitutionGroupElementDeclIndex<=-1) {
                         // REVISIT:  localize
                         noErrorSoFar = false;
-                        reportGenericSchemaError("couldn't find substitutionGroup " + substitutionGroupLocalpart + " referenced by element " + nameStr 
+                        reportGenericSchemaError("couldn't find substitutionGroup " + substitutionGroupLocalpart + " referenced by element " + nameStr
                                          + " in the SchemaGrammar "+substitutionGroupUri);
 
                     } else {
@@ -6376,7 +6376,7 @@ throws Exception {
                             if (substitutionGroupEltDV == null) {
                                 //TO DO: report error here;
                                 noErrorSoFar = false;
-                                reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart 
+                                reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
                                                  + "' in schema '" + substitutionGroupUri+"'");
                             }
                         }
@@ -6390,24 +6390,24 @@ throws Exception {
             else {
                 substitutionGroupElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, substitutionGroupLocalpart);
                 if (substitutionGroupElementDecl == null) {
-                    substitutionGroupElementDeclIndex = 
+                    substitutionGroupElementDeclIndex =
                         fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
                     if ( substitutionGroupElementDeclIndex == -1) {
                         noErrorSoFar = false;
                         // REVISIT: Localize
                         reportGenericSchemaError("unable to locate substitutionGroup affiliation element "
                                                   +substitutionGroupStr
-                                                  +" in element declaration " 
+                                                  +" in element declaration "
                                                   +nameStr);
                     }
                 }
                 else {
-                    substitutionGroupElementDeclIndex = 
+                    substitutionGroupElementDeclIndex =
                         fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
 
                     if ( substitutionGroupElementDeclIndex == -1) {
                         traverseElementDecl(substitutionGroupElementDecl);
-                        substitutionGroupElementDeclIndex = 
+                        substitutionGroupElementDeclIndex =
                             fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
                     }
                 }
@@ -6420,15 +6420,15 @@ throws Exception {
                         if (substitutionGroupEltDV == null) {
                             //TO DO: report error here;
                             noErrorSoFar = false;
-                            reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart 
+                            reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
                                                      + "' in schema '" + substitutionGroupUri+"'");
                         }
                     }
                 }
             }
- 
+
         }
-        
+
 
         //
         // resolving the type for this element right here
@@ -6438,22 +6438,22 @@ throws Exception {
 
         // element has a single child element, either a datatype or a type, null if primitive
         Element child = XUtil.getFirstChildElement(elementDecl);
-        
+
         if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
 			traverseAnnotationDecl(child);
             child = XUtil.getNextSiblingElement(child);
 		}
-        if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) 
+        if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
             // REVISIT: Localize
             reportGenericSchemaError("element declarations can contain at most one annotation Element Information Item");
-        
+
         boolean haveAnonType = false;
 
         // Handle Anonymous type if there is one
         if (child != null) {
-            
+
             String childName = child.getLocalName();
-            
+
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
                     noErrorSoFar = false;
@@ -6462,7 +6462,7 @@ throws Exception {
                 }
 
                 else {
-                    // Determine what the type name will be 
+                    // Determine what the type name will be
                     String anonTypeName = genAnonTypeName(child);
                     if (fCurrentTypeNameStack.search((Object)anonTypeName) > - 1) {
                         // A recursing element using an anonymous type
@@ -6494,14 +6494,14 @@ throws Exception {
 
                 haveAnonType = true;
             	child = XUtil.getNextSiblingElement(child);
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
                     noErrorSoFar = false;
                     // REVISIT: Localize
                     reportGenericSchemaError("anonymous simpleType in element '" + nameStr +"' has a name attribute");
                 }
-                else 
+                else
                     typeNameIndex = traverseSimpleTypeDecl(child);
                 if (typeNameIndex != -1) {
                     dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
@@ -6511,7 +6511,7 @@ throws Exception {
                     // REVISIT: Localize
                     reportGenericSchemaError("traverse simpleType error in element '" + nameStr +"'");
                 }
-                contentSpecType = XMLElementDecl.TYPE_SIMPLE; 
+                contentSpecType = XMLElementDecl.TYPE_SIMPLE;
                 haveAnonType = true;
             	child = XUtil.getNextSiblingElement(child);
             } else if (typeAtt == null) { // "ur-typed" leaf
@@ -6520,12 +6520,12 @@ throws Exception {
                 //contentSpecType = fStringPool.addSymbol("UR_TYPE");
                 // set occurrence count
                 contentSpecNodeIndex = -1;
-            } 
+            }
 			// see if there's something here; it had better be key, keyref or unique.
-			if (child != null) 
+			if (child != null)
             	childName = child.getLocalName();
 			while ((child != null) && ((childName.equals(SchemaSymbols.ELT_KEY))
-					|| (childName.equals(SchemaSymbols.ELT_KEYREF)) 
+					|| (childName.equals(SchemaSymbols.ELT_KEYREF))
 					|| (childName.equals(SchemaSymbols.ELT_UNIQUE)))) {
             	child = XUtil.getNextSiblingElement(child);
                 if (child != null) {
@@ -6537,7 +6537,7 @@ throws Exception {
             	noErrorSoFar = false;
                 reportGenericSchemaError("src-element.0: the content of an element information item must match (annotation?, (simpleType | complexType)?, (unique | key | keyref)*)");
 			}
-        } 
+        }
 
         // handle type="" here
         if (haveAnonType && (typeAtt != null)) {
@@ -6556,9 +6556,9 @@ throws Exception {
                 localpart = typeStr.substring(colonptr+1);
             }
             String typeURI = resolvePrefixToURI(prefix);
-            
+
             // check if the type is from the same Schema
-            if ( !typeURI.equals(fTargetNSURIString) 
+            if ( !typeURI.equals(fTargetNSURIString)
                  && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
                  && typeURI.length() != 0) {  // REVISIT, only needed because of resolvePrifixToURI.
                 fromAnotherSchema = typeURI;
@@ -6568,7 +6568,7 @@ throws Exception {
                     if (dv == null) {
                         //TO DO: report error here;
                         noErrorSoFar = false;
-                        reportGenericSchemaError("Could not find type " +localpart 
+                        reportGenericSchemaError("Could not find type " +localpart
                                            + " in schema " + typeURI);
                     }
                 }
@@ -6579,7 +6579,7 @@ throws Exception {
                     dv = getDatatypeValidator(typeURI, localpart);
                     if (dv == null )
                     if (typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
-                        && !fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) 
+                        && !fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA))
                     {
                         noErrorSoFar = false;
                         // REVISIT: Localize
@@ -6624,16 +6624,16 @@ throws Exception {
                     }
                 }
             }
-   
-        } 
+
+        }
         // now we need to make sure that our substitution (if any)
         // is valid, now that we have all the requisite type-related info.
         if(substitutionGroupStr.length() > 0) {
-            checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV); 
+            checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
         }
-        
+
         // this element is ur-type, check its substitutionGroup affiliation.
-        // if there is substitutionGroup affiliation and not type definition found for this element, 
+        // if there is substitutionGroup affiliation and not type definition found for this element,
         // then grab substitutionGroup affiliation's type and give it to this element
         if ( noErrorSoFar && typeInfo == null && dv == null ) {
 			typeInfo = substitutionGroupEltTypeInfo;
@@ -6670,11 +6670,11 @@ throws Exception {
             }
         }
 
-        // Now we can handle validation etc. of default and fixed attributes, 
+        // Now we can handle validation etc. of default and fixed attributes,
         // since we finally have all the type information.
         if(fixedAtt != null) defaultStr = fixedStr;
         if(!defaultStr.equals("")) {
-            if(typeInfo != null && 
+            if(typeInfo != null &&
                     (typeInfo.contentType != XMLElementDecl.TYPE_MIXED_SIMPLE &&
                      typeInfo.contentType != XMLElementDecl.TYPE_MIXED_COMPLEX &&
                     typeInfo.contentType != XMLElementDecl.TYPE_SIMPLE)) {
@@ -6689,9 +6689,7 @@ throws Exception {
             }
 
             try {
-                if(dv == null) { // in this case validate according to xs:string
-                    new StringDatatypeValidator().validate(defaultStr, null);
-                } else {
+                if(dv != null) {
                     dv.validate(defaultStr, null);
                 }
             } catch (InvalidDatatypeValueException ide) {
@@ -6721,7 +6719,7 @@ throws Exception {
         else if ( !formStr.equals(SchemaSymbols.ATTVAL_UNQUALIFIED) &&
                 	(( formStr.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
                    		fElementDefaultQualified ))) {
-            
+
             uriIndex = fTargetNSURI;
         }
         //There can never be two elements with the same name and different type in the same scope.
@@ -6734,24 +6732,24 @@ throws Exception {
                  || ((edv != null)&&(edv != dv)) )  {
                 noErrorSoFar = false;
                 // REVISIT: Localize
-                reportGenericSchemaError("duplicate element decl in the same scope : " + 
+                reportGenericSchemaError("duplicate element decl in the same scope : " +
                                          fStringPool.toString(localpartIndex));
 
             }
         }
 
         QName eltQName = new QName(-1,localpartIndex,elementNameIndex,uriIndex);
-        
+
         // add element decl to pool
-        
+
         int attrListHead = -1 ;
 
         // copy up attribute decls from type object
         if (typeInfo != null) {
             attrListHead = typeInfo.attlistHead;
         }
-        int elementIndex = fSchemaGrammar.addElementDecl(eltQName, enclosingScope, scopeDefined, 
-                                                         contentSpecType, contentSpecNodeIndex, 
+        int elementIndex = fSchemaGrammar.addElementDecl(eltQName, enclosingScope, scopeDefined,
+                                                         contentSpecType, contentSpecNodeIndex,
                                                          attrListHead, dv);
         if ( DEBUGGING ) {
             /***/
@@ -6763,7 +6761,7 @@ throws Exception {
              /***/
         }
 
-        fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo); 
+        fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
         // REVISIT: should we report error if typeInfo was null?
 
         // mark element if its type belongs to different Schema.
@@ -6798,7 +6796,7 @@ throws Exception {
                 ic = XUtil.getNextSiblingElementNS(ic, IDENTITY_CONSTRAINTS);
             }
         }
-        
+
         return eltQName;
 
     }// end of method traverseElementDecl(Element)
@@ -6816,7 +6814,7 @@ throws Exception {
             for (int i = 0; i < size; i++) {
                 Element ic = (Element)identityConstraints.elementAt(i);
                 String icName = ic.getLocalName();
-                if ( icName.equals(SchemaSymbols.ELT_KEY) ) { 
+                if ( icName.equals(SchemaSymbols.ELT_KEY) ) {
                     traverseKey(ic, edecl);
                 }
                 else if ( icName.equals(SchemaSymbols.ELT_UNIQUE) ) {
@@ -6854,7 +6852,7 @@ throws Exception {
 
     } // traverseIdentityRefConstraints(Vector)
 
-    private void traverseUnique(Element uElem, XMLElementDecl eDecl) 
+    private void traverseUnique(Element uElem, XMLElementDecl eDecl)
         throws Exception {
 
         // General Attribute Checking
@@ -6908,7 +6906,7 @@ throws Exception {
 
     } // traverseKey(Element,XMLElementDecl)
 
-    private void traverseKeyRef(Element krElem, XMLElementDecl eDecl) 
+    private void traverseKeyRef(Element krElem, XMLElementDecl eDecl)
         throws Exception {
 
         // General Attribute Checking
@@ -6935,13 +6933,13 @@ throws Exception {
             localpart = kName.substring(colonptr+1);
         }
         String uriStr = resolvePrefixToURI(prefix);
-        IdentityConstraint kId = (IdentityConstraint)fIdentityConstraintNames.get(uriStr+","+localpart); 
+        IdentityConstraint kId = (IdentityConstraint)fIdentityConstraintNames.get(uriStr+","+localpart);
         if (kId== null) {
             reportSchemaError(SchemaMessageProvider.KeyRefReferNotFound,
                               new Object[]{krName,kName});
             return;
         }
-        
+
         String eName = getElementNameFor(krElem);
         KeyRef keyRef = new KeyRef(krName, kId, eName);
 
@@ -6952,13 +6950,13 @@ throws Exception {
         eDecl.keyRef.addElement(keyRef);
         // store in fIdentityConstraintNames so can flag schemas in which multiple
         // keyrefs with the same name are present.
-        fIdentityConstraintNames.put(fTargetNSURIString+","+krName, keyRef);  
+        fIdentityConstraintNames.put(fTargetNSURIString+","+krName, keyRef);
 
     } // traverseKeyRef(Element,XMLElementDecl)
 
-    private void traverseIdentityConstraint(IdentityConstraint ic, 
+    private void traverseIdentityConstraint(IdentityConstraint ic,
                                             Element icElem) throws Exception {
-        
+
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(icElem, scope);
@@ -6990,7 +6988,7 @@ throws Exception {
             //          fully qualified if the grammar has a target
             //          namespace. -Ac
             //          RESOLUTION: Yes.
-            sXpath = new Selector.XPath(sText, fStringPool, 
+            sXpath = new Selector.XPath(sText, fStringPool,
                                         fNamespacesScope);
             Selector selector = new Selector(sXpath, ic);
             if (DEBUG_IDENTITY_CONSTRAINTS) {
@@ -7027,7 +7025,7 @@ throws Exception {
                 //          fully qualified if the grammar has a target
                 //          namespace. -Ac
                 //          RESOLUTION: Yes.
-                Field.XPath fXpath = new Field.XPath(fText, fStringPool, 
+                Field.XPath fXpath = new Field.XPath(fText, fStringPool,
                                                      fNamespacesScope);
                 // REVISIT: Get datatype validator. -Ac
                 // cannot statically determine type of field; not just because of descendant/union
@@ -7054,8 +7052,8 @@ throws Exception {
     } // traverseIdentityConstraint(IdentityConstraint,Element)
 
     /* This code is no longer used because datatypes can't be found statically for ID constraints.
-    private DatatypeValidator getDatatypeValidatorFor(Element element, 
-                                                      Selector.XPath sxpath, 
+    private DatatypeValidator getDatatypeValidatorFor(Element element,
+                                                      Selector.XPath sxpath,
                                                       Field.XPath fxpath)
         throws Exception {
 
@@ -7068,7 +7066,7 @@ throws Exception {
         int localpart = fStringPool.addSymbol(ename);
         String targetNamespace = fSchemaRootElement.getAttribute("targetNamespace");
         int uri = fStringPool.addSymbol(targetNamespace);
-        int edeclIndex = fSchemaGrammar.getElementDeclIndex(uri, localpart, 
+        int edeclIndex = fSchemaGrammar.getElementDeclIndex(uri, localpart,
                                                             Grammar.TOP_LEVEL_SCOPE);
 
         // walk selector
@@ -7194,25 +7192,25 @@ throws Exception {
     } // getElementNameFor(Element):String
 
     int getLocalPartIndex(String fullName){
-        int colonAt = fullName.indexOf(":"); 
+        int colonAt = fullName.indexOf(":");
         String localpart = fullName;
         if (  colonAt > -1 ) {
             localpart = fullName.substring(colonAt+1);
         }
         return fStringPool.addSymbol(localpart);
     }
-    
+
     String getLocalPart(String fullName){
-        int colonAt = fullName.indexOf(":"); 
+        int colonAt = fullName.indexOf(":");
         String localpart = fullName;
         if (  colonAt > -1 ) {
             localpart = fullName.substring(colonAt+1);
         }
         return localpart;
     }
-    
+
     int getPrefixIndex(String fullName){
-        int colonAt = fullName.indexOf(":"); 
+        int colonAt = fullName.indexOf(":");
         String prefix = "";
         if (  colonAt > -1 ) {
             prefix = fullName.substring(0,colonAt);
@@ -7221,17 +7219,17 @@ throws Exception {
     }
 
     String getPrefix(String fullName){
-        int colonAt = fullName.indexOf(":"); 
+        int colonAt = fullName.indexOf(":");
         String prefix = "";
         if (  colonAt > -1 ) {
             prefix = fullName.substring(0,colonAt);
         }
         return prefix;
     }
-    
-    private void checkSubstitutionGroupOK(Element elementDecl, Element substitutionGroupElementDecl, 
-            boolean noErrorSoFar, int substitutionGroupElementDeclIndex, SchemaGrammar substitutionGroupGrammar, ComplexTypeInfo typeInfo, 
-            ComplexTypeInfo substitutionGroupEltTypeInfo, DatatypeValidator dv, 
+
+    private void checkSubstitutionGroupOK(Element elementDecl, Element substitutionGroupElementDecl,
+            boolean noErrorSoFar, int substitutionGroupElementDeclIndex, SchemaGrammar substitutionGroupGrammar, ComplexTypeInfo typeInfo,
+            ComplexTypeInfo substitutionGroupEltTypeInfo, DatatypeValidator dv,
             DatatypeValidator substitutionGroupEltDV)  throws Exception {
         // here we must do two things:
         // 1.  Make sure there actually *is* a relation between the types of
@@ -7243,7 +7241,7 @@ throws Exception {
         // an element with the given type-relation.
         // Note:  we assume that (complex|simple)Type processing checks
         // whether the type in question allows itself to
-        // be modified as this element desires.  
+        // be modified as this element desires.
 
         // Check for type relationship;
         // that is, make sure that the type we're deriving has some relationship
@@ -7252,7 +7250,7 @@ throws Exception {
             int derivationMethod = typeInfo.derivedBy;
             if(typeInfo.baseComplexTypeInfo == null) {
                 if (typeInfo.baseDataTypeValidator != null) { // take care of complexType based on simpleType case...
-                    DatatypeValidator dTemp = typeInfo.baseDataTypeValidator; 
+                    DatatypeValidator dTemp = typeInfo.baseDataTypeValidator;
                     for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
                         // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
                         if(dTemp == substitutionGroupEltDV) break;
@@ -7264,8 +7262,8 @@ throws Exception {
                             int subUnionSize = subUnionMemberDV.size();
                             boolean found = false;
                             for (int i=0; i<subUnionSize && !found; i++) {
-                                DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
-                                DatatypeValidator dTempOrig = typeInfo.baseDataTypeValidator; 
+                                DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+                                DatatypeValidator dTempOrig = typeInfo.baseDataTypeValidator;
                                 for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
                                     // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
                                     if(dTempSub == dTempOrig) {
@@ -7288,10 +7286,10 @@ throws Exception {
                         if((derivationMethod & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                             noErrorSoFar = false;
                             // REVISIT:  localize
-                            reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
-                                + " cannot be part of the substitution group headed by " 
+                            reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
+                                + " cannot be part of the substitution group headed by "
                                 + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
-                        } 
+                        }
                     }
                 } else {
                     // REVISIT:  localize
@@ -7310,12 +7308,12 @@ throws Exception {
                     if((derivationMethod & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                         noErrorSoFar = false;
                         // REVISIT:  localize
-                        reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
-                            + " cannot be part of the substitution group headed by " 
+                        reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
+                            + " cannot be part of the substitution group headed by "
                             + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
-                    } 
+                    }
                 }
-            } 
+            }
         } else if (dv != null) { // do simpleType case...
             // first, check for type relation.
             if (!(checkSimpleTypeDerivationOK(dv,substitutionGroupEltDV))) {
@@ -7327,35 +7325,35 @@ throws Exception {
                 if((SchemaSymbols.RESTRICTION & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                     noErrorSoFar = false;
                     // REVISIT:  localize
-                    reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) 
-                        + " cannot be part of the substitution group headed by " 
+                    reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
+                        + " cannot be part of the substitution group headed by "
                         + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
-                } 
-            } 
-        } 
+                }
+            }
+        }
     }
-    
+
     //
-    // A utility method to check whether a particular datatypevalidator d, was validly 
+    // A utility method to check whether a particular datatypevalidator d, was validly
     // derived from another datatypevalidator, b
-    // 
+    //
     private boolean checkSimpleTypeDerivationOK(DatatypeValidator d, DatatypeValidator b) {
-       DatatypeValidator dTemp = d; 
+       DatatypeValidator dTemp = d;
        for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
            if(dTemp == b) break;
        }
        if (dTemp == null) {
            // now if b is a union, then we can
-           // derive from it if we derive from any of its members' types.  
+           // derive from it if we derive from any of its members' types.
            if(b instanceof UnionDatatypeValidator) {
                // d must derive from one of its members...
                Vector subUnionMemberDV = ((UnionDatatypeValidator)b).getBaseValidators();
                int subUnionSize = subUnionMemberDV.size();
                boolean found = false;
                for (int i=0; i<subUnionSize && !found; i++) {
-                   DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
-                   DatatypeValidator dTempOrig = d; 
+                   DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+                   DatatypeValidator dTempOrig = d;
                    for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
                        // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
                        if(dTempSub == dTempOrig) {
@@ -7368,25 +7366,25 @@ throws Exception {
                   return false;
                }
            } else {
-               return false;         
+               return false;
            }
-       } 
+       }
 
     return true;
     }
 
-    // this originally-simple method is much -complicated by the fact that, when we're 
+    // this originally-simple method is much -complicated by the fact that, when we're
     // redefining something, we've not only got to look at the space of the thing
     // we're redefining but at the original schema too.
     // The idea is to start from the top, then go down through
-    // our list of schemas until we find what we aant.  
+    // our list of schemas until we find what we aant.
     // This should not often be necessary, because we've processed
     // all redefined schemas, but three are conditions in which
     // not all elements so redefined may have been promoted to
-    // the topmost level.  
+    // the topmost level.
     private Element getTopLevelComponentByName(String componentCategory, String name) throws Exception {
         Element child = null;
-        SchemaInfo curr = fSchemaInfoListRoot; 
+        SchemaInfo curr = fSchemaInfoListRoot;
         for (; curr != null || curr == fSchemaInfoListRoot; curr = curr.getNext()) {
             if (curr != null) curr.restore();
             if ( componentCategory.equals(SchemaSymbols.ELT_GROUP) ) {
@@ -7402,7 +7400,7 @@ throws Exception {
             if (child != null ) {
                 break;
             }
-            
+
             child = XUtil.getFirstChildElement(fSchemaRootElement);
 
             if (child == null) {
@@ -7434,10 +7432,10 @@ throws Exception {
             if (child != null || fSchemaInfoListRoot == null) break;
         }
         // have to reset fSchemaInfoList
-        if(curr != null) 
+        if(curr != null)
             curr.restore();
         else
-            if (fSchemaInfoListRoot != null) 
+            if (fSchemaInfoListRoot != null)
                 fSchemaInfoListRoot.restore();
         return child;
     }
@@ -7445,9 +7443,9 @@ throws Exception {
     private boolean isTopLevel(Element component) {
         String parentName = component.getParentNode().getLocalName();
 		return (parentName.endsWith(SchemaSymbols.ELT_SCHEMA))
-		    || (parentName.endsWith(SchemaSymbols.ELT_REDEFINE)) ; 
+		    || (parentName.endsWith(SchemaSymbols.ELT_REDEFINE)) ;
     }
-    
+
     DatatypeValidator getTypeValidatorFromNS(String newSchemaURI, String localpart) throws Exception {
         // The following impl is for the case where every Schema Grammar has its own instance of DatatypeRegistry.
         // Now that we have only one DataTypeRegistry used by all schemas. this is not needed.
@@ -7478,13 +7476,13 @@ throws Exception {
         }
         return null;
     }
-    
+
     DatatypeValidator getElementDeclTypeValidatorFromNS(String newSchemaURI, String localpart) throws Exception {
         Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
         if (grammar != null && grammar instanceof SchemaGrammar) {
             SchemaGrammar sGrammar = (SchemaGrammar) grammar;
-            int eltIndex = sGrammar.getElementDeclIndex(fStringPool.addSymbol(newSchemaURI), 
-                                                        fStringPool.addSymbol(localpart), 
+            int eltIndex = sGrammar.getElementDeclIndex(fStringPool.addSymbol(newSchemaURI),
+                                                        fStringPool.addSymbol(localpart),
                                                         TOP_LEVEL_SCOPE);
 
             DatatypeValidator dv = null;
@@ -7493,7 +7491,7 @@ throws Exception {
                 dv = fTempElementDecl.datatypeValidator;
             }
             else {
-                reportGenericSchemaError("could not find global element : '" + localpart 
+                reportGenericSchemaError("could not find global element : '" + localpart
                                          + " in the SchemaGrammar "+newSchemaURI);
             }
             return dv;
@@ -7509,22 +7507,22 @@ throws Exception {
         Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
         if (grammar != null && grammar instanceof SchemaGrammar) {
             SchemaGrammar sGrammar = (SchemaGrammar) grammar;
-            int eltIndex = sGrammar.getElementDeclIndex(fStringPool.addSymbol(newSchemaURI), 
-                                                              fStringPool.addSymbol(localpart), 
+            int eltIndex = sGrammar.getElementDeclIndex(fStringPool.addSymbol(newSchemaURI),
+                                                              fStringPool.addSymbol(localpart),
                                                               TOP_LEVEL_SCOPE);
             ComplexTypeInfo typeInfo = null;
             if (eltIndex>-1) {
                  typeInfo = sGrammar.getElementComplexTypeInfo(eltIndex);
             }
             else {
-                reportGenericSchemaError("could not find global element : '" + localpart 
+                reportGenericSchemaError("could not find global element : '" + localpart
                                          + " in the SchemaGrammar "+newSchemaURI);
 
             }
             return typeInfo;
         }
         else {
-            reportGenericSchemaError("could not resolve URI : " + newSchemaURI 
+            reportGenericSchemaError("could not resolve URI : " + newSchemaURI
                                      + " to a SchemaGrammar in getElementDeclTypeInfoFromNS");
         }
         return null;
@@ -7533,11 +7531,11 @@ throws Exception {
 
 
     /**
-     * Traverses notation declaration 
+     * Traverses notation declaration
      * and saves it in a registry.
      * Notations are stored in registry with the following
      * key: "uri:localname"
-     * 
+     *
      * @param notation child <notation>
      * @return  local name of notation
      * @exception Exception
@@ -7566,21 +7564,21 @@ throws Exception {
             reportGenericSchemaError("<notation> declaration does not have a name");
 
         }
-        
+
         fNotationRegistry.put(qualifiedName, name);
 
         //we don't really care if something inside <notation> is wrong..
         checkContent( notation, XUtil.getFirstChildElement(notation), true );
-        
+
         //REVISIT: wait for DOM L3 APIs to pass info to application
         //REVISIT: SAX2 does not support notations. API should be changed.
         return name;
     }
-    
+
     /**
      * This methods will traverse notation from current schema,
      * as well as from included or imported schemas
-     * 
+     *
      * @param notationName
      *               localName of notation
      * @param uriStr uriStr for schema grammar
@@ -7589,7 +7587,7 @@ throws Exception {
      * @exception Exception
      */
     private String traverseNotationFromAnotherSchema( String notationName , String uriStr ) throws Exception {
-        
+
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || aGrammar==null ||! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
@@ -7616,7 +7614,7 @@ throws Exception {
         Element notationDecl = (Element) aGrammar.topLevelNotationDecls.get((Object)notationName);
         if (notationDecl == null) {
             // REVISIT: Localize
-            reportGenericSchemaError( "no notation named \"" + notationName 
+            reportGenericSchemaError( "no notation named \"" + notationName
                                       + "\" was defined in schema : " + uriStr);
             return "";
         }
@@ -7630,18 +7628,18 @@ throws Exception {
 
     /**
      * Traverse Group Declaration.
-     * 
-     * <group 
-     *         id = ID 
-     *         maxOccurs = string 
-     *         minOccurs = nonNegativeInteger 
-     *         name = NCName 
+     *
+     * <group
+     *         id = ID
+     *         maxOccurs = string
+     *         minOccurs = nonNegativeInteger
+     *         name = NCName
      *         ref = QName>
      *   Content: (annotation? , (all | choice | sequence)?)
      * <group/>
-     * 
+     *
      * @param elementDecl
-     * @return 
+     * @return
      * @exception Exception
      */
     private int traverseGroupDecl( Element groupDecl ) throws Exception {
@@ -7657,15 +7655,15 @@ throws Exception {
 		Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
 
         if (!ref.equals("")) {
-            if (isTopLevel(groupDecl)) 
-                // REVISIT:  localize 
+            if (isTopLevel(groupDecl))
+                // REVISIT:  localize
                 reportGenericSchemaError ( "A group with \"ref\" present must not have <schema> or <redefine> as its parent");
             if (!groupName.equals(""))
-                // REVISIT:  localize 
+                // REVISIT:  localize
                 reportGenericSchemaError ( "group " + groupName + " cannot refer to another group, but it refers to " + ref);
 
             // there should be no children for <group ref="...">
-            if (XUtil.getFirstChildElement(groupDecl)!=null) 
+            if (XUtil.getFirstChildElement(groupDecl)!=null)
                 reportGenericSchemaError ( "A group with \"ref\" present must not have children");
             String prefix = "";
             String localpart = ref;
@@ -7675,7 +7673,7 @@ throws Exception {
                 localpart = ref.substring(colonptr+1);
             }
             int localpartIndex = fStringPool.addSymbol(localpart);
-            
+
             String uriStr = resolvePrefixToURI(prefix);
 
             if (!uriStr.equals(fTargetNSURIString)) {
@@ -7697,7 +7695,7 @@ throws Exception {
 
             // Check if we are in the middle of traversing this group (i.e. circular references)
             if (fCurrentGroupNameStack.search((Object)localpart) > - 1) {
-                reportGenericSchemaError("mg-props-correct: Circular definition for group " + localpart); 
+                reportGenericSchemaError("mg-props-correct: Circular definition for group " + localpart);
                 return -2;
             }
 
@@ -7712,7 +7710,7 @@ throws Exception {
             else {
                 contentSpecIndex = traverseGroupDecl(referredGroup);
             }
-            
+
             return contentSpecIndex;
         } else if (groupName.equals(""))
             // REVISIT: Localize
@@ -7736,25 +7734,25 @@ throws Exception {
         // Push the group name onto a stack, so that we can check for circular groups
         fCurrentGroupNameStack.push(groupName);
 
-        // Save the scope and set the current scope to -1 
+        // Save the scope and set the current scope to -1
         int savedScope = fCurrentScope;
         fCurrentScope = -1;
 
         int index = -2;
 
         boolean illegalChild = false;
-		String childName = 
+		String childName =
         	(child != null) ? child.getLocalName() : "";
 
         if (childName.equals(SchemaSymbols.ELT_ALL)) {
             index = traverseAll(child);
-        } 
+        }
         else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
             index = traverseChoice(child);
-        } 
+        }
         else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
             index = traverseSequence(child);
-        } 
+        }
         else if (!childName.equals("") || (child != null && XUtil.getNextSiblingElement(child) != null)) {
             illegalChild = true;
             reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
@@ -7782,7 +7780,7 @@ throws Exception {
     }
 
     private int traverseGroupDeclFromAnotherSchema( String groupName , String uriStr ) throws Exception {
-        
+
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || aGrammar==null ||! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
@@ -7796,7 +7794,7 @@ throws Exception {
         Element groupDecl = (Element) aGrammar.topLevelGroupDecls.get((Object)groupName);
         if (groupDecl == null) {
             // REVISIT: Localize
-            reportGenericSchemaError( "no group named \"" + groupName 
+            reportGenericSchemaError( "no group named \"" + groupName
                                       + "\" was defined in schema : " + uriStr);
             return -1;
         }
@@ -7832,13 +7830,13 @@ throws Exception {
 	String childName = (child != null) ? child.getLocalName() : "";
         if (childName.equals(SchemaSymbols.ELT_ALL)) {
             index = traverseAll(child);
-        } 
+        }
         else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
             index = traverseChoice(child);
-        } 
+        }
         else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
             index = traverseSequence(child);
-        } 
+        }
         else if (!childName.equals("") || (child != null && XUtil.getNextSiblingElement(child) != null)) {
             illegalChild = true;
             reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
@@ -7856,24 +7854,24 @@ throws Exception {
 
 
     } // end of method traverseGroupDeclFromAnotherSchema
-    
+
     /**
     *
     * Traverse the Sequence declaration
-    * 
-    * <sequence 
-    *   id = ID 
-    *   maxOccurs = string 
+    *
+    * <sequence
+    *   id = ID
+    *   maxOccurs = string
     *   minOccurs = nonNegativeInteger>
     *   Content: (annotation? , (element | group | choice | sequence | any)*)
     * </sequence>
-    * 
+    *
     **/
     int traverseSequence (Element sequenceDecl) throws Exception {
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(sequenceDecl, scope);
-            
+
         Element child = checkContent(sequenceDecl, XUtil.getFirstChildElement(sequenceDecl), true);
 
         int csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
@@ -7893,11 +7891,11 @@ throws Exception {
                 QName eltQName = traverseElementDecl(child);
                 index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
                                                        eltQName.localpart,
-                                                       eltQName.uri, 
+                                                       eltQName.uri,
                                                        false);
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
 
@@ -7911,21 +7909,21 @@ throws Exception {
 
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 index = traverseChoice(child);
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 index = traverseSequence(child);
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_ANY)) {
                 index = traverseAny(child);
                 seeParticle = true;
-            } 
+            }
             else {
                 reportSchemaError(
                              SchemaMessageProvider.SeqChoiceContentRestricted,
@@ -7957,24 +7955,24 @@ throws Exception {
 
         return left;
     }
-    
+
     /**
     *
     * Traverse the Choice declaration
-    * 
+    *
     * <choice
-    *   id = ID 
-    *   maxOccurs = string 
+    *   id = ID
+    *   maxOccurs = string
     *   minOccurs = nonNegativeInteger>
     *   Content: (annotation? , (element | group | choice | sequence | any)*)
     * </choice>
-    * 
+    *
     **/
     int traverseChoice (Element choiceDecl) throws Exception {
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(choiceDecl, scope);
-            
+
         // REVISIT: traverseChoice, traverseSequence can be combined
         Element child = checkContent(choiceDecl, XUtil.getFirstChildElement(choiceDecl), true);
 
@@ -7995,11 +7993,11 @@ throws Exception {
                 QName eltQName = traverseElementDecl(child);
                 index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
                                                        eltQName.localpart,
-                                                       eltQName.uri, 
+                                                       eltQName.uri,
                                                        false);
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
 
@@ -8013,21 +8011,21 @@ throws Exception {
 
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 index = traverseChoice(child);
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 index = traverseSequence(child);
                 seeParticle = true;
 
-            } 
+            }
             else if (childName.equals(SchemaSymbols.ELT_ANY)) {
                 index = traverseAny(child);
                 seeParticle = true;
-            } 
+            }
             else {
                 reportSchemaError(
                               SchemaMessageProvider.SeqChoiceContentRestricted,
@@ -8060,7 +8058,7 @@ throws Exception {
         }
         return left;
     }
-    
+
 
    /**
     *
@@ -8101,11 +8099,11 @@ throws Exception {
                 index = fSchemaGrammar.addContentSpecNode(
                                            XMLContentSpec.CONTENTSPECNODE_LEAF,
                                            eltQName.localpart,
-                                           eltQName.uri, 
+                                           eltQName.uri,
                                            false);
 
                 index = handleOccurrences(index, child, PROCESSING_ALL);
-            } 
+            }
             else {
                 reportSchemaError(SchemaMessageProvider.AllContentRestricted,
                                   new Object [] { childName });
@@ -8114,7 +8112,7 @@ throws Exception {
 
             hadContent = true;
 
-            if (left == -2) { 
+            if (left == -2) {
                 left = index;
             } else if (right == -2) {
                 right = index;
@@ -8165,8 +8163,8 @@ throws Exception {
                     return Integer.parseInt (intString);
             }
     }
-    
-       
+
+
     private int parseSimpleFinal (String finalString) throws Exception
     {
             if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
@@ -8197,7 +8195,7 @@ throws Exception {
                             }
                             else {
                                 // REVISIT: Localize
-                                reportGenericSchemaError (  "Invalid value (" + 
+                                reportGenericSchemaError (  "Invalid value (" +
                                                             finalString +
                                                             ")" );
                             }
@@ -8246,7 +8244,7 @@ throws Exception {
 
     private int parseBlockSet (String blockString)  throws Exception
     {
-            if( blockString == null) 
+            if( blockString == null)
                 return fBlockDefault;
             else if ( blockString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
                     return SchemaSymbols.SUBSTITUTION+SchemaSymbols.EXTENSION+SchemaSymbols.RESTRICTION;
@@ -8349,11 +8347,11 @@ throws Exception {
 
     private void reportGenericSchemaError (String error) throws Exception {
         if (fErrorReporter == null) {
-            System.err.println("__TraverseSchemaError__ : " + error);       
+            System.err.println("__TraverseSchemaError__ : " + error);
         }
         else {
             reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
-        }        
+        }
     }
 
 
@@ -8361,7 +8359,7 @@ throws Exception {
         if (fErrorReporter == null) {
             System.out.println("__TraverseSchemaError__ : " + SchemaMessageProvider.fgMessageKeys[major]);
             for (int i=0; i< args.length ; i++) {
-                System.out.println((String)args[i]);    
+                System.out.println((String)args[i]);
             }
         }
         else {
@@ -8422,7 +8420,7 @@ throws Exception {
             catch (Exception e) {
                 e.printStackTrace(System.err);
             }
-            
+
             parser.getDocument();
     }
     **/
@@ -8514,15 +8512,15 @@ throws Exception {
         public void ignorableWhitespace(int dataIdx) {}
     } // class IgnoreWhitespaceParser
 
-    // When in a <redefine>, type definitions being used (and indeed 
-    // refs to <group>'s and <attributeGroup>'s) may refer to info 
-    // items either in the schema being redefined, in the <redefine>, 
-    // or else in the schema doing the redefining.  Because of this 
-    // latter we have to be prepared sometimes to look for our type 
-    // definitions outside the schema stored in fSchemaRootElement.  
-    // This simple class does this; it's just a linked list that 
-    // lets us look at the <schema>'s on the queue; note also that this 
-    // should provide us with a mechanism to handle nested <redefine>'s.  
+    // When in a <redefine>, type definitions being used (and indeed
+    // refs to <group>'s and <attributeGroup>'s) may refer to info
+    // items either in the schema being redefined, in the <redefine>,
+    // or else in the schema doing the redefining.  Because of this
+    // latter we have to be prepared sometimes to look for our type
+    // definitions outside the schema stored in fSchemaRootElement.
+    // This simple class does this; it's just a linked list that
+    // lets us look at the <schema>'s on the queue; note also that this
+    // should provide us with a mechanism to handle nested <redefine>'s.
     // It's also a handy way of saving schema info when importing/including; saves some code.
     public class SchemaInfo {
         private Element saveRoot;
@@ -8537,8 +8535,8 @@ throws Exception {
         private NamespacesScope saveNamespacesScope = fNamespacesScope;
 
         public SchemaInfo ( boolean saveElementDefaultQualified, boolean saveAttributeDefaultQualified,
-                int saveBlockDefault, int saveFinalDefault, 
-                int saveScope, String savedSchemaURL, Element saveRoot, 
+                int saveBlockDefault, int saveFinalDefault,
+                int saveScope, String savedSchemaURL, Element saveRoot,
                 NamespacesScope saveNamespacesScope, SchemaInfo nextRoot, SchemaInfo prevRoot) {
             this.saveElementDefaultQualified = saveElementDefaultQualified;
             this.saveAttributeDefaultQualified = saveAttributeDefaultQualified;
@@ -8575,7 +8573,7 @@ throws Exception {
             fBlockDefault = saveBlockDefault;
             fFinalDefault = saveFinalDefault;
             fNamespacesScope = (NamespacesScope)saveNamespacesScope.clone();
-            fSchemaRootElement = saveRoot; 
+            fSchemaRootElement = saveRoot;
         }
     } // class SchemaInfo
 

@@ -74,12 +74,17 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  */
 public class IDDatatypeValidator extends StringDatatypeValidator {
     private static StringDatatypeValidator  fgStrValidator  = null;
-    private static Object                   fNullValue      = null;
-    protected static Hashtable              fTableOfId      = null;
+    private static Object                   fNullValue      = new Object();
 
-    public static final  int                IDREF_STORE     = 0;
-    public static final  int                ID_CLEAR        = 1;
-
+    static {
+        // make a string validator for NCName
+        if ( fgStrValidator == null ) {
+            Hashtable strFacets = new Hashtable();
+            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
+            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+        }
+    }
 
     public IDDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -94,14 +99,6 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
             return;
-
-        // make a string validator for NCName
-        if ( fgStrValidator == null ) {
-            Hashtable strFacets = new Hashtable();
-            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
-        }
 
         Vector enum = null;
         if ( facets != null )
@@ -140,22 +137,9 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public Object validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
-
-        // no validation if asked to clear ID hash table
-        if ( IDStorage != null ) {
-            StateMessageDatatype message = (StateMessageDatatype) IDStorage;
-            if ( message.getDatatypeState() == IDDatatypeValidator.ID_CLEAR ) {
-                if ( this.fTableOfId != null ) {
-                    this.fTableOfId.clear();
-                    this.fTableOfId = null;
-                }
-                return null;
-            }
-        }
-
+    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
         // use StringDatatypeValidator to validate content against facets
-        super.validate(content, IDStorage);
+        super.validate(content, state);
 
         // check if content is a valid NCName
         try {
@@ -168,16 +152,17 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
             throw error;
         }
 
-        if ( !addId( content, IDStorage) ) {
-            InvalidDatatypeValueException error =
-            new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
-            error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
-            error.setMajorCode(XMLMessages.VC_ID);
-            throw error;
+        if (state != null) {
+            if ( !addId( content, (Hashtable)state) ) {
+                InvalidDatatypeValueException error =
+                new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
+                error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
+                error.setMajorCode(XMLMessages.VC_ID);
+                throw error;
+            }
         }
 
-        //Return the table of Ids
-        return fTableOfId;
+        return null;
     }
 
 
@@ -190,31 +175,17 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
 
 
     /** addId. */
-    private boolean addId(String content, Object idTable) {
-
-        if ( this.fTableOfId == null ) {
-            this.fTableOfId = new Hashtable();
-        }
-        else if ( this.fTableOfId.containsKey( content ) ) {
+    private boolean addId(String content, Hashtable IDList) {
+        if ( IDList.containsKey( content ) )
             return false;
-        }
-        if ( this.fNullValue == null ) {
-            fNullValue = new Object();
-        }
+
         try {
-            this.fTableOfId.put( content, fNullValue );
+            IDList.put( content, fNullValue );
         }
         catch ( OutOfMemoryError ex ) {
-            System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableOfId.size() + " Elements" );
+            System.out.println( "Out of Memory: Hashtable of ID's has " + IDList.size() + " Elements" );
             ex.printStackTrace();
         }
         return true;
     } // addId(int):boolean
-
-    protected void resetIDs() {
-        if ( this.fTableOfId != null ) {
-            this.fTableOfId.clear();
-            this.fTableOfId = null;
-        }
-    }
 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -66,7 +66,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 
 /**
- * 
+ *
  * This class implements a factory of datatype validators. Internally the
  * DatatypeValidators are kept in three registries:<BR>
  * (i) DTDRegistry - stores DTD datatype validators
@@ -87,7 +87,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
  * to be checked. If no validation is necessary we should not instantiate a
  * DatatypeValidatorFactoryImpl.<BR>
  * <BR>
- * 
+ *
  * @author Elena Litani
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
@@ -121,7 +121,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     }
 
     /**
-     * Initializes fDTDRegistry with (9) DTD related datatypes . 
+     * Initializes fDTDRegistry with (9) DTD related datatypes .
      */
     public void initializeDTDRegistry() {
 
@@ -156,16 +156,16 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
     /**
      * Initializes fSchemaDatatypeRegistry with schema primitive and derived datatypes.
-     * See W3C Schema Datatype REC. 
+     * See W3C Schema Datatype REC.
      * If DTD registry is not initialized yet, this method will initialize it as well.
      */
     public void expandRegistryToFullSchemaSet() {
         fSchemaValidation = 1;
-        //Register Primitive Datatypes 
+        //Register Primitive Datatypes
         if ( fRegistryExpanded != 2 ) {
             DatatypeValidator v;
             try {
-                //REVISIT: we want to create datatypes lazily 
+                //REVISIT: we want to create datatypes lazily
                 //         esspecially for the types that are not often used
                 //
                 fSchemaDatatypeRegistry.put("boolean",           new BooleanDatatypeValidator()  );
@@ -175,9 +175,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fSchemaDatatypeRegistry.put("hexBinary",         new HexBinaryDatatypeValidator());
                 fSchemaDatatypeRegistry.put("base64Binary",      new Base64BinaryDatatypeValidator());
                 fSchemaDatatypeRegistry.put("anyURI",            new AnyURIDatatypeValidator());
-                fSchemaDatatypeRegistry.put("QName",             new QNameDatatypeValidator()); 
+                fSchemaDatatypeRegistry.put("QName",             new QNameDatatypeValidator());
                 fSchemaDatatypeRegistry.put("duration",          new DurationDatatypeValidator());
-                fSchemaDatatypeRegistry.put("gDay",              new DayDatatypeValidator()); 
+                fSchemaDatatypeRegistry.put("gDay",              new DayDatatypeValidator());
                 fSchemaDatatypeRegistry.put("time",              new TimeDatatypeValidator());
                 fSchemaDatatypeRegistry.put("dateTime",          new DateTimeDatatypeValidator());
                 fSchemaDatatypeRegistry.put("date",              new DateDatatypeValidator());
@@ -217,13 +217,13 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "0" );
-                createSchemaDatatypeValidator("nonPositiveInteger", 
+                createSchemaDatatypeValidator("nonPositiveInteger",
                                               getDatatypeValidator("integer"), facets, false );
 
 
                 facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "-1" );
-                createSchemaDatatypeValidator("negativeInteger", 
+                createSchemaDatatypeValidator("negativeInteger",
                                               getDatatypeValidator( "nonPositiveInteger"), facets, false );
 
                 facets.clear();
@@ -249,7 +249,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 facets.clear();
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
-                createSchemaDatatypeValidator("nonNegativeInteger", 
+                createSchemaDatatypeValidator("nonNegativeInteger",
                                               getDatatypeValidator( "integer"), facets, false );
 
                 facets.clear();
@@ -266,7 +266,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 facets.clear();
                 facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "65535" );
-                createSchemaDatatypeValidator("unsignedShort", 
+                createSchemaDatatypeValidator("unsignedShort",
                                               getDatatypeValidator( "unsignedInt"), facets, false );
 
 
@@ -299,12 +299,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     public void resetRegistry() {
         fRegistry.clear();
         fSchemaValidation = 0;
-        //reset some Primitive datatypes - static fields
-        ((IDDatatypeValidator)fDTDDatatypeRegistry.get("ID")).resetIDs();
-        ((IDREFDatatypeValidator)fDTDDatatypeRegistry.get("IDREF")).resetIDRefs();
     }
 
-    public DatatypeValidator createDatatypeValidator(String typeName, 
+    public DatatypeValidator createDatatypeValidator(String typeName,
                                                      DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
         if ( base == null ) {
             return null;
@@ -329,9 +326,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
     /**
      * Searches different datatype registries depending on validation mode (schema or dtd)
-     * 
+     *
      * @param type
-     * @return 
+     * @return
      */
     public DatatypeValidator getDatatypeValidator(String type) {
         AbstractDatatypeValidator simpleType = null;
@@ -352,26 +349,26 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     }
 
 
-    private DatatypeValidator createSchemaDatatypeValidator(String typeName, 
+    private DatatypeValidator createSchemaDatatypeValidator(String typeName,
                                                             DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
         DatatypeValidator primitive = createSchemaValidator(typeName, base, facets, list);
         registerSchemaValidator(typeName, primitive);
         return primitive;
     }
 
-    private DatatypeValidator createDTDDatatypeValidator(String typeName, 
+    private DatatypeValidator createDTDDatatypeValidator(String typeName,
                                                          DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
         DatatypeValidator primitive = createSchemaValidator(typeName, base, facets, list);
         registerDTDValidator(typeName, primitive);
         return primitive;
     }
 
-    private DatatypeValidator createSchemaValidator (String typeName, 
+    private DatatypeValidator createSchemaValidator (String typeName,
                                                      DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException{
 
         DatatypeValidator simpleType = null;
         if ( list ) {
-            simpleType = new ListDatatypeValidator(base, facets, list);    
+            simpleType = new ListDatatypeValidator(base, facets, list);
         }
         else {
             try {
@@ -388,7 +385,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 Class validatorDef = base.getClass();
 
-                Class [] validatorArgsClass = new Class[] {  
+                Class [] validatorArgsClass = new Class[] {
                     org.apache.xerces.validators.datatype.DatatypeValidator.class,
                     java.util.Hashtable.class,
                     boolean.class};
@@ -423,7 +420,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
 
-    private static Object createDatatypeValidator(Constructor validatorConstructor, 
+    private static Object createDatatypeValidator(Constructor validatorConstructor,
                                                   Object[] arguments)  throws  InvalidDatatypeFacetException {
         Object validator = null;
         try {
