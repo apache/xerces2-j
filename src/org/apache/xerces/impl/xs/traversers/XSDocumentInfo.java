@@ -67,7 +67,7 @@ import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import java.util.Hashtable;
+import java.util.Vector;
 import java.util.Stack;
 
 /*
@@ -105,6 +105,9 @@ class XSDocumentInfo {
     // the root of the schema Document tree itself
     protected Document fSchemaDoc;
 
+    // all namespaces that this document can refer to
+    Vector fImportedNS = new Vector();
+    
     protected ValidationState fValidationContext = new ValidationState();
 
     SymbolTable fSymbolTable = null;

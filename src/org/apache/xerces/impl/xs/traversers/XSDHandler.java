@@ -258,9 +258,9 @@ public class XSDHandler {
 
             // REVISIT: resolve the entity. passing null as public id, instead
             // of passing namespace value. -SG
-	    // REVISIT:  shouldn't we expand the literal systemId (location hint) first?  - neilg
-	    String expandedLoc = XMLEntityManager.expandSystemId(loc, base);
-	    fResourceIdentifier.setValues(null, loc, base, expandedLoc);
+            // REVISIT:  shouldn't we expand the literal systemId (location hint) first?  - neilg
+            String expandedLoc = XMLEntityManager.expandSystemId(loc, base);
+            fResourceIdentifier.setValues(null, loc, base, expandedLoc);
             return fExternalResolver.resolveEntity(fResourceIdentifier);
         }
     }
@@ -489,6 +489,9 @@ public class XSDHandler {
         // the other cases (callerTNS == currSchemaInfo.fTargetNamespce == null)
         // are valid
         
+        // a schema document can always access it's own target namespace
+        currSchemaInfo.fImportedNS.addElement(currSchemaInfo.fTargetNamespace);
+
         if (fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace) == null) {
             SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
             fGrammarBucket.putGrammar(sg);
@@ -531,6 +534,8 @@ public class XSDHandler {
                     reportSchemaError("src-import.1.1", new Object [] {schemaNamespace});
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
+                // a schema document can access it's imported namespaces
+                currSchemaInfo.fImportedNS.addElement(schemaNamespace);
                 // consciously throw away whether was a duplicate; don't care.
                 // pass the systemId of the current document as the base systemId
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false, XSDDescription.CONTEXT_IMPORT);
@@ -885,9 +890,54 @@ public class XSDHandler {
             }
         }
 
+        // now check whether this document can access the requsted namespace
+        if (!currSchema.fImportedNS.contains(declToTraverse.uri)) {
+            // cannot get to this schema from the one containing the requesting decl
+            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri});
+            return null;
+        }
+
+        // check whether there is grammar for the requested namespace
+        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(declToTraverse.uri);
+        if (sGrammar == null) {
+            reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]});
+            return null;
+        }
+
+        // if there is such grammar, check whether the requested component is in the grammar
+        Object retObj = null;
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            retObj = sGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
+            break;
+        case ATTRIBUTEGROUP_TYPE :
+            retObj = sGrammar.getGlobalAttributeGroupDecl(declToTraverse.localpart);
+            break;
+        case ELEMENT_TYPE :
+            retObj = sGrammar.getGlobalElementDecl(declToTraverse.localpart);
+            break;
+        case GROUP_TYPE :
+            retObj = sGrammar.getGlobalGroupDecl(declToTraverse.localpart);
+            break;
+        case IDENTITYCONSTRAINT_TYPE :
+            retObj = sGrammar.getIDConstraintDecl(declToTraverse.localpart);
+            break;
+        case NOTATION_TYPE :
+            retObj = sGrammar.getNotationDecl(declToTraverse.localpart);
+            break;
+        case TYPEDECL_TYPE :
+            retObj = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);
+            break;
+        }
+
+        // if the component is parsed, return it
+        if (retObj != null)
+            return retObj;
+
         XSDocumentInfo schemaWithDecl = null;
         Element decl = null;
 
+        // the component is not parsed, try to find a DOM element for it
         String declKey = declToTraverse.uri == null? ","+declToTraverse.localpart:
                          declToTraverse.uri+","+declToTraverse.localpart;
         switch (declType) {
@@ -915,60 +965,39 @@ public class XSDHandler {
         default:
             reportSchemaError("Internal-Error", new Object [] {"XSDHandler asked to locate component of type " + declType + "; it does not recognize this type!"});
         }
-        if (decl != null)
-            schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
-        else {
+        
+        // no DOM element found, so the component can't be located
+        if (decl == null) {
             reportSchemaError("src-resolve", new Object[]{declToTraverse.rawname, COMP_TYPE[declType]});
             return null;
         }
 
+        // get the schema doc containing the component to be parsed
+        // it should always return non-null value, but since null-checking
+        // comes for free, let's be safe and check again
+        schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
         if (schemaWithDecl == null) {
             // cannot get to this schema from the one containing the requesting decl
-            reportSchemaError("src-resolve.4", new Object[]{currSchema, declToTraverse.uri});
+            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri});
             return null;
         }
-        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(schemaWithDecl.fTargetNamespace);
-
-        Object retObj = null;
-        switch (declType) {
-        case ATTRIBUTE_TYPE :
-            retObj = sGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
-            break;
-        case ATTRIBUTEGROUP_TYPE :
-            retObj = sGrammar.getGlobalAttributeGroupDecl(declToTraverse.localpart);
-            break;
-        case ELEMENT_TYPE :
-            retObj = sGrammar.getGlobalElementDecl(declToTraverse.localpart);
-            break;
-        case GROUP_TYPE :
-            retObj = sGrammar.getGlobalGroupDecl(declToTraverse.localpart);
-            break;
-        case IDENTITYCONSTRAINT_TYPE :
-            retObj = sGrammar.getIDConstraintDecl(declToTraverse.localpart);
-            break;
-        case NOTATION_TYPE :
-            retObj = sGrammar.getNotationDecl(declToTraverse.localpart);
-            break;
-        case TYPEDECL_TYPE :
-            retObj = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);
-            break;
-        }
-
-        if (retObj != null)
-            return retObj;
-
+        // a component is hidden, meaning either it's traversed, or being traversed.
+        // but we didn't find it in the grammar, so it's the latter case, and
+        // a circular reference. error!
         if (DOMUtil.isHidden(decl)) {
             // decl must not be null if we're here...
             reportSchemaError("st-props-correct.2", new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart});
             return null;
         }
 
+        // hide the element node before traversing it
         DOMUtil.setHidden(decl);
 
         // back up the current SchemaNamespaceSupport, because we need to provide
         // a fresh one to the traverseGlobal methods.
         schemaWithDecl.backupNSSupport();
 
+        // traverse the referenced global component
         switch (declType) {
         case ATTRIBUTE_TYPE :
             retObj = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
@@ -1247,7 +1276,7 @@ public class XSDHandler {
         fDoc2SystemId.clear();
         fDoc2XSDocumentMap.clear();
         fRedefine2XSDMap.clear();
-	fResourceIdentifier.clear();
+        fResourceIdentifier.clear();
         fRoot = null;
         fLastSchemaWasDuplicate = false;
 
