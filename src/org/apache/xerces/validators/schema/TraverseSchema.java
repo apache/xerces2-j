@@ -2264,7 +2264,7 @@ public class TraverseSchema implements
                if (typeInfo.contentSpecHandle == -2) {
                    typeInfo.contentSpecHandle = baseContentSpecHandle;
                }
-               else {
+               else if (baseContentSpecHandle > -1) {
                    typeInfo.contentSpecHandle = 
                    fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
                                                      baseContentSpecHandle,
