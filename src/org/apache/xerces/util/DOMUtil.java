@@ -720,7 +720,12 @@ public class DOMUtil {
             String localName) {
         return elem.getAttributeNS(nsUri, localName);
     } // getAttrValueNS(Element, String):Attr
-
+    
+    // return the prefix
+    public static String getPrefix(Node node) {
+        return node.getPrefix();
+    }
+    
     // return the namespace URI
     public static String getNamespaceURI(Node node) {
         return node.getNamespaceURI();
