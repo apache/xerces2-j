@@ -66,7 +66,6 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XIntPool;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.util.NamespaceSupport;
 
 /**
  * Class <code>XSAttributeCheck</code> is used to check the validity of attributes
@@ -984,7 +983,7 @@ public class XSAttributeChecker {
      * @return: Hashtable - list of attributes and values
      */
     public Object[] checkAttributes(Element element, boolean isGlobal,
-                                    NamespaceSupport nsSupport) {
+                                    SchemaNamespaceSupport nsSupport) {
         if (element == null)
             return null;
 
@@ -1172,7 +1171,7 @@ public class XSAttributeChecker {
     }
 
     private Object validate(String attr, String value, int dvIndex,
-                            NamespaceSupport nsSupport) throws InvalidDatatypeValueException {
+                            SchemaNamespaceSupport nsSupport) throws InvalidDatatypeValueException {
         if (value == null)
             return null;
 
@@ -1515,7 +1514,7 @@ public class XSAttributeChecker {
     }
 
     //REVISIT: how to resolver qname?
-    protected QName resolveQName (String attrVal, NamespaceSupport nsSupport) {
+    protected QName resolveQName (String attrVal, SchemaNamespaceSupport nsSupport) {
         String prefix = XSDHandler.EMPTY_STRING;
         String localpart = attrVal;
         int colonptr = attrVal.indexOf(":");
@@ -1569,7 +1568,7 @@ public class XSAttributeChecker {
     }
     
     // return an array back to the pool
-    public void returnAttrArray(Object[] attrArray, NamespaceSupport nsSupport) {
+    public void returnAttrArray(Object[] attrArray, SchemaNamespaceSupport nsSupport) {
         // pop the namespace context
         nsSupport.popContext();
         
@@ -1589,7 +1588,7 @@ public class XSAttributeChecker {
         fArrayPool[--fPoolPos] = attrArray;
     }
 
-    public void resolveNamespace(Element element, NamespaceSupport nsSupport) {
+    public void resolveNamespace(Element element, SchemaNamespaceSupport nsSupport) {
         // push the namespace context
         nsSupport.pushContext();
 

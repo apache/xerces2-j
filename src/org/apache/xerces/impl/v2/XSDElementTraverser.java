@@ -101,20 +101,11 @@ class XSDElementTraverser extends XSDAbstractTraverser{
     protected XSElementDecl  fTempElementDecl  = new XSElementDecl();
     protected XSParticleDecl fTempParticleDecl = new XSParticleDecl();
     
-    // the initial size of the array to store deferred local elements
-    static final int INIT_STACK_SIZE = 30;
-    // the incremental size of the array to store deferred local elements
-    static final int INC_STACK_SIZE  = 10;
-    // current position of the array (# of deferred local elements)
-    int fStackPos = 0;
-
-    private int[] fParticleIdx = new int[INIT_STACK_SIZE];
-    private Element[] fElementDecl = new Element[INIT_STACK_SIZE];
-    private XSDocumentInfo[] fSchemaDoc = new XSDocumentInfo[INIT_STACK_SIZE];
-    private SchemaGrammar[] fGrammar = new SchemaGrammar[INIT_STACK_SIZE];
-    private int[] fAllContext = new int[INIT_STACK_SIZE];
-    
     SubstitutionGroupHandler fSubGroupHandler;
+
+    // this controls what happens when a local element is encountered.
+    // We may not encounter all local elements when first parsing.
+    boolean fDeferTraversingLocalElements;
     
     XSDElementTraverser (XSDHandler handler,
                          XMLErrorReporter errorReporter,
@@ -127,9 +118,10 @@ class XSDElementTraverser extends XSDAbstractTraverser{
     /**
      * Traverse a locally declared element (or an element reference).
      *
-     * To handle the recursive cases effeciently, we delay the traversal
+     * To handle the recursive cases efficiently, we delay the traversal
      * and return an empty particle node. We'll fill in this particle node
      * later after we've done with all the global declarations.
+     * This method causes a number of data structures in the schema handler to be filled in.
      *
      * @param  elmDecl
      * @param  schemaDoc
@@ -141,44 +133,17 @@ class XSDElementTraverser extends XSDAbstractTraverser{
                       SchemaGrammar grammar,
                       int allContextFlags) {
 
-        // if the stack is full, increase the size
-        if (fParticleIdx.length == fStackPos) {
-            // increase size
-            int[] newStackI = new int[fStackPos+INC_STACK_SIZE];
-            System.arraycopy(fParticleIdx, 0, newStackI, 0, fStackPos);
-            Element[] newStackE = new Element[fStackPos+INC_STACK_SIZE];
-            System.arraycopy(fElementDecl, 0, newStackE, 0, fStackPos);
-            XSDocumentInfo[] newStackX = new XSDocumentInfo[fStackPos+INC_STACK_SIZE];
-            System.arraycopy(fSchemaDoc, 0, newStackX, 0, fStackPos);
-            SchemaGrammar[] newStackS = new SchemaGrammar[fStackPos+INC_STACK_SIZE];
-            System.arraycopy(fGrammar, 0, newStackS, 0, fStackPos);
-            newStackI = new int[fStackPos+INC_STACK_SIZE];
-            System.arraycopy(fAllContext, 0, newStackI, 0, fStackPos);
-        }
-
         fTempParticleDecl.clear();
         fTempParticleDecl.type = XSParticleDecl.PARTICLE_EMPTY;
         int particleIdx = grammar.addParticleDecl(fTempParticleDecl);
-
-        fParticleIdx[fStackPos] = particleIdx;
-        fElementDecl[fStackPos] = elmDecl;
-        fSchemaDoc[fStackPos] = schemaDoc;
-        fGrammar[fStackPos] = grammar;
-        fAllContext[fStackPos] = allContextFlags;
-
+        if(fDeferTraversingLocalElements) { 
+            fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, particleIdx);
+        } else {
+            traverseLocal(particleIdx, elmDecl, schemaDoc, grammar, allContextFlags); 
+        }
         return particleIdx;
     }
 
-    /**
-     * Traverse all the deferred local elements. This method should be called
-     * by the handler after we've done with all the global declarations.
-     */
-    void traverseLocalElements() {
-        for (int i = 0; i < fStackPos; i++) {
-            traverseLocal(i);
-        }
-    }
-    
     /**
      * Traverse a locally declared element (or an element reference).
      *
@@ -187,13 +152,10 @@ class XSDElementTraverser extends XSDAbstractTraverser{
      *
      * @param  index
      */
-    private void traverseLocal(int index) {
-
-        int particleIdx = fParticleIdx[index];
-        Element elmDecl = fElementDecl[index];
-        XSDocumentInfo schemaDoc = fSchemaDoc[index];
-        SchemaGrammar grammar = fGrammar[index];
-        int allContextFlags = fAllContext[index];
+    private void traverseLocal(int particleIdx, Element elmDecl,
+                      XSDocumentInfo schemaDoc,
+                      SchemaGrammar grammar,
+                      int allContextFlags) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc.fNamespaceSupport);
@@ -565,5 +527,9 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         
         return ret;
     }
+
+    void reset() {
+        fDeferTraversingLocalElements = true;
+    } // reset()
 
 }

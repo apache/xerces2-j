@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.v2;
 
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XIntPool;
@@ -79,9 +78,9 @@ import java.util.Stack;
 class XSDocumentInfo {
 
     // Data
-    protected NamespaceSupport fNamespaceSupport;
-    protected NamespaceSupport fNamespaceSupportRoot;
-    protected Stack NamespaceSupportStack = new Stack();
+    protected SchemaNamespaceSupport fNamespaceSupport;
+    protected SchemaNamespaceSupport fNamespaceSupportRoot;
+    protected Stack SchemaNamespaceSupportStack = new Stack();
 
     // schema's attributeFormDefault
     protected boolean fAreLocalAttributesQualified;
@@ -101,7 +100,7 @@ class XSDocumentInfo {
 
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker) {
         fSchemaDoc = schemaDoc;
-        fNamespaceSupport = new NamespaceSupport();
+        fNamespaceSupport = new SchemaNamespaceSupport();
         
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc); 
@@ -119,7 +118,7 @@ class XSDocumentInfo {
             if (fTargetNamespace == null)
                 fTargetNamespace = XSDHandler.EMPTY_STRING; 
 
-            fNamespaceSupportRoot = new NamespaceSupport(fNamespaceSupport);
+            fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 
             // REVISIT: we can't return, becaues we can't pop fNamespaceSupport
             //attrChecker.returnAttrArray(schemaAttrs, fNamespaceSupport);
@@ -127,12 +126,12 @@ class XSDocumentInfo {
     }
 
     void backupNSSupport() {
-        NamespaceSupportStack.push(fNamespaceSupport);
-        fNamespaceSupport = new NamespaceSupport(fNamespaceSupportRoot);
+        SchemaNamespaceSupportStack.push(fNamespaceSupport);
+        fNamespaceSupport = new SchemaNamespaceSupport(fNamespaceSupportRoot);
     }
 
     void restoreNSSupport() {
-        fNamespaceSupport = (NamespaceSupport)NamespaceSupportStack.pop();
+        fNamespaceSupport = (SchemaNamespaceSupport)SchemaNamespaceSupportStack.pop();
     }
     
 } // XSDocumentInfo

@@ -597,15 +597,19 @@ public class SchemaGrammar {
             if(fElementDeclKeyRef[chunk][index].length == 0) {
                 fElementDeclKeyRef[chunk][index][0] = icIndex;
             } else {
+                int[] tempReg = new int[fElementDeclKeyRef[chunk][index].length+1];
                 System.arraycopy(fElementDeclKeyRef[chunk][index], 0, 
-                    fElementDeclKeyRef[chunk][index], 0, fElementDeclKeyRef.length);
+                    tempReg, 0, fElementDeclKeyRef.length);
+                fElementDeclKeyRef[chunk][index] = tempReg;
             }
         } else { // must be unique or key...
             if(fElementDeclUniqueOrKey[chunk][index].length == 0) {
                 fElementDeclUniqueOrKey[chunk][index][0] = icIndex;
             } else {
+                int[] tempReg = new int[fElementDeclUniqueOrKey[chunk][index].length+1];
                 System.arraycopy(fElementDeclUniqueOrKey[chunk][index], 0, 
-                    fElementDeclUniqueOrKey[chunk][index], 0, fElementDeclUniqueOrKey.length);
+                    tempReg, 0, fElementDeclUniqueOrKey.length);
+                fElementDeclUniqueOrKey[chunk][index] = tempReg;
             }
         }
         // update fGlobalIDConstraintDecl registry

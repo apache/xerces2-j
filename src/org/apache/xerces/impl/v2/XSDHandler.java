@@ -65,7 +65,6 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.DOMUtil;
 
 import org.w3c.dom.Document;
@@ -207,6 +206,22 @@ class XSDHandler {
     XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
     XSDWildcardTraverser fWildCardTraverser;
 
+    // these data members are needed for the deferred traversal
+    // of local elements.  
+
+    // the initial size of the array to store deferred local elements
+    private static final int INIT_STACK_SIZE = 30;
+    // the incremental size of the array to store deferred local elements
+    private static final int INC_STACK_SIZE  = 10;
+    // current position of the array (# of deferred local elements)
+    private int fLocalElemStackPos;
+
+    private int[] fParticleIdx;
+    private Element[] fLocalElementDecl;
+    private int[] fAllContext;
+    private String [][] fLocalElemNamespaceContext;
+    
+
     // Constructors
 
     // it should be possible to use the same XSDHandler to parse
@@ -251,7 +266,7 @@ class XSDHandler {
         traverseSchemas();
 
         // fourth:  handle local element decls
-        // traverseLocalElements(...)
+        traverseLocalElements();
 
         // fifth phase:  handle Keyrefs
 //        resolveKeyRefs();
@@ -659,7 +674,7 @@ class XSDHandler {
             
             DOMUtil.setHidden(decl);
 
-            // back up the current NamespaceSupport, because we need to provide
+            // back up the current SchemaNamespaceSupport, because we need to provide
             // a fresh one to the traverGlobal methods.
             schemaWithDecl.backupNSSupport();
             
@@ -683,7 +698,7 @@ class XSDHandler {
                     retIndex = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             }
         
-            // restore the previous NamespaceSupport, so that the caller can get
+            // restore the previous SchemaNamespaceSupport, so that the caller can get
             // proper namespace binding.
             schemaWithDecl.restoreNSSupport();
         }
@@ -810,6 +825,13 @@ class XSDHandler {
         fRedefine2XSDMap.clear();
         fRoot = null;
 
+        fLocalElemStackPos = 0; 
+        fParticleIdx = new int[INIT_STACK_SIZE];
+        fLocalElementDecl = new Element[INIT_STACK_SIZE];
+        fAllContext = new int[INIT_STACK_SIZE];
+        // err on the small side for num. of local namespaces declared...
+        fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
+    
         // reset traversers
         fAttributeChecker.reset();
         fAttributeGroupTraverser.reset();
@@ -824,6 +846,48 @@ class XSDHandler {
         fWildCardTraverser.reset();
 
     } // reset
+
+    /**
+     * Traverse all the deferred local elements. This method should be called
+     * by traverseSchemas after we've done with all the global declarations.
+     */
+    void traverseLocalElements() {
+        fElementTraverser.fDeferTraversingLocalElements = false;
+        for (int i = 0; i < fLocalElemStackPos; i++) {
+            Element currElem = fLocalElementDecl[i]; 
+            XSDocumentInfo currSchema = (XSDocumentInfo)fDoc2XSDocumentMap.get(DOMUtil.getDocument(currElem));
+            SchemaGrammar currGrammar = fGrammarResolver.getGrammar(currSchema.fTargetNamespace);
+            fElementTraverser.traverseLocal (currElem, currSchema, currGrammar, fAllContext[i]); 
+        }
+    }
+    
+    // the purpose of this method is to keep up-to-date structures
+    // we'll need for the feferred traversal of local elements.
+    void fillInLocalElemInfo(Element elmDecl,
+                      XSDocumentInfo schemaDoc,
+                      int allContextFlags, int particleIndex) {
+
+        // if the stack is full, increase the size
+        if (fParticleIdx.length == fLocalElemStackPos) {
+            // increase size
+            int[] newStackI = new int[fLocalElemStackPos+INC_STACK_SIZE];
+            System.arraycopy(fParticleIdx, 0, newStackI, 0, fLocalElemStackPos);
+            fParticleIdx = newStackI;
+            Element[] newStackE = new Element[fLocalElemStackPos+INC_STACK_SIZE];
+            System.arraycopy(fLocalElementDecl, 0, newStackE, 0, fLocalElemStackPos);
+            fLocalElementDecl = newStackE;
+            newStackI = new int[fLocalElemStackPos+INC_STACK_SIZE];
+            System.arraycopy(fAllContext, 0, newStackI, 0, fLocalElemStackPos);
+            String [][] newStackN = new String [fLocalElemStackPos+INC_STACK_SIZE][];
+            System.arraycopy(fLocalElemNamespaceContext, 0, newStackN, 0, fLocalElemStackPos); 
+            fLocalElemNamespaceContext = newStackN;
+        }
+
+        fParticleIdx[fLocalElemStackPos] = particleIndex;
+        fLocalElementDecl[fLocalElemStackPos] = elmDecl;
+        fAllContext[fLocalElemStackPos] = allContextFlags;
+        fLocalElemNamespaceContext[fLocalElemStackPos] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
+    } // end fillInLocalElemInfo(...)
 
     /** This method makes sure that
      * if this component is being redefined that it lives in the
@@ -880,7 +944,7 @@ class XSDHandler {
             Element child, String componentType, 
             String oldName, String newName) {
 
-        NamespaceSupport currNSMap = currSchema.fNamespaceSupport;
+        SchemaNamespaceSupport currNSMap = currSchema.fNamespaceSupport;
         if (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
             String processedTypeName = currSchema.fTargetNamespace+","+oldName;
 			Element grandKid = DOMUtil.getFirstChildElement(child);
@@ -1013,10 +1077,10 @@ class XSDHandler {
     } // renameRedefiningComponents(XSDocumentInfo, Element, String, String, String):void
 
     // this method takes a name of the form a:b, determines the URI mapped
-    // to by a in the current NamespaceSupport object, and returns this
+    // to by a in the current SchemaNamespaceSupport object, and returns this
     // information in the form (nsURI,b) suitable for lookups in the global
     // decl Hashtables.
-    private String findQName(String name, NamespaceSupport currNSMap) {
+    private String findQName(String name, SchemaNamespaceSupport currNSMap) {
         int colonPtr = name.indexOf(':');
         String prefix = "";
         if (colonPtr > 0)
@@ -1024,7 +1088,7 @@ class XSDHandler {
         String uri = currNSMap.getURI(prefix);
         String localpart = (colonPtr == 0)?name:name.substring(colonPtr);
         return uri+","+localpart;
-    } // findQName(String, NamespaceSupport):  String
+    } // findQName(String, SchemaNamespaceSupport):  String
 
 	// This function looks among the children of curr for an element of type elementSought.
 	// If it finds one, it evaluates whether its ref attribute contains a reference
@@ -1034,7 +1098,7 @@ class XSDHandler {
 	// It also resets the value of ref so that it will refer to the renamed type from the schema
 	// being redefined.
 	private int changeRedefineGroup(String originalQName, String elementSought, 
-            String newName, Element curr, NamespaceSupport currNSMap) {
+            String newName, Element curr, SchemaNamespaceSupport currNSMap) {
 		int result = 0;
 		for (Element child = DOMUtil.getFirstChildElement(curr);
 				child != null; child = DOMUtil.getNextSiblingElement(child)) {
