@@ -118,7 +118,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * But in the tests I've run I've seen up to 12% of memory gain. And the good
  * thing is that it also leads to a slight gain in speed because we allocate
  * fewer objects! I mean, that's until we have to actually create the node...
- *
+ * <p>
  * To avoid too much duplicated code, I got rid of ParentNode and renamed
  * ChildAndParentNode, which I never really liked, to ParentNode for
  * simplicity, this doesn't make much of a difference in memory usage because
@@ -126,6 +126,9 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * because AttrImpl now inherits directly from NodeImpl and has its own
  * implementation of the ParentNode's node behavior. So there is still some
  * duplicated code there.
+ *
+ * <p><b>WARNING</b>: Some of the code here is partially duplicated in
+ * ParentNode, be careful to keep these two classes in sync!
  *
  * @see AttrNSImpl
  *
@@ -646,21 +649,28 @@ public class AttrImpl
 
         if (errorChecking) {
             // Prevent cycles in the tree
+            // newChild cannot be ancestor of this Node,
+            // and actually cannot be this
             boolean treeSafe = true;
-            for (NodeImpl a = parentNode();
+            for (NodeImpl a = this;
                  treeSafe && a != null;
                  a = a.parentNode()) {
                 treeSafe = newChild != a;
             }
             if(!treeSafe) {
                 throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                           "DOM006 Hierarchy request error");
+                                       "DOM006 Hierarchy request error");
             }
 
             // refChild must in fact be a child of this node (or null)
             if(refChild != null && refChild.getParentNode() != this) {
                 throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                           "DOM008 Not found");
+                                       "DOM008 Not found");
+            }
+            // refChild cannot be same as newChild
+            if(refChild == newChild) {
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
+                                       "DOM006 Hierarchy request error");
             }
         }
         

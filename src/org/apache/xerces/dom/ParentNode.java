@@ -89,6 +89,9 @@ import org.apache.xerces.dom.events.*;
  * case is Attribute, but we deal with there in another special way, so this is
  * not applicable.
  *
+ * <p><b>WARNING</b>: Some of the code here is partially duplicated in
+ * AttrImpl, be careful to keep these two classes in sync!
+ *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
@@ -343,21 +346,28 @@ public abstract class ParentNode
 
         if (errorChecking) {
             // Prevent cycles in the tree
+            // newChild cannot be ancestor of this Node,
+            // and actually cannot be this
             boolean treeSafe = true;
-            for (NodeImpl a = parentNode();
+            for (NodeImpl a = this;
                  treeSafe && a != null;
                  a = a.parentNode()) {
                 treeSafe = newChild != a;
             }
             if(!treeSafe) {
                 throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                           "DOM006 Hierarchy request error");
+                                       "DOM006 Hierarchy request error");
             }
 
             // refChild must in fact be a child of this node (or null)
             if(refChild != null && refChild.getParentNode() != this) {
                 throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                           "DOM008 Not found");
+                                       "DOM008 Not found");
+            }
+            // refChild cannot be same as newChild
+            if(refChild == newChild) {
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
+                                       "DOM006 Hierarchy request error");
             }
         }
         
