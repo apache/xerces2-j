@@ -1884,7 +1884,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                    ) {
                     validateDTDattribute(element, attrValue, fTempAttDecl);
                 }
-                 System.out.println("name = " + fTempAttDecl.name + " Value = >>" + attrValue + "<<" );
              
 
             }
@@ -1903,7 +1902,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                         XMLAttributeDecl attributeDecl) throws SAXException {
         //AttributeValidator av = null;
 
-        System.out.println("name = " + attributeDecl.name + " Value = " + attValue );
 
         switch (attributeDecl.simpleType.type) {
         
@@ -2501,6 +2499,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         if (fTableOfIDs == null) {
             fTableOfIDs = new Hashtable();//Initialize table of IDs
         }
+        fTableOfIDs.clear();
         fValID.initialize(fTableOfIDs);
         fValIDRef.initialize(fTableOfIDs);
         fValIDRefs.initialize(fTableOfIDs);
