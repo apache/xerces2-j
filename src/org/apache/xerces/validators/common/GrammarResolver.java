@@ -128,7 +128,7 @@ public interface GrammarResolver {
      * @return                Boolean- true - Namespace key association
      *         is in grammar pool.
      */
-    public boolean containsNamesSpace( String nameSpaceKey ); 
+    public boolean containsNameSpace( String nameSpaceKey ); 
 
     /**
      *         Reset internal Namespace/Grammar registry.
