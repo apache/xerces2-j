@@ -213,7 +213,7 @@ public class XMLDocumentScanner
     protected QName fCurrentElement;
 
     /** Element stack. */
-    protected Stack fElementStack = new Stack();
+    protected ElementStack fElementStack = new ElementStack();
 
     // features
 
@@ -355,7 +355,7 @@ public class XMLDocumentScanner
 
         fElementDepth = 0;
         fCurrentElement = null;
-        fElementStack.removeAllElements();
+        fElementStack.clear();
         
         fSeenDoctypeDecl = false;
         fStandalone = false;
@@ -846,8 +846,7 @@ public class XMLDocumentScanner
         }
 
         // push element stack
-        fCurrentElement = new QName(fElementQName);
-        fElementStack.push(fCurrentElement);
+        fCurrentElement = fElementStack.pushElement(fElementQName);
 
         // call handler
         if (fDocumentHandler != null) {
@@ -1190,7 +1189,8 @@ public class XMLDocumentScanner
     protected int handleEndElement(QName element) throws SAXException {
 
         // make sure the elements match
-        QName startElement = (QName)fElementStack.pop();
+        QName startElement = fElementQName;
+        fElementStack.popElement(startElement);
         if (element.rawname != startElement.rawname) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "ETagRequired",
@@ -1318,6 +1318,86 @@ public class XMLDocumentScanner
     //
     // Classes
     //
+
+    /**
+     * Element stack. This stack operates without synchronization, error
+     * checking, and it re-uses objects instead of throwing popped items
+     * away.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected static class ElementStack {
+
+        //
+        // Data
+        //
+
+        /** The stack data. */
+        protected QName[] fElements;
+
+        /** The size of the stack. */
+        protected int fSize;
+
+        //
+        // Constructors
+        //
+
+        /** Default constructor. */
+        public ElementStack() {
+            fElements = new QName[10];
+            for (int i = 0; i < fElements.length; i++) {
+                fElements[i] = new QName();
+            }
+        } // <init>()
+
+        //
+        // Public methods
+        //
+
+        /** 
+         * Pushes an element on the stack. 
+         * <p>
+         * <strong>Note:</strong> The QName values are copied into the
+         * stack. In other words, the caller does <em>not</em> orphan
+         * the element to the stack. Also, the QName object returned
+         * is <em>not</em> orphaned to the caller. It should be 
+         * considered read-only.
+         *
+         * @param element The element to push onto the stack.
+         *
+         * @return Returns the actual QName object that stores the
+         */
+        public QName pushElement(QName element) {
+            if (fSize == fElements.length) {
+                QName[] array = new QName[fElements.length * 2];
+                System.arraycopy(fElements, 0, array, 0, fSize);
+                fElements = array;
+                for (int i = fSize; i < fElements.length; i++) {
+                    fElements[i] = new QName();
+                }
+            }
+            fElements[fSize].setValues(element);
+            return fElements[fSize++];
+        } // pushElement(QName):QName
+
+        /** 
+         * Pops an element off of the stack by setting the values of
+         * the specified QName.
+         * <p>
+         * <strong>Note:</strong> The object returned is <em>not</em>
+         * orphaned to the caller. Therefore, the caller should consider
+         * the object to be read-only.
+         */
+        public void popElement(QName element) {
+            element.setValues(fElements[--fSize]);
+        } // popElement(QName)
+
+        /** Clears the stack without throwing away existing QName objects. */
+        public void clear() {
+            fSize = 0;
+        }
+
+    } // class ElementStack
 
     /**
      * Entity for entity stack. 
