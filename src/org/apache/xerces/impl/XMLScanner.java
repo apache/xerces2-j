@@ -255,31 +255,23 @@ public abstract class XMLScanner
                         version = fString.toString();
                         state = STATE_ENCODING;
                         if (!version.equals("1.0")) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "VersionNotSupported", 
-                                                       new Object[]{version}, 
-                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("VersionNotSupported", 
+                                             new Object[]{version});
                         }
                     }
                     else if (name == fEncodingSymbol) {
                         if (!scanningTextDecl) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "VersionInfoRequired", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("VersionInfoRequired", null);
                         }
                         encoding = fString.toString();
                         state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
                     }
                     else {
                         if (scanningTextDecl) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "EncodingDeclRequired", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("EncodingDeclRequired", null);
                         }
                         else {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "VersionInfoRequired", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("VersionInfoRequired", null);
                         }
                     }
                     break;
@@ -295,15 +287,11 @@ public abstract class XMLScanner
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "SDDeclInvalid", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("SDDeclInvalid", null);
                         }
                     }
                     else {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                   "EncodingDeclRequired", 
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        reportFatalError("EncodingDeclRequired", null);
                     }
                     break;
                 }
@@ -312,40 +300,30 @@ public abstract class XMLScanner
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                       "SDDeclInvalid", 
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("SDDeclInvalid", null);
                         }
                     }
                     else {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                   "EncodingDeclRequired", 
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        reportFatalError("EncodingDeclRequired", null);
                     }
                     break;
                 }
                 default: {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                               "NoMorePseudoAttributes", 
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("NoMorePseudoAttributes", null);
                 }
             }
             fEntityScanner.skipSpaces();
         }
         if (scanningTextDecl && state != STATE_DONE) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                       "MorePseudoAttributes", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MorePseudoAttributes", null);
         }
 
         // end
         if (!fEntityScanner.skipChar('?')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("XMLDeclUnterminated", null);
         }
         if (!fEntityScanner.skipChar('>')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("XMLDeclUnterminated", null);
 
         }
 
@@ -377,19 +355,16 @@ public abstract class XMLScanner
 
         String name = fEntityScanner.scanName();
         if (name == null) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PseudoAttrNameExpected", 
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("PseudoAttrNameExpected", null);
         }
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "EqRequiredInTextDecl", 
-                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("EqRequiredInTextDecl", new Object[]{name});
         }
         fEntityScanner.skipSpaces();
         int quote = fEntityScanner.peekChar();
         if (quote != '\'' && quote != '"') {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "QuoteRequiredInTextDecl", 
-                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("QuoteRequiredInTextDecl", new Object[]{name});
         }
         fEntityScanner.scanChar();
         int c = fEntityScanner.scanLiteral(quote, value);
@@ -405,10 +380,8 @@ public abstract class XMLScanner
                         String key = scanningTextDecl 
                                    ? "InvalidCharInTextDecl" 
                                    : "InvalidCharInXMLDecl";
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                   key,
-                                                   new Object[] {Integer.toString(c, 16)},
-                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        reportFatalError(key,
+                                       new Object[] {Integer.toString(c, 16)});
                         fEntityScanner.scanChar();
                     }
                 }
@@ -418,8 +391,8 @@ public abstract class XMLScanner
             value.setValues(fPseudoAttrStringBuffer);
         }
         if (!fEntityScanner.skipChar(quote)) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInTextDecl", 
-                                       new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("CloseQuoteMissingInTextDecl",
+                             new Object[]{name});
         }
 
         // return
@@ -442,8 +415,7 @@ public abstract class XMLScanner
         // target
         String target = fEntityScanner.scanName();
         if (target == null) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PITargetRequired", 
-                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("PITargetRequired", null);
         }
 
         // scan data
@@ -471,10 +443,7 @@ public abstract class XMLScanner
             char c1 = Character.toLowerCase(target.charAt(1));
             char c2 = Character.toLowerCase(target.charAt(2));
             if (c0 == 'x' && c1 == 'm' && c2 == 'l') {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                           "ReservedPITarget", 
-                                           null, 
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("ReservedPITarget", null);
             }
         }
 
@@ -487,10 +456,7 @@ public abstract class XMLScanner
             }
             else {
                 // if there is data there should be some space
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "SpaceRequiredInPI",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("SpaceRequiredInPI", null);
             }
         }
 
@@ -501,10 +467,8 @@ public abstract class XMLScanner
                 fStringBuffer.append(data);
                 int c = fEntityScanner.peekChar();
                 if (c != -1 && XMLChar.isInvalid(c)) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "InvalidCharInPI",
-                                               new Object[] { Integer.toHexString(c) },
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("InvalidCharInPI",
+                                     new Object[] { Integer.toHexString(c) });
                     fEntityScanner.scanChar();
                 }
             } while (fEntityScanner.scanData("?>", data));
@@ -538,17 +502,14 @@ public abstract class XMLScanner
             /***/
             int c = fEntityScanner.peekChar();
             if (XMLChar.isInvalid(c)) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "InvalidCharInComment",
-                                           new Object[] { Integer.toHexString(c) },
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("InvalidCharInComment",
+                                 new Object[] { Integer.toHexString(c) }); 
                 fEntityScanner.scanChar();
             }
         }
         text.append(fString);
         if (!fEntityScanner.skipChar('>')) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "DashDashInComment", 
-                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("DashDashInComment", null);
         }
 
     } // scanComment()
@@ -607,9 +568,7 @@ public abstract class XMLScanner
 
         // end
         if (!fEntityScanner.skipChar(';')) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "SemicolonRequiredInCharRef",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("SemicolonRequiredInCharRef", null);
         }
         
         // convert string to number
@@ -624,11 +583,8 @@ public abstract class XMLScanner
 
         // character reference must be a valid XML character
         if (!XMLChar.isValid(value)) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "InvalidCharRef",
-                                       new Object[]{
-                                           Integer.toString(value, 16) },
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("InvalidCharRef",
+                             new Object[]{Integer.toString(value, 16)}); 
         }
 
         // append corresponding chars to the given buffer
@@ -659,10 +615,8 @@ public abstract class XMLScanner
         int high = fEntityScanner.scanChar();
         int low = fEntityScanner.peekChar();
         if (!XMLChar.isLowSurrogate(low)) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                       "InvalidCharInContent",
-                                       new Object[] {Integer.toString(high, 16)},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("InvalidCharInContent",
+                             new Object[] {Integer.toString(high, 16)});
             return false;
         }
         fEntityScanner.scanChar();
@@ -674,5 +628,12 @@ public abstract class XMLScanner
         return true;
 
     } // scanSurrogates():boolean
+
+    protected void reportFatalError(String msgId, Object[] args)
+        throws SAXException {
+        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                   msgId, args,
+                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+    }
 
 } // class XMLScanner

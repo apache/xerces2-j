@@ -1148,9 +1148,11 @@ public class XMLDTDScanner
         fString.clear();
         if (fEntityScanner.skipString("#REQUIRED")) {
             defaultType = "#REQUIRED";
+            defaultVal.clear();
         }
         else if (fEntityScanner.skipString("#IMPLIED")) {
             defaultType = "#IMPLIED";
+            defaultVal.clear();
         }
         else {
             if (fEntityScanner.skipString("#FIXED")) {
@@ -1732,13 +1734,6 @@ public class XMLDTDScanner
         }
     }
 
-
-    protected void reportFatalError(String msgId, Object[] args)
-        throws SAXException {
-        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                   msgId, args,
-                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
-    }
 
     /*
      * Element Children Content Stack
