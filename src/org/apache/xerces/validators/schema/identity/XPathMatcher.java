@@ -293,7 +293,7 @@ public class XPathMatcher {
             }
             XPath.Axis axis = step.axis;
             switch (axis.type) {
-                case axis.SELF: {
+                case XPath.Axis.SELF: {
                     if (DEBUG_MATCH) {
                         System.out.println("XPATH["+toString()+"]: "+
                                            "axis: SELF");
@@ -313,7 +313,7 @@ public class XPathMatcher {
                     }
                     continue;
                 }
-                case axis.CHILD: {
+                case XPath.Axis.CHILD: {
                     int elementStep = fCurrentStep + 1;
                     if (DEBUG_MATCH) {
                         System.out.println("XPATH["+toString()+"]: "+
