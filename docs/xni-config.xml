@@ -644,6 +644,11 @@
   <s3 title='Interface XMLDocumentScanner'>
    <p>This interface defines an XML document scanner.</p>
    <table>
+    <tr>
+     <th>
+      Extends <link anchor='document-source'>XMLDocumentSource</link>
+     </th>
+    </tr>
     <tr><th>Methods</th></tr>
     <tr>
      <td>
@@ -675,6 +680,12 @@
     scanning of the DTD external subset.
    </p>
    <table>
+    <tr>
+     <th>
+      Extends <link anchor='dtd-source'>XMLDTDSource</link>,
+      <link anchor='dtd-content-model-source'>XMLDTDContentModelSource</link>
+     </th>
+    </tr>
     <tr><th>Methods</th></tr>
     <tr>
      <td>
@@ -741,6 +752,21 @@
     </tr>
    </table>
   </s3>
+  <anchor name='document-filter'/>
+  <s3 title='Interface XMLDocumentFilter'>
+   <p>
+    Defines a document filter that acts as both a receiver and 
+    an emitter of document events.
+   </p>
+   <table>
+    <tr>
+     <th> Extends 
+      <link idref='xni-core' anchor='document-handler'>XMLDocumentHandler</link>,
+      <link anchor='document-source'>XMLDocumentSource</link>
+     </th>
+    </tr>
+   </table>
+  </s3>
   <anchor name='dtd-source'/>
   <s3 title='Interface XMLDTDSource'>
    <p>This interface allows a DTD handler to be registered.</p>
@@ -757,6 +783,21 @@
     </tr>
    </table>
   </s3>
+  <anchor name='dtd-filter'/>
+  <s3 title='Interface XMLDTDFilter'>
+   <p>
+    Defines a DTD filter that acts as both a receiver and 
+    an emitter of DTD events.
+   </p>
+   <table>
+    <tr>
+     <th> Extends 
+      <link idref='xni-core' anchor='dtd-handler'>XMLDTDHandler</link>,
+      <link anchor='dtd-source'>XMLDTDSource</link>
+     </th>
+    </tr>
+   </table>
+  </s3>
   <anchor name='dtd-content-model-source'/>
   <s3 title='Interface XMLDTDContentModelSource'>
    <p>This interface allows a DTD content model handler to be registered.</p>
@@ -770,6 +811,21 @@
            );
       </code>
      </td>
+    </tr>
+   </table>
+  </s3>
+  <anchor name='dtd-filter'/>
+  <s3 title='Interface XMLDTDContentModelFilter'>
+   <p>
+    Defines a DTD content model filter that acts as both a receiver and 
+    an emitter of DTD content model events.
+   </p>
+   <table>
+    <tr>
+     <th> Extends 
+      <link idref='xni-core' anchor='dtd-content-model-handler'>XMLDTDContentModelHandler</link>,
+      <link anchor='dtd-content-model-source'>XMLDTDContentModelSource</link>
+     </th>
     </tr>
    </table>
   </s3>
@@ -938,23 +994,43 @@ public abstract class AbstractConfiguration
     public void setEntityResolver(XMLEntityResolver resolver) {
         fEntityResolver = resolver;
     }
+    
+    public XMLEntityResolver getEntityResolver() {
+        return fEntityResolver;
+    }
 
     public void setErrorHandler(XMLErrorHandler handler) {
         fErrorHandler = handler;
     }
     
+    public XMLErrorHandler getErrorHandler() {
+        return fErrorHandler;
+    }
+
     public void setDocumentHandler(XMLDocumentHandler handler) {
         fDocumentHandler = handler;
+    }
+
+    public XMLDocumentHandler getDocumentHandler() {
+        return fDocumentHandler;
     }
 
     public void setDTDHandler(XMLDTDHandler handler) {
         fDTDHandler = handler;
     }
 
+    public XMLDTDHandler getDTDHandler() {
+        return fDTDHandler;
+    }
+
     public void setDTDContentModelHandler(XMLDTDContentModelHandler handler) {
         fDTDContentModelHandler = handler;
     }
     
+    public XMLDTDContentModelHandler getDTDContentModelHandler() {
+        return fDTDContentModelHandler;
+    }
+
     public abstract void parse(XMLInputSource inputSource) 
         throws IOException, XNIException;
     

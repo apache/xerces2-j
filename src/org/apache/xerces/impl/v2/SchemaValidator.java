@@ -81,6 +81,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentFilter;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -111,7 +112,7 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 public class SchemaValidator
-    implements XMLComponent, XMLDocumentHandler {
+    implements XMLComponent, XMLDocumentFilter {
 
     //
     // Constants

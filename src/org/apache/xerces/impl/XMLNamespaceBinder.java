@@ -75,6 +75,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentFilter;
 
 /**
  * This class performs namespace binding on the startElement and endElement
@@ -95,7 +96,7 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
  * @version $Id$
  */
 public class XMLNamespaceBinder 
-    implements XMLComponent, XMLDocumentHandler {
+    implements XMLComponent, XMLDocumentFilter {
 
     //
     // Constants

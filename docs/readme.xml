@@ -77,12 +77,32 @@
  </s2>
  <s2 title='Changes from Previous Release'>
   <p>
-   The deferred DOM implementation has been been re-added
-   in this release and is the default DOM in the DOMParser.
-   Check the documentation on this
-   <link idref='features' anchor='dom.defer-node-expansion'>feature</link>
-   for more information.
+   This release introduces some changes to the Xerces Native
+   Interface. The following list enumerates the important changes:
   </p>
+  <ul>
+   <li>
+    Filter interfaces were added to simplify the implementation and
+    use of pipeline components that consume and produce document
+    and DTD events.
+   </li>
+   <li>
+    Getter methods were added to the <code>XMLParserConfiguration</code>
+    interface to query the registered handlers, resolvers, etc.
+   </li>
+   <li>
+    The <code>XMLDTDHandler#internalEntityDecl</code> method was
+    modified to include the non-normalized literal value of the
+    internal entity.
+   </li>
+   <li>
+    The <code>XMLAttributes</code> interface was simplified by
+    removing the methods relating to entities appearing in
+    attribute values. The non-normalized attribute value in
+    conjunction with the non-normalized value for internal entity
+    declarations makes these methods unnecessary.
+   </li>
+  </ul>
   <p>
    For a more complete list of changes, refer to the 
    <link idref='releases'>Release Information</link> page.

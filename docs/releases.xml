@@ -3,12 +3,16 @@
 <releases>
  <release version='NOT YET RELEASED'>
   <desc>
-   This is primarily a bug fix release with some minor changes to
-   XNI interfaces related to DTD information.
+   This releases fixes a number of bugs and introduces some changes to
+   the Xerces Native Interface.
   </desc>
   <changes>
    <update>
-    <note>Added getter methods to XMLParserConfiguration interface.</note>
+    <note>
+     Added getter methods to XMLParserConfiguration interface and added
+     filter interfaces for components that consume and produce document 
+     and DTD information.
+    </note>
     <submitter name='Andy Clark'/>
    </update>
    <fix>

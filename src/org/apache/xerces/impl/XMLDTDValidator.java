@@ -92,6 +92,9 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentFilter;
+import org.apache.xerces.xni.parser.XMLDTDFilter;
+import org.apache.xerces.xni.parser.XMLDTDContentModelFilter;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -126,7 +129,7 @@ import java.util.StringTokenizer;
  */
 public class XMLDTDValidator
     implements XMLComponent, 
-               XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler
+               XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter
     {
 
     //

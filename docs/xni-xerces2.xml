@@ -402,7 +402,7 @@ public class MyComponent
    Both the <link anchor='document-scanner'>Document Scanner</link>
    and the <link anchor='dtd-scanner'>DTD Scanner</link> depend
    on the Entity Manager. This component handles starting and
-   starting entities automatically so that the scanners can continue
+   stopping entities automatically so that the scanners can continue
    operation transparently even when entities go in and out of
    scope.
   </p>
