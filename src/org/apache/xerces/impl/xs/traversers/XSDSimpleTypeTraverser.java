@@ -521,8 +521,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             (baseTypeStr.localpart.equals(SchemaSymbols.ATTVAL_ANYSIMPLETYPE) ||
              baseTypeStr.localpart.equals(SchemaSymbols.ATTVAL_ANYTYPE)) &&
             baseRefContext == SchemaSymbols.RESTRICTION) {
-            reportSchemaError("dt-unknown-basetype", new Object[] {
-                                       DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME), DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE)});
+            reportSchemaError("dt-unknown-basetype", new Object[] {baseTypeStr.rawname,
+                                       DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME)});
             return SchemaGrammar.fAnySimpleType;
         }
 
