@@ -725,6 +725,12 @@ Copyright:
           classname="schema.Test"
           failOnError="yes">
     </java>
+    <echo message="Running jaxp.PropertyTest ..." />
+    <java fork="yes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
+          classname="jaxp.PropertyTest"
+          failOnError="yes">
+    </java>
   </target>
 
   <!-- =================================================================== -->
