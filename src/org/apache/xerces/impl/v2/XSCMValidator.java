@@ -68,6 +68,13 @@ import org.apache.xerces.xni.QName;
  */
 public interface XSCMValidator {
 
+    
+    public static final short FIRST_ERROR = -1;
+    
+    // on subsequent errors the validator should not report 
+    // an error
+    //
+    public static final short SUBSEQUENT_ERROR = -2;
 
     /**
      * This methods to be called on entering a first element whose type
@@ -75,7 +82,7 @@ public interface XSCMValidator {
      *
      * @return Start state of the content model
      */
-    public Object startContentModel();
+    public int[] startContentModel();
 
 
     /**
@@ -86,7 +93,7 @@ public interface XSCMValidator {
      * @return element decl or wildcard decl that
      *         corresponds to the element from the Schema grammar
      */
-    public Object oneTransition (QName elementName, Object state);
+    public Object oneTransition (QName elementName, int[] state);
 
 
     /**
@@ -95,6 +102,6 @@ public interface XSCMValidator {
      * @param state  Current state of the content model
      * @return true if the last state was a valid final state
      */
-    public boolean endContentModel (Object state);
+    public boolean endContentModel (int[] state);
 
 } // XSCMValidator
