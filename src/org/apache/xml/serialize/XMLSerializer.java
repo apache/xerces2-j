@@ -1266,7 +1266,8 @@ extends BaseMarkupSerializer {
     }
 
 
-    protected final void printXMLChar( int ch ) throws IOException {
+    // note that this "int" should, in all cases, be a char.
+    protected void printXMLChar( int ch ) throws IOException {
 
         if ( ch == '<') {
             _printer.printText("&lt;");
@@ -1276,7 +1277,7 @@ extends BaseMarkupSerializer {
             // REVISIT: for character data we should not convert this into 
             //          char reference
             _printer.printText("&quot;");
-        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch)) ||
+        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch)) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
             _printer.printText((char)ch);
         } else {
