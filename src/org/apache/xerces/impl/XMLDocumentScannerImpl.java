@@ -713,6 +713,9 @@ public class XMLDocumentScannerImpl
                                 setDispatcher(fDTDDispatcher);
                                 return true;
                             }
+                            if (fDoctypeSystemId == null) {
+                                fDTDScanner.setInputSource(null);
+                            }
                             if (fDoctypeSystemId != null && ((fValidation || fLoadExternalDTD) 
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                 setScannerState(SCANNER_STATE_DTD_EXTERNAL);

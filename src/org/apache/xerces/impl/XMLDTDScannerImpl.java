@@ -263,6 +263,12 @@ public class XMLDTDScannerImpl
      * @throws IOException Thrown on i/o error.
      */
     public void setInputSource(XMLInputSource inputSource) throws IOException {
+        if (inputSource == null) {
+            // no system id was available
+            fDTDHandler.startDTD(null, null);
+            fDTDHandler.endDTD(null);
+            return;
+        }
         fEntityManager.setEntityHandler(this);
         fEntityManager.startDTDEntity(inputSource);
     } // setInputSource(XMLInputSource)
