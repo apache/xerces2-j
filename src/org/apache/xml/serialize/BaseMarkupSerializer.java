@@ -106,7 +106,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.ext.DeclHandler;
 
-
 /**
  * Base class for a serializer supporting both DOM and SAX pretty
  * serializing of XML/HTML/XHTML documents. Derives classes perform
