@@ -367,6 +367,9 @@ public abstract class BasicParserConfiguration
         fDocumentHandler = documentHandler;
         if (fLastComponent != null) {
             fLastComponent.setDocumentHandler(fDocumentHandler);
+            if (fDocumentHandler !=null){
+                fDocumentHandler.setDocumentSource(fLastComponent);
+            }
         }
     } // setDocumentHandler(XMLDocumentHandler)
 

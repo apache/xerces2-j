@@ -194,46 +194,57 @@ extends StandardParserConfiguration {
     
     /** Configures the pipeline. */
 	protected void configurePipeline() {
-        
-        // use XML 1.0 datatype library
-         setProperty(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
-         
-		// setup dtd pipeline
-		if (fDTDScanner != null) {
-            fProperties.put(DTD_SCANNER, fDTDScanner);
-			if (fDTDProcessor != null) {
-                fProperties.put(DTD_PROCESSOR, fDTDProcessor);
-				fDTDScanner.setDTDHandler(fDTDProcessor);
-				fDTDProcessor.setDTDHandler(fDTDHandler);
-				fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
-				fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
-			}
-			else {
-				fDTDScanner.setDTDHandler(fDTDHandler);
-				fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
-			}
-		}
 
+		// use XML 1.0 datatype library
+		setProperty(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
+
+		// setup DTD pipeline
+		configureDTDPipeline();
+
+		// setup document pipeline
 		if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
 			fScanner = fNamespaceScanner;
-			fProperties.put(DTD_VALIDATOR, fDTDValidator);
 			fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
-			fNamespaceScanner.setDTDValidator(fDTDValidator);
-			fNamespaceScanner.setDocumentHandler(fDTDValidator);
-			fDTDValidator.setDocumentSource(fNamespaceScanner);
-			fDTDValidator.setDocumentHandler(fDocumentHandler);
-			fDocumentHandler.setDocumentSource(fDTDValidator);
-			fLastComponent = fDTDValidator;
+			if (fDTDValidator != null) {
+				fProperties.put(DTD_VALIDATOR, fDTDValidator);
+				fNamespaceScanner.setDTDValidator(fDTDValidator);
+				fNamespaceScanner.setDocumentHandler(fDTDValidator);
+				fDTDValidator.setDocumentSource(fNamespaceScanner);
+				fDTDValidator.setDocumentHandler(fDocumentHandler);
+				if (fDocumentHandler != null) {
+					fDocumentHandler.setDocumentSource(fDTDValidator);
+				}
+				fLastComponent = fDTDValidator;
+			}
+			else {
+				fNamespaceScanner.setDocumentHandler(fDocumentHandler);
+                fNamespaceScanner.setDTDValidator(null);
+				if (fDocumentHandler != null) {
+					fDocumentHandler.setDocumentSource(fNamespaceScanner);
+				}
+				fLastComponent = fNamespaceScanner;
+			}
 		}
 		else {
 			fScanner = fNonNSScanner;
-			fProperties.put(DTD_VALIDATOR, fNonNSDTDValidator);
 			fProperties.put(DOCUMENT_SCANNER, fNonNSScanner);
-			fNonNSScanner.setDocumentHandler(fNonNSDTDValidator);
-			fNonNSDTDValidator.setDocumentSource(fNonNSScanner);
-			fNonNSDTDValidator.setDocumentHandler(fDocumentHandler);
-			fDocumentHandler.setDocumentSource(fNonNSDTDValidator);
-			fLastComponent = fNonNSDTDValidator;
+			if (fNonNSDTDValidator != null) {
+				fProperties.put(DTD_VALIDATOR, fNonNSDTDValidator);
+				fNonNSScanner.setDocumentHandler(fNonNSDTDValidator);
+				fNonNSDTDValidator.setDocumentSource(fNonNSScanner);
+				fNonNSDTDValidator.setDocumentHandler(fDocumentHandler);
+				if (fDocumentHandler != null) {
+					fDocumentHandler.setDocumentSource(fNonNSDTDValidator);
+				}
+				fLastComponent = fNonNSDTDValidator;
+			}
+			else {
+				fScanner.setDocumentHandler(fDocumentHandler);
+				if (fDocumentHandler != null) {
+					fDocumentHandler.setDocumentSource(fScanner);
+				}
+				fLastComponent = fScanner;
+			}
 		}
 
 		// setup document pipeline
@@ -256,8 +267,10 @@ extends StandardParserConfiguration {
 			fLastComponent.setDocumentHandler(fSchemaValidator);
 			fSchemaValidator.setDocumentSource(fLastComponent);
 			fSchemaValidator.setDocumentHandler(fDocumentHandler);
+			if (fDocumentHandler != null) {
+				fDocumentHandler.setDocumentSource(fSchemaValidator);
+			}
 			fLastComponent = fSchemaValidator;
-
 		}
 	} // configurePipeline()
 

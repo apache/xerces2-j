@@ -680,37 +680,43 @@ public class DTDConfiguration
 				fLastComponent = fScanner;
 			}
 		}
-
-		// setup dtd pipeline
-		if (fDTDScanner != null) {
-			if (fDTDProcessor != null) {
-				fDTDScanner.setDTDHandler(fDTDProcessor);
-				fDTDProcessor.setDTDSource(fDTDScanner);
-				fDTDProcessor.setDTDHandler(fDTDHandler);
+        
+        configureDTDPipeline();
+	} // configurePipeline()
+    
+    protected void configureDTDPipeline (){
+        
+        // setup dtd pipeline
+        if (fDTDScanner != null) {
+            if (fDTDProcessor != null) {
+                fDTDScanner.setDTDHandler(fDTDProcessor);
+                fDTDProcessor.setDTDSource(fDTDScanner);
+                fDTDProcessor.setDTDHandler(fDTDHandler);
                 if (fDTDHandler != null) {
                     fDTDHandler.setDTDSource(fDTDProcessor);
                 }
 
-				fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
-				fDTDProcessor.setDTDContentModelSource(fDTDScanner);
-				fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
+                fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
+                fDTDProcessor.setDTDContentModelSource(fDTDScanner);
+                fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
                 if (fDTDContentModelHandler != null) {
                     fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
                 }
-			}
-			else {
-				fDTDScanner.setDTDHandler(fDTDHandler);
+            }
+            else {
+                fDTDScanner.setDTDHandler(fDTDHandler);
                 if (fDTDHandler != null) {
                     fDTDHandler.setDTDSource(fDTDScanner);
                 }
-				fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
+                fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
                 if (fDTDContentModelHandler != null) {
                     fDTDContentModelHandler.setDTDContentModelSource(fDTDScanner);
                 }
-			}
-		}
+            }
+        }
 
-	} // configurePipeline()
+
+    }
 
     // features and properties
 
