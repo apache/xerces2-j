@@ -1937,10 +1937,12 @@ public class TraverseSchema implements
             if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 attType        = XMLAttributeDecl.TYPE_SIMPLE;
                 dataTypeSymbol = traverseSimpleTypeDecl(child);
+                localpart = fStringPool.toString(dataTypeSymbol);
             } 
             else {
                 attType        = XMLAttributeDecl.TYPE_SIMPLE;
-                dataTypeSymbol = fStringPool.addSymbol("string");
+                localpart      = "string";
+                dataTypeSymbol = fStringPool.addSymbol(localpart);
             }
             localpart = fStringPool.toString(dataTypeSymbol);
 
