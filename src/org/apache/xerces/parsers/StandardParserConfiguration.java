@@ -147,6 +147,10 @@ public class StandardParserConfiguration
     protected static final String NOTIFY_BUILTIN_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_BUILTIN_REFS_FEATURE;
     
+    /** Feature identifier: notify character refereces. */
+    protected static final String NOTIFY_CHAR_REFS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
+    
     // property identifiers
 
     /** Property identifier: error reporter. */
@@ -255,16 +259,18 @@ public class StandardParserConfiguration
             WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
             ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
             LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
+            NOTIFY_CHAR_REFS,
         };
         addRecognizedFeatures(recognizedFeatures);
 
         // set state for default features
-        fFeatures.put(WARN_ON_DUPLICATE_ATTDEF, Boolean.FALSE);
-        fFeatures.put(WARN_ON_UNDECLARED_ELEMDEF, Boolean.FALSE);
-        fFeatures.put(ALLOW_JAVA_ENCODINGS, Boolean.FALSE);
-        fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
-        fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
-        fFeatures.put(NOTIFY_BUILTIN_REFS, Boolean.TRUE);
+        setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
+        setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);
+        setFeature(ALLOW_JAVA_ENCODINGS, false);
+        setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
+        setFeature(LOAD_EXTERNAL_DTD, true);
+        setFeature(NOTIFY_BUILTIN_REFS, false);
+        setFeature(NOTIFY_CHAR_REFS, false);
 
         // add default recognized properties
         final String[] recognizedProperties = {

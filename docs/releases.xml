@@ -4,6 +4,14 @@
  <release version='NOT YET RELEASED'>
   <desc/>
   <fix>
+   <note>
+    Fixed bug in scanner that allowed the built-in entity references
+    to be sent via XNI. The default value for this feature should have
+    been false.
+   </note>
+   <submitter name='Andy Clark'/>
+  </fix>
+  <fix>
    <note>Fixed several SAX bugs.</note>
    <submitter name='Andy Clark'/>
   </fix>

@@ -256,7 +256,7 @@ public class XMLDocumentScannerImpl
     protected boolean fLoadExternalDTD = true;
 
     /** Notify built-in references. */
-    protected boolean fNotifyBuiltInRefs = true;
+    protected boolean fNotifyBuiltInRefs = false;
 
     // dispatchers
 
@@ -380,7 +380,7 @@ public class XMLDocumentScannerImpl
         fAttributes.setNamespaces(fNamespaces);
 
         // xerces features
-        fNotifyCharRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
+        fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
 
         // xerces properties
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
