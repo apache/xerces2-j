@@ -818,7 +818,6 @@ public class XSDHandler {
             decl = (Element)fUnparsedTypeRegistry.get(declKey);
             break;
         default:
-            // REVISIT: report internal error...
             reportSchemaError("Internal-Error", new Object [] {"XSDHandler asked to locate component of type " + declType + "; it does not recognize this type!"});
         }
         if (decl != null)
@@ -865,7 +864,6 @@ public class XSDHandler {
 
         if (DOMUtil.isHidden(decl)) {
             // decl must not be null if we're here...
-            //REVISIT: report an error: circular reference
             reportSchemaError("st-props-correct.2", new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart});
             return null;
         }
@@ -1063,7 +1061,6 @@ public class XSDHandler {
 
         }
         catch (java.io.FileNotFoundException ex) {
-            // REVISIT: how to report an error for missing files
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "General",
                                        new Object[]{"file not found: " + schemaHint},
@@ -1293,22 +1290,6 @@ public class XSDHandler {
         }
     } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
 
-
-    //
-    //!!!!!!!!!!!!!!!! IMPLEMENT the following functions !!!!!!!!!!
-    //
-    //REVISIT: implement namescope support!!!
-    protected String resolvePrefixToURI (String prefix) {
-        //String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
-        //if (uriStr.length() == 0 && prefix.length() > 0) {
-        // REVISIT: Localize
-        //// REVISIT:  reportGenericSchemaError("prefix : [" + prefix +"] cannot be resolved to a URI");
-        //return "";
-        //}
-
-        return null;
-    }
-
     // the purpose of this method is to take the component of the
     // specified type and rename references to itself so that they
     // refer to the object being redefined.  It takes special care of
@@ -1325,7 +1306,6 @@ public class XSDHandler {
                                        ","+oldName:currSchema.fTargetNamespace+","+oldName;
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
-                // fRedefineSucceeded = false;
                 reportSchemaError("src-redefine.5", null);
             }
             else {
@@ -1335,18 +1315,15 @@ public class XSDHandler {
                     grandKidName = grandKid.getLocalName();
                 }
                 if (grandKid == null) {
-                    // fRedefineSucceeded = false;
                     reportSchemaError("src-redefine.5", null);
                 }
                 else if (!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
-                    // fRedefineSucceeded = false;
                     reportSchemaError("src-redefine.5", null);
                 }
                 else {
                     String derivedBase = grandKid.getAttribute( SchemaSymbols.ATT_BASE );
                     String processedDerivedBase = findQName(derivedBase, currSchema);
                     if (!processedTypeName.equals(processedDerivedBase)) {
-                        // fRedefineSucceeded = false;
                         reportSchemaError("src-redefine.5", null);
                     }
                     else {
@@ -1367,7 +1344,6 @@ public class XSDHandler {
                                        ","+oldName:currSchema.fTargetNamespace+","+oldName;
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
-                // fRedefineSucceeded = false;
                 reportSchemaError("src-redefine.5", null);
             }
             else {
@@ -1375,14 +1351,12 @@ public class XSDHandler {
                     grandKid = DOMUtil.getNextSiblingElement(grandKid);
                 }
                 if (grandKid == null) {
-                    // fRedefineSucceeded = false;
                     reportSchemaError("src-redefine.5", null);
                 }
                 else {
                     // have to go one more level down; let another pass worry whether complexType is valid.
                     Element greatGrandKid = DOMUtil.getFirstChildElement(grandKid);
                     if (greatGrandKid == null) {
-                        // fRedefineSucceeded = false;
                         reportSchemaError("src-redefine.5", null);
                     }
                     else {
@@ -1392,19 +1366,16 @@ public class XSDHandler {
                             greatGrandKidName = greatGrandKid.getLocalName();
                         }
                         if (greatGrandKid == null) {
-                            // fRedefineSucceeded = false;
                             reportSchemaError("src-redefine.5", null);
                         }
                         else if (!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
                                  !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
-                            // fRedefineSucceeded = false;
                             reportSchemaError("src-redefine.5", null);
                         }
                         else {
                             String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
                             String processedDerivedBase = findQName(derivedBase, currSchema);
                             if (!processedTypeName.equals(processedDerivedBase)) {
-                                // fRedefineSucceeded = false;
                                 reportSchemaError("src-redefine.5", null);
                             }
                             else {
@@ -1428,7 +1399,6 @@ public class XSDHandler {
                                        ","+oldName:currSchema.fTargetNamespace+","+oldName;
             int attGroupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema);
             if (attGroupRefsCount > 1) {
-                // fRedefineSucceeded = false;
                 reportSchemaError("src-redefine.7.1", new Object []{new Integer(attGroupRefsCount)});
             }
             else if (attGroupRefsCount == 1) {
@@ -1445,7 +1415,6 @@ public class XSDHandler {
                                        ","+oldName:currSchema.fTargetNamespace+","+oldName;
             int groupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema);
             if (groupRefsCount > 1) {
-                // fRedefineSucceeded = false;
                 reportSchemaError("src-redefine.6.1.1", new Object []{new Integer(groupRefsCount)});
             }
             else if (groupRefsCount == 1) {
@@ -1459,8 +1428,6 @@ public class XSDHandler {
             }
         }
         else {
-            // fRedefineSucceeded = false;
-            // REVISIT: Localize
             reportSchemaError("Internal-Error", new Object [] {"could not handle this particular <redefine>; please submit your schemas and instance document in a bug report!"});
         }
         // if we get here then we must have reported an error and failed somewhere...
