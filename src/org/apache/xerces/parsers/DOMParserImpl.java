@@ -473,11 +473,12 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 if (value instanceof String || value == null) {
                     try {
                         if (value == null) {
+                            fSchemaLocation = null;
                             fConfiguration.setProperty (
                                 Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
                                 null);
                         }
-                        else if (fSchemaType == Constants.NS_XMLSCHEMA) {
+                        else {
                             fSchemaLocation = (String)value;
                             // map DOM schema-location to JAXP schemaSource property
                             // tokenize location string
@@ -498,16 +499,6 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                                 value);
                             }
                         }
-                        else {
-                            // REVISIT: allow pre-parsing DTD grammars
-                            String msg =
-                            DOMMessageFormatter.formatMessage (
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
-                            new Object[] { name });
-                            throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
-                        }
-
                     }
                     catch (XMLConfigurationException e) {}
                 }
