@@ -80,7 +80,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     DatatypeValidator  fBaseValidator   = null; // Native datatypes have null
 
     private int        fLength           = 0;
-    private int        fMaxLength        = 0;
+    private int        fMaxLength        = Integer.MAX_VALUE;
     private int        fMinLength        = 0;
     private String     fPattern          = null;
     private Vector     fEnumeration      = null;
@@ -134,7 +134,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         try {
                             fMinLength     = Integer.parseInt( minLengthValue );
                         } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
+                            throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
                         }
                     } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
                         fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
@@ -163,7 +163,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
                         fMinExclusive = (String)facets.get(key);
                     } else {
-                        throw new InvalidDatatypeFacetException();
+                        throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                     }
                 }
 
@@ -179,9 +179,9 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength < fMaxLength ) {
+                    if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                                 "must be greater that the value of maxLength" + fMaxLength );
+                                                                 "must be less than the value of maxLength = " + fMaxLength );
                     }
                 }
 
@@ -237,7 +237,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                         fEnumeration    = (Vector)facets.get(key);
                     } else {
-                        throw new InvalidDatatypeFacetException();
+                        throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                     }
                 }
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {

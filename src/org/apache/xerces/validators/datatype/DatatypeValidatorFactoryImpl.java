@@ -281,7 +281,10 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 ( DatatypeValidator ) createDatatypeValidator (
                                                  validatorConstructor, validatorArgs );
 
-                addValidator( typeName, simpleType );//register validator
+                if (simpleType != null) {
+                    addValidator( typeName, simpleType );//register validator
+                }
+
 
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
@@ -300,25 +303,26 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             validator = validatorConstructor.newInstance(arguments);
             return validator;
         } catch (InstantiationException e) {
-            if( fDebug == true ){
+            if( fDebug ){
                 e.printStackTrace();
             }else {
                 return null;
             }
         } catch (IllegalAccessException e) {
-            if( fDebug == true ){
+            if( fDebug ){
                 e.printStackTrace();
             }else {
                 return null;
             }
         } catch (IllegalArgumentException e) {
-            if( fDebug == true ){
+            if( fDebug ){
                 e.printStackTrace();
             }else {
                 return null;
             }
         } catch (InvocationTargetException e) {
-            if ( fDebug == true ){
+            if ( fDebug ){
+                System.out.println("!! The original error message is: " + e.getTargetException().getMessage() );
                 e.getTargetException().printStackTrace();
             } else {
                 return null;
