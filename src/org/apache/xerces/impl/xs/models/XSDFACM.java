@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs.models;
 
-import org.apache.xerces.impl.msg.ImplementationMessages;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMStateSet;
