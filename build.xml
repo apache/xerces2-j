@@ -19,15 +19,19 @@ Copyright:
 <project default="usage" basedir=".">
 
   <target name="init">
-    <property name="name" value="xerces"/>
-    <property name="Name" value="Xerces-J"/>
-    <property name="version" value="2.0.0 (beta2)"/>
-    <property name="version_postfix" value=".2.0.0.beta2"/>
-    <property name="appendit" value="2_0_0_beta2"/>
+    <property name='parser.Name' value='Xerces-J'/>
+    <property name='parser.name' value='xerces-j'/>
+    <property name='parser.Version' value='2.0.0 (betaX)'/>
+    <property name='parser.version' value='2.0.0.betaX'/>
+    <property name='parser_version' value='2_0_0_betaX'/>
+
+    <property name='jar.parser' value='xerces.jar'/>
+    <property name='jar.samples' value='xercesSamples.jar'/>
+
     <property name="year" value="1999-2001"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
-    <echo message= "---------------- ${Name} ${version} [${year}] ---------------"/>
+    <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
     <property name="build.compiler" value="classic"/>
     <property name="debug" value="off"/>
     <property name="optimize" value="on"/>
@@ -40,7 +44,6 @@ Copyright:
     <property name="tests.dir" value="./tests"/>
     <property name="tools.dir" value="./tools"/>
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
-    <property name="version.file" value="org/apache/xerces/impl/Version.java"/>
 
     <property name="packages" value="org.*"/>
 
@@ -58,11 +61,11 @@ Copyright:
     <property name="build.data" value="${build.dir}/data"/>
     <property name="build.javadocs" value="${build.dir}/docs/javadocs"/>
 
-    <property name="distsrc.dir" value="${build.dir}/${name}-${appendit}"/>
-    <property name="distbin.dir" value="${build.dir}/${name}-${appendit}"/>
+    <property name="distsrc.dir" value="${build.dir}/${parser.name}-${parser_version}"/>
+    <property name="distbin.dir" value="${build.dir}/${parser.name}-${parser_version}"/>
 
     <filter token="year" value="${year}"/>
-    <filter token="version" value="${version}"/>
+    <filter token="version" value="${parser.Version}"/>
     <filter token="date" value="${TODAY}"/>
     <filter token="log" value="true"/>
     <filter token="verbose" value="true"/>
@@ -75,7 +78,7 @@ Copyright:
   <target name="usage">
     <echo message=""/>
     <echo message=""/>
-    <echo message="${Name} Build instructions"/>
+    <echo message="${parser.Name} Build instructions"/>
     <echo message="-------------------------------------------------------------"/>
     <echo message=""/>
     <echo message=" available targets are:"/>
@@ -138,8 +141,8 @@ Copyright:
     </copy>
     
     <!-- substitute tokens as needed -->
-    <replace file="${build.src}/${version.file}" token="@@version@@" value="${version}"/>
-    <!-- <replace file="${build.src}/${version.file}" token="@@year@@" value="${year}"/> -->
+    <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
+             token="@@VERSION@@" value="${parser.Version}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -166,7 +169,7 @@ Copyright:
   <!-- Creates the class package                                           -->
   <!-- =================================================================== -->
   <target name="jar" depends="compile">
-    <jar jarfile="${build.dir}/${name}.jar"
+    <jar jarfile="${build.dir}/${jar.parser}"
          basedir="${build.dest}"
          compress="false"
          includes="org/**, javax/**,META-INF/**"/>
@@ -209,7 +212,7 @@ Copyright:
   <!-- Creates the samples package                                         -->
   <!-- =================================================================== -->
   <target name="sampjar" depends="samples">
-    <jar jarfile="${build.dir}/${name}Samples.jar"
+    <jar jarfile="${build.dir}/${jar.samples}"
          basedir="${build.dest}"
          compress="false"
          includes="dom/**,sax/**,socket/**,ui/**,xni/**"/>
@@ -220,20 +223,33 @@ Copyright:
   <!-- =================================================================== -->
   <target name="prepare-docs" depends="init"> 
     <mkdir dir="${build.docs}"/>
+    <mkdir dir="${build.dir}/xdocs"/>
+    <copy todir="${build.dir}/xdocs">
+        <fileset dir="${docs.dir}"/>
+    </copy>
+    <replace file="${build.dir}/xdocs/dtd/entities.ent" 
+             token="@@VERSION@@" value="${parser.Version}"/>
+    <replace file="${build.dir}/xdocs/dtd/entities.ent" 
+             token="@@version@@" value="${parser.version}"/>
+    <replace file="${build.dir}/xdocs/dtd/entities.ent" 
+             token="@@_version_@@" value="${parser_version}"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Generate HTML docs                                                  -->
   <!-- =================================================================== -->
   <target name="docs" depends="prepare, prepare-docs">
-     <unjar src="${doc.style.jar}"
-         dest="${doc.style}"/>
-    <echo message="Building docs for ${Name} ${version} ..." />
+    <!-- <unjar src="${doc.style.jar}"
+         dest="${doc.style}"/> -->
+    <echo message="Building docs for ${parser.Name} ${parser.Version} ..." />
     <java fork="yes"
           classpath="${java.class.path}:${doc.generator.package}:./tools/xalan.jar"
-          classname="${doc.generator}"
-          args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
-    <delete dir="${doc.style}"/>
+          classname="${doc.generator}">
+      <arg value="targetDirectory=${build.docs}"/>
+      <arg value="${build.dir}/xdocs/docs-book.xml"/>
+      <arg value="${build.dir}/xdocs/style"/>
+    </java>
+    <!--<delete dir="${doc.style}"/>-->
   </target>
 
   <!-- =================================================================== -->
@@ -248,8 +264,8 @@ Copyright:
              author="true"
              version="true"
              use="true"
-             windowtitle="${Name} API"
-             doctitle="${Name}"
+             windowtitle="${parser.Name} API"
+             doctitle="${parser.Name}"
              bottom="${copyright}" />
     -->
     <mkdir dir='${build.dir}/docs/javadocs/api'/>
@@ -346,15 +362,15 @@ Copyright:
     <chmod file="${distsrc.dir}/build.sh" perm="ugo+rx" />
     <copy file="${basedir}/build.bat" tofile="${distsrc.dir}/build.bat" />
 
-    <zip zipfile="${build.dir}/${Name}-src${version_postfix}.zip" basedir="${build.dir}"
-         includes="${name}-${appendit}/**" excludes="*.class"/>
+    <zip zipfile="${build.dir}/${parser.Name}-src.${parser.version}.zip" basedir="${build.dir}"
+         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
 
-    <tar tarfile="${build.dir}/${Name}-src${version_postfix}.tar" basedir="${build.dir}"
-         includes="${name}-${appendit}/**" excludes="*.class"/>
-    <gzip zipfile="${build.dir}/${Name}-src${version_postfix}.tar.gz"
-          src="${build.dir}/${Name}-src${version_postfix}.tar" />
+    <tar tarfile="${build.dir}/${parser.Name}-src.${parser.version}.tar" basedir="${build.dir}"
+         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
+    <gzip zipfile="${build.dir}/${parser.Name}-src.${parser.version}.tar.gz"
+          src="${build.dir}/${parser.Name}-src.${parser.version}.tar" />
     <!-- and why not get rid of the un-gzip'd tarball and save ourselves 15 Mb? -->
-    <delete file="${build.dir}/${Name}-src${version_postfix}.tar"/>
+    <delete file="${build.dir}/${parser.Name}-src.${parser.version}.tar"/>
   </target>
 
   <!-- Prepares the tools distribution -->
@@ -366,12 +382,12 @@ Copyright:
     <copy todir="${distbin.dir}/tools" >
         <fileset dir="tools"/>
     </copy>
-    <zip zipfile="${build.dir}/${Name}-tools${version_postfix}.zip" basedir="${build.dir}"
-         includes="${name}-${appendit}/**"/>
-    <tar tarfile="${build.dir}/${Name}-tools${version_postfix}.tar" basedir="${build.dir}"
-         includes="${name}-${appendit}/**"/>
-    <gzip zipfile="${build.dir}/${Name}-tools${version_postfix}.tar.gz"
-          src="${build.dir}/${Name}-tools${version_postfix}.tar" />
+    <zip zipfile="${build.dir}/${parser.Name}-tools.${parser.version}.zip" basedir="${build.dir}"
+         includes="${parser.name}-${parser_version}/**"/>
+    <tar tarfile="${build.dir}/${parser.Name}-tools.${parser.version}.tar" basedir="${build.dir}"
+         includes="${parser.name}-${parser_version}/**"/>
+    <gzip zipfile="${build.dir}/${parser.Name}-tools.${parser.version}.tar.gz"
+          src="${build.dir}/${parser.Name}-tools.${parser.version}.tar" />
   </target>
 
   <!-- =================================================================== -->
@@ -411,8 +427,8 @@ Copyright:
         <fileset dir="${build.dir}/docs/javadocs/other" />
     </copy>
 
-    <copy file="${build.dir}/${name}.jar" tofile="${distbin.dir}/${name}.jar"/>
-    <copy file="${build.dir}/${name}Samples.jar" tofile="${distbin.dir}/${name}Samples.jar"/>
+    <copy file="${build.dir}/${jar.parser}" tofile="${distbin.dir}/${jar.parser}"/>
+    <copy file="${build.dir}/${jar.samples}" tofile="${distbin.dir}/${jar.samples}"/>
 
     <copy file="LICENSE" tofile="${distbin.dir}/LICENSE"/>
     <copy file="Readme.html" tofile="${distbin.dir}/Readme.html"/>
@@ -427,14 +443,14 @@ Copyright:
     <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
 
 
-    <zip zipfile="${build.dir}/${Name}-bin${version_postfix}.zip" basedir="${build.dir}"
-         includes="${name}-${appendit}/**" excludes="*.class"/>
-    <tar tarfile="${build.dir}/${Name}-bin${version_postfix}.tar" basedir="${build.dir}"
-         includes="${name}-${appendit}/**" excludes="*.class"/>
-    <gzip zipfile="${build.dir}/${Name}-bin${version_postfix}.tar.gz"
-          src="${build.dir}/${Name}-bin${version_postfix}.tar" />
+    <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" basedir="${build.dir}"
+         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
+    <tar tarfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar" basedir="${build.dir}"
+         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
+    <gzip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar.gz"
+          src="${build.dir}/${parser.Name}-bin.${parser.version}.tar" />
     <!-- as before, let's kill of the ungzip'd tarball! -->
-    <delete file="${build.dir}/${Name}-bin${version_postfix}.tar"/>
+    <delete file="${build.dir}/${parser.Name}-bin.${parser.version}.tar"/>
 
   </target>
 
@@ -442,7 +458,7 @@ Copyright:
   <!-- Do a sanity test using samples                                      -->
   <!-- =================================================================== -->
   <target name="test" depends="samples">
-    <echo message="Performing sanity test for ${Name} ${version} ..." />
+    <echo message="Performing sanity test for ${parser.Name} ${parser.Version} ..." />
     <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
     <echo message="Running sax.Counter ..." />
     <java fork="yes"

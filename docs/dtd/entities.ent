@@ -9,5 +9,5 @@
 <!ENTITY parserversion '@@version@@'>
 
 <!-- packaging names -->
-<!ENTITY parserdir 'xerces-2_0_0_beta2'>
+<!ENTITY parserdir 'xerces-@@_version_@@'>
 <!ENTITY parserdistname 'Xerces-J-bin'>
