@@ -1354,6 +1354,38 @@ public class XIncludeHandler
             parse = XINCLUDE_PARSE_XML;
         }
         
+        URI hrefURI = null;
+        
+        // Check whether href is correct and perform escaping as per section 4.1.1 of the XInclude spec.
+        // Report fatal error if the href value contains a fragment identifier or if the value after
+        // escaping is a syntactically invalid URI or IRI.
+        if (href != null) {
+            try {
+                hrefURI = new URI(href, true);
+                if (hrefURI.getFragment() != null) {
+                    reportFatalError("HrefFragmentIdentifierIllegal", new Object[] {href});
+                }
+            }
+            catch (URI.MalformedURIException exc) {
+                String newHref = escapeHref(href);
+                if (href != newHref) {
+                    href = newHref;
+                    try {
+                        hrefURI = new URI(href, true);
+                        if (hrefURI.getFragment() != null) {
+                            reportFatalError("HrefFragmentIdentifierIllegal", new Object[] {href});
+                        }
+                    }
+                    catch (URI.MalformedURIException exc2) {
+                        reportFatalError("HrefSyntacticallyInvalid", new Object[] {href});
+                    }
+                }
+                else {
+                    reportFatalError("HrefSyntacticallyInvalid", new Object[] {href});
+                }
+            }
+        }
+        
         // Verify that if an accept and/or an accept-language attribute exist
         // that the value(s) don't contain disallowed characters.
         if (accept != null && !isValidInHTTPHeader(accept)) {
@@ -2583,5 +2615,131 @@ public class XIncludeHandler
             httpSource.setHTTPRequestProperty(XIncludeHandler.HTTP_ACCEPT_LANGUAGE, acceptLanguage);
         }
         return httpSource;
+    }
+    
+    // which ASCII characters need to be escaped
+    private static boolean gNeedEscaping[] = new boolean[128];
+    // the first hex character if a character needs to be escaped
+    private static char gAfterEscaping1[] = new char[128];
+    // the second hex character if a character needs to be escaped
+    private static char gAfterEscaping2[] = new char[128];
+    private static char[] gHexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    // initialize the above 3 arrays
+    static {
+        char[] escChs = {' ', '<', '>', '"', '{', '}', '|', '\\', '^', '`'};
+        int len = escChs.length;
+        char ch;
+        for (int i = 0; i < len; i++) {
+            ch = escChs[i];
+            gNeedEscaping[ch] = true;
+            gAfterEscaping1[ch] = gHexChs[ch >> 4];
+            gAfterEscaping2[ch] = gHexChs[ch & 0xf];
+        }
+    }
+    
+    //
+    // Escape an href value according to (4.1.1):
+    //
+    // To convert the value of the href attribute to an IRI reference, the following characters must be escaped:
+    // space #x20
+    // the delimiters < #x3C, > #x3E and " #x22
+    // the unwise characters { #x7B, } #x7D, | #x7C, \ #x5C, ^ #x5E and ` #x60
+    //
+    // To convert an IRI reference to a URI reference, the following characters must also be escaped:
+    // the Unicode plane 0 characters #xA0 - #xD7FF, #xF900-#xFDCF, #xFDF0-#xFFEF
+    // the Unicode plane 1-14 characters #x10000-#x1FFFD ... #xE0000-#xEFFFD
+    //
+    private String escapeHref(String href) {
+        int len = href.length();
+        int ch;
+        StringBuffer buffer = new StringBuffer(len*3);
+
+        // for each character in the href
+        int i = 0;
+        for (; i < len; i++) {
+            ch = href.charAt(i);
+            // if it's not an ASCII character (excluding 0x7F), break here, and use UTF-8 encoding
+            if (ch > 0x7E) {
+                break;
+            }
+            // abort: href does not allow this character
+            if (ch < 0x20) {
+                return href;
+            }
+            if (gNeedEscaping[ch]) {
+                buffer.append('%');
+                buffer.append(gAfterEscaping1[ch]);
+                buffer.append(gAfterEscaping2[ch]);
+            }
+            else {
+                buffer.append((char)ch);
+            }
+        }
+
+        // we saw some non-ascii character
+        if (i < len) {
+            // check if remainder of href contains any illegal characters before proceeding
+            for (int j = i; j < len; ++j) {
+                ch = href.charAt(j);
+                if ((ch >= 0x20 && ch <= 0x7E) || 
+                    (ch >= 0xA0 && ch <= 0xD7FF) ||
+                    (ch >= 0xF900 && ch <= 0xFDCF) ||
+                    (ch >= 0xFDF0 && ch <= 0xFFEF)) {
+                    continue;
+                }
+                if (XMLChar.isHighSurrogate(ch) && ++j < len) {
+                    int ch2 = href.charAt(j);
+                    if (XMLChar.isLowSurrogate(ch2)) {
+                        ch2 = XMLChar.supplemental((char)ch, (char)ch2);
+                        if (ch2 < 0xF0000 && (ch2 & 0xFFFF) <= 0xFFFD) {
+                            continue;
+                        }
+                    }
+                }
+                // abort: href does not allow this character
+                return href;
+            }
+            
+            // get UTF-8 bytes for the remaining sub-string
+            byte[] bytes = null;
+            byte b;
+            try {
+                bytes = href.substring(i).getBytes("UTF-8");
+            } catch (java.io.UnsupportedEncodingException e) {
+                // should never happen
+                return href;
+            }
+            len = bytes.length;
+
+            // for each byte
+            for (i = 0; i < len; i++) {
+                b = bytes[i];
+                // for non-ascii character: make it positive, then escape
+                if (b < 0) {
+                    ch = b + 256;
+                    buffer.append('%');
+                    buffer.append(gHexChs[ch >> 4]);
+                    buffer.append(gHexChs[ch & 0xf]);
+                }
+                else if (gNeedEscaping[b]) {
+                    buffer.append('%');
+                    buffer.append(gAfterEscaping1[b]);
+                    buffer.append(gAfterEscaping2[b]);
+                }
+                else {
+                    buffer.append((char)b);
+                }
+            }
+        }
+
+        // If escaping happened, create a new string;
+        // otherwise, return the orginal one.
+        if (buffer.length() != len) {
+            return buffer.toString();
+        }
+        else {
+            return href;
+        }
     }
 }
