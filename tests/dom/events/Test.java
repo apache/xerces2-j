@@ -120,6 +120,8 @@ public class Test
         sharedReporter.on();
         t.insertData(1, "o");
 
+        root.setAttribute("foo", "bar");
+
         System.out.println("Done");
     }
     
