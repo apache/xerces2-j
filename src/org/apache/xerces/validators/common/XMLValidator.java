@@ -2579,6 +2579,7 @@ public final class XMLValidator
              }
 
             fXsiTypeAttValue = -1;
+            fNil = false;
             index = attrList.getFirstAttr(fAttrListHandle);
             int attName;
             int attPrefix;
