@@ -161,10 +161,9 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         fMiscFlags |= CT_IS_ANONYMOUS;
     }
 
-    public XSCMValidator getContentModel(CMBuilder cmBuilder) {
-        if (fCMValidator != null)
-            return fCMValidator;
-        fCMValidator = cmBuilder.getContentModel(this);
+    public synchronized XSCMValidator getContentModel(CMBuilder cmBuilder) {
+        if (fCMValidator == null)
+            fCMValidator = cmBuilder.getContentModel(this);
 
         return fCMValidator;
     }
