@@ -531,6 +531,14 @@ public class MIME2Java {
         //    <preferred MIME name (uppercase)>, <Java encoding name>
         s_enchash.put("UTF-8", "UTF8");
         s_enchash.put("US-ASCII",        "ASCII");
+        s_enchash.put("ISO-IR-6",        "ASCII");
+        s_enchash.put("ANSI_X3.4-1986",        "ASCII");
+        s_enchash.put("ISO_646.IRV:1991",        "ASCII");
+        s_enchash.put("ASCII",        "ASCII");
+        s_enchash.put("ISO646-US",        "ASCII");
+        s_enchash.put("US",        "ASCII");
+        s_enchash.put("IBM367",        "ASCII");
+        s_enchash.put("CP367",        "ASCII");
         s_enchash.put("ISO-8859-1",      "ISO8859_1");
         s_enchash.put("ISO-IR-100",      "ISO8859_1");
         s_enchash.put("ISO_8859-1",      "ISO8859_1");
@@ -644,6 +652,14 @@ public class MIME2Java {
         //    <Java encoding name (uppercase)>, <preferred MIME name>
         s_revhash.put("UTF8", "UTF-8");
         s_revhash.put("ASCII", "US-ASCII");
+        s_revhash.put("ASCII", "ISO-IR-6");
+        s_revhash.put("ASCII", "ANSI_X3.4-1986");
+        s_revhash.put("ASCII", "ISO_646.IRV:1991");
+        s_revhash.put("ASCII", "ASCII");
+        s_revhash.put("ASCII", "ISO646-US");
+        s_revhash.put("ASCII", "US");
+        s_revhash.put("ASCII", "IBM367");
+        s_revhash.put("ASCII", "CP367");
         s_revhash.put("ISO8859_1", "ISO-8859-1");
         s_revhash.put("ISO8859_1", "ISO-IR-100");
         s_revhash.put("ISO8859_1", "ISO_8859-1");
