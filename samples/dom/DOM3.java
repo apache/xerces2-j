@@ -110,7 +110,7 @@ public class DOM3 implements DOMErrorHandler, LSParserFilter {
             // create DOMBuilder
             builder = impl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
             
-            DOMConfiguration config = builder.getConfig();
+            DOMConfiguration config = builder.getDomConfig();
 
             // create Error Handler
             DOMErrorHandler errorHandler = new DOM3();
@@ -162,7 +162,7 @@ public class DOM3 implements DOMErrorHandler, LSParserFilter {
             LSSerializer domWriter = impl.createLSSerializer();
             
             System.out.println("Serializing document... ");
-            config = domWriter.getConfig();
+            config = domWriter.getDomConfig();
             config.setParameter("xml-declaration", Boolean.FALSE);
             //config.setParameter("validate",errorHandler);
 

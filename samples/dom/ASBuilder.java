@@ -136,7 +136,7 @@ public class ASBuilder implements DOMErrorHandler {
         DOMImplementationAS domImpl = (DOMImplementationAS)ASDOMImplementationImpl.getDOMImplementation();
         // create a new parser, and set the error handler
         DOMASBuilder parser = domImpl.createDOMASBuilder();
-        DOMConfiguration config = parser.getConfig();
+        DOMConfiguration config = parser.getDomConfig();
         config.setParameter("error-handler", new ASBuilder());
 
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
