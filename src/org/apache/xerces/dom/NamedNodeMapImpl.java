@@ -647,7 +647,8 @@ public class NamedNodeMapImpl
     				    ++d;
     			    }
     			    else { //REVIST: if same name, but specified, simply increment over it.
-    			        System.out.println("reconcile (test==0, specified=true): just increment");
+    			        if (DEBUG)
+                                    System.out.println("reconcile (test==0, specified=true): just increment");
     				    ++n;
     				    ++d;
     			    }
