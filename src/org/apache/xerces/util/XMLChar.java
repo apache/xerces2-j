@@ -489,17 +489,6 @@ public class XMLChar {
     } // isSpace(int):boolean
 
     /**
-     * Returns true if the specified character is a space character
-     * as amdended in the XML 1.1 specification.
-     *
-     * @param c The character to check.
-     */
-    public static boolean isXML11Space(int c) {
-        return (c < 0x10000 && (CHARS[c] & MASK_SPACE) != 0) ||
-            c == 0x85 || c == 0x2028;
-    } // isXML11Space(int):boolean
-
-    /**
      * Returns true if the specified character is a valid name start
      * character as defined by production [5] in the XML 1.0
      * specification.
@@ -688,5 +677,6 @@ public class XMLChar {
         }
         return false;
     } // isValidIANAEncoding(String):boolean
+
 
 } // class XMLChar

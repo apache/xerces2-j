@@ -718,6 +718,10 @@ public class EncodingMap {
         fIANA2JavaMap.put("ISO-IR-159",  "JIS0212");
         fIANA2JavaMap.put("CSISO159JISX02121990",  "JIS0212");
         fIANA2JavaMap.put("GB18030",       "GB18030");
+        fIANA2JavaMap.put("GBK",       "GBK");
+        fIANA2JavaMap.put("CP936",       "GBK");
+        fIANA2JavaMap.put("MS936",       "GBK");
+        fIANA2JavaMap.put("WINDOWS-936",       "GBK");
         fIANA2JavaMap.put("SHIFT_JIS",       "SJIS");
         fIANA2JavaMap.put("CSSHIFTJIS",       "SJIS");
         fIANA2JavaMap.put("MS_KANJI",       "SJIS");
@@ -946,6 +950,7 @@ public class EncodingMap {
         fJava2IANAMap.put("KOI8_R",    "KOI8-R");
         fJava2IANAMap.put("KSC5601",   "EUC-KR");
         fJava2IANAMap.put("GB18030",      "GB18030");
+        fJava2IANAMap.put("GBK",       "GBK");
         fJava2IANAMap.put("SJIS",      "SHIFT_JIS");
         fJava2IANAMap.put("MS932",      "WINDOWS-31J");
         fJava2IANAMap.put("UTF8",      "UTF-8");
