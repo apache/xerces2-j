@@ -181,9 +181,7 @@ public class XMLDocumentScanner
     // Constructors
     //
 
-    /**
-     * 
-     */
+    /** Default constructor. */
     public XMLDocumentScanner() {
     } // <init>()
 
@@ -191,9 +189,27 @@ public class XMLDocumentScanner
     // Public methods
     //
 
-    /** Scans a document. */
+    /** 
+     * Scans a document. 
+     * <p>
+     * <strong>Note:</strong> The caller of this method is responsible
+     * for having called <code>reset(XMLComponentManager)</code> before
+     * any scanning and initialized the entity manager by starting the
+     * document entity.
+     *
+     * @param complete
+     *
+     * @returns
+     */
     public boolean scanDocument(boolean complete) 
         throws IOException, SAXException {
+
+        // REVISIT: Currently this is implemented without the pull
+        //          parser capability. In the true pull parser, the
+        //          scanner initialization code would need to be
+        //          moved to reset(XMLComponentManager) and the body
+        //          of this method would be a state machine dispatcher
+        //          within a "while (complete)" loop. -Ac
 
         // initialize scanner
         fEntityScanner = fEntityManager.getEntityScanner();
@@ -471,7 +487,7 @@ public class XMLDocumentScanner
                 empty = true;
                 break;
             }
-            else if (!XMLChar.isNameStartChar(c)) {
+            else if (!XMLChar.isNameStart(c)) {
                 // REVISIT: report error
                 throw new SAXException("expected attribute name, found '"+(char)c+'\'');
             }
@@ -510,6 +526,13 @@ public class XMLDocumentScanner
         //
 
         if (!empty) {
+            // slash
+            int c = fEntityScanner.scanChar();
+            if (c != '/') {
+                // REVISIT: report error
+                throw new SAXException("expected '/'");
+            }
+
             // name
             if (fNamespaces) {
                 fEntityScanner.scanQName(fElemQName);
@@ -521,11 +544,6 @@ public class XMLDocumentScanner
 
             // end
             fEntityScanner.skipSpaces();
-            int c = fEntityScanner.scanChar();
-            if (c != '/') {
-                // REVISIT: report error
-                throw new SAXException("expected '/'");
-            }
             c = fEntityScanner.scanChar();
             if (c != '>') {
                 // REVISIT: report error
@@ -654,7 +672,54 @@ public class XMLDocumentScanner
      * </pre> 
      */
     protected void scanContent() throws IOException, SAXException {
-        // TODO
+
+        while (true) {
+            boolean more = false;
+            do {
+                more = fEntityScanner.scanContent(fString);
+                if (fDocumentHandler != null) {
+                    // REVISIT: check for whitespace
+                    fDocumentHandler.characters(fString, false);
+                }
+            } while (more);
+            int c = fEntityScanner.scanChar();
+            if (c == '<') {
+                c = fEntityScanner.peekChar();
+                if (c == '/') {
+                    break;
+                }
+                if (c == '!') {
+                    fEntityScanner.scanChar();
+                    c = fEntityScanner.scanChar();
+                    if (c == '-') {
+                        fEntityScanner.scanChar();
+                        if (fEntityScanner.scanChar() != '-') {
+                            // REVISIT: report error
+                            throw new SAXException("expected '-'");
+                        }
+                        scanComment();
+                        continue;
+                    }
+                    if (c == '[') {
+                        // TODO
+                        continue;
+                    }
+                    throw new SAXException("what to do now?");
+                }
+                if (c == '?') {
+                    scanPI();
+                    continue;
+                }
+                scanElement();
+            }
+            else if (c == '&') {
+                scanReference();
+            }
+            else {
+                break;
+            }
+        }
+
     } // scanContent()
 
     // utility methods

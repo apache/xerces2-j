@@ -58,10 +58,14 @@
 package org.apache.xerces.parsers;
 
 import java.io.IOException;
+
 import org.apache.xerces.framework.XMLString;
+import org.apache.xerces.scanners.XMLAttributes;
 import org.apache.xerces.scanners.XMLDTDHandler;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.SymbolTable;
 import org.apache.xerces.validators.GrammarPool;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.DocumentHandler;
@@ -135,8 +139,76 @@ public class SAXParser
      * @param symbolTable 
      * @param grammarPool 
      */
-    protected SAXParser(SymbolTable symbolTable, GrammarPool grammarPool) {
+    public SAXParser(SymbolTable symbolTable, GrammarPool grammarPool) {
         super(symbolTable, grammarPool);
+    }
+
+    //
+    // XMLDocumentHandler methods
+    //
+
+    public void startDocument() throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startDocument();
+        }
+        if (fContentHandler != null) {
+            fContentHandler.startDocument();
+        }
+    }
+
+    public void startElement(QName element, XMLAttributes attributes) 
+        throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startElement(element.rawname, attributes);
+        }
+        if (fContentHandler != null) {
+            fContentHandler.startElement(element.uri, element.localpart,
+                                         element.rawname, attributes);
+        }
+    }
+
+    public void characters(XMLString text, boolean whitespace) 
+        throws SAXException {
+        if (whitespace) {
+            ignorableWhitespace(text);
+        }
+        else {
+            if (fDocumentHandler != null) {
+                fDocumentHandler.characters(text.ch, text.offset, text.length);
+            }
+            if (fContentHandler != null) {
+                fContentHandler.characters(text.ch, text.offset, text.length);
+            }
+        }
+    }
+
+    public void ignorableWhitespace(XMLString text) 
+        throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.ignorableWhitespace(text.ch, text.offset, text.length);
+        }
+        if (fContentHandler != null) {
+            fContentHandler.ignorableWhitespace(text.ch, text.offset, text.length);
+        }
+    }
+
+    public void endElement(QName element) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endElement(element.rawname);
+        }
+        if (fContentHandler != null) {
+            fContentHandler.endElement(element.uri, element.localpart,
+                                       element.rawname);
+        }
+    }
+
+    public void endDocument() throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endDocument();
+        }
+        if (fContentHandler != null) {
+            fContentHandler.endDocument();
+        }
     }
 
     //
@@ -440,69 +512,6 @@ public class SAXParser
     //
     // Parser and XMLReader methods
     //
-
-    /**
-     * Parse an XML document from a system identifier (URI).
-     *
-     * <p>This method is a shortcut for the common case of reading a
-     * document from a system identifier.  It is the exact
-     * equivalent of the following:</p>
-     *
-     * <pre>
-     * parse(new InputSource(systemId));
-     * </pre>
-     *
-     * <p>If the system identifier is a URL, it must be fully resolved
-     * by the application before it is passed to the parser.</p>
-     *
-     * @param systemId The system identifier (URI).
-     * @exception org.xml.sax.SAXException Any SAX exception, possibly
-     *            wrapping another exception.
-     * @exception java.io.IOException An IO exception from the parser,
-     *            possibly from a byte stream or character stream
-     *            supplied by the application.
-     * @see #parse(org.xml.sax.InputSource)
-     */
-    public void parse(String systemId) throws IOException, SAXException {
-    }
-
-    /**
-     * Parse an XML document.
-     *
-     * <p>The application can use this method to instruct the XML
-     * reader to begin parsing an XML document from any valid input
-     * source (a character stream, a byte stream, or a URI).</p>
-     *
-     * <p>Applications may not invoke this method while a parse is in
-     * progress (they should create a new XMLReader instead for each
-     * nested XML document).  Once a parse is complete, an
-     * application may reuse the same XMLReader object, possibly with a
-     * different input source.</p>
-     *
-     * <p>During the parse, the XMLReader will provide information
-     * about the XML document through the registered event
-     * handlers.</p>
-     *
-     * <p>This method is synchronous: it will not return until parsing
-     * has ended.  If a client application wants to terminate 
-     * parsing early, it should throw an exception.</p>
-     *
-     * @param source The input source for the top-level of the
-     *        XML document.
-     * @exception org.xml.sax.SAXException Any SAX exception, possibly
-     *            wrapping another exception.
-     * @exception java.io.IOException An IO exception from the parser,
-     *            possibly from a byte stream or character stream
-     *            supplied by the application.
-     * @see org.xml.sax.InputSource
-     * @see #parse(java.lang.String)
-     * @see #setEntityResolver
-     * @see #setDTDHandler
-     * @see #setContentHandler
-     * @see #setErrorHandler 
-     */
-    public void parse(InputSource input) throws IOException, SAXException {
-    }
 
     /**
      * Allow an application to register a DTD event handler.
