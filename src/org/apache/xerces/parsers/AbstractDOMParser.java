@@ -856,13 +856,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             if (fDocumentImpl != null) {
                 fDocumentImpl.setVersion(version);
                 fDocumentImpl.setEncoding(encoding);
-                fDocumentImpl.setStandalone("true".equals(standalone));
+                fDocumentImpl.setStandalone("yes".equals(standalone));
             }
         }
         else {
             fDeferredDocumentImpl.setVersion(version);
             fDeferredDocumentImpl.setEncoding(encoding);
-            fDeferredDocumentImpl.setStandalone("true".equals(standalone));
+            fDeferredDocumentImpl.setStandalone("yes".equals(standalone));
         }
     } // xmlDecl(String,String,String)
 
