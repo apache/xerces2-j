@@ -99,7 +99,7 @@ public class QueryXS implements DOMErrorHandler {
             // get DOM Implementation using DOM Registry
             System.setProperty(
                 DOMImplementationRegistry.PROPERTY,
-                "org.apache.xerces.dom.DOMImplementationSourceImpl");
+                "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
             DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
 
             XSImplementation impl = (XSImplementation) registry.getDOMImplementation("XS-Loader");
