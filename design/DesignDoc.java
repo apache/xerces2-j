@@ -20,6 +20,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Andy Clark
+ * @version $Id$
  */
 public class DesignDoc {
 

@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Andy Clark
+ * @version $Id$
  */
 public class Stylesheet {
 
