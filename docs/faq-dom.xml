@@ -190,21 +190,22 @@ writer.writeNode(System.out, document);</source>
   				<jump href="#domparser">Create</jump> the DOMBuilder.
   			</li>
   			<li>
-  				Set <em>validate</em> feature using <code>setNormalizationFeature</code>
-  				method.
+  				Retrieve <code>DOMConfiguration</code> from the <code>Document</code>, 
+  				and set <em>validate</em> feature to true.
   			</li>
   			<li>
-  				Make sure your document has <em>xsi:schemaLocation</em>
-  				or
-  				<em>xsi:noSchemaLocation</em> attributes at the document root that 
-  				specify the location of schema(s) against which validation should occur.
+  			   Provide XML Schemas (agains which validation should occur)
+  			   by either setting <em>xsi:schemaLocation</em>/
+  				<em>xsi:noSchemaLocation</em> attributes on the <code>documentElement</code>, or
+  			   by setting <code>schema-location</code> parameter on the 
+  			   <code>DOMConfiguration</code>.
   			</li>
   			<li>
-  				The
-  				<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-documentURI">documentURI</jump>
-  				must be set. Locations of the schema documents will be resolved relative to the
-  				<code>documentURI</code>
-  				.
+  				Relative URIs for the schema documents will be resolved relative to the
+  		       <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-documentURI">documentURI</jump>
+  		       (which should be set).
+  		       Otherwise, you can implement your own <code>DOMEntityResolver</code> and set it 
+  		       via <code>entity-resolver</code> on the <code>DOMConfiguration</code>.
   			</li>
   		</ul>
   		<p>
@@ -222,14 +223,17 @@ writer.writeNode(System.out, document);</source>
   		identify attribute nodes by their namespaceURI and localName. Because of this fundamental difference, mixing both 
   		sets of methods can lead to unpredictable results.</em></p>
  
-  		<source>import org.w3c.dom.Document; 
+  		<source>
+import org.w3c.dom.Document;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.ls.DOMBuilder;
 
 ..... 
 
-Document document = builder.parseURI("data/personal.xml");
-document.setErrorHandler(new MyErrorHandler());
-document.setNormalizationFeature("validate", true);
+Document document = builder.parseURI("data/personal-schema.xml");
+DOMConfiguration config = document.getConfig();
+config.setParameter("error-handler",new MyErrorHandler());
+config.setParameter("validate", Boolean.TRUE);
 document.normalizeDocument();</source>
 
   		<p>
@@ -338,34 +342,27 @@ builder.setErrorHandler(handler);</source>
 <link idref='features' anchor="validation.schema">schema feature</link> are turned on before you parse a document.
    
   </p>
-  <p>Xerces does not <em>yet</em> provide a way to set an ID attribute after the document was loaded.
-  </p>
-  <!--
-   <p>According to the XML Schema specification, an instance document might have
-more than one <jump href="http://www.w3.org/TR/xmlschema-1/#key-vr">validation root</jump> and 
-it specifies that the 
-<jump href="http://www.w3.org/TR/xmlschema-1/#cvc-id">ID/IDREFS</jump> must be 
-unique within the context of a particular validation root, meaning that a 
-document may contain multiple identical ids. In this case, the output 
-of getElementById() is unspecified. On the other hand, if the document root is 
-a validation root of the document, getElementById() should work as expected.
-
-During loading there is no way (currently) so specify validation roots
-in Xerces, thus Xerces always treats the document root as validation
-root. 
-However, in the future it is possible to give XPath expression
-specifying at what elements validation should start. For example:
-
-<documentRoot> 
-<validationRoot_1>Some Data</validationRoot_1>
-<validationRoot_2>Some Data</validationRoot_2>
-<documentRoot>
-
-In this case, ID/IDREF must be unique in the scope of validationRoot_1
-or in scope of validationRoot_2, however ID/IDREF table might not be
-unique for documentRoot.
--->
-  
   </a>
  </faq>
+ 
+ 
+   <faq title="Setting ID attribute">
+    <q>How do I specify an ID attribute in the DOM?</q>
+    <a> <p>You can use the DOM level 3 setIdAttribute, setIdAttributeNS, and setIdAttributeNode methods
+    to specify ID attribute in the DOM. See <jump href="#dom3">DOM Level 3</jump>.
+      </p>
+    </a>
+  </faq>
+  
+     <faq title="Accessing type information">
+    <q>How do I access type information in the DOM?</q>
+    <a> <p><jump href="#dom3">DOM Level 3</jump> defines a  <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/core.html#TypeInfo">TypeInfo</jump> 
+    interface that exposes type information for 
+     element and attribute nodes. The type information depends on the document schema and is only available
+     if Xerces was able to find the corresponding grammar (DOM Level 3 <code>validate</code> or 
+     <code>validate-if-schema</code> feature must be turned on).  
+     If you need to access the full PSVI in the DOM please refer to <jump href="faq-xs.html#faq-5">Using XML Schemas</jump>.
+      </p>
+    </a>
+  </faq>
 </faqs>

@@ -18,7 +18,7 @@ Xerces2 also provides an <strong>experimental</strong> implementation of <link i
 <p>This section provides the following topics:</p>
 
 <ul>
-<li><jump href='http://www.w3.org/DOM/faq'>About DOM</jump></li>
+<li><jump href='http://www.w3.org/DOM/faq.html'>About DOM</jump></li>
 <li><link idref='faq-dom'>How do I?</link> -- the most frequently asked questions
     about DOM that include some sample code.</li>
 <li><link idref='samples-dom'>DOM Samples</link> -- documents various DOM samples 
