@@ -68,37 +68,40 @@ import java.util.ListResourceBundle;
 public class ExceptionMessages extends ListResourceBundle {
     /** The list resource bundle contents. */
     public static final Object CONTENTS[][] = {
-// Internal message formatter messages
+    
+    // org.apache.xerces.msg.ExceptionMessageLocalizer
+	{ "FMT001", "Message Formatting Error." },
+    
 
 	// org.apache.html
 
 	{ "HTM001", "State error: startDocument fired twice on one builder." },
 	{ "HTM002", "State error: document never started or missing document element." },
 	{ "HTM003", "State error: document ended before end of document element." },
-	{ "HTM004", "Argument 'tagName' is null." },
+	{ "HTM004", "Argument ''tagName'' is null." },
 	{ "HTM005", "State error: Document.getDocumentElement returns null." },
 	{ "HTM006", "State error: startElement called after end of document element." },
 	{ "HTM007", "State error: endElement called with no current node." },
 	{ "HTM008", "State error: mismatch in closing tag name {0}" },
 	{ "HTM009", "State error: character data found outside of root element." },
 	{ "HTM010", "State error: character data found outside of root element." },
-	{ "HTM011", "Argument 'topLevel' is null." },
-	{ "HTM012", "Argument 'index' is negative." },
-	{ "HTM013", "Argument 'name' is null." },
-	{ "HTM014", "Argument 'title' is null." },
-	{ "HTM015", "Tag '{0}' associated with an Element class that failed to construct." },
-	{ "HTM016", "Argument 'caption' is not an element of type <CAPTION>." },
-	{ "HTM017", "Argument 'tHead' is not an element of type <THEAD>." },
-	{ "HTM018", "Argument 'tFoot' is not an element of type <TFOOT>." },
+	{ "HTM011", "Argument ''topLevel'' is null." },
+	{ "HTM012", "Argument ''index'' is negative." },
+	{ "HTM013", "Argument ''name'' is null." },
+	{ "HTM014", "Argument ''title'' is null." },
+	{ "HTM015", "Tag ''{0}'' associated with an Element class that failed to construct." },
+	{ "HTM016", "Argument ''caption'' is not an element of type <CAPTION>." },
+	{ "HTM017", "Argument ''tHead'' is not an element of type <THEAD>." },
+	{ "HTM018", "Argument ''tFoot'' is not an element of type <TFOOT>." },
 	{ "HTM019", "OpenXML Error: Could not find class {0} implementing HTML element {1}" },
 
 	// org.apache.xml.serialize
 
-	{ "SER001", "Argument 'output' is null." },
+	{ "SER001", "Argument ''output'' is null." },
 	{ "SER002", "No writer supplied for serializer" },
 	{ "SER003", "The resource [{0}] could not be found." },
 	{ "SER004", "The resource [{0}] could not load: {1}" },
-	{ "SER005", "The method '{0}' is not supported by this factory" },
+	{ "SER005", "The method ''{0}'' is not supported by this factory" },
 
 	// org.apache.xerces.dom
 
@@ -136,7 +139,7 @@ public class ExceptionMessages extends ListResourceBundle {
     { "PAR007", "Current element node cannot be queried when node expansion is deferred." },
     { "PAR008", "Fatal error getting document factory." },
     { "PAR009", "Fatal error reading expansion mode." },
-    { "PAR010", "Can't copy node type, {0} ({1})." },
+    { "PAR010", "Can''t copy node type, {0} ({1})." },
     { "PAR011", "Feature {0} not supported during parse." },
     { "PAR012", "For propertyId \"{0}\", the value \""+
                 "{1}\" cannot be cast to {2}." },
