@@ -464,11 +464,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     throw new ComplexTypeRecoverableError();
 
                 //check that this datatype validator is validly derived from the base
-                //according to derivation-ok-restriction 5.1.1
+                //according to derivation-ok-restriction 5.1.2.1
 
                 if (!XSConstraints.checkSimpleDerivationOk(dv, baseValidator,
                                                            baseValidator.getFinal())) {
-                    throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.1",
+                    throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.2.1",
                            new Object[]{fName},
                            simpleContent);
                 }
@@ -700,9 +700,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // traversed so that occurrence information is correct.
 
             
-            if (fParticle!=null && baseContent==null) {
-                //REVISIT - need better error msg
-                throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.3",
+            if (fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED &&
+                baseType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.3.1.2",
                                           new Object[]{fName}, complexContent);
             }
 

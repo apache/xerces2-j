@@ -429,7 +429,7 @@ public class XSConstraints {
                   if (derivedParticle==null && (!(baseParticle==null ||
                                                baseParticle.emptiable()))) {
                     reportSchemaError(errorReporter,ctLocators[j],
-                                      "derivation-ok-restriction.5.2",
+                                      "derivation-ok-restriction.5.2.2",
                                       new Object[]{types[j].fName});
                   }
                   else if (derivedParticle!=null &&
@@ -445,7 +445,7 @@ public class XSConstraints {
                                         e.getKey(),
                                         e.getArgs());
                       reportSchemaError(errorReporter, ctLocators[j],
-                                        "derivation-ok-restriction.5.3",
+                                        "derivation-ok-restriction.5.3.2",
                                         new Object[]{types[j].fName});
                     }
                 }
