@@ -1483,31 +1483,27 @@ public class DOMParser
             Node erNode = fCurrentElementNode;//fCurrentElementNode.getParentNode();
             fCurrentElementNode = erNode.getParentNode();
 
+            // if necessary populate the related entity now
             if (fDocumentImpl != null) {
                 EntityReferenceImpl xer = (EntityReferenceImpl) erNode;
-                // if necessary populate the related entity now
-                if (fDocumentImpl != null) {
 
-                    NamedNodeMap entities = fDocumentType.getEntities();
-                    String name = fStringPool.toString(entityName);
-                    Node entityNode = entities.getNamedItem(name);
+                NamedNodeMap entities = fDocumentType.getEntities();
+                String name = fStringPool.toString(entityName);
+                Node entityNode = entities.getNamedItem(name);
 
-                    // We could simply return here if there is no entity for
-                    // the reference or if the entity is already populated.
-                    if (entityNode == null || entityNode.hasChildNodes()) {
-                        return;
-                    }
-
-                    EntityImpl entity = (EntityImpl) entityNode;
-                    for (Node child = erNode.getFirstChild();
-                         child != null;
-                         child = child.getNextSibling()) {
-                        Node childClone = child.cloneNode(true);
-                        entity.appendChild(childClone);
-                    }
-                    entity.setReadOnly(true, true);
+                // simply return here if there is no entity for
+                // the reference or if the entity is already populated.
+                if (entityNode == null || entityNode.hasChildNodes()) {
+                    return;
                 }
-                xer.setReadOnly(true, true);
+
+                EntityImpl entity = (EntityImpl) entityNode;
+                for (Node child = erNode.getFirstChild();
+                     child != null;
+                     child = child.getNextSibling()) {
+                    Node childClone = child.cloneNode(true);
+                    entity.appendChild(childClone);
+                }
             }
         }
 
