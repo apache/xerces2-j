@@ -112,6 +112,8 @@ Copyright:
     <echo message=" sampjar-dom3  --> 'sampjar' + DOM Level 3 support"/>
     <echo message=" apijar-dom3   --> 'apijar' + DOM Level 3 support."/>
     <echo message=" jars-dom3  --> 'jars' + DOM Level 3 support."/>
+    <echo message=" jar-schema11 --> 'jar' + XML Schema 1.1 support"/>
+    <echo message=" jars-schema11 --> 'jars' + XML Schema 1.1 support"/>
     <echo message=" docs     --> generates the HTML documentation"/>
     <echo message=" javadocs --> generates the API docs (needs Java 1.2 or higher)"/>
     <echo message=" samples  --> compiles the samples source code"/>
@@ -1512,6 +1514,12 @@ Copyright:
   <!-- Creates the implementation class package with Schema 1.1 support    -->
   <!-- =================================================================== -->
   <target name="jar-schema11" depends="compile-schema11">
+    <!-- take care of manifest file -->
+    <filter token="java.version" value="${java.version}"/>
+    <filter token="java.vendor" value="${java.vendor}"/>
+    <filter token="impl.name" value="${parser.Name} ${parser.Version}"/>
+    <filter token="impl.version" value="${parser.Version}"/>   
+    <copy todir="${build.dir}" file="${src.dir}/manifest.xerces" filtering="true"/>
     <jar jarfile="${build.dir}/schema11-${jar.parser}"
          basedir="${build.dest}"
          compress="true"
@@ -1523,7 +1531,11 @@ Copyright:
                    org/w3c/dom/DOMImplementationSource.class
                    org/w3c/dom/DOMImplementationRegistry.class
                    org/w3c/dom/DOMLocator.class
-                   org/w3c/dom/UserDataHandler.class">
+                   org/w3c/dom/UserDataHandler.class"
+         manifest="${build.dir}/manifest.xerces">
+      <manifest>
+        <attribute name="Ant-Version" value="${ant.version}"/>
+      </manifest>
     </jar>
   </target>	
 
