@@ -163,8 +163,11 @@ public final class Constants {
     /** Validate datatypes feature ("validation/validate-datatypes"). */
     public static final String VALIDATE_DATATYPES_FEATURE = "validation/validate-datatypes";
 
-    /** Should scanner resolve character deferences? */
+    /** Notify character references feature (scanner/notify-char-refs"). */
     public static final String NOTIFY_CHAR_REFS_FEATURE = "scanner/notify-char-refs";
+    
+    /** Notify built-in (&amp;amp;, etc.) references feature (scanner/notify-builtin-refs"). */
+    public static final String NOTIFY_BUILTIN_REFS_FEATURE = "scanner/notify-builtin-refs";
     
     // xerces properties
 

@@ -177,6 +177,10 @@ public class XMLDocumentScanner
     protected static final String LOAD_EXTERNAL_DTD = 
         Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
 
+    /** Feature identifier: notify built-in refereces. */
+    protected static final String NOTIFY_BUILTIN_REFS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_BUILTIN_REFS_FEATURE;
+    
     // property identifiers
     
     /** Property identifier: DTD scanner. */
@@ -187,7 +191,11 @@ public class XMLDocumentScanner
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        NOTIFY_CHAR_REFS, VALIDATION, NAMESPACES, LOAD_EXTERNAL_DTD,
+        VALIDATION, 
+        NAMESPACES, 
+        LOAD_EXTERNAL_DTD,
+        NOTIFY_CHAR_REFS, 
+        NOTIFY_BUILTIN_REFS,
     };
 
     /** Recognized properties. */
@@ -260,6 +268,9 @@ public class XMLDocumentScanner
     protected boolean fNamespaces;
 
     protected boolean fLoadExternalDTD = true;
+
+    /** Notify built-in references. */
+    protected boolean fNotifyBuiltInRefs = true;
 
     // dispatchers
 
@@ -369,6 +380,9 @@ public class XMLDocumentScanner
         fNamespaces = componentManager.getFeature(NAMESPACES);
         fAttributes.setNamespaces(fNamespaces);
 
+        // xerces features
+        fNotifyCharRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
+
         // xerces properties
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
 
@@ -383,7 +397,7 @@ public class XMLDocumentScanner
         fStandalone = false;
         fScanningDTD = false;
 
-        // save built-in entity names
+        // create symbols
         fCDATASymbol = fSymbolTable.addSymbol("CDATA");
 
         // setup dispatcher
@@ -426,9 +440,13 @@ public class XMLDocumentScanner
             String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
             if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
                 fLoadExternalDTD = state;
+                return;
             }
-            return;
+            if (feature.equals(Constants.NOTIFY_BUILTIN_REFS_FEATURE)) {
+                fNotifyCharRefs = state;
+            }
         }
+
     } // setFeature(String,boolean)
 
     /**
@@ -1152,7 +1170,7 @@ public class XMLDocumentScanner
      */
     private void handleCharacter(char c, String entity) throws XNIException {
         if (fDocumentHandler != null) {
-            if (fNotifyCharRefs) {
+            if (fNotifyBuiltInRefs) {
                 fDocumentHandler.startEntity(entity, null, null, null);
             }
             
@@ -1160,9 +1178,9 @@ public class XMLDocumentScanner
             fString.setValues(fSingleChar, 0, 1);
             fDocumentHandler.characters(fString);
             
-            if (fNotifyCharRefs) {
+            if (fNotifyBuiltInRefs) {
                 fDocumentHandler.endEntity(entity);
-            }            
+            }
         }
     } // handleCharacter(char)
 

@@ -142,6 +142,10 @@ public class StandardParserConfiguration
     protected static final String LOAD_EXTERNAL_DTD =
         Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
 
+    /** Feature identifier: notify built-in refereces. */
+    protected static final String NOTIFY_BUILTIN_REFS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_BUILTIN_REFS_FEATURE;
+    
     // property identifiers
 
     /** Property identifier: error reporter. */
@@ -253,7 +257,7 @@ public class StandardParserConfiguration
         final String[] recognizedFeatures = {
             WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
             ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
-            LOAD_EXTERNAL_DTD,
+            LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -263,6 +267,7 @@ public class StandardParserConfiguration
         fFeatures.put(ALLOW_JAVA_ENCODINGS, Boolean.FALSE);
         fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
         fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
+        fFeatures.put(NOTIFY_BUILTIN_REFS, Boolean.TRUE);
 
         // add default recognized properties
         final String[] recognizedProperties = {
