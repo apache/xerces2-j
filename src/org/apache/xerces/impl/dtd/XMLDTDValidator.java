@@ -2870,7 +2870,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             fCurrentElementIndex = fDTDGrammar.getElementDeclIndex(element, -1);
 
             fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
-            if (fCurrentElementIndex == -1 && fPerformValidation) {
+            if (fCurrentContentSpecType == -1 && fPerformValidation) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                            "MSG_ELEMENT_NOT_DECLARED",
                                            new Object[]{ element.rawname},
