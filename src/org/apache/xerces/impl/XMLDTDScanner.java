@@ -175,11 +175,16 @@ public class XMLDTDScanner
     //
 
     /**
-     * scanDTD
+     * Scan an external DTD.
+     * <p>
+     * <pre>
+     * [30] extSubset      ::=  TextDecl? extSubsetDecl 
+     * [31] extSubsetDecl  ::=  ( markupdecl | conditionalSect | DeclSep)* 
+     * </pre>
      * 
-     * @param complete 
+     * @param complete Whether to parse to completion or just a piece of it.
      * 
-     * @return 
+     * @return Whether there is more to parse or not.
      */
     public boolean scanDTD(boolean complete)
         throws IOException, SAXException {
@@ -210,9 +215,9 @@ public class XMLDTDScanner
     /**
      * scanDTDFragment
      * 
-     * @param complete 
+     * @param complete Whether to parse to completion or just a piece of it.
      * 
-     * @return 
+     * @return Whether there is more to parse or not.
      */
     public boolean scanDTDFragment(boolean complete)
         throws IOException, SAXException {
@@ -239,11 +244,11 @@ public class XMLDTDScanner
     } // scanDTDFragment
 
     /**
-     * scanDTDInternalSubset
+     * Scan an internal subset (starting after '[' and ending at ']').
      * 
-     * @param complete 
+     * @param complete Whether to parse to completion or just a piece of it.
      * 
-     * @return 
+     * @return Whether there is more to parse or not.
      */
     public boolean scanDTDInternalSubset(boolean complete, boolean standalone,
                                          boolean hasExtDTD)
@@ -558,7 +563,7 @@ public class XMLDTDScanner
     protected final void scanElementDecl() throws IOException, SAXException {
 
         // spaces
-        if (!checkForPEReference(true)) {
+        if (!skipSeparator(true, fScanningExtSubset)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_SPACE_REQUIRED_BEFORE_ELEMENT_NAME_IN_ELEMENTDECL",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -573,7 +578,7 @@ public class XMLDTDScanner
         }
 
         // spaces
-        if (!checkForPEReference(true)) {
+        if (!skipSeparator(true, fScanningExtSubset)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_SPACE_REQUIRED_AFTER_ELEMENT_NAME_IN_ELEMENTDECL",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -605,7 +610,7 @@ public class XMLDTDScanner
             }
             fStringBuffer.clear();
             fStringBuffer.append('(');
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
 
             // Mixed content model
             if (fEntityScanner.skipString("#PCDATA")) {
@@ -632,7 +637,7 @@ public class XMLDTDScanner
             fDTDContentModelHandler.endContentModel();
         }
 
-        checkForPEReference(false);
+        skipSeparator(false, fScanningExtSubset);
         // end
         if (!fEntityScanner.skipChar('>')) {
             System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
@@ -661,10 +666,10 @@ public class XMLDTDScanner
     private final void scanMixed() throws IOException, SAXException {
 
         fStringBuffer.append("#PCDATA");
-        checkForPEReference(false);
+        skipSeparator(false, fScanningExtSubset);
         while (fEntityScanner.skipChar('|')) {
             fStringBuffer.append('|');
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
 
             String childName = fEntityScanner.scanName();
             if (childName == null) {
@@ -677,7 +682,7 @@ public class XMLDTDScanner
             if (fDTDContentModelHandler != null) {
                 fDTDContentModelHandler.mixedElement(childName);
             }
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
         }
         if (!fEntityScanner.skipChar(')')) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -800,7 +805,7 @@ public class XMLDTDScanner
                 }
                 fStringBuffer.append(childName);
             }
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
         } while (fDepth >= 0);
 
         // occurence operator
@@ -839,7 +844,7 @@ public class XMLDTDScanner
     protected final void scanAttlistDecl() throws IOException, SAXException {
 
         // spaces
-        if (!checkForPEReference(true)) {
+        if (!skipSeparator(true, fScanningExtSubset)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_SPACE_REQUIRED_BEFORE_ATTRIBUTE_NAME_IN_ATTRDECL",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -859,7 +864,7 @@ public class XMLDTDScanner
         }
 
         // spaces
-        if (!checkForPEReference(true)) {
+        if (!skipSeparator(true, fScanningExtSubset)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_SPACE_REQUIRED_AFTER_ELEMENT_NAME_IN_ATTRDECL",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -874,7 +879,7 @@ public class XMLDTDScanner
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             // spaces
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_NAME_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -883,7 +888,7 @@ public class XMLDTDScanner
             String type = scanAttType();
 
             // spaces
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_TYPE_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -903,7 +908,7 @@ public class XMLDTDScanner
                 fDTDHandler.attributeDecl(elName, name, type, enum,
                                           defaultType, fDefaultValue);
             }
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
             // is it the end?
             if (fEntityScanner.skipChar('>')) {
                 // call handler
@@ -973,7 +978,7 @@ public class XMLDTDScanner
         else if (fEntityScanner.skipString("NOTATION")) {
             type = "NOTATION";
             // spaces
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_NAME_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -994,7 +999,7 @@ public class XMLDTDScanner
                 }
                 ensureEnumerationSize(fEnumerationCount + 1);
                 fEnumeration[fEnumerationCount++] = aName;
-                checkForPEReference(false);
+                skipSeparator(false, fScanningExtSubset);
                 c = fEntityScanner.scanChar();
             } while (c == '|');
             if (c != ')') {
@@ -1021,7 +1026,7 @@ public class XMLDTDScanner
                 }
                 ensureEnumerationSize(fEnumerationCount + 1);
                 fEnumeration[fEnumerationCount++] = token;
-                checkForPEReference(false);
+                skipSeparator(false, fScanningExtSubset);
                 c = fEntityScanner.scanChar();
             } while (c == '|');
             if (c != ')') {
@@ -1061,7 +1066,7 @@ public class XMLDTDScanner
             if (fEntityScanner.skipString("#FIXED")) {
                 defaultType = "#FIXED";
                 // spaces
-                if (!checkForPEReference(true)) {
+                if (!skipSeparator(true, fScanningExtSubset)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_DEFAULT_IN_ATTRDECL",
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -1125,7 +1130,7 @@ public class XMLDTDScanner
         String name = null;
         boolean parameter = false;
         if (fEntityScanner.skipChar('%')) {
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 // REVISIT: report error
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_ENTITYDECL",
@@ -1143,7 +1148,7 @@ public class XMLDTDScanner
         }
 
         // spaces
-        if (!checkForPEReference(true)) {
+        if (!skipSeparator(true, fScanningExtSubset)) {
             // REVISIT: report error
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
@@ -1154,7 +1159,7 @@ public class XMLDTDScanner
         String publicId = null;
         if (fEntityScanner.skipString("PUBLIC")) {
             // spaces
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 // REVISIT: report error
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_BEFORE_PUBLICID_IN_ENTITYDECL",
@@ -1187,7 +1192,7 @@ public class XMLDTDScanner
         String systemId = null;
         if (publicId != null || fEntityScanner.skipString("SYSTEM")) {
             // spaces
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 // REVISIT: report error
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_BEFORE_SYSTEMID_IN_ENTITYDECL",
@@ -1220,7 +1225,7 @@ public class XMLDTDScanner
         String notation = null;
         if (systemId != null && !parameter && fEntityScanner.skipString("NDATA")) {
             // spaces
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 // REVISIT: report error
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_AFTER_NDATA_IN_ENTITYDECL",
@@ -1287,7 +1292,7 @@ public class XMLDTDScanner
         }
 
         // skip possible trailing space
-        checkForPEReference(false);
+        skipSeparator(false, fScanningExtSubset);
 
         // end
         if (!fEntityScanner.skipChar('>')) {
@@ -1337,7 +1342,7 @@ public class XMLDTDScanner
     private final void scanNotationDecl() throws IOException, SAXException {
 
         // spaces
-        if (!checkForPEReference(true)) {
+        if (!skipSeparator(true, fScanningExtSubset)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_NOTATIONDECL",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -1352,7 +1357,7 @@ public class XMLDTDScanner
         }
 
         // spaces
-        if (!checkForPEReference(true)) {
+        if (!skipSeparator(true, fScanningExtSubset)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_SPACE_REQUIRED_AFTER_NOTATION_NAME_IN_NOTATIONDECL",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -1362,7 +1367,7 @@ public class XMLDTDScanner
         String systemId = null;
         String publicId = null;
         if (fEntityScanner.skipString("SYSTEM")) {
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "SpaceRequiredAfterSYSTEM",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -1392,7 +1397,7 @@ public class XMLDTDScanner
             }
         }
         else if (fEntityScanner.skipString("PUBLIC")) {
-            if (!checkForPEReference(true)) {
+            if (!skipSeparator(true, fScanningExtSubset)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "SpaceRequiredAfterPUBLIC",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -1422,7 +1427,7 @@ public class XMLDTDScanner
             }
 
             // skip possible space
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
 
             // do we have a system id as well?
             int c = fEntityScanner.peekChar();
@@ -1454,7 +1459,7 @@ public class XMLDTDScanner
         }
 
         // skip possible trailing space
-        checkForPEReference(false);
+        skipSeparator(false, fScanningExtSubset);
 
         // end
         if (!fEntityScanner.skipChar('>')) {
@@ -1473,7 +1478,11 @@ public class XMLDTDScanner
     } // scanNotationDecl()
 
     /**
-     * Partially scans a conditional section
+     * Scans a conditional section. If it's a section to ignore the whole
+     * section gets scanned through and this method only returns after the
+     * closing bracket has been found. When it's an include section though, it
+     * returns to let the main loop take care of scanning it. In that case the
+     * end of the section if handled by the main loop (scanDecls).
      * <p>
      * <pre>
      * [61] conditionalSect   ::= includeSect | ignoreSect  
@@ -1483,19 +1492,18 @@ public class XMLDTDScanner
      * [65] Ignore            ::=    Char* - (Char* ('<![' | ']]>') Char*)  
      * </pre>
      * <p>
-     * <strong>Note:</strong> Called after scanning past '&lt;!['
-     */
+     * <strong>Note:</strong> Called after scanning past '&lt;![' */
     private final void scanConditionalSect()
         throws IOException, SAXException {
 
-        checkForPEReference(false);
+        skipSeparator(false, fScanningExtSubset);
         if (fEntityScanner.skipString("INCLUDE")) {
             // call handler
             if (fDTDHandler != null) {
                 fDTDHandler.startConditional(
                                             XMLDTDHandler.CONDITIONAL_INCLUDE);
             }
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
             if (!fEntityScanner.skipChar('[')) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MarkupNotRecognizedInDTD",
@@ -1510,7 +1518,7 @@ public class XMLDTDScanner
             if (fDTDHandler != null) {
                 fDTDHandler.startConditional(XMLDTDHandler.CONDITIONAL_IGNORE);
             }
-            checkForPEReference(false);
+            skipSeparator(false, fScanningExtSubset);
             if (!fEntityScanner.skipChar('[')) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MarkupNotRecognizedInDTD",
@@ -1580,7 +1588,7 @@ public class XMLDTDScanner
     protected final boolean scanDecls(boolean complete)
             throws IOException, SAXException {
         
-        checkForPEReference(false);
+        skipSeparator(false, true);
         while (complete && fScannerState == SCANNER_STATE_MARKUP_DECL) {
             if (fEntityScanner.skipChar('<')) {
                 if (fEntityScanner.skipChar('?')) {
@@ -1608,7 +1616,13 @@ public class XMLDTDScanner
                         scanNotationDecl();
                     }
                     else if (fEntityScanner.skipChar('[')) {
-                        scanConditionalSect();
+                        if (fScanningExtSubset) {
+                            scanConditionalSect();
+                        } else {
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "ConditionalSectionNotAllowedInInternalSubset",
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        }
                     }
                 }
             }
@@ -1638,30 +1652,34 @@ public class XMLDTDScanner
                                            "MarkupNotRecognizedInDTD",
                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            checkForPEReference(false);
+            skipSeparator(false, true);
         }
         return fScannerState != SCANNER_STATE_END_OF_INPUT;
     }
 
     /**
-     * Check for any parameter entity reference. If there is some "expand them"
-     * by calling the corresponding entity from the entity manager.
+     * Skip separator. This is typically just whitespace but it can also be one
+     * or more parameter entity references.
+     * <p>
+     * If there are some this "expand them" by calling the corresponding entity
+     * from the entity manager.
+     * <p>
      * This is recursive and will process has many refs as possible.
      *
      * @param spaceRequired Specify whether some leading whitespace should be
      *                      found
+     * @param lookForPERefs Specify whether parameter entity references should
+     *                      be looked for
      * @return whether any leading whitespace was found.
      */
-    private boolean checkForPEReference(boolean spaceRequired)
+    private boolean skipSeparator(boolean spaceRequired,
+                                  boolean lookForPERefs)
         throws IOException, SAXException
     {
         boolean sawSpace = fEntityScanner.skipSpaces();
-        /***
-         * REVISIT: this is from Glenn but don't know what this is for...
-        if (!fScanningExtSubset) {
+        if (!lookForPERefs) {
             return !spaceRequired || sawSpace;
         }
-        /***/
         if (!fEntityScanner.skipChar('%')) {
             return !spaceRequired || sawSpace;
         }
