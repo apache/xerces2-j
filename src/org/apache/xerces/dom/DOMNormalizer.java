@@ -1087,11 +1087,10 @@ public class DOMNormalizer implements XMLGrammarPool {
     //
     // XML GrammarPool methods
     //
-    protected final Grammar[] fGrammarPool = new Grammar[1];
 
+    // REVISIT: should DOMNormalizer implement grammar pool?
     public Grammar[] retrieveInitialGrammarSet(String grammarType){
         // REVISIT: should take into account grammarType
-        fGrammarPool[0] = fDocument.fGrammar;
         return null;
 
     }

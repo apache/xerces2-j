@@ -209,7 +209,7 @@ extends AbstractDOMParser implements DOMBuilder {
     public DOMBuilderImpl(SymbolTable symbolTable) {
         this((XMLParserConfiguration)ObjectFactory.createObject(
                                                                "org.apache.xerces.xni.parser.XMLParserConfiguration",
-                                                               "org.apache.xerces.parsers.StandardParserConfiguration"
+                                                               "org.apache.xerces.parsers.IntegratedParserConfiguration"
                                                                ));
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
     } // <init>(SymbolTable)
@@ -504,8 +504,6 @@ extends AbstractDOMParser implements DOMBuilder {
     public Document parseURI(String uri)  {
         XMLInputSource source = new XMLInputSource(null, uri, null);
 
-        // initialize grammar pool
-        initGrammarPool();
         try {        
             parse(source);
         } catch (Exception e){
@@ -534,9 +532,6 @@ extends AbstractDOMParser implements DOMBuilder {
         // need to wrap the DOMInputSource with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource(is);
 
-
-        // initialize grammar pool
-        initGrammarPool();
         try {        
             parse(xmlInputSource);
         } catch (Exception e) {
@@ -553,26 +548,6 @@ extends AbstractDOMParser implements DOMBuilder {
             }
         }
         return getDocument();
-    }
-
-    protected void initGrammarPool(){
-
-        // REVISIT: do we want to use custome grammar pool to be able
-        //          to retrieve a grammar used in validation of the document
-        //          for dom revalidation?
-        
-        /*
-        fGrammarPool = (XMLGrammarPool)fConfiguration.getProperty(GRAMMAR_POOL);
-        if (fGrammarPool == null) {
-            fGrammarPool = new XMLGrammarPoolImpl();
-            // set our own grammar pool
-            fConfiguration.setProperty(GRAMMAR_POOL, fGrammarPool);
-        }
-        else {
-            //REVISIT: if user sets its own grammar pool do we do anything?
-        }
-        */
-        
     }
 
     /**
@@ -653,11 +628,47 @@ extends AbstractDOMParser implements DOMBuilder {
 
         // If this is a DOM Level 3 implementation we should copy some information
         if (fDocumentImpl != null) {  
-            CoreDocumentImpl doc = (CoreDocumentImpl)fDocument;
-            doc.copyConfigurationProperties(fConfiguration);
+            fDocumentImpl.copyConfigurationProperties(fConfiguration);
         }
 
     } // endDocument()
+
+
+    /**
+     * Set the value of any property in a DOMBuilder parser.  The parser
+     * might not recognize the property, and if it does recognize
+     * it, it might not support the requested value.
+     *
+     * NOTE: this method is experimental and might be removed in the next
+     *       Xerces release. 
+     * 
+     * @param propertyId The unique identifier (URI) of the property
+     *                   being set.
+     * @param Object The value to which the property is being set.
+     *
+     * @exception DOMException: NotRecognizedException If the
+     *            requested property is not known.
+     * @exception DOMException: NotSupportedException If the
+     *            requested property is known, but the requested
+     *            value is not supported.
+     */
+    public void setProperty(String propertyId, Object value)
+        throws DOMException {
+
+        try {
+            fConfiguration.setProperty(propertyId, value);
+        }
+        catch (XMLConfigurationException e) {
+            String message = e.getMessage();
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new DOMException(DOMException.NOT_FOUND_ERR, message);
+            }
+            else {
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, message);
+            }
+        }
+
+    } // setProperty(String,Object)
 
 
 } // class DOMBuilderImpl

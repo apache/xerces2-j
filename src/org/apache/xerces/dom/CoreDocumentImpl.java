@@ -93,6 +93,7 @@ import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
@@ -192,11 +193,7 @@ public class CoreDocumentImpl
     
     // DOM Revalidation 
     protected DOMNormalizer domNormalizer = null;
-    protected DOMValidationConfiguration fConfiguration= null;
-    protected ShadowedSymbolTable fSymbolTable = null;
-    protected XMLEntityResolver fEntityResolver = null;
-    protected Grammar fGrammar = null;
-    
+    protected DOMValidationConfiguration fConfiguration= null;    
 
     /** Table for quick check of child insertion. */
     private final static int[] kidOK;
@@ -1024,21 +1021,20 @@ public class CoreDocumentImpl
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
+        
         if (domNormalizer == null) {
             domNormalizer = new DOMNormalizer();
         }
 
 
         if (fConfiguration == null) {
-            // if symbol table is not available                
-            // it will be created by the configuration
-            fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
+            fConfiguration =  new DOMValidationConfiguration();
         }
         if (fErrorHandlerWrapper.getErrorHandler() !=null) {           
             fConfiguration.setErrorHandler(fErrorHandlerWrapper);
         }
-            // resets components.
-            fConfiguration.reset();
+        // resets components.
+        fConfiguration.reset();
 
         if ((features & VALIDATION) != 0) {
             // REVISIT: validation is performed only against one type of grammar
@@ -1051,11 +1047,6 @@ public class CoreDocumentImpl
            // set xml-schema validator handler
             domNormalizer.setValidationHandler(
                 CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_SCHEMA));
-        
-
-            if (fGrammar != null) {
-                fConfiguration.setProperty(DOMValidationConfiguration.GRAMMAR_POOL, domNormalizer);
-            }
         } 
         else { // remove validation handler
                 domNormalizer.setValidationHandler(null);
@@ -2310,29 +2301,28 @@ public class CoreDocumentImpl
       * This method is called after the parsing is done 
       */
     public void copyConfigurationProperties(XMLParserConfiguration config){
+        // REVISIT: add a set/getProperty on DocumentImpl to allow setting 
+        //          grammar pool, symbol table, entity resolver.
+
         // REVISIT: how should we copy symbol table?
 	// It usually grows with the parser, do we need to carry all
 	// data per document?
-        fSymbolTable = new ShadowedSymbolTable((SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE));
-        fEntityResolver =  config.getEntityResolver();
-        
-        // REVISIT: storing one grammar per document is not efficient
-        // and might not be enough. We need to implement some grammar
-        // cashing possibly on DOM Implementation
 
+        SymbolTable symbolTable = new ShadowedSymbolTable((SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE));
+        fConfiguration =  new DOMValidationConfiguration(symbolTable);
+        
+        XMLEntityResolver entityResolver =  config.getEntityResolver();
+        if (entityResolver != null) {
+            fConfiguration.setEntityResolver(entityResolver);
+        }
+        
         XMLGrammarPool pool = (XMLGrammarPool)config.getProperty(DOMValidationConfiguration.GRAMMAR_POOL);
         if (pool != null) {
-            // retrieve either a DTD or XML Schema grammar
-
-            if (docType != null) {
-                // retrieve DTD grammar
-                // pool.retrieveGrammar();
-            } else {
-                // retrieve XML Schema grammar based on teh namespace
-                // of the root element
-                String targetNamespace = this.docElement.getNamespaceURI();
-                // pool.retrieveGrammar();
-            }
+            // copy the grammar pool
+            XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
+            grammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA,  
+                                      pool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA));
+            fConfiguration.setProperty(DOMValidationConfiguration.GRAMMAR_POOL, grammarPool);
         }
     }
 
