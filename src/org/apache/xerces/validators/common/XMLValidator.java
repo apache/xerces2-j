@@ -2782,7 +2782,16 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                             }
                                                             else {
                                                                 try {
-                                                                    attDV.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                                                    String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
+                                                                    String  value       = unTrimValue.trim();
+                                                                    if(attDecl.type == XMLAttributeDecl.TYPE_ID ){
+                                                                        this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                                                                    }
+                                                                    if(attDecl.type == XMLAttributeDecl.TYPE_IDREF ){
+                                                                        attDV.validate(value, this.fStoreIDRef );
+                                                                    }
+                                                                    else
+                                                                        attDV.validate(unTrimValue, null );
                                                                 }
                                                                 catch (InvalidDatatypeValueException idve) {
                                                                     fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -2829,12 +2838,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                     }
                                     else{
                                         try {
-                                            if(fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ){
-                                                String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
-                                                String  value       = unTrimValue.trim();
-                                                fTempAttDecl.datatypeValidator.validate(value, this.fValidateIDRef );
+                                            String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
+                                            String  value       = unTrimValue.trim();
+                                            if(fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ){
+                                                this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                                            }
+                                            else if(fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ){
+                                                fTempAttDecl.datatypeValidator.validate(value, this.fStoreIDRef );
                                             } else{
-                                                fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                                fTempAttDecl.datatypeValidator.validate(unTrimValue, null );
                                             }
 
                                         }
