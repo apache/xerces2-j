@@ -1358,11 +1358,16 @@ public class XMLEntityManager
         // Windows fix
         if (str.length() >= 2) {
             char ch1 = str.charAt(1);
+            // change "C:blah" to "/C:blah"
             if (ch1 == ':') {
                 char ch0 = Character.toUpperCase(str.charAt(0));
                 if (ch0 >= 'A' && ch0 <= 'Z') {
                     str = "/" + str;
                 }
+            }
+            // change "//blah" to "file://blah"
+            else if (ch1 == '/' && str.charAt(0) == '/') {
+                str = "file:" + str;
             }
         }
 
