@@ -627,6 +627,35 @@ Copyright:
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
+    <echo message="Running thread.Test dom" />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="thread.Test"
+          failOnError="yes">
+           <arg value="-dom"/>
+           <arg value="-threads"/>
+           <arg value="20"/>
+           <arg value="-time"/>
+           <arg value="10"/>
+           <arg value="${data.dir}/personal-schema.xml"/>
+
+    </java>
+    <echo message="Running thread.Test sax" />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="thread.Test"
+          failOnError="yes">
+           <arg value="-dom"/>
+           <arg value="-threads"/>
+           <arg value="20"/>
+           <arg value="-time"/>
+           <arg value="10"/>
+           <arg value="${data.dir}/personal-schema.xml"/>
+
+    </java>
+
+
+
     <!--
     <echo message="Running DOMFilter ..." />
     <java fork="yes"
@@ -1090,6 +1119,10 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
      <replace file="${build.tests}/dom/dom3/Test.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+     <replace file="${build.tests}/dom/ids/Test.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+     <replace file="${build.tests}/thread/Test.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
 
     <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -1164,6 +1197,26 @@ Copyright:
     <java fork="yes"
           classpath="${build.dir}/classes"
           classname="dom.mem.Test"
+          failOnError="yes">
+    </java>
+    <echo message="Running thread.Test ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="thread.Test"
+          failOnError="yes">
+           <arg value="-dom"/>
+           <arg value="-threads"/>
+           <arg value="20"/>
+           <arg value="-time"/>
+           <arg value="10"/>
+           <arg value="${data.dir}/personal-schema.xml"/>
+
+    </java>
+
+    <echo message="Running dom.ids.Test ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.ids.Test"
           failOnError="yes">
     </java>
     <echo message="Running dom.DTest ..." />
