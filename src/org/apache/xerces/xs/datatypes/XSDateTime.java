@@ -96,7 +96,7 @@ public interface XSDateTime {
     
     /**
      * @return whether a date-time related object is normalized or not
-     *         (value is not useful for durations)
+     *         (value is not useful for durations or types where timezone is not specified)
      */
     public boolean isNormalized();
 }

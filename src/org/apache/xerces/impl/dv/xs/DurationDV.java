@@ -64,7 +64,6 @@ public class DurationDV extends AbstractDateTimeDV {
     protected DateTimeData parse(String str, int durationType) throws SchemaDateTimeException{
         int len = str.length();
         DateTimeData date= new DateTimeData(str, this);
-        date.normalized = true;
         
         int start = 0;
         char c=str.charAt(start++);
