@@ -481,6 +481,38 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
       fSimpleType.enumeration       = enumeration;
       fSimpleType.datatypeValidator = DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(type);
 
+      if (type.equals("CDATA")) {
+          fSimpleType.type = XMLSimpleType.TYPE_CDATA;
+      }
+      else if ( type.equals("ID") ) {
+          fSimpleType.type = XMLSimpleType.TYPE_ID;
+      }
+      else if ( type.startsWith("IDREF") ) {
+          fSimpleType.type = XMLSimpleType.TYPE_IDREF;
+          if (type.indexOf("S") > 0) {
+              fSimpleType.list = true;
+          }
+      }
+      else if (type.equals("ENTITIES")) {
+          fSimpleType.type = XMLSimpleType.TYPE_ENTITY;
+          fSimpleType.list = true;
+      }
+      else if (type.equals("ENTITY")) {
+          fSimpleType.type = XMLSimpleType.TYPE_ENTITY;
+      }
+      else if (type.equals("NMTOKENS")) {
+          fSimpleType.type = XMLSimpleType.TYPE_NMTOKEN;
+          fSimpleType.list = true;
+      }
+      else if (type.equals("NMTOKEN")) {
+          fSimpleType.type = XMLSimpleType.TYPE_NMTOKEN;
+      }
+      else if (type.startsWith("NOTATION") ) {
+          fSimpleType.type = XMLSimpleType.TYPE_NOTATION;
+      }
+      else if (type.startsWith("(") ) {
+          fSimpleType.type = XMLSimpleType.TYPE_ENUMERATION;
+      }
 
       fQName.clear();
       fQName.setValues(null, attributeName, attributeName, null);
