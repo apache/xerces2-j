@@ -209,7 +209,17 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
                 throw new SAXNotSupportedException(
                     "Unsupported schema language");
             }
-        } else {
+        } else if(JAXP_SCHEMA_SOURCE.equals(name)){
+					String val = (String)getProperty(JAXP_SCHEMA_LANGUAGE);
+					if(val != null && W3C_XML_SCHEMA.equals(val)){
+            			xmlReader.setProperty(name, value);
+					}else
+                		throw new SAXNotSupportedException(
+								"'http://java.sun.com/xml/jaxp/properties/schemaLanguage' "+
+								"property should be set before setting "+
+								"'http://java.sun.com/xml/jaxp/properties/schemaSource'"+
+								" property");
+		}else{
             xmlReader.setProperty(name, value);
         }
     }

@@ -169,13 +169,26 @@ public class DocumentBuilderImpl extends DocumentBuilder
                             domParser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
                         }
                     }
-                } else {
+        		} else if(JAXP_SCHEMA_SOURCE.equals(name)){
+               		if( isValidating() ) {
+						String value=(String)dbfAttrs.get(JAXP_SCHEMA_LANGUAGE);
+						if(value !=null && W3C_XML_SCHEMA.equals(value)){
+            				domParser.setProperty(name, val);
+						}else{
+            				throw new IllegalArgumentException(
+								"'http://java.sun.com/xml/jaxp/properties/schemaLanguage' "+
+								"property should be set before setting "+
+								"'http://java.sun.com/xml/jaxp/properties/schemaSource'"+
+								" property");
+						}
+					}
+            	} else {
                     // Let Xerces code handle the property
                     domParser.setProperty(name, val);
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+	}
 
     /**
      * Non-preferred: use the getDOMImplementation() method instead of this
