@@ -22,6 +22,8 @@ package org.apache.xerces.xs.datatypes;
  * <p>Interface to expose value of the float datatype.</p>
  * 
  * @author Ankit Pasricha, IBM
+ * 
+ * @version $Id$
  */
 public interface XSFloat {
     

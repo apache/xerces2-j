@@ -22,6 +22,8 @@ import org.apache.xerces.xs.XSException;
  * Implementation of <code>org.apache.xerces.xs.datatypes.ByteList</code>.
  * 
  * @author Ankit Pasricha, IBM
+ * 
+ * @version $Id$
  */
 public class ByteListImpl implements ByteList {
 

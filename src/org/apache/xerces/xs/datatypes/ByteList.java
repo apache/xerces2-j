@@ -25,6 +25,8 @@ import org.apache.xerces.xs.XSException;
  * <code>byte</code>.</p>
  * 
  * @author Ankit Pasricha, IBM
+ * 
+ * @version $Id$
  */
 public interface ByteList {
     

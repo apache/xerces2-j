@@ -22,6 +22,8 @@ import org.apache.xerces.impl.dv.ValidationContext;
  * Used to validate the <yearMonthDuration> type
  * 
  * @author Ankit Pasricha, IBM
+ *  
+ * @version $Id$
  */
 class YearMonthDurationDV extends DurationDV {
     
