@@ -155,7 +155,9 @@ public class XMLDTDScanner
     private int[] fOpStack = new int[5];
     private int fDepth;
 
-    private XMLString defaultValue = new XMLString();
+    private XMLString fDefaultValue = new XMLString();
+    private String[] fEnumeration = new String[5];
+    private int fEnumerationCount;
 
     // symbols
 
@@ -814,13 +816,18 @@ public class XMLDTDScanner
             }
 
             // default decl
-            String defaultType = scanAttDefaultDecl(name, defaultValue);
+            String defaultType = scanAttDefaultDecl(name, fDefaultValue);
 
             // call handler
             if (fDTDHandler != null) {
-                // REVISIT fix this
-                fDTDHandler.attributeDecl(elName, name, type, null,
-                                          defaultType, defaultValue);
+                String[] enum = null;
+                if (fEnumerationCount != 0) {
+                    enum = new String[fEnumerationCount];
+                    System.arraycopy(fEnumeration, 0, enum,
+                                     0, fEnumerationCount);
+                }
+                fDTDHandler.attributeDecl(elName, name, type, enum,
+                                          defaultType, fDefaultValue);
             }
             fEntityScanner.skipSpaces();
             // is it the end?
@@ -855,6 +862,7 @@ public class XMLDTDScanner
     private final String scanAttType() throws IOException, SAXException {
 
         String type = null;
+        fEnumerationCount = 0;
         /*
          * Watchout: the order here is important: when a string happens to
          * be a substring of another string, the longer one needs to be
@@ -885,8 +893,7 @@ public class XMLDTDScanner
             type = "NMTOKEN";
         }
         else if (fEntityScanner.skipString("NOTATION")) {
-            fStringBuffer.clear();
-            fStringBuffer.append("NOTATION");
+            type = "NOTATION";
             // spaces
             if (!fEntityScanner.skipSpaces()) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -894,15 +901,12 @@ public class XMLDTDScanner
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             // open paren
-            int c = fEntityScanner.peekChar();
+            int c = fEntityScanner.scanChar();
             if (c != '(') {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "OPEN_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            fEntityScanner.scanChar();
-            fStringBuffer.append(" (");
-            c = 0;
             do {
                 String aName = fEntityScanner.scanName();
                 if (aName == null) {
@@ -910,11 +914,8 @@ public class XMLDTDScanner
                                                    "MSG_SPACE_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
-                // REVISIT: need to build the enumeration String[] instead
-                if (c != 0) {
-                    fStringBuffer.append('|');
-                    }
-                fStringBuffer.append(aName);
+                ensureEnumerationSize(fEnumerationCount + 1);
+                fEnumeration[fEnumerationCount++] = aName;
                 fEntityScanner.skipSpaces();
                 c = fEntityScanner.scanChar();
             } while (c == '|');
@@ -923,21 +924,16 @@ public class XMLDTDScanner
                                            "CLOSE_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            fStringBuffer.append(')');
-            type = fStringBuffer.toString();
         }
         else {              // Enumeration
-            fStringBuffer.clear();
+            type = "ENUMERATION";
             // open paren
-            int c = fEntityScanner.peekChar();
+            int c = fEntityScanner.scanChar();
             if (c != '(') {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "OPEN_PAREN_REQUIRED_BEFORE_ENUMERATION_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            fEntityScanner.scanChar();
-            fStringBuffer.append(" (");
-            c = 0;
             do {
                 String token = fEntityScanner.scanNmtoken();
                 if (token == null) {
@@ -945,11 +941,8 @@ public class XMLDTDScanner
                                                "NMTOKEN_REQUIRED_IN_ENUMERATION_IN_ATTRDECL",
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
-                // REVISIT: need to build the enumeration String[] instead
-                if (c != 0) {
-                    fStringBuffer.append('|');
-                }
-                fStringBuffer.append(token);
+                ensureEnumerationSize(fEnumerationCount + 1);
+                fEnumeration[fEnumerationCount++] = token;
                 fEntityScanner.skipSpaces();
                 c = fEntityScanner.scanChar();
             } while (c == '|');
@@ -958,8 +951,6 @@ public class XMLDTDScanner
                                            "CLOSE_PAREN_REQUIRED_AFTER_ENUMERATION_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            fStringBuffer.append(')');
-            type = fStringBuffer.toString();
         }
         return type;
 
@@ -1286,6 +1277,14 @@ public class XMLDTDScanner
 
     private final int popOpStack() {
         return fOpStack[fDepth];
+    }
+
+    private final void ensureEnumerationSize(int size) {
+        if (fEnumeration.length == size) {
+            String[] newEnum = new String[size * 2];
+            System.arraycopy(fEnumeration, 0, newEnum, 0, size);
+            fEnumeration = newEnum;
+        }
     }
 
 } // class XMLDTDScanner
