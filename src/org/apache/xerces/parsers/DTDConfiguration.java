@@ -686,7 +686,9 @@ public class DTDConfiguration
         
         // setup dtd pipeline
         if (fDTDScanner != null) {
+            fProperties.put(DTD_SCANNER, fDTDScanner);          
             if (fDTDProcessor != null) {
+                fProperties.put(DTD_PROCESSOR, fDTDProcessor);
                 fDTDScanner.setDTDHandler(fDTDProcessor);
                 fDTDProcessor.setDTDSource(fDTDScanner);
                 fDTDProcessor.setDTDHandler(fDTDHandler);

@@ -198,6 +198,7 @@ extends StandardParserConfiguration {
 
 		// setup document pipeline
 		if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
+            fProperties.put(NAMESPACE_BINDER, fNamespaceBinder);
 			fScanner = fNamespaceScanner;
 			fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
 			if (fDTDValidator != null) {
