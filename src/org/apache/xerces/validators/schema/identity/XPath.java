@@ -1596,7 +1596,7 @@ public class XPath {
                     break;
                 case CHARTYPE_COLON:            // '::'
                     if (++currentOffset == endOffset) {
-        System.out.println("abort 1a");
+				// System.out.println("abort 1a");
                         return false; // REVISIT
                     }
                     /***
@@ -1605,7 +1605,7 @@ public class XPath {
                     ch = data.charAt(currentOffset);
                     /***/
                     if (ch != ':') {
-        System.out.println("abort 1b");
+				// System.out.println("abort 1b");
                         return false; // REVISIT
                     }
                     addToken(tokens, XPath.Tokens.EXPRTOKEN_DOUBLE_COLON);
@@ -1666,7 +1666,7 @@ public class XPath {
                     break;
                 case CHARTYPE_EXCLAMATION:      // '!='
                     if (++currentOffset == endOffset) {
-        System.out.println("abort 2a");
+				// System.out.println("abort 2a");
                         return false; // REVISIT
                     }
                     /***
@@ -1675,7 +1675,7 @@ public class XPath {
                     ch = data.charAt(currentOffset);
                     /***/
                     if (ch != '=') {
-        System.out.println("abort 2b");
+				// System.out.println("abort 2b");
                         return false; // REVISIT
                     }
                     addToken(tokens, XPath.Tokens.EXPRTOKEN_OPERATOR_NOT_EQUAL);
@@ -1734,7 +1734,7 @@ public class XPath {
                 case CHARTYPE_QUOTE:            // '\"' or '\''
                     int qchar = ch;
                     if (++currentOffset == endOffset) {
-        System.out.println("abort 2c");
+				// System.out.println("abort 2c");
                         return false; // REVISIT
                     }
                     /***
@@ -1745,7 +1745,7 @@ public class XPath {
                     int litOffset = currentOffset;
                     while (ch != qchar) {
                         if (++currentOffset == endOffset) {
-        System.out.println("abort 2d");
+				// System.out.println("abort 2d");
                             return false; // REVISIT
                         }
                         /***
@@ -1780,13 +1780,13 @@ public class XPath {
                 //
                 case CHARTYPE_DOLLAR:
                     if (++currentOffset == endOffset) {
-        System.out.println("abort 3a");
+				// System.out.println("abort 3a");
                         return false; // REVISIT
                     }
                     nameOffset = currentOffset;
                     currentOffset = scanNCName(data, endOffset, currentOffset);
                     if (currentOffset == nameOffset) {
-        System.out.println("abort 3b");
+				// System.out.println("abort 3b");
                         return false; // REVISIT
                     }
                     if (currentOffset < endOffset) {
@@ -1805,13 +1805,13 @@ public class XPath {
                     } else {
                         prefixHandle = nameHandle;
                         if (++currentOffset == endOffset) {
-        System.out.println("abort 4a");
+				// System.out.println("abort 4a");
                             return false; // REVISIT
                         }
                         nameOffset = currentOffset;
                         currentOffset = scanNCName(data, endOffset, currentOffset);
                         if (currentOffset == nameOffset) {
-        System.out.println("abort 4b");
+				// System.out.println("abort 4b");
                             return false; // REVISIT
                         }
                         if (currentOffset < endOffset) {
@@ -1891,7 +1891,7 @@ public class XPath {
                     nameOffset = currentOffset;
                     currentOffset = scanNCName(data, endOffset, currentOffset);
                     if (currentOffset == nameOffset) {
-        System.out.println("abort 4c");
+				// System.out.println("abort 4c");
                         return false; // REVISIT
                     }
                     if (currentOffset < endOffset) {
@@ -1910,7 +1910,7 @@ public class XPath {
                     prefixHandle = -1;
                     if (ch == ':') {
                         if (++currentOffset == endOffset) {
-        System.out.println("abort 5");
+				// System.out.println("abort 5");
                             return false; // REVISIT
                         }
                         /***
@@ -1941,7 +1941,7 @@ public class XPath {
                             nameOffset = currentOffset;
                             currentOffset = scanNCName(data, endOffset, currentOffset);
                             if (currentOffset == nameOffset) {
-        System.out.println("abort 5b");
+				// System.out.println("abort 5b");
                                 return false; // REVISIT
                             }
                             if (currentOffset < endOffset) {
@@ -1988,14 +1988,14 @@ public class XPath {
                             addToken(tokens, XPath.Tokens.EXPRTOKEN_OPERATOR_DIV);
                             starIsMultiplyOperator = false;
                         } else {
-        System.out.println("abort 6");
+				// System.out.println("abort 6");
                             return false; // REVISIT
                         }
                         if (isNameTestNCName) {
-        System.out.println("abort 7");
+				// System.out.println("abort 7");
                             return false; // REVISIT - NCName:* where an OperatorName is required
                         } else if (isAxisName) {
-        System.out.println("abort 8");
+				// System.out.println("abort 8");
                             return false; // REVISIT - AxisName:: where an OperatorName is required
                         }
                         break;
@@ -2063,11 +2063,11 @@ public class XPath {
                         } else if (nameHandle == fSelfSymbol) {
                             addToken(tokens, XPath.Tokens.EXPRTOKEN_AXISNAME_SELF);
                         } else {
-        System.out.println("abort 9");
+				// System.out.println("abort 9");
                             return false; // REVISIT
                         }
                         if (isNameTestNCName) {
-        System.out.println("abort 10");
+				// System.out.println("abort 10");
                             return false; // REVISIT - "NCName:* ::" where "AxisName ::" is required
                         }
                         addToken(tokens, XPath.Tokens.EXPRTOKEN_DOUBLE_COLON);
@@ -2494,11 +2494,11 @@ public class XPath {
             fTokenCount = fTokens.getTokenCount();
             fCurrentToken = 0;
             if (!parseExpr()) {
-        System.out.println("abort 12");
+				// System.out.println("abort 12");
                 return -1; // REVISIT
             }
             if (fCurrentToken < fTokenCount) {
-        System.out.println("abort 13");
+				// System.out.println("abort 13");
                 return -1; // REVISIT
             }
             if (DUMP_PARSE_TREE) {
