@@ -211,6 +211,9 @@ public abstract class AbstractSAXParser
      */
     protected boolean fParseInProgress = false;
 
+    // track the version of the document being parsed
+    protected String fVersion;
+
     // temp vars
     private final AttributesProxy fAttributesProxy = new AttributesProxy();
     private Augmentations fAugmentations = null;
@@ -274,6 +277,7 @@ public abstract class AbstractSAXParser
         throws XNIException {
         
         fNamespaceContext = namespaceContext;
+
         try {
             // SAX1
             if (fDocumentHandler != null) {
@@ -296,6 +300,27 @@ public abstract class AbstractSAXParser
         }
 
     } // startDocument(locator,encoding,augs)
+
+    /**
+     * Notifies of the presence of an XMLDecl line in the document. If
+     * present, this method will be called immediately following the
+     * startDocument call.
+     * 
+     * @param version    The XML version.
+     * @param encoding   The IANA encoding name of the document, or null if
+     *                   not specified.
+     * @param standalone The standalone value, or null if not specified.
+     * @param augs   Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
+        throws XNIException {
+
+        // the version need only be set once; if
+        // document's XML 1.0|1.1, that's how it'll stay
+        fVersion = version;
+    } // xmlDecl(String,String,String)
 
     /**
      * Notifies of the presence of the DOCTYPE line in the document.
@@ -1070,7 +1095,19 @@ public abstract class AbstractSAXParser
             if (ex == null) {
                 // must be a parser exception; mine it for locator info and throw
                 // a SAXParseException
-                LocatorImpl locatorImpl = new LocatorImpl();
+                LocatorImpl locatorImpl = new LocatorImpl(){
+                    public String getXMLVersion() {
+                        return fVersion;
+                    }
+                    // since XMLParseExceptions know nothing about encoding,
+                    // we cannot return anything meaningful in this context.
+                    // We *could* consult the LocatorProxy, but the
+                    // application can do this itself if it wishes to possibly
+                    // be mislead.
+                    public String getEncoding() {
+                        return null;
+                    }
+                };
                 locatorImpl.setPublicId(e.getPublicId());
                 locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
@@ -1131,7 +1168,19 @@ public abstract class AbstractSAXParser
             if (ex == null) {
                 // must be a parser exception; mine it for locator info and throw
                 // a SAXParseException
-                LocatorImpl locatorImpl = new LocatorImpl();
+                LocatorImpl locatorImpl = new LocatorImpl() {
+                    public String getXMLVersion() {
+                        return fVersion;
+                    }
+                    // since XMLParseExceptions know nothing about encoding,
+                    // we cannot return anything meaningful in this context.
+                    // We *could* consult the LocatorProxy, but the
+                    // application can do this itself if it wishes to possibly
+                    // be mislead.
+                    public String getEncoding() {
+                        return null;
+                    }
+                };
                 locatorImpl.setPublicId(e.getPublicId());
                 locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
@@ -1894,6 +1943,7 @@ public abstract class AbstractSAXParser
 
         // reset state
         fInDTD = false;
+        fVersion = "1.0";
 
         // features
         fNamespaces = fConfiguration.getFeature(NAMESPACES);           
@@ -1907,7 +1957,7 @@ public abstract class AbstractSAXParser
     // Classes
     //
 
-    protected static class LocatorProxy
+    protected class LocatorProxy
         implements Locator {
 
         //
@@ -1947,6 +1997,15 @@ public abstract class AbstractSAXParser
         /** Column number. */
         public int getColumnNumber() {
             return fLocator.getColumnNumber();
+        }
+
+        // Locator2 methods
+        public String getXMLVersion() {
+            return fVersion;
+        }
+
+        public String getEncoding() {
+            return fLocator.getEncoding();
         }
 
     } // class LocatorProxy

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.
+ * Copyright (c) 1999-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,6 +84,10 @@ public class XMLEntityScanner implements XMLLocator {
     // constants
     private static final boolean DEBUG_ENCODINGS = false;
     private static final boolean DEBUG_BUFFER = false;
+
+    //
+    // Data
+    //
 
     private XMLEntityManager fEntityManager = null;
     protected XMLEntityManager.ScannedEntity fCurrentEntity = null;
@@ -183,6 +187,7 @@ public class XMLEntityScanner implements XMLLocator {
                 }
                 //fCurrentEntity.stream.reset();
                 fCurrentEntity.setReader(fCurrentEntity.stream, encoding, null);
+                fCurrentEntity.encoding = encoding;
             } else {
                 if (DEBUG_ENCODINGS)
                     System.out.println("$$$ reusing old reader on stream");
@@ -1437,6 +1442,27 @@ public class XMLEntityScanner implements XMLLocator {
 
         return -1;
     } // getColumnNumber():int
+    
+    /** Returns the encoding of the current entity.  
+     * Note that, for a given entity, this value can only be
+     * considered final once the encoding declaration has been read (or once it
+     * has been determined that there is no such declaration) since, no encoding
+     * having been specified on the XMLInputSource, the parser
+     * will make an initial "guess" which could be in error. 
+     */
+    public String getEncoding() {
+        if (fCurrentEntity != null) {
+            if (fCurrentEntity.isExternal()) {
+                return fCurrentEntity.encoding;
+            }
+            else {
+                // ask current entity to find appropriate column number
+                return fCurrentEntity.getEncoding();
+            }
+        }
+
+        return null;
+    } // getEncoding():String
     
     /**
      * @see org.apache.xerces.xni.XMLLocator#setColumnNumber(int)

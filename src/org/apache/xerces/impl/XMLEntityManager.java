@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.
+ * Copyright (c) 1999-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2391,6 +2391,19 @@ public class XMLEntityManager
                 }
             }
             return -1;
+        }
+
+        // return encoding of most recent external entity
+        public String getEncoding() {
+            // search for the first external entity on the stack
+            int size = fEntityStack.size();
+            for (int i=size-1; i>0 ; i--) {
+               ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                if (firstExternalEntity.isExternal()) {
+                    return firstExternalEntity.encoding;
+                }
+            }
+            return null;
         }
 
         //

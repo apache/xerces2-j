@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -256,6 +256,7 @@ public class ErrorHandlerWrapper
             public void setColumnNumber(int col) {}
             public int getLineNumber() { return fLineNumber; }
             public void setLineNumber(int line) {}
+            public String getEncoding() { return null; }
         };
         return new XMLParseException(location, exception.getMessage(),
                                      exception.getException());

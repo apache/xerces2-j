@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2002, 2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -146,5 +146,15 @@ public class SimpleLocator implements XMLLocator {
 	 * @see org.apache.xerces.xni.XMLResourceIdentifier#setPublicId(String)
 	 */
 	public void setPublicId(String publicId) {}
+
+    /** Returns the encoding of the current entity.  
+     * Since these locators are used in the construction of
+     * XMLParseExceptions, which know nothing about encodings, there is
+     * no point in having this object deal intelligently 
+     * with encoding information.
+     */
+    public String getEncoding() {
+        return null;
+    }
 
 }
