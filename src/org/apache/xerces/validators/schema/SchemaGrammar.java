@@ -70,6 +70,7 @@ import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.common.Grammar;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.util.Hashtable;
 
@@ -96,7 +97,7 @@ public class SchemaGrammar extends Grammar{
 
     // private int fTargetNamespace;
 
-    //private Document fGrammarDocument;
+    // private Element fGrammarDocument;
 
     // element decl tables that used only by Schemas
     // these arrays are indexed by elementdeclindex.
@@ -112,16 +113,18 @@ public class SchemaGrammar extends Grammar{
     private Hashtable fComplexTypeRegistry = null;
     private DatatypeValidatorRegistry fDatatypeRegistry = null;
 
-    public Hashtable getComplexTypeRegistry(){
-        return fComplexTypeRegistry;
-    }
-    public DatatypeValidatorRegistry getDatatypeRegistry(){
-        return fDatatypeRegistry;
-    }
 
     //
     // Public methods
     //
+    public Hashtable getComplexTypeRegistry(){
+        return fComplexTypeRegistry;
+    }
+
+    public DatatypeValidatorRegistry getDatatypeRegistry(){
+        return fDatatypeRegistry;
+    }
+
     public int getElementDefinedScope(int elementDeclIndex) {
         
         if (elementDeclIndex < -1) {
