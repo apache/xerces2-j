@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.dv.util;
 
+import java.io.UnsupportedEncodingException;
 /**
  * format validation
  *
@@ -148,8 +149,14 @@ public final class  HexBin {
         if (binaryData == null)
             return null;
 
-        byte[] decoded = decode(binaryData.getBytes());
-
+	byte[] decoded = null;
+ 	try {
+          decoded = decode(binaryData.getBytes("utf-8"));
+	}
+	catch(UnsupportedEncodingException e) {
+ 	}
+	finally {
         return decoded == null ? null : new String(decoded);
+	}
     }
 }

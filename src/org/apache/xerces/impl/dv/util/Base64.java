@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.dv.util;
 
+import java.io.UnsupportedEncodingException;
 /**
  * This class provides encode/decode for RFC 2045 Base64 as
  * defined by RFC 2045, N. Freed and N. Borenstein.
@@ -333,8 +334,14 @@ public final class  Base64 {
         if (base64Data == null)
             return null;
 
-        byte[] decoded = decode(base64Data.getBytes());
-
+	byte[] decoded = null;	
+	try {
+	  decoded = decode(base64Data.getBytes("utf-8"));
+	}
+	catch(UnsupportedEncodingException e) {	
+	}
+	finally {
         return decoded == null ? null : new String(decoded);
+	}
     }
 }
