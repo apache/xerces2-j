@@ -2,7 +2,7 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
-    <s2 title='May 10, 2000'>
+    <s2 title='May 9, 2000'>
         <ul>
            <li>Upgraded to SAX 2.0. [lehors]</li>
            <li>Added support for WML DOM. [david]</li>
