@@ -137,7 +137,10 @@ public interface XMLParserConfiguration
      * This method is synchronous: it will not return until parsing
      * has ended.  If a client application wants to terminate 
      * parsing early, it should throw an exception.
-     *
+     * <p>
+     * When this method returns, all characters streams and byte streams
+     * opened by the parser are closed.
+     * 
      * @param source The input source for the top-level of the
      *               XML document.
      *

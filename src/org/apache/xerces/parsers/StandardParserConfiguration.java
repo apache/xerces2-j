@@ -439,7 +439,7 @@ public class StandardParserConfiguration
      *                         specified locale.
      */
     public void setLocale(Locale locale) throws XNIException {
-    	super.setLocale(locale);
+        super.setLocale(locale);
         fErrorReporter.setLocale(locale);
     } // setLocale(Locale)
 
@@ -547,6 +547,15 @@ public class StandardParserConfiguration
 
     } // parse(boolean):boolean
 
+    /**
+     * If the application decides to terminate parsing before the xml document
+     * is fully parsed, the application should call this method to free any
+     * resource allocated during parsing. For example, close all opened streams.
+     */
+    public void cleanup() {
+        fEntityManager.closeReaders();
+    }
+    
     //
     // XMLParserConfiguration methods
     //
@@ -588,6 +597,8 @@ public class StandardParserConfiguration
         }
         finally {
             fParseInProgress = false;
+            // close all streams opened by xerces
+            this.cleanup();
         }
 
     } // parse(InputSource)

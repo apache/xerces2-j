@@ -58,6 +58,7 @@
 package org.apache.xerces.parsers;
 
 import java.util.Vector;
+import java.io.IOException;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -253,8 +254,16 @@ public class DOMASBuilderImpl
      */
     public ASModel parseASURI(String uri)
                               throws DOMASException, Exception {
-        // need to wrap the uri with an XMLInputSource
-        return parseASInputSource(new XMLInputSource(null, uri, null));
+        XMLInputSource source = new XMLInputSource(null, uri, null);
+        try {
+            return parseASInputSource(source);
+        }
+
+        catch (XNIException e) {
+            Exception ex = e.getException();
+            throw ex;
+        }
+
     }
 
     /**
@@ -286,7 +295,25 @@ public class DOMASBuilderImpl
                                       throws DOMASException, Exception {
         // need to wrap the DOMInputSource with an XMLInputSource
         XMLInputSource xis = this.dom2xmlInputSource(is);
-        return parseASInputSource(xis);
+        try {
+            return parseASInputSource(xis);
+        }
+
+        catch (XNIException e) {
+            Exception ex = e.getException();
+            throw ex;
+        }
+        finally {
+            // if we created a StringReader from the string data, need to
+            // close such reader
+            if (is.getStringData() != null) {
+                try {
+                    xis.getCharacterStream().close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
     }
 
     ASModel parseASInputSource(XMLInputSource is) throws Exception {

@@ -125,4 +125,11 @@ public interface XMLPullParserConfiguration
      */
     public boolean parse(boolean complete) throws XNIException, IOException;
 
+    /**
+     * If the application decides to terminate parsing before the xml document
+     * is fully parsed, the application should call this method to free any
+     * resource allocated during parsing. For example, close all opened streams.
+     */
+    public void cleanup();
+    
 } // interface XMLPullParserConfiguration

@@ -1132,25 +1132,6 @@ public abstract class AbstractSAXParser
             throw new SAXException(ex);
         }
 
-        // close stream opened by the parser
-        finally {
-            try {
-                Reader reader = source.getCharacterStream();
-                if (reader != null) {
-                    reader.close();
-                }
-                else {
-                    InputStream is = source.getByteStream();
-                    if (is != null) {
-                        is.close();
-                    }
-                }
-            }
-            catch (IOException e) {
-                // ignore
-            }
-        }
-
     } // parse(String)
 
     /**

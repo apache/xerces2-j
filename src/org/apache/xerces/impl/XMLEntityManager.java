@@ -68,6 +68,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.Stack;
+import java.util.Vector;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.io.ASCIIReader;
@@ -792,6 +793,10 @@ public class XMLEntityManager
             //reader = new OneCharReader(reader);
         }
 
+        // we've seen a new Reader. put it in a list, so that
+        // we can close it later.
+        fOwnReaders.addElement(reader);
+        
         // push entity on stack
         if (fCurrentEntity != null) {
             fEntityStack.push(fCurrentEntity);
@@ -815,6 +820,25 @@ public class XMLEntityManager
         return fEntityScanner;
     } // getEntityScanner():XMLEntityScanner
 
+    // a list of Readers ever seen
+    protected Vector fOwnReaders = new Vector();
+    
+    /**
+     * Close all opened InputStreams and Readers opened by this parser.
+     */
+    public void closeReaders() {
+        // close all readers
+        for (int i = fOwnReaders.size()-1; i >= 0; i--) {
+            try {
+                ((Reader)fOwnReaders.elementAt(i)).close();
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+        // and clear the list
+        fOwnReaders.removeAllElements();
+    }
+    
     //
     // XMLComponent methods
     //
@@ -1127,6 +1151,10 @@ public class XMLEntityManager
         }
 
         // pop stack
+        // REVISIT: we are done with the current entity, should close
+        //          the associated reader
+        //fCurrentEntity.reader.close();
+        // Now we close all readers after we finish parsing
         fCurrentEntity = fEntityStack.size() > 0
                        ? (ScannedEntity)fEntityStack.pop() : null;
         if (DEBUG_BUFFER) {
@@ -3055,9 +3083,8 @@ public class XMLEntityManager
          * @return The line number, or -1 if none is available.
          */
         public int getLineNumber() {
-            //return fCurrentEntity != null ? fCurrentEntity.lineNumber : -1;
             if (fCurrentEntity != null) {
-                if (fCurrentEntity.entityLocation != null && fCurrentEntity.entityLocation.getLiteralSystemId() != null ) {
+                if (fCurrentEntity.isExternal()) {
                     return fCurrentEntity.lineNumber;
                 }
                 else {
@@ -3065,8 +3092,7 @@ public class XMLEntityManager
                     int size = fEntityStack.size();
                     for (int i=size-1; i>0 ; i--) {
                         ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
-
-                        if (firstExternalEntity.entityLocation != null && firstExternalEntity.entityLocation.getLiteralSystemId() != null) {
+                        if (firstExternalEntity.isExternal()) {
                             return firstExternalEntity.lineNumber;
                         }
                     }
@@ -3100,9 +3126,8 @@ public class XMLEntityManager
          * @return The column number, or -1 if none is available.
          */
         public int getColumnNumber() {
-            //return fCurrentEntity != null ? fCurrentEntity.columnNumber : -1;
             if (fCurrentEntity != null) {
-                if (fCurrentEntity.entityLocation != null && fCurrentEntity.entityLocation.getLiteralSystemId() != null ) {
+                if (fCurrentEntity.isExternal()) {
                     return fCurrentEntity.columnNumber;
                 }
                 else {
@@ -3110,8 +3135,7 @@ public class XMLEntityManager
                     int size = fEntityStack.size();
                     for (int i=size-1; i>0 ; i--) {
                         ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
-
-                        if (firstExternalEntity.entityLocation != null && firstExternalEntity.entityLocation.getLiteralSystemId() != null) {
+                        if (firstExternalEntity.isExternal()) {
                             return firstExternalEntity.columnNumber;
                         }
                     }
