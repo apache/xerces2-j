@@ -1277,7 +1277,16 @@ public class XMLEntityManager
         // try to use a Java reader
         String javaEncoding = EncodingMap.getIANA2JavaMapping(ENCODING);
         if (javaEncoding == null) {
+            if(fAllowJavaEncodings) {
             javaEncoding = encoding;
+            } else {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "EncodingDeclInvalid",
+                                       new Object[] { encoding },
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                // see comment above.
+                javaEncoding = "ISO8859_1";
+            }
         }
         if (DEBUG_ENCODINGS) {
             System.out.print("$$$ creating Java InputStreamReader: encoding="+javaEncoding);
