@@ -1512,6 +1512,8 @@ public class XMLDocumentFragmentScannerImpl
                                     scanXMLDeclOrTextDecl(true);
                                 }
                             }
+                            // now that we've straightened out the readers, we can read in chunks:
+                            fEntityManager.fCurrentEntity.mayReadChunks = true;
                             setScannerState(SCANNER_STATE_CONTENT);
                             break;
                         }

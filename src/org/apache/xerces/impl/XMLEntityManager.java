@@ -127,6 +127,9 @@ public class XMLEntityManager
     /** Default buffer size (2048). */
     public static final int DEFAULT_BUFFER_SIZE = 2048;
 
+    /** Default buffer size before we've finished with the XMLDecl:  */
+    public static final int DEFAULT_XMLDECL_BUFFER_SIZE = 64;
+
     // feature identifiers
 
     /** Feature identifier: validation. */
@@ -1727,7 +1730,7 @@ public class XMLEntityManager
         /** Count of characters in buffer. */
         public int count;
 
-        // to allow the reader/nputStream to behave efficiently:
+        // to allow the reader/inputStream to behave efficiently:
         public boolean mayReadChunks;
 
         //
@@ -3181,7 +3184,9 @@ public class XMLEntityManager
             }
 
             // read characters
-            int length = fCurrentEntity.ch.length - offset;
+            int length = fCurrentEntity.mayReadChunks? 
+                    (fCurrentEntity.ch.length - offset):
+                    (DEFAULT_XMLDECL_BUFFER_SIZE);
             if (DEBUG_BUFFER) System.out.println("  length to try to read: "+length);
             int count = fCurrentEntity.reader.read(fCurrentEntity.ch, offset, length);
             if (DEBUG_BUFFER) System.out.println("  length actually read:  "+count);
@@ -3219,7 +3224,7 @@ public class XMLEntityManager
 
             return entityChanged;
 
-        } // load(int):boolean
+        } // load(int, boolean):boolean
 
     } // class EntityScanner
 

@@ -410,7 +410,7 @@ public class XMLDocumentScannerImpl
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
             setScannerState(SCANNER_STATE_TEXT_DECL);
-        }
+        } 
 
         // call handler
         if (fDocumentHandler != null && name.equals("[xml]")) {
@@ -578,8 +578,11 @@ public class XMLDocumentScannerImpl
                     else {
                         scanXMLDeclOrTextDecl(false);
                     }
-                    return true;
                 }
+                fEntityManager.fCurrentEntity.mayReadChunks = true;
+
+                // if no XMLDecl, then scan piece of prolog
+                return true;
             }
 
             // premature end of file
@@ -588,8 +591,6 @@ public class XMLDocumentScannerImpl
                 throw e;
             }
 
-            // if no XMLDecl, then scan piece of prolog
-            return true;
 
         } // dispatch(boolean):boolean
 
@@ -628,8 +629,6 @@ public class XMLDocumentScannerImpl
                     again = false;
                     switch (fScannerState) {
                         case SCANNER_STATE_PROLOG: {
-                            // if we're here then we're past the prolog decl!
-                            fEntityManager.fCurrentEntity.mayReadChunks = true;
                             fEntityScanner.skipSpaces();
                             if (fEntityScanner.skipChar('<')) {
                                 setScannerState(SCANNER_STATE_START_OF_MARKUP);
@@ -768,7 +767,7 @@ public class XMLDocumentScannerImpl
             fEntityManager.setEntityHandler(null);
             try {
                 boolean again;
-		XMLResourceIdentifierImpl resourceIdentifier = new XMLResourceIdentifierImpl();
+		        XMLResourceIdentifierImpl resourceIdentifier = new XMLResourceIdentifierImpl();
                 do {
                     again = false;
                     switch (fScannerState) {
@@ -805,7 +804,7 @@ public class XMLDocumentScannerImpl
                             break;
                         }
                         case SCANNER_STATE_DTD_EXTERNAL: {
-			    resourceIdentifier.setValues(fDoctypePublicId, fDoctypeSystemId, null, null);
+			                resourceIdentifier.setValues(fDoctypePublicId, fDoctypeSystemId, null, null);
                             XMLInputSource xmlInputSource =
                                 fEntityManager.resolveEntity(resourceIdentifier);
                             fDTDScanner.setInputSource(xmlInputSource);
