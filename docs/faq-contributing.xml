@@ -58,10 +58,10 @@
         </li>
         <li>
             Submit a bug report on <jump
-            href="http://nagoya.apache.org/bugzilla">Bugzilla</jump>
+            href="http://nagoya.apache.org/jira">JIRA</jump>
             (remembering to attach your patches and test code)
             or, if you think your patch might need some discussion,
-            post it to the xerces-j-dev list.
+            post it to the <jump href="http://xml.apache.org/mail.html#xerces-j-dev">xerces-j-dev</jump> list.
         </li>
     </ol>
     </a>

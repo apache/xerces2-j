@@ -23,10 +23,10 @@
     </p>
     </a>
   </faq>
-  <faq title="Bugzilla">
-    <q>How do I use Bugzilla to report bugs?</q>
+  <faq title="JIRA">
+    <q>How do I use JIRA to report bugs?</q>
     <a> <p>
-    Please refer to the <link idref="bugzilla">Reporting bugs in bugzilla</link>
+    Please refer to the <link idref="jira">Reporting bugs in JIRA</link>
     </p>
     </a>
   </faq>

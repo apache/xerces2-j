@@ -94,5 +94,5 @@
 
 
  <document label='Report a Bug' title='Reporting Bugs'
-           id='bugzilla' source='bugzilla.xml'/> 
+           id='jira' source='bugzilla.xml'/>
 </book>

@@ -25,13 +25,13 @@
          </li>
 	<li>To help to eliminate duplicate or invalid bug reports, such as the
 	    <jump href="http://nagoya.apache.org/jira/browse/XERCESJ-581">external-schemaLocation</jump> bug, 
-	    <em>please take a quick look at bugs in Jira</em> opened against the version you're working 
+	    <em>please take a quick look at bugs in JIRA</em> opened against the version you're working 
         with to see whether the bug has been already reported and/or fixed.
 	    You can also download the 
-	    <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>latest code</jump> 
+	    <jump href='http://cvs.apache.org/viewcvs.cgi/xml-xerces/java/'>latest code</jump> 
 	    in CVS and check if you can reproduce the bug.</li>
 	  <li>Report bugs against the newest release.</li>
-	  <li>Read <jump href="http://nagoya.apache.org/jira">Jira Notes</jump></li>
+	  <li>Read <jump href="http://nagoya.apache.org/jira">JIRA Notes</jump></li>
       </ul>
       <p>We strongly encourage you write patches for problems you find and submit 
          them to <jump href="http://xml.apache.org/mail.html#xerces-j-dev">xerces-j-dev@xml.apache.org</jump>.
@@ -39,7 +39,7 @@
          bug will improve the likelihood that the bug you found will be fixed in the foreseeable future. In the 
          interest of fixing bugs, adding enhancements, and addressing outstanding design issues, we need your 
          active participation in the ongoing development of Xerces2.</p>
-      <anchor name="bugzilla"/>
+      <anchor name="jira"/>
 
 </s2>
 
