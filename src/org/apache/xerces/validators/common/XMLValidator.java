@@ -3347,7 +3347,7 @@ public final class XMLValidator
                                           }
                                        } else {
                                           SchemaGrammar sGrammar = (SchemaGrammar) aGrammar;
-                                          Hashtable attRegistry = sGrammar.getAttirubteDeclRegistry();
+                                          Hashtable attRegistry = sGrammar.getAttributeDeclRegistry();
                                           if (attRegistry == null) {
                                              if (processContentStrict) {
                                                 reportError = true;

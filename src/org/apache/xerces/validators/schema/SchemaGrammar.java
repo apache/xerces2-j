@@ -143,7 +143,7 @@ public class SchemaGrammar extends Grammar{
         return fTargetNamespaceURI;
     }
 
-    public Hashtable getAttirubteDeclRegistry() {
+    public Hashtable getAttributeDeclRegistry() {
         return fAttributeDeclRegistry;
     }
 

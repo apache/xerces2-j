@@ -359,11 +359,11 @@ public class TraverseSchema implements
                 fComplexTypeRegistry = fSchemaGrammar.getComplexTypeRegistry();
             }
 
-            if (fSchemaGrammar.getAttirubteDeclRegistry() == null ) {
+            if (fSchemaGrammar.getAttributeDeclRegistry() == null ) {
                 fSchemaGrammar.setAttributeDeclRegistry(fAttributeDeclRegistry);
             }
             else {
-                fAttributeDeclRegistry = fSchemaGrammar.getAttirubteDeclRegistry();
+                fAttributeDeclRegistry = fSchemaGrammar.getAttributeDeclRegistry();
             }
 
             if (fSchemaGrammar.getNamespacesScope() == null ) {
@@ -3803,7 +3803,7 @@ public class TraverseSchema implements
             return -1;
         }
 
-        Hashtable attrRegistry = aGrammar.getAttirubteDeclRegistry();
+        Hashtable attrRegistry = aGrammar.getAttributeDeclRegistry();
         if (attrRegistry == null) {
             // REVISIT: Localize
             reportGenericSchemaError("no attribute was defined in schema : " + uriStr);
@@ -3963,7 +3963,7 @@ public class TraverseSchema implements
             if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
                 String childAttName = child.getAttribute(SchemaSymbols.ATT_NAME);
                 if ( childAttName.length() > 0 ) {
-                    Hashtable attDeclRegistry = aGrammar.getAttirubteDeclRegistry();
+                    Hashtable attDeclRegistry = aGrammar.getAttributeDeclRegistry();
                     if (attDeclRegistry != null) {
                         if (attDeclRegistry.get((Object)childAttName) != null ){
                             addAttributeDeclFromAnotherSchema(childAttName, uriStr, typeInfo);
