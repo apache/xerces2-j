@@ -102,6 +102,9 @@ public class GetElementsByTagName {
 
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
+    
+    /** Dynamic validation feature id (http://apache.org/xml/features/validation/dynamic). */
+    protected static final String DYNAMIC_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/dynamic";
 
     // default settings
 
@@ -122,6 +125,9 @@ public class GetElementsByTagName {
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+    
+    /** Default dynamic validation support (false). */
+    protected static final boolean DEFAULT_DYNAMIC_VALIDATION = false;
 
     //
     // Public static methods
@@ -252,6 +258,7 @@ public class GetElementsByTagName {
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
 
         // process arguments
         for (int i = 0; i < argv.length; i++) {
@@ -305,6 +312,10 @@ public class GetElementsByTagName {
                     schemaFullChecking = option.equals("f");
                     continue;
                 }
+                if (option.equalsIgnoreCase("dv")) {
+                    dynamicValidation = option.equals("dv");
+                    continue;
+                }
                 if (option.equals("h")) {
                     printUsage();
                     continue;
@@ -349,6 +360,12 @@ public class GetElementsByTagName {
             catch (SAXException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
             }
+            try {
+                parser.setFeature(DYNAMIC_VALIDATION_FEATURE_ID, dynamicValidation);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+DYNAMIC_VALIDATION_FEATURE_ID+")");
+            }
 
             // parse file
             try {
@@ -383,16 +400,18 @@ public class GetElementsByTagName {
         System.err.println();
 
         System.err.println("options:");
-        System.err.println("  -p name  Select parser by name.");
-        System.err.println("  -e name  Specify element name for search.");
-        System.err.println("  -a name  Specify attribute name for specified elements.");
-        System.err.println("  -n | -N  Turn on/off namespace processing.");
-        System.err.println("  -v | -V  Turn on/off validation.");
-        System.err.println("  -s | -S  Turn on/off Schema validation support.");
-        System.err.println("           NOTE: Not supported by all parsers.");
-        System.err.println("  -f  | -F Turn on/off Schema full checking.");
-        System.err.println("           NOTE: Requires use of -s and not supported by all parsers.");
-        System.err.println("  -h       This help screen.");
+        System.err.println("  -p name     Select parser by name.");
+        System.err.println("  -e name     Specify element name for search.");
+        System.err.println("  -a name     Specify attribute name for specified elements.");
+        System.err.println("  -n | -N     Turn on/off namespace processing.");
+        System.err.println("  -v | -V     Turn on/off validation.");
+        System.err.println("  -s | -S     Turn on/off Schema validation support.");
+        System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -f  | -F    Turn on/off Schema full checking.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
+        System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -h          This help screen.");
         System.err.println();
 
         System.err.println("defaults:");
@@ -406,6 +425,8 @@ public class GetElementsByTagName {
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
         System.err.print("  Schema full checking:     ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
+        System.err.print("  Dynamic:    ");
+        System.err.println(DEFAULT_DYNAMIC_VALIDATION ? "on" : "off");
 
     } // printUsage()
 

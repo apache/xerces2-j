@@ -108,6 +108,9 @@ public class Counter {
 
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
+    
+    /** Dynamic validation feature id (http://apache.org/xml/features/validation/dynamic). */
+    protected static final String DYNAMIC_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/dynamic";
 
     // default settings
 
@@ -128,6 +131,9 @@ public class Counter {
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+
+    /** Default dynamic validation support (false). */
+    protected static final boolean DEFAULT_DYNAMIC_VALIDATION = false;
 
     //
     // Data
@@ -275,6 +281,7 @@ public class Counter {
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
 
         // process arguments
         for (int i = 0; i < argv.length; i++) {
@@ -333,6 +340,10 @@ public class Counter {
                     schemaFullChecking = option.equals("f");
                     continue;
                 }
+                if (option.equalsIgnoreCase("dv")) {
+                    dynamicValidation = option.equals("dv");
+                    continue;
+                }
                 if (option.equals("h")) {
                     printUsage();
                     continue;
@@ -376,6 +387,12 @@ public class Counter {
             }
             catch (SAXException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(DYNAMIC_VALIDATION_FEATURE_ID, dynamicValidation);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+DYNAMIC_VALIDATION_FEATURE_ID+")");
             }
 
             // parse file
@@ -440,6 +457,8 @@ public class Counter {
         System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
+        System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -h          This help screen.");
         System.err.println();
 
@@ -454,6 +473,8 @@ public class Counter {
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
         System.err.print("  Schema full checking:     ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
+        System.err.print("  Dynamic:    ");
+        System.err.println(DEFAULT_DYNAMIC_VALIDATION ? "on" : "off");
 
     } // printUsage()
 
