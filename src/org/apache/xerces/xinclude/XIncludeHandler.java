@@ -99,6 +99,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * </p>
  *
  * @author Peter McCracken, IBM
+ * @author Michael Glavassevich, IBM
  *
  * @version $Id$
  *
@@ -141,6 +142,15 @@ public class XIncludeHandler
             XINCLUDE_BASE,
             XMLSymbols.PREFIX_XML + ":" + XINCLUDE_BASE,
             NamespaceContext.XML_URI);
+    
+    // used for adding [language] attributes
+    public final static String XINCLUDE_LANG = "lang";
+    public final static QName XML_LANG_QNAME = 
+        new QName(
+                XMLSymbols.PREFIX_XML,
+                XINCLUDE_LANG,
+                XMLSymbols.PREFIX_XML + ":" + XINCLUDE_LANG,
+                NamespaceContext.XML_URI);
 
     public final static QName NEW_NS_ATTR_QNAME =
         new QName(
@@ -244,10 +254,15 @@ public class XIncludeHandler
 
     // these are needed for XML Base processing
     protected XMLResourceIdentifier fCurrentBaseURI;
-    protected IntStack baseURIScope;
-    protected Stack baseURI;
-    protected Stack literalSystemID;
-    protected Stack expandedSystemID;
+    protected IntStack fBaseURIScope;
+    protected Stack fBaseURI;
+    protected Stack fLiteralSystemID;
+    protected Stack fExpandedSystemID;
+    
+    // these are needed for Language Fixup
+    protected IntStack fLanguageScope;
+    protected Stack fLanguageStack;
+    protected String fCurrentLanguage;
 
     // used for passing features on to child XIncludeHandler objects
     protected ParserConfigurationSettings fSettings;
@@ -298,11 +313,15 @@ public class XIncludeHandler
         fNotations = new Vector();
         fUnparsedEntities = new Vector();
 
-        baseURIScope = new IntStack();
-        baseURI = new Stack();
-        literalSystemID = new Stack();
-        expandedSystemID = new Stack();
+        fBaseURIScope = new IntStack();
+        fBaseURI = new Stack();
+        fLiteralSystemID = new Stack();
+        fExpandedSystemID = new Stack();
         fCurrentBaseURI = new XMLResourceIdentifierImpl();
+        
+        fLanguageScope = new IntStack();
+        fLanguageStack = new Stack();
+        fCurrentLanguage = null;
     }
 
     // XMLComponent methods
@@ -317,10 +336,10 @@ public class XIncludeHandler
         fIsXML11 = false;
         fInDTD = false;
 
-        baseURIScope.clear();
-        baseURI.clear();
-        literalSystemID.clear();
-        expandedSystemID.clear();
+        fBaseURIScope.clear();
+        fBaseURI.clear();
+        fLiteralSystemID.clear();
+        fExpandedSystemID.clear();
 
         // REVISIT: Find a better method for maintaining
         // the state of the XInclude processor. These arrays
@@ -630,6 +649,10 @@ public class XIncludeHandler
             augs = new AugmentationsImpl();
         }
         augs.putItem(CURRENT_BASE_URI, fCurrentBaseURI);
+        
+        // initialize the current language
+        fCurrentLanguage = XMLSymbols.EMPTY_STRING;
+        saveLanguage(fCurrentLanguage);
 
         if (isRootDocument() && fDocumentHandler != null) {
             fDocumentHandler.startDocument(
@@ -707,8 +730,10 @@ public class XIncludeHandler
         fDepth++;
         setState(getState(fDepth - 1));
 
-        // we process the xml:base attributes regardless of what type of element it is
+        // we process the xml:base and xml:lang attributes regardless
+        // of what type of element it is.
         processXMLBaseAttributes(attributes);
+        processXMLLangAttributes(attributes);
 
         if (isIncludeElement(element)) {
             boolean success = this.handleIncludeElement(attributes);
@@ -757,8 +782,10 @@ public class XIncludeHandler
         fDepth++;
         setState(getState(fDepth - 1));
 
-        // we process the xml:base attributes regardless of what type of element it is
+        // we process the xml:base and xml:lang attributes regardless
+        // of what type of element it is.
         processXMLBaseAttributes(attributes);
+        processXMLLangAttributes(attributes);
 
         if (isIncludeElement(element)) {
             boolean success = this.handleIncludeElement(attributes);
@@ -802,7 +829,7 @@ public class XIncludeHandler
         setSawInclude(fDepth + 1, false);
 
         // check if an xml:base has gone out of scope
-        if (baseURIScope.size() > 0 && fDepth == baseURIScope.peek()) {
+        if (fBaseURIScope.size() > 0 && fDepth == fBaseURIScope.peek()) {
             // pop the values from the stack
             restoreBaseURI();
         }
@@ -838,10 +865,17 @@ public class XIncludeHandler
         setSawInclude(fDepth + 1, false);
 
         // check if an xml:base has gone out of scope
-        if (baseURIScope.size() > 0 && fDepth == baseURIScope.peek()) {
+        if (fBaseURIScope.size() > 0 && fDepth == fBaseURIScope.peek()) {
             // pop the values from the stack
             restoreBaseURI();
         }
+        
+        // check if an xml:lang has gone out of scope
+        if (fLanguageScope.size() > 0 && fDepth == fLanguageScope.peek()) {
+            // pop the language from the stack
+            fCurrentLanguage = restoreLanguage();
+        }
+        
         fDepth--;
     }
 
@@ -1485,6 +1519,23 @@ public class XIncludeHandler
         //       The decision also affects whether we output the file name of the URI, or just the path.
         return parentBaseURI != null && parentBaseURI.equals(baseURI);
     }
+    
+    /**
+     * Returns true if the current [language] is equivalent to the [language] that
+     * was in effect on the include parent, taking case-insensitivity into account
+     * as per [RFC 3066].  This method should <em>only</em> be called when the
+     * current element is a top level included element, i.e. the direct child
+     * of a fallback element, or the root elements in an included document.
+     * The "include parent" is the element which, in the result infoset, will be the
+     * direct parent of the current element.
+     * 
+     * @return true if the [language] properties have the same value
+     * taking case-insensitivity into account as per [RFC 3066].
+     */
+    protected boolean sameLanguageAsIncludeParent() {
+        String parentLanguage = getIncludeParentLanguage();
+        return parentLanguage != null && parentLanguage.equalsIgnoreCase(fCurrentLanguage);
+    }
 
     /**
      * Checks if the file indicated by the given XMLLocator has already been included
@@ -1583,6 +1634,21 @@ public class XIncludeHandler
                         XML_BASE_QNAME,
                         XMLSymbols.fCDATASymbol,
                         uri);
+                attributes.setSpecified(index, true);
+            }
+            
+            // Modify attributes to perform language-fixup (spec 4.5.6).
+            // We only do it to top level included elements, which have a different
+            // [language] than their include parent.
+            if (!sameLanguageAsIncludeParent()) {
+                if (attributes == null) {
+                    attributes = new XMLAttributesImpl();
+                }
+                int index =
+                    attributes.addAttribute(
+                        XML_LANG_QNAME,
+                        XMLSymbols.fCDATASymbol,
+                        fCurrentLanguage);
                 attributes.setSpecified(index, true);
             }
 
@@ -1710,6 +1776,21 @@ public class XIncludeHandler
         }
         else {
             return this.getBaseURI(depth);
+        }
+    }
+    
+    /**
+     * Returns the [language] of the include parent.
+     * 
+     * @return the language property of the include parent.
+     */
+    private String getIncludeParentLanguage() {
+        int depth = getIncludeParentDepth();
+        if (!isRootDocument() && depth == 0) {
+            return fParentXIncludeHandler.getIncludeParentLanguage();
+        }
+        else {
+            return getLanguage(depth);
         }
     }
 
@@ -2200,23 +2281,44 @@ public class XIncludeHandler
      * Saves the current base URI to the top of the stack.
      */
     protected void saveBaseURI() {
-        baseURIScope.push(fDepth);
-        baseURI.push(fCurrentBaseURI.getBaseSystemId());
-        literalSystemID.push(fCurrentBaseURI.getLiteralSystemId());
-        expandedSystemID.push(fCurrentBaseURI.getExpandedSystemId());
+        fBaseURIScope.push(fDepth);
+        fBaseURI.push(fCurrentBaseURI.getBaseSystemId());
+        fLiteralSystemID.push(fCurrentBaseURI.getLiteralSystemId());
+        fExpandedSystemID.push(fCurrentBaseURI.getExpandedSystemId());
     }
 
     /**
      * Discards the URIs at the top of the stack, and restores the ones beneath it.
      */
     protected void restoreBaseURI() {
-        baseURI.pop();
-        literalSystemID.pop();
-        expandedSystemID.pop();
-        baseURIScope.pop();
-        fCurrentBaseURI.setBaseSystemId((String)baseURI.peek());
-        fCurrentBaseURI.setLiteralSystemId((String)literalSystemID.peek());
-        fCurrentBaseURI.setExpandedSystemId((String)expandedSystemID.peek());
+        fBaseURI.pop();
+        fLiteralSystemID.pop();
+        fExpandedSystemID.pop();
+        fBaseURIScope.pop();
+        fCurrentBaseURI.setBaseSystemId((String)fBaseURI.peek());
+        fCurrentBaseURI.setLiteralSystemId((String)fLiteralSystemID.peek());
+        fCurrentBaseURI.setExpandedSystemId((String)fExpandedSystemID.peek());
+    }
+    
+    // The following methods are used for language processing
+    
+    /**
+     * Saves the given language on the top of the stack.
+     * 
+     * @param lanaguage the language to push onto the stack.
+     */
+    protected void saveLanguage(String language) {
+        fLanguageScope.push(fDepth);
+        fLanguageStack.push(language);
+    }
+    
+    /**
+     * Discards the language at the top of the stack, and returns the one beneath it.
+     */
+    public String restoreLanguage() {
+        fLanguageStack.pop();
+        fLanguageScope.pop();
+        return (String) fLanguageStack.peek();
     }
 
     /**
@@ -2225,8 +2327,18 @@ public class XIncludeHandler
      * @return the base URI
      */
     public String getBaseURI(int depth) {
-        int scope = scopeOf(depth);
-        return (String)expandedSystemID.elementAt(scope);
+        int scope = scopeOfBaseURI(depth);
+        return (String)fExpandedSystemID.elementAt(scope);
+    }
+    
+    /**
+     * Gets the language that was in use at that depth.
+     * @param depth
+     * @return the language
+     */
+    public String getLanguage(int depth) {
+        int scope = scopeOfLanguage(depth);
+        return (String)fLanguageStack.elementAt(scope);
     }
 
     /**
@@ -2241,14 +2353,14 @@ public class XIncludeHandler
         // The literal system id at the location given by "start" is *in focus* at
         // the given depth. So we need to adjust it to the next scope, so that we
         // only process out of focus literal system ids
-        int start = scopeOf(depth) + 1;
-        if (start == baseURIScope.size()) {
+        int start = scopeOfBaseURI(depth) + 1;
+        if (start == fBaseURIScope.size()) {
             // If that is the last system id, then we don't need a relative URI
             return "";
         }
-        URI uri = new URI("file", (String)literalSystemID.elementAt(start));
-        for (int i = start + 1; i < baseURIScope.size(); i++) {
-            uri = new URI(uri, (String)literalSystemID.elementAt(i));
+        URI uri = new URI("file", (String)fLiteralSystemID.elementAt(start));
+        for (int i = start + 1; i < fBaseURIScope.size(); i++) {
+            uri = new URI(uri, (String)fLiteralSystemID.elementAt(i));
         }
         return uri.getPath();
     }
@@ -2256,12 +2368,20 @@ public class XIncludeHandler
     // We need to find two consecutive elements in the scope stack,
     // such that the first is lower than 'depth' (or equal), and the
     // second is higher.
-    private int scopeOf(int depth) {
-        for (int i = baseURIScope.size() - 1; i >= 0; i--) {
-            if (baseURIScope.elementAt(i) <= depth)
+    private int scopeOfBaseURI(int depth) {
+        for (int i = fBaseURIScope.size() - 1; i >= 0; i--) {
+            if (fBaseURIScope.elementAt(i) <= depth)
                 return i;
         }
-
+        // we should never get here, because 0 was put on the stack in startDocument()
+        return -1;
+    }
+    
+    private int scopeOfLanguage(int depth) {
+        for (int i = fLanguageScope.size() - 1; i >= 0; i--) {
+            if (fLanguageScope.elementAt(i) <= depth)
+                return i;
+        }
         // we should never get here, because 0 was put on the stack in startDocument()
         return -1;
     }
@@ -2291,6 +2411,18 @@ public class XIncludeHandler
             catch (MalformedURIException e) {
                 // REVISIT: throw error here
             }
+        }
+    }
+    
+    /**
+     * Search for a xml:lang attribute, and if one is found, put the new 
+     * [language] into effect.
+     */
+    protected void processXMLLangAttributes(XMLAttributes attributes) {
+        String language = attributes.getValue(NamespaceContext.XML_URI, "lang");
+        if (language != null) {
+            fCurrentLanguage = language;
+            saveLanguage(fCurrentLanguage);
         }
     }
     
