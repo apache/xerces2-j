@@ -187,6 +187,12 @@ public class XSAttributeGroupDecl {
                return errorCode;
              }
 
+             // if this attribute is prohibited in the derived type, don't
+             // need to check any of the following constraints.
+             if (attrUse.fUse == SchemaSymbols.USE_PROHIBITED) {
+                continue;
+             }
+             
              baseAttrDecl = baseAttrUse.fAttrDecl;
              //
              // derivation-ok-restriction.  Constraint 2.1.1
