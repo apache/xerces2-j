@@ -820,6 +820,7 @@ public class RangeImpl  implements Range {
     	}
     	
     	Node node = fStartContainer;
+        Node stopNode = fEndContainer;
     	StringBuffer sb = new StringBuffer();
     	if (fStartContainer.getNodeType() == Node.TEXT_NODE
     	 || fStartContainer.getNodeType() == Node.CDATA_SECTION_NODE
@@ -827,20 +828,46 @@ public class RangeImpl  implements Range {
     	    if (fStartContainer == fEndContainer) {
     	        sb.append(fStartContainer.getNodeValue().substring(fStartOffset, fEndOffset));
     	        return sb.toString();
-    	    } else {
-    	        sb.append(fStartContainer.getNodeValue().substring(fStartOffset));
-    	    }
+            }
+    	    sb.append(fStartContainer.getNodeValue().substring(fStartOffset));
+            node=nextNode (node,true); //fEndContainer!=fStartContainer
+    	    
     	}
-    	while (node != fEndContainer) {
-    	    node = nextNode(node, true);
-    	    if (node == null) break;
-    	    if (node.getNodeType() == Node.TEXT_NODE
-    	    ||  node.getNodeType() == Node.CDATA_SECTION_NODE
-    	    ) {
-    	        sb.append(node.getNodeValue());
-    	    }
-    	}
-    	if (fEndContainer.getNodeType() == Node.TEXT_NODE
+        else {  //fStartContainer is not a TextNode
+            node=node.getFirstChild();
+            if (fStartOffset>0) { //find a first node within a range, specified by fStartOffset
+               int counter=0;
+               while (counter<fStartOffset && node!=null) {
+                   node=node.getNextSibling();
+                   counter++;
+               }  
+            }
+            if (node == null) {
+                   node = nextNode(fStartContainer,false);
+            }
+        } 
+        if ( fEndContainer.getNodeType()!= Node.TEXT_NODE &&
+             fEndContainer.getNodeType()!= Node.CDATA_SECTION_NODE ){
+             int i=fEndOffset;
+             stopNode = fEndContainer.getFirstChild();
+             while( i>0 && stopNode!=null ){
+                 --i;
+                 stopNode = stopNode.getNextSibling();
+             }
+             if ( stopNode == null )
+                 stopNode = nextNode( fEndContainer, false );
+         }
+         while (node != stopNode) {  //look into all kids of the Range
+             if (node == null) break;
+             if (node.getNodeType() == Node.TEXT_NODE
+             ||  node.getNodeType() == Node.CDATA_SECTION_NODE) {
+                 sb.append(node.getNodeValue());
+             }
+
+             node = nextNode(node, true);
+         }
+
+      	if (fEndContainer.getNodeType() == Node.TEXT_NODE
     	 || fEndContainer.getNodeType() == Node.CDATA_SECTION_NODE) {
     	    sb.append(fEndContainer.getNodeValue().substring(0,fEndOffset));
     	}
