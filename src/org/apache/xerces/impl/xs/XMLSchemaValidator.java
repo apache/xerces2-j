@@ -1582,7 +1582,6 @@ public class XMLSchemaValidator
         // ensure the ch array is big enough
         if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < value.length+1) {
             fNormalizedStr.ch = new char[value.length+1];
-            fNormalizedStr.ch[0] = ' ';
         }
         // don't include the leading ' ' for now. might include it later.
         fNormalizedStr.offset = 1;
@@ -1632,10 +1631,12 @@ public class XMLSchemaValidator
                     // previous chunk ended on whitespace
                     // insert whitespace
                     fNormalizedStr.offset = 0;
+                    fNormalizedStr.ch[0] = ' ';
                 } else if (spaces == 1 || spaces == 3) {
                     // previous chunk ended on character,
                     // this chunk starts with whitespace
                     fNormalizedStr.offset = 0;
+                    fNormalizedStr.ch[0] = ' ';
                 }
             }
         }
