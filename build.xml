@@ -1163,9 +1163,9 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
     <replace file="${build.src}/org/apache/xml/serialize/XML11Serializer.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
-    <replace file="${build.src}/org/w3c/dom/ls/DOMSerializer.java"  
+    <replace file="${build.src}/org/w3c/dom/ls/LSSerializer.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/w3c/dom/ls/DOMParser.java"  
+    <replace file="${build.src}/org/w3c/dom/ls/LSParser.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultNode.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
