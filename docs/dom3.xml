@@ -37,11 +37,6 @@
 	</s2>
 
 	<s2 title='Implementation of DOM Level 3 Core'>
-            <p>Missing functionality:</p>
-             <ul>
-               <li><strong>DOMConfiguration "infoset"</strong> parameter - value "true" is not supported. </li>
-             </ul>
-              
 		<p>
 			The <code>parameters</code> supported are:
 		</p>
@@ -103,7 +98,7 @@
 			<li>
 				<strong>infoset</strong>
 				[
-				<em>false</em>
+				<em>true/false</em>
 				]
 			</li>
 			<li>
@@ -131,7 +126,7 @@
 				]
 			</li>
 			<li>
-				<strong>whitespace-in-element-content</strong>
+				<strong>element-content-whitespace</strong>
 				[
 				<em>true</em>
 				]
