@@ -61,6 +61,9 @@ package org.apache.xerces.dom;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Attr;
 
+import org.apache.xerces.util.URI;
+
+
 
 /**
  * ElementNSImpl inherits from ElementImpl and adds namespace support. 
@@ -325,12 +328,25 @@ public class ElementNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
+
+
+        String baseURI = this.ownerNode.getBaseURI();
         if (attributes != null) {
             Attr attrNode = (Attr)attributes.getNamedItemNS("http://www.w3.org/XML/1998/namespace", "base");
             if (attrNode != null) {
-                return attrNode.getNodeValue();
+                String uri =  attrNode.getNodeValue();
+                if (uri.length() != 0 ) {// attribute value is always empty string
+                    try {
+                       uri = new URI(new URI(baseURI), uri).toString();  
+                    } 
+                    catch (org.apache.xerces.util.URI.MalformedURIException e){
+                        // REVISIT: what should happen in this case?
+                        return null;
+                    }
+                    return uri;
+                }
             }
         }
-        return this.ownerNode.getBaseURI();
+        return baseURI;
     }
 }

@@ -65,6 +65,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import org.apache.xerces.util.URI;
+
 /**
  * Elements represent most of the "markup" and structure of the
  * document.  They contain both the data for the element itself
@@ -202,13 +204,24 @@ public class ElementImpl
         if (needsSyncData()) {
             synchronizeData();
         }
+        String baseURI = this.ownerNode.getBaseURI();
         if (attributes != null) {
             Attr attrNode = (Attr)attributes.getNamedItem("xml:base");
             if (attrNode != null) {
-                return attrNode.getNodeValue();
+                String uri =  attrNode.getNodeValue();
+                if (uri.length() != 0 ) {// attribute value is always empty string
+                    try {
+                       uri = new URI(baseURI, uri).toString();  
+                    } 
+                    catch (org.apache.xerces.util.URI.MalformedURIException e){
+                        // REVISIT: what should happen in this case?
+                        return null;
+                    }
+                    return uri;
+                }
             }
         }
-        return this.ownerNode.getBaseURI();
+        return baseURI;
     }
 
 
