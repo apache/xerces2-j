@@ -833,7 +833,7 @@ public class XMLSchemaValidator
 
         fGrammarResolver = new XSGrammarResolver();
         fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
-        fSchemaHandler = new XSDHandler(fGrammarResolver, fSubGroupHandler);
+        fSchemaHandler = new XSDHandler(fGrammarResolver);
 
     } // <init>()
 
@@ -1153,7 +1153,10 @@ public class XMLSchemaValidator
             while (t.hasMoreTokens()) {
                 namespace = t.nextToken ();
                 if (!t.hasMoreTokens()) {
-                    // REVISIT: report error for wrong number of uris
+                    // REVISIT: new error code
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "general", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
+                                               XMLErrorReporter.SEVERITY_WARNING);
                     break;
                 }
                 location = t.nextToken();

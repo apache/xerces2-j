@@ -58,7 +58,6 @@
 package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.dv.xs.*;
-import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XSGrammarResolver;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
@@ -204,9 +203,6 @@ public class XSDHandler {
     // the XSAttributeChecker
     private XSAttributeChecker fAttributeChecker;
 
-    // the SubstitutionGroupHandler
-    private SubstitutionGroupHandler fSubGroupHandler;
-
     // the XMLEntityResolver
     private XMLEntityResolver fEntityResolver;
 
@@ -264,9 +260,8 @@ public class XSDHandler {
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
-    public XSDHandler (XSGrammarResolver gResolver, SubstitutionGroupHandler subGroupHandler) {
+    public XSDHandler (XSGrammarResolver gResolver) {
         fGrammarResolver = gResolver;
-        fSubGroupHandler = subGroupHandler;
 
         // REVISIT: do we use shadowed or synchronized symbol table of
         //          SchemaSymbols.fSymbolTable?
@@ -326,13 +321,12 @@ public class XSDHandler {
         // fifth phase:  handle Keyrefs
         resolveKeyRefs();
 
-        // sixth phase:  handle derivation constraint checking
-        // and UPA, and validate attribute of non-schema namespaces
+        // sixth phase: validate attribute of non-schema namespaces
         // REVISIT: skip this for now. we reall don't want to do it.
         //fAttributeChecker.checkNonSchemaAttributes(fGrammarResolver);
 
         // and return.
-        return fGrammarResolver.getGrammar(fRoot.fTargetNamespace);
+        return fGrammarResolver.getGrammar(schemaNamespace);
     } // end parseSchema
 
     // may wish to have setter methods for ErrorHandler,
@@ -885,7 +879,7 @@ public class XSDHandler {
         }
         if (nameToFind == null) return null;
         int commaPos = nameToFind.indexOf(",");
-        QName qNameToFind = new QName(EMPTY_STRING, nameToFind.substring(commaPos+1), 
+        QName qNameToFind = new QName(EMPTY_STRING, nameToFind.substring(commaPos+1),
             nameToFind.substring(commaPos), (commaPos == 0)? null : nameToFind.substring(0, commaPos));
         Object retObj = getGlobalDecl(currSchema, type, qNameToFind);
         if(retObj == null) {
@@ -899,7 +893,7 @@ public class XSDHandler {
             }
             return null;
         }
-        return retObj; 
+        return retObj;
     } // getGrpOrAttrGrpRedefinedByRestriction(int, QName, XSDocumentInfo):  Object
 
     // Since ID constraints can occur in local elements, unless we
@@ -1028,7 +1022,7 @@ public class XSDHandler {
         fAttributeGroupTraverser = new XSDAttributeGroupTraverser(this, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this, fAttributeChecker);
         fComplexTypeTraverser = new XSDComplexTypeTraverser(this, fAttributeChecker);
-        fElementTraverser = new XSDElementTraverser(this, fAttributeChecker, fSubGroupHandler);
+        fElementTraverser = new XSDElementTraverser(this, fAttributeChecker);
         fGroupTraverser = new XSDGroupTraverser(this, fAttributeChecker);
         fKeyrefTraverser = new XSDKeyrefTraverser(this, fAttributeChecker);
         fNotationTraverser = new XSDNotationTraverser(this, fAttributeChecker);
@@ -1518,28 +1512,4 @@ public class XSDHandler {
                                    XMLErrorReporter.SEVERITY_ERROR);
     }
 
-    /******* only for testing!  ******/
-    public static void main (String args[]) throws Exception {
-        DefaultHandler handler = new DefaultHandler();
-        XSGrammarResolver xsg = new XSGrammarResolver();
-        XSDHandler me = new XSDHandler(xsg, new SubstitutionGroupHandler(xsg));
-        XMLErrorReporter rep = new XMLErrorReporter();
-        rep.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
-        me.reset(rep, new EntityResolverWrapper(new org.apache.xerces.impl.xs.traversers.XSDHandler.DummyResolver()), new SymbolTable());
-        me.parseSchema(args[0], args[1]);
-        Enumeration types = me.fUnparsedTypeRegistry.keys();
-        String name = null;
-        while (types.hasMoreElements()) {
-            name = (String)types.nextElement();
-        }
-    } // main
-
-    public static class DummyResolver implements EntityResolver {
-        public InputSource resolveEntity(String pubId, String sysId) throws SAXException, IOException {
-            InputSource toReturn = new InputSource(sysId);
-            toReturn.setPublicId(pubId);
-            toReturn.setCharacterStream(new FileReader(sysId));
-            return toReturn;
-        }
-    } // dummyResolver*/
 } // XSDHandler

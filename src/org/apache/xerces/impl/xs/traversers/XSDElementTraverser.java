@@ -60,7 +60,6 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.dv.xs.*;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.XSConstraints;
-import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSElementDecl;
@@ -104,17 +103,13 @@ class XSDElementTraverser extends XSDAbstractTraverser {
     protected XSElementDecl  fTempElementDecl  = new XSElementDecl();
     protected XSParticleDecl fTempParticleDecl = new XSParticleDecl();
 
-    SubstitutionGroupHandler fSubGroupHandler;
-
     // this controls what happens when a local element is encountered.
     // We may not encounter all local elements when first parsing.
     boolean fDeferTraversingLocalElements;
 
     XSDElementTraverser (XSDHandler handler,
-                         XSAttributeChecker gAttrCheck,
-                         SubstitutionGroupHandler subGroupHandler) {
+                         XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
-        fSubGroupHandler = subGroupHandler;
     }
 
     /**
