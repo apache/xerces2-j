@@ -12,7 +12,7 @@
   <ul>
    <li><link anchor='Counter'>sax.Counter</link></li>
    <li><link anchor='DocumentTracer'>sax.DocumentTracer</link></li>
-   <li><link anchor='Writer'>dom.Writer</link></li>
+   <li><link anchor='Writer'>sax.Writer</link></li>
   </ul>
   <p>
    Most of the SAX parser samples have a command line option that
