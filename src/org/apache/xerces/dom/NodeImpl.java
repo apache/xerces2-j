@@ -1156,9 +1156,10 @@ public abstract class NodeImpl
                 if(owner!=null)
                 {
                     MutationEventImpl me= new MutationEventImpl();
-                    //?????ownerDocument.createEvent("MutationEvents");
-                    me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,true,false,
-                       null,oldvalue,enclosingAttr.getNodeValue(),enclosingAttr.getNodeName());
+                    me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
+                                         true,false, null,oldvalue,
+                                         enclosingAttr.getNodeValue(),
+                                         enclosingAttr.getNodeName(),(short)0);
                     // REVISIT: The DOM Level 2 PR has a bug: the init method
                     // should let this attribute be specified. Since it doesn't
                     // we have to set it directly.
@@ -1175,12 +1176,9 @@ public abstract class NodeImpl
         LCount lc=LCount.lookup(MutationEventImpl.DOM_SUBTREE_MODIFIED);
         if(lc.captures+lc.bubbles+lc.defaults>0)
         {
-            MutationEvent me=
-                    new MutationEventImpl();
-                //?????ownerDocument.createEvent("MutationEvents");
-            me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,true,false,
-               null,null,null,null);
-            
+            MutationEvent me= new MutationEventImpl();
+            me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,
+                                 true,false,null,null,null,null,(short)0);
             
             // If we're within an Attr, DStM gets sent to the Attr
             // and to its owningElement. Otherwise we dispatch it

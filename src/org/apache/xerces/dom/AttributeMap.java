@@ -331,15 +331,10 @@ public class AttributeMap extends NamedNodeMapImpl {
             // do so.
             if(lc.captures+lc.bubbles+lc.defaults>0) {
                 MutationEventImpl me= new MutationEventImpl();
-                //?????ownerDocument.createEvent("MutationEvents");
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
                                      true, false,
                                      null, n.getNodeValue(),
-				     null, name);
-                // REVISIT: The DOM Level 2 PR has a bug: the init method
-                // should let this attribute be specified. Since it doesn't we
-                // have to set it directly.
-                me.attrChange = MutationEvent.REMOVAL;
+				     null, name, MutationEvent.REMOVAL);
                 ownerNode.dispatchEvent(me);
             }
 
@@ -465,15 +460,9 @@ public class AttributeMap extends NamedNodeMapImpl {
             // do so.
             if(lc.captures+lc.bubbles+lc.defaults>0) {
                 MutationEventImpl me= new MutationEventImpl();
-                //?????ownerDocument.createEvent("MutationEvents");
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
-                                     true, false,
-                                     null, n.getNodeValue(),
-				     null, name);
-                // REVISIT: The DOM Level 2 PR has a bug: the init method
-                // should let this attribute be specified. Since it doesn't we
-                // have to set it directly.
-                me.attrChange = MutationEvent.REMOVAL;
+                                     true, false, null, n.getNodeValue(),
+				     null, name, MutationEvent.REMOVAL);
                 ownerNode.dispatchEvent(me);
             }
 

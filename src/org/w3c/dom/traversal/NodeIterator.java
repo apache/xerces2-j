@@ -25,7 +25,7 @@ import org.w3c.dom.DOMException;
  * traversal of a document subtree. Instances of these iterators are created 
  * by calling <code>DocumentTraversal</code>
  * <code>.createNodeIterator()</code>.
- * <p>See also the <a href='http://www.w3.org/TR/2000/PR-DOM-Level-2-Traversal-Range-20000927'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
  * @since DOM Level 2
  */
 public interface NodeIterator {

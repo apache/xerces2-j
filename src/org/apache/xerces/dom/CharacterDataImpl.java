@@ -190,10 +190,9 @@ public abstract class CharacterDataImpl
             if(lc.captures+lc.bubbles+lc.defaults>0)
             {
                 MutationEvent me= new MutationEventImpl();
-                //?????ownerDocument.createEvent("MutationEvents");
                 me.initMutationEvent(
                                  MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
-                                     true,false,null,oldvalue,value,null);
+                                 true,false,null,oldvalue,value,null,(short)0);
                 dispatchEvent(me);
             }
             

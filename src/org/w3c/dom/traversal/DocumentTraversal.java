@@ -22,7 +22,7 @@ import org.w3c.dom.DOMException;
  * start tags occur in the text representation of the document). In DOMs 
  * which support the Traversal feature, <code>DocumentTraversal</code> will 
  * be implemented by the same objects that implement the Document interface.
- * <p>See also the <a href='http://www.w3.org/TR/2000/PR-DOM-Level-2-Traversal-Range-20000927'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
  * @since DOM Level 2
  */
 public interface DocumentTraversal {

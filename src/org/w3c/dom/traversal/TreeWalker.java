@@ -30,7 +30,7 @@ import org.w3c.dom.DOMException;
  * the root node of a document. In the logical view that results, all text 
  * nodes will be siblings and appear as direct children of the root node, no 
  * matter how deeply nested the structure of the original document.
- * <p>See also the <a href='http://www.w3.org/TR/2000/PR-DOM-Level-2-Traversal-Range-20000927'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
  * @since DOM Level 2
  */
 public interface TreeWalker {

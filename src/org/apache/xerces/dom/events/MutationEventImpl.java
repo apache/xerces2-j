@@ -131,12 +131,13 @@ implements MutationEvent
         */
     public void initMutationEvent(String typeArg, boolean canBubbleArg, 
         boolean cancelableArg, Node relatedNodeArg, String prevValueArg, 
-        String newValueArg, String attrNameArg)
+        String newValueArg, String attrNameArg, short attrChangeArg)
     {
         relatedNode=relatedNodeArg;
         prevValue=prevValueArg;
         newValue=newValueArg;
         attrName=attrNameArg;
+        attrChange=attrChangeArg;
         super.initEvent(typeArg,canBubbleArg,cancelableArg);
     }
 

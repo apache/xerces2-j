@@ -485,10 +485,10 @@ public abstract class ParentNode
                     if(lc.captures+lc.bubbles+lc.defaults>0)
                     {
                         MutationEvent me= new MutationEventImpl();
-                        //?????ownerDocument.createEvent("MutationEvents");
                         me.initMutationEvent(
                                           MutationEventImpl.DOM_NODE_INSERTED,
-                                          true,false,this,null,null,null);
+                                          true,false,this,null,
+                                          null,null,(short)0);
                         newInternal.dispatchEvent(me);
                     }
 
@@ -519,11 +519,10 @@ public abstract class ParentNode
                             if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                             {
                                 MutationEvent me= new MutationEventImpl();
-                                //??ownerDocument.createEvent("MutationEvents")
                                 me.initMutationEvent(MutationEventImpl
                                               .DOM_NODE_INSERTED_INTO_DOCUMENT,
-                                                     false,false,
-                                                     null,null,null,null);
+                                                     false,false,null,null,
+                                                     null,null,(short)0);
                                 dispatchEventToSubtree(newInternal,me);
                             }
                         }
@@ -603,9 +602,9 @@ public abstract class ParentNode
                 if(lc.captures+lc.bubbles+lc.defaults>0)
                 {
                     MutationEvent me= new MutationEventImpl();
-                    //?????ownerDocument.createEvent("MutationEvents");
                     me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,
-                                         true,false,this,null,null,null);
+                                         true,false,this,null,
+                                         null,null,(short)0);
                     oldInternal.dispatchEvent(me);
                 }
             
@@ -630,11 +629,10 @@ public abstract class ParentNode
                         if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                         {
                             MutationEvent me= new MutationEventImpl();
-                            //?????ownerDocument.createEvent("MutationEvents");
                             me.initMutationEvent(MutationEventImpl
                                                .DOM_NODE_REMOVED_FROM_DOCUMENT,
                                                  false,false,
-                                                 null,null,null,null);
+                                                 null,null,null,null,(short)0);
                             dispatchEventToSubtree(oldInternal,me);
                         }
                     }
