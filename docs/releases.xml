@@ -4,6 +4,8 @@
 <releases>
   <release version="&ParserName; 2.2.0">
     <desc>
+        As well as incorporating two changes to the Xerces Native Interface, this
+        release focuses on performance improvements and bug fixes.  
     </desc>
     <changes>
        <update>
@@ -15,6 +17,22 @@
            </note>
            <submitter name='Andy Clark'/>
        </update>
+       <update>
+        <note>
+            Modified XNI XMLDocumentHandler interface so that NamespaceContext
+            objects are passed on the startDocument call.  This makes
+            the start/endPrefixMapping calls redundant; they have
+            been deprecated.
+        </note>
+        <submitter name="Elena Litani, Arnaud Le Hors"/>
+      </update>
+       <fix>
+        <note>
+            Fixed many conformance bugs and enhanced the parser's performance
+            in many situations.
+        </note>
+        <submitter name="Elena Litani, Sandy Gao, Neil Graham"/>
+      </fix>
     </changes>
   </release>
   <release version="&ParserName; 2.1.0">
