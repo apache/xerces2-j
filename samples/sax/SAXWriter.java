@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package sax;                    
+package sax;
 
 import util.Arguments;
 import java.io.OutputStreamWriter;
@@ -81,7 +81,7 @@ import org.xml.sax.XMLReader;
  *
  * @version
  */
-public class SAXWriter 
+public class SAXWriter
 extends HandlerBase {
 
     //
@@ -89,12 +89,13 @@ extends HandlerBase {
     //
 
     /** Default parser name. */
-    private static final String 
+    private static final String
     DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
     private static boolean setSchemaSupport = true;
+    private static boolean setSchemaFullSupport = false;
 
 
 
@@ -143,12 +144,14 @@ extends HandlerBase {
 
 
             if ( parser instanceof XMLReader ){
-                ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
+                ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation",
                                                 setValidation);
                 ((XMLReader)parser).setFeature( "http://xml.org/sax/features/namespaces",
                                                 setNameSpaces );
                 ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema",
                                                 setSchemaSupport );
+                ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema-full-checking",
+                                                setSchemaFullSupport );
 
             }
 
@@ -349,7 +352,7 @@ extends HandlerBase {
                 }
                 j++;
             }
-            attributes.insertAttributeAt(j, name, attrs.getType(i), 
+            attributes.insertAttributeAt(j, name, attrs.getType(i),
                                          attrs.getValue(i));
         }
 
@@ -372,6 +375,7 @@ extends HandlerBase {
                              "  -n | -N  Turn on/off namespace [default=on]",
                              "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -f | -F  Turn on/off Schema full consraint checking  [default=off]",
                              "  -c       Canonical XML output.",
                              "  -h       This help screen."} );
 
@@ -392,7 +396,7 @@ extends HandlerBase {
         argopt.parseArgumentTokens(argv, new char[] { 'p'} );
 
         int   c;
-        String arg = null; 
+        String arg = null;
         while ( ( arg =  argopt.getlistFiles() ) != null ) {
 
             outer:
@@ -425,6 +429,12 @@ extends HandlerBase {
                 case 'S':
                     setSchemaSupport = false;
                     break;
+                case 'f':
+                    setSchemaFullSupport = true;
+                    break;
+                case 'F':
+                    setSchemaFullSupport = false;
+                    break;
                 case '?':
                 case 'h':
                 case '-':
@@ -437,7 +447,7 @@ extends HandlerBase {
                     break;
                 }
             }
-            // print 
+            // print
             System.err.println(arg+':');
             print(parserName, arg, canonical);
         }

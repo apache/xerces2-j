@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package sax;                    
+package sax;
 
 import util.Arguments;
 import java.io.OutputStreamWriter;
@@ -79,7 +79,7 @@ import org.xml.sax.helpers.ParserFactory;
  *
  * @version
  */
-public class SAXCount 
+public class SAXCount
 extends HandlerBase {
 
     //
@@ -87,7 +87,7 @@ extends HandlerBase {
     //
 
     /** Default parser name. */
-    private static final String 
+    private static final String
     DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
 
@@ -95,6 +95,7 @@ extends HandlerBase {
     private static boolean setNameSpaces    = true;
     private static boolean setLoadExternalDTD = true;
     private static boolean setSchemaSupport = true;
+    private static boolean setSchemaFullSupport = false;
 
 
     //
@@ -131,7 +132,7 @@ extends HandlerBase {
             try {
                 //if (validate && parser instanceof XMLReader)
                 if ( parser instanceof XMLReader ){
-                    ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
+                    ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation",
                                                     validate);
                     ((XMLReader)parser).setFeature( "http://xml.org/sax/features/namespaces",
                                                     setNameSpaces );
@@ -139,6 +140,8 @@ extends HandlerBase {
                                                     setSchemaSupport );
                     ((XMLReader)parser).setFeature( "http://apache.org/xml/features/nonvalidating/load-external-dtd",
                                                     setLoadExternalDTD );
+                    ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema-full-checking",
+                                                    setSchemaFullSupport );
 
                 }
             } catch (Exception ex) {
@@ -304,13 +307,14 @@ extends HandlerBase {
     public static void main(String argv[]) {
 
         Arguments argopt = new Arguments();
-        argopt.setUsage( new String[] 
+        argopt.setUsage( new String[]
                          { "usage: java sax.SAXCount (options) uri ...","",
                              "options:",
                              "  -p name  Specify SAX parser by name.",
                              "  -n | -N  Turn on/off namespace [default=on]",
                              "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -f | -F  Turn on/off Schema full consraint checking  [default=off]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -l | -L  Turn on/off external DTD loading [default=on]",
                              "  -w       Warmup the parser before timing.",
@@ -329,7 +333,7 @@ extends HandlerBase {
         argopt.parseArgumentTokens(argv, new char[]  { 'p'} );
 
         int   c;
-        String arg = null; 
+        String arg = null;
         while ( ( arg =  argopt.getlistFiles() ) != null ) {
             outer:
             while ( (c =  argopt.getArguments()) != -1 ){
@@ -361,6 +365,12 @@ extends HandlerBase {
                 case 'S':
                     setSchemaSupport = false;
                     break;
+                case 'f':
+                    setSchemaFullSupport = true;
+                    break;
+                case 'F':
+                    setSchemaFullSupport = false;
+                    break;
                 case '?':
                 case 'h':
                 case '-':
@@ -377,7 +387,7 @@ extends HandlerBase {
                 }
 
             }
-            
+
             // print uri
             print(parserName, arg,  setValidation);
             ///

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,8 +55,8 @@
  * <http://www.apache.org/>.
  */
 
-package sax;                    
-                    
+package sax;
+
 import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -77,7 +77,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @version $Id$
  */
-public class SAX2Writer 
+public class SAX2Writer
     extends DefaultHandler {
 
     //
@@ -85,13 +85,14 @@ public class SAX2Writer
     //
 
     /** Default parser name. */
-    private static final String 
+    private static final String
         DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
     private static boolean setSchemaSupport = true;
+    private static boolean setSchemaFullSupport = false;
 
 
     //
@@ -136,12 +137,14 @@ public class SAX2Writer
 
             XMLReader parser = (XMLReader)Class.forName(parserName).newInstance();
 
-            parser.setFeature( "http://xml.org/sax/features/validation", 
+            parser.setFeature( "http://xml.org/sax/features/validation",
                                                 setValidation);
             parser.setFeature( "http://xml.org/sax/features/namespaces",
                                                 setNameSpaces );
             parser.setFeature( "http://apache.org/xml/features/validation/schema",
                                                 setSchemaSupport );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema-full-checking",
+                                                setSchemaFullSupport );
 
 
             parser.setContentHandler(handler);
@@ -183,7 +186,7 @@ public class SAX2Writer
     } // startDocument()
 
     /** Start element. */
-    public void startElement(String uri, String local, String raw, 
+    public void startElement(String uri, String local, String raw,
                              Attributes attrs) {
 
         out.print('<');
@@ -263,7 +266,7 @@ public class SAX2Writer
         String systemId = ex.getSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
-            if (index != -1) 
+            if (index != -1)
                 systemId = systemId.substring(index + 1);
             str.append(systemId);
         }
@@ -340,7 +343,7 @@ public class SAX2Writer
                 }
                 j++;
             }
-            attributes.insertAttributeAt(j, name, attrs.getType(i), 
+            attributes.insertAttributeAt(j, name, attrs.getType(i),
                                          attrs.getValue(i));
         }
 
@@ -363,6 +366,7 @@ public class SAX2Writer
                              "  -n | -N  Turn on/off namespace [default=on]",
                              "  -v | -V  Turn on/off validation [default=on]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -f | -F  Turn on/off Schema full consraint checking  [default=off]",
                              "  -c       Canonical XML output.",
                              "  -h       This help screen."} );
 
@@ -383,7 +387,7 @@ public class SAX2Writer
         argopt.parseArgumentTokens(argv, new char[] { 'p'} );
 
         int   c;
-        String arg = null; 
+        String arg = null;
         while ( ( arg =  argopt.getlistFiles() ) != null ) {
 
             outer:
@@ -416,6 +420,12 @@ public class SAX2Writer
                 case 'S':
                     setSchemaSupport = false;
                     break;
+                case 'f':
+                    setSchemaFullSupport = true;
+                    break;
+                case 'F':
+                    setSchemaFullSupport = false;
+                    break;
                 case '?':
                 case 'h':
                 case '-':
@@ -428,7 +438,7 @@ public class SAX2Writer
                     break;
                 }
             }
-            // print 
+            // print
             System.err.println(arg+':');
             print(parserName, arg, canonical);
         }
