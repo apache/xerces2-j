@@ -107,7 +107,7 @@ public abstract class DocumentBuilderFactory {
     private boolean validating = false;
     private boolean namespaceAware = false;
     private boolean whitespace = false;
-    private boolean expandEntityRef = false;
+    private boolean expandEntityRef = true;
     private boolean ignoreComments = false;
     private boolean coalescing = false;
     
