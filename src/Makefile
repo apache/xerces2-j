@@ -42,6 +42,7 @@ source: ../bin/${JARFILE}
 #-src/org/apache/xerces/impl/msg
 	${MKDIR} ../class/org/apache/xerces/impl/msg
 	${CP}  ../src/org/apache/xerces/impl/msg/*.class                      ../class/org/apache/xerces/impl/msg
+	${CP}  ../src/org/apache/xerces/impl/msg/*.properties                      ../class/org/apache/xerces/impl/msg
 
 #-src/org/apache/xerces/impl/validation
 	${MKDIR} ../class/org/apache/xerces/impl/validation
