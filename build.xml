@@ -1471,4 +1471,69 @@ Copyright:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
   </target>
 
+  <!-- =================================================================== -->
+  <!-- Prepares the source code with Schema 1.1 support                    -->
+  <!-- =================================================================== -->
+  <target name="prepare-src-schema11" depends="prepare-src">
+  	<replace file="${build.src}/org/apache/xerces/impl/Constants.java"
+  		token="SCHEMA_1_1_SUPPORT = false" value="SCHEMA_1_1_SUPPORT = true"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the source directory with Schema 1.1 support               -->
+  <!-- =================================================================== -->
+  <target name="compile-schema11" depends="prepare-src-schema11">
+        <copy todir="${build.dest}">
+          <fileset dir="${build.src}"
+            includes="**/*.res, **/*.properties">
+          </fileset>
+        </copy>
+
+        <xjavac srcdir="${build.src}"
+               destdir="${build.dest}"
+               classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}"
+               debug="${debug}"
+               deprecation="${deprecation}"
+               optimize="${optimize}"
+               includeAntRuntime="false"
+               includeJavaRuntime="false"
+               excludes="org/xml/sax/** 
+                    javax/xml/parsers/**
+                    org/w3c/dom/*
+                    org/w3c/dom/events/**
+                    org/w3c/dom/html/**
+                    org/w3c/dom/ranges/**
+                    org/w3c/dom/traversal/**"
+               />
+  	</target>
+  
+  <!-- =================================================================== -->
+  <!-- Creates the implementation class package with Schema 1.1 support    -->
+  <!-- =================================================================== -->
+  <target name="jar-schema11" depends="compile-schema11">
+    <jar jarfile="${build.dir}/schema11-${jar.parser}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="org/apache/**, META-INF/**
+                    org/w3c/dom/html/HTMLDOMImplementation.class
+                   org/w3c/dom/ls/**
+                   org/w3c/dom/DOMError.class
+                   org/w3c/dom/DOMErrorHandler.class
+                   org/w3c/dom/DOMImplementationSource.class
+                   org/w3c/dom/DOMImplementationRegistry.class
+                   org/w3c/dom/DOMLocator.class
+                   org/w3c/dom/UserDataHandler.class">
+    </jar>
+  </target>	
+
+  <!-- =================================================================== -->
+  <!-- Builds xercesImpl, xml-apis and sample jars with Schema 1.1 support -->
+  <!-- =================================================================== -->
+  <target name="jars-schema11" depends="jar-schema11, sampjar">
+    <!-- support xml-commons APIs -->
+    <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
+
+    <!-- support xml-commons resolver -->
+    <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
+  </target>
 </project>
