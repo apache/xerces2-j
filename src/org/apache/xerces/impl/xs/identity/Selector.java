@@ -157,15 +157,7 @@ public class Selector {
         /** Constructs a selector XPath expression. */
         public XPath(String xpath, SymbolTable symbolTable, 
                      NamespaceContext context) throws XPathException {
-            // NOTE: We have to prefix the selector XPath with "./" in
-            //       order to handle selectors such as "." that select
-            //       the element container because the fields could be
-            //       relative to that element. -Ac
-            //       Unless xpath starts with a descendant node -Achille Fokoue
-            //      ... or a '.' or a '/' - NG
-            super(((xpath.trim().startsWith("/") ||xpath.trim().startsWith("."))?
-                   xpath:"./"+xpath), symbolTable, context);
-
+            super(normalize(xpath), symbolTable, context);
             // verify that an attribute is not selected
             for (int i=0;i<fLocationPaths.length;i++) {
                 org.apache.xerces.impl.xpath.XPath.Axis axis =
@@ -176,6 +168,31 @@ public class Selector {
             }
 
         } // <init>(String,SymbolTable,NamespacesScope)
+
+        private static String normalize(String xpath) {
+            // NOTE: We have to prefix the selector XPath with "./" in
+            //       order to handle selectors such as "." that select
+            //       the element container because the fields could be
+            //       relative to that element. -Ac
+            //       Unless xpath starts with a descendant node -Achille Fokoue
+            //      ... or a '.' or a '/' - NG
+            //  And we also need to prefix exprs to the right of | with ./ - NG
+            StringBuffer modifiedXPath = new StringBuffer(xpath.length()+5);
+            int unionIndex = -1;
+            do {
+                if(!(xpath.trim().startsWith("/") ||xpath.trim().startsWith("."))) {
+                    modifiedXPath.append("./"); 
+                }
+                unionIndex = xpath.indexOf('|');
+                if(unionIndex == -1) {
+                    modifiedXPath.append(xpath);
+                    break;
+                }
+                modifiedXPath.append(xpath.substring(0,unionIndex+1));
+                xpath = xpath.substring(unionIndex+1, xpath.length());
+            } while(true);
+            return modifiedXPath.toString();
+        }
 
     } // class Selector.XPath
 
