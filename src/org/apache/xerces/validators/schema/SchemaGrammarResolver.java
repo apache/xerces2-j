@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.common;
+package org.apache.xerces.validators.schema;
 
 
 import java.util.*;
