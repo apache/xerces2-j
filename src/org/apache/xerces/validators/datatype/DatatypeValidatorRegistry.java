@@ -99,15 +99,15 @@ public class DatatypeValidatorRegistry {
 
         Hashtable facets = new Hashtable();
         facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
-        addValidator("language", createDatatypeValidator("String", facets ));
+        addValidator("language", createDatatypeValidator("string", facets ));
 
         facets = new Hashtable();
         facets.put(SchemaSymbols.ELT_PATTERN , "\\i\\c*" );
-        addValidator("Name", createDatatypeValidator("String", facets ));
+        addValidator("Name", createDatatypeValidator("string", facets ));
 
         facets = new Hashtable();
         facets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-        addValidator("NCName", createDatatypeValidator("String", facets ));
+        addValidator("NCName", createDatatypeValidator("string", facets ));
 
         facets = new Hashtable();
         facets.put(SchemaSymbols.ELT_SCALE, "0");
