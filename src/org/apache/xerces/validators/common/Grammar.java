@@ -477,6 +477,8 @@ implements XMLContentSpec.Provider {
         int index = elementDeclIndex &  CHUNK_MASK;
 
         fElementDeclFirstAttributeDeclIndex[chunk][index] = newFirstAttrIndex;
+        if (fElementDeclLastAttributeDeclIndex[chunk][index] == -1)
+            fElementDeclLastAttributeDeclIndex[chunk][index] = newFirstAttrIndex;
     }
 
 
