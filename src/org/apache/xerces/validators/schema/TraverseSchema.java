@@ -5715,10 +5715,8 @@ throws Exception {
      *         Content: (annotation? , simpleType?)
      *       <attribute/>
      *
-     * @param attributeDecl: the declaration of the attribute under
-	 *                                          		consideration
-     * @param typeInfo: Contains the index of the element to which
-	 *                                          		the attribute declaration is attached.
+     * @param attributeDecl: the declaration of the attribute under consideration
+     * @param typeInfo: Contains the index of the element to which the attribute declaration is attached.
      * @param referredTo:  true iff traverseAttributeDecl was called because
      *		of encountering a ``ref''property (used
      *		to suppress error-reporting).
@@ -6142,13 +6140,14 @@ throws Exception {
     } // end of method traverseAttribute
 
     private int addAttributeDeclFromAnotherSchema( String name, String uriStr, ComplexTypeInfo typeInfo) throws Exception {
-        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
-        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+        Grammar grammar = fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || ! (grammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError( "no attribute named \"" + name
                                       + "\" was defined in schema : " + uriStr);
             return -1;
         }
+        SchemaGrammar aGrammar = (SchemaGrammar)grammar;
 
         Hashtable attrRegistry = aGrammar.getAttributeDeclRegistry();
         if (attrRegistry == null) {
@@ -6199,13 +6198,14 @@ throws Exception {
     }
 
     private int addAttributeDeclFromAnotherSchema( String name, String uriStr, ComplexTypeInfo typeInfo, boolean hasDefault, boolean hasFixed, String fixedValue, int attValueAndUseType) throws Exception {
-        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
-        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+        Grammar grammar = fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || ! (grammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError( "no attribute named \"" + name
                                       + "\" was defined in schema : " + uriStr);
             return -1;
         }
+        SchemaGrammar aGrammar = (SchemaGrammar)grammar;
 
         Hashtable attrRegistry = aGrammar.getAttributeDeclRegistry();
         if (attrRegistry == null) {
@@ -6215,7 +6215,7 @@ throws Exception {
             return -1;
         }
 
-        XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl((XMLAttributeDecl) attrRegistry.get(name));
+        XMLAttributeDecl referredAttrDecl = (XMLAttributeDecl) attrRegistry.get(name);
 
         if (referredAttrDecl == null) {
             // REVISIT: Localize
@@ -6224,6 +6224,7 @@ throws Exception {
             return -1;
         }
 
+        referredAttrDecl = new XMLAttributeDecl(referredAttrDecl);
 
         if (typeInfo!= null) {
 
@@ -6427,12 +6428,14 @@ throws Exception {
                                                              ComplexTypeInfo typeInfo,
                                                              Vector anyAttDecls ) throws Exception {
 
-        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
-        if (uriStr == null || aGrammar == null || ! (aGrammar instanceof SchemaGrammar) ) {
+        Grammar grammar = fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || grammar == null || ! (grammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found in #traverseAttributeGroupDeclFromAnotherSchema, schema uri : " + uriStr);
             return -1;
         }
+        SchemaGrammar aGrammar = (SchemaGrammar)grammar;
+
         // attribute name
         Element attGrpDecl = (Element) aGrammar.topLevelAttrGrpDecls.get((Object)attGrpName);
         if (attGrpDecl == null) {
@@ -8061,15 +8064,15 @@ throws Exception {
      */
     private String traverseNotationFromAnotherSchema( String notationName , String uriStr ) throws Exception {
 
-        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
-        if (uriStr == null || aGrammar==null ||! (aGrammar instanceof SchemaGrammar) ) {
+        Grammar grammar = fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || grammar==null ||! (grammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found in #traverseNotationDeclFromAnotherSchema, "+
                                      "schema uri: " + uriStr
                                      +", groupName: " + notationName);
             return "";
         }
-
+        SchemaGrammar aGrammar = (SchemaGrammar)grammar;
 
         String savedNSURIString = fTargetNSURIString;
         fTargetNSURIString = fStringPool.toString(fStringPool.addSymbol(aGrammar.getTargetNamespaceURI()));
@@ -8332,15 +8335,15 @@ throws Exception {
     private GroupInfo traverseGroupDeclFromAnotherSchema( String groupName , String uriStr ) throws Exception {
 
         GroupInfo gInfo = null;
-        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
-        if (uriStr == null || aGrammar==null ||! (aGrammar instanceof SchemaGrammar) ) {
+        Grammar grammar = fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || grammar==null ||! (grammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found in #traverseGroupDeclFromAnotherSchema, "+
                                      "schema uri: " + uriStr
                                      +", groupName: " + groupName);
             return null;
         }
-
+        SchemaGrammar aGrammar = (SchemaGrammar)grammar;
 
         Element groupDecl = (Element) aGrammar.topLevelGroupDecls.get((Object)groupName);
         if (groupDecl == null) {
