@@ -1,13 +1,41 @@
-Build Instructions:
+			Xerces Java Build Instructions
 
-To build Xerces Java on Windows, you need a copy of Cygnus's Cygwin.
-See http://sourceware.cygnus.com/cygwin. Once Cygwin is installed,
-or if you're on unix, all you need to do is then to go to the top of
-the Xerces Java tree and type 'make'.
+** On Windows:
 
-If you're using JDK 1.1 and want to build the documentation you need
+First, you need a copy of Cygnus's Cygwin.
+See http://sourceware.cygnus.com/cygwin.
+
+If your JDK is properly installed on your system, you do not need to set
+any CLASSPATH to build Xerces. If you have one, make sure it does not end
+with a '\' or it will cause the build to fail.
+
+If you're using JDK 1.1 and want to build the documentation you then need
 to specify where the JDK 1.2 java and javadoc programs are by setting
-the variable JDK12BIN, either in your environment or simply when
-calling make with something like:
+the variable JDK12BIN in your environment with something like:
 
-	make JDK12BIN="<pathToJDK12>"
+    set JDK12BIN="C:/jdk1.2.2/bin"
+
+Note the use of forward slashes! Depending on which version of make you are
+using having blackshlashes there may cause the build to fail.
+
+Then, if you're not using the Cygwin bash shell, you need to set the variable
+MAKE_MODE in your environment like this:
+
+    set MAKE_MODE=UNIX
+
+Finally, from the top of the Xerces Java tree, run make.
+
+
+
+** On Unix:
+
+If your JDK is properly installed on your system, you do not need to set
+any CLASSPATH to build Xerces.
+
+If you're using JDK 1.1 and want to build the documentation you then need
+to specify where the JDK 1.2 java and javadoc programs are by setting
+the variable JDK12BIN in your environment with something like:
+
+    set JDK12BIN "/usr/local/jdk-1.2.2/bin"
+
+Then, from the top of the Xerces Java tree, run make.
