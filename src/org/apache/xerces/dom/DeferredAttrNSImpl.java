@@ -137,6 +137,15 @@ public final class DeferredAttrNSImpl
 	prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
 	if (prefix != null)  { // REVIST: Unqualified attributes do not inherit default namespaces.
 	    namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+	    if (namespaceURI == null) {
+		if (prefix.equals("xml")) {
+		    namespaceURI = "http://www.w3.org/XML/1998/namespace";
+		} else if (prefix.equals("xmlns")) {
+		    namespaceURI = "http://www.w3.org/2000/xmlns/";
+		}
+	    }
+	} else if (name.equals("xmlns")) {
+	    namespaceURI = "http://www.w3.org/2000/xmlns/";
 	}
 	localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
 
