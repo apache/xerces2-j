@@ -216,7 +216,7 @@ public class AttrImpl
     		
         LCount lc=null;
         String oldvalue="";
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION PREPROCESSING AND PRE-EVENTS:
             // Only DOMAttrModified need be produced directly.
@@ -230,7 +230,7 @@ public class AttrImpl
             
         } // End mutation preprocessing
 
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // Can no longer just discard the kids; they may have
             // event listeners waiting for them to disconnect.
@@ -266,7 +266,7 @@ public class AttrImpl
 		
     	changed(); // ***** Is this redundant?
 
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION POST-EVENTS:
             dispatchAggregateEvents(this,oldvalue);            

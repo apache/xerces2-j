@@ -394,7 +394,8 @@ public abstract class ParentNode
             ChildNode newInternal = (ChildNode)newChild;
 
             EnclosingAttr enclosingAttr=null;
-            if(MUTATIONEVENTS && (mutationMask&MUTATION_AGGREGATE)!=0)
+            if(MUTATIONEVENTS && ownerDocument.mutationEvents
+               && (mutationMask&MUTATION_AGGREGATE)!=0)
             {
                 // MUTATION PREPROCESSING
                 // No direct pre-events, but if we're within the scope 
@@ -472,7 +473,7 @@ public abstract class ParentNode
                 }
             }
 
-            if(MUTATIONEVENTS)
+            if(MUTATIONEVENTS && ownerDocument.mutationEvents)
             {
                 // MUTATION POST-EVENTS:
                 // "Local" events (non-aggregated)
@@ -583,7 +584,7 @@ public abstract class ParentNode
         ChildNode oldInternal = (ChildNode) oldChild;
 
         EnclosingAttr enclosingAttr=null;
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION PREPROCESSING AND PRE-EVENTS:
             // If we're within the scope of an Attr and DOMAttrModified 
@@ -688,7 +689,7 @@ public abstract class ParentNode
 
         changed();
 
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION POST-EVENTS:
             // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
@@ -731,7 +732,7 @@ public abstract class ParentNode
         // aggregations should be issued only once per user request.
 
         EnclosingAttr enclosingAttr=null;
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION PREPROCESSING AND PRE-EVENTS:
             // If we're within the scope of an Attr and DOMAttrModified 
@@ -747,7 +748,7 @@ public abstract class ParentNode
         internalInsertBefore(newChild, oldChild,MUTATION_LOCAL);
         internalRemoveChild(oldChild,MUTATION_LOCAL);
 
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             dispatchAggregateEvents(enclosingAttr);
         }
@@ -892,6 +893,10 @@ public abstract class ParentNode
      */
     protected final void synchronizeChildren(int nodeIndex) {
 
+        // we don't want to generate any event for this so turn them off
+        boolean orig = ownerDocument.mutationEvents;
+        ownerDocument.mutationEvents = false;
+
         // no need to sync in the future
         needsSyncChildren(false);
 
@@ -921,6 +926,9 @@ public abstract class ParentNode
             first.isFirstChild(true);
             lastChild(last);
         }
+
+        // set mutation events flag back to its original value
+        ownerDocument.mutationEvents = orig;
 
     } // synchronizeChildren()
 

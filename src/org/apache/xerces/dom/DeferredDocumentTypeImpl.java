@@ -152,6 +152,10 @@ public class DeferredDocumentTypeImpl
     /** Synchronizes the entities, notations, and elements. */
     protected void synchronizeChildren() {
 
+        // we don't want to generate any event for this so turn them off
+        boolean orig = ownerDocument().mutationEvents;
+        ownerDocument().mutationEvents = false;
+
         // no need to synchronize again
         needsSyncChildren(false);
 
@@ -206,6 +210,9 @@ public class DeferredDocumentTypeImpl
                 }
              }
         }
+
+        // set mutation events flag back to its original value
+        ownerDocument().mutationEvents = orig;
 
     } // synchronizeChildren()
 

@@ -178,6 +178,9 @@ public class DocumentImpl
     /** Bypass error checking. */
     protected boolean errorChecking = true;
 
+    /** Bypass mutation events firing. */
+    protected boolean mutationEvents = false;
+
     //
     // Static initialization
     //
@@ -303,6 +306,7 @@ public class DocumentImpl
         // experimental
         newdoc.allowGrammarAccess = allowGrammarAccess;
         newdoc.errorChecking = errorChecking;
+        newdoc.mutationEvents = mutationEvents;
 
         // return new document
     	return newdoc;
@@ -359,7 +363,7 @@ public class DocumentImpl
      */
     public Node removeChild(Node oldChild)
         throws DOMException {
-	    super.removeChild(oldChild);
+        super.removeChild(oldChild);
 	
     	// If remove succeeded, un-cache the kid appropriately
         int type = oldChild.getNodeType();
@@ -624,6 +628,21 @@ public class DocumentImpl
      */
     public boolean getErrorChecking() {
         return errorChecking;
+    }
+
+    /** 
+     * Sets whether the DOM implementation generates mutation events
+     * upon operations.
+     */
+    public void setMutationEvents(boolean set) {
+        mutationEvents = set;
+    }
+
+    /**
+     * Returns true if the DOM implementation generates mutation events.
+     */
+    public boolean getMutationEvents() {
+        return mutationEvents;
     }
 
     // non-DOM factory methods

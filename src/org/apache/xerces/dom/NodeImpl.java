@@ -739,6 +739,10 @@ public abstract class NodeImpl
 	        ++lc.captures;
 	    else
 	        ++lc.bubbles;
+
+            // turn mutation events on
+            ownerDocument().mutationEvents = true;
+
 	} // addEventListener(String,EventListener,boolean) :void
 	
 	/** Introduced in DOM Level 2. <p>
@@ -1024,7 +1028,7 @@ public abstract class NodeImpl
      */
     void dispatchEventToSubtree(ChildNode n,Event e)
     {
-      if(MUTATIONEVENTS)
+      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
 	    if(nodeListeners==null || n==null)
             return;
@@ -1062,7 +1066,7 @@ public abstract class NodeImpl
 	 */
 	EnclosingAttr getEnclosingAttr()
 	{
-      if(MUTATIONEVENTS)
+      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
         NodeImpl eventAncestor=this;
         while(true)
@@ -1124,7 +1128,7 @@ public abstract class NodeImpl
 	 */
 	void dispatchAggregateEvents(AttrImpl enclosingAttr,String oldvalue)
 	{
-      if(MUTATIONEVENTS)
+      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
 	    if(nodeListeners==null)
             return;

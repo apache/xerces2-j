@@ -144,7 +144,8 @@ public class AttributeMap extends NamedNodeMapImpl {
             nodes.insertElementAt(arg, i);
         }
 
-        if (NodeImpl.MUTATIONEVENTS) {
+        if (NodeImpl.MUTATIONEVENTS &&
+            ownerNode.ownerDocument().mutationEvents) {
             // MUTATION POST-EVENTS:
             ownerNode.dispatchAggregateEvents(
                 (AttrImpl)arg,
@@ -214,7 +215,8 @@ public class AttributeMap extends NamedNodeMapImpl {
 
     	// Only NamedNodeMaps containing attributes (those which are
     	// bound to an element) need report MutationEvents
-        if (NodeImpl.MUTATIONEVENTS)
+        if (NodeImpl.MUTATIONEVENTS
+            && ownerNode.ownerDocument().mutationEvents)
         {
             // MUTATION POST-EVENTS:
             ownerNode.dispatchAggregateEvents(
@@ -359,7 +361,8 @@ public class AttributeMap extends NamedNodeMapImpl {
         LCount lc=null;
         String oldvalue="";
         AttrImpl enclosingAttribute=null;
-        if (NodeImpl.MUTATIONEVENTS)
+        if (NodeImpl.MUTATIONEVENTS
+            && ownerNode.ownerDocument().mutationEvents)
         {
             // MUTATION PREPROCESSING AND PRE-EVENTS:
             lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
@@ -409,7 +412,7 @@ public class AttributeMap extends NamedNodeMapImpl {
         // We can't use the standard dispatchAggregate, since it assumes
         // that the Attr is still attached to an owner. This code is
         // similar but dispatches to the previous owner, "element".
-        if(NodeImpl.MUTATIONEVENTS)
+        if(NodeImpl.MUTATIONEVENTS && ownerNode.ownerDocument().mutationEvents)
         {
     	    // If we have to send DOMAttrModified (determined earlier),
             // do so.

@@ -1376,6 +1376,10 @@ public class DeferredDocumentImpl
             }
         }
 
+        // we don't want to generate any event for this so turn them off
+        boolean orig = mutationEvents;
+        mutationEvents = false;
+
         // no need to sync in the future
         needsSyncChildren(false);
 
@@ -1415,6 +1419,9 @@ public class DeferredDocumentImpl
             first.isFirstChild(true);
             lastChild(last);
         }
+
+        // set mutation events flag back to its original value
+        mutationEvents = orig;
 
     } // synchronizeChildren()
 

@@ -183,6 +183,11 @@ public class DeferredEntityReferenceImpl
         DocumentType doctype = ownerDocument.getDoctype();
         boolean found = false;
         if (doctype != null) {
+
+            // we don't want to generate any event for this so turn them off
+            boolean orig = ownerDocument.mutationEvents;
+            ownerDocument.mutationEvents = false;
+
             NamedNodeMap entities = doctype.getEntities();
             if (entities != null) {
                 Entity entity = (Entity)entities.getNamedItem(getNodeName());
@@ -205,6 +210,8 @@ public class DeferredEntityReferenceImpl
                     }
                 }
             }
+            // set mutation events flag back to its original value
+            ownerDocument().mutationEvents = orig;
         }
 
         // if not found, create entity at this reference
