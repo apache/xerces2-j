@@ -210,7 +210,7 @@ public class DefaultNode implements Node {
     	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
     
-    public short compareTreePosition(Node other){
+    public short compareDocumentPosition(Node other){
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
     
