@@ -91,7 +91,7 @@ public class XSElementDecl {
     // the substitution group affiliation of the element
     public XSElementDecl fSubGroup = null;
     // identity constraints
-    static final int INITIAL_SIZE = 8;
+    static final int INITIAL_SIZE = 2;
     int fIDCPos = 0;
     IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
 

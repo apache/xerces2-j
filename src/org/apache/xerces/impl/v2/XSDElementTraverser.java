@@ -477,14 +477,17 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             }
         }
 
-        // get the simple type delaration, and validate
+        // get the simple type declaration, and validate
         boolean ret = true;
         if (dv != null) {
+            // REVISIT:  we'll be able to do this once he datatype redesign is implemented
+            /******
             try {
                 element.fDefault = dv.validate((String)element.fDefault, null);
             } catch (InvalidDatatypeValueException ide) {
                 ret = false;
             }
+            ***/
         }
 
         return ret;
