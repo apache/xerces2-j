@@ -70,6 +70,7 @@ import org.apache.xerces.impl.validation.XMLNotationDecl;
 import org.apache.xerces.impl.validation.XMLEntityDecl;
 import org.apache.xerces.impl.validation.XMLSimpleType;
 import org.apache.xerces.impl.validation.XMLContentSpec;
+import org.apache.xerces.impl.validation.DatatypeValidator;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.xni.QName;
 import org.xml.sax.SAXException;
@@ -516,9 +517,23 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
       }
       else if (type.startsWith("NOTATION") ) {
           fSimpleType.type = XMLSimpleType.TYPE_NOTATION;
+          Hashtable facets = new Hashtable();
+          facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
+          DatatypeValidator dv = 
+              DatatypeValidatorFactoryImpl.getDatatypeRegistry().createDatatypeValidator(attributeName+"_NOTATION", 
+                                                                                         fSimpleType.datatypeValidator,
+                                                                                         facets, false);
+          fSimpleType.datatypeValidator = dv;
       }
       else if (type.startsWith("(") ) {
           fSimpleType.type = XMLSimpleType.TYPE_ENUMERATION;
+          Hashtable facets = new Hashtable();
+          facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
+          DatatypeValidator dv = 
+              DatatypeValidatorFactoryImpl.getDatatypeRegistry().createDatatypeValidator(attributeName+"_CDATA", 
+                                                                                         DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator("string"),
+                                                                                         facets, false);
+          fSimpleType.datatypeValidator = dv;
       }
 
       fQName.clear();
@@ -526,7 +541,6 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
 
 
       fAttributeDecl.clear();
-      fAttributeDecl.simpleType     = fSimpleType;
       fAttributeDecl.setValues( fQName, fSimpleType, false );
 
       setAttributeDecl( elementIndex, fCurrentAttributeIndex,
