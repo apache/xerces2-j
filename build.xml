@@ -367,11 +367,11 @@ Copyright:
 
   <target name="javadoc-replace" unless="additional.param">
     <replace token="@xerces.internal" dir="${build.src}">
-      <replacevalue><![CDATA[<DL><DT><H1 style="font-size:110%">INTERNAL:</H1><DD>This type should not be directly used by the user. The methods/fields defined can be altered or removed at any time.</DD></DT></DL>]]></replacevalue>
+      <replacevalue><![CDATA[<DL><DT><H1 style="font-size:110%">INTERNAL:</H1><DD>Usage of this class is not supported. It may be altered or removed at any time.</DD></DT></DL>]]></replacevalue>
     </replace>
   	
     <replace token="@xerces.experimental" dir="${build.src}">
-      <replacevalue><![CDATA[<DL><DT><H1 style="font-size:150%">EXPERIMENTAL:</H1><DD>This interface should not be considered stable. It is likely to be altered or replaced in the future.</DD></DT></DL>]]></replacevalue>
+      <replacevalue><![CDATA[<DL><DT><H1 style="font-size:150%">EXPERIMENTAL:</H1><DD>This class should not be considered stable. It is likely to be altered or replaced in the future.</DD></DT></DL>]]></replacevalue>
     </replace>
   </target>
 	
