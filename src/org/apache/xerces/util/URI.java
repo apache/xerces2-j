@@ -1391,7 +1391,8 @@ import java.io.Serializable;
     }
 
     char testChar;
-    for (int i = 1; i < p_scheme.length(); i++) {
+    int schemeLength = p_scheme.length();
+    for (int i = 1; i < schemeLength; ++i) {
       testChar = p_scheme.charAt(i);
       if (!isSchemeCharacter(testChar)) {
         return false;
@@ -1406,7 +1407,7 @@ import java.io.Serializable;
   * a valid IPv4 address, IPv6 reference or the domain name of a network host. 
   * A valid IPv4 address consists of four decimal digit groups separated by a
   * '.'. Each group must consist of one to three digits. See RFC 2732 Section 3,
-  * and RFC 2373 Appendix B, for the definition of IPv6 references. A hostname 
+  * and RFC 2373 Section 2.2, for the definition of IPv6 references. A hostname 
   * consists of domain labels (each of which must begin and end with an alphanumeric 
   * but may contain '-') separated & by a '.'. See RFC 2396 Section 3.2.2.
   *
@@ -1428,7 +1429,10 @@ import java.io.Serializable;
       return isWellFormedIPv6Reference(address);
     }
 
-    if (address.startsWith(".") || address.startsWith("-")) {
+    // Cannot start with a '.', '-', or end with a '-'.
+    if (address.startsWith(".") || 
+        address.startsWith("-") || 
+        address.endsWith("-")) {
       return false;
     }
 
@@ -1458,6 +1462,7 @@ import java.io.Serializable;
       // domain labels can contain alphanumerics and '-"
       // but must start and end with an alphanumeric
       char testChar;
+      int labelCharCount = 0;
 
       for (int i = 0; i < addrLength; i++) {
         testChar = address.charAt(i);
@@ -1468,8 +1473,13 @@ import java.io.Serializable;
           if (i+1 < addrLength && !isAlphanum(address.charAt(i+1))) {
             return false;
           }
+          labelCharCount = 0;
         }
         else if (!isAlphanum(testChar) && testChar != '-') {
+          return false;
+        }
+        // RFC 1034: Labels must be 63 characters or less.
+        else if (++labelCharCount > 63) {
           return false;
         }
       }
@@ -1484,7 +1494,7 @@ import java.io.Serializable;
    * the 32-bit address constraint, each segment of the address cannot 
    * be greater than 255 (8 bits of information).</p>
    *
-   * <p>IPv4address = 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT</p>
+   * <p><code>IPv4address = 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT</code></p>
    *
    * @return true if the string is a syntactically valid IPv4 address
    */
@@ -1541,22 +1551,25 @@ import java.io.Serializable;
   }
   
   /**
-   * <p>Determines whether a string is an IPv6 reference.</p>
+   * <p>Determines whether a string is an IPv6 reference as defined
+   * by RFC 2732, where IPv6address is defined in RFC 2373. The 
+   * IPv6 address is parsed according to Section 2.2 of RFC 2373,
+   * with the additional constraint that the address be composed of
+   * 128 bits of information.</p>
    *
-   * <p>IPv6reference = "[" IPv6address "]" <br>
-   * IPv6address   = hexpart [ ":" IPv4address ] <br>
-   * IPv4address   = 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT <br>
-   * hexpart       = hexseq | hexseq "::" [ hexseq ] | "::" [ hexseq ] <br>
-   * hexseq        = hex4 *( ":" hex4) <br>
-   * hex4          = 1*4HEXDIG</p>
+   * <p><code>IPv6reference = "[" IPv6address "]"</code></p>
+   *
+   * <p>Note: The BNF expressed in RFC 2732 Appendix B does not 
+   * accurately describe section 2.2, and was in fact removed from
+   * RFC 3513, the successor of RFC 2732.</p>
    *
    * @return true if the string is a syntactically valid IPv6 reference
    */
   public static boolean isWellFormedIPv6Reference(String address) {
+
       int addrLength = address.length();
-      int start = 1;
+      int index = 1;
       int end = addrLength-1;
-      int index = start;
       
       // Check if string is a potential match for IPv6reference.
       if (!(addrLength > 2 && address.charAt(0) == '[' 
@@ -1564,77 +1577,71 @@ import java.io.Serializable;
           return false;
       }
       
-      // The production hexpart can be rewritten as:
-      // hexpart = hexseq | [hexseq] "::" [hexseq]
-      // which means as long as we see one of the following
-      // three groups, then we have a match.
+      // Counter for the number of 16-bit sections read in the address.
+      int [] counter = new int[1];
       
-      // 1. Scan hex sequence before possible '::'.
-      index = scanHexSequence(address, index, end);
+      // Scan hex sequence before possible '::' or IPv4 address.
+      index = scanHexSequence(address, index, end, counter);
       if (index == -1) {
           return false;
       }
+      // Address must contain 128-bits of information.
       else if (index == end) {
-          return true;
+          return (counter[0] == 8);
       }
       
-      // 2. Skip '::' if present.
-      if (index + 1 < end && address.charAt(index) == ':') {
+      if (index+1 < end && address.charAt(index) == ':') {
           if (address.charAt(index+1) == ':') {
+              // '::' represents at least one 16-bit group of zeros.
+              if (++counter[0] > 8) {
+                  return false;
+              }
               index += 2;
+              // Trailing zeros will fill out the rest of the address.
               if (index == end) {
                  return true;
               }
           }
-          // If the second character wasn't ':', the remainder of the
-          // string must match IPv4Address. IPv6Address cannot 
-          // start with [":" IPv4Address].
+          // If the second character wasn't ':', in order to be valid,
+          // the remainder of the string must match IPv4Address, 
+          // and we must have read exactly 6 16-bit groups.
           else {
-              return (index > start) && 
+              return (counter[0] == 6) && 
                   isWellFormedIPv4Address(address.substring(index+1, end));
           }
       }
-      
-      // 3. Scan hex sequence after '::'.
-      index = scanHexSequence(address, index, end);
-      if (index == -1) {
+      else {
           return false;
       }
-      else if (index == end) {
-      	  return true;
-      }
       
-      // If we've gotten this far then the string is a valid
-      // IPv6 reference only if it contained a valid hexpart,
-      // and it has an IPv4 address.
-      //
-      // REVISIT: The example given for an IPv6 reference
-      // http://[::192.9.5.5]/ipng in RFC 2732 is an error, or
-      // the BNF for IPv6address is incorrect. In order to be
-      // valid for the grammar defined in RFC 2373, if the hexpart
-      // is only '::', and if the address contains an IPv4 address,
-      // '::' must be followed by another ':'. Going with the BNF
-      // from RFC 2373 for now. - mrglavas
-      if (index > start && index+1 < end && address.charAt(index) == ':') {
-          return isWellFormedIPv4Address(address.substring(index+1, end));
-      }
-      
-      return false;
+      // 3. Scan hex sequence after '::'.
+      int prevCount = counter[0];
+      index = scanHexSequence(address, index, end, counter);
+
+      // We've either reached the end of the string, the address ends in
+      // an IPv4 address, or it is invalid. scanHexSequence has already 
+      // made sure that we have the right number of bits. 
+      return (index == end) || 
+          (index != -1 && isWellFormedIPv4Address(
+          address.substring((counter[0] > prevCount) ? index+1 : index, end)));
   }
   
   /**
-   * Helper method for isWellFormedIPv6Reference which scans hex sequeunces.
-   * It returns the index of the next character to scan, or -1 if the
-   * string region cannot match a valid IPv6 address. 
+   * Helper method for isWellFormedIPv6Reference which scans the 
+   * hex sequences of an IPv6 address. It returns the index of the 
+   * next character to scan in the address, or -1 if the string 
+   * cannot match a valid IPv6 address. 
    *
-   * @param sequence the string to be scanned
+   * @param address the string to be scanned
    * @param index the beginning index (inclusive)
    * @param end the ending index (exclusive)
+   * @param counter a counter for the number of 16-bit sections read
+   * in the address
    *
    * @return the index of the next character to scan, or -1 if the
-   * string region cannot match a valid IPv6 address
+   * string cannot match a valid IPv6 address
    */
-  private static int scanHexSequence (String sequence, int index, int end) {
+  private static int scanHexSequence (String address, int index, int end, int [] counter) {
   	
       char testChar;
       int numDigits = 0;
@@ -1644,26 +1651,33 @@ import java.io.Serializable;
       // hexseq = hex4 *( ":" hex4)
       // hex4   = 1*4HEXDIG
       for (; index < end; ++index) {
-      	testChar = sequence.charAt(index);
+      	testChar = address.charAt(index);
       	if (testChar == ':') {
-      	    if (numDigits == 0 || ((index+1 < end) && sequence.charAt(index+1) == ':')) {
+      	    // IPv6 addresses are 128-bit, so there can be at most eight sections.
+      	    if (numDigits > 0 && ++counter[0] > 8) {
+      	        return -1;
+      	    }
+      	    // This could be '::'.
+      	    if (numDigits == 0 || ((index+1 < end) && address.charAt(index+1) == ':')) {
       	        return index;
       	    }
       	    numDigits = 0;
         }
         // This might be invalid or an IPv4address. If it's potentially an IPv4address,
-        // backup to the ':' before the first hex digit in this group.
+        // backup to just after the last valid character that matches hexseq.
         else if (!isHex(testChar)) {
-            int back = index - numDigits - 1;
-            return (testChar == '.' && numDigits < 4 && numDigits > 0
-                    && back >= start && sequence.charAt(back) == ':') ? back : -1;
+            if (testChar == '.' && numDigits < 4 && numDigits > 0 && counter[0] <= 6) {
+                int back = index - numDigits - 1;
+                return (back >= start) ? back : (back+1);
+            }
+            return -1;
         }
         // There can be at most 4 hex digits per group.
         else if (++numDigits > 4) {
             return -1;
         }
       }
-      return (numDigits > 0) ? end : -1;
+      return (numDigits > 0 && ++counter[0] <= 8) ? end : -1;
   } 
 
 
