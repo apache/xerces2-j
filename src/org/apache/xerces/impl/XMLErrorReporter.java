@@ -320,7 +320,27 @@ public class XMLErrorReporter
         
         // format error message and create parse exception
         MessageFormatter messageFormatter = getMessageFormatter(domain);
-        String message = messageFormatter.formatMessage(fLocale, key, arguments);
+        String message;
+        if (messageFormatter != null) {
+            message = messageFormatter.formatMessage(fLocale, key, arguments);
+        }
+        else {
+            StringBuffer str = new StringBuffer();
+            str.append(domain);
+            str.append('#');
+            str.append(key);
+            int argCount = arguments != null ? arguments.length : 0;
+            if (argCount > 0) {
+                str.append('?');
+                for (int i = 0; i < argCount; i++) {
+                    str.append(arguments[i]);
+                    if (i < argCount -1) {
+                        str.append('&');
+                    }
+                }
+            }
+            message = str.toString();
+        }
         XMLParseException parseException = 
             new XMLParseException(location, message);
 
