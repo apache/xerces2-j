@@ -171,10 +171,6 @@ public class ElementImpl
      */
     public Node cloneNode(boolean deep) {
 
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-
     	ElementImpl newnode = (ElementImpl) super.cloneNode(deep);
     	// Replicate NamedNodeMap rather than sharing it.
         if (attributes != null) {
