@@ -2790,7 +2790,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns)
                   if (fGrammar != null) {
-                     fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
                      fTempQName.setValues(attrList.getAttrPrefix(index), 
                                           attrList.getAttrLocalpart(index),
                                           attrList.getAttrName(index),
@@ -2806,6 +2805,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                  fStringPool.toString(attrList.getAttrName(index))};
 
                               /*****/
+                              fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
+
                               fErrorReporter.reportError(fAttrNameLocator,
                                                          XMLMessages.XML_DOMAIN,
                                                          XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
@@ -2904,6 +2905,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                        Object[] args = { fStringPool.toString(element.rawname),
                                           "ANY---"+fStringPool.toString(attrList.getAttrName(index))};
 
+                                       fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
+
                                        fErrorReporter.reportError(fAttrNameLocator,    
                                                                   XMLMessages.XML_DOMAIN,
                                                                   XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
@@ -2919,8 +2922,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                                  System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
                                                     + " not found in element type " + fStringPool.toString(element.rawname));
-                                 //REVISIT : is this the right message?
                                  /****/
+                                 fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
+
                                  fErrorReporter.reportError(fAttrNameLocator,    
                                                             XMLMessages.XML_DOMAIN,
                                                             XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
