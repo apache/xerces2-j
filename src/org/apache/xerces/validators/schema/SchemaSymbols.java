@@ -147,6 +147,7 @@ public final  class SchemaSymbols {
     public static final String ATT_REFER =  "refer";
     public static final String ATT_SCHEMALOCATION =  "schemaLocation";
     public static final String ATT_SYSTEM =  "system";
+    public static final String ATT_PUBLIC =  "public";
     public static final String ATT_TARGETNAMESPACE =  "targetNamespace";
     public static final String ATT_TYPE =  "type";
     public static final String ATT_USE =  "use";

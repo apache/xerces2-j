@@ -74,7 +74,8 @@ import  org.apache.xerces.validators.schema.identity.XPath;
 import  org.apache.xerces.validators.schema.identity.XPathException;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
-import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;  //CR implementation
+import  org.apache.xerces.validators.datatype.NOTATIONDatatypeValidator;
+import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;  
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
@@ -171,9 +172,13 @@ public class TraverseSchema implements
 
     private Hashtable fComplexTypeRegistry = new Hashtable();
     private Hashtable fAttributeDeclRegistry = new Hashtable();
-	// stores the names of groups that we've traversed so we can avoid multiple traversals
-	// qualified group names are keys and their contentSpecIndexes are values.  
-	private Hashtable fGroupNameRegistry = new Hashtable();
+    
+    // stores the names of groups that we've traversed so we can avoid multiple traversals
+    // qualified group names are keys and their contentSpecIndexes are values.  
+    private Hashtable fGroupNameRegistry = new Hashtable();
+
+    // stores <notation> decl
+    private static Hashtable fNotationRegistry = new Hashtable();
 
     private Vector fIncludeLocations = new Vector();
     private Vector fImportLocations = new Vector();
@@ -455,7 +460,7 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
                 traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
-                ; //TO DO
+                traverseNotationDecl(child); //TO DO
             } else {
                 // REVISIT: Localize
                 reportGenericSchemaError("error in content of <schema> element information item");
@@ -777,7 +782,7 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
                 traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
-                ; //TO DO
+                traverseNotationDecl(child); //TO DO
             } else {
                 // REVISIT: Localize
                 reportGenericSchemaError("error in content of included <schema> element information item");
@@ -1535,7 +1540,35 @@ public class TraverseSchema implements
                         if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
                             numEnumerationLiterals++;
                             String enumVal = content.getAttribute(SchemaSymbols.ATT_VALUE);
-                            enumData.addElement(enumVal);
+                            String localName;
+                            if (baseValidator instanceof NOTATIONDatatypeValidator) {
+                                String prefix = "";
+                                String localpart = enumVal;
+                                int colonptr = enumVal.indexOf(":");
+                                if ( colonptr > 0) {
+                                        prefix = enumVal.substring(0,colonptr);
+                                        localpart = enumVal.substring(colonptr+1);
+                                }
+                                int localpartIndex = fStringPool.addSymbol(localpart);
+                                String uriStr = resolvePrefixToURI(prefix);
+				String fullName=uriStr + "," + localpart;
+                                localName = (String)fNotationRegistry.get(fullName);
+                                if(localName == null ){
+                                    Element notationDecl = getTopLevelComponentByName(SchemaSymbols.ELT_NOTATION,localpart);
+                                    if (notationDecl == null) {
+                                           reportGenericSchemaError("Notation " + localpart + " not found in the Schema");
+                                    }
+                                    else {
+                                           localName=traverseNotationDecl(notationDecl);
+                                    }
+                                }
+				//REVISIT: make sure QNAME of notation gets validated correctly 
+				if (DEBUGGING) {
+				    System.out.println("[notation decl] fullName: = " + fullName +"; enum value: =" +enumVal);
+				}
+                                
+                            }
+			    enumData.addElement(enumVal);
                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
                         }
                         else if (facet.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -4889,6 +4922,39 @@ public class TraverseSchema implements
         }
         return null;
     }
+
+
+
+    /**
+      * Notation decl
+      */
+    private String traverseNotationDecl( Element notation ) throws Exception {
+        String name = notation.getAttribute(SchemaSymbols.ATT_NAME);
+        String qualifiedName =name;
+        if (fTargetNSURIString.length () != 0) {
+            qualifiedName = fTargetNSURIString+","+name;
+        }
+        if (fNotationRegistry.get(qualifiedName)!=null) {
+            return name;
+        }
+        String publicId = notation.getAttribute(SchemaSymbols.ATT_PUBLIC);
+        String systemId = notation.getAttribute(SchemaSymbols.ATT_SYSTEM);
+        if (publicId.equals("") && systemId.equals("")) {
+            //REVISIT: update error messages
+            reportGenericSchemaError("<notation> declaration is invalid");
+        }
+        if (name.equals("")) {
+            //REVISIT: update error messages
+            reportGenericSchemaError("<notation> declaration does not have a name");
+
+        }
+        
+        fNotationRegistry.put(qualifiedName, name); 
+        //REVISIT: wait for DOM L3 APIs to pass info to application
+        //REVISIT: SAX2 does not support notations. API should be changed.
+        return name;
+    }
+
 
     /**
      * Traverse Group Declaration.
