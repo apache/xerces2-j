@@ -23,6 +23,7 @@ try {
 			<tr><th>True:</th>		<td>Validate the document.</td></tr>
 			<tr><th>False:</th>		<td>Do not validate the document.</td></tr>
 			<tr><th>Default:</th>	<td>false</td></tr>
+			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
 			<tr><th>Note:</th>		<td>If this feature is set to true, the document must specify a grammar. 
 					   				If this feature is set to false, the document may specify a grammar 
 					  				and that grammar will be parsed but no validation of the document 
@@ -37,6 +38,7 @@ try {
 			<tr><th>True:</th>		<td>Include external general (text) entities.</td></tr>
 			<tr><th>False:</th>		<td>Do not include external general entities.</td></tr>
 			<tr><th>Default:</th>	<td>true</td></tr>
+			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
 			<tr><th>See:</th>
 				<td><link anchor="external-parameter-entities">http://xml.org/sax/features/external-parameter-entities</link></td></tr>
 		</table>
@@ -47,6 +49,7 @@ try {
 			<tr><th>True:</th>		<td>Include external parameter entities and the external DTD subset.</td></tr>
 			<tr><th>False:</th>		<td>Do not include external parameter entities or the external DTD subset.</td></tr>
 			<tr><th>Default:</th>	<td>true</td></tr>
+			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
 			<tr><th>See:</th>
 				<td><link anchor="external-parameter-entities">http://xml.org/sax/features/external-parameter-entities</link></td></tr>
 		</table>
@@ -61,6 +64,7 @@ try {
 					  				 separating the URI part and the local part.</td></tr>
 			<tr><th>False:</th>		<td>Do not perform namespace processing.</td></tr>
 			<tr><th>Default:</th>	<td>false</td></tr>
+			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
 			<tr><th>Note:</th>		<td>If the validation feature is set to true, then the document must contain 
    									a grammar that supports the use of namespaces.</td></tr>
 			<tr><th>See:</th>		<td><link anchor="validation">http://xml.org/sax/features/validation</link>
@@ -177,6 +181,7 @@ try {
 		</table>	
 	</s2>
 	<s2 title="SAX Features">
+		<!--
 		<anchor name="use-locator"/>
 		<p>http://xml.org/sax/features/use-locator</p>
 		<table>
@@ -201,7 +206,26 @@ try {
 										in a single callback to the DocumentHandler 
 										characters method.</td></tr>
 		</table>
-		
+		-->
+		<anchor name='namespace-prefixes'/>
+		<p>http://xml.org/sax/features/namespace-prefixes</p>
+		<table>
+			<tr><th>True:</th>	<td>Report the original prefixed names and attributes used for Namespace declarations.</td></tr>
+			<tr><th>False:</th>	<td>Do not report attributes used for Namespace declarations, and optionally do not report original prefixed names.</td></tr>
+			<tr><th>Default:</th>	<td>true</td></tr>
+			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
+		</table>
+		<anchor name='string-interning'/>
+		<p>http://xml.org/sax/features/string-interning</p>
+		<table>
+			<tr><th>True:</th>	<td>All element names, prefixes, attribute names, Namespace URIs, and local names are internalized using java.lang.String.intern.</td></tr>
+			<tr><th>False:</th>	<td>Names are not necessarily internalized.</td></tr>
+			<tr><th>Default:</th>	<td>false</td></tr>
+			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
+			<tr><th>Note:</th>	<td>Xerces-J does not support interning all strings using the
+						String.intern() method because Xerces-J does its own intern
+						optimizations for String objects.</td></tr>
+		</table>
 	</s2>
 </s1> 
 

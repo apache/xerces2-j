@@ -16,6 +16,7 @@ try {
 	</s2>
 	
 	<s2 title="General Properties">
+		<!--
 		<anchor name="namespace-sep"/>
 		<p>http://xml.org/sax/properties/namespace-sep</p>
 		<table>
@@ -28,6 +29,7 @@ try {
 			<tr><th>  Default:  </th>	<td>""</td></tr>
 			<tr><th>See:</th>		<td><link idref="features" anchor="namespaces">http://xml.org/sax/features/namespaces</link></td></tr>
 		</table>
+		-->
 		
 		<anchor name="xml-string"/>
 		<p>http://xml.org/sax/properties/xml-string</p>
@@ -71,6 +73,7 @@ try {
 	</s2>
 	
 	<s2 title="SAX Parser Properties">
+		<!--
 		<anchor name="DeclHandler"/>
 		<p>http://xml.org/sax/handlers/DeclHandler</p>
 		<table>
@@ -94,12 +97,28 @@ try {
 			<tr><th>Access:</th>	<td>read-write</td></tr>
 			<tr><th>Desc:</th>		<td>Set the handler for lexical parsing events.</td></tr>
 		</table>
+		-->
+		<anchor name="declaration-handler"/>
+		<p>http://xml.org/sax/properties/declaration-handler</p>
+		<table>
+			<tr><th>Type:</th>		<td>org.xml.sax.ext.DeclHandler</td></tr>
+			<tr><th>Access:</th>	<td>read-write</td></tr>
+			<tr><th>Desc:</th>		<td>Set the handler for DTD declarations.</td></tr>
+		</table>
 		
+		<anchor name="lexical-handler"/>
+		<p>http://xml.org/sax/properties/lexical-handler</p>
+		<table>
+			<tr><th>Type:</th>		<td>org.xml.sax.ext.LexicalHandler</td></tr>
+			<tr><th>Access:</th>	<td>read-write</td></tr>
+			<tr><th>Desc:</th>		<td>Set the handler for lexical parsing events.</td></tr>
+		</table>
+
 		<anchor name="dom-node"/>
 		<p>http://xml.org/sax/properties/dom-node</p>
 		<table>
 			<tr><th>Type:</th>		<td>org.w3c.dom.Node</td></tr>
-			<tr><th>Access:</th>	<td>read-only</td></tr>
+			<tr><th>Access:</th>	<td>(parsing) read-only; (not parsing) read/write</td></tr>
 			<tr><th>Desc:</th>		<td>The DOM node currently being visited, 
 									if SAX is being used as a DOM iterator. 
 									If the parser recognizes and supports this property but is 
