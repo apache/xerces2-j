@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,10 +102,6 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_NOTATION, SchemaSymbols.ATT_NAME}, elmNode);
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
-        }
-
-        if (publicAttr == null) {
-            reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_NOTATION, SchemaSymbols.ATT_PUBLIC}, elmNode);
         }
 
         XSNotationDecl notation = new XSNotationDecl();
