@@ -524,6 +524,20 @@ public class XMLAttributesImpl
     } // getType(String,String):String
 
     /**
+     * Returns the prefix of the attribute at the specified index.
+     *
+     * @param index The index of the attribute.
+     */
+    public String getPrefix(int index) {
+        if (index < 0 || index >= fLength) {
+            return null;
+        }
+        String prefix = fAttributes[index].name.prefix;
+        // REVISIT: The empty string is not entered in the symbol table!
+        return prefix != null ? prefix : "";
+    } // getPrefix(int):String
+
+    /**
      * Look up an attribute's Namespace URI by index.
      *
      * @param index The attribute index (zero-based).
@@ -537,6 +551,7 @@ public class XMLAttributesImpl
             return null;
         }
         String uri = fAttributes[index].name.uri;
+        // REVISIT: The empty string is not entered in the symbol table!
         return uri != null ? uri : "";
     } // getURI(int):String
 

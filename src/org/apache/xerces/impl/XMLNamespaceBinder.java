@@ -669,13 +669,15 @@ public class XMLNamespaceBinder
         // search for new namespace bindings
         int length = attributes.getLength();
         for (int i = 0; i < length; i++) {
-            String rawname = attributes.getQName(i);
-            if (rawname.startsWith("xmlns")) {
-                // declare prefix in context
-                String prefix = rawname.length() > 5
-                              ? attributes.getLocalName(i) : fEmptySymbol;
+            String localpart = attributes.getLocalName(i);
+            String prefix = attributes.getPrefix(i);
+            if (prefix == fXmlnsSymbol || localpart == fXmlnsSymbol) {
+                // check for duplicates
+                prefix = localpart != fXmlnsSymbol ? localpart : fEmptySymbol;
                 String uri = attributes.getValue(i);
                 uri = fSymbolTable.addSymbol(uri);
+
+                // declare prefix in context
                 fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
 
                 // call handler
@@ -719,6 +721,24 @@ public class XMLNamespaceBinder
                                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     attributes.setName(i, fAttributeQName);
+                }
+            }
+        }
+
+        // verify that duplicate attributes don't exist
+        // Example: <foo xmlns:a='NS' xmlns:b='NS' a:attr='v1' b:attr='v2'/>
+        int attrCount = attributes.getLength();
+        for (int i = 0; i < attrCount - 1; i++) {
+            String alocalpart = attributes.getLocalName(i);
+            String auri = attributes.getURI(i);
+            for (int j = i + 1; j < attrCount; j++) {
+                String blocalpart = attributes.getLocalName(j);
+                String buri = attributes.getURI(j);
+                if (alocalpart == blocalpart && auri == buri) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                               "AttributeNSNotUnique",
+                                               new Object[]{element.rawname,alocalpart, auri},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
             }
         }
