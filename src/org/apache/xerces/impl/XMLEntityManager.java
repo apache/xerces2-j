@@ -2020,6 +2020,12 @@ public class XMLEntityManager
             // return next character
             if (fCurrentEntity.position != fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position];
+                // NOTE: We don't want to accidentally signal the
+                //       end of the literal if we're expanding an
+                //       entity appearing in the literal. -Ac
+                if (c == quote && fCurrentEntity.literal) {
+                    c = -1;
+                }
             }
             if (DEBUG_PRINT) {
                 System.out.print(")scanLiteral, '"+(char)quote+"': ");
@@ -2529,7 +2535,7 @@ public class XMLEntityManager
         // Data
         //
 
-        /** Seen first character. */
+        /** True if we've seen the first character. */
         private boolean fSeenFirstChar;
 
         /** True if we've seen the end of the first markup. */
@@ -2569,7 +2575,7 @@ public class XMLEntityManager
                 fSeenEndOfMarkup = c != '<';
             }
             else {
-                fSeenEndOfMarkup = c == '>';
+                fSeenEndOfMarkup = c == '>' || c == '[';
             }
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ read() -> '"+(char)c+"' (end of markup: "+fSeenEndOfMarkup+')');

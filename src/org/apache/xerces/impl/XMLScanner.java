@@ -510,6 +510,7 @@ public abstract class XMLScanner
         // scan hexadecimal value
         boolean hex = false;
         if (fEntityScanner.skipChar('x')) {
+            hex = true;
             fStringBuffer.clear();
             boolean digit = true;
             do {

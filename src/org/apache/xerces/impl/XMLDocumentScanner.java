@@ -487,6 +487,8 @@ public class XMLDocumentScanner
     public void endEntity(String name) throws SAXException {
 
         // sanity check
+        // REVISIT: Shouldn't the entity manager perform this sanity
+        //          check? -Ac
         Entity entity = (Entity)fEntityStack.pop();
         if (!name.equals(entity.name)) {
             // REVISIT: report error
@@ -676,7 +678,6 @@ public class XMLDocumentScanner
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 fEntityScanner.scanChar();
-                // REVISIT: do right
                 XMLString value = fString;
                 if (fEntityScanner.scanLiteral(quote, fString) != quote) {
                     fStringBuffer.clear();
@@ -706,7 +707,6 @@ public class XMLDocumentScanner
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 fEntityScanner.scanChar();
-                // REVISIT: do right
                 XMLString value = fString;
                 if (fEntityScanner.scanLiteral(quote, fString) != quote) {
                     fStringBuffer.clear();
@@ -734,7 +734,6 @@ public class XMLDocumentScanner
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 fEntityScanner.scanChar();
-                // REVISIT: do right
                 value = fString;
                 if (fEntityScanner.scanLiteral(quote, fString) != quote) {
                     fStringBuffer.clear();
@@ -952,18 +951,65 @@ public class XMLDocumentScanner
         final String CDATA = fSymbolTable.addSymbol("CDATA");
         attributes.setAttribute(fAttributeQName, CDATA, null);
         XMLString value = fString;
-        if (fEntityScanner.scanLiteral(quote, fString) != quote) {
+        int c = fEntityScanner.scanLiteral(quote, fString);
+        if (c != quote) {
+            fScanningAttribute = true;
             fStringBuffer.clear();
             do {
                 fStringBuffer.append(fString);
-                /***
-                if (fEntityScanner.peekChar() == '&') {
-                    // TODO: handle entities in value
+                if (c == '&') {
+                    fEntityScanner.skipChar('&');
+                    if (fEntityScanner.skipChar('#')) {
+                        int cv = scanCharReferenceValue();
+                        if (cv != -1) {
+                            fStringBuffer.append((char)cv);
+                        }
+                    }
+                    else {
+                        // REVISIT: Store offsets and lengths of
+                        //          expanded entities so that we
+                        //          can expose them in the DOM. -Ac
+                        String entityName = fEntityScanner.scanName();
+                        if (entityName == null) {
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "NameRequiredInReference",
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        }
+                        if (!fEntityScanner.skipChar(';')) {
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "SemicolonRequiredInReference",
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        }
+                        if (entityName == fAmpSymbol) {
+                            fStringBuffer.append('&');
+                        }
+                        else if (entityName == fAposSymbol) {
+                            fStringBuffer.append('\'');
+                        }
+                        else if (entityName == fLtSymbol) {
+                            fStringBuffer.append('<');
+                        }
+                        else if (entityName == fGtSymbol) {
+                            fStringBuffer.append('>');
+                        }
+                        else if (entityName == fQuotSymbol) {
+                            fStringBuffer.append('"');
+                        }
+                        else {
+                            fEntityManager.startEntity(entityName, true);
+                        }
+                    }
                 }
-                /***/
-            } while (fEntityScanner.scanLiteral(quote, fString) != quote);
+                else if (c == '<') {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "LessthanInAttValue",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                c = fEntityScanner.scanLiteral(quote, fString);
+            } while (c != quote);
             fStringBuffer.append(fString);
             value = fStringBuffer;
+            fScanningAttribute = false;
         }
         attributes.setValue(attributes.getLength() - 1, value);
 
