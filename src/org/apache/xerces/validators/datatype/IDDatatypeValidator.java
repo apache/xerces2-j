@@ -59,6 +59,9 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Hashtable;
+import org.apache.xerces.utils.XMLCharacterProperties;
+import org.apache.xerces.utils.XMLMessages;
 
 /**
  * DataTypeValidator defines the interface that data type validators must obey.
@@ -68,8 +71,13 @@ import java.util.Locale;
  * @version $Id$
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator = null;
-    private boolean           fDerivedByList = false;
+    private DatatypeValidator         fBaseValidator = null;
+    private boolean                   fDerivedByList = false;
+    private Object                        fNullValue = null;
+    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    private Hashtable                     fTableOfId;
+    private Locale            fLocale           = null;
+
 
 
     public IDDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -77,7 +85,7 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-            boolean derivedByList ) throws InvalidDatatypeFacetException  {
+                                 boolean derivedByList ) throws InvalidDatatypeFacetException  {
         fDerivedByList = derivedByList;
     }
 
@@ -100,6 +108,14 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+        //Pass content as a String
+
+        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
+            throw new InvalidDatatypeValueException( "ID is not valid" );//Need Message
+        }
+        if(!addId( content, state) ){
+            throw new InvalidDatatypeValueException( "ID has to be unique" );
+        }
         return null;
     }
 
@@ -118,9 +134,10 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     public Hashtable getFacets(){
         return null;
     }
-  /**
-     * Returns a copy of this object.
-     */
+
+    /**
+       * Returns a copy of this object.
+       */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
@@ -136,5 +153,42 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     private void setBasetype(DatatypeValidator base){
         fBaseValidator = base;
     }
+
+    /** addId. */
+    private boolean addId(String content, Object state) {
+
+        if ( state == null ) {
+            if ( this.fTableOfId == null ){
+                this.fTableOfId = new Hashtable();
+            } else if ( this.fTableOfId.containsKey( content ) ){ 
+                return false;
+            }
+            if ( this.fNullValue == null ){
+                fNullValue = new Object();
+            }
+            this.fTableOfId.put( content, fNullValue ); 
+        } else {
+            ;
+        }
+        return true;
+    } // addId(int):boolean
+
+
+    /**
+     * set the locate to be used for error messages
+     */
+    public void setLocale(Locale locale) {
+        fLocale = locale;
+    }
+
+
+    private String getErrorString(int major, int minor, Object args[]) {
+        try {
+            return fMessageProvider.createMessage(fLocale, major, minor, args);
+        } catch (Exception e) {
+            return "Illegal Errorcode "+minor;
+        }
+    }
+
 
 }
