@@ -59,9 +59,10 @@ Copyright:
 
   <target name="init">
     <property name="name" value="xerces"/>
-    <property name="Name" value="Xerces-J"/>
-    <property name="version" value="1.1.0"/>
-    <property name="version_postfix" value="_1_1_0"/>
+    <property name="Name" value="xerces-J"/>
+    <property name="version" value="2.0.0"/>
+    <property name="version_postfix" value=".2.0.0"/>
+    <property name="appendit" value="1_2_2"/>
     <property name="year" value="1999-2000"/>
 	<property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
@@ -78,7 +79,7 @@ Copyright:
     <property name="tests.dir" value="./tests"/>
     <property name="tools.dir" value="./tools"/>
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
-    <property name="version.file" value="org/apache/xerces/impl/Version.java"/>
+    <property name="version.file" value="org/apache/xerces/framework/Version.java"/>
 
     <property name="packages" value="org.*"/>
 
@@ -95,8 +96,8 @@ Copyright:
     <property name="build.data" value="${build.dir}/data"/>
     <property name="build.javadocs" value="${build.dir}/docs/apiDocs"/>
 
-    <property name="distsrc.dir" value="${build.dir}/${Name}-src${version_postfix}"/>
-    <property name="distbin.dir" value="${build.dir}/${Name}-bin${version_postfix}"/>
+    <property name="distsrc.dir" value="${build.dir}/${name}-${appendit}"/>
+    <property name="distbin.dir" value="${build.dir}/${name}-${appendit}"/>
 
     <filter token="year" value="${year}"/>
     <filter token="version" value="${version}"/>
@@ -152,14 +153,21 @@ Copyright:
     <!-- create directories -->
     <mkdir dir="${build.src}"/>
     <mkdir dir="${build.dest}"/>
+    <mkdir dir="${build.dest}/META-INF"/>
+    <mkdir dir="${build.dest}/META-INF/services"/>
+
+    <copyfile src="src/org/apache/xerces/jaxp/javax.xml.parsers.DocumentBuilderFactory"
+      dest="${build.dest}/META-INF/services/javax.xml.parsers.DocumentBuilderFactory"/>
+
+    <copyfile src="src/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory"
+      dest="${build.dest}/META-INF/services/javax.xml.parsers.SAXParserFactory"/>
 
     <!-- copy src files -->
     <copydir src="${src.dir}" dest="${build.src}" includes="**/Makefile, **/Makefile.incl, javax/**, org/**"
              excludes="**/classfiles_updated **/CVS* **/.#*
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java **/apache/wml/** **/apache/html/**
-                       org/w3c/dom/html/** org/apache/xml/**"/>
+                       **/DTDImporter.java "/>
 	<deltree dir="${build.src}/whiteboard"/>
 
     <!-- substitute tokens as needed -->
@@ -172,6 +180,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="compile" depends="prepare-src">
     <javac srcdir="${build.src}"
+           excludes="**/RevalidatingDOMParser.java "
     	   destdir="${build.dest}"
     	   debug="${debug}"
 	       deprecation="${deprecation}"
@@ -184,7 +193,7 @@ Copyright:
   <target name="jar" depends="compile">
     <jar jarfile="${build.dir}/${name}.jar"
          basedir="${build.dest}"
-         includes="org/**, javax/**" excludes="**/Makefile **/*.html"/>
+         includes="org/**, javax/**,META-INF/**"/>
   </target>
 
   <!-- =================================================================== -->
@@ -192,18 +201,17 @@ Copyright:
   <!-- =================================================================== -->
   <target name="samples" depends="jar">
     <mkdir dir="${build.samples}"/>
-    <!-- <copydir src="${samples.dir}" dest="${build.samples}" excludes="ui/**"/> -->
-    <copydir src="${samples.dir}" dest="${build.samples}" excludes="**/DOMParserSaveEncoding.java **/TreeView.java **/TreeViewer.java"/>
+    <copydir src="${samples.dir}" dest="${build.samples}" />
     <javac srcdir="${build.samples}"
            destdir="${build.dest}"
-           classpath="${build.dir}/${name}.jar:${build.samples}"
+           classpath="${build.dir}/${name}.jar"
            debug="${debug}"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Compiles the tests                                                  -->
   <!-- =================================================================== -->
-  <target name="tests" depends="jar">
+  <target name="tests" depends="samples">
     <mkdir dir="${build.tests}"/>
     <copydir src="${tests.dir}" dest="${build.tests}" />
     <javac srcdir="${build.tests}"
@@ -218,7 +226,7 @@ Copyright:
   <target name="sampjar" depends="samples">
     <jar jarfile="${build.dir}/${name}Samples.jar"
          basedir="${build.dest}"
-         includes="dom/**,sax/**,ui/**"/>
+         includes="dom/**,sax/**,ui/**,util/**"/>
   </target>
 
   <!-- =================================================================== -->
@@ -260,19 +268,22 @@ Copyright:
   <!-- =================================================================== -->
   <target name="pack-src" depends="init">
     <echo message="Building the source distribution files (zip,tar)"/>
+    <deltree dir="${distbin.dir}"/>
+
     <mkdir dir="${distsrc.dir}"/>
     <mkdir dir="${distsrc.dir}/src"/>
     <mkdir dir="${distsrc.dir}/data"/>
     <mkdir dir="${distsrc.dir}/docs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
-    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*"
+    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*, **/*.class"
              includes="**/Makefile, **/Makefile.incl, org/**, javax/**"/>
     <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/.#*"/>
     <copydir src="${docs.dir}" dest="${distsrc.dir}/docs"
              excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"/>
     <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
 
+    <copyfile src="Makefile" dest="${distsrc.dir}/Makefile"/>
     <copyfile src="LICENSE" dest="${distsrc.dir}/LICENSE"/>
     <copyfile src="README" dest="${distsrc.dir}/README"/>
     <copyfile src="Readme.html" dest="${distsrc.dir}/Readme.html"/>
@@ -283,9 +294,10 @@ Copyright:
     <copyfile src="${basedir}/build.bat" dest="${distsrc.dir}/build.bat" />
 
     <zip zipfile="${build.dir}/${Name}-src${version_postfix}.zip" basedir="${build.dir}"
-         includes="${Name}-src${version_postfix}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
+
     <tar tarfile="${build.dir}/${Name}-src${version_postfix}.tar" basedir="${build.dir}"
-         includes="${Name}-src${version_postfix}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${Name}-src${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-src${version_postfix}.tar" />
   </target>
@@ -296,11 +308,14 @@ Copyright:
   <target name="pack-bin" depends="jar, sampjar, javadocs, docs">
 
     <echo message="Building the binary distribution files (zip,tar)"/>
+    <deltree dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}/data"/>
     <mkdir dir="${distbin.dir}/docs"/>
     <mkdir dir="${distbin.dir}/docs/html"/>
     <mkdir dir="${distbin.dir}/docs/apiDocs"/>
+    <mkdir dir="${distsrc.dir}/samples"/>
+
 
     <copydir src="${data.dir}" dest="${distbin.dir}/data" excludes="**/CVS*, **/*.#*"/>
     <copydir src="${build.docs}" dest="${distbin.dir}/docs/html"/>
@@ -312,10 +327,13 @@ Copyright:
     <copyfile src="LICENSE" dest="${distbin.dir}/LICENSE"/>
     <copyfile src="Readme.html" dest="${distbin.dir}/Readme.html"/>
 
+    <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
+
+
     <zip zipfile="${build.dir}/${Name}-bin${version_postfix}.zip" basedir="${build.dir}"
-         includes="${Name}-bin${version_postfix}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
     <tar tarfile="${build.dir}/${Name}-bin${version_postfix}.tar" basedir="${build.dir}"
-         includes="${Name}-bin${version_postfix}/**"/>
+         includes="${name}-${appendit}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${Name}-bin${version_postfix}.tar.gz"
           src="${build.dir}/${Name}-bin${version_postfix}.tar" />
 
@@ -331,6 +349,11 @@ Copyright:
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
           classname="sax.SAXCount"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running SAX2Count ..." />
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
+          classname="sax.SAX2Count"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running SAXWriter ..." />
     <java fork="yes"

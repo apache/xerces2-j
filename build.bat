@@ -4,12 +4,11 @@ echo ------------------------
 
 if "%JAVA_HOME%" == "" goto error
 
-set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;.\tools\ant.jar;.\tools\xerces-1.0.1.jar;.\tools\xalan-0.19.2.jar;.\tools\stylebook-1.0-b2.jar;.\tools\style-apachexml.jar;.\tools\xml.jar;
-set ANT_HOME=./tools
+set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;.\tools\ant.jar;.\tools\xerces.jar;.\tools\xalan.jar;.\tools\stylebook-1.0-b2.jar;.\tools\style-apachexml.jar;
 
 echo Building with classpath %LOCALCLASSPATH%
 echo Starting Ant...
-%JAVA_HOME%\bin\java.exe -Dant.home="%ANT_HOME%" -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %1 %2 %3 %4 %5
+%JAVA_HOME%\bin\java.exe -Dant.home="./tools" -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %1 %2 %3 %4 %5
 goto end
 
 :error
