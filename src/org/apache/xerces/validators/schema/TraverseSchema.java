@@ -8136,8 +8136,20 @@ throws Exception {
           ComplexTypeInfo typeInfo = fSchemaGrammar.getElementComplexTypeInfo(eltNdx);
           int scopeDefined = typeInfo != null ? typeInfo.scopeDefined : fCurrentScope;
 
-          fSchemaGrammar.cloneElementDecl(eltNdx, fCurrentScope, scopeDefined);
+          int newIdx = fSchemaGrammar.cloneElementDecl(eltNdx, fCurrentScope, scopeDefined);
 
+          // if the element being cloned is in fElementRecurseComplex,
+          // which means it's inside a recursive declaration, we need to put
+          // the cloned element in the vector too, so that its declaration
+          // will be finished after we get all the type information - sgao
+          int count = fElementRecurseComplex.size();
+          for (int i = 0; i < count; i++) {
+             ElementInfo eobj = (ElementInfo)fElementRecurseComplex.elementAt(i);
+             if (eobj.elementIndex == eltNdx) {
+                fElementRecurseComplex.addElement(new ElementInfo(newIdx,eobj.typeName));
+                break;
+             }
+          }
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
                  type == XMLContentSpec.CONTENTSPECNODE_ALL ||
