@@ -81,13 +81,15 @@ public class ElementWildcard {
         int type = wtype & 0x0f;
 
         if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                return true;
+            return true;
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
+            // TO BE DONE: substitution of "uri" satisfies "wtype:wildcard"
             if (uri == wildcard)
                 return true;
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+            // TO BE DONE: substitution of "uri" satisfies "wtype:wildcard"
             if (wildcard != uri)
                 return true;
         }
@@ -113,8 +115,7 @@ public class ElementWildcard {
 
         // if both are "##other", and equal, then intersects
         if (type1 == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
-            type2 == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER &&
-            w1 == w2) {
+            type2 == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
             return true;
         }
 
@@ -142,12 +143,18 @@ public class ElementWildcard {
 
         if (type1 == XMLContentSpec.CONTENTSPECNODE_LEAF &&
             type2 == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-            try {
-                if (comparator.isEquivalentTo(q1, q2) ||
-                    comparator.isEquivalentTo(q2, q1))
+            if (comparator != null) {
+                try {
+                    if (comparator.isEquivalentTo(q1, q2) ||
+                        comparator.isEquivalentTo(q2, q1))
+                        return true;
+                } catch (Exception e) {
+                    // error occurs in comparator, do nothing here.
+                }
+            } else {
+                if (q1.localpart == q2.localpart &&
+                    q1.uri == q2.uri)
                     return true;
-            } catch (Exception e) {
-                // error occurs in comparator, do nothing here.
             }
         } else if (type1 == XMLContentSpec.CONTENTSPECNODE_LEAF) {
             if (uriInWildcard(uri1, uri2, type2))
