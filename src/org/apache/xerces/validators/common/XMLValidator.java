@@ -943,7 +943,21 @@ public final class XMLValidator
              }
              matcher.characters(chars, offset, length);
          }
-
+         if (fGrammar != null && fValidating) {         
+             
+             fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+             fCurrentDV = fTempElementDecl.datatypeValidator;
+             if (fCurrentDV !=null) {
+                fWhiteSpace = fCurrentDV.getWSFacet();
+             }
+         
+     
+            if (fWhiteSpace == DatatypeValidator.PRESERVE) { //do not normalize
+                fDatatypeBuffer.append(chars, offset, length);
+            }
+            
+         }
+      
          fDocumentHandler.characters(chars, offset, length);
       }
 
@@ -980,6 +994,17 @@ public final class XMLValidator
              }
          }
 
+         if (fGrammar != null && fValidating) {
+            fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+            fCurrentDV = fTempElementDecl.datatypeValidator;
+            if (fCurrentDV !=null) {
+                fWhiteSpace = fCurrentDV.getWSFacet();
+            }
+            if (fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
+                fDatatypeBuffer.append(fStringPool.toString(data));
+            }
+            
+         }
          fDocumentHandler.characters(data);
       }
 
