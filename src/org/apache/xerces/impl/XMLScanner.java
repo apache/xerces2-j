@@ -480,7 +480,13 @@ public abstract class XMLScanner
 
         // spaces
         if (!fEntityScanner.skipSpaces()) {
-            if (!fEntityScanner.skipString("?>")) {
+            if (fEntityScanner.skipString("?>")) {
+                // we found the end of, there is no data
+                data.clear();
+                return;
+            }
+            else {
+                // if there is data there should be some space
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "SpaceRequiredInPI",
                                            null,
