@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  
+ * Copyright (c) 2000-2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -87,17 +87,17 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-
+import java.util.Vector;
 /**
  * This class implements XMLGrammarLoader.  It is designed to interact
  * either with a proxy for a user application which wants to preparse schemas,
  * or with our own Schema validator.  It is hoped that none of these "external"
  * classes will therefore need to communicate directly
  * with XSDHandler in future.
- * <p>This class only knows how to make XSDHandler do its thing.  
+ * <p>This class only knows how to make XSDHandler do its thing.
  * The caller must ensure that all its properties (schemaLocation, JAXPSchemaSource
- * etc.) have been properly set.  
- * 
+ * etc.) have been properly set.
+ *
  * @author Neil Graham, IBM
  * @version $Id$
  */
@@ -180,12 +180,12 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     private boolean fAllowJavaEncodings = false;
 
     private SymbolTable fSymbolTable = null;
-    private XMLErrorReporter fErrorReporter = new XMLErrorReporter (); 
+    private XMLErrorReporter fErrorReporter = new XMLErrorReporter ();
     private XMLEntityResolver fEntityResolver = null;
     private XMLGrammarPool fGrammarPool = null;
     private String fExternalSchemas = null;
     private String fExternalNoNSSchema = null;
-    private Object fJAXPSource = null; 
+    private Object fJAXPSource = null;
     private Locale fLocale = Locale.getDefault();
 
     private XSDHandler fSchemaHandler;
@@ -196,6 +196,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     private CMBuilder fCMBuilder;
     // boolean that tells whether we've tested the JAXP property.
     private boolean fJAXPProcessed = false;
+
 
     // containers
     private XSDDescription fXSDDescription = new XSDDescription();
@@ -210,19 +211,19 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     }
 
     XMLSchemaLoader(XMLErrorReporter errorReporter,
-                XSGrammarBucket grammarBucket,  
+                XSGrammarBucket grammarBucket,
                 SubstitutionGroupHandler sHandler, CMBuilder builder) {
         this(null, errorReporter, null, grammarBucket, sHandler, builder);
     }
 
-    XMLSchemaLoader(SymbolTable symbolTable, 
+    XMLSchemaLoader(SymbolTable symbolTable,
                 XMLErrorReporter errorReporter,
                 XMLEntityResolver entityResolver,
                 XSGrammarBucket grammarBucket,
                 SubstitutionGroupHandler sHandler,
                 CMBuilder builder) {
         fSymbolTable = symbolTable;
-        if(errorReporter == null) { 
+        if(errorReporter == null) {
             errorReporter = new XMLErrorReporter ();
             errorReporter.setProperty(ERROR_HANDLER, new DefaultErrorHandler());
         }
@@ -255,12 +256,12 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
 
     /**
      * Returns the state of a feature.
-     * 
+     *
      * @param featureId The feature identifier.
-     * 
+     *
      * @throws XMLConfigurationException Thrown on configuration error.
      */
-    public boolean getFeature(String featureId) 
+    public boolean getFeature(String featureId)
             throws XMLConfigurationException {
         if(featureId.equals(SCHEMA_FULL_CHECKING)) {
             return fIsCheckedFully;
@@ -271,7 +272,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     } // getFeature (String):  boolean
 
     /**
-     * Sets the state of a feature. 
+     * Sets the state of a feature.
      *
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
@@ -303,12 +304,12 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
 
     /**
      * Returns the state of a property.
-     * 
+     *
      * @param propertyId The property identifier.
-     * 
+     *
      * @throws XMLConfigurationException Thrown on configuration error.
      */
-    public Object getProperty(String propertyId) 
+    public Object getProperty(String propertyId)
             throws XMLConfigurationException {
         if(propertyId.equals( SYMBOL_TABLE)) {
             return fSymbolTable;
@@ -331,8 +332,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     } // getProperty(String):  Object
 
     /**
-     * Sets the state of a property. 
-     * 
+     * Sets the state of a property.
+     *
      * @param propertyId The property identifier.
      * @param state     The state of the property.
      *
@@ -358,7 +359,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         } else if(propertyId.equals( JAXP_SCHEMA_SOURCE)) {
             fJAXPSource = state;
             fJAXPProcessed = false;
-        } else 
+        } else
             throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, propertyId);
     } // setProperty(String, Object)
 
@@ -409,14 +410,14 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
 
     // reset all objects that "belong" to this one.
     public void reset () {
-        fGrammarBucket.reset(); 
+        fGrammarBucket.reset();
         //we should retreive the initial grammar set given by the application
         //to the parser and put it in local grammar bucket.
 
         // make sure error reporter knows about schemas...
         if(fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
             fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
-        } 
+        }
 
         if(fGrammarPool != null) {
 
@@ -479,17 +480,17 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             noNs.addLocation(fExternalNoNSSchema);
             locationPairs.put(XMLSymbols.EMPTY_STRING, noNs);
         }
-        SchemaGrammar grammar = loadSchema(desc, source, locationPairs); 
+        SchemaGrammar grammar = loadSchema(desc, source, locationPairs);
         if(grammar != null && fGrammarPool != null) {
             fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, fGrammarBucket.getGrammars());
         }
         return grammar;
     } // loadGrammar(XMLInputSource):  Grammar
 
-    SchemaGrammar loadSchema(XSDDescription desc, 
+    SchemaGrammar loadSchema(XSDDescription desc,
             XMLInputSource source,
             Hashtable locationPairs) throws IOException, XNIException {
-        
+
         // this should only be done once per invocation of this object;
         // unless application alters JAXPSource in the mean time.
         if(!fJAXPProcessed) {
@@ -509,8 +510,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     // namespace of absent namespace). when resolving an entity, we first try
     // to find in the hashtable whether there is a value for that namespace,
     // if so, pass that location value to the user-defined entity resolver.
-    public static XMLInputSource resolveDocument(XSDDescription desc, Hashtable locationPairs, 
-            XMLEntityResolver entityResolver) throws IOException { 
+    public static XMLInputSource resolveDocument(XSDDescription desc, Hashtable locationPairs,
+            XMLEntityResolver entityResolver) throws IOException {
         String loc = null;
         // we consider the schema location properties for import
         if (desc.getContextType() == XSDDescription.CONTEXT_IMPORT ||
@@ -520,7 +521,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             String ns = namespace == null ? XMLSymbols.EMPTY_STRING : namespace;
             // get the location hint for that namespace
             LocationArray tempLA = (LocationArray)locationPairs.get(ns);
-            if(tempLA != null) 
+            if(tempLA != null)
                 loc = tempLA.getFirstLocation();
         }
 
@@ -545,7 +546,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     // @param schemaStr     The schemaLocation string to tokenize
     // @param locations     Hashtable mapping namespaces to LocationArray objects holding lists of locaitons
     // @return true if no problems; false if string could not be tokenized
-    public static boolean tokenizeSchemaLocationStr(String schemaStr, Hashtable locations) { 
+    public static boolean tokenizeSchemaLocationStr(String schemaStr, Hashtable locations) {
         if (schemaStr!= null) {
             StringTokenizer t = new StringTokenizer(schemaStr, " \n\t\r");
             String namespace, location;
@@ -610,10 +611,12 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 "InputStream, InputSource.");
         }
 
-        // JAXP spec. allow []s of type String, File, InputStream, 
+        // JAXP spec. allow []s of type String, File, InputStream,
         // InputSource also, apart from [] of type Object.
         Object[] objArr = (Object[]) fJAXPSource;
         fJAXPProcessed = true;
+        //make local vector for storing targetn namespaces of schemasources specified in object arrays.
+        Vector jaxpSchemaSourceNamespaces = new Vector() ;
         for (int i = 0; i < objArr.length; i++) {
             fXSDDescription.reset();
             xis = xsdToXMLInputSource(objArr[i]);
@@ -624,9 +627,26 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 fXSDDescription.setExpandedSystemId(sid);
                 fXSDDescription.fLocationHints = new String[]{sid};
             }
-            fGrammarBucket.putGrammar(loadSchema(fXSDDescription, xis, locationPairs));
+            String targetNamespace = null ;
+            SchemaGrammar grammar = loadSchema(fXSDDescription, xis, locationPairs);
+            if(grammar != null){
+                targetNamespace = grammar.getTargetNamespace() ;
+                if(jaxpSchemaSourceNamespaces.contains(targetNamespace)){
+                    //when an array of objects is passed it is illegal to have two schemas that share same namespace.
+                    throw new java.lang.IllegalArgumentException(
+                        " When using array of Objects as the value of SCHEMA_SOURCE property , " +
+                        "no two Schemas should share the same targetNamespace. " );
+                }
+                else{
+                    jaxpSchemaSourceNamespaces.add(targetNamespace) ;
+                }
+                fGrammarBucket.putGrammar(grammar);
+            }
+            else{
+                //REVISIT: What should be the acutal behavior if grammar can't be loaded as specified in schema source?
+            }
         }
-    }
+    }//processJAXPSchemaSource
 
     private XMLInputSource xsdToXMLInputSource(
             Object val)
