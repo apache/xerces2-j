@@ -679,7 +679,7 @@ final class StringReader extends XMLEntityReader {
         qname.rawname = fStringPool.addSymbol(fData.substring(nameOffset, fCurrentOffset));
        
         int index = fData.indexOf(':', nameOffset);
-        if (index != -1) {
+        if (index != -1 && index < fCurrentOffset) {
             qname.prefix = fStringPool.addSymbol(fData.substring(nameOffset, index));
             int indexOfSpaceChar = fData.indexOf( ' ', index + 1 );//one past : look for blank
             String localPart;
