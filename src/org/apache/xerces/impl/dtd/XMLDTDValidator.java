@@ -166,7 +166,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /** Property identifier: grammar pool. */
     protected static final String GRAMMAR_POOL =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+    Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
 
     /** Property identifier: datatype validator factory. */
     protected static final String DATATYPE_VALIDATOR_FACTORY =
