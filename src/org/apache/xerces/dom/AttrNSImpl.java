@@ -224,7 +224,7 @@ public class AttrNSImpl
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
             }
-            if (namespaceURI == null) {
+            if (namespaceURI == null || prefix.indexOf(':') >=0) {
                 throw new DOMException(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
             } else if (prefix != null) {
@@ -238,6 +238,9 @@ public class AttrNSImpl
                         throw new DOMException(DOMException.NAMESPACE_ERR, 
                                                "DOM003 Namespace error");
                     }
+                } else if (name.equals("xmlns")) {
+                        throw new DOMException(DOMException.NAMESPACE_ERR,
+                                    "DOM003 Namespace error");
                 }
             }
         }

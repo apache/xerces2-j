@@ -1028,40 +1028,6 @@ public class CoreDocumentImpl
 		break;
             }
 
-            // REVISIT: The DOM specifications say that DocumentType nodes
-            // cannot be imported. Is this OK?
-    	    case DOCUMENT_TYPE_NODE: {
-		DocumentType srcdoctype = (DocumentType)source;
-		DocumentTypeImpl newdoctype = (DocumentTypeImpl)
-		    createDocumentType(srcdoctype.getNodeName(),
-				       srcdoctype.getPublicId(),
-				       srcdoctype.getSystemId());
-		// Values are on NamedNodeMaps
-		NamedNodeMap smap = srcdoctype.getEntities();
-		NamedNodeMap tmap = newdoctype.getEntities();
-		if(smap != null) {
-		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true,
-                                                     reversedIdentifiers));
-                    }
-                }
-		smap = srcdoctype.getNotations();
-		tmap = newdoctype.getNotations();
-		if (smap != null) {
-		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true,
-                                                     reversedIdentifiers));
-                    }
-                }
-		// NOTE: At this time, the DOM definition of DocumentType
-		// doesn't cover Elements and their Attributes. domimpl's
-		// extentions in that area will not be preserved, even if
-		// copying from domimpl to domimpl. We could special-case
-		// that here. Arguably we should. Consider. ?????
-		newnode = newdoctype;
-		break;
-            }
-
     	    case DOCUMENT_FRAGMENT_NODE: {
 		newnode = createDocumentFragment();
 		// No name, kids carry value
@@ -1079,7 +1045,7 @@ public class CoreDocumentImpl
 		// No name, no value
 		break;
             }
-
+            case DOCUMENT_TYPE_NODE: 
             case DOCUMENT_NODE : // Can't import document nodes
             default: {           // Unknown node type
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR,

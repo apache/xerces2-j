@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ package org.apache.xerces.validators.datatype;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.lang.Math;
 import org.apache.xerces.utils.regex.RegularExpression;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 
@@ -553,13 +554,6 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
         int i = indexOf(start, end, '-');
         if ( i==-1 ) throw new RuntimeException("Year separator is missing or misplaced");
-        int length = i-start;
-        if (length<4) {
-            throw new RuntimeException("Year must have 'CCYY' format");
-        }
-        else if (length > 4 && fBuffer.charAt(start)=='0'){
-            throw new RuntimeException("Leading zeros are required if the year value would otherwise have fewer than four digits; otherwise they are forbidden");
-        }
         date[CY]= parseIntYear(i);
         if (fBuffer.charAt(i)!='-') {
             throw new RuntimeException("CCYY must be followed by '-' sign");
@@ -684,28 +678,30 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
 
         //validate hours
-        if ( data[h]>23 || data[h]<0 ) {
-            throw new RuntimeException("Hour must have values 0-23");
+        if ( data[h]>24 || data[h]<0 ||
+             (data[h] == 24 && (data[m]!=0 || data[s]!=0 || data[ms]!=0)) ) {
+            throw new RuntimeException("Hour must have values 0-24.  If hour is 24, minutes and seconds must both have the value 0.");
         }
 
-        //validate
+        //validate minutes
         if ( data[m]>59 || data[m]<0 ) {
             throw new RuntimeException("Minute must have values 0-59");
         }
 
-        //validate
+        //validate seconds
         if ( data[s]>60 || data[s]<0 ) {
             throw new RuntimeException("Second must have values 0-60");
 
         }
 
-        //validate
-        if ( timeZone[hh]>14 || timeZone[hh]<-14 ) {
+        //validate time-zone hours
+        if ( Math.abs(timeZone[hh])>14 ||
+             (Math.abs(timeZone[hh]) == 14 && timeZone[mm] != 0) ) {
             throw new RuntimeException("Time zone should have range -14..+14");
         }
 
-        //validate
-        if ( timeZone[mm]>59 || timeZone[mm]<-59 ) {
+        //validate time-zone minutes
+        if ( Math.abs(timeZone[mm]) > 59 ) {
             throw new RuntimeException("Minute must have values 0-59");
         }
     }
@@ -774,11 +770,17 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             negative = true;
             limit = Integer.MIN_VALUE;
             i++;
-         
         } 
         else{
             limit = -Integer.MAX_VALUE;
         }
+
+        int length = end-i;
+        if (length<4 ||
+            (length > 4 && fBuffer.charAt(i)=='0')) {
+            throw new RuntimeException("Leading zeros are required if the year value would otherwise have fewer than four digits; otherwise they are forbidden.");
+        }
+
         multmin = limit / radix;
         while (i < end)
         {
@@ -802,7 +804,9 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     }
 
     /**
-     * If timezone present - normalize dateTime  [E Adding durations to dateTimes]
+     * normalize dateTime  [E Adding durations to dateTimes]
+     * If timezone present - normalize to UTC
+     * If hour is 24 - normalize to start of following day
      * 
      * @param date   CCYY-MM-DDThh:mm:ss+03
      * @return CCYY-MM-DDThh:mm:ssZ
@@ -857,7 +861,10 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             date[M]=modulo(temp, 1, 13);
             date[CY]=date[CY]+fQuotient(temp, 1, 13);
         }
-        date[utc]='Z';  
+
+        if (date[utc] != 0) {
+            date[utc]='Z';
+        }
     }
 
 
@@ -917,8 +924,6 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
 
     private boolean isLeapYear(int year) {
-
-        //REVISIT: should we take care about Julian calendar? 
         return((year%4 == 0) && ((year%100 != 0) || (year%400 == 0))); 
     }
 

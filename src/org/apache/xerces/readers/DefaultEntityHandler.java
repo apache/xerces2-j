@@ -391,7 +391,9 @@ public class DefaultEntityHandler
 
         // check for bad parameters id
         if (id == null || id.length() == 0) {
-            return systemId;
+            // REVISIT: returning null here will result in NPE
+            // for notations and entity declarations
+            return "";
         }
 
         // if id already expanded, return
