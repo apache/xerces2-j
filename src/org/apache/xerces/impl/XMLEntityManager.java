@@ -1603,7 +1603,7 @@ public class XMLEntityManager
                 System.out.println();
             }
 
-            int length = s.length();
+            final int length = s.length();
             for (int i = 0; i < length; i++) {
                 char c = fCurrentEntity.ch[fCurrentEntity.position++];
                 if (c != s.charAt(i)) {
@@ -1615,7 +1615,7 @@ public class XMLEntityManager
                     }
                     return false;
                 }
-                if (fCurrentEntity.position == fCurrentEntity.count) {
+                if (i < length - 1 && fCurrentEntity.position == fCurrentEntity.count) {
                     System.arraycopy(fCurrentEntity.ch, fCurrentEntity.count - i - 1, fCurrentEntity.ch, 0, i + 1);
                     // REVISIT: Can a string to be skipped cross an
                     //          entity boundary? -Ac
