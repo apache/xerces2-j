@@ -746,9 +746,18 @@ public abstract class AbstractSAXParser
         throws XNIException {
 
         try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.startEntity(name);
+            // Only report startEntity if this entity was actually read.
+            if (augs != null && Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
+                // report skipped entity to content handler
+                if (fContentHandler != null) {
+                    fContentHandler.skippedEntity(name);
+                }
+            }
+            else {
+                // SAX2 extension
+                if (fLexicalHandler != null) {
+                    fLexicalHandler.startEntity(name);
+                }
             }
         }
         catch (SAXException e) {
@@ -780,9 +789,12 @@ public abstract class AbstractSAXParser
     public void endParameterEntity(String name, Augmentations augs) throws XNIException {
 
         try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.endEntity(name);
+            // Only report endEntity if this entity was actually read.
+            if (augs == null || !Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
+                // SAX2 extension
+                if (fLexicalHandler != null) {
+                    fLexicalHandler.endEntity(name);
+                }
             }
         }
         catch (SAXException e) {

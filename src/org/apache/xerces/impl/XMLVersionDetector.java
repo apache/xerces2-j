@@ -126,7 +126,7 @@ public class XMLVersionDetector {
         // 
         fEntityManager.setEntityHandler(scanner);
         
-        scanner.startEntity(fXMLSymbol, fEntityManager.getCurrentResourceIdentifier(), fEncoding);        
+        scanner.startEntity(fXMLSymbol, fEntityManager.getCurrentResourceIdentifier(), fEncoding, null);        
     }
 
 

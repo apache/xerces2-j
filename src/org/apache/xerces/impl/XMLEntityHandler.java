@@ -16,6 +16,7 @@
 
 package org.apache.xerces.impl;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 
@@ -47,12 +48,13 @@ public interface XMLEntityHandler {
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
-     *
+     * @param augs     Additional information that may include infoset augmentations
+     * 
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
                             XMLResourceIdentifier identifier,
-                            String encoding) throws XNIException;
+                            String encoding, Augmentations augs) throws XNIException;
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
@@ -60,9 +62,10 @@ public interface XMLEntityHandler {
      * are just specified by their name.
      * 
      * @param name The name of the entity.
-     *
+     * @param augs Additional information that may include infoset augmentations
+     * 
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException;
+    public void endEntity(String name, Augmentations augs) throws XNIException;
 
 } // interface XMLEntityHandler

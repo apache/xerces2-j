@@ -23,6 +23,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLStringBuffer;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
@@ -1129,12 +1130,13 @@ public abstract class XMLScanner
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
                             XMLResourceIdentifier identifier,
-                            String encoding) throws XNIException {
+                            String encoding, Augmentations augs) throws XNIException {
 
         // keep track of the entity depth
         fEntityDepth++;
@@ -1150,10 +1152,11 @@ public abstract class XMLScanner
      * specified by their name.
      * 
      * @param name The name of the entity.
+     * @param augs Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augs) throws XNIException {
 
         // keep track of the entity depth
         fEntityDepth--;

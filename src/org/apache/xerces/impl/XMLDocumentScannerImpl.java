@@ -24,6 +24,7 @@ import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLStringBuffer;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
@@ -478,9 +479,9 @@ public class XMLDocumentScannerImpl
      */
     public void startEntity(String name,
                             XMLResourceIdentifier identifier,
-                            String encoding) throws XNIException {
+                            String encoding, Augmentations augs) throws XNIException {
 
-        super.startEntity(name, identifier, encoding);
+        super.startEntity(name, identifier, encoding, augs);
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
@@ -503,9 +504,9 @@ public class XMLDocumentScannerImpl
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augs) throws XNIException {
 
-        super.endEntity(name);
+        super.endEntity(name, augs);
 
         // call handler
         if (fDocumentHandler != null && name.equals("[xml]")) {

@@ -33,12 +33,14 @@ import org.apache.xerces.impl.io.UCSReader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
+import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -338,6 +340,9 @@ public class XMLEntityManager
 
     /** Resource identifer. */
     private final XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
+    
+    /** Augmentations for entities. */
+    private final Augmentations fEntityAugs = new AugmentationsImpl();
 
     //
     // Constructors
@@ -687,8 +692,12 @@ public class XMLEntityManager
             if (fEntityHandler != null) {
                 String encoding = null;
                 fResourceIdentifier.clear();
-                fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
-                fEntityHandler.endEntity(entityName);
+                fEntityAugs.removeAllItems();
+                fEntityAugs.putItem(Constants.ENTITY_SKIPPED, Boolean.TRUE);
+                fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding, fEntityAugs);
+                fEntityAugs.removeAllItems();
+                fEntityAugs.putItem(Constants.ENTITY_SKIPPED, Boolean.TRUE);
+                fEntityHandler.endEntity(entityName, fEntityAugs);
             }
             return;
         }
@@ -714,8 +723,12 @@ public class XMLEntityManager
                     fResourceIdentifier.setValues(
                             (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
                             extLitSysId, extBaseSysId, expandedSystemId);
-                    fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
-                    fEntityHandler.endEntity(entityName);
+                    fEntityAugs.removeAllItems();
+                    fEntityAugs.putItem(Constants.ENTITY_SKIPPED, Boolean.TRUE);
+                    fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding, fEntityAugs);
+                    fEntityAugs.removeAllItems();
+                    fEntityAugs.putItem(Constants.ENTITY_SKIPPED, Boolean.TRUE);
+                    fEntityHandler.endEntity(entityName, fEntityAugs);
                 }
                 return;
             }
@@ -752,8 +765,12 @@ public class XMLEntityManager
                                 (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
                                 extLitSysId, extBaseSysId, expandedSystemId);
                     }
-                    fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
-                    fEntityHandler.endEntity(entityName);
+                    fEntityAugs.removeAllItems();
+                    fEntityAugs.putItem(Constants.ENTITY_SKIPPED, Boolean.TRUE);
+                    fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding, fEntityAugs);
+                    fEntityAugs.removeAllItems();
+                    fEntityAugs.putItem(Constants.ENTITY_SKIPPED, Boolean.TRUE);
+                    fEntityHandler.endEntity(entityName, null);
                 }
                 return;
             }
@@ -856,7 +873,7 @@ public class XMLEntityManager
         
         // call handler
         if (fEntityHandler != null) {
-            fEntityHandler.startEntity(name, fResourceIdentifier, encoding);
+            fEntityHandler.startEntity(name, fResourceIdentifier, encoding, null);
         }
 
     } // startEntity(String,XMLInputSource)
@@ -1678,7 +1695,7 @@ public class XMLEntityManager
             System.out.println();
         }
         if (fEntityHandler != null) {
-            fEntityHandler.endEntity(fCurrentEntity.name);
+            fEntityHandler.endEntity(fCurrentEntity.name, null);
         }
         
         // Close the reader for the current entity once we're 

@@ -23,6 +23,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLResourceIdentifier;
@@ -476,14 +477,15 @@ public class XMLDTDScannerImpl
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
                             XMLResourceIdentifier identifier,
-                            String encoding) throws XNIException {
+                            String encoding, Augmentations augs) throws XNIException {
 
-        super.startEntity(name, identifier, encoding);
+        super.startEntity(name, identifier, encoding, augs);
 
         boolean dtdEntity = name.equals("[dtd]");
         if (dtdEntity) {
@@ -506,7 +508,7 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null && !dtdEntity && fReportEntity) {
-            fDTDHandler.startParameterEntity(name, identifier, encoding, null);
+            fDTDHandler.startParameterEntity(name, identifier, encoding, augs);
         }
 
     } // startEntity(String,XMLResourceIdentifier,String)
@@ -517,13 +519,14 @@ public class XMLDTDScannerImpl
      * are just specified by their name.
      * 
      * @param name The name of the entity.
+     * @param augs Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) 
+    public void endEntity(String name, Augmentations augs) 
         throws XNIException {
 
-        super.endEntity(name);
+        super.endEntity(name, augs);
 
         // if there is no data after the doctype
         //  
@@ -564,7 +567,7 @@ public class XMLDTDScannerImpl
         // call handler
         boolean dtdEntity = name.equals("[dtd]");
         if (fDTDHandler != null && !dtdEntity && reportEntity) {
-            fDTDHandler.endParameterEntity(name, null);
+            fDTDHandler.endParameterEntity(name, augs);
         }
 
         // end DTD

@@ -509,12 +509,13 @@ public class XMLDocumentFragmentScannerImpl
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
                             XMLResourceIdentifier identifier,
-                            String encoding) throws XNIException {
+                            String encoding, Augmentations augs) throws XNIException {
 
         // keep track of this entity before fEntityDepth is increased
         if (fEntityDepth == fEntityStack.length) {
@@ -524,7 +525,7 @@ public class XMLDocumentFragmentScannerImpl
         }
         fEntityStack[fEntityDepth] = fMarkupDepth;
 
-        super.startEntity(name, identifier, encoding);
+        super.startEntity(name, identifier, encoding, augs);
 
         // WFC:  entity declared in external subset in standalone doc
         if(fStandalone && fEntityManager.isEntityDeclInExternalSubset(name)) {
@@ -535,7 +536,7 @@ public class XMLDocumentFragmentScannerImpl
         // call handler
         if (fDocumentHandler != null && !fScanningAttribute) {
             if (!name.equals("[xml]")) {
-                fDocumentHandler.startGeneralEntity(name, identifier, encoding, null);
+                fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
             }
         }
 
@@ -547,10 +548,11 @@ public class XMLDocumentFragmentScannerImpl
      * are just specified by their name.
      * 
      * @param name The name of the entity.
+     * @param augs Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augs) throws XNIException {
 
         // flush possible pending output buffer - see scanContent
         if (fInScanContent && fStringBuffer.length != 0
@@ -559,7 +561,7 @@ public class XMLDocumentFragmentScannerImpl
             fStringBuffer.length = 0; // make sure we know it's been flushed
         }
 
-        super.endEntity(name);
+        super.endEntity(name, augs);
 
         // make sure markup is properly balanced
         if (fMarkupDepth != fEntityStack[fEntityDepth]) {
@@ -569,7 +571,7 @@ public class XMLDocumentFragmentScannerImpl
         // call handler
         if (fDocumentHandler != null && !fScanningAttribute) {
             if (!name.equals("[xml]")) {
-                fDocumentHandler.endGeneralEntity(name, null);
+                fDocumentHandler.endGeneralEntity(name, augs);
             }
         }
         
