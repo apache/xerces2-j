@@ -1518,7 +1518,14 @@ public abstract class XMLParser
             //
             if (feature.equals("validation/schema")) {
                 return getValidationSchema();
+            } 
+            // http://apache.org/xml/features/validation/schema-full-checking
+            //   Lets the user turn Schema full constraint checking on/off.
+            //
+            if (feature.equals("validation/schema-full-checking")) {
+                return getValidationSchemaFullChecking();
             }
+            //
             //
             // http://apache.org/xml/features/validation/dynamic
             //   Allows the parser to validate a document only when it
