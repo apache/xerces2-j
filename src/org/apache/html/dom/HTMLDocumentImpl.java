@@ -441,12 +441,33 @@ public class HTMLDocumentImpl
     } 
 
 
+    /**
+     * Xerces-specific constructor. "localName" is passed in, so we don't need
+     * to create a new String for it.
+     * 
+     * @param namespaceURI The namespace URI of the element to
+     *                     create.
+     * @param qualifiedName The qualified name of the element type to
+     *                      instantiate.
+     * @param localName     The local name of the element to instantiate.
+     * @return Element A new Element object with the following attributes:
+     * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
+     *                      name contains an invalid character.
+     */
+    public Element createElementNS(String namespaceURI, String qualifiedName,
+                                   String localpart)
+        throws DOMException
+    {
+        return createElementNS(namespaceURI, qualifiedName);
+    }
+    
     public Element createElementNS( String namespaceURI, String qualifiedName )
     {
         if ( namespaceURI == null || namespaceURI.length() == 0 )
             return createElement( qualifiedName );
-        else
+        else {
             return super.createElementNS( namespaceURI, qualifiedName );
+        }
     }
 
 

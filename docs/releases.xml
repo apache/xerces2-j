@@ -9,6 +9,14 @@
   <changes>
     <fix>
      <note>
+      Fixed bug in HTML DOM implementation that was causing xerces.dom
+      element nodes to be created instead of the appropriate HTML element
+      nodes.
+     </note>
+     <submitter name='Andy Clark'/>
+    </fix>
+    <fix>
+     <note>
       Fixed bug to avoid null pointer exception in AbstractDOMParser when
       locator information is not available from parser configuration.
      </note>
