@@ -441,13 +441,11 @@ public abstract class AbstractSAXParser
                             // localpart should be empty string as per SAX documentation:
                             // http://www.saxproject.org/?selected=namespaces
                             fQName.prefix = "";
+                            fQName.uri = "";
                             fQName.localpart = "";
                             attributes.setName(i, fQName);
                         }
                     } 
-                    
-
-                  
                 }
                 
                 String uri = element.uri != null ? element.uri : "";

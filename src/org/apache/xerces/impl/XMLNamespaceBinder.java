@@ -694,7 +694,7 @@ public class XMLNamespaceBinder
     } // endCDATA()
 
     /**
-     * The end of the document.     
+     * The end of the document.
      * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -728,8 +728,8 @@ public class XMLNamespaceBinder
     //
 
     /** Handles start element. */
-    protected void handleStartElement(QName element, XMLAttributes attributes, 
-                                      Augmentations augs, 
+    protected void handleStartElement(QName element, XMLAttributes attributes,
+                                      Augmentations augs,
                                       boolean isEmpty) throws XNIException {
 
         // add new namespace context
@@ -740,11 +740,50 @@ public class XMLNamespaceBinder
         for (int i = 0; i < length; i++) {
             String localpart = attributes.getLocalName(i);
             String prefix = attributes.getPrefix(i);
-            if (prefix == fXmlnsSymbol || localpart == fXmlnsSymbol) {
-                // check for duplicates
+            // when it's of form xmlns="..." or xmlns:prefix="...",
+            // it's a namespace declaration. but prefix:xmlns="..." isn't.
+            if (prefix == fXmlnsSymbol ||
+                prefix == fEmptySymbol && localpart == fXmlnsSymbol) {
+
+                // get the internalized value of this attribute
+                String uri = fSymbolTable.addSymbol(attributes.getValue(i));
+
+                // 1. "xmlns" can't be bound to any namespace
+                if (prefix == fXmlnsSymbol && localpart == fXmlnsSymbol) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                               "CantBindXMLNS",
+                                               new Object[]{attributes.getQName(i)},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                
+                // 2. the namespace for "xmlns" can't be bound to any prefix
+                if (uri == NamespaceSupport.XMLNS_URI) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                               "CantBindXMLNS",
+                                               new Object[]{attributes.getQName(i)},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                
+                // 3. "xml" can't be bound to any other namespace than it's own
+                if (localpart == fXmlSymbol) {
+                    if (uri != NamespaceSupport.XML_URI) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                                   "CantBindXML",
+                                                   new Object[]{attributes.getQName(i)},
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
+                }
+                // 4. the namespace for "xml" can't be bound to any other prefix
+                else {
+                    if (uri ==NamespaceSupport.XML_URI) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                                   "CantBindXML",
+                                                   new Object[]{attributes.getQName(i)},
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
+                }
+
                 prefix = localpart != fXmlnsSymbol ? localpart : fEmptySymbol;
-                String uri = attributes.getValue(i);
-                uri = fSymbolTable.addSymbol(uri);
 
                 // http://www.w3.org/TR/1999/REC-xml-names-19990114/#dt-prefix
                 // We should only report an error if there is a prefix,
@@ -787,21 +826,19 @@ public class XMLNamespaceBinder
             String aprefix = fAttributeQName.prefix != null
                            ? fAttributeQName.prefix : fEmptySymbol;
             String arawname = fAttributeQName.rawname;
-            if (aprefix == fXmlSymbol) {
-                fAttributeQName.uri = fNamespaceSupport.getURI(fXmlSymbol);
+            if (arawname == fXmlnsSymbol) {
+                fAttributeQName.uri = fNamespaceSupport.getURI(fXmlnsSymbol);
                 attributes.setName(i, fAttributeQName);
             }
-            else if (arawname != fXmlnsSymbol && !arawname.startsWith("xmlns:")) {
-                if (aprefix != fEmptySymbol) {
-                    fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
-                    if (fAttributeQName.uri == null) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
-                                                   "AttributePrefixUnbound",
-                                                   new Object[]{aprefix, arawname},
-                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    attributes.setName(i, fAttributeQName);
+            else if (aprefix != fEmptySymbol) {
+                fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
+                if (fAttributeQName.uri == null) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                               "AttributePrefixUnbound",
+                                               new Object[]{aprefix, arawname},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
+                attributes.setName(i, fAttributeQName);
             }
         }
 
@@ -811,22 +848,18 @@ public class XMLNamespaceBinder
         for (int i = 0; i < attrCount - 1; i++) {
             String alocalpart = attributes.getLocalName(i);
             String auri = attributes.getURI(i);
-            String arawName = attributes.getQName(i);
             for (int j = i + 1; j < attrCount; j++) {
                 String blocalpart = attributes.getLocalName(j);
                 String buri = attributes.getURI(j);
-                String brawName = attributes.getQName(j);
                 if (alocalpart == blocalpart && auri == buri) {
-                    if ((arawName == brawName) ||  (!arawName.startsWith("xmlns") && !brawName.startsWith("xmlns"))) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
-                                                   "AttributeNSNotUnique",
-                                                   new Object[]{element.rawname,alocalpart, auri},
-                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
+                    fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                               "AttributeNSNotUnique",
+                                               new Object[]{element.rawname,alocalpart, auri},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
             }
         }
-       
+
         // call handler
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             if (isEmpty) {

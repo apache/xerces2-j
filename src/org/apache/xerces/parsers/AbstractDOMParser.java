@@ -832,13 +832,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
                 attributes.getName(i, fAttrQName);
-                // DOM Level 2 wants all namespace declaration attributes
-                // to be bound to "http://www.w3.org/2000/xmlns/"
-                String attributeName = fAttrQName.rawname;
-                if (attributeName !=null && (attributeName.startsWith("xmlns:") ||
-                    attributeName.equals("xmlns"))) {
-                    fAttrQName.uri = NamespaceContext.XMLNS_URI;
-                }
                 Attr attr = createAttrNode(fAttrQName);
 
                 String attrValue = attributes.getValue(i);
