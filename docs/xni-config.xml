@@ -102,6 +102,22 @@
     <tr>
      <td>
       <code>
+       public Boolean getDefaultFeature(
+           String featureId);
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public void getDefaultProperty(
+           String propertyId);
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
        public void setFeature(
            String featureId,
            boolean state
@@ -782,6 +798,13 @@
        public void setDocumentHandler(
            <link idref='xni-core' anchor='document-handler'>XMLDocumentHandler</link> handler
            );
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public <link idref='xni-core' anchor='document-handler'>XMLDocumentHandler</link> getDocumentHandler();
       </code>
      </td>
     </tr>
