@@ -179,7 +179,7 @@ public class DOMImplementationImpl
                                              DocumentType doctype)
                                              throws DOMException
     {
-    	if (doctype.getOwnerDocument() != null) {
+    	if (doctype != null && doctype.getOwnerDocument() != null) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
     		                           "DOM005 Wrong document");
         }
