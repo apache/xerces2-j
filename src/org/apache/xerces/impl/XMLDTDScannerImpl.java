@@ -192,6 +192,10 @@ public class XMLDTDScannerImpl
     /** Parameter entity stack to check well-formedness. */
     private int[] fPEStack = new int[5];
 
+
+    /** Parameter entity stack to report start/end entity calls. */
+    private boolean[] fPEReport = new boolean[5];
+
     /** Number of opened parameter entities. */
     private int fPEDepth;
 
@@ -457,7 +461,7 @@ public class XMLDTDScannerImpl
             fExtEntityDepth++;
         }
         else if (name.charAt(0) == '%') {
-            pushPEStack(fMarkUpDepth);
+            pushPEStack(fMarkUpDepth, fReportEntity);
             if (fEntityScanner.isExternal()) {
                 fExtEntityDepth++;
             }
@@ -483,6 +487,7 @@ public class XMLDTDScannerImpl
         // Handle end of PE
         boolean reportEntity = fReportEntity;
         if (name.startsWith("%")) {
+            reportEntity = peekReportEntity();
             // check well-formedness of the enity
             int startMarkUpDepth = popPEStack();
             if (startMarkUpDepth != fMarkUpDepth) {
@@ -1649,18 +1654,21 @@ public class XMLDTDScannerImpl
 
         fReportEntity = false;
         skipSeparator(false, !scanningInternalSubset());
+
         if (fEntityScanner.skipString("INCLUDE")) {
             skipSeparator(false, !scanningInternalSubset());
             // call handler
+            if (!fEntityScanner.skipChar('[')) {
+                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
+            }
+
             if (fDTDHandler != null) {
                 fDTDHandler.startConditional(
                                             XMLDTDHandler.CONDITIONAL_INCLUDE);
             }
-            if (!fEntityScanner.skipChar('[')) {
-                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
-            }
             fIncludeSectDepth++;
             // just stop there and go back to the main loop
+            fReportEntity = true;
         }
         else if (fEntityScanner.skipString("IGNORE")) {
             skipSeparator(false, !scanningInternalSubset());
@@ -1901,17 +1909,29 @@ public class XMLDTDScannerImpl
     /*
      * Parameter Entity Stack
      */
-    private final void pushPEStack(int depth) {
+    private final void pushPEStack(int depth, boolean report) {
         if (fPEStack.length == fPEDepth) {
             int[] newIntStack = new int[fPEDepth * 2];
             System.arraycopy(fPEStack, 0, newIntStack, 0, fPEDepth);
             fPEStack = newIntStack;
+            // report end/start calls
+            boolean[] newBooleanStack = new boolean[fPEDepth * 2];
+            System.arraycopy(fPEReport, 0, newBooleanStack, 0, fPEDepth);
+            fPEReport = newBooleanStack;
+
         }
+        fPEReport[fPEDepth] = report;
         fPEStack[fPEDepth++] = depth;
     }
 
+    /** pop the stack */
     private final int popPEStack() {
         return fPEStack[--fPEDepth];
+    }
+
+    /** look at the top of the stack */
+    private final boolean peekReportEntity() {
+        return fPEReport[fPEDepth-1];
     }
 
 
