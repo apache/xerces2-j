@@ -60,9 +60,11 @@ package org.apache.xerces.readers;
 import java.io.IOException;
 import org.apache.xerces.framework.XMLString;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.utils.XMLChar;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import java.io.Reader;
+import java.io.PushbackReader;
 import java.util.Vector;
 
 /**
@@ -96,11 +98,9 @@ implements Locator {
 
     /** Reader fields ....  */
 
-    private   Reader    fReader;
-    private   char[]    fData;
-    private   int       fLength;
-    private   final int BUFFERSIZE = 1024;
-    private   boolean   fReadBuffer = true;
+    private   PushbackReader    fPushbackReader;
+
+
 
     //
     // Constructors
@@ -110,7 +110,7 @@ implements Locator {
      * 
      */
     public XMLEntityScanner() {
-        this.fData = new char[BUFFERSIZE];
+
     }
 
     //
@@ -151,13 +151,11 @@ implements Locator {
      * 
      * @return 
      */
-    public char peekChar()
+    public int peekChar()
     throws IOException {
-        if ( fReadBuffer == true ) {
-            readBuffer();
-        }
-        return this.fData[ (int) fCharPosition];//return char  
-
+        int charToReturn = this.fPushbackReader.read();
+        this.fPushbackReader.unread(charToReturn );
+        return charToReturn;
     } // peekChar
 
     /**
@@ -165,55 +163,99 @@ implements Locator {
      * 
      * @return 
      */
-    public char scanChar()
+    public int scanChar()
     throws IOException {
-        if ( fReadBuffer == true ) {
-            readBuffer();
-        }
-        return this.fData[ (int) fCharPosition++];//return char and advance
+        int charToReturn = this.fPushbackReader.read();//consume character
+        return charToReturn;
     } // scanChar
 
     /**
      * scanNmtoken
+     * [7]  Nmtoken ::=  (NameChar)+ 
      * 
-     * @return 
+     * @return           String containing Nmtoken
+     * @exception IOException
      */
     public String scanNmtoken()
     throws IOException {
-        if ( fReadBuffer == true ) {
-            readBuffer();
+        int charValue;
+        StringBuffer  buffer = new StringBuffer();
+        while ( XMLChar.isNameChar( charValue = this.fPushbackReader.read() ) == true ) {
+            buffer.append( (char) (charValue & 0xffff ) );
+            fCharPosition++;
         }
-
-        return null;
+        return buffer.toString();
     } // scanNmtoken
 
     /**
      * scanName
+     * [5]  Name ::=  (Letter | '_' | ':') (NameChar)* 
      * 
      * @return 
+     * @exception IOException
      */
     public String scanName()
     throws IOException {
-
-        if ( fReadBuffer == true ) {
-            readBuffer();
+        int charValue;
+        StringBuffer  buffer = new StringBuffer();
+        if ( XMLChar.isNameStartChar( charValue = this.fPushbackReader.read() )== true) {
+            buffer.append( (char) (charValue & 0xffff ) );
+            fCharPosition++;
+            while ( XMLChar.isNameChar( charValue = this.fPushbackReader.read() ) == true ) {
+                buffer.append( (char) (charValue & 0xffff ) );
+                fCharPosition++;
+            }
         }
-
-        return null;
+        return buffer.toString();
     } // scanName
 
     /**
      * scanQName
      * 
-     * @param qname 
+     * 6]  QName ::=  (Prefix ':')? LocalPart 
+     * [7]  Prefix ::=  NCName 
+     * [8]  LocalPart ::=  NCName 
+     * [1]  NSAttName ::=  PrefixedAttName 
+     *    | DefaultAttName 
+     * [2]  PrefixedAttName ::=  'xmlns:' NCName [  NSC: Leading "XML" ] 
+     * [3]  DefaultAttName ::=  'xmlns' 
+     * [4]  NCName ::=  (Letter | '_') (NCNameChar)* /*  An XML Name, minus the ":" 
+     * [5]  NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender 
+     * 
+     * @param qname
+     * @exception IOException
      */
     public void scanQName(QName qname)
     throws IOException {
+        int charValue;
+        int startIndex = 0;
+        StringBuffer  buffer = new StringBuffer();
+        
+        charValue = this.fPushbackReader.read();
 
-        if ( fReadBuffer == true ) {
-            readBuffer();
-        }
+        if( charValue < 0x80 ){
+            if( XMLChar.isNameStartChar( charValue) == false ) {
+                qname.clear();
+                return;
+            }
+            if( charValue  == ':' ){
+                qname.clear();
+                return;
+            }
+        } 
+        //int offset = 
+        
 
+
+      if ( XMLChar.isNameStartChar( charValue = this.fPushbackReader.read() )== true) {
+          buffer.append( (char) (charValue & 0xffff ) );
+          fCharPosition++;
+          while ( XMLChar.isNameChar( charValue = this.fPushbackReader.read() ) == true ) {
+              buffer.append( (char) (charValue & 0xffff ) );
+              fCharPosition++;
+          }
+      }
+      return;
 
     } // scanQName
 
@@ -225,9 +267,6 @@ implements Locator {
     public void scanContent(XMLString content)
     throws IOException {
 
-        if ( fReadBuffer == true ) {
-            readBuffer();
-        }
 
     } // scanContent
 
@@ -241,38 +280,29 @@ implements Locator {
     public boolean scanAttContent(int quote, XMLString content)
     throws IOException {
 
-        if ( fReadBuffer == true ) {
-            readBuffer();
-        }
 
         return false;
     } // scanAttContent
 
     /**
      * skipSpaces
+     * [3]  S ::=  (#x20 | #x9 | #xD | #xA)+ 
+     * 
+     * 
      */
-    public void skipSpaces() {
-        try {
-            if ( fReadBuffer == true ) {
-                readBuffer();
-            }
-        } catch ( IOException ex) {
-
-            ex.printStackTrace();
+    public void skipSpaces() throws IOException {
+        while (  XMLChar.isSpace( this.fPushbackReader.read() ) == true ) {
+            fCharPosition++;
         }
     } // skipSpaces
+
+
+
 
     /**
      * skipString
      */
     public void skipString() {
-        try {
-            if ( fReadBuffer == true ) {
-                readBuffer();
-            }
-        } catch ( IOException ex) {
-            ex.printStackTrace();
-        }
     } // skipString
 
     //
@@ -315,13 +345,11 @@ implements Locator {
         return this.getColumnNumber();
     } // getColumnNumber
 
-    private void readBuffer() throws IOException {
-        if ( fReader == null )
-            fReader = this.fInputSource.getCharacterStream();//Get Character reader.
-
-        int charRead  = fReader.read( this.fData );
-        fLength      += charRead; 
-        fReadBuffer   = false;//So we dont have to read until pos to be read is past  fLength
+    protected void setXMLEntityReader( InputSource source ){
+        Reader inSource = source.getCharacterStream();
+        if ( inSource != null  ) {
+            fPushbackReader = new PushbackReader(inSource);//One character reader
+        }
     }
 
 
