@@ -525,6 +525,73 @@ public class NamedNodeMapImpl
         }
         return -1;
     }
+
+    /**
+      * NON-DOM: Remove attribute at specified index
+      */
+    protected void removeItem(int index) {
+       if (nodes != null && index < nodes.size()){
+           nodes.removeElementAt(index);
+       }
+    }
+
+    /**
+     * NON-DOM: Remove the node object
+     * 
+     * NOTE: Specifically removes THIS NODE -- not the node with this
+     * name, nor the node with these contents. If node does not belong to
+     * this named node map, we throw a DOMException.
+     * 
+     * @param item   The node to remove
+     * @return Removed node
+     * @exception DOMException
+     */
+    protected Node removeItem (Node item) throws DOMException{
+        int index = -1;
+        if (nodes != null) {
+            for (int i= 0;i<nodes.size();i++) {
+                if (nodes.elementAt(i) == item) {
+                    index = i;
+                    nodes.removeElementAt(index);
+                    break;
+                }
+            }
+        }
+        if (index < 0) {
+            throw new DOMException(DOMException.NOT_FOUND_ERR,
+                                       "DOM008 Not found");
+        }
+        return item;
+    }
+
+    /**
+     * NON-DOM: copy content of this map into the specified vector
+     * 
+     * @param list   Vector to copy information into.
+     * @return A copy of this node named map
+     */
+    protected Vector cloneMap(Vector list){
+        if (list == null) {
+            list = new Vector(5, 10);
+        }
+        list.setSize(0);
+        if (nodes != null) {
+            for (int i=0; i<nodes.size(); i++) {
+                list.insertElementAt(nodes.elementAt(i), i);
+            }
+        }
+        
+        return list;
+    }
+
+    /**
+      * NON-DOM remove all elements from this map
+      */
+    public void removeAll (){
+        if (nodes != null) {
+            nodes.removeAllElements();
+        }
+    }
     
 
 } // class NamedNodeMapImpl

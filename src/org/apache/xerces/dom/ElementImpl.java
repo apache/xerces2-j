@@ -432,7 +432,7 @@ public class ElementImpl
             throw new DOMException(DOMException.NOT_FOUND_ERR, 
                                        "DOM008 Not found");
         }
-        return (Attr) attributes.removeNamedItem(oldAttr.getName());
+        return (Attr) attributes.removeItem(oldAttr);
 
     } // removeAttributeNode(Attr):Attr
 
@@ -580,7 +580,7 @@ public class ElementImpl
      *
      * @param namespaceURI      The namespace URI of the attribute to create
      *                          or alter. 
-     * @param localName         The local name of the attribute to create or
+     * @param qualifiedName     The qualified name of the attribute to create or
      *                          alter.
      * @param value             The value to set in string form.
      * @throws                  INVALID_CHARACTER_ERR: Raised if the specified
@@ -600,7 +600,7 @@ public class ElementImpl
      *                          namespaceURI is null or an empty string.
      * @since WD-DOM-Level-2-19990923
      */
-    public void setAttributeNS(String namespaceURI, String localName, String value) {
+    public void setAttributeNS(String namespaceURI, String qualifiedName, String value) {
 
     	if (ownerDocument.errorChecking && isReadOnly()) {
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
@@ -611,10 +611,20 @@ public class ElementImpl
             synchronizeData();
         }
 
+        int index = qualifiedName.indexOf(':');
+        String prefix, localName;
+        if (index < 0) {
+            prefix = null;
+            localName = qualifiedName;
+        } 
+        else {
+            prefix = qualifiedName.substring(0, index); 
+            localName = qualifiedName.substring(index+1);
+        }
     	Attr newAttr = getAttributeNodeNS(namespaceURI, localName);
         if (newAttr == null) {
             newAttr =
-                getOwnerDocument().createAttributeNS(namespaceURI, localName);
+                getOwnerDocument().createAttributeNS(namespaceURI, qualifiedName);
 
             if (attributes == null) {
                 attributes = new AttributeMap(this, null);
@@ -865,6 +875,7 @@ public class ElementImpl
         ((AttrImpl) at).isIdAttribute(true);
         ownerDocument.putIdentifier(at.getValue(), this);
     }
+
 
     //
     // Protected methods
