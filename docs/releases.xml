@@ -2,6 +2,11 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+  <s2 title='TBD'>
+        <ul>
+           <li>Fixed bug in Deferred DOM with multiple IDs on same element [andyc]</li>
+        </ul>
+  </s2>
   <s2 title='December 06, 2000'>
          <ul>
            <li>Fixed Memory leak bug was reported by Tosiki IGA where parser runs out of memory [ericye]</li>
