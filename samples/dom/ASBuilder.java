@@ -127,7 +127,7 @@ public class ASBuilder implements DOMErrorHandler {
     public static void main(String argv[]) {
 
         // too fee parameters
-        if (argv.length < 4) {
+        if (argv.length < 2) {
             printUsage();
             System.exit(1);
         }
