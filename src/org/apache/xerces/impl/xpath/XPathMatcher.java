@@ -257,6 +257,15 @@ public class XPathMatcher
     } // reset(XMLComponentManager)
 
     /**
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures() {
+        return null;
+    }
+
+    /**
      * Sets the state of a feature. This method is called by the component
      * manager any time after reset when a feature changes state. 
      * <p>
@@ -274,6 +283,15 @@ public class XPathMatcher
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
     } // setFeature(String,boolean)
+
+    /**
+     * Returns a list of property identifiers that are recognized by
+     * this component. This method may return null if no properties
+     * are recognized by this component.
+     */
+    public String[] getRecognizedProperties() {
+        return null;
+    }
 
     /**
      * Sets the value of a property. This method is called by the component
